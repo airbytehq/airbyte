@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
@@ -125,7 +124,7 @@ class GcsDataLakeStreamLoader(
         // Reconcile identifier fields after BigLake creates the table
         // BigLake reassigns field IDs, so we need to update the schema with the correct field names
         val primaryKeyNames =
-            when (val importType = stream.importType) {
+            when (val importType = stream.tableSchema.importType) {
                 is Dedupe -> {
                     importType.primaryKey.flatten().map { originalName ->
                         if (Meta.COLUMN_NAMES.contains(originalName)) {
@@ -201,8 +200,8 @@ class GcsDataLakeStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, state)
     }
 
-    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (streamFailure == null) {
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully) {
             // Doing it first to make sure that data coming in the current batch is written to the
             // main branch
             logger.info {

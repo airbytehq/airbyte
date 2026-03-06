@@ -61,7 +61,6 @@ class BigLakeWriteTest :
                                                 catalogConfiguration =
                                                     BigLakeCatalogConfiguration("", "")
                                             ),
-                                        numProcessRecordsWorkers = 1
                                     ),
                                     tempTableNameGenerator = DefaultTempTableNameGenerator(),
                                 )
@@ -80,14 +79,12 @@ class BigLakeWriteTest :
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.STRINGIFY,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         allTypesBehavior =
             StronglyTyped(integerCanBeLarge = false, nestedFloatLosesPrecision = false),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         configUpdater = IcebergConfigUpdater,
-        useDataFlowPipeline = true
     ) {
 
     @Test
@@ -100,13 +97,11 @@ class BigLakeWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace + namespaceSuffix,
                 unmappedName = name,
-                Append,
-                ObjectType(linkedMapOf("id" to intType)),
                 generationId = 0,
                 minimumGenerationId = 0,
                 syncId = 42,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema
+                tableSchema = makeTableSchema(ObjectType(linkedMapOf("id" to intType)), Append),
             )
         // Glue downcases stream IDs, and also coerces to alphanumeric+underscore.
         // So these two streams will collide.
@@ -144,13 +139,11 @@ class BigLakeWriteTest :
             DestinationStream(
                 unmappedNamespace = randomizedNamespace,
                 unmappedName = "test_stream",
-                Append,
-                ObjectType(schema),
                 generationId = 0,
                 minimumGenerationId = 0,
-                syncId,
+                syncId = syncId,
                 namespaceMapper = NamespaceMapper(),
-                tableSchema = emptyTableSchema
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
             )
         val firstStream =
             makeStream(

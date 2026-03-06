@@ -19,10 +19,12 @@ import com.mongodb.DBRefCodecProvider;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonBinary;
 import org.bson.BsonDocument;
@@ -128,7 +130,7 @@ public class MongoDbCdcEventUtils {
    * @param json The Debezium event data as JSON.
    * @return The transformed Debezium event data as JSON.
    */
-  public static ObjectNode transformDataTypes(final String json, final Set<String> configuredFields) {
+  public static ObjectNode transformDataTypes(final String json, final Map<String, JsonNode> configuredFields) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
     formatDocument(document, objectNode, configuredFields);
@@ -142,9 +144,9 @@ public class MongoDbCdcEventUtils {
     return normalizeObjectIdNoSchema(objectNode);
   }
 
-  public static JsonNode toJsonNode(final Document document, final Set<String> columnNames) {
+  public static JsonNode toJsonNode(final Document document, final Map<String, JsonNode> columnNamesAndTypes) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-    formatDocument(document, objectNode, columnNames);
+    formatDocument(document, objectNode, columnNamesAndTypes);
     return normalizeObjectId(objectNode);
   }
 
@@ -154,10 +156,10 @@ public class MongoDbCdcEventUtils {
     return normalizeObjectIdNoSchema(objectNode);
   }
 
-  private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
+  private static void formatDocument(final Document document, final ObjectNode objectNode, final Map<String, JsonNode> columnNamesAndTypes) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
-      readDocument(reader, objectNode, columnNames, false);
+      readDocument(reader, objectNode, columnNamesAndTypes, false);
     } catch (final Exception e) {
       LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
@@ -168,7 +170,7 @@ public class MongoDbCdcEventUtils {
     objectNode.set(SCHEMALESS_MODE_DATA_FIELD, Jsons.jsonNode(Collections.emptyMap()));
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
-      readDocument(reader, (ObjectNode) objectNode.get(SCHEMALESS_MODE_DATA_FIELD), Collections.emptySet(), true);
+      readDocument(reader, (ObjectNode) objectNode.get(SCHEMALESS_MODE_DATA_FIELD), Collections.emptyMap(), true);
       final Optional<JsonNode> maybeId = Optional.ofNullable(objectNode.get(SCHEMALESS_MODE_DATA_FIELD).get(DOCUMENT_OBJECT_ID_FIELD));
       maybeId.ifPresent(id -> objectNode.set(DOCUMENT_OBJECT_ID_FIELD, id));
     } catch (final Exception e) {
@@ -177,9 +179,45 @@ public class MongoDbCdcEventUtils {
     }
   }
 
+  /**
+   * Extracts field names and their JSON schema definitions from the properties.
+   *
+   * @param stream The configured stream containing the JSON schema
+   * @return Map of field names to their schema definitions, e.g.: { "_id": {"type": "string"},
+   *         "reviews": {"type": "array"} }
+   */
+  public static Map<String, JsonNode> extractFieldSchemas(final ConfiguredAirbyteStream stream) {
+    final Map<String, JsonNode> fieldSchemas = new HashMap<>();
+    final JsonNode properties = stream.getStream().getJsonSchema().get("properties");
+    if (properties != null && properties.isObject()) {
+      properties.fields().forEachRemaining(entry -> fieldSchemas.put(entry.getKey(), entry.getValue()));
+    }
+    return fieldSchemas;
+  }
+
+  /**
+   * Checks if the schema for a given field expects an array type.
+   *
+   * @param fieldSchemas Map of field names to their JSON schema definitions
+   * @param fieldName The field to check
+   * @return true if the schema expects an array, false otherwise
+   */
+  private static boolean schemaExpectsArray(final Map<String, JsonNode> fieldSchemas, final String fieldName) {
+    if (fieldSchemas == null || !fieldSchemas.containsKey(fieldName)) {
+      return false;
+    }
+    final JsonNode schema = fieldSchemas.get(fieldName);
+    final JsonNode typeNode = schema.get("type");
+    if (typeNode == null) {
+      return false;
+    }
+
+    return "array".equals(typeNode.asText());
+  }
+
   private static ObjectNode readDocument(final BsonReader reader,
                                          final ObjectNode jsonNodes,
-                                         final Set<String> includedFields,
+                                         final Map<String, JsonNode> includedFields,
                                          final boolean allowAllFields) {
     reader.readStartDocument();
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
@@ -187,12 +225,29 @@ public class MongoDbCdcEventUtils {
       final var fieldType = reader.getCurrentBsonType();
 
       if (shouldIncludeField(fieldName, includedFields, allowAllFields)) {
-        if (DOCUMENT.equals(fieldType)) {
+        /*
+         * If the field from MongoDB is not an array but the field in our source configuration expects an
+         * array, wrap it in an array to prevent NULL values in the destination. MongoDB types are dynamic,
+         * and destinations automatically convert primitives. However, structural mismatches like object to
+         * array will not be converted and we're handling it here.
+         */
+        if (!ARRAY.equals(fieldType) && schemaExpectsArray(includedFields, fieldName)) {
+          LOGGER.warn("Field '{}' expected array but received {}. Auto-wrapping value in array to prevent null in " +
+              "destination.", fieldName, fieldType);
+          // Read the value into a temporary node before wrapping in an array and setting on jsonNodes
+          final var emptyTempNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+          if (DOCUMENT.equals(fieldType)) {
+            jsonNodes.set(fieldName, Jsons.jsonNode(List.of(readDocument(reader, emptyTempNode, Map.of(), true))));
+          } else {
+            JsonNode valueNode = readField(reader, emptyTempNode, fieldName, fieldType).get(fieldName);
+            jsonNodes.set(fieldName, Jsons.jsonNode(List.of(valueNode)));
+          }
+        } else if (DOCUMENT.equals(fieldType)) {
           /*
            * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
            * are processed.
            */
-          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(), true));
+          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Map.of(), true));
         } else if (ARRAY.equals(fieldType)) {
           jsonNodes.set(fieldName, readArray(reader, includedFields, fieldName));
         } else {
@@ -208,7 +263,7 @@ public class MongoDbCdcEventUtils {
     return jsonNodes;
   }
 
-  private static JsonNode readArray(final BsonReader reader, final Set<String> columnNames, final String fieldName) {
+  private static JsonNode readArray(final BsonReader reader, final Map<String, JsonNode> columnNamesAndTypes, final String fieldName) {
     reader.readStartArray();
     final var elements = Lists.newArrayList();
 
@@ -216,10 +271,10 @@ public class MongoDbCdcEventUtils {
       final var currentBsonType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(currentBsonType)) {
         // recursion is used to read inner doc
-        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, true));
+        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNamesAndTypes, true));
       } else if (ARRAY.equals(currentBsonType)) {
         // recursion is used to read inner array
-        elements.add(readArray(reader, columnNames, fieldName));
+        elements.add(readArray(reader, columnNamesAndTypes, fieldName));
       } else {
         final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), fieldName, currentBsonType);
         elements.add(element.get(fieldName));
@@ -297,7 +352,8 @@ public class MongoDbCdcEventUtils {
 
   private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName) {
     final var code = reader.readJavaScriptWithScope();
-    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"), false);
+    final var scope =
+        readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Map.of("scope", Jsons.jsonNode(Collections.emptyMap())), false);
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 
@@ -311,8 +367,8 @@ public class MongoDbCdcEventUtils {
     }
   }
 
-  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final Set<String> columnNames, final String fieldName) {
-    if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
+  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final Map<String, JsonNode> columnNamesAndTypes, final String fieldName) {
+    if (columnNamesAndTypes.containsKey(fieldName + AIRBYTE_SUFFIX)) {
       final JsonNode data = jsonNodes.get(fieldName);
       if (data != null) {
         jsonNodes.remove(fieldName);
@@ -326,8 +382,8 @@ public class MongoDbCdcEventUtils {
   /**
    * Test if the current field that is included in the configured set of discovered fields. In order
    * to support the fields of nested document fields that pass the initial filter, the
-   * {@code allowAll} flag may be included in the as a way to allow the fields of the nested document
-   * to be processed.
+   * {@code allowAll} flag may be included in as a way to allow the fields of the nested document to
+   * be processed.
    *
    * @param fieldName The name of the current field.
    * @param includedFields The discovered fields.
@@ -335,8 +391,8 @@ public class MongoDbCdcEventUtils {
    * @return {@code true} if the current field should be included for processing or {@code false}
    *         otherwise.
    */
-  private static boolean shouldIncludeField(final String fieldName, final Set<String> includedFields, final boolean allowAll) {
-    return allowAll || includedFields.contains(fieldName);
+  private static boolean shouldIncludeField(final String fieldName, final Map<String, JsonNode> includedFields, final boolean allowAll) {
+    return allowAll || includedFields.containsKey(fieldName);
   }
 
   /**

@@ -109,9 +109,13 @@ concurrent rate limit, making it easier to start many queries at once.
 The BigQuery destination connector supports the following
 [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh Sync
-- Incremental - Append Sync
-- Incremental - Append + Deduped
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Output schema
 
@@ -203,6 +207,10 @@ tutorials:
 - [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 - [Partition and cluster BigQuery tables with Airbyte and dbt](https://airbyte.com/tutorials/bigquery-partition-cluster)
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a BigQuery dataset.
+
 ## Changelog
 
 <details>
@@ -210,6 +218,8 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.17      | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0                                                                                                                                                     |
+| 3.0.17-rc.1 | 2026-01-26 | [72296](https://github.com/airbytehq/airbyte/pull/72296) | Upgrade CDK to 0.2.0 |
 | 3.0.16 | 2025-11-25 | [67401](https://github.com/airbytehq/airbyte/pull/67401) | Add backticks to column names in SQL generation to prevent syntax errors. |
 | 3.0.15 | 2025-11-13 | [69307](https://github.com/airbytehq/airbyte/pull/69307) | Handle out-of-range timestamps/times. |
 | 3.0.14 | 2025-11-11 | [69231](https://github.com/airbytehq/airbyte/pull/69231) | Upgrade to Bulk CDK 0.1.74. |

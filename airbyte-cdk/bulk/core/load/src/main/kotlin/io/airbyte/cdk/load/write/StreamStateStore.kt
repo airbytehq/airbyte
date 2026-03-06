@@ -9,6 +9,8 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 /**
+ * TODO: Deprecate
+ *
  * Can be used by the dev connector to pass state between different parts of the connector. To use
  * it is sufficient to inject a StreamStateStore of any type into any component. The expected use is
  * for making state generated during initialization generally available to the Loaders.

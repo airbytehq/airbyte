@@ -12,6 +12,7 @@ This source syncs the following streams:
 | :----- | :-------- | :---------- |
 | [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
 | [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps |
+| [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Full Refresh | Call transcript segments with speaker IDs, topics, and timestamped sentences |
 | [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including transcripts, topics, and interaction stats |
 | [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
 | [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
@@ -30,7 +31,14 @@ The Gong connector should not run into Gong API limitations under normal usage. 
 
 ## Requirements
 
-- **Gong API keys**. You must be a Gong administrator to obtain API credentials. Navigate to Settings, then API in your Gong account to generate an access key and secret. See the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api) for detailed instructions.
+You can authenticate to Gong using one of two methods:
+
+- **OAuth 2.0 (recommended for Airbyte Cloud)**. Authenticate through Gong's OAuth flow. This method is available in Airbyte Cloud and handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
+
+- **API Key**. Authenticate using an access key and secret. You must be a Gong technical administrator to obtain API credentials. In your Gong account, navigate to **Company Settings**, then **Ecosystem**, then **API** to generate an access key and secret. See the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api) for detailed instructions.
+
+Additionally, you can configure:
+
 - **Start Date** (optional). The date from which to fetch data in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector fetches data from the last 90 days.
 
 ## Changelog
@@ -40,6 +48,12 @@ The Gong connector should not run into Gong API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.5.5 | 2026-02-24 | [73782](https://github.com/airbytehq/airbyte/pull/73782) | Update dependencies |
+| 0.5.4 | 2026-02-17 | [71754](https://github.com/airbytehq/airbyte/pull/71754) | Add callTranscripts stream to sync call transcripts |
+| 0.5.3 | 2026-02-10 | [73037](https://github.com/airbytehq/airbyte/pull/73037) | Update dependencies |
+| 0.5.2 | 2026-02-03 | [72579](https://github.com/airbytehq/airbyte/pull/72579) | Update dependencies |
+| 0.5.1 | 2026-01-20 | [65382](https://github.com/airbytehq/airbyte/pull/65382) | Update dependencies |
+| 0.5.0 | 2026-01-16 | [71356](https://github.com/airbytehq/airbyte/pull/71356) | Add OAuth 2.0 authentication support with SelectiveAuthenticator |
 | 0.4.14 | 2026-01-13 | [71344](https://github.com/airbytehq/airbyte/pull/71344) | Add 404 error handlers and fix CDK import path |
 | 0.4.13 | 2025-08-09 | [64594](https://github.com/airbytehq/airbyte/pull/64594) | Update dependencies |
 | 0.4.12 | 2025-08-02 | [64200](https://github.com/airbytehq/airbyte/pull/64200) | Update dependencies |

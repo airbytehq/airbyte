@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlTypes
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["component"], resolveParameters = false)
@@ -56,6 +57,7 @@ class ClickhouseTableSchemaEvolutionTest(
         super.`changeset is correct when changing a column's type`()
     }
 
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15578")
     @Test
     override fun `apply changeset - handle sync mode append`() {
         super.`apply changeset - handle sync mode append`()
@@ -71,6 +73,7 @@ class ClickhouseTableSchemaEvolutionTest(
         super.`apply changeset - handle changing sync mode from dedup to append`()
     }
 
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/15578")
     @Test
     override fun `apply changeset - handle sync mode dedup`() {
         super.`apply changeset - handle sync mode dedup`()
