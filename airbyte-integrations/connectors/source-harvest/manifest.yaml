@@ -2692,7 +2692,7 @@ api_budget:
           interval: PT15M
       matchers:
         - method: GET
-          url_path_pattern: "/reports/"
+          url_path_pattern: "^/reports/"
     # General API: 100 requests per 15 seconds
     - type: MovingWindowCallRatePolicy
       rates:
@@ -2702,8 +2702,8 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
-  max_concurrency: 30
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 10
 
 spec:
   type: Spec
@@ -2749,14 +2749,14 @@ spec:
         type: integer
         title: Number of concurrent workers
         description: The number of worker threads to use for the sync. More workers can improve sync speed but may increase API rate limit usage.
-        minimum: 1
-        maximum: 30
-        default: 10
+        minimum: 2
+        maximum: 10
+        default: 5
         order: 3
         examples:
+          - 3
           - 5
           - 10
-          - 20
       credentials:
         type: object
         description: Choose how to authenticate to Harvest.

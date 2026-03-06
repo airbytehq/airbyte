@@ -89,7 +89,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 The connector includes built-in rate limiting (`HTTPAPIBudget`) to proactively manage these limits and avoid HTTP 429 errors.
 
-You can configure the number of concurrent workers using the `num_workers` parameter (default: 10, maximum: 30). Higher values may improve sync speed but increase API usage.
+You can configure the number of concurrent workers using the `num_workers` parameter (default: 5, maximum: 10). Higher values may improve sync speed but increase API usage.
 
 ## Changelog
 
@@ -98,7 +98,7 @@ You can configure the number of concurrent workers using the `num_workers` param
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.31 | 2026-03-06 | [70857](https://github.com/airbytehq/airbyte/pull/70857) | Add HTTPAPIBudget, concurrency_level, and configurable num_workers parameter |
+| 1.2.31-rc.1 | 2026-03-06 | [70857](https://github.com/airbytehq/airbyte/pull/70857) | Add HTTPAPIBudget, concurrency_level, and configurable num_workers parameter |
 | 1.2.30 | 2026-02-24 | [73930](https://github.com/airbytehq/airbyte/pull/73930) | Update dependencies |
 | 1.2.29 | 2026-02-10 | [73113](https://github.com/airbytehq/airbyte/pull/73113) | Update dependencies |
 | 1.2.28 | 2026-02-03 | [72645](https://github.com/airbytehq/airbyte/pull/72645) | Update dependencies |
