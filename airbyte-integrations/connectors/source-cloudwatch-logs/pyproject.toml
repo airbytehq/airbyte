@@ -34,6 +34,7 @@ flake8 = "^7.0.0"
 pyflakes = "^3.2.0"
 mypy = "^1.17.0"
 coverage = "^7.9.2"
+freezegun = "^1.5.5"
 
 [tool.poe]
 include = [
