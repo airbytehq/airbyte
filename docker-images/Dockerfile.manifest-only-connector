@@ -33,5 +33,6 @@ USER airbyte
 ENV DD_PROFILING_ENABLED="true"
 ENV DD_PROFILING_TIMELINE_ENABLED="true"
 ENV DD_TRACE_SQLITE3_ENABLED="false"
+ENV DD_PROFILING_HEAP_SAMPLE_SIZE="262144"
 ENV AIRBYTE_ENTRYPOINT="ddtrace-run python /airbyte/integration_code/main.py"
 ENTRYPOINT ["ddtrace-run", "python", "/airbyte/integration_code/main.py"]
