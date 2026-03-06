@@ -3,10 +3,10 @@
 #
 
 import datetime as dt
-from freezegun import freeze_time
 from unittest.mock import MagicMock
 
 import pytest
+from freezegun import freeze_time
 from source_cloudwatch_logs.streams import Logs
 
 
@@ -139,9 +139,7 @@ class TestGetStartTimestamp:
         assert mock_log_stream._get_start_timestamp() is None
 
     def test_returns_earliest_timestamp_when_events_exist(self, mock_log_stream):
-        mock_log_stream.client.filter_log_events.return_value = {
-            "events": [{"timestamp": 1234567890000}]
-        }
+        mock_log_stream.client.filter_log_events.return_value = {"events": [{"timestamp": 1234567890000}]}
         assert mock_log_stream._get_start_timestamp() == 1234567890000
 
     def test_queries_from_time_zero(self, mock_log_stream):
@@ -237,14 +235,10 @@ class TestStreamSlices:
         ]
 
     @freeze_time("2026-01-01 00:00:00+00:00")
-    def test_falls_back_to_get_start_timestamp_when_no_state_or_start_date(
-        self, mock_log_stream
-    ):
+    def test_falls_back_to_get_start_timestamp_when_no_state_or_start_date(self, mock_log_stream):
         # 1 hour before current_time
         earliest_ts = self.CURRENT_TIME - 3600000
-        mock_log_stream.client.filter_log_events.return_value = {
-            "events": [{"timestamp": earliest_ts}]
-        }
+        mock_log_stream.client.filter_log_events.return_value = {"events": [{"timestamp": earliest_ts}]}
 
         slices = list(mock_log_stream.stream_slices(sync_mode=None, stream_state={}))
 
