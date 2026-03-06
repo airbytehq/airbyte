@@ -1137,12 +1137,22 @@ class GoogleAdsStreamingDecoder(Decoder):
         )
         records_batch: List[Dict[str, Any]] = []
         total_records = 0
-        for record in self._parse_records_from_stream(data):
+        last_progress_log = time.monotonic()
+        for record in self._parse_records_from_stream(data, resp_id=resp_id):
             records_batch.append(record)
             total_records += 1
             if len(records_batch) >= 100:
                 yield {"results": records_batch}
                 records_batch = []
+                now = time.monotonic()
+                if now - last_progress_log >= 30.0:
+                    decode_logger.info(
+                        "Decoder [resp=%s] streaming progress: %d records yielded so far, elapsed=%.1fs",
+                        resp_id,
+                        total_records,
+                        now - decode_start,
+                    )
+                    last_progress_log = now
 
         if records_batch:
             yield {"results": records_batch}
@@ -1218,16 +1228,33 @@ class GoogleAdsStreamingDecoder(Decoder):
         to_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
 
         def _reader() -> None:
+            reader_chunks = 0
+            reader_bytes = 0
             try:
+                to_logger.info("ReaderThread [resp=%s]: started, reading iter_content(chunk_size=%d)", resp_id, chunk_size)
                 for chunk in response.iter_content(chunk_size=chunk_size):
+                    reader_chunks += 1
+                    reader_bytes += len(chunk)
                     chunk_queue.put(("chunk", chunk))
+                to_logger.info(
+                    "ReaderThread [resp=%s]: iter_content() completed normally, total_chunks=%d, total_bytes=%d",
+                    resp_id, reader_chunks, reader_bytes,
+                )
                 chunk_queue.put(("done", _DONE))
             except Exception as exc:
+                to_logger.warning(
+                    "ReaderThread [resp=%s]: iter_content() raised %s after %d chunks (%d bytes): %s",
+                    resp_id, type(exc).__name__, reader_chunks, reader_bytes, exc,
+                )
                 chunk_queue.put(("error", exc))
 
         reader_thread = threading.Thread(target=_reader, daemon=True, name=f"iter-content-{resp_id}")
         reader_thread.start()
 
+        consumer_chunks = 0
+        consumer_bytes = 0
+        consumer_start = time.monotonic()
+        last_consumer_log = consumer_start
         while True:
             try:
                 msg_type, payload = chunk_queue.get(timeout=timeout)
@@ -1242,10 +1269,28 @@ class GoogleAdsStreamingDecoder(Decoder):
                 )
 
             if msg_type == "done":
+                to_logger.info(
+                    "Consumer [resp=%s]: stream done, consumed %d chunks (%d bytes) in %.1fs",
+                    resp_id, consumer_chunks, consumer_bytes, time.monotonic() - consumer_start,
+                )
                 return
             if msg_type == "error":
+                to_logger.warning(
+                    "Consumer [resp=%s]: received error after %d chunks (%d bytes): %s",
+                    resp_id, consumer_chunks, consumer_bytes, payload,
+                )
                 raise payload  # type: ignore[misc]
             # msg_type == "chunk"
+            consumer_chunks += 1
+            consumer_bytes += len(payload)
+            now = time.monotonic()
+            if consumer_chunks <= 2 or now - last_consumer_log >= 30.0:
+                to_logger.info(
+                    "Consumer [resp=%s]: yielding chunk #%d (%d bytes, total=%d bytes, qsize=%d, elapsed=%.1fs)",
+                    resp_id, consumer_chunks, len(payload), consumer_bytes,
+                    chunk_queue.qsize(), now - consumer_start,
+                )
+                last_consumer_log = now
             yield payload  # type: ignore[misc]
 
     @staticmethod
@@ -1253,13 +1298,37 @@ class GoogleAdsStreamingDecoder(Decoder):
         yield prefix
         yield from rest_stream
 
-    def _parse_records_from_stream(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
+    def _parse_records_from_stream(
+        self, byte_iter: Iterable[bytes], encoding: str = "utf-8", resp_id: str = ""
+    ) -> Generator[Dict[str, Any], None, None]:
+        parse_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
         string_state = StringParseState()
         results_state = ResultsArrayState()
         record_state = RecordParseState()
         top_level_state = TopLevelObjectState()
 
+        chunk_idx = 0
+        total_bytes_parsed = 0
+        total_records_parsed = 0
+        parse_start = time.monotonic()
+        last_chunk_log = parse_start
         for chunk in byte_iter:
+            chunk_idx += 1
+            chunk_len = len(chunk)
+            total_bytes_parsed += chunk_len
+            chunk_parse_start = time.monotonic()
+            now = time.monotonic()
+            if chunk_idx <= 2 or now - last_chunk_log >= 30.0:
+                parse_logger.info(
+                    "StreamParser [resp=%s]: processing chunk #%d (%d bytes, total_parsed=%d bytes, records_so_far=%d, elapsed=%.1fs)",
+                    resp_id,
+                    chunk_idx,
+                    chunk_len,
+                    total_bytes_parsed,
+                    total_records_parsed,
+                    now - parse_start,
+                )
+                last_chunk_log = now
             for char in chunk.decode(encoding, errors="replace"):
                 self._append_to_current_record_if_any(char, record_state)
 
@@ -1279,8 +1348,28 @@ class GoogleAdsStreamingDecoder(Decoder):
 
                 record = self._parse_record_structure(char, results_state, record_state)
                 if record is not None:
+                    total_records_parsed += 1
                     yield record
+            # Log after each chunk is fully parsed
+            chunk_parse_elapsed = time.monotonic() - chunk_parse_start
+            if chunk_parse_elapsed > 5.0 or chunk_idx <= 2:
+                parse_logger.info(
+                    "StreamParser [resp=%s]: chunk #%d parsed in %.1fs (%d bytes), total_records=%d",
+                    resp_id,
+                    chunk_idx,
+                    chunk_parse_elapsed,
+                    chunk_len,
+                    total_records_parsed,
+                )
 
+        parse_logger.info(
+            "StreamParser [resp=%s]: all chunks processed, total_chunks=%d, total_bytes=%d, total_records=%d, elapsed=%.1fs",
+            resp_id,
+            chunk_idx,
+            total_bytes_parsed,
+            total_records_parsed,
+            time.monotonic() - parse_start,
+        )
         # EOF validation
         if (
             string_state.inside_string
