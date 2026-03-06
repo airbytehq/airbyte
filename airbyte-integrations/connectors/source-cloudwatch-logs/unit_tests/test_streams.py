@@ -72,12 +72,13 @@ def test_setting_existing_state(log_stream):
 
 
 @patch(
-    "source_cloudwatch_logs.streams.dt.datetime.now",
+    "source_cloudwatch_logs.streams.dt.datetime",
     return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
 )
-def test_stream_slices_one_slice(mock_datetime_now, log_stream):
+def test_stream_slices_one_slice(mock_datetime, log_stream):
     # Stream slices splits the time range into 1 day slices. For a 1h range, it should return 1 slice
 
+    mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
     # 2026-01-01 00:00:00 UTC in milliseconds
     current_time = 1767225600000
     # 1 hour before current time
@@ -94,11 +95,12 @@ def test_stream_slices_one_slice(mock_datetime_now, log_stream):
 
 
 @patch(
-    "source_cloudwatch_logs.streams.dt.datetime.now",
+    "source_cloudwatch_logs.streams.dt.datetime",
     return_value=dt.datetime(2026, 1, 1, tzinfo=dt.UTC),
 )
-def test_stream_slices_many_slices(mock_datetime_now, log_stream):
+def test_stream_slices_many_slices(mock_datetime, log_stream):
     # Stream slices splits the time range into 1 day slices. For a 2-day range, it should return 2 slices
+    mock_datetime.now.return_value = dt.datetime(2026, 1, 1, tzinfo=dt.timezone.utc)
 
     # 2026-01-01 00:00:00 UTC in milliseconds
     current_time = 1767225600000
