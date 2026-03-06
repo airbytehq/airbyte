@@ -208,23 +208,15 @@ class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
             batch: List[str] = []
             last_parent_partition: dict = {}
 
-            for partition, is_last_slice in iterate_with_last_flag(
-                parent_stream.generate_partitions()
-            ):
+            for partition, is_last_slice in iterate_with_last_flag(parent_stream.generate_partitions()):
                 if partition is None:
                     break
 
-                for parent_record, is_last_record_in_slice in iterate_with_last_flag(
-                    partition.read()
-                ):
+                for parent_record, is_last_record_in_slice in iterate_with_last_flag(partition.read()):
                     should_add = parent_record is not None
                     if parent_record is not None:
                         parent_stream.cursor.observe(parent_record)
-                        last_parent_partition = (
-                            parent_record.associated_slice.partition
-                            if parent_record.associated_slice
-                            else {}
-                        )
+                        last_parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
                         record_data = parent_record.data
 
                         try:
