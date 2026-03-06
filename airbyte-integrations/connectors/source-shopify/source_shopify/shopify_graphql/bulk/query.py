@@ -1610,8 +1610,11 @@ class FulfillmentOrder(ShopifyBulkQuery):
     connections that can cause some fulfillment orders to be missing when queried through orders.
     See: https://github.com/airbytehq/oncall/issues/10991
 
+    The `includeClosed` parameter is configurable via `fulfillment_orders_include_closed` (default: true).
+    When enabled, closed fulfillment orders are included in the results.
+
         {
-            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT){
+            fulfillmentOrders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT, includeClosed: true){
                 edges {
                     node {
                         __typename
@@ -1794,8 +1797,13 @@ class FulfillmentOrder(ShopifyBulkQuery):
         ],
     }
 
+    @property
+    def _should_include_closed(self) -> bool:
+        return self.config.get("fulfillment_orders_include_closed", True)
+
     def query(self, filter_query: Optional[str] = None) -> Query:
-        return self.build(self.query_name, self.query_nodes, filter_query)
+        additional_query_args = {"includeClosed": "true"} if self._should_include_closed else None
+        return self.build(self.query_name, self.query_nodes, filter_query, additional_query_args)
 
     def process_fulfillment_order(self, record: MutableMapping[str, Any], shop_id: int) -> MutableMapping[str, Any]:
         # addings
