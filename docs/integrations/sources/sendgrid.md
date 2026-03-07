@@ -107,7 +107,7 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.27-rc.1 | 2026-03-07 | [](https://github.com/airbytehq/airbyte/pull/) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
+| 1.3.27-rc.1 | 2026-03-07 | [74349](https://github.com/airbytehq/airbyte/pull/74349) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 1.3.26 | 2026-02-24 | [73950](https://github.com/airbytehq/airbyte/pull/73950) | Update dependencies |
 | 1.3.25 | 2026-02-10 | [73157](https://github.com/airbytehq/airbyte/pull/73157) | Update dependencies |
 | 1.3.24 | 2026-02-03 | [72566](https://github.com/airbytehq/airbyte/pull/72566) | Update dependencies |
