@@ -27,7 +27,7 @@ definitions:
           - type: WaitTimeFromHeader
             header: Retry-After
       request_headers:
-        User-Agent: Airbyte (Connector Version 0.5.3)
+        User-Agent: Airbyte (Connector Version 0.6.0)
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -129,7 +129,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/tasks/'
+        url: '{{ config["base_url"] }}/api/v2.15/tasks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -759,7 +759,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/taskcategories/'
+        url: '{{ config["base_url"] }}/api/v2.15/taskcategories/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -816,7 +816,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/clients/'
+        url: '{{ config["base_url"] }}/api/v2.15/clients/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1104,7 +1104,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/clientgroups/'
+        url: '{{ config["base_url"] }}/api/v2.15/clientgroups/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1175,7 +1175,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/properties/'
+        url: '{{ config["base_url"] }}/api/v2.15/properties/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1348,7 +1348,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/invoices/'
+        url: '{{ config["base_url"] }}/api/v2.15/invoices/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1540,7 +1540,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/projects/'
+        url: '{{ config["base_url"] }}/api/v2.15/projects/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1770,7 +1770,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequotes/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequotes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -1940,7 +1940,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/defectquotes/'
+        url: '{{ config["base_url"] }}/api/v2.15/defectquotes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2109,7 +2109,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/suppliers/'
+        url: '{{ config["base_url"] }}/api/v2.15/suppliers/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2195,7 +2195,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorders/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorders/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2319,7 +2319,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routines/'
+        url: '{{ config["base_url"] }}/api/v2.15/routines/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2416,7 +2416,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/billingcards/'
+        url: '{{ config["base_url"] }}/api/v2.15/billingcards/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2480,7 +2480,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderbills/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderbills/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2552,7 +2552,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderdockets/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderdockets/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2624,7 +2624,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/invoicelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/invoicelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2754,7 +2754,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/users/'
+        url: '{{ config["base_url"] }}/api/v2.15/users/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2924,7 +2924,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicegroups/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicegroups/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -2981,7 +2981,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/costcentres/'
+        url: '{{ config["base_url"] }}/api/v2.15/costcentres/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3089,7 +3089,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3269,7 +3269,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/purchaseorderbilllineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/purchaseorderbilllineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3419,7 +3419,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/accreditationtypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/accreditationtypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3497,7 +3497,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/accreditations/'
+        url: '{{ config["base_url"] }}/api/v2.15/accreditations/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3602,11 +3602,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/branches/'
+        url: '{{ config["base_url"] }}/api/v2.15/branches/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Branch]: id,created,updated,name,code,address,business_hours,email,phone,fax,property_count,user_count,material_markup,extra_fields,subcontracted_task_safety_requirements,subcontracted_task_service_requirements,default_warehouse
+          fields[Branch]: id,created,updated,name,code,address,business_hours,email,phone,property_count,user_count,material_markup,extra_fields,subcontracted_task_safety_requirements,subcontracted_task_service_requirements,default_warehouse
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3645,9 +3645,6 @@ streams:
               - string
             format: email
           phone:
-            type:
-              - string
-          fax:
             type:
               - string
           property_count:
@@ -3717,10 +3714,6 @@ streams:
             value: '{{ record["attributes"]["phone"] }}'
           - type: AddedFieldDefinition
             path:
-              - fax
-            value: '{{ record["attributes"]["fax"] }}'
-          - type: AddedFieldDefinition
-            path:
               - property_count
             value: '{{ record["attributes"]["property_count"] or "None"}}'
           - type: AddedFieldDefinition
@@ -3757,7 +3750,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/creditnotes/'
+        url: '{{ config["base_url"] }}/api/v2.15/creditnotes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -3900,7 +3893,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/creditnotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/creditnotelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4045,7 +4038,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/remarks/'
+        url: '{{ config["base_url"] }}/api/v2.15/remarks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4270,7 +4263,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/assettypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/assettypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4545,7 +4538,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/assettypevariants/'
+        url: '{{ config["base_url"] }}/api/v2.15/assettypevariants/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -4658,7 +4651,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/assets/'
+        url: '{{ config["base_url"] }}/api/v2.15/assets/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -5068,7 +5061,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/products/'
+        url: '{{ config["base_url"] }}/api/v2.15/products/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -5374,7 +5367,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/rounds/'
+        url: '{{ config["base_url"] }}/api/v2.15/rounds/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -5505,11 +5498,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/tasksessions/'
+        url: '{{ config["base_url"] }}/api/v2.15/tasksessions/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[TaskSession]: id,created,updated,trashed,submitted,is_approved,is_submitted,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,duration,duration_hours,status,payroll_date
+          fields[TaskSession]: id,created,updated,trashed,type,started,finished,started_coord_lat,started_coord_lng,finished_coord_lat,finished_coord_lng,original_started,original_finished,description,rate,timezone,multiplier,multiplier_label,sell_rate,cost,sell,submitted_at,approved_at,task,technician,sell_product,submitted_by,approved_by,duration,duration_hours,status,payroll_date
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -5536,18 +5529,6 @@ streams:
               - "null"
             format: date-time
             airbyte_type: timestamp_with_timezone
-          submitted:
-            type:
-              - string
-              - "null"
-            format: date-time
-            airbyte_type: timestamp_with_timezone
-          is_approved:
-            type:
-              - boolean
-          is_submitted:
-            type:
-              - boolean
           type_id:
             type:
               - integer
@@ -5695,18 +5676,6 @@ streams:
             value: '{{ record["attributes"]["trashed"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - submitted
-            value: '{{ record["attributes"]["submitted"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - is_approved
-            value: '{{ record["attributes"]["is_approved"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - is_submitted
-            value: '{{ record["attributes"]["is_submitted"] }}'
-          - type: AddedFieldDefinition
-            path:
               - type_id
             value: '{{ record["relationships"]["type"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
@@ -5827,7 +5796,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/contractors/'
+        url: '{{ config["base_url"] }}/api/v2.15/contractors/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6049,7 +6018,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/appointments/'
+        url: '{{ config["base_url"] }}/api/v2.15/appointments/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6208,7 +6177,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/billingcontracts/'
+        url: '{{ config["base_url"] }}/api/v2.15/billingcontracts/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6444,7 +6413,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/billingcontractlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/billingcontractlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6553,11 +6522,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/defectquotelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/defectquotelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[DefectQuoteLineItem]: id,created,updated,description,unit_price,cost_price,markup,quantity,taxcode,taxrate,subtotal,total,gst,index,estimated_time,product_type,product,quote,asset,remark
+          fields[DefectQuoteLineItem]: id,created,updated,description,unit_price,cost_price,markup,quantity,taxcode,taxrate,subtotal,total,gst,index,estimated_time,product,quote,asset,remark
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6619,10 +6588,6 @@ streams:
           estimated_time:
             type:
               - integer
-          product_type:
-            type:
-              - string
-              - "null"
           product_id:
             type:
               - integer
@@ -6704,10 +6669,6 @@ streams:
             value: '{{ record["attributes"]["estimated_time"] }}'
           - type: AddedFieldDefinition
             path:
-              - product_type
-            value: '{{ record["attributes"]["product_type"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
               - product_id
             value: '{{ record["relationships"]["product"]["data"]["id"] or "None"}}'
           - type: AddedFieldDefinition
@@ -6732,7 +6693,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequotefixedlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequotefixedlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -6867,7 +6828,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequotedoandchargelineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequotedoandchargelineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7018,7 +6979,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicequoteproductlineitems/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicequoteproductlineitems/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7161,7 +7122,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/remarkevents/'
+        url: '{{ config["base_url"] }}/api/v2.15/remarkevents/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7257,11 +7218,11 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/servicetasks/'
+        url: '{{ config["base_url"] }}/api/v2.15/servicetasks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[ServiceTask]: id,created,updated,deleted,due,quantity,unit_price,subtotal,cost_price,from_stock,markup,notes,is_scheduled,is_majorservice,is_quoted,is_invoiced,is_billable,is_scanned,performed_date,quoted_date,invoiced_date,guid,result,extra_fields,remarks_added_count,active_remarks_count,highest_severity,task,item,routine,remark,product,technician,purchaseorderlineitem,routineserviceleveltype
+          fields[ServiceTask]: id,created,updated,deleted,quantity,unit_price,subtotal,cost_price,from_stock,markup,notes,is_scheduled,is_quoted,is_invoiced,is_billable,is_scanned,performed_date,quoted_date,invoiced_date,guid,result,extra_fields,remarks_added_count,active_remarks_count,highest_severity,task,item,routine,remark,product,technician,purchaseorderlineitem,routineserviceleveltype
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -7288,11 +7249,6 @@ streams:
               - "null"
             format: date-time
             airbyte_type: timestamp_with_timezone
-          due:
-            type:
-              - string
-              - "null"
-            format: date
           quantity:
             type:
               - string
@@ -7320,9 +7276,6 @@ streams:
             type:
               - string
           is_scheduled:
-            type:
-              - boolean
-          is_majorservice:
             type:
               - boolean
           is_quoted:
@@ -7430,10 +7383,6 @@ streams:
             value: '{{ record["attributes"]["deleted"] or "None"}}'
           - type: AddedFieldDefinition
             path:
-              - due
-            value: '{{ record["attributes"]["due"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
               - quantity
             value: '{{ record["attributes"]["quantity"] }}'
           - type: AddedFieldDefinition
@@ -7464,10 +7413,6 @@ streams:
             path:
               - is_scheduled
             value: '{{ record["attributes"]["is_scheduled"] }}'
-          - type: AddedFieldDefinition
-            path:
-              - is_majorservice
-            value: '{{ record["attributes"]["is_majorservice"] }}'
           - type: AddedFieldDefinition
             path:
               - is_quoted
@@ -7566,7 +7511,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineservices/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineservices/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7709,7 +7654,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineservicelevels/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineservicelevels/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7828,7 +7773,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineservicetypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineservicetypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -7980,7 +7925,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/routineserviceleveltypes/'
+        url: '{{ config["base_url"] }}/api/v2.15/routineserviceleveltypes/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"
@@ -8191,7 +8136,7 @@ streams:
       $ref: "#/definitions/linked/BaseSimpleRetriever"
       requester:
         $ref: "#/definitions/linked/BaseSimpleRetriever/requester"
-        url: '{{ config["base_url"] }}/api/v2.14/subtasks/'
+        url: '{{ config["base_url"] }}/api/v2.15/subtasks/'
         request_parameters:
           ordering: -updated
           show_deleted: "true"

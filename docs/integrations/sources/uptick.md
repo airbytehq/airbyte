@@ -157,6 +157,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.6.0 | 2026-02-24 | [73740](https://github.com/airbytehq/airbyte/pull/73740) | Bump API version to v2.15. Remove deprecated fields: fax (branches), product_type (defectquotelineitems), due and is_majorservice (servicetasks), submitted, is_approved and is_submitted (tasksessions) |
 | 0.5.4 | 2026-02-24 | [73926](https://github.com/airbytehq/airbyte/pull/73926) | Update dependencies |
 | 0.5.3 | 2026-02-23 | [72302](https://github.com/airbytehq/airbyte/pull/72302) | Add fields to defectquotes and projects streams |
 | 0.5.2 | 2026-02-17 | [73433](https://github.com/airbytehq/airbyte/pull/73433) | Update dependencies |
