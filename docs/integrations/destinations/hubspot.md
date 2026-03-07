@@ -117,6 +117,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.11  | 2026-03-07 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Use Properties API for standard object discovery to fix missing Deal and Company objects |
 | 0.0.10  | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975) | Upgrade CDK to 1.0.1                      |
 | 0.0.9   | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304) | Upgrade CDK to 0.2.0                      |
 | 0.0.8   | 2025-11-05 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61.               |

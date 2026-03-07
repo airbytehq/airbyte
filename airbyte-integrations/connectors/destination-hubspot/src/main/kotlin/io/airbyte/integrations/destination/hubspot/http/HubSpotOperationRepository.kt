@@ -40,7 +40,7 @@ class HubSpotOperationRepository(
                     objectsSupplier = StaticDestinationObjectProvider(listOf("CONTACT")),
                     operationAssembler =
                         DestinationOperationAssembler(
-                            propertiesPath = PROPERTIES_PATH,
+                            propertiesPath = PROPERTIES_API_RESULTS_PATH,
                             insertionMethods =
                                 listOf(
                                     InsertionMethod(
@@ -60,7 +60,7 @@ class HubSpotOperationRepository(
                                 HttpRequester(
                                     httpClient,
                                     RequestMethod.GET,
-                                    STANDARD_OBJECT_SCHEMA_URL
+                                    STANDARD_OBJECT_PROPERTIES_URL
                                 ),
                         )
                 ),
@@ -69,13 +69,13 @@ class HubSpotOperationRepository(
                         StaticDestinationObjectProvider(listOf("COMPANY", "DEAL", "PRODUCT")),
                     operationAssembler =
                         DestinationOperationAssembler(
-                            propertiesPath = PROPERTIES_PATH,
+                            propertiesPath = PROPERTIES_API_RESULTS_PATH,
                             insertionMethods = listOf(UPSERT_UNIQUE_VALUE_INSERTION_METHOD),
                             schemaRequester =
                                 HttpRequester(
                                     httpClient,
                                     RequestMethod.GET,
-                                    STANDARD_OBJECT_SCHEMA_URL
+                                    STANDARD_OBJECT_PROPERTIES_URL
                                 ),
                         )
                 ),
@@ -96,7 +96,7 @@ class HubSpotOperationRepository(
                         ),
                     operationAssembler =
                         DestinationOperationAssembler(
-                            propertiesPath = PROPERTIES_PATH,
+                            propertiesPath = SCHEMA_API_PROPERTIES_PATH,
                             insertionMethods = listOf(UPSERT_UNIQUE_VALUE_INSERTION_METHOD),
                             schemaRequester = null,
                         ),
@@ -116,7 +116,8 @@ class HubSpotOperationRepository(
                 "datetime" to TimestampTypeWithTimezone,
             )
         val OBJECT_NAME_PATH = listOf("name")
-        val PROPERTIES_PATH = listOf("properties")
+        val SCHEMA_API_PROPERTIES_PATH = listOf("properties")
+        val PROPERTIES_API_RESULTS_PATH = listOf("results")
         val PROPERTY_NAME_PATH = listOf("name")
         val PROPERTY_TYPE_PATH = listOf("type")
         val UPSERT_AVAILABILITY_PREDICATE =
@@ -126,6 +127,8 @@ class HubSpotOperationRepository(
         val NEVER_REQUIRED_PREDICATE: Predicate<JsonNode> = Predicate { _ -> false }
         const val STANDARD_OBJECT_SCHEMA_URL =
             """https://api.hubapi.com/crm/v3/schemas/{{ object["name"] }}"""
+        const val STANDARD_OBJECT_PROPERTIES_URL =
+            """https://api.hubapi.com/crm/v3/properties/{{ object["name"] }}"""
         val UPSERT_UNIQUE_VALUE_INSERTION_METHOD =
             InsertionMethod(
                 importType = upsertOperation(),
