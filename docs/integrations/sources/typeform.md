@@ -103,7 +103,7 @@ The connector includes a `num_workers` configuration parameter (default: 2, max:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 1.4.7-rc.1 | 2026-03-07 | [](https://github.com/airbytehq/airbyte/pull/) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
+| 1.4.7-rc.1 | 2026-03-07 | [74350](https://github.com/airbytehq/airbyte/pull/74350) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 1.4.6 | 2026-03-03 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |
 | 1.4.5 | 2026-01-22 | [72261](https://github.com/airbytehq/airbyte/pull/72261) | Update CDK version from 7.0.1 to 7.6.5 |
 | 1.4.4 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
