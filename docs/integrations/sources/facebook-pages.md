@@ -4,64 +4,66 @@ This page contains the setup guide and reference information for the Facebook Pa
 
 ## Prerequisites
 
-To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
+- A [Facebook Developer](https://developers.facebook.com/async/registration/) account
+- A [Facebook App](https://developers.facebook.com/apps/)
+- A Facebook Page you manage
+- A long-lived Page access token with the following permissions:
+  - `pages_read_engagement`
+  - `pages_read_user_content`
+  - `pages_show_list`
+  - `read_insights`
 
 :::note
-The Facebook Pages source connector is currently only compatible with v24 of the Facebook Graph API.
+This connector uses the Facebook Graph API v24.0.
 :::
 
 ## Setup guide
 
-### Step 1: Set up Facebook Pages
+### Set up Facebook Pages
 
-1. Create a Facebook Developer Account. Follow [these instructions](https://developers.facebook.com/async/registration/) to create one.
-2. Create a [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
-3. Connect a User [Page](https://developers.facebook.com/tools/explorer/) using the Graph API Explorer. Choose your app in the `Meta App` field. Choose your Page in the `User or Page` field. Add the following permissions:
-   - pages_read_engagement
-   - pages_read_user_content
-   - pages_show_list
-   - read_insights
-4. Click Generate Access Token and follow instructions.
+1. Create a [Facebook Developer Account](https://developers.facebook.com/async/registration/).
+2. Create a [Facebook App](https://developers.facebook.com/apps/). Choose **Business** as the app type. Fill out the remaining fields to create your app.
+3. Open the [Graph API Explorer](https://developers.facebook.com/tools/explorer/). Select your app in the **Meta App** field and your Page in the **User or Page** field. Add the following permissions:
+   - `pages_read_engagement`
+   - `pages_read_user_content`
+   - `pages_show_list`
+   - `read_insights`
+4. Click **Generate Access Token** and follow the instructions.
 
-After all the steps, it should look something like this:
+After completing these steps, the Graph API Explorer should look something like this:
 
-![](/.gitbook/assets/facebook-pages-1.png)
+![Facebook Pages Graph API Explorer](/.gitbook/assets/facebook-pages-1.png)
 
-5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
-6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.
+5. [Generate a long-lived User access token](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token).
+6. [Generate a long-lived Page token](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) from the long-lived User access token.
 
-### Step 2: Set up the Facebook Pages connector in Airbyte
+:::caution
+Long-lived Page tokens do not expire as long as the User access token used to generate them remains valid. However, if you change your Facebook password, revoke app permissions, or the app loses its `pages_show_list` permission, the token becomes invalid and you must generate a new one.
+:::
 
-### For Airbyte Cloud:
+### Set up the connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
-6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
+1. In Airbyte, navigate to **Sources** and click **+ New source**.
+2. Select **Facebook Pages** from the source type dropdown.
+3. Enter a name for the source.
+4. Authenticate using one of the following methods:
+   - **OAuth** (Airbyte Cloud only): Click **Authenticate your Facebook Pages account** and follow the prompts.
+   - **Page Access Token**: Paste the long-lived Page token you generated in the previous section.
+5. Enter your **Page ID**. If your page URL is `https://www.facebook.com/YourPageName`, the Page ID is `YourPageName`. You can also find your numeric Page ID in your Page's **About** section or by using the [Graph API Explorer](https://developers.facebook.com/tools/explorer/).
+6. Optionally, set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
 
-### For Airbyte OSS
+#### Creating your own OAuth app
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
-6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
+If you need to use your own OAuth app instead of the Airbyte-managed one, follow [Meta's guide to creating an app](https://developers.facebook.com/docs/development/create-an-app/).
 
-### Creating your own OAuth App
-
-Follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
-
-Required permissions for your OAuth App to sync data using the Facebook Pages source connector:
+Your OAuth app requires the following permissions:
 
 - `pages_read_engagement`
 - `pages_read_user_content`
 - `pages_show_list`
 - `read_insights`
 
-If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need. As a rule it's best to request the lowest number of permissions you can to function normally.
+If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need.
 
 ## Supported sync modes
 
@@ -70,40 +72,53 @@ The Facebook Pages source connector supports the following [sync modes](https://
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
-## Supported Streams
+## Supported streams
 
-- [Page](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview)
-- [Post](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed)
-- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights)
-- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights)
+| Stream | Description |
+| :--- | :--- |
+| [Page](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | Metadata about your Facebook Page, including name, category, description, follower count, and contact information. |
+| [Post](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | Posts published on your Page's feed, including message content, attachments, creation time, and privacy settings. |
+| [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | Aggregated analytics for your Page, such as total actions, post engagements, fan additions, impressions, and media views. |
+| [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights) | Per-post analytics, including unique impressions, clicks, click breakdowns by type, reactions by type, and media views. |
 
-## Limitations & Troubleshooting
+## Limitations and troubleshooting
+
+### Access token errors
+
+If syncs fail with authentication errors, your access token may be invalid. Common causes include:
+
+- **Password change**: Changing your Facebook password invalidates all active tokens.
+- **Revoked permissions**: If you or another Page admin revokes the app's permissions, the token stops working.
+- **App restrictions**: If Meta restricts your app for policy violations, tokens issued by that app become invalid.
+
+To resolve this, generate a new long-lived Page token by following the [setup guide](#set-up-facebook-pages).
+
+### "Bad request" errors (HTTP 400)
+
+If syncs fail with `HTTP Status Code: 400. Error: Bad request. Please check your request parameters`, this typically indicates one of the following:
+
+- **Expired or invalid access token**: The token used to authenticate has expired or been revoked. Generate a new long-lived Page token.
+- **Insufficient permissions**: The token lacks one or more required permissions. Verify that your token includes all [required permissions](#prerequisites).
+- **Invalid Page ID**: The configured Page ID does not match a Page accessible with the provided token. Verify the Page ID in your connector configuration.
+
+The connector retries 400 errors automatically, so you may see this error reported as a backoff exception after retries are exhausted.
 
 ### "Please reduce the amount of data you're asking for" error
 
-This error occurs when the Facebook Graph API considers the total response data too large. There are two ways to resolve it:
+This error occurs when the Facebook Graph API considers the response data too large. There are two ways to resolve it:
 
-- **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
-- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+- **Remove fields from the request**: Go to your connection's **Schema** tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
+- **Reduce page size**: Set the **Page Size** configuration parameter to a lower value, such as 25 or 50. This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
 
 ### Product catalogs field not available
 
-Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and will always be `null`. This is because the Facebook Graph API only returns product catalogs that are owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now created as Business-owned catalogs (Page-owned catalogs are a legacy feature), and this connector uses Page access tokens, the `product_catalogs` field would not return meaningful data for most users.
+Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and always returns `null`. The Facebook Graph API only returns product catalogs owned directly by the Page, not catalogs owned by a Business. Because most product catalogs are now Business-owned, this field does not return meaningful data for most users.
 
-## Data type map
+### Rate limiting
 
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
+Facebook applies [rate limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) to all API requests. Requests made with Page access tokens are subject to Business Use Case rate limits. If syncs are slow or encounter rate limit errors, you can [request a rate limit increase](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) from Meta.
 
-## Performance considerations
-
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
-
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
+Using a long-lived Page token rather than a short-lived app token significantly reduces rate limiting issues.
 
 ## Changelog
 
