@@ -193,7 +193,7 @@ The connector includes a `num_workers` configuration parameter (default: 3, max:
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.6-rc.1 | 2026-03-07 | [](https://github.com/airbytehq/airbyte/pull/) | Add HTTPAPIBudget with rate limit headers for Zendesk Support API |
+| 5.1.6-rc.1 | 2026-03-07 | [74352](https://github.com/airbytehq/airbyte/pull/74352) | Add HTTPAPIBudget with rate limit headers for Zendesk Support API |
 | 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
 | 5.1.4 | 2026-02-24 | [73911](https://github.com/airbytehq/airbyte/pull/73911) | Update dependencies |
 | 5.1.3 | 2026-02-17 | [73508](https://github.com/airbytehq/airbyte/pull/73508) | Update dependencies |
