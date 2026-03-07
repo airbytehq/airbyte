@@ -674,6 +674,29 @@ streams:
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/contacts"
 
+# Rate limits: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits
+# SendGrid v3 API rate limits vary by endpoint.
+# General: most endpoints allow ~50 requests/second.
+# Marketing API: ~600 requests/minute.
+# Headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+# Returns HTTP 429 when rate limited.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT1S
+      matchers: []
+  ratelimit_reset_header: "X-RateLimit-Reset"
+  ratelimit_remaining_header: "X-RateLimit-Remaining"
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 20
 
 spec:
   type: Spec
@@ -702,6 +725,18 @@ spec:
         order: 1
         title: API Key
         airbyte_secret: true
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          The number of worker threads to use for the sync. Higher values can
+          speed up syncs but may hit rate limits. SendGrid API allows ~50
+          requests/second for most endpoints. More info at
+          https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits
+        default: 5
+        minimum: 2
+        maximum: 20
+        order: 2
     additionalProperties: true
 
 metadata:

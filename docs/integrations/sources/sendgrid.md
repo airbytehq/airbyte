@@ -84,6 +84,8 @@ Expand to see details about Sendgrid connector limitations and troubleshooting.
 
 The connector is restricted by normal Sendgrid [requests limitation](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits).
 
+The connector includes a `num_workers` configuration parameter (default: 5, max: 20) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but be mindful of the rate limits.
+
 ### Troubleshooting
 
 #### 403 Forbidden errors
@@ -105,6 +107,7 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.27-rc.1 | 2026-03-07 | [](https://github.com/airbytehq/airbyte/pull/) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 1.3.26 | 2026-02-24 | [73950](https://github.com/airbytehq/airbyte/pull/73950) | Update dependencies |
 | 1.3.25 | 2026-02-10 | [73157](https://github.com/airbytehq/airbyte/pull/73157) | Update dependencies |
 | 1.3.24 | 2026-02-03 | [72566](https://github.com/airbytehq/airbyte/pull/72566) | Update dependencies |
