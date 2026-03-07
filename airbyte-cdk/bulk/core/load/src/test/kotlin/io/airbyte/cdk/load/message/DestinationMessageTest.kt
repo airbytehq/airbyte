@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
@@ -62,8 +61,6 @@ internal class DestinationMessageTest {
                     DestinationStream(
                         unmappedNamespace = descriptor.namespace,
                         unmappedName = descriptor.name,
-                        Append,
-                        ObjectTypeWithEmptySchema,
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
@@ -499,11 +496,9 @@ internal class DestinationMessageTest {
             DestinationStream(
                 unmappedNamespace = "namespace",
                 unmappedName = "name",
-                importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 1,
-                schema = streamSchema,
                 namespaceMapper = NamespaceMapper(),
                 tableSchema =
                     io.airbyte.cdk.load.schema.model.StreamTableSchema(

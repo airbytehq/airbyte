@@ -15,14 +15,15 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 
 ## Supported sync modes
 
-The connectors supports all sync modes.
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-| Feature                        | Supported?\(Yes/No\) | Notes                          |
-| :----------------------------- |:---------------------|:-------------------------------|
-| Full Refresh Sync              | Yes                  |                                |
-| Incremental - Append Sync      | Yes                  |                                |
-| Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
-| Namespaces                     | Yes                  |                                |
+Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) below for details.
 
 ## Deduplication
 
@@ -165,6 +166,10 @@ The connector converts Airbyte data types to ClickHouse types as follows:
 The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
 :::
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
+
 ## Changelog
 
 <!-- vale off -->
@@ -174,6 +179,7 @@ The connector converts arrays and unions to strings for compatibility. If you ne
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.23     | 2026-02-04 | [72857](https://github.com/airbytehq/airbyte/pull/72857)   | No user-facing changes (Upgrade CDK to 0.2.8)                    |
 | 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
 | 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |
 | 2.1.20     | 2026-01-15 | [71120](https://github.com/airbytehq/airbyte/pull/71120)   | Add schema and table identifier regression tests; upgrade CDK to 0.1.105       |

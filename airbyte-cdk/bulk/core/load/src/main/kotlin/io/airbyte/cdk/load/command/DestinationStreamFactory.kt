@@ -53,12 +53,10 @@ class DestinationStreamFactory(
         return DestinationStream(
             unmappedNamespace = stream.stream.namespace,
             unmappedName = stream.stream.name,
-            namespaceMapper = namespaceMapper,
-            importType = importType,
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
-            schema = airbyteSchemaType,
+            namespaceMapper = namespaceMapper,
             tableSchema = tableSchema,
         )
     }

@@ -8,7 +8,6 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.schema.TableNameResolver
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
@@ -71,20 +70,22 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
 
     internal fun throwIfInvalidDedupConfig() {
         streams.forEach { stream ->
-            if (stream.importType is Dedupe) {
-                stream.importType.primaryKey.forEach { pk ->
+            val importType = stream.tableSchema.importType
+            if (importType is Dedupe) {
+                val inputSchema = stream.tableSchema.columnSchema.inputSchema
+                importType.primaryKey.forEach { pk ->
                     if (pk.isNotEmpty()) {
                         val firstPkElement = pk.first()
-                        if (!stream.schema.asColumns().containsKey(firstPkElement)) {
+                        if (!inputSchema.containsKey(firstPkElement)) {
                             throw ConfigErrorException(
                                 "For stream ${stream.mappedDescriptor.toPrettyString()}: A primary key column does not exist in the schema: $firstPkElement"
                             )
                         }
                     }
                 }
-                if (stream.importType.cursor.isNotEmpty()) {
-                    val firstCursorElement = stream.importType.cursor.first()
-                    if (!stream.schema.asColumns().containsKey(firstCursorElement)) {
+                if (importType.cursor.isNotEmpty()) {
+                    val firstCursorElement = importType.cursor.first()
+                    if (!inputSchema.containsKey(firstCursorElement)) {
                         throw ConfigErrorException(
                             "For stream ${stream.mappedDescriptor.toPrettyString()}: The cursor does not exist in the schema: $firstCursorElement"
                         )
@@ -142,14 +143,12 @@ class DefaultDestinationCatalogFactory {
         // generate 5 random characters
         val random = RandomStringUtils.insecure().nextAlphabetic(5).lowercase()
         val namespace = checkNamespace ?: "airbyte_internal_test_$date$random"
+        val testSchema = mapOf("test" to FieldType(IntegerType, nullable = true))
         return DestinationCatalog(
             listOf(
                 DestinationStream(
                     unmappedNamespace = namespace,
                     unmappedName = "test$date$random",
-                    importType = Append,
-                    schema =
-                        ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
@@ -158,8 +157,8 @@ class DefaultDestinationCatalogFactory {
                         StreamTableSchema(
                             columnSchema =
                                 ColumnSchema(
-                                    inputSchema = mapOf(),
-                                    inputToFinalColumnNames = mapOf(),
+                                    inputSchema = testSchema,
+                                    inputToFinalColumnNames = mapOf("test" to "test"),
                                     finalSchema = mapOf()
                                 ),
                             importType = Append,

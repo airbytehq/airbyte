@@ -8,7 +8,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.config.DataChannelMedium
-import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier

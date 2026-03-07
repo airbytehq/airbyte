@@ -28,6 +28,10 @@ API documentation: https://developer.cisco.com/meraki/api-v1/introduction/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2026-02-24 | [73797](https://github.com/airbytehq/airbyte/pull/73797) | Update dependencies |
+| 0.0.29 | 2026-02-17 | [73449](https://github.com/airbytehq/airbyte/pull/73449) | Update dependencies |
+| 0.0.28 | 2026-02-10 | [73021](https://github.com/airbytehq/airbyte/pull/73021) | Update dependencies |
+| 0.0.27 | 2026-02-03 | [72706](https://github.com/airbytehq/airbyte/pull/72706) | Update dependencies |
 | 0.0.26 | 2026-01-20 | [72121](https://github.com/airbytehq/airbyte/pull/72121) | Update dependencies |
 | 0.0.25 | 2026-01-14 | [71688](https://github.com/airbytehq/airbyte/pull/71688) | Update dependencies |
 | 0.0.24 | 2025-12-18 | [70646](https://github.com/airbytehq/airbyte/pull/70646) | Update dependencies |

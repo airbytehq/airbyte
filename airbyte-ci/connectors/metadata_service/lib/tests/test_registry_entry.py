@@ -173,8 +173,15 @@ def test_generate_and_persist_registry_entry(
 
         # Verify GCS operations were called
         mock_gcs_client.assert_called()
-        mock_safe_read_gcs_file.assert_called_once()
-        mock_get_icon_blob.assert_called_once_with(bucket_name, scenario["metadata_dict"]["data"])
+        # For "latest" version type (normal publishes), safe_read_gcs_file and _get_icon_blob_from_gcs
+        # are called twice because we generate two sets of metadata: one for versioned entry (actual
+        # published version), one for latest entry (with version pinning applied).
+        if scenario["version_type"] == "latest":
+            assert mock_safe_read_gcs_file.call_count == 2
+            assert mock_get_icon_blob.call_count == 2
+        else:
+            mock_safe_read_gcs_file.assert_called_once()
+            mock_get_icon_blob.assert_called_once_with(bucket_name, scenario["metadata_dict"]["data"])
 
         # Verify registry entry was persisted
         mock_persist_entry.assert_called()

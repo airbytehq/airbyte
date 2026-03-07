@@ -36,7 +36,7 @@ await zendesk_chat.accounts.get()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -78,7 +78,7 @@ await zendesk_chat.agents.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -137,7 +137,7 @@ await zendesk_chat.agents.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -198,7 +198,7 @@ await zendesk_chat.agents.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -218,7 +218,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -240,21 +240,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Unique agent identifier |
-| `hits[].data.email` | `string` | Agent email address |
-| `hits[].data.display_name` | `string` | Agent display name |
-| `hits[].data.first_name` | `string` | Agent first name |
-| `hits[].data.last_name` | `string` | Agent last name |
-| `hits[].data.enabled` | `boolean` | Whether agent is enabled |
-| `hits[].data.role_id` | `integer` | Agent role ID |
-| `hits[].data.departments` | `array` | Department IDs agent belongs to |
-| `hits[].data.create_date` | `string` | When agent was created |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique agent identifier |
+| `data[].email` | `string` | Agent email address |
+| `data[].display_name` | `string` | Agent display name |
+| `data[].first_name` | `string` | Agent first name |
+| `data[].last_name` | `string` | Agent last name |
+| `data[].enabled` | `boolean` | Whether agent is enabled |
+| `data[].role_id` | `integer` | Agent role ID |
+| `data[].departments` | `array` | Department IDs agent belongs to |
+| `data[].create_date` | `string` | When agent was created |
 
 </details>
 
@@ -273,7 +272,7 @@ await zendesk_chat.agent_timeline.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -330,7 +329,7 @@ await zendesk_chat.bans.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -363,7 +362,7 @@ await zendesk_chat.bans.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -416,7 +415,7 @@ await zendesk_chat.chats.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -533,7 +532,7 @@ await zendesk_chat.chats.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -644,7 +643,7 @@ await zendesk_chat.chats.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -664,7 +663,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -686,21 +685,20 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `string` | Unique chat identifier |
-| `hits[].data.timestamp` | `string` | Chat start timestamp |
-| `hits[].data.update_timestamp` | `string` | Last update timestamp |
-| `hits[].data.department_id` | `integer` | Department ID |
-| `hits[].data.department_name` | `string` | Department name |
-| `hits[].data.duration` | `integer` | Chat duration in seconds |
-| `hits[].data.rating` | `string` | Satisfaction rating |
-| `hits[].data.missed` | `boolean` | Whether chat was missed |
-| `hits[].data.agent_ids` | `array` | IDs of agents in chat |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `string` | Unique chat identifier |
+| `data[].timestamp` | `string` | Chat start timestamp |
+| `data[].update_timestamp` | `string` | Last update timestamp |
+| `data[].department_id` | `integer` | Department ID |
+| `data[].department_name` | `string` | Department name |
+| `data[].duration` | `integer` | Chat duration in seconds |
+| `data[].rating` | `string` | Satisfaction rating |
+| `data[].missed` | `boolean` | Whether chat was missed |
+| `data[].agent_ids` | `array` | IDs of agents in chat |
 
 </details>
 
@@ -719,7 +717,7 @@ await zendesk_chat.departments.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -762,7 +760,7 @@ await zendesk_chat.departments.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -814,7 +812,7 @@ await zendesk_chat.departments.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -834,7 +832,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -851,16 +849,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Department ID |
-| `hits[].data.name` | `string` | Department name |
-| `hits[].data.enabled` | `boolean` | Whether department is enabled |
-| `hits[].data.members` | `array` | Agent IDs in department |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Department ID |
+| `data[].name` | `string` | Department name |
+| `data[].enabled` | `boolean` | Whether department is enabled |
+| `data[].members` | `array` | Agent IDs in department |
 
 </details>
 
@@ -879,7 +876,7 @@ await zendesk_chat.goals.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -924,7 +921,7 @@ await zendesk_chat.goals.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -978,7 +975,7 @@ await zendesk_chat.roles.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1021,7 +1018,7 @@ await zendesk_chat.roles.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1073,7 +1070,7 @@ await zendesk_chat.routing_settings.get()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1116,7 +1113,7 @@ await zendesk_chat.shortcuts.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1161,7 +1158,7 @@ await zendesk_chat.shortcuts.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1215,7 +1212,7 @@ await zendesk_chat.shortcuts.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1235,7 +1232,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1252,16 +1249,15 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Shortcut ID |
-| `hits[].data.name` | `string` | Shortcut name/trigger |
-| `hits[].data.message` | `string` | Shortcut message content |
-| `hits[].data.tags` | `array` | Tags applied when shortcut is used |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Shortcut ID |
+| `data[].name` | `string` | Shortcut name/trigger |
+| `data[].message` | `string` | Shortcut message content |
+| `data[].tags` | `array` | Tags applied when shortcut is used |
 
 </details>
 
@@ -1280,7 +1276,7 @@ await zendesk_chat.skills.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1322,7 +1318,7 @@ await zendesk_chat.skills.get(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1373,7 +1369,7 @@ await zendesk_chat.triggers.list()
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1419,7 +1415,7 @@ await zendesk_chat.triggers.search(
 #### API
 
 ```bash
-curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_id}/execute' \
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
@@ -1439,7 +1435,7 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
-| `cursor` | `string` | No | Pagination cursor from previous response's next_cursor |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
 | `fields` | `array` | No | Field paths to include in results |
 
 #### Searchable Fields
@@ -1455,47 +1451,14 @@ curl --location 'https://api.airbyte.ai/api/v1/connectors/sources/{your_source_i
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `hits` | `array` | List of matching records |
-| `hits[].id` | `string` | Record identifier |
-| `hits[].score` | `number` | Relevance score |
-| `hits[].data` | `object` | Record data containing the searchable fields listed above |
-| `hits[].data.id` | `integer` | Trigger ID |
-| `hits[].data.name` | `string` | Trigger name |
-| `hits[].data.enabled` | `boolean` | Whether trigger is enabled |
-| `next_cursor` | `string \| null` | Cursor for next page of results |
-| `took_ms` | `number` | Query execution time in milliseconds |
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Trigger ID |
+| `data[].name` | `string` | Trigger name |
+| `data[].enabled` | `boolean` | Whether trigger is enabled |
 
 </details>
 
-
-
-## Replication Configuration
-
-Settings for data replication from Zendesk Chat
-
-These settings control how data is replicated from the source. Pass them via the `replication_config` parameter when creating a source.
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `start_date` | `str (date-time)` | Yes | The date from which to start replicating data, in the format YYYY-MM-DDT00:00:00Z. |
-
-### Example
-
-**API**
-
-```bash
-curl --location 'https://api.airbyte.ai/integrations/connectors' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {your_auth_token}' \
---data '{
-  "external_user_id": "{your_external_user_id}",
-  "connector_type": "zendesk-chat",
-  "credentials": {
-    ...
-  },
-  "replication_config": {
-    "start_date": "<The date from which to start replicating data, in the format YYYY-MM-DDT00:00:00Z.>"
-  },
-  "name": "My Zendesk-Chat Connector"
-}'
-```

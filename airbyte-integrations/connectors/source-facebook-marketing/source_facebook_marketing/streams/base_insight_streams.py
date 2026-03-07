@@ -3,9 +3,10 @@
 #
 
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from functools import cache, cached_property
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from zoneinfo import ZoneInfo
 
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
@@ -37,6 +38,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         "28d_click",
         "1d_view",
     ]
+
+    INCREMENTALITY_WINDOW = "incrementality"
 
     breakdowns = []
     action_breakdowns = [
@@ -77,11 +80,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         insights_lookback_window: int = None,
         insights_job_timeout: int = 60,
         level: str = "ad",
+        include_incrementality: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
+        self._account_end_dates: dict[str, date] = {}
         self._custom_fields = fields
         if action_breakdowns_allow_empty:
             if action_breakdowns is not None:
@@ -98,6 +103,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.level = level
         self.entity_prefix = level
 
+        if include_incrementality:
+            self.action_attribution_windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS) + [self.INCREMENTALITY_WINDOW]
+
         # state
         self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
         self._next_cursor_values = self._get_start_date()
@@ -109,10 +117,24 @@ class AdsInsights(FBMarketingIncrementalStream):
         name = self._new_class_name or self.__class__.__name__
         return casing.camel_to_snake(name)
 
+    # Mapping from level to the corresponding entity ID field
+    # Note: "account" level is not included because account_id is already in the base primary key
+    LEVEL_TO_ID_FIELD = {
+        "ad": "ad_id",
+        "adset": "adset_id",
+        "campaign": "campaign_id",
+    }
+
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        """Build complex PK based on slices and breakdowns"""
+        """Build complex PK based on level and breakdowns.
 
+        The primary key includes:
+        - date_start: The date of the insight data
+        - account_id: The Facebook ad account ID
+        - entity_id: The ID field corresponding to the configured level (ad_id, adset_id, campaign_id)
+        - breakdown fields: Any additional breakdown dimensions
+        """
         breakdowns_pks = []
 
         for breakdown in self.breakdowns:
@@ -121,7 +143,16 @@ class AdsInsights(FBMarketingIncrementalStream):
             else:
                 breakdowns_pks.append(breakdown)
 
-        return ["date_start", "account_id", "ad_id"] + breakdowns_pks
+        # Determine the entity ID field based on the configured level
+        # For "account" level (or any unknown level), no additional entity ID is needed
+        # since account_id is already in the base primary key
+        entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
+
+        base_pk = ["date_start", "account_id"]
+        if entity_id_field:
+            base_pk.append(entity_id_field)
+
+        return base_pk + breakdowns_pks
 
     @property
     def insights_lookback_period(self):
@@ -259,14 +290,41 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         self._next_cursor_values = self._get_start_date()
 
+    def _get_end_date_for_account(self, account_id: str) -> date:
+        """Compute the effective end date for a specific account based on its timezone.
+
+        The Facebook Insights API interprets time_range dates in the ad account's timezone.
+        For accounts ahead of UTC, the UTC date may lag behind the account's local date,
+        causing the current day's data to be missed. This adjusts the end date per account.
+        """
+        if account_id in self._account_end_dates:
+            return self._account_end_dates[account_id]
+
+        today_utc = ab_datetime_now().date()
+        if self._end_date < today_utc:
+            self._account_end_dates[account_id] = self._end_date
+            return self._end_date
+
+        account = self._api.get_account(account_id=account_id)
+        timezone_name = account.get("timezone_name")
+        if isinstance(timezone_name, str):
+            account_today = datetime.now(tz=ZoneInfo(timezone_name)).date()
+            end_date = max(self._end_date, account_today)
+        else:
+            end_date = self._end_date
+
+        self._account_end_dates[account_id] = end_date
+        return end_date
+
     def _date_intervals(self, account_id: str) -> Iterator[date]:
         """Get date period to sync"""
-        if self._end_date < self._next_cursor_values[account_id]:
+        end_date = self._get_end_date_for_account(account_id)
+        if end_date < self._next_cursor_values[account_id]:
             return
 
         # Generate date intervals manually using standard datetime arithmetic
         current_date = self._next_cursor_values[account_id]
-        while current_date <= self._end_date:
+        while current_date <= end_date:
             yield current_date
             current_date += timedelta(days=self.time_increment)
 
@@ -422,7 +480,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         schema = loader.get_schema("ads_insights")
         if self._custom_fields:
             # 'date_stop' and 'account_id' are also returned by default, even if they are not requested
-            custom_fields = set(self._custom_fields + [self.cursor_field, "date_stop", "account_id", "ad_id"])
+            # Include the appropriate entity ID field based on the configured level
+            # For "account" level, no additional entity ID is needed since account_id is already included
+            entity_id_field = self.LEVEL_TO_ID_FIELD.get(self.level)
+            required_fields = [self.cursor_field, "date_stop", "account_id"]
+            if entity_id_field:
+                required_fields.append(entity_id_field)
+            custom_fields = set(self._custom_fields + required_fields)
             schema["properties"] = {k: v for k, v in schema["properties"].items() if k in custom_fields}
 
             # Load extra fields for custom insights that are not in the base ads_insights schema
