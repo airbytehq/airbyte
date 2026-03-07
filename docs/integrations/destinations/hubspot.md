@@ -66,13 +66,13 @@ This is a [data activation](/platform/move-data/elt-data-activation) destination
 
 ## Supported Objects
 
-The HubSpot destination connector supports the following streams:
+The HubSpot destination connector supports writing to the following objects:
 
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies): Upsert on unique field
-- [Contacts](https://developers.hubspot.com/docs/methods/contacts): Upsert on email
+- [Contacts](https://developers.hubspot.com/docs/guides/api/crm/contacts): Upsert on email
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals): Upsert on unique field
 - [Products](https://developers.hubspot.com/docs/api/crm/products): Upsert on unique field
-- [Custom Objects](https://developers.hubspot.com/docs/guides/api/crm/objects/custom-objects): Upsert on unique field
+- [Custom Objects](https://developers.hubspot.com/docs/guides/api/crm/objects/custom-objects): Upsert on unique field. Requires a HubSpot Enterprise subscription.
 
 ## Limitations & Troubleshooting
 
@@ -100,7 +100,7 @@ In order to verify our HubSpot application, HubSpot expects some usage i.e. [mor
 
 ### Scopes for Unsupported Streams
 
-During app the app installation, you might see scopes related to objects we don't support. This is expected as changing scopes might require the users to re-authenticate which is quite disruptive. In order to prevent that, we added scopes on objects we intend to support given user demands.
+During the app installation, you might see scopes related to objects we don't support. This is expected as changing scopes might require the users to re-authenticate which is quite disruptive. In order to prevent that, we added scopes on objects we intend to support given user demands.
 
 ### 403 Forbidden Error
 
@@ -117,7 +117,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
-| 0.0.11  | 2026-03-07 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Use Properties API for standard object discovery to fix missing Deal and Company objects |
+| 0.0.11  | 2026-03-07 | [74355](https://github.com/airbytehq/airbyte/pull/74355) | Use Properties API for standard object discovery to fix missing Deal and Company objects |
 | 0.0.10  | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975) | Upgrade CDK to 1.0.1                      |
 | 0.0.9   | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304) | Upgrade CDK to 0.2.0                      |
 | 0.0.8   | 2025-11-05 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61.               |
