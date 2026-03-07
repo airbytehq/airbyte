@@ -1,0 +1,25 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "creatives": [
+    {
+      "sub_request_status": "SUCCESS",
+      "creative": {
+        "id": "test_creative_123",
+        "updated_at": "2024-01-15T10:00:00.000Z",
+        "created_at": "2023-01-01T00:00:00.000Z",
+        "name": "Test Creative",
+        "ad_account_id": "test_adaccount_456",
+        "type": "SNAP_AD",
+        "packaging_status": "SUCCESS",
+        "review_status": "APPROVED",
+        "shareable": true,
+        "headline": "Test Headline",
+        "brand_name": "Test Brand",
+        "call_to_action": "INSTALL_NOW",
+        "top_snap_media_id": "test_media_id",
+        "top_snap_crop_position": "MIDDLE"
+      }
+    }
+  ]
+}

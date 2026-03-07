@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
@@ -222,8 +222,8 @@ class IcebergTypesComparator {
                 // but for this function's purpose, we only check the existing fields.
                 true
             }
-            Type.TypeID.BINARY,
             Type.TypeID.DECIMAL,
+            Type.TypeID.BINARY,
             Type.TypeID.FIXED,
             Type.TypeID.UUID,
             Type.TypeID.MAP,

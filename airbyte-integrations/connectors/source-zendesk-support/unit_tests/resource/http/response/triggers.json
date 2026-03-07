@@ -1,0 +1,25 @@
+{
+  "triggers": [
+    {
+      "id": 12345,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/triggers/12345.json",
+      "title": "Notify requester of received request",
+      "active": true,
+      "position": 1,
+      "description": "Notifies the requester when a ticket is received",
+      "raw_title": "Notify requester of received request",
+      "category_id": null,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": null,
+    "before_cursor": null
+  },
+  "links": {
+    "prev": null,
+    "next": null
+  }
+}
