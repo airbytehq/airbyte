@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write
@@ -170,7 +170,6 @@ abstract class SnowflakeAcceptanceTest(
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         stringifyUnionObjects = false,
-        supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
@@ -192,7 +191,6 @@ abstract class SnowflakeAcceptanceTest(
         recordMangler = recordMapper,
         nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
-        useDataFlowPipeline = true,
     )
 
 fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {

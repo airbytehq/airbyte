@@ -1,0 +1,14 @@
+[
+  {
+    "id": "clear_transients",
+    "name": "WooCommerce transients",
+    "action": "Clear transients",
+    "description": "This tool will clear the product/shop transients cache."
+  },
+  {
+    "id": "clear_expired_transients",
+    "name": "Expired transients",
+    "action": "Clear transients",
+    "description": "This tool will clear ALL expired transients from WordPress."
+  }
+]

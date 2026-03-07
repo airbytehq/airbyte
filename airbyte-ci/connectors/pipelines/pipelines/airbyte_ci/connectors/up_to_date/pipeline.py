@@ -68,7 +68,7 @@ def get_pr_creation_arguments(
             "branch_id": f"up-to-date/{context.connector.technical_name}",
             "commit_message": "[up-to-date]"  # << We can skip Vercel builds if this is in the commit message
             + "; ".join(step_result.step.title for step_result in step_results if step_result.success),
-            "pr_title": f"🐙 {context.connector.technical_name}: run up-to-date pipeline [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
+            "pr_title": f"deps({context.connector.technical_name}): 🐙 update dependencies [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
             "pr_body": get_pr_body(context, step_results, dependency_updates),
         },
     )
@@ -147,9 +147,10 @@ async def run_connector_up_to_date_pipeline(
 
                 # We open a PR even if build is failing.
                 # This might allow a developer to fix the build in the PR.
+                initial_labels = DEFAULT_PR_LABELS + ([AUTO_MERGE_PR_LABEL] if auto_merge else [])
                 initial_pr_creation = CreateOrUpdatePullRequest(
                     context,
-                    labels=DEFAULT_PR_LABELS,
+                    labels=initial_labels,
                     # Reduce pressure on rate limit, since we need to push a
                     # a follow-on commit anyway once we have the PR number:
                     skip_ci=True,

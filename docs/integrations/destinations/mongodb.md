@@ -1,14 +1,5 @@
 # MongoDB
 
-## Features
-
-| Feature                        | Supported?\(Yes/No\) | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
-
 ## Prerequisites
 
 - For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your MongoDB connector to version `0.1.6` or newer
@@ -20,6 +11,16 @@ Each stream will be output into its own collection in MongoDB. Each collection w
 - `_id`: an identifier assigned to each document that is processed. The filed type in MongoDB is `String`.
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The field type in MongoDB is `Timestamp`.
 - `_airbyte_data`: a json blob representing with the event data. The field type in MongoDB is `Object`.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -112,6 +113,10 @@ Collection names should begin with an underscore or a letter character, and cann
 - be an empty string \(e.g. ""\).
 - contain the null character.
 - begin with the system. prefix. \(Reserved for internal use.\)
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a MongoDB database.
 
 ## Changelog
 

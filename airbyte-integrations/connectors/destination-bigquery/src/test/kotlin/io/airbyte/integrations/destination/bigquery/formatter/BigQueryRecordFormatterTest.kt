@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.formatter
@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage

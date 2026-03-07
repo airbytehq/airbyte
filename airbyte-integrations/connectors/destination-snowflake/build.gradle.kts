@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-db")
+    toolkits = listOf("load-csv")
 }
 
 tasks.withType<JavaCompile>().configureEach {
