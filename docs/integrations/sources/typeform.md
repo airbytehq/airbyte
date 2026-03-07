@@ -94,6 +94,8 @@ The connector performs an additional API call to fetch all form IDs in your acco
 
 API rate limits \(2 requests per second\): [https://developer.typeform.com/get-started/\#rate-limits](https://developer.typeform.com/get-started/#rate-limits)
 
+The connector includes a `num_workers` configuration parameter (default: 2, max: 8) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but be mindful of the rate limits.
+
 ## Changelog
 
 <details>
@@ -101,6 +103,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.7-rc.1 | 2026-03-07 | [](https://github.com/airbytehq/airbyte/pull/) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 1.4.6 | 2026-03-03 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |
 | 1.4.5 | 2026-01-22 | [72261](https://github.com/airbytehq/airbyte/pull/72261) | Update CDK version from 7.0.1 to 7.6.5 |
 | 1.4.4 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |

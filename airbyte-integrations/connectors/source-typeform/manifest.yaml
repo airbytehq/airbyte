@@ -1810,6 +1810,25 @@ streams:
             format: date-time
         $schema: http://json-schema.org/draft-07/schema#
 
+# Rate limits: https://www.typeform.com/developers/get-started/applications/#rate-limits
+# Typeform API: 2 requests per second per token.
+# Returns HTTP 429 when rate limited.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2
+          interval: PT1S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 8
+
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/typeform
@@ -1887,6 +1906,18 @@ spec:
           type: string
         uniqueItems: true
         order: 3
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          The number of worker threads to use for the sync. Higher values can
+          speed up syncs but may hit rate limits. Typeform API allows 2
+          requests/second per token. More info at
+          https://www.typeform.com/developers/get-started/applications/#rate-limits
+        default: 2
+        minimum: 2
+        maximum: 8
+        order: 4
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
