@@ -178,6 +178,8 @@ The connector is restricted by normal Zendesk [requests limitation](https://deve
 
 The Zendesk connector ideally should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+The connector includes a `num_workers` configuration parameter (default: 3, max: 40) that controls the number of concurrent threads used during syncing. The default is conservative for Team-tier accounts (200 req/min). You can increase this value for higher-tier plans. For more details, see the [Zendesk rate limits documentation](https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/).
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
@@ -191,6 +193,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.6-rc.1 | 2026-03-07 | [](https://github.com/airbytehq/airbyte/pull/) | Add HTTPAPIBudget with rate limit headers for Zendesk Support API |
 | 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
 | 5.1.4 | 2026-02-24 | [73911](https://github.com/airbytehq/airbyte/pull/73911) | Update dependencies |
 | 5.1.3 | 2026-02-17 | [73508](https://github.com/airbytehq/airbyte/pull/73508) | Update dependencies |

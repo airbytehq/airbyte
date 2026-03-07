@@ -1269,12 +1269,27 @@ streams:
   # - $ref: "#/definitions/account_attributes_stream"
   # - $ref: "#/definitions/attribute_definitions_stream"
 
+# Rate limits: https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
 # Zendesk Support offers four tiers of rate limits:
 # - Team: 200 req/min (3.3 req/sec)
 # - Professional: 400 req/min (6.7 req/sec)
 # - Enterprise: 700 req/min (11.7 req/sec)
 # - High Volume API add-on: 2500 req/min (41.7 req/sec)
-#
+# Headers: RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset, Retry-After
+# Returns HTTP 429 when rate limited.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 200
+          interval: PT1M
+      matchers: []
+  ratelimit_reset_header: "Retry-After"
+  ratelimit_remaining_header: "RateLimit-Remaining"
+  status_codes_for_ratelimit_hit:
+    - 429
+
 # We use defer to a level of 3 because we assume by default that customers are on the Team tier, but
 # customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
 concurrency_level:
