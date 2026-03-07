@@ -111,6 +111,8 @@ Expand to see details about Mailchimp connector limitations and troubleshooting
 
 [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
 
+The connector includes a `num_workers` configuration parameter (default: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but be mindful of the 10 simultaneous connections limit.
+
 </details>
 
 ## Tutorials
@@ -126,6 +128,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.20-rc.1 | 2026-03-06 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 2.1.19 | 2026-03-03 | [74155](https://github.com/airbytehq/airbyte/pull/74155) | Update dependencies |
 | 2.1.18 | 2026-02-17 | [73380](https://github.com/airbytehq/airbyte/pull/73380) | Update dependencies |
 | 2.1.17 | 2026-02-10 | [73055](https://github.com/airbytehq/airbyte/pull/73055) | Update dependencies |
