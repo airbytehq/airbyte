@@ -248,6 +248,8 @@ The below table contains the configuraiton parameters available for this connect
 - `page_size`: The number of records per page is differs per stream. `source-paypal-transaction` sets maximum allowed page size for each stream by default.
 - `requests_per_minute`: The maximum limit is 50 requests per minute from IP address to all endpoint (API Server restriction).
 
+The connector includes a `num_workers` configuration parameter (default: 3, max: 12) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but be mindful of the rate limits. For more details, see the [PayPal API rate limiting documentation](https://developer.paypal.com/api/rest/reference/rate-limiting/).
+
 ## Data type map
 
 | Integration Type | Airbyte Type |
@@ -264,6 +266,7 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.28-rc.1 | 2026-03-07 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 2.6.27 | 2026-03-03 | [73875](https://github.com/airbytehq/airbyte/pull/73875) | Update dependencies |
 | 2.6.26 | 2026-02-26 | [74027](https://github.com/airbytehq/airbyte/pull/74027) | Fix INVALID_DATE_TIME_FORMAT error on disputes stream by using 3-digit milliseconds |
 | 2.6.25 | 2026-02-17 | [73574](https://github.com/airbytehq/airbyte/pull/73574) | Update dependencies |
