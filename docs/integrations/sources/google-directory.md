@@ -2,66 +2,61 @@
 
 ## Overview
 
-The Directory source supports Full Refresh syncs. It uses [Google Directory API](https://developers.google.com/admin-sdk/directory/v1/get-start/getting-started).
+The Google Directory source syncs data from the [Google Admin SDK Directory API](https://developers.google.com/admin-sdk/directory/reference/rest). It supports Full Refresh syncs only.
+
+This connector requires a **Google Workspace** account. It does not work with personal Gmail accounts. The authenticating user must be a Google Workspace administrator (or a service account with delegated domain-wide authority).
 
 ### Output schema
 
-This Source is capable of syncing the following Streams:
+This source syncs the following streams:
 
-- [users](https://developers.google.com/admin-sdk/directory/v1/guides/manage-users#get_all_users)
-- [groups](https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups)
-- [group members](https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members#get_all_members)
-
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
+- [users](https://developers.google.com/admin-sdk/directory/v1/guides/manage-users#get_all_users) — All users in the Google Workspace domain.
+- [groups](https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups#get_all_domain_groups) — All groups in the domain.
+- [group_members](https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members#get_all_members) — Members of each group. Each member record is enriched with `group_email` and `group_id` fields so you can identify which group a member belongs to. These fields are added by the connector and are not part of the Google API response.
 
 ### Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes |
-| :---------------------------- | :------------------- | :---- |
-| Full Refresh Sync             | Yes                  |       |
-| Incremental Sync              | No                   |       |
-| Replicate Incremental Deletes | Coming soon          |       |
-| SSL connection                | Yes                  |       |
-| Namespaces                    | No                   |       |
+| Feature           | Supported? | Notes |
+| :---------------- | :--------- | :---- |
+| Full Refresh Sync | Yes        |       |
+| Incremental Sync  | No         |       |
+| Namespaces        | No         |       |
 
 ### Performance considerations
 
-This connector attempts to back off gracefully when it hits Directory API's rate limits. To find more information about limits, see [Google Directory's Limits and Quotas](https://developers.google.com/admin-sdk/directory/v1/limits) documentation.
+This connector uses exponential backoff when it hits Directory API rate limits. The default rate limit is 2,400 queries per minute per user. For more information, see [Google Directory's Limits and Quotas](https://developers.google.com/admin-sdk/directory/v1/limits).
 
-## Getting Started \(Airbyte Cloud\)
+The `group_members` stream fetches all groups first, then retrieves members for each group. For domains with many groups, this can result in a large number of API calls.
 
-1. Click `OAuth2.0 authorization` then `Authenticate your Google Directory account`.
-2. You're done.
+## Prerequisites
 
-## Getting Started \(Airbyte Open Source\)
+- A **Google Workspace** account (not a personal Gmail account).
+- The authenticating user must have administrator privileges, or you must use a service account with domain-wide delegation.
+- The [Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com) must be enabled in your Google Cloud project.
 
-Google APIs use the OAuth 2.0 protocol for authentication and authorization. This connector supports [Web server application](https://developers.google.com/identity/protocols/oauth2#webserver) and [Service accounts](https://developers.google.com/identity/protocols/oauth2#serviceaccount) scenarios. Therefore, there are 2 options of setting up authorization for this source:
+## Getting Started (Airbyte Cloud)
 
-- Use your Google account and authorize over Google's OAuth on connection setup. Select "Default OAuth2.0 authorization" from dropdown list.
-- Create service account specifically for Airbyte.
+1. In the Airbyte UI, navigate to **Sources** and select **Google Directory**.
+2. Select **Sign in via Google (OAuth)** and authenticate with a Google Workspace admin account.
+3. The required scopes (`admin.directory.user.readonly` and `admin.directory.group.readonly`) are requested automatically.
 
-### Service account requirements
+## Getting Started (Airbyte Open Source)
 
-- Credentials to a Google Service Account with delegated Domain Wide Authority
-- Email address of the workspace admin which created the Service Account
+This connector supports two authentication methods:
 
-### Create a Service Account with delegated domain wide authority
+- **OAuth 2.0** — Use your Google account and authorize on connection setup. Select "Sign in via Google (OAuth)" from the credentials dropdown.
+- **Service Account** — Create a service account with delegated domain-wide authority.
 
-Follow the Google Documentation for performing [Domain Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) to create a Service account with delegated domain wide authority. This account must be created by an administrator of the Google Workspace. Please make sure to grant the following OAuth scopes to the service user:
+### Service account setup
 
-1. `https://www.googleapis.com/auth/admin.directory.user.readonly`
-2. `https://www.googleapis.com/auth/admin.directory.group.readonly`
-
-At the end of this process, you should have JSON credentials to this Google Service Account.
-
-You should now be ready to use the Google Directory connector in Airbyte.
+1. Follow Google's documentation for [Domain Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) to create a service account. This must be done by a Google Workspace administrator.
+2. Grant the following OAuth scopes to the service account:
+   - `https://www.googleapis.com/auth/admin.directory.user.readonly`
+   - `https://www.googleapis.com/auth/admin.directory.group.readonly`
+3. Download the JSON key file for the service account.
+4. In the Airbyte connector configuration, provide:
+   - The contents of the JSON key file.
+   - The email address of a Workspace admin. The service account impersonates this user when making API calls.
 
 ## Changelog
 
@@ -70,7 +65,7 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
-| 0.2.45 | 2025-07-07 | [62526](https://github.com/airbytehq/airbyte/pull/62526) | Add `group` and `email` fields to `group_members` stream |
+| 0.2.45 | 2026-03-05 | [62526](https://github.com/airbytehq/airbyte/pull/62526) | Add `group_email` and `group_id` fields to `group_members` stream |
 | 0.2.44 | 2025-05-17 | [60641](https://github.com/airbytehq/airbyte/pull/60641) | Update dependencies |
 | 0.2.43 | 2025-05-10 | [59799](https://github.com/airbytehq/airbyte/pull/59799) | Update dependencies |
 | 0.2.42 | 2025-05-03 | [59264](https://github.com/airbytehq/airbyte/pull/59264) | Update dependencies |
