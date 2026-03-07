@@ -1,0 +1,141 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "accounts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "issues",
+        "json_schema": {},
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"],
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "issue_messages",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "issue_threads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "tags",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "teams",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "custom_fields",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "knowledge_bases",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "knowledge_base_articles",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ticket_forms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "user_roles",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "activity_types",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "issue_statuses",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

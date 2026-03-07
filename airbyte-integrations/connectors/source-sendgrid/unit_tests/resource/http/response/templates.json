@@ -1,0 +1,12 @@
+{
+  "result": [
+    {
+      "id": "template-123-abc",
+      "name": "Welcome Email",
+      "generation": "dynamic",
+      "updated_at": "2024-01-15T10:30:00Z",
+      "versions": []
+    }
+  ],
+  "_metadata": {}
+}

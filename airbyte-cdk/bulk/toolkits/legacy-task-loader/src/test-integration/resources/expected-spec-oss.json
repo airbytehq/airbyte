@@ -1,0 +1,19 @@
+{
+  "documentationUrl" : "https://example.com/integrations/destinations/fake-destination",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Mock Destination Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "foo" : {
+        "type" : "integer"
+      }
+    },
+    "required" : [ "foo" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "append", "append_dedup", "overwrite" ]
+}

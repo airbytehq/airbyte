@@ -27,8 +27,7 @@
   --color-active-nav-item-text: var(--ifm-color-primary-darker);
   --ifm-table-background: transparent;
   --ifm-table-stripe-background: transparent;
-  --ifm-table-head-background: var(--ifm-color-primary);
-  --ifm-table-head-color: var(--color-white);
+  --ifm-table-head-background: var(--color-blue-30);
   --ifm-table-border-color: var(--ifm-color-primary-lightest);
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.2);
   
@@ -91,8 +90,6 @@ html[data-theme="dark"] {
 
   --modal-overlay-background: hsla(236, 11%, 42%, 70%);
   --icon-background: hsl(0, 0%, 100%);
-  --markprompt-background: var(--ifm-background-color) !important;
-  --markprompt-background-accent: var(--ifm-background-color) !important;
 }
 
 /* Hide sidebar on the homepage */
@@ -230,6 +227,7 @@ ul.table-of-contents li {
 
 nav.theme-doc-breadcrumbs {
   margin-top: 8px !important;
+  margin-bottom: 0px !important;
 }
 
 ul.breadcrumbs > li.breadcrumbs__item > a.breadcrumbs__link {
@@ -327,25 +325,8 @@ The variables for them have been added to :root at the top of this file */
 
 table {
   border-spacing: 0;
-  border-collapse: separate;
+  border-collapse: collapse;
   overflow-x: auto;
-}
-
-/* Add these new styles */
-table th:first-child {
-  border-top-left-radius: 10px;
-}
-
-table th:last-child {
-  border-top-right-radius: 10px;
-}
-
-table tr:last-child td:first-child {
-  border-bottom-left-radius: 10px;
-}
-
-table tr:last-child td:last-child {
-  border-bottom-right-radius: 10px;
 }
 
 table th code {
@@ -358,6 +339,10 @@ table td code {
   border: none;
   font-family: monospace;
   border-radius: 4px;
+}
+
+table th, table td {
+  vertical-align: top;
 }
 
 table tr:hover {
@@ -378,49 +363,24 @@ nav a.navbar__link--active {
   border-bottom: 3px solid var(--ifm-color-primary);
 }
 
-.MarkpromptContentDialog[data-variant="sheet"] {
-  z-index: 201 !important; /* This needs to be greater than var(--ifm-z-index-fixed) */
+/* Active-route indicator for the Data Replication dropdown.
+   The wrapper <div> must stretch to full navbar height so the
+   border-bottom aligns with Agent Engine's underline. */
+@media (min-width: 996px) {
+  .dropdown--active-route {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-bottom: 3px solid var(--ifm-color-primary);
+  }
+  .dropdown--active-route > .navbar__link {
+    color: var(--ifm-color-primary) !important;
+  }
 }
-.MarkpromptBranding {
+
+/* Hide Ask AI button until Osano consent is granted */
+.kapa-ai-hidden {
   display: none !important;
-}
-
-.MarkpromptDefaultViewExamplePromptButton {
-  color: var(--color-gray-40) !important;
-  border: 1px solid var(--color-dark-blue-40) !important;
-  border-radius: 4px !important;
-}
-
-.MarkpromptOverlay {
-  z-index: 201 !important;
-}
-
-.MarkpromptContentDialog[data-variant="sheet"] {
-  max-width: 580px !important;
-}
-
-.MarkpromptMessageAvatarContainer {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptMessageAvatarImage {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptMessageAvatar {
-  width: 48px !important;
-  height: 48px !important;
-}
-
-.MarkpromptContentDialog {
-  --markprompt-text-size: 1em !important;
-  --markprompt-text-size-code: 1em !important;
-}
-
-.MarkpromptPrompt {
-  padding-block: 0.35rem !important;
 }
 
 /* Header with button styling */
@@ -431,12 +391,18 @@ nav a.navbar__link--active {
 }
 
 .header-with-button h1 {
-  margin-bottom: 0;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
 }
 
-/* Force no margin on the bottom when inside a flex container */
 header h1 {
-  margin-bottom: 0;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+h1.openapi__heading {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem !important;
 }
 
 article span.theme-doc-version-badge {
@@ -498,4 +464,9 @@ li.api-method.put .menu__link::before {
 li.api-method.patch .menu__link::before {
   content: "patch";
   background-color: var(--openapi-code-orange);
+}
+
+/* Hide announcement bar on AI Agents pages */
+html.plugin-id-ai-agents div[class*="announcementBar"] {
+  display: none;
 }

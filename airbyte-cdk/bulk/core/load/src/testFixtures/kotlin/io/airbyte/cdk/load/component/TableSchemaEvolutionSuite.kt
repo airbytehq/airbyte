@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.component
@@ -44,7 +44,13 @@ interface TableSchemaEvolutionSuite {
     val schemaFactory: TableSchemaFactory
 
     private val harness: TableOperationsTestHarness
-        get() = TableOperationsTestHarness(opsClient, testClient, airbyteMetaColumnMapping)
+        get() =
+            TableOperationsTestHarness(
+                opsClient,
+                testClient,
+                schemaFactory,
+                airbyteMetaColumnMapping
+            )
 
     /**
      * Test that the connector can correctly discover all of its own data types. This test creates a

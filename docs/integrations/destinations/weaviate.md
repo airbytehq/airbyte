@@ -25,15 +25,15 @@ You'll need the following information to configure the destination:
 - **Weaviate cluster URL** - The URL of the Weaviate cluster to load data into. Airbyte Cloud only supports connecting to your Weaviate Instance instance with TLS encryption.
 - **Weaviate credentials** - The credentials for your Weaviate instance (either API token or username/password)
 
-## Features
+## Supported sync modes
 
-| Feature                        | Supported?\(Yes/No\) | Notes                                                    |
-| :----------------------------- | :------------------- | :------------------------------------------------------- |
-| Full Refresh Sync              | Yes                  |                                                          |
-| Incremental - Append Sync      | Yes                  |                                                          |
-| Incremental - Append + Deduped | Yes                  |                                                          |
-| Namespaces                     | No                   |                                                          |
-| Provide vector                 | Yes                  | Either from field are calculated during the load process |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Data type mapping
 
@@ -82,6 +82,10 @@ You can also create the class in Weaviate in advance if you need more control ov
 As properties have to start will a lowercase letter in Weaviate and can't contain spaces or special characters. Field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
 
 When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/multi-tenancy), the tenant id can be configured in the connector configuration. If not specified, multi-tenancy will be disabled. In case you want to index into an already created class, you need to make sure the class is created with multi-tenancy enabled. In case the class doesn't exist, it will be created with multi-tenancy properly configured. If the class already exists but the tenant id is not associated with the class, the connector will automatically add the tenant id to the class. This allows you to configure multiple connections for different tenants on the same schema.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
