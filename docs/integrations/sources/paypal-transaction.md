@@ -266,7 +266,7 @@ The connector includes a `num_workers` configuration parameter (default: 3, max:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 2.6.28-rc.1 | 2026-03-07 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
+| 2.6.28-rc.1 | 2026-03-07 | [74348](https://github.com/airbytehq/airbyte/pull/74348) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 2.6.27 | 2026-03-03 | [73875](https://github.com/airbytehq/airbyte/pull/73875) | Update dependencies |
 | 2.6.26 | 2026-02-26 | [74027](https://github.com/airbytehq/airbyte/pull/74027) | Fix INVALID_DATE_TIME_FORMAT error on disputes stream by using 3-digit milliseconds |
 | 2.6.25 | 2026-02-17 | [73574](https://github.com/airbytehq/airbyte/pull/73574) | Update dependencies |
