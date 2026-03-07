@@ -4992,6 +4992,18 @@ spec:
         description: Ad Account IDs of the ad accounts to retrieve
         order: 9
         title: Ad Account IDs
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          The number of worker threads to use for the sync. Higher values can
+          speed up syncs but may hit rate limits. Snapchat Marketing API allows
+          10 requests/second per token. More info at
+          https://developers.snap.com/api/marketing-api/Ads-API/rate-limits
+        default: 3
+        minimum: 2
+        maximum: 12
+        order: 10
     additionalProperties: true
   advanced_auth:
     auth_flow_type: "oauth2.0"
@@ -10720,5 +10732,5 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
-  max_concurrency: 10
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 12

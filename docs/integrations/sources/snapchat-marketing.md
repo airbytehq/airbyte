@@ -134,6 +134,8 @@ The `Start Date` is required for the all streams that use `start_time` as a key 
 
 The Snapchat Marketing API limits requests to 1,000 items per page.
 
+The API enforces rate limits of 10 requests/second per token and 20 requests/second per app. The connector includes a `num_workers` configuration parameter (default: 3, max: 12) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but be mindful of the rate limits. For more details, see the [Snapchat Ads API rate limits documentation](https://developers.snap.com/api/marketing-api/Ads-API/rate-limits).
+
 Syncing data with an hourly granularity often generates large data volumes and can take longer times to sync. We recommend syncing at a day granularity.
 
 ## Changelog
@@ -143,6 +145,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.31-rc.1 | 2026-03-06 | [70866](https://github.com/airbytehq/airbyte/pull/70866) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 1.5.30 | 2026-03-03 | [72736](https://github.com/airbytehq/airbyte/pull/72736) | Update dependencies |
 | 1.5.29 | 2026-02-24 | [73634](https://github.com/airbytehq/airbyte/pull/73634) | fix(source-snapchat-marketing): add lookback_window P2D to mitigate UTC timezone mismatch (AI-Triage PR) |
 | 1.5.28 | 2026-01-20 | [70672](https://github.com/airbytehq/airbyte/pull/70672) | Update dependencies |
