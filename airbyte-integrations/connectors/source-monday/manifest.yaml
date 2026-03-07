@@ -465,7 +465,7 @@ spec:
           - scope: assets:read
           - scope: tags:read
           - scope: teams:read
-        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}&subdomain={{subdomain}}
+        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&subdomain={{subdomain}}
         access_token_url: https://auth.monday.com/oauth2/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
         extract_output: ["access_token"]
       oauth_user_input_from_connector_config_specification:
