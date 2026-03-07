@@ -66,7 +66,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 10. (Optional) For **Streams with API Data Retention Validation**, select which streams should validate cursor age against Stripe's 30-day event retention period. When a selected stream's cursor is older than 30 days, the connector performs a full refresh to avoid missing data due to the [Events API retention limit](https://stripe.com/docs/api/events). Streams not selected here will always use incremental sync regardless of cursor age.
 
-   By default, no streams are selected — all streams will use incremental sync without cursor age validation. You can add streams to this list based on your account's usage patterns. For high-usage streams like `charges`, `invoice_items`, `invoice_line_items`, `invoices`, `payment_intents`, and `payouts`, enabling cursor age validation is recommended since a stale cursor likely indicates missed data rather than normal inactivity.
+   By default, no streams are selected, so all streams use incremental sync without cursor age validation. You can add streams to this list based on your account's usage patterns. For high-usage streams like `charges`, `invoice_items`, `invoice_line_items`, `invoices`, `payment_intents`, and `payouts`, enabling cursor age validation is recommended since a stale cursor likely indicates missed data rather than normal inactivity.
 
    Streams like `customers`, `subscriptions`, `products`, and `plans` may not need validation because some accounts legitimately have no new records in 30+ days, and forcing a full refresh would be unnecessary.
 
@@ -170,45 +170,9 @@ To prevent data loss caused by the 30-day Events API retention limit, the connec
 
 **This behavior is configurable via the "Streams with API Data Retention Validation" setting** (see [setup guide](#step-2-set-up-the-stripe-connector-in-airbyte) step 10). Only streams listed in this setting will have their cursor age validated. By default, no streams are selected — all streams will use incremental sync without cursor age validation.
 
-For high-usage streams like `Charges`, `Invoice Items`, `Invoice Line Items`, `Invoices`, `Payment Intents`, and `Payouts`, enabling cursor age validation is recommended since a stale cursor likely indicates missed data rather than normal inactivity. Streams like `Customers`, `Subscriptions`, `Products`, and `Plans` may not need validation because some accounts legitimately have no new records in 30+ days, making a full refresh unnecessary.
+For high-usage streams like `charges`, `invoice_items`, `invoice_line_items`, `invoices`, `payment_intents`, and `payouts`, enabling cursor age validation is recommended since a stale cursor likely indicates missed data rather than normal inactivity. Streams like `customers`, `subscriptions`, `products`, and `plans` may not need validation because some accounts legitimately have no new records in 30+ days, making a full refresh unnecessary.
 
-You can customize which streams have cursor age validation by modifying the **Streams with API Data Retention Validation** list in your connection settings. The full list of streams eligible for cursor age validation is:
-
-- `Accounts`
-- `Application Fees`
-- `Application Fee Refunds`
-- `Authorizations`
-- `Bank Accounts`
-- `Cardholders`
-- `Charges`
-- `Checkout Sessions`
-- `Coupons`
-- `Credit Notes`
-- `Customers`
-- `Disputes`
-- `Early Fraud Warnings`
-- `External Account Bank Accounts`
-- `External Account Cards`
-- `Invoice Items`
-- `Invoice Line Items`
-- `Invoices`
-- `Payment Intents`
-- `Payment Methods`
-- `Payouts`
-- `Persons`
-- `Plans`
-- `Prices`
-- `Products`
-- `Promotion Codes`
-- `Refunds`
-- `Reviews`
-- `Setup Intents`
-- `Subscription Items`
-- `Subscription Schedule`
-- `Subscriptions`
-- `Top Ups`
-- `Transactions`
-- `Transfers`
+You can customize which streams have cursor age validation by modifying the **Streams with API Data Retention Validation** list in your connection settings. The full list of eligible streams is available in the connector configuration UI.
 
 :::warning
 **Important**: If a stream is removed from the validation list and its cursor becomes stale (older than 30 days), the connector will continue using the Events API for incremental sync, which only returns the last 30 days of data. This may result in missed updates for records older than 30 days. Only remove streams from the validation list if you are confident that a stale cursor is acceptable for your use case.
