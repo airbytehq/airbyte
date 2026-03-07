@@ -124,7 +124,7 @@ The connector includes a `num_workers` configuration parameter (default: 3, max:
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
-| 0.5.32-rc.1 | 2026-03-07 | [](https://github.com/airbytehq/airbyte/pull/) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
+| 0.5.32-rc.1 | 2026-03-07 | [74351](https://github.com/airbytehq/airbyte/pull/74351) | Add HTTPAPIBudget, concurrency_level, and num_workers configuration |
 | 0.5.31 | 2026-02-24 | [73889](https://github.com/airbytehq/airbyte/pull/73889) | Update dependencies |
 | 0.5.30 | 2026-02-10 | [72988](https://github.com/airbytehq/airbyte/pull/72988) | Update dependencies |
 | 0.5.29 | 2026-02-03 | [72658](https://github.com/airbytehq/airbyte/pull/72658) | Update dependencies |
