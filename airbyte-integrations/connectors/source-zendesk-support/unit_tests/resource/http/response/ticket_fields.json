@@ -1,0 +1,36 @@
+{
+  "ticket_fields": [
+    {
+      "id": 12345,
+      "url": "https://d3v-airbyte.zendesk.com/api/v2/ticket_fields/12345.json",
+      "type": "text",
+      "title": "Subject",
+      "raw_title": "Subject",
+      "description": "Ticket subject",
+      "raw_description": "Ticket subject",
+      "position": 1,
+      "active": true,
+      "required": true,
+      "collapsed_for_agents": false,
+      "regexp_for_validation": null,
+      "title_in_portal": "Subject",
+      "raw_title_in_portal": "Subject",
+      "visible_in_portal": true,
+      "editable_in_portal": true,
+      "required_in_portal": true,
+      "tag": null,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z",
+      "removable": false
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": null,
+    "before_cursor": null
+  },
+  "links": {
+    "prev": null,
+    "next": null
+  }
+}

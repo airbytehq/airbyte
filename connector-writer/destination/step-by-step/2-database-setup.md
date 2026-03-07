@@ -56,10 +56,11 @@ This file contains two phases:
 package io.airbyte.integrations.destination.{db}
 
 import io.airbyte.cdk.Operation
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.{db}.spec.*
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import javax.sql.DataSource
 import com.zaxxer.hikari.HikariDataSource
 
@@ -69,7 +70,7 @@ class {DB}BeanFactory {
     @Singleton
     fun configuration(
         configFactory: {DB}ConfigurationFactory,
-        specFactory: MigratingConfigurationSpecificationSupplier<{DB}Specification>,
+        specFactory: ConfigurationSpecificationSupplier<{DB}Specification>,
     ): {DB}Configuration {
         val spec = specFactory.get()
         return configFactory.makeWithoutExceptionHandling(spec)
@@ -151,12 +152,11 @@ dependencies {
 ```kotlin
 package io.airbyte.integrations.destination.{db}.component
 
-import io.airbyte.cdk.command.MigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.{db}.spec.*
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import org.testcontainers.containers.{DB}Container  // e.g., PostgreSQLContainer
 
 @Factory
@@ -199,32 +199,6 @@ class {DB}TestConfigFactory {
             password = container.password,
         )
     }
-
-    @Singleton
-    @Primary
-    fun testSpecSupplier(
-        config: {DB}Configuration
-    ): MigratingConfigurationSpecificationSupplier<{DB}Specification> {
-        return object : MigratingConfigurationSpecificationSupplier<{DB}Specification> {
-            override fun get() = {DB}Specification()
-        }
-    }
-}
-```
-
-**Alternative: Environment variables** (for local development with existing database)
-
-```kotlin
-@Singleton
-@Primary
-fun testConfig(): {DB}Configuration {
-    return {DB}Configuration(
-        hostname = System.getenv("DB_HOSTNAME") ?: "localhost",
-        port = System.getenv("DB_PORT")?.toInt() ?: 5432,
-        database = System.getenv("DB_DATABASE") ?: "test",
-        username = System.getenv("DB_USERNAME") ?: "test",
-        password = System.getenv("DB_PASSWORD") ?: "test",
-    )
 }
 ```
 
@@ -234,6 +208,79 @@ fun testConfig(): {DB}Configuration {
 - ✅ Reproducible across machines
 - ✅ Automatic cleanup
 - ✅ No manual database installation
+
+#### Part D: Testing Without Testcontainers
+
+**Use this approach when:**
+- No Testcontainers module exists for your database (Snowflake, BigQuery, Databricks)
+- Testing against a cloud-hosted or managed database
+- Testcontainers doesn't work in your environment
+
+**Prerequisites:**
+
+Before running tests, `secrets/config.json` must exist with valid database credentials.
+
+**File:** `destination-{db}/secrets/config.json`
+
+```json
+{
+  "hostname": "your-database-host.example.com",
+  "port": 5432,
+  "database": "your_database",
+  "username": "your_username",
+  "password": "your_password"
+}
+```
+
+⚠️ This file is gitignored - never commit credentials.
+
+**TestConfigFactory (reads from secrets file):**
+
+**File:** `src/test-integration/kotlin/.../component/{DB}TestConfigFactory.kt`
+
+```kotlin
+package io.airbyte.integrations.destination.{db}.component
+
+import io.airbyte.cdk.load.component.config.TestConfigLoader.loadTestConfig
+import io.airbyte.integrations.destination.{db}.spec.*
+import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
+@Factory
+@Requires(env = ["component"])
+class {DB}TestConfigFactory {
+
+    @Singleton
+    @Primary
+    fun testConfig(): {DB}Configuration {
+        return loadTestConfig(
+            {DB}Specification::class.java,
+            {DB}ConfigurationFactory::class.java,
+            "test-instance.json",  // or "config.json" in secrets/
+        )
+    }
+}
+```
+
+**Alternative: Environment variables** (for CI or when you prefer not to use files)
+
+Replace `testConfig()` with:
+
+```kotlin
+@Singleton
+@Primary
+fun testConfig(): {DB}Configuration {
+    return {DB}Configuration(
+        hostname = System.getenv("DB_HOSTNAME") ?: error("DB_HOSTNAME not set"),
+        port = System.getenv("DB_PORT")?.toInt() ?: error("DB_PORT not set"),
+        database = System.getenv("DB_DATABASE") ?: error("DB_DATABASE not set"),
+        username = System.getenv("DB_USERNAME") ?: error("DB_USERNAME not set"),
+        password = System.getenv("DB_PASSWORD") ?: error("DB_PASSWORD not set"),
+    )
+}
+```
 
 **Validate infrastructure setup:**
 ```bash
@@ -252,7 +299,7 @@ Expected: BUILD SUCCESSFUL
 package io.airbyte.integrations.destination.{db}.client
 
 import io.airbyte.cdk.load.data.*
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class {DB}ColumnUtils {
@@ -311,9 +358,9 @@ package io.airbyte.integrations.destination.{db}.client
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 private val log = KotlinLogging.logger {}
 
@@ -470,10 +517,10 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import java.sql.SQLException
 import javax.sql.DataSource
 
@@ -651,9 +698,9 @@ package io.airbyte.integrations.destination.{db}.component
 
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.micronaut.context.annotation.Requires
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.Timestamp
@@ -991,10 +1038,10 @@ import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
 import io.airbyte.integrations.destination.{db}.spec.{DB}Configuration
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 

@@ -204,7 +204,7 @@
         "title": "Buffer Memory",
         "description": "The total bytes of memory the producer can use to buffer records waiting to be sent to the server.",
         "type": "string",
-        "examples": 33554432
+        "examples": [33554432]
       },
       "max_request_size": {
         "title": "Max Request Size",

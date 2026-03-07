@@ -186,14 +186,28 @@
               "airbyte_secret" : true,
               "order" : 4
             },
+            "scope" : {
+              "type" : "string",
+              "description" : "The OAuth scope for authentication. Must be in the format PRINCIPAL_ROLE:<role_name>.",
+              "title" : "OAuth Scope",
+              "examples" : [ "PRINCIPAL_ROLE:catalog_admin" ],
+              "order" : 5
+            },
+            "oauth2_server_uri" : {
+              "type" : "string",
+              "description" : "The OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as this will become required in future versions.",
+              "title" : "OAuth2 Server URI",
+              "examples" : [ "https://polaris.example.com/oauth/tokens" ],
+              "order" : 6
+            },
             "namespace" : {
               "type" : "string",
               "description" : "The Polaris namespace to be used in the Table identifier.\n           This will ONLY be used if the `Destination Namespace` setting for the connection is set to\n           `Destination-defined` or `Source-defined`",
               "title" : "Default namespace",
-              "order" : 5
+              "order" : 7
             }
           },
-          "required" : [ "catalog_type", "server_uri", "catalog_name", "client_id", "client_secret", "namespace" ]
+          "required" : [ "catalog_type", "server_uri", "catalog_name", "client_id", "client_secret", "scope", "namespace" ]
         } ],
         "description" : "Specifies the type of Iceberg catalog (e.g., NESSIE, GLUE, REST, POLARIS) and its associated configuration.",
         "title" : "Catalog Type",

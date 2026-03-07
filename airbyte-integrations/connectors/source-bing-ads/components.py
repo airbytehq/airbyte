@@ -1,11 +1,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 import csv
 import gzip
+import io
+import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
-from io import StringIO
 from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -15,6 +16,9 @@ from airbyte_cdk.sources.declarative.partition_routers.substream_partition_route
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+
+
+logger = logging.getLogger(__name__)
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
@@ -425,45 +429,85 @@ class CustomReportTransformation(RecordTransformation):
             )
 
 
+class _PrefixedStream(io.RawIOBase):
+    """
+    A minimal read-only stream that prepends initial bytes to another stream.
+    Used to peek at the first bytes of a response (for gzip magic number detection)
+    while still allowing the full stream to be read sequentially.
+    """
+
+    def __init__(self, prefix: bytes, stream: Any) -> None:
+        self._prefix = prefix
+        self._prefix_offset = 0
+        self._stream = stream
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, b: bytearray) -> int:
+        data = self.read(len(b))
+        n = len(data)
+        b[:n] = data
+        return n
+
+    def read(self, size: int = -1) -> bytes:
+        prefix_remaining = len(self._prefix) - self._prefix_offset
+        if prefix_remaining > 0:
+            if size < 0:
+                chunk = self._prefix[self._prefix_offset :]
+                self._prefix_offset = len(self._prefix)
+                return chunk + (self._stream.read() or b"")
+            take = min(size, prefix_remaining)
+            chunk = self._prefix[self._prefix_offset : self._prefix_offset + take]
+            self._prefix_offset += take
+            if take < size:
+                more = self._stream.read(size - take)
+                return chunk + (more or b"")
+            return chunk
+        return self._stream.read(size) or b""
+
+
 @dataclass
 class BingAdsGzipCsvDecoder(Decoder):
     """
-    Custom decoder that always attempts GZip decompression before parsing CSV data.
-    This is needed because Bing Ads now sends GZip compressed files from Azure Blob Storage
-    without proper compression headers, so the standard GzipDecoder fails to detect compression.
+    Custom decoder that detects GZip compression via magic bytes and parses CSV data
+    using streaming decompression. This prevents OOM on large bulk downloads by avoiding
+    loading the entire file into memory.
+
+    Bing Ads sends GZip compressed files from Azure Blob Storage without proper
+    compression headers, so standard header-based detection does not work. Instead,
+    this decoder checks the first two bytes for the gzip magic number (0x1f 0x8b)
+    and routes to either streaming gzip decompression or plain-text CSV parsing.
     """
 
     def is_stream_response(self) -> bool:
-        return False
+        return True
 
-    def decode(self, response) -> Generator[MutableMapping[str, Any], None, None]:
-        """
-        Always attempt GZip decompression first, then fall back to plain CSV if that fails.
-        """
-
+    def decode(self, response: Any) -> Generator[MutableMapping[str, Any], None, None]:
+        raw = response.raw
+        raw.auto_close = False
         try:
-            # First, try to decompress as GZip
-            decompressed_content = gzip.decompress(response.content)
-            # Parse as CSV with utf-8-sig encoding (handles BOM)
-            text_content = decompressed_content.decode("utf-8-sig")
-            csv_reader = csv.DictReader(StringIO(text_content))
+            yield from self._decode_stream(raw)
+        except Exception as e:
+            logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
+            yield {}
+        finally:
+            raw.close()
 
-            for row in csv_reader:
-                yield row
+    def _decode_stream(self, raw: Any) -> Generator[MutableMapping[str, Any], None, None]:
+        header = raw.read(2)
+        if not header:
+            return
 
-        except (gzip.BadGzipFile, OSError):
-            # If GZip decompression fails, try parsing as plain CSV
-            try:
-                text_content = response.content.decode("utf-8-sig")
-                csv_reader = csv.DictReader(StringIO(text_content))
+        is_gzip = header[:2] == b"\x1f\x8b"
+        byte_stream = _PrefixedStream(header, raw)
 
-                for row in csv_reader:
-                    yield row
+        if is_gzip:
+            decompressed = gzip.GzipFile(fileobj=byte_stream, mode="rb")
+            text_stream = io.TextIOWrapper(decompressed, encoding="utf-8-sig")
+        else:
+            text_stream = io.TextIOWrapper(io.BufferedReader(byte_stream), encoding="utf-8-sig")
 
-            except Exception as e:
-                # If both fail, log the error and yield empty
-                import logging
-
-                logger = logging.getLogger(__name__)
-                logger.error(f"Failed to parse response as either GZip or plain CSV: {e}")
-                yield {}
+        csv_reader = csv.DictReader(text_stream)
+        for row in csv_reader:
+            yield row
