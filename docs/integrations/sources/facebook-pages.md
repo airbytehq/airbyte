@@ -1,67 +1,69 @@
 # Facebook Pages
 
-This page contains the setup guide and reference information for the Facebook Pages source connector.
+This page contains the setup guide and reference information for the [Facebook Pages](https://developers.facebook.com/docs/pages/) source connector.
 
 ## Prerequisites
 
-To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
+- A [Facebook Developer](https://developers.facebook.com/async/registration/) account
+- A [Facebook App](https://developers.facebook.com/apps/)
+- A Facebook Page that you manage
+- A Long-Lived Page Access Token with the following permissions:
+  - `pages_read_engagement`
+  - `pages_read_user_content`
+  - `pages_show_list`
+  - `read_insights`
 
 :::note
-The Facebook Pages source connector is currently only compatible with v24 of the Facebook Graph API.
+This connector uses the Facebook Graph API v24.0. Some fields and metrics available in earlier API versions have been removed. See the [v2.0.0 migration guide](facebook-pages-migrations.md#upgrading-to-200) for details.
 :::
 
 ## Setup guide
 
-### Step 1: Set up Facebook Pages
+### Set up Facebook Pages
 
-1. Create a Facebook Developer Account. Follow [these instructions](https://developers.facebook.com/async/registration/) to create one.
-2. Create a [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
-3. Connect a User [Page](https://developers.facebook.com/tools/explorer/) using the Graph API Explorer. Choose your app in the `Meta App` field. Choose your Page in the `User or Page` field. Add the following permissions:
-   - pages_read_engagement
-   - pages_read_user_content
-   - pages_show_list
-   - read_insights
-4. Click Generate Access Token and follow instructions.
+1. If you don't already have one, [create a Facebook Developer account](https://developers.facebook.com/async/registration/).
 
-After all the steps, it should look something like this:
+2. [Create a Facebook App](https://developers.facebook.com/docs/development/create-an-app/). Fill out the required fields to create your app.
 
-![](/.gitbook/assets/facebook-pages-1.png)
+3. Go to the [Graph API Explorer](https://developers.facebook.com/tools/explorer/). Select your app in the **Meta App** field. Select your Page in the **User or Page** field. Add the following permissions:
+   - `pages_read_engagement`
+   - `pages_read_user_content`
+   - `pages_show_list`
+   - `read_insights`
 
-5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
-6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.
+4. Click **Generate Access Token** and follow the authorization prompts.
 
-### Step 2: Set up the Facebook Pages connector in Airbyte
+   After completing these steps, the Graph API Explorer should look something like this:
 
-### For Airbyte Cloud:
+   ![Graph API Explorer with permissions configured](/.gitbook/assets/facebook-pages-1.png)
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
-6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
+5. [Generate a Long-Lived User Access Token](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token). This requires your App ID and App Secret, available from your app's dashboard.
 
-### For Airbyte OSS
+6. [Generate a Long-Lived Page Access Token](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) from the Long-Lived User Access Token.
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
-4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
-6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
+:::tip
+Long-Lived Page Access Tokens do not expire, unlike Long-Lived User Access Tokens which expire after approximately 60 days. Use a Long-Lived Page Access Token to avoid re-authentication.
+:::
+
+### Set up the connector in Airbyte
+
+1. In Airbyte, navigate to **Sources** and select **+ New source**.
+2. Select **Facebook Pages** from the source type dropdown.
+3. Enter a name for your source.
+4. Enter the **Page Access Token** from the previous steps.
+5. Enter the **Page ID**. If your page URL is `https://www.facebook.com/MyPageName`, the Page ID is `MyPageName`. You can also find the numeric Page ID in your Page's **About** section.
+6. Optionally, set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default and maximum is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
 
 ### Creating your own OAuth App
 
-Follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
-
-Required permissions for your OAuth App to sync data using the Facebook Pages source connector:
+If you use Airbyte Cloud with OAuth, you can also [create your own Facebook App](https://developers.facebook.com/docs/development/create-an-app/) for authentication. Your app requires these permissions:
 
 - `pages_read_engagement`
 - `pages_read_user_content`
 - `pages_show_list`
 - `read_insights`
 
-If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need. As a rule it's best to request the lowest number of permissions you can to function normally.
+If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need.
 
 ## Supported sync modes
 
@@ -70,40 +72,56 @@ The Facebook Pages source connector supports the following [sync modes](https://
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
-## Supported Streams
+## Supported streams
 
-- [Page](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview)
-- [Post](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed)
-- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights)
-- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights)
+- [Page](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) - Returns metadata and details about your Facebook Page.
+- [Post](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) - Returns posts from your Page's feed. You can deselect individual fields in the connection's **Schema** tab.
+- [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) - Returns Page-level engagement metrics such as impressions, post engagements, and reactions.
+- [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights) - Returns post-level engagement metrics for each post, including impressions and reactions.
 
-## Limitations & Troubleshooting
+## Limitations and troubleshooting
+
+### Rate limiting
+
+The Facebook Graph API applies [rate limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) to all requests. Pages API requests made with Page access tokens are subject to Business Use Case rate limits. When rate limited, the API returns error code `32`.
+
+Facebook heavily throttles API tokens generated from Facebook Apps by default. To use this connector without syncs being delayed by rate limiting, use a Long-Lived Page Access Token as described in the setup guide.
+
+### Page Insights requirements
+
+The Page Insights stream has the following Facebook API requirements:
+
+- The Page must have at least **100 likes** for insights data to be available.
+- Insights data is only available for the **last two years**.
+- Most Page Insights metrics update once every 24 hours.
+- Demographic metrics such as age, gender, and location require data from 100 or more people to return results.
+
+### Post stream limits
+
+The Facebook API returns approximately 600 ranked, published posts per year. The maximum number of posts per page request is 100, controlled by the **Page Size** setting.
 
 ### "Please reduce the amount of data you're asking for" error
 
-This error occurs when the Facebook Graph API considers the total response data too large. There are two ways to resolve it:
+This error occurs when the Facebook Graph API considers the total response data too large. To resolve it:
 
-- **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
-- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+- **Remove fields from the request.** Go to your connection's **Schema** tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
+- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value, such as 25 or 50. This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+
+### HTTP 400 "Bad request" errors
+
+The connector automatically retries HTTP 400 errors returned by the Facebook API. These errors can occur when the API temporarily rejects a request due to server-side issues or when requesting fields that are not available for a specific Page type. If 400 errors persist, verify that your Page Access Token is valid and has the required permissions.
 
 ### Product catalogs field not available
 
-Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and will always be `null`. This is because the Facebook Graph API only returns product catalogs that are owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now created as Business-owned catalogs (Page-owned catalogs are a legacy feature), and this connector uses Page access tokens, the `product_catalogs` field would not return meaningful data for most users.
+Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and is always `null`. The Facebook Graph API only returns product catalogs owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now Business-owned catalogs, this field does not return meaningful data for most users.
 
-## Data type map
+### Access token issues
 
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
+The connector converts your provided access token into a Page Access Token at runtime. This works with both User Access Tokens and Page Access Tokens. If you provide a User Access Token, the connector exchanges it for a Page Access Token using the Page ID you configured. If the exchange fails, verify that:
 
-## Performance considerations
-
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
-
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
+- The token has not expired. Long-Lived User Access Tokens expire after approximately 60 days.
+- The token has the required permissions.
+- The Page ID is correct and corresponds to a Page you have access to.
 
 ## Changelog
 
@@ -164,8 +182,8 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 | 0.2.1   | 2022-12-29 | [20925](https://github.com/airbytehq/airbyte/pull/20925)       | Fix tests; modify expected records                                                                                                                                     |
 | 0.2.0   | 2022-11-24 | [19788](https://github.com/airbytehq/airbyte/pull/19788)       | Migrate lo low-code; Beta certification; Upgrade Facebook API to v.15                                                                                                  |
 | 0.1.6   | 2021-12-22 | [9032](https://github.com/airbytehq/airbyte/pull/9032)         | Remove deprecated field `live_encoders` from Page stream                                                                                                               |
-| 0.1.5   | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/8267)         | updated all empty objects in schemas for Page and Post streams                                                                                                         |
-| 0.1.4   | 2021-11-26 | [](https://github.com/airbytehq/airbyte/pull/)                 | Remove unsupported insights_export field from Pages request                                                                                                            |
+| 0.1.5   | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/8267)         | Updated all empty objects in schemas for Page and Post streams                                                                                                         |
+| 0.1.4   | 2021-11-26 |                                                                 | Remove unsupported insights_export field from Pages request                                                                                                            |
 | 0.1.3   | 2021-10-28 | [7440](https://github.com/airbytehq/airbyte/pull/7440)         | Generate Page token from config access token                                                                                                                           |
 | 0.1.2   | 2021-10-18 | [7128](https://github.com/airbytehq/airbyte/pull/7128)         | Upgrade Facebook API to v.12                                                                                                                                           |
 | 0.1.1   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)         | Annotate Oauth2 flow initialization parameters in connector specification                                                                                              |
