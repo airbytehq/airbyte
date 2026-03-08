@@ -241,7 +241,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 If your sync fails with an error like:
 
-```
+```text
 ERROR: permission denied for schema <schema_name>
 ```
 
