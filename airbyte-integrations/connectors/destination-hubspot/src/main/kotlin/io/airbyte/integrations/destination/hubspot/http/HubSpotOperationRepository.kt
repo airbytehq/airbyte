@@ -12,9 +12,9 @@ import io.airbyte.cdk.load.data.DateType
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.discoverer.destinationobject.DestinationObjectProvider
 import io.airbyte.cdk.load.discoverer.destinationobject.DynamicDestinationObjectProvider
 import io.airbyte.cdk.load.discoverer.destinationobject.StaticDestinationObjectProvider
-import io.airbyte.cdk.load.discoverer.destinationobject.DestinationObjectProvider
 import io.airbyte.cdk.load.discoverer.operation.CompositeOperationProvider
 import io.airbyte.cdk.load.discoverer.operation.DestinationOperationAssembler
 import io.airbyte.cdk.load.discoverer.operation.InsertionMethod
