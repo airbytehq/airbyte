@@ -1,8 +1,11 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import contextlib
 import os
 from typing import Generator
 
 import sentry_sdk
+
 from pipelines import main
 
 
