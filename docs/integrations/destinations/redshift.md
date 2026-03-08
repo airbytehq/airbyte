@@ -68,26 +68,35 @@ and deduping queries on final table are executed over using provided SSH Tunnel 
 
 ### Permissions in Redshift
 
-Airbyte writes data into two schemas, whichever schema you want your data to land in, e.g.
-`my_schema` and a "Raw Data" schema that Airbyte uses to improve ELT reliability. By default, this
-raw data schema is `airbyte_internal` but this can be overridden in the Redshift Destination's
-advanced settings. Airbyte also needs to query Redshift's
-[SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for
-metadata about the tables airbyte manages.
+The Redshift destination writes data into multiple schemas:
 
-To ensure the `airbyte_user` has the correct permissions to:
+- **Final table schemas**: One schema per source namespace. The schema name is derived from each source's namespace. For example, data from a Typeform source lands in a schema named `airbyte_typeform`, data from a HubSpot source lands in `airbyte_hubspot`, and so on. If the source does not define a namespace, Airbyte uses the default schema you configured in the connection settings.
+- **Raw data schema**: Airbyte stores intermediate data in a raw data schema named `airbyte_internal` by default. You can override this name in the destination's advanced settings.
 
-- create schemas in your database
-- grant usage to any existing schemas you want Airbyte to use
-- grant select to the `svv_table_info` table
+Airbyte also queries Redshift's [SVV_TABLE_INFO](https://docs.aws.amazon.com/redshift/latest/dg/r_SVV_TABLE_INFO.html) table for metadata about the tables it manages.
 
-You can execute the following SQL statements
+The Redshift user you configure in Airbyte needs the following permissions:
+
+- `CREATE` on the database, so Airbyte can create new schemas as needed
+- `USAGE` and `CREATE` on any pre-existing schemas where Airbyte writes data
+- `SELECT` on `SVV_TABLE_INFO`
+
+Run the following SQL statements to grant these permissions, replacing `database_name` and `airbyte_user` with your values:
 
 ```sql
-GRANT CREATE ON DATABASE database_name TO airbyte_user; -- add create schema permission
-GRANT usage, create on schema my_schema TO airbyte_user; -- add create table permission
-GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission for svv_table_info
+-- Allow Airbyte to create schemas (required for namespace-based schemas)
+GRANT CREATE ON DATABASE database_name TO airbyte_user;
+
+-- If you have pre-existing schemas that Airbyte needs to write into, grant access:
+GRANT USAGE, CREATE ON SCHEMA my_schema TO airbyte_user;
+
+-- Allow Airbyte to query table metadata
+GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user;
 ```
+
+:::caution
+The `CREATE` permission on the database is required. Without it, syncs fail with a "permission denied for schema" error when Airbyte attempts to create the namespace-based schema for each source. See [Troubleshooting](#troubleshooting) for details.
+:::
 
 ### Optional Use of SSH Bastion Host
 
@@ -224,7 +233,31 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a Redshift schema.
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). Each namespace maps to a Redshift schema. Airbyte creates the schema automatically if it does not already exist. The Redshift user configured in the connection must have `CREATE` permission on the database for this to work. See [Permissions in Redshift](#permissions-in-redshift) for the required grants.
+
+## Troubleshooting
+
+### Permission denied for schema
+
+If your sync fails with an error like:
+
+```
+ERROR: permission denied for schema <schema_name>
+```
+
+The Redshift user configured in Airbyte lacks permission to create or access the specified schema. Airbyte creates a separate schema for each source namespace. For example, syncing data from a Typeform source creates a schema named `airbyte_typeform`.
+
+To fix this, grant the `CREATE` privilege on the database to your Redshift user:
+
+```sql
+GRANT CREATE ON DATABASE your_database TO your_airbyte_user;
+```
+
+If the schema already exists but was created by another user, also grant `USAGE` and `CREATE` on that specific schema:
+
+```sql
+GRANT USAGE, CREATE ON SCHEMA airbyte_typeform TO your_airbyte_user;
+```
 
 ## Changelog
 
