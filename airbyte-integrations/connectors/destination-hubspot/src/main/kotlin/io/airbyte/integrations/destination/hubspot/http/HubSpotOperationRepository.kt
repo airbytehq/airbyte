@@ -14,9 +14,9 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.discoverer.destinationobject.DynamicDestinationObjectProvider
 import io.airbyte.cdk.load.discoverer.destinationobject.StaticDestinationObjectProvider
+import io.airbyte.cdk.load.discoverer.destinationobject.DestinationObjectProvider
 import io.airbyte.cdk.load.discoverer.operation.CompositeOperationProvider
 import io.airbyte.cdk.load.discoverer.operation.DestinationOperationAssembler
-import io.airbyte.cdk.load.discoverer.operation.DynamicOperationProvider
 import io.airbyte.cdk.load.discoverer.operation.InsertionMethod
 import io.airbyte.cdk.load.discoverer.operation.JsonNodePredicate
 import io.airbyte.cdk.load.discoverer.operation.OperationProvider
@@ -24,8 +24,11 @@ import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.RequestMethod
 import io.airbyte.cdk.load.http.Retriever
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Predicate
 import kotlin.collections.List
+
+private val logger = KotlinLogging.logger {}
 
 /*
 HubSpot process in a way that fetching schemas for standard objects is different from custom ones. This community member documented a list of standard objects: https://community.hubspot.com/t5/APIs-Integrations/Object-Schemas-GET-All-Custom-and-Standard/m-p/881573/highlight/true#M69167
@@ -36,7 +39,7 @@ class HubSpotOperationRepository(
     private val operationProvider: OperationProvider =
         CompositeOperationProvider(
             listOf(
-                DynamicOperationProvider(
+                FaultTolerantDynamicOperationProvider(
                     objectsSupplier = StaticDestinationObjectProvider(listOf("CONTACT")),
                     operationAssembler =
                         DestinationOperationAssembler(
@@ -64,7 +67,7 @@ class HubSpotOperationRepository(
                                 ),
                         )
                 ),
-                DynamicOperationProvider(
+                FaultTolerantDynamicOperationProvider(
                     objectsSupplier =
                         StaticDestinationObjectProvider(listOf("COMPANY", "DEAL", "PRODUCT")),
                     operationAssembler =
@@ -79,7 +82,7 @@ class HubSpotOperationRepository(
                                 ),
                         )
                 ),
-                DynamicOperationProvider(
+                FaultTolerantDynamicOperationProvider(
                     objectsSupplier =
                         DynamicDestinationObjectProvider(
                             retriever =
@@ -148,5 +151,36 @@ class HubSpotOperationRepository(
 
     fun fetchAll(): List<DestinationOperation> {
         return operationProvider.get()
+    }
+}
+
+/**
+ * A fault-tolerant version of DynamicOperationProvider that catches per-object exceptions during
+ * discovery. If the API returns an error for a specific object (e.g., a HubSpot account doesn't
+ * have Products enabled), that object is skipped with a warning instead of crashing the entire
+ * discovery process.
+ */
+private class FaultTolerantDynamicOperationProvider(
+    private val objectsSupplier: DestinationObjectProvider,
+    private val operationAssembler: DestinationOperationAssembler
+) : OperationProvider {
+    override fun get(): List<DestinationOperation> {
+        val objects =
+            try {
+                objectsSupplier.get()
+            } catch (e: Exception) {
+                logger.warn { "Failed to fetch destination objects: ${e.message}" }
+                return emptyList()
+            }
+        return objects.flatMap { destinationObject ->
+            try {
+                operationAssembler.assemble(destinationObject)
+            } catch (e: Exception) {
+                logger.warn {
+                    "Skipping object ${destinationObject.name} during discovery: ${e.message}"
+                }
+                emptyList()
+            }
+        }
     }
 }
