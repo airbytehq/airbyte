@@ -21,6 +21,7 @@ The Facebook-Marketing connector supports the following entities and actions.
 | Videos | [List](#videos-list), [Search](#videos-search) |
 | Pixels | [List](#pixels-list), [Get](#pixels-get) |
 | Pixel Stats | [List](#pixel-stats-list) |
+| Ad Library | [List](#ad-library-list) |
 
 ## Current User
 
@@ -2381,6 +2382,103 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `total_deduped_count` | `integer \| null` |  |
 | `test_events_count` | `integer \| null` |  |
 
+
+</details>
+
+## Ad Library
+
+### Ad Library List
+
+Search the Facebook Ad Library for ads about social issues, elections or politics, and ads delivered to the UK or EU. Returns archived ads matching the specified search criteria including ad creative content, delivery dates, spend ranges, and demographic reach data.
+
+#### Python SDK
+
+```python
+await facebook_marketing.ad_library.list(
+    ad_reached_countries="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ad_library",
+    "action": "list",
+    "params": {
+        "ad_reached_countries": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `ad_reached_countries` | `string` | Yes | Search by ISO country code to return ads that reached specific countries. Use ALL to search all countries. |
+| `search_terms` | `string` | No | The terms to search for. Blank space is treated as logical AND. Limit of 100 characters. |
+| `search_page_ids` | `string` | No | Search for ads by specific Facebook Page IDs (comma-separated, up to 10) |
+| `ad_type` | `"ALL" \| "EMPLOYMENT_ADS" \| "FINANCIAL_PRODUCTS_AND_SERVICES_ADS" \| "HOUSING_ADS" \| "POLITICAL_AND_ISSUE_ADS"` | No | Filter by ad type category |
+| `ad_active_status` | `"ACTIVE" \| "ALL" \| "INACTIVE"` | No | Filter by ad active status |
+| `ad_delivery_date_min` | `string` | No | Search for ads delivered after this date (inclusive, YYYY-MM-DD) |
+| `ad_delivery_date_max` | `string` | No | Search for ads delivered before this date (inclusive, YYYY-MM-DD) |
+| `bylines` | `string` | No | Filter by paid-for-by disclaimer byline (JSON array of strings). Available only for POLITICAL_AND_ISSUE_ADS. |
+| `languages` | `string` | No | Filter by language codes (ISO 639-1 JSON array, e.g. "['en','es']") |
+| `media_type` | `"ALL" \| "IMAGE" \| "MEME" \| "VIDEO" \| "NONE"` | No | Filter by media type in the ad |
+| `publisher_platforms` | `string` | No | Filter by Meta platform where the ad appeared (JSON array) |
+| `search_type` | `"KEYWORD_UNORDERED" \| "KEYWORD_EXACT_PHRASE"` | No | Type of search to use for search_terms |
+| `unmask_removed_content` | `boolean` | No | Whether to reveal content removed for violating standards |
+| `fields` | `string` | No | Comma-separated list of fields to return |
+| `limit` | `integer` | No | Maximum number of results to return |
+| `after` | `string` | No | Cursor for pagination |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `ad_creation_time` | `string \| null` |  |
+| `ad_creative_bodies` | `array \| null` |  |
+| `ad_creative_link_captions` | `array \| null` |  |
+| `ad_creative_link_descriptions` | `array \| null` |  |
+| `ad_creative_link_titles` | `array \| null` |  |
+| `ad_delivery_start_time` | `string \| null` |  |
+| `ad_delivery_stop_time` | `string \| null` |  |
+| `ad_snapshot_url` | `string \| null` |  |
+| `age_country_gender_reach_breakdown` | `array \| null` |  |
+| `beneficiary_payers` | `array \| null` |  |
+| `br_total_reach` | `integer \| null` |  |
+| `bylines` | `string \| null` |  |
+| `currency` | `string \| null` |  |
+| `delivery_by_region` | `array \| null` |  |
+| `demographic_distribution` | `array \| null` |  |
+| `estimated_audience_size` | `object \| null` |  |
+| `eu_total_reach` | `integer \| null` |  |
+| `impressions` | `object \| null` |  |
+| `languages` | `array \| null` |  |
+| `page_id` | `string \| null` |  |
+| `page_name` | `string \| null` |  |
+| `publisher_platforms` | `array \| null` |  |
+| `spend` | `object \| null` |  |
+| `target_ages` | `array \| null` |  |
+| `target_gender` | `string \| null` |  |
+| `target_locations` | `array \| null` |  |
+| `total_reach_by_location` | `array \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `after` | `string \| null` |  |
 
 </details>
 
