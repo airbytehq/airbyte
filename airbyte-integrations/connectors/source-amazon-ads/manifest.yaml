@@ -2684,6 +2684,163 @@ definitions:
         schema:
           $ref: "#/schemas/sponsored_products_keywords_report_stream_daily"
 
+    sponsored_products_search_terms_report_stream:
+      type: DeclarativeStream
+      name: sponsored_products_search_terms_report_stream
+      primary_key: ["profileId", "reportDate", "searchTerm", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "search terms report {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["searchTerm"]
+              columns:
+                [
+                  "searchTerm",
+                  "targeting",
+                  "keywordType",
+                  "campaignName",
+                  "campaignId",
+                  "adGroupName",
+                  "adGroupId",
+                  "keywordId",
+                  "keyword",
+                  "matchType",
+                  "impressions",
+                  "clicks",
+                  "cost",
+                  "purchases1d",
+                  "purchases7d",
+                  "purchases14d",
+                  "purchases30d",
+                  "purchasesSameSku1d",
+                  "purchasesSameSku7d",
+                  "purchasesSameSku14d",
+                  "purchasesSameSku30d",
+                  "unitsSoldClicks1d",
+                  "unitsSoldClicks7d",
+                  "unitsSoldClicks14d",
+                  "unitsSoldClicks30d",
+                  "sales1d",
+                  "sales7d",
+                  "sales14d",
+                  "sales30d",
+                  "attributedSalesSameSku1d",
+                  "attributedSalesSameSku7d",
+                  "attributedSalesSameSku14d",
+                  "attributedSalesSameSku30d",
+                  "unitsSoldSameSku1d",
+                  "unitsSoldSameSku7d",
+                  "unitsSoldSameSku14d",
+                  "unitsSoldSameSku30d",
+                ]
+              reportTypeId: spSearchTerm
+              filters:
+                [
+                  {
+                    "field": "keywordType",
+                    "values":
+                      [
+                        "BROAD",
+                        "PHRASE",
+                        "EXACT",
+                        "TARGETING_EXPRESSION",
+                        "TARGETING_EXPRESSION_PREDEFINED",
+                      ],
+                  },
+                ]
+              timeUnit: SUMMARY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_search_terms_report_stream"
+
+    sponsored_products_search_terms_report_stream_daily:
+      type: DeclarativeStream
+      name: sponsored_products_search_terms_report_stream_daily
+      primary_key: ["profileId", "reportDate", "searchTerm", "keywordId"]
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+      transformations:
+        $ref: "#/definitions/transformation_report_add_fields"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            name: "search terms report daily {{ stream_interval.start_time }}"
+            startDate: "{{ stream_interval.start_time }}"
+            endDate: "{{ stream_interval.end_time }}"
+            configuration:
+              adProduct: SPONSORED_PRODUCTS
+              groupBy: ["searchTerm"]
+              columns:
+                - "date"
+                - "searchTerm"
+                - "targeting"
+                - "keywordType"
+                - "campaignName"
+                - "campaignId"
+                - "adGroupName"
+                - "adGroupId"
+                - "keywordId"
+                - "keyword"
+                - "matchType"
+                - "impressions"
+                - "clicks"
+                - "cost"
+                - "purchases1d"
+                - "purchases7d"
+                - "purchases14d"
+                - "purchases30d"
+                - "purchasesSameSku1d"
+                - "purchasesSameSku7d"
+                - "purchasesSameSku14d"
+                - "purchasesSameSku30d"
+                - "unitsSoldClicks1d"
+                - "unitsSoldClicks7d"
+                - "unitsSoldClicks14d"
+                - "unitsSoldClicks30d"
+                - "sales1d"
+                - "sales7d"
+                - "sales14d"
+                - "sales30d"
+                - "attributedSalesSameSku1d"
+                - "attributedSalesSameSku7d"
+                - "attributedSalesSameSku14d"
+                - "attributedSalesSameSku30d"
+                - "unitsSoldSameSku1d"
+                - "unitsSoldSameSku7d"
+                - "unitsSoldSameSku14d"
+                - "unitsSoldSameSku30d"
+              reportTypeId: spSearchTerm
+              filters:
+                - field: "keywordType"
+                  values:
+                    [
+                      "BROAD",
+                      "PHRASE",
+                      "EXACT",
+                      "TARGETING_EXPRESSION",
+                      "TARGETING_EXPRESSION_PREDEFINED",
+                    ]
+              timeUnit: DAILY
+              format: GZIP_JSON
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sponsored_products_search_terms_report_stream_daily"
+
     sponsored_products_targets_report_stream:
       type: DeclarativeStream
       name: sponsored_products_targets_report_stream
@@ -3361,6 +3518,7 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_adgroups_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_keywords_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_targets_report_stream"
+  - $ref: "#/definitions/streams/sponsored_products_search_terms_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_productads_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream"
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream"
@@ -3375,6 +3533,7 @@ streams:
   - $ref: "#/definitions/streams/sponsored_products_adgroups_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_keywords_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_targets_report_stream_daily"
+  - $ref: "#/definitions/streams/sponsored_products_search_terms_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_productads_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_asins_keywords_report_stream_daily"
   - $ref: "#/definitions/streams/sponsored_products_asins_targets_report_stream_daily"
@@ -8960,6 +9119,336 @@ schemas:
           - "null"
           - integer
     title: sponsored_products_keywords_report_stream_daily
+    type:
+      - "null"
+      - object
+  sponsored_products_search_terms_report_stream:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      searchTerm:
+        type:
+          - "null"
+          - string
+      targeting:
+        type:
+          - "null"
+          - string
+      keywordType:
+        type:
+          - "null"
+          - string
+      keywordId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_search_terms_report_stream
+    type:
+      - "null"
+      - object
+  sponsored_products_search_terms_report_stream_daily:
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+      profileId:
+        type:
+          - "null"
+          - integer
+      reportDate:
+        type:
+          - "null"
+          - string
+      searchTerm:
+        type:
+          - "null"
+          - string
+      targeting:
+        type:
+          - "null"
+          - string
+      keywordType:
+        type:
+          - "null"
+          - string
+      keywordId:
+        type:
+          - "null"
+          - integer
+      campaignName:
+        type:
+          - "null"
+          - string
+      campaignId:
+        type:
+          - "null"
+          - integer
+      adGroupName:
+        type:
+          - "null"
+          - string
+      adGroupId:
+        type:
+          - "null"
+          - integer
+      keyword:
+        type:
+          - "null"
+          - string
+      matchType:
+        type:
+          - "null"
+          - string
+      impressions:
+        type:
+          - "null"
+          - integer
+      clicks:
+        type:
+          - "null"
+          - integer
+      cost:
+        type:
+          - "null"
+          - number
+      purchases1d:
+        type:
+          - "null"
+          - integer
+      purchases7d:
+        type:
+          - "null"
+          - integer
+      purchases14d:
+        type:
+          - "null"
+          - integer
+      purchases30d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku1d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku7d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku14d:
+        type:
+          - "null"
+          - integer
+      purchasesSameSku30d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldClicks30d:
+        type:
+          - "null"
+          - integer
+      sales1d:
+        type:
+          - "null"
+          - number
+      sales7d:
+        type:
+          - "null"
+          - number
+      sales14d:
+        type:
+          - "null"
+          - number
+      sales30d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku1d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku7d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku14d:
+        type:
+          - "null"
+          - number
+      attributedSalesSameSku30d:
+        type:
+          - "null"
+          - number
+      unitsSoldSameSku1d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku7d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku14d:
+        type:
+          - "null"
+          - integer
+      unitsSoldSameSku30d:
+        type:
+          - "null"
+          - integer
+    title: sponsored_products_search_terms_report_stream_daily
     type:
       - "null"
       - object
