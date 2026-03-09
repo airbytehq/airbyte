@@ -507,7 +507,7 @@ definitions:
               value,
               click_window_days,
             ]
-          value: "{{ components_values['click_window_days'] or 30 }}"
+          value: "{{ components_values['click_window_days'] if components_values['click_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -518,7 +518,7 @@ definitions:
               value,
               engagement_window_days,
             ]
-          value: "{{ components_values['engagement_window_days'] or 30 }}"
+          value: "{{ components_values['engagement_window_days'] if components_values['engagement_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -529,7 +529,7 @@ definitions:
               value,
               view_window_days,
             ]
-          value: "{{ components_values['view_window_days'] or 30 }}"
+          value: "{{ components_values['view_window_days'] if components_values['view_window_days'] is not none else 30 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -4338,14 +4338,14 @@ spec:
             engagement_window_days:
               title: "Engagement window days"
               description: "Number of days to use as the conversion attribution window for an engagement action."
-              default: [30]
+              default: 30
               enum: [0, 1, 7, 14, 30, 60]
               type: integer
               order: 5
             view_window_days:
               title: "View window days"
               description: "Number of days to use as the conversion attribution window for a view action."
-              default: [30]
+              default: 30
               enum: [0, 1, 7, 14, 30, 60]
               type: integer
               order: 6
@@ -4422,6 +4422,34 @@ spec:
           client_secret:
             type: string
             path_in_connector_config: ["credentials", "client_secret"]
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Migrate custom_reports window_days fields from array [30] to integer 30.
+          Prior versions incorrectly declared default: [30] (array) for engagement_window_days
+          and view_window_days, so saved configs may contain array values instead of integers.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["custom_reports"]
+                value: >-
+                  {%- set migrated_reports = [] -%}
+                  {%- for report in config.get('custom_reports', []) -%}
+                    {%- set new_report = {} -%}
+                    {%- for key, val in report.items() -%}
+                      {%- if key in ('click_window_days', 'engagement_window_days', 'view_window_days') and val is iterable and val is not string and val | length > 0 -%}
+                        {%- set _ = new_report.update({key: val[0]}) -%}
+                      {%- else -%}
+                        {%- set _ = new_report.update({key: val}) -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- set _ = migrated_reports.append(new_report) -%}
+                  {%- endfor -%}
+                  {{- migrated_reports -}}
+            condition: "{{ config.get('custom_reports', False) }}"
 
 streams:
   # Full refresh streams
