@@ -690,6 +690,11 @@
       "source": "/ai-agents/api/api-reference/sonar/:path*",
       "destination": "/ai-agents/api/api-reference/agent-engine-api/:path*",
       "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/tutorials/quickstarts/tutorial-python",
+      "destination": "/ai-agents/tutorials/quickstarts/tutorial-pydantic",
+      "statusCode": 301
     }
   ]
 }

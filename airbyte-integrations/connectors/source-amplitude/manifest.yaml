@@ -1039,3 +1039,22 @@ spec:
         description: >
           According to <a href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Amplitude documentation</a>, grouping by `Country` is optional. If you face issues fetching the stream or checking the connection please set this field to `False`.
         default: true
+
+# Amplitude API rate limits:
+# - Dashboard REST API: 5 concurrent requests, 108,000 cost/hour
+# - Export API: No explicit rate limits documented, but large exports may timeout
+# See: https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits
+# Using conservative limits to avoid rate limiting issues
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1M
+      # Conservative limit based on Amplitude's concurrent request limit
+      # Amplitude allows 5 concurrent requests for Dashboard REST API
+      call_limit: 60
+      matchers: []

@@ -57,7 +57,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "external_user_id": "customer_workspace_123"
+    "customer_name": "customer_workspace_123"
   }'
 ```
 
@@ -72,7 +72,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "external_user_id": "customer_workspace_123",
+    "customer_name": "customer_workspace_123",
     "allowed_origin": "https://yourapp.com"
   }'
 ```
