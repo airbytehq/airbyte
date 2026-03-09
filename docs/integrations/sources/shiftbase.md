@@ -44,17 +44,12 @@ To set up the Shiftbase source connector, you'll need:
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Shiftbase** from the Source type dropdown.
 4. Enter the name for the Shiftbase connector.
-5. Add one or more **Accounts** with:
-   - **Access Token**: Your Shiftbase API access token generated from the App Center
-   - **Account Name**: A name to identify the account
-6. For **Start Date**, enter the date in `YYYY-MM-DD` format. Data from this date onwards will be replicated.
-7. Click **Set up source**.
+5. Enter your **Access Token** from the Shiftbase App Center.
+6. Enter your **Account Name** (an identifier for tracking).
+7. For **Start Date**, enter the date in `YYYY-MM-DD` format. Data from this date onwards will be replicated.
+8. Click **Set up source**.
 
 <!-- /env:oss -->
-
-### Multiple Accounts
-
-The Shiftbase connector supports syncing data from multiple Shiftbase accounts simultaneously. When configuring the connector, you can add multiple account configurations, each with its own access token and account name.
 
 ## Supported sync modes
 
