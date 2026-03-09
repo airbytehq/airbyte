@@ -44,27 +44,3 @@ jobs:
           #   uvx --from airbyte-internal-ops airbyte-ops registry store compile --store coral:prod --with-secrets-mask
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops registry store compile --store coral:prod --with-secrets-mask
-
-  # TK-TODO: The 'generate-report' command does not yet exist in the ops CLI. # IGNORE:TK
-  # This job previously generated an HTML/JSON registry report and uploaded it to GCS.
-  # Re-enable once 'airbyte-ops registry generate-report' is implemented in the ops repo.
-  # post-registry-generation:
-  #   name: Post registry generation steps
-  #   runs-on: ubuntu-24.04
-  #   needs: [compile-registries]
-  #   steps:
-  #     - name: Checkout Airbyte
-  #       uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
-  #       with:
-  #         ref: ${{ github.event.inputs.gitref || github.ref }}
-  #         submodules: true
-  #     - name: Install uv
-  #       uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
-  #     - name: Generate connector registry report
-  #       env:
-  #         GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-  #       shell: bash
-  #       run: |
-  #         uvx --from airbyte-internal-ops \
-  #           airbyte-ops registry generate-report \
-  #           --store coral:prod
