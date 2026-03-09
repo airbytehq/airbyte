@@ -71,6 +71,12 @@ class SourceFacebookMarketing(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
 
+        for insight in config.get("custom_insights", []) or []:
+            if insight.get("start_date") == "":
+                insight.pop("start_date")
+            if insight.get("end_date") == "":
+                insight.pop("end_date")
+
         config = ConnectorConfig.parse_obj(config)
 
         default_ads_insights_action_breakdowns = (
