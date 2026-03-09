@@ -7,18 +7,23 @@ import logging
 import os
 import re
 import textwrap
-from typing import Any, Mapping, Optional
+from pathlib import Path
+from typing import Any, List, Mapping, Optional
 
 import pandas as pd
 import requests
 import yaml
 from github import Auth, Github
 
+from metadata_service.gcs_upload import upload_metadata_to_gcs
 from metadata_service.helpers.gcs import get_gcs_storage_client
 from metadata_service.helpers.slack import send_slack_message
 from metadata_service.models.generated import ConnectorMetadataDefinitionV0
+from metadata_service.validators.metadata_validator import ValidatorOptions
 
 from .constants import (
+    CONNECTORS_PATH,
+    DOCS_FOLDER_PATH,
     EXTENSIBILITY_TEAM_SLACK_TEAM_ID,
     GITHUB_REPO_NAME,
     METADATA_FILE_NAME,
@@ -208,6 +213,99 @@ def _generate_stale_metadata_report(
     return pd.DataFrame(stale_connectors)
 
 
+def _get_connector_name_from_docker_repository(docker_repository: str) -> str:
+    """
+    Extract the connector name from a docker repository string.
+
+    Args:
+        docker_repository (str): The docker repository (e.g., "airbyte/source-github").
+    Returns:
+        str: The connector name (e.g., "source-github").
+    """
+    return docker_repository.split("/")[-1]
+
+
+def _get_connector_type_from_name(connector_name: str) -> str:
+    """
+    Extract the connector type from a connector name.
+
+    Args:
+        connector_name (str): The connector name (e.g., "source-github").
+    Returns:
+        str: The connector type (e.g., "sources" or "destinations").
+    """
+    if connector_name.startswith("source-"):
+        return "sources"
+    elif connector_name.startswith("destination-"):
+        return "destinations"
+    else:
+        raise ValueError(f"Unknown connector type for connector: {connector_name}")
+
+
+def _get_docs_path_for_connector(repo_root: Path, connector_name: str) -> Path:
+    """
+    Get the docs path for a connector.
+
+    Args:
+        repo_root (Path): The root path of the repository.
+        connector_name (str): The connector name (e.g., "source-github").
+    Returns:
+        Path: The path to the connector's documentation file.
+    """
+    connector_type = _get_connector_type_from_name(connector_name)
+    doc_name = connector_name.replace("source-", "").replace("destination-", "")
+    return repo_root / DOCS_FOLDER_PATH / connector_type / doc_name
+
+
+def _auto_heal_stale_connectors(
+    stale_connectors: List[str],
+    bucket_name: str,
+    repo_root: Path,
+) -> List[str]:
+    """
+    Attempt to auto-heal stale connectors by uploading their metadata to GCS.
+
+    Args:
+        stale_connectors (List[str]): List of stale connector docker repositories.
+        bucket_name (str): The name of the GCS bucket to upload metadata to.
+        repo_root (Path): The root path of the repository.
+    Returns:
+        List[str]: List of connectors that were successfully healed.
+    """
+    healed_connectors = []
+
+    for docker_repository in stale_connectors:
+        connector_name = _get_connector_name_from_docker_repository(docker_repository)
+        metadata_file_path = repo_root / CONNECTORS_PATH / connector_name / METADATA_FILE_NAME
+
+        if not metadata_file_path.exists():
+            logger.warning(f"Metadata file not found for {connector_name} at {metadata_file_path}. Skipping auto-heal.")
+            continue
+
+        try:
+            docs_path = _get_docs_path_for_connector(repo_root, connector_name)
+            validator_opts = ValidatorOptions(
+                docs_path=str(docs_path),
+                prerelease_tag=None,
+                disable_dockerhub_checks=True,
+            )
+
+            logger.info(f"Auto-healing connector {connector_name} by uploading metadata to GCS...")
+            upload_info = upload_metadata_to_gcs(bucket_name, metadata_file_path, validator_opts)
+
+            if upload_info.metadata_uploaded:
+                logger.info(f"Successfully auto-healed connector {connector_name}")
+                healed_connectors.append(docker_repository)
+            else:
+                logger.warning(f"Metadata upload for {connector_name} did not result in any changes")
+
+        except Exception as e:
+            logger.error(f"Failed to auto-heal connector {connector_name}: {e}")
+            continue
+
+    return healed_connectors
+
+
 def _publish_stale_metadata_report(
     stale_metadata_report: pd.DataFrame, latest_metadata_versions_on_github_count: int, latest_metadata_versions_on_gcs_count: int
 ) -> tuple[bool, Optional[str]]:
@@ -244,18 +342,38 @@ def _publish_stale_metadata_report(
     return True, None
 
 
-def generate_and_publish_stale_metadata_report(bucket_name: str) -> tuple[bool, Optional[str]]:
+def generate_and_publish_stale_metadata_report(
+    bucket_name: str,
+    repo_root: Optional[Path] = None,
+) -> tuple[bool, Optional[str]]:
     """
     Generate a stale metadata report and publish it to a Slack channel.
 
+    If repo_root is provided, attempts to auto-heal stale connectors by uploading
+    their metadata to GCS before publishing the report.
+
     Args:
         bucket_name (str): The name of the GCS bucket to check for stale metadata.
+        repo_root (Optional[Path]): The root path of the repository. If provided,
+            enables auto-healing of stale connectors.
     Returns:
         tuple[bool, Optional[str]]: A tuple containing a boolean indicating whether the report was published and an optional error message.
     """
     latest_metadata_entries_on_gcs = _get_latest_metadata_entries_on_gcs(bucket_name)
     latest_metadata_versions_on_github = _get_latest_metadata_versions_on_github()
     stale_metadata_report = _generate_stale_metadata_report(latest_metadata_versions_on_github, latest_metadata_entries_on_gcs)
+
+    if len(stale_metadata_report) > 0 and repo_root is not None:
+        logger.info(f"Found {len(stale_metadata_report)} stale connectors. Attempting auto-heal...")
+        stale_connector_names = stale_metadata_report["connector"].tolist()
+        healed_connectors = _auto_heal_stale_connectors(stale_connector_names, bucket_name, repo_root)
+
+        if healed_connectors:
+            logger.info(f"Auto-healed {len(healed_connectors)} connectors. Re-checking for stale metadata...")
+            latest_metadata_entries_on_gcs = _get_latest_metadata_entries_on_gcs(bucket_name)
+            stale_metadata_report = _generate_stale_metadata_report(latest_metadata_versions_on_github, latest_metadata_entries_on_gcs)
+            logger.info(f"After auto-heal, {len(stale_metadata_report)} connectors are still stale.")
+
     report_published, error_message = _publish_stale_metadata_report(
         stale_metadata_report, len(latest_metadata_versions_on_github), len(latest_metadata_entries_on_gcs)
     )

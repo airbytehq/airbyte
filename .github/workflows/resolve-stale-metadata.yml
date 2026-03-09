@@ -48,7 +48,7 @@ jobs:
         working-directory: airbyte-ci/connectors/metadata_service/lib
         run: poetry install
 
-      - name: Run stale metadata report task
+      - name: Run stale metadata report task with auto-heal
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
@@ -56,4 +56,4 @@ jobs:
         working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
-          poetry run metadata_service publish-stale-metadata-report prod-airbyte-cloud-connector-metadata-service
+          poetry run metadata_service publish-stale-metadata-report prod-airbyte-cloud-connector-metadata-service --repo-root ${{ github.workspace }}

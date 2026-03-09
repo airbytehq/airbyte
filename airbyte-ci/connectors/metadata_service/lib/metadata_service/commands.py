@@ -117,11 +117,20 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
 
 @metadata_service.command(help="Generate and publish a stale metadata report to Slack.")
 @click.argument("bucket-name", type=click.STRING, required=True)
-def publish_stale_metadata_report(bucket_name: str):
+@click.option(
+    "--repo-root",
+    type=click.Path(exists=True, path_type=pathlib.Path),
+    required=False,
+    default=None,
+    help="The root path of the repository. If provided, enables auto-healing of stale connectors by uploading their metadata to GCS.",
+)
+def publish_stale_metadata_report(bucket_name: str, repo_root: pathlib.Path):
     click.echo(f"Starting stale metadata report for bucket: {bucket_name}")
+    if repo_root:
+        click.echo(f"Auto-heal enabled with repo root: {repo_root}")
     logger.debug("Starting stale metadata report generation and publishing process")
     try:
-        report_published, error_message = generate_and_publish_stale_metadata_report(bucket_name)
+        report_published, error_message = generate_and_publish_stale_metadata_report(bucket_name, repo_root=repo_root)
         if not report_published:
             logger.warning(f"Failed to publish the report to Slack: '{error_message}'.")
             click.secho(f"WARNING: The stale metadata report could not be published: '{error_message}'", fg="red")
