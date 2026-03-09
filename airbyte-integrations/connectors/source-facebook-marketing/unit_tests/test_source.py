@@ -9,7 +9,7 @@ from unittest.mock import call
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
-from source_facebook_marketing.spec import ConnectorConfig
+from source_facebook_marketing.spec import ConnectorConfig, TimeIncrementPeriod
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import (
@@ -141,6 +141,22 @@ class TestSourceFacebookMarketing:
         ]
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
+
+    def test_get_custom_insights_streams_with_time_increment_period(self, api, config, fb_marketing):
+        config["custom_insights"] = [
+            {
+                "name": "test_weekly",
+                "fields": ["account_id"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+                "time_increment_period": "weekly",
+            },
+        ]
+        config = ConnectorConfig.parse_obj(config)
+        streams = fb_marketing.get_custom_insights_streams(api, config)
+        assert len(streams) == 1
+        assert streams[0].time_increment_period == TimeIncrementPeriod.weekly
+        assert streams[0].time_increment == 7
 
     def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config, fb_marketing):
         config["custom_insights"] = [

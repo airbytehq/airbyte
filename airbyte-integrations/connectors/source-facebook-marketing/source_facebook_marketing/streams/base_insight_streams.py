@@ -99,13 +99,16 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self.action_breakdowns = action_breakdowns
         if breakdowns is not None:
             self.breakdowns = breakdowns
-        self.time_increment_period = time_increment_period
-        if time_increment_period == TimeIncrementPeriod.daily:
+        if time_increment_period is not None and not isinstance(time_increment_period, TimeIncrementPeriod):
+            self.time_increment_period = TimeIncrementPeriod(time_increment_period)
+        else:
+            self.time_increment_period = time_increment_period
+        if self.time_increment_period == TimeIncrementPeriod.daily:
             self.time_increment = 1
-        elif time_increment_period is not None:
+        elif self.time_increment_period is not None:
             # For weekly/monthly, time_increment is not used for date chunking
             # but we set a nominal value for state tracking compatibility
-            self.time_increment = 7 if time_increment_period == TimeIncrementPeriod.weekly else 30
+            self.time_increment = 7 if self.time_increment_period == TimeIncrementPeriod.weekly else 30
         else:
             self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
@@ -293,7 +296,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             return
 
         saved_period = transformed_state.get("time_increment_period")
-        current_period = self.time_increment_period.value if self.time_increment_period else None
+        current_period = self.time_increment_period.value if self.time_increment_period is not None else None
         if saved_period != current_period:
             logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment_period` option.")
             return
