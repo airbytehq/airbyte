@@ -220,23 +220,32 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment">
-   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
+   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day. Cannot be used together with **Time Increment Period**.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.time_increment_period">
+   8. (Optional) For **Time Increment Period**, select a calendar-aligned aggregation period instead of a fixed number of days. This produces consistently aligned time buckets regardless of the start date, making cross-client comparison easier. Available options:
+      - `daily` — equivalent to Time Increment = 1 (1-day buckets).
+      - `weekly` — aligns to Monday-through-Sunday calendar weeks.
+      - `monthly` — aligns to calendar month boundaries (1st to last day of each month). This is natively supported by the Facebook API.
+
+   Cannot be used together with **Time Increment**. When switching between Time Increment and Time Increment Period (or vice versa), a full re-sync will be triggered.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.start_date">
-   8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+   9. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.end_date">
-   9. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
+   10. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.insights_lookback_window">
-   10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+   11. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.include_incrementality">
-   11. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
+   12. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
 </FieldAnchor>
 
 <FieldAnchor field="page_size">
@@ -432,6 +441,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
 | 5.2.0 | 2026-03-05 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
 | 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
 | 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
