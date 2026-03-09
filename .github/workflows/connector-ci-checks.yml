@@ -463,8 +463,21 @@ jobs:
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
 
-      - name: Get connector metadata
+      - name: Detect connector language
         if: matrix.connector
+        id: connector-language
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          LANGUAGE="$(poe -qq get-language)"
+          echo "language=${LANGUAGE}" | tee -a $GITHUB_OUTPUT
+          if [[ "${LANGUAGE}" == "java" ]]; then
+            echo "is-jvm=true" | tee -a $GITHUB_OUTPUT
+          else
+            echo "is-jvm=false" | tee -a $GITHUB_OUTPUT
+          fi
+
+      - name: Get connector metadata
+        if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         id: connector-metadata
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -476,14 +489,14 @@ jobs:
           echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
 
       - name: Build connector Docker image
-        if: matrix.connector
+        if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: >
           airbyte-cdk image build
           --tag ${{ steps.connector-metadata.outputs.connector-version }}
 
       - name: Generate and Validate Registry Artifacts
-        if: matrix.connector
+        if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         shell: bash
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -495,7 +508,7 @@ jobs:
           --with-validate
 
       - name: Upload Registry Artifacts
-        if: matrix.connector
+        if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector-version }}
