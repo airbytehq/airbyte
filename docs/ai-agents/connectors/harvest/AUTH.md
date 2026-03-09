@@ -1,6 +1,6 @@
-# Amazon-Seller-Partner authentication
+# Harvest authentication
 
-This page documents the authentication and configuration options for the Amazon-Seller-Partner agent connector.
+This page documents the authentication and configuration options for the Harvest agent connector.
 
 ## Authentication
 
@@ -15,29 +15,45 @@ In open source mode, you provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `lwa_app_id` | `str` | Yes | Your Login with Amazon Client ID. |
-| `lwa_client_secret` | `str` | Yes | Your Login with Amazon Client Secret. |
-| `refresh_token` | `str` | Yes | The Refresh Token obtained via the OAuth authorization flow. |
-| `access_token` | `str` | No | Access token (optional if refresh_token is provided). |
+| `access_token` | `str` | Yes | Your Harvest OAuth2 access token |
+| `account_id` | `str` | Yes | Your Harvest account ID |
 
 Example request:
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector
-from airbyte_agent_amazon_seller_partner.models import AmazonSellerPartnerAuthConfig
+from airbyte_agent_harvest import HarvestConnector
+from airbyte_agent_harvest.models import HarvestOauth20AuthConfig
 
-connector = AmazonSellerPartnerConnector(
-    auth_config=AmazonSellerPartnerAuthConfig(
-        lwa_app_id="<Your Login with Amazon Client ID.>",
-        lwa_client_secret="<Your Login with Amazon Client Secret.>",
-        refresh_token="<The Refresh Token obtained via the OAuth authorization flow.>",
-        access_token="<Access token (optional if refresh_token is provided).>"
+connector = HarvestConnector(
+    auth_config=HarvestOauth20AuthConfig(
+        access_token="<Your Harvest OAuth2 access token>",
+        account_id="<Your Harvest account ID>"
     )
 )
 ```
 
 #### Token
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `token` | `str` | Yes | Your Harvest personal access token |
+| `account_id` | `str` | Yes | Your Harvest account ID |
+
+Example request:
+
+```python
+from airbyte_agent_harvest import HarvestConnector
+from airbyte_agent_harvest.models import HarvestPersonalAccessTokenAuthConfig
+
+connector = HarvestConnector(
+    auth_config=HarvestPersonalAccessTokenAuthConfig(
+        token="<Your Harvest personal access token>",
+        account_id="<Your Harvest account ID>"
+    )
+)
+```
 
 ### Hosted execution
 
@@ -51,16 +67,14 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `lwa_app_id` | `str` | Yes | Your Login with Amazon Client ID. |
-| `lwa_client_secret` | `str` | Yes | Your Login with Amazon Client Secret. |
-| `refresh_token` | `str` | Yes | The Refresh Token obtained via the OAuth authorization flow. |
-| `access_token` | `str` | No | Access token (optional if refresh_token is provided). |
+| `access_token` | `str` | Yes | Your Harvest OAuth2 access token |
+| `account_id` | `str` | Yes | Your Harvest account ID |
 
 `replication_config` fields you need:
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. |
+| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated. |
 
 Example request:
 
@@ -70,16 +84,14 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Content-Type: application/json" \
   -d '{
     "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Amazon-Seller-Partner",
-    "name": "My Amazon-Seller-Partner Connector",
+    "connector_type": "Harvest",
+    "name": "My Harvest Connector",
     "credentials": {
-      "lwa_app_id": "<Your Login with Amazon Client ID.>",
-      "lwa_client_secret": "<Your Login with Amazon Client Secret.>",
-      "refresh_token": "<The Refresh Token obtained via the OAuth authorization flow.>",
-      "access_token": "<Access token (optional if refresh_token is provided).>"
+      "access_token": "<Your Harvest OAuth2 access token>",
+      "account_id": "<Your Harvest account ID>"
     },
     "replication_config": {
-      "replication_start_date": "<UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.>"
+      "replication_start_date": "<UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated.>"
     }
   }'
 ```
@@ -96,7 +108,7 @@ Request a consent URL for your user.
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `customer_name` | `string` | Yes | Your unique identifier for the customer |
-| `connector_type` | `string` | Yes | The connector type (e.g., "Amazon-Seller-Partner") |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Harvest") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
 Example request:
@@ -107,7 +119,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Content-Type: application/json" \
   -d '{
     "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Amazon-Seller-Partner",
+    "connector_type": "Harvest",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
 ```
@@ -125,7 +137,42 @@ https://yourapp.com/oauth/callback?connector_id=<connector_id>
 Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
 
 #### Token
-This authentication method isn't available for this connector.
+Create a connector with Token credentials.
+
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `token` | `str` | Yes | Your Harvest personal access token |
+| `account_id` | `str` | Yes | Your Harvest account ID |
+
+`replication_config` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated. |
+
+Example request:
+
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_name": "<CUSTOMER_NAME>",
+    "connector_type": "Harvest",
+    "name": "My Harvest Connector",
+    "credentials": {
+      "token": "<Your Harvest personal access token>",
+      "account_id": "<Your Harvest account ID>"
+    },
+    "replication_config": {
+      "replication_start_date": "<UTC date and time in YYYY-MM-DDTHH:mm:ssZ format from which to start replicating data. Data before this date will not be replicated.>"
+    }
+  }'
+```
 
 #### Execution
 
@@ -135,9 +182,9 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector, AirbyteAuthConfig
+from airbyte_agent_harvest import HarvestConnector, AirbyteAuthConfig
 
-connector = AmazonSellerPartnerConnector(
+connector = HarvestConnector(
     auth_config=AirbyteAuthConfig(
         customer_name="<your_customer_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -147,8 +194,8 @@ connector = AmazonSellerPartnerConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@AmazonSellerPartnerConnector.tool_utils
-async def amazon_seller_partner_execute(entity: str, action: str, params: dict | None = None):
+@HarvestConnector.tool_utils
+async def harvest_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -163,14 +210,3 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ```
 
 
-## Configuration
-
-The Amazon-Seller-Partner connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `region` | `string` | Yes | na | The SP-API endpoint URL based on seller region:
-- NA (North America: US, CA, MX, BR): https://sellingpartnerapi-na.amazon.com
-- EU (Europe/Middle East/Africa/India): https://sellingpartnerapi-eu.amazon.com
-- FE (Far East: JP, AU, SG): https://sellingpartnerapi-fe.amazon.com
- |

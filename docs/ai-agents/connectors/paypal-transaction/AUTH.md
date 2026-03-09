@@ -1,6 +1,6 @@
-# Amazon-Seller-Partner authentication
+# Paypal-Transaction authentication
 
-This page documents the authentication and configuration options for the Amazon-Seller-Partner agent connector.
+This page documents the authentication and configuration options for the Paypal-Transaction agent connector.
 
 ## Authentication
 
@@ -15,23 +15,23 @@ In open source mode, you provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `lwa_app_id` | `str` | Yes | Your Login with Amazon Client ID. |
-| `lwa_client_secret` | `str` | Yes | Your Login with Amazon Client Secret. |
-| `refresh_token` | `str` | Yes | The Refresh Token obtained via the OAuth authorization flow. |
-| `access_token` | `str` | No | Access token (optional if refresh_token is provided). |
+| `client_id` | `str` | Yes | The Client ID of your PayPal developer application. |
+| `client_secret` | `str` | Yes | The Client Secret of your PayPal developer application. |
+| `access_token` | `str` | No | OAuth2 access token obtained via client credentials grant. Use the PayPal token endpoint with your client_id and client_secret to obtain this.
+ |
 
 Example request:
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector
-from airbyte_agent_amazon_seller_partner.models import AmazonSellerPartnerAuthConfig
+from airbyte_agent_paypal_transaction import PaypalTransactionConnector
+from airbyte_agent_paypal_transaction.models import PaypalTransactionAuthConfig
 
-connector = AmazonSellerPartnerConnector(
-    auth_config=AmazonSellerPartnerAuthConfig(
-        lwa_app_id="<Your Login with Amazon Client ID.>",
-        lwa_client_secret="<Your Login with Amazon Client Secret.>",
-        refresh_token="<The Refresh Token obtained via the OAuth authorization flow.>",
-        access_token="<Access token (optional if refresh_token is provided).>"
+connector = PaypalTransactionConnector(
+    auth_config=PaypalTransactionAuthConfig(
+        client_id="<The Client ID of your PayPal developer application.>",
+        client_secret="<The Client Secret of your PayPal developer application.>",
+        access_token="<OAuth2 access token obtained via client credentials grant. Use the PayPal token endpoint with your client_id and client_secret to obtain this.
+>"
     )
 )
 ```
@@ -51,16 +51,17 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `lwa_app_id` | `str` | Yes | Your Login with Amazon Client ID. |
-| `lwa_client_secret` | `str` | Yes | Your Login with Amazon Client Secret. |
-| `refresh_token` | `str` | Yes | The Refresh Token obtained via the OAuth authorization flow. |
-| `access_token` | `str` | No | Access token (optional if refresh_token is provided). |
+| `client_id` | `str` | Yes | The Client ID of your PayPal developer application. |
+| `client_secret` | `str` | Yes | The Client Secret of your PayPal developer application. |
+| `access_token` | `str` | No | OAuth2 access token obtained via client credentials grant. Use the PayPal token endpoint with your client_id and client_secret to obtain this.
+ |
 
 `replication_config` fields you need:
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `replication_start_date` | `str (date-time)` | Yes | UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. |
+| `start_date` | `str (date-time)` | Yes | Start date for data extraction in ISO 8601 format. Date must be in range from 3 years till 12 hours before present time.
+ |
 
 Example request:
 
@@ -70,16 +71,17 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Content-Type: application/json" \
   -d '{
     "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Amazon-Seller-Partner",
-    "name": "My Amazon-Seller-Partner Connector",
+    "connector_type": "Paypal-Transaction",
+    "name": "My Paypal-Transaction Connector",
     "credentials": {
-      "lwa_app_id": "<Your Login with Amazon Client ID.>",
-      "lwa_client_secret": "<Your Login with Amazon Client Secret.>",
-      "refresh_token": "<The Refresh Token obtained via the OAuth authorization flow.>",
-      "access_token": "<Access token (optional if refresh_token is provided).>"
+      "client_id": "<The Client ID of your PayPal developer application.>",
+      "client_secret": "<The Client Secret of your PayPal developer application.>",
+      "access_token": "<OAuth2 access token obtained via client credentials grant. Use the PayPal token endpoint with your client_id and client_secret to obtain this.
+>"
     },
     "replication_config": {
-      "replication_start_date": "<UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.>"
+      "start_date": "<Start date for data extraction in ISO 8601 format. Date must be in range from 3 years till 12 hours before present time.
+>"
     }
   }'
 ```
@@ -96,7 +98,7 @@ Request a consent URL for your user.
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
 | `customer_name` | `string` | Yes | Your unique identifier for the customer |
-| `connector_type` | `string` | Yes | The connector type (e.g., "Amazon-Seller-Partner") |
+| `connector_type` | `string` | Yes | The connector type (e.g., "Paypal-Transaction") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
 Example request:
@@ -107,7 +109,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Content-Type: application/json" \
   -d '{
     "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Amazon-Seller-Partner",
+    "connector_type": "Paypal-Transaction",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
 ```
@@ -135,9 +137,9 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_amazon_seller_partner import AmazonSellerPartnerConnector, AirbyteAuthConfig
+from airbyte_agent_paypal_transaction import PaypalTransactionConnector, AirbyteAuthConfig
 
-connector = AmazonSellerPartnerConnector(
+connector = PaypalTransactionConnector(
     auth_config=AirbyteAuthConfig(
         customer_name="<your_customer_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -147,8 +149,8 @@ connector = AmazonSellerPartnerConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@AmazonSellerPartnerConnector.tool_utils
-async def amazon_seller_partner_execute(entity: str, action: str, params: dict | None = None):
+@PaypalTransactionConnector.tool_utils
+async def paypal_transaction_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -163,14 +165,3 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ```
 
 
-## Configuration
-
-The Amazon-Seller-Partner connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `region` | `string` | Yes | na | The SP-API endpoint URL based on seller region:
-- NA (North America: US, CA, MX, BR): https://sellingpartnerapi-na.amazon.com
-- EU (Europe/Middle East/Africa/India): https://sellingpartnerapi-eu.amazon.com
-- FE (Far East: JP, AU, SG): https://sellingpartnerapi-fe.amazon.com
- |
