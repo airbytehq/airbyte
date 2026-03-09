@@ -438,10 +438,12 @@ jobs:
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
-      - name: Install Ops CLI
+      - name: Install Ops CLI and Airbyte CDK
         if: matrix.connector
         run: |
           uv tool install airbyte-internal-ops
+          uv tool install "airbyte-cdk[dev]"
+
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
@@ -466,22 +468,31 @@ jobs:
         id: connector-metadata
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
+          DOCKER_REPO: airbyte/${{ matrix.connector }}
         run: |
           set -euo pipefail
-          echo "connector-version=$(poe -qq --root "${CONNECTOR_DIR}" get-version)" | tee -a $GITHUB_OUTPUT
+          CONNECTOR_VERSION="$(poe -qq --root "${CONNECTOR_DIR}" get-version)"
+          echo "connector-version=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+          echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+
+      - name: Build connector Docker image
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: >
+          airbyte-cdk image build
+          --tag ${{ steps.connector-metadata.outputs.connector-version }}
 
       - name: Generate and Validate Registry Artifacts
         if: matrix.connector
         shell: bash
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
-          DOCKER_REPO: airbyte/${{ matrix.connector }}
-        run: |
-          airbyte-ops registry connector-version artifacts generate \
-            --metadata-file "${CONNECTOR_DIR}/metadata.yaml" \
-            --docker-image "${DOCKER_REPO}:${{ steps.connector-metadata.outputs.connector-version }}" \
-            --output-dir ./registry-artifacts \
-            --with-validate
+        run: >
+          airbyte-ops registry connector-version artifacts generate
+          --metadata-file "${CONNECTOR_DIR}/metadata.yaml"
+          --docker-image "${{ steps.connector-metadata.outputs.docker-image }}"
+          --output-dir ./registry-artifacts
+          --with-validate
 
       - name: Upload Registry Artifacts
         if: matrix.connector
