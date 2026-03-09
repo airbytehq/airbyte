@@ -40,10 +40,10 @@ jobs:
         shell: bash
         # TODO: GitHub Step Summary output should be handled internally by the ops CLI.
         #   See: https://github.com/airbytehq/airbyte-ops-mcp/issues/473
-        run: |
-          uvx --from airbyte-internal-ops \
-            airbyte-ops local connector list \
-            --repo-path "${{ github.workspace }}" \
-            --unpublished \
-            --store coral:prod \
+        run: >
+          uvx --from airbyte-internal-ops
+            airbyte-ops local connector list
+            --repo-path "${{ github.workspace }}"
+            --unpublished
+            --store coral:prod
             --assert-none
