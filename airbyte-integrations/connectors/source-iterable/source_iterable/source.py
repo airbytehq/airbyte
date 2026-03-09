@@ -69,11 +69,13 @@ class SourceIterable(YamlDeclarativeSource):
         start_date, end_date = config["start_date"], config.get("end_date")
         end_time_buffer_minutes = config.get("end_time_buffer_minutes", 5)
         date_range = {"start_date": start_date, "end_date": end_date, "end_time_buffer_minutes": end_time_buffer_minutes}
+        # CampaignsMetrics extends IterableStream (not IterableExportStream) and does not accept end_time_buffer_minutes
+        campaigns_date_range = {"start_date": start_date, "end_date": end_date}
 
         # TODO: migrate streams below to low code as slicer logic will be migrated to generator based
         streams.extend(
             [
-                CampaignsMetrics(authenticator=authenticator, **date_range),
+                CampaignsMetrics(authenticator=authenticator, **campaigns_date_range),
                 Templates(authenticator=authenticator, **date_range),
                 EmailBounce(authenticator=authenticator, **date_range),
                 EmailClick(authenticator=authenticator, **date_range),
