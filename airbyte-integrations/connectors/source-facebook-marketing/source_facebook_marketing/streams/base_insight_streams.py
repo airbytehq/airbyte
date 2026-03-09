@@ -99,8 +99,6 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self.action_breakdowns = action_breakdowns
         if breakdowns is not None:
             self.breakdowns = breakdowns
-        # Pydantic v1 compat layer may pass time_increment_period as a plain string
-        # instead of a TimeIncrementPeriod enum member. Normalize to enum here.
         if time_increment_period is not None and not isinstance(time_increment_period, TimeIncrementPeriod):
             self.time_increment_period = TimeIncrementPeriod(time_increment_period)
         else:
