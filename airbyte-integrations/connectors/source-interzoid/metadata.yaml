@@ -2,6 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
+      - api.interzoid.com
   registryOverrides:
     oss:
       enabled: true
@@ -32,18 +33,18 @@ data:
   ab_internal:
     ql: 100
     sl: 100
-   connectorTestSuitesOptions:
-      - suite: integrationTests
-        testSecrets:
-          - name: SECRET_SOURCE-INTERZOID__CREDS
-            fileName: config.json
-            secretStore:
-              type: GSM
-              alias: airbyte-connector-testing-secret-store
-      - suite: acceptanceTests
-        testSecrets:
-          - name: SECRET_SOURCE-INTERZOID__CREDS
-            fileName: config.json
-            secretStore:
-              type: GSM
-              alias: airbyte-connector-testing-secret-store
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-INTERZOID__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-INTERZOID__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
