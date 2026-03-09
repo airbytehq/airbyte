@@ -7,7 +7,7 @@
       "type": "string"
     },
     "url": {
-      "description": "The URL for the release.",
+      "description": "The REST API URL for the release (synthesized from GraphQL data).",
       "type": ["null", "string"]
     },
     "html_url": {
@@ -15,19 +15,19 @@
       "type": ["null", "string"]
     },
     "assets_url": {
-      "description": "The URL to fetch information about the assets linked to this release.",
+      "description": "The URL to fetch information about the assets linked to this release (synthesized from GraphQL data).",
       "type": ["null", "string"]
     },
     "upload_url": {
-      "description": "The URL for uploading assets to the release.",
+      "description": "The URL for uploading assets to the release (synthesized from GraphQL data).",
       "type": ["null", "string"]
     },
     "tarball_url": {
-      "description": "The URL for the tarball file of the release.",
+      "description": "The URL for the tarball file of the release (synthesized from GraphQL data).",
       "type": ["null", "string"]
     },
     "zipball_url": {
-      "description": "The URL for the zipball file of the release.",
+      "description": "The URL for the zipball file of the release (synthesized from GraphQL data).",
       "type": ["null", "string"]
     },
     "id": {
@@ -43,7 +43,7 @@
       "type": ["null", "string"]
     },
     "target_commitish": {
-      "description": "The commit SHA or branch name for the release.",
+      "description": "The commit SHA the release is based on. Note: the GraphQL API returns the commit SHA here, not the branch name returned by the REST API.",
       "type": ["null", "string"]
     },
     "name": {
@@ -72,12 +72,17 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "updated_at": {
+      "description": "The timestamp of when the release was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "author": {
       "description": "The author of the release.",
       "$ref": "user.json"
     },
     "assets": {
-      "description": "List of assets (e.g., downloadable files) associated with the release",
+      "description": "List of assets (e.g., downloadable files) associated with the release. Capped at 100 per release.",
       "type": ["null", "array"],
       "items": {
         "description": "Details of an individual asset",
@@ -92,7 +97,7 @@
             "type": ["null", "string"]
           },
           "id": {
-            "description": "The unique identifier for the asset.",
+            "description": "The unique numeric identifier of the asset (extracted from the GraphQL Node ID).",
             "type": ["null", "integer"]
           },
           "node_id": {
@@ -101,14 +106,6 @@
           },
           "name": {
             "description": "The name of the asset.",
-            "type": ["null", "string"]
-          },
-          "label": {
-            "description": "The label assigned to the asset.",
-            "type": ["null", "string"]
-          },
-          "state": {
-            "description": "The state of the asset.",
             "type": ["null", "string"]
           },
           "content_type": {
@@ -144,17 +141,9 @@
       "description": "The HTML body of the release.",
       "type": ["null", "string"]
     },
-    "body_text": {
-      "description": "The text body of the release.",
-      "type": ["null", "string"]
-    },
     "mentions_count": {
       "description": "The count of mentions in the release.",
       "type": ["null", "integer"]
-    },
-    "discussion_url": {
-      "description": "The URL for the discussion related to the release.",
-      "type": ["null", "string"]
     },
     "reactions": {
       "description": "The reactions associated with the release.",
