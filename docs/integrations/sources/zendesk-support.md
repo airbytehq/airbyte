@@ -13,7 +13,7 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ## Setup guide
 
-## Set up Zendesk Support
+### Set up Zendesk Support
 
 The Zendesk Support source connector supports two authentication methods:
 
@@ -174,7 +174,11 @@ Expand to see details about Zendesk Support connector limitations and troublesho
 
 #### Rate limiting
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
+The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/api-reference/introduction/rate-limits/).
+
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute. This applies to the `tickets`, `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The connector includes a built-in API budget that automatically throttles requests to stay within this limit.
+
+If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
 The Zendesk connector ideally should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
@@ -191,7 +195,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.6 | 2026-02-20 | [73686](https://github.com/airbytehq/airbyte/pull/73686) | Add 504 exponential backoff error handling to `ticket_comments` stream for improved resilience on large Zendesk instances |
+| 5.1.6 | 2026-03-09 | [73686](https://github.com/airbytehq/airbyte/pull/73686) | Add 504 exponential backoff error handling to `ticket_comments` stream and API budget (10 req/min) for all incremental export streams |
 | 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
 | 5.1.4 | 2026-02-24 | [73911](https://github.com/airbytehq/airbyte/pull/73911) | Update dependencies |
 | 5.1.3 | 2026-02-17 | [73508](https://github.com/airbytehq/airbyte/pull/73508) | Update dependencies |
