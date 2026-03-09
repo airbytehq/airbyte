@@ -104,6 +104,7 @@ class AdCreativesFromAds(FBMarketingStream):
         self._fetch_thumbnail_images = fetch_thumbnail_images
         self._seen_creative_ids: Set[str] = set()
         self._creative_fields: Optional[List[str]] = None
+        self._fields = ["id", "creative"]
 
     @property
     def name(self) -> str:
@@ -126,10 +127,6 @@ class AdCreativesFromAds(FBMarketingStream):
 
     def fields(self, **kwargs) -> List[str]:
         """Return fields to request from the ads endpoint - just id and creative reference"""
-        if self._fields:
-            return self._fields
-
-        self._fields = ["id", "creative"]
         return self._fields
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
@@ -156,11 +153,7 @@ class AdCreativesFromAds(FBMarketingStream):
         self._seen_creative_ids = set()
 
         for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            creative_ref = ad_record.get("creative")
-            if not creative_ref:
-                continue
-
-            creative_id = creative_ref.get("id")
+            creative_id = ad_record.get("creative", {}).get("id")
             if not creative_id or creative_id in self._seen_creative_ids:
                 continue
 
