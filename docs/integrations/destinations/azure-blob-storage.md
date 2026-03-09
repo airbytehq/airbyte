@@ -7,13 +7,15 @@ This destination writes data to Azure Blob Storage.
 The Airbyte Azure Blob Storage destination allows you to sync data to Azure Blob Storage. Each stream is written to its own blob under the container,
 as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file_extension>`.
 
-## Sync Mode
+## Supported sync modes
 
-| Feature                        | Support |
-| :----------------------------- | :-----: |
-| Full Refresh Sync              |   ✅    |
-| Incremental - Append Sync      |   ✅    |
-| Incremental - Append + Deduped |   ❌    |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Configuration
 
@@ -130,6 +132,10 @@ With root level flattening, the output JSONL is:
 - Make sure your user has access to Azure from the machine running Airbyte.
   - This depends on your networking setup.
   - The easiest way to verify if Airbyte is able to connect to your Azure blob storage container is via the check connection tool in the UI.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace is used as part of the output path structure.
 
 ## Changelog
 
