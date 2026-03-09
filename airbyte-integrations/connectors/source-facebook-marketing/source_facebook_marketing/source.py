@@ -107,7 +107,10 @@ class SourceFacebookMarketing(AbstractSource):
                 return False, "End date must be equal or after start date."
 
             if config.credentials is not None:
-                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+                api = API(
+                    access_token=config.credentials.access_token,
+                    page_size=config.page_size,
+                )
             else:
                 api = API(access_token=config.access_token, page_size=config.page_size)
 
@@ -282,7 +285,10 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "access_token": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "access_token"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "access_token",
+                                ],
                             },
                         },
                     },
@@ -299,11 +305,17 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "client_id": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_id"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_id",
+                                ],
                             },
                             "client_secret": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_secret"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_secret",
+                                ],
                             },
                         },
                     },
@@ -335,6 +347,7 @@ class SourceFacebookMarketing(AbstractSource):
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
+                time_increment_period=insight.time_increment_period,
                 start_date=insight.start_date or config.start_date or (ab_datetime_now() - timedelta(days=365 * 2)),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
