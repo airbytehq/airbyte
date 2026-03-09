@@ -2,7 +2,7 @@
 
 ## Upgrading to 6.0.0
 
-The deprecated `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` (Flat File Settlement Report) stream has been removed per [Amazon SP-API deprecation](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) effective March 25, 2026.
+The deprecated `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` (Flat File Settlement Report) stream has been removed per [Amazon SP-API deprecation](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) effective October 31, 2026.
 
 A new replacement stream `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` (Flat File V2 Settlement Report) has been added. The V2 report has a different schema — instead of many individual price and fee columns, it uses three general-purpose columns:
 
