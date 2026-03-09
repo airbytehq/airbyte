@@ -8,8 +8,9 @@ object FetchSizeConstants {
     // This size is not enforced. It is only used to calculate a proper
     // fetch size. The max row size the connector can handle is actually
     // limited by the heap size.
-    const val TARGET_BUFFER_SIZE_RATIO: Double = 0.6
+    const val TARGET_BUFFER_SIZE_RATIO: Double = 0.1
     const val MIN_BUFFER_BYTE_SIZE: Long = 250L * 1024L * 1024L // 250 MB
+    const val MAX_BUFFER_BYTE_SIZE: Long = 500L * 1024L * 1024L // 500 MB
 
     // sample size for making the first estimation of the row size
     const val INITIAL_SAMPLE_SIZE: Int = 10
