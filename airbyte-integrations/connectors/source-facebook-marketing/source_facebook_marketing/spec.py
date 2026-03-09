@@ -144,7 +144,7 @@ class InsightConfig(BaseModel):
     start_date: Optional[datetime] = Field(
         title="Start Date",
         description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
-        pattern=DATE_TIME_PATTERN,
+        pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
     )
 
@@ -155,7 +155,7 @@ class InsightConfig(BaseModel):
             "All data generated between the start date and this end date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
-        pattern=DATE_TIME_PATTERN,
+        pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
