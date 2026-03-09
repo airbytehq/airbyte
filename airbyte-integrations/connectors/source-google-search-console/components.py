@@ -246,11 +246,11 @@ class EnhancedSitesErrorHandler(DefaultErrorHandler):
                 "https://search.google.com/search-console" + original_detail
             )
 
-        property_list = ", ".join(p.get("siteUrl", "unknown") for p in available_properties)
+        property_list = "; ".join(p.get("siteUrl", "unknown") for p in available_properties)
         return (
             f"The property was not found in your account. "
             f"Your account has access to these Search Console properties: "
-            f"{property_list}. "
+            f"[{property_list}]. "
             f"Choose the property that matches the site you want to sync and "
             f"enter the exact value into the 'Search Console Properties' field."
             f"{original_detail}"
@@ -266,20 +266,18 @@ class EnhancedSitesErrorHandler(DefaultErrorHandler):
         Returns a list of property dicts on success, an empty list if the account has no
         properties, or None if the request could not be completed.
         """
-        headers = {}
-        if isinstance(response_or_exception, requests.Response) and response_or_exception.request:
-            auth_header = response_or_exception.request.headers.get("Authorization")
-            if auth_header:
-                headers["Authorization"] = auth_header
-            else:
-                return None
-        else:
+        if not (isinstance(response_or_exception, requests.Response) and response_or_exception.request):
+            return None
+        auth_header = response_or_exception.request.headers.get("Authorization")
+        if not auth_header:
             return None
 
+        headers = {"Authorization": auth_header}
         try:
-            # Best-effort diagnostic call outside the CDK pipeline — no retries or rate limiting.
-            # If the token has expired since the original request, this will fail silently (returns None).
             response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
+            if response.status_code == 429:
+                logger.warning("GET /sites rate-limited (429), retrying once")
+                response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
             response.raise_for_status()
             data = response.json()
         except (requests.RequestException, ValueError):

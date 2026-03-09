@@ -1841,6 +1841,7 @@ schemas:
   sites_list:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
+    additionalProperties: true
     properties:
       siteUrl:
         description: >-
