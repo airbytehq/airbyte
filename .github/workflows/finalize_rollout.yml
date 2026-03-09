@@ -55,8 +55,4 @@ jobs:
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        run: |
-          uvx --from airbyte-internal-ops \
-            airbyte-ops registry rc "${ACTION}" \
-            --name "${CONNECTOR_NAME}" \
-            --store coral:prod
+        run: uvx --from airbyte-internal-ops airbyte-ops registry rc "${ACTION}" --name "${CONNECTOR_NAME}" --store coral:prod
