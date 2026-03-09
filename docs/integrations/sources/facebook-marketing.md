@@ -265,8 +265,8 @@ The Facebook Marketing source connector supports the following [sync modes](http
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives, Ad Creatives From Ads, and AdAccount streams)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives, Ad Creatives From Ads, and AdAccount streams)
 
 ## Supported Streams
 
@@ -275,6 +275,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 | activities         | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)                        | ✅                    | ✅                   |
 | ad_account         | [Latest](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts) | ✅                    | ❌                   |
 | ad_creatives       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)                  | ✅                    | ❌                   |
+| ad_creatives_from_ads | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                   | ✅                    | ❌                   |
 | ad_sets            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                  | ✅                    | ✅                   |
 | ads                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                      | ✅                    | ✅                   |
 | ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)                  | ✅                    | ✅                   |
@@ -285,6 +286,10 @@ The Facebook Marketing source connector supports the following [sync modes](http
 | videos             | [Latest](https://developers.facebook.com/docs/marketing-api/reference/video)                              | ✅                    | ✅                   |
 
 **Notes on Streams:**
+
+:::info Ad Creatives From Ads
+The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` for accounts where the direct endpoint fails with a "Please reduce the amount of data" error. It returns the same schema as `ad_creatives` but fetches creatives individually through the Ads endpoint, which avoids the data-size limitation. This stream is slower because it makes one API call per creative, and it only includes creatives associated with ads. See the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section for details.
+:::
 
 :::info Custom Audiences
 The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data`. See our Troubleshooting section for more information.
@@ -432,7 +437,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-03-05 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
+| 5.2.0 | 2026-03-09 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add `ad_creatives_from_ads` stream as alternative to `ad_creatives` |
 | 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
 | 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
 | 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
