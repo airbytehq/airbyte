@@ -441,9 +441,7 @@ jobs:
       - name: Install Ops CLI
         if: matrix.connector
         run: |
-          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uv tool install airbyte-internal-ops
-          uv tool install "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main"
+          uv tool install airbyte-internal-ops
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
