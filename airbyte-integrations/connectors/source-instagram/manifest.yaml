@@ -570,6 +570,17 @@ definitions:
                 error_message: >-
                   Check provided permissions for: {{
                   response['error']['message'] }}
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and response['error']['code'] == 100
+                  and 'since param is not valid' in
+                  response['error']['message'] }}
+                http_codes: []
+                error_message: >-
+                  Ignoring invalid since parameter (likely a future date for
+                  UTC-negative accounts): {{
+                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
