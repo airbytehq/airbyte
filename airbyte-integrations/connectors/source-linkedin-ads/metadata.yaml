@@ -12,6 +12,7 @@ data:
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
   dockerImageTag: 5.6.4
+  canonicalImageTag: 5.6.4-canonical-1.1.0
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   externalDocumentationUrls:
