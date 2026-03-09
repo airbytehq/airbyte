@@ -443,7 +443,7 @@ jobs:
         run: |
           # TK-TODO: Revert to GA version before merging: # IGNORE:TK
           #   uv tool install airbyte-internal-ops
-          uv tool install "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@devin/1772263418-compile-with-secrets-mask"
+          uv tool install "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main"
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
