@@ -2706,8 +2706,8 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
-  max_concurrency: 10
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 7
 
 spec:
   type: Spec
@@ -2754,8 +2754,8 @@ spec:
         title: Number of Concurrent Workers
         description: Number of concurrent threads for syncing. Higher values can speed up syncs. Adjust based on your API tier.
         minimum: 2
-        maximum: 10
-        default: 5
+        maximum: 7
+        default: 2
         order: 3
       credentials:
         type: object

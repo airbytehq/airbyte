@@ -89,7 +89,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 The connector includes built-in rate limiting (`HTTPAPIBudget`) to proactively manage these limits and avoid HTTP 429 errors.
 
-You can configure the number of concurrent workers using the `num_workers` parameter (default: 5, maximum: 10). Higher values may improve sync speed but increase API usage.
+You can configure the number of concurrent workers using the `num_workers` parameter (default: 2, maximum: 7). Higher values may improve sync speed but increase API usage.
 
 ## Changelog
 
