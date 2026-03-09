@@ -786,18 +786,10 @@ schemas:
         type:
           - "null"
           - boolean
-      archived:
-        type:
-          - "null"
-          - boolean
       category_key:
         type:
           - "null"
           - string
-      company:
-        type:
-          - "null"
-          - object
       created_at:
         type:
           - "null"
