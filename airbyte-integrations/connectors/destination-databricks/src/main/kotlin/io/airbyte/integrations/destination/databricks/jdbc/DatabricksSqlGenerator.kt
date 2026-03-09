@@ -31,6 +31,7 @@ import java.util.Optional
 class DatabricksSqlGenerator(
     private val namingTransformer: NamingConventionTransformer,
     private val unityCatalogName: String,
+    private val enableLiquidClustering: Boolean = false,
 ) : SqlGenerator {
 
     private val cdcDeletedColumn = buildColumnId(CDC_DELETED_COLUMN_NAME)
@@ -113,6 +114,7 @@ class DatabricksSqlGenerator(
             } else {
                 "CREATE TABLE IF NOT EXISTS"
             }
+        val clusterByClause = if (enableLiquidClustering) " CLUSTER BY AUTO" else ""
         return Sql.of(
             """
                 $createStatement $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName}$suffix (
@@ -122,7 +124,7 @@ class DatabricksSqlGenerator(
                     $AB_DATA STRING,
                     $AB_META STRING,
                     $AB_GENERATION BIGINT
-                )
+                )$clusterByClause
             """.trimIndent(),
         )
     }
@@ -157,11 +159,12 @@ class DatabricksSqlGenerator(
                 .toList()
                 .joinToString(", \n")
         val finalTableIdentifier = stream.id.finalName + namingTransformer.applyDefaultCase(suffix)
+        val clusterByClause = if (enableLiquidClustering) " CLUSTER BY AUTO" else ""
         return Sql.of(
             """
             CREATE ${if (force) "OR REPLACE" else ""} TABLE $unityCatalogName.`${stream.id.finalNamespace}`.`$finalTableIdentifier`(
                 $columnNameTypeMapping
-            )
+            )$clusterByClause
         """.trimIndent(),
         )
     }
