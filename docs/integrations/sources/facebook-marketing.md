@@ -220,7 +220,16 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment">
-   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
+   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day. Cannot be used together with **Time Increment Period**.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.time_increment_period">
+   7a. (Optional) For **Time Increment Period**, select a calendar-aligned aggregation period instead of a fixed number of days. This produces consistently aligned time buckets regardless of the start date, making cross-client comparison easier. Available options:
+      - `daily` — equivalent to Time Increment = 1 (1-day buckets).
+      - `weekly` — aligns to Monday-through-Sunday calendar weeks.
+      - `monthly` — aligns to calendar month boundaries (1st to last day of each month). This is natively supported by the Facebook API.
+
+   Cannot be used together with **Time Increment**. When switching between Time Increment and Time Increment Period (or vice versa), a full re-sync will be triggered.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.start_date">
