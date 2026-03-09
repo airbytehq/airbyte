@@ -269,6 +269,21 @@ definitions:
       path: "help_center/categories"
       primary_key: "id"
 
+  deleted_tickets_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deleted_tickets"
+    $parameters:
+      name: "deleted_tickets"
+      path: "deleted_tickets"
+      primary_key: "id"
+
   sections_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -1261,6 +1276,7 @@ definitions:
 
 streams:
   # Full refresh streams
+  - $ref: "#/definitions/deleted_tickets_stream"
   - $ref: "#/definitions/account_attributes_stream"
   - $ref: "#/definitions/attribute_definitions_stream"
   - $ref: "#/definitions/brands_stream"
