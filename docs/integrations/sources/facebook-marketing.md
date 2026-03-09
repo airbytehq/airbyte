@@ -284,6 +284,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 | activities         | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)                        | ✅                    | ✅                   |
 | ad_account         | [Latest](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts) | ✅                    | ❌                   |
 | ad_creatives       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)                  | ✅                    | ❌                   |
+| ad_creatives_from_ads | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                   | ✅                    | ❌                   |
 | ad_sets            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                  | ✅                    | ✅                   |
 | ads                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                      | ✅                    | ✅                   |
 | ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)                  | ✅                    | ✅                   |
@@ -297,6 +298,10 @@ The Facebook Marketing source connector supports the following [sync modes](http
 
 :::info Custom Audiences
 The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data`. See our Troubleshooting section for more information.
+:::
+
+:::info Ad Creatives From Ads
+The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema is identical to `ad_creatives`, but this stream only returns creatives associated with ads — orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
 :::
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
@@ -442,7 +447,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
-| 5.2.0 | 2026-03-05 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
+| 5.2.0 | 2026-03-09 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
 | 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
 | 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
 | 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
