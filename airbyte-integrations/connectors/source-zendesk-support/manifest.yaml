@@ -1094,7 +1094,7 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         path: "search/export"
         request_parameters:
-          query: "updated_at>{{ stream_interval['start_time'] }} updated_at<{{ stream_interval['end_time'] }}"
+          query: "updated_at>{{ now_utc().utcfromtimestamp(stream_interval['start_time']|int).strftime('%Y-%m-%dT%H:%M:%SZ') }} updated_at<{{ now_utc().utcfromtimestamp(stream_interval['end_time']|int).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           "filter[type]": "ticket"
       paginator:
         $ref: "#/definitions/export_search_paginator"
