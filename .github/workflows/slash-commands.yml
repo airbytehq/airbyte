@@ -64,7 +64,6 @@ jobs:
             ai-release-watch
             ai-review
             approve-regression-tests
-            bump-bulk-cdk-version
             bump-progressive-rollout-version
             bump-version
             build-connector-images

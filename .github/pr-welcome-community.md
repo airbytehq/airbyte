@@ -35,6 +35,7 @@ As needed or by request, Airbyte Maintainers can execute the following slash com
 
 ### Helpful Resources
 
+- _Maintainers: [AI-SDLC Docs](https://github.com/airbytehq/ai-skills/blob/main/docs/hydra/) (internal link)_
 - [PR Guidelines](https://docs.airbyte.com/contributing-to-airbyte): Check our guidelines for contributions.
 - [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes): Guide to breaking changes, migration guides, and upgrade deadlines.
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development): Learn how to set up your environment and develop connectors locally.

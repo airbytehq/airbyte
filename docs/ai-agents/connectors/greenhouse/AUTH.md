@@ -1,4 +1,4 @@
-# Greenhouse authentication and configuration
+# Greenhouse authentication
 
 This page documents the authentication and configuration options for the Greenhouse agent connector.
 
@@ -56,11 +56,11 @@ Example request:
 
 
 ```bash
-curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
-  -H "Authorization: Bearer <SCOPED_TOKEN>" \
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
+    "customer_name": "<CUSTOMER_NAME>",
     "connector_type": "Greenhouse",
     "name": "My Greenhouse Connector",
     "credentials": {
@@ -72,16 +72,20 @@ curl -X POST "https://api.airbyte.ai/v1/integrations/connectors" \
 #### Execution
 
 After creating the connector, execute operations using either the Python SDK or API.
+If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
 
 **Python SDK**
 
 ```python
-from airbyte_agent_greenhouse import GreenhouseConnector
+from airbyte_agent_greenhouse import GreenhouseConnector, AirbyteAuthConfig
 
 connector = GreenhouseConnector(
-    external_user_id="<your_external_user_id>",
-    airbyte_client_id="<your-client-id>",
-    airbyte_client_secret="<your-client-secret>"
+    auth_config=AirbyteAuthConfig(
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
+        airbyte_client_id="<your-client-id>",
+        airbyte_client_secret="<your-client-secret>"
+    )
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
@@ -93,8 +97,9 @@ async def greenhouse_execute(entity: str, action: str, params: dict | None = Non
 **API**
 
 ```bash
-curl -X POST 'https://api.airbyte.ai/api/v1/connectors/sources/<connector_id>/execute' \
-  -H 'Authorization: Bearer <SCOPED_TOKEN>' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
+  -H 'Authorization: Bearer <YOUR_BEARER_TOKEN>' \
+  -H 'X-Organization-Id: <YOUR_ORGANIZATION_ID>' \
   -H 'Content-Type: application/json' \
   -d '{"entity": "<entity>", "action": "<action>", "params": {}}'
 ```

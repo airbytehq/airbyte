@@ -8,8 +8,8 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
-import io.airbyte.cdk.load.dataflow.config.model.JsonConverterConfig
 import io.airbyte.cdk.load.dataflow.config.model.LifecycleParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -33,8 +33,8 @@ class S3DataLakeBeanFactory {
 
     /** Iceberg has specific timestamp requirements */
     @Singleton
-    fun jsonConvertConfig() =
-        JsonConverterConfig(
+    fun mediumConverterConfig() =
+        MediumConverterConfig(
             extractedAtAsTimestampWithTimezone = false,
         )
 
@@ -60,7 +60,7 @@ class S3DataLakeBeanFactory {
     @Singleton
     @Requires(notEnv = [Environment.TEST])
     fun dataFlowSocketConfig(catalog: DestinationCatalog): DataFlowSocketConfig {
-        val hasDedupStreams = catalog.streams.any { it.importType is Dedupe }
+        val hasDedupStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
         return if (hasDedupStreams) {
             log.info { "Dedup streams detected, limiting to 1 socket for data consistency" }
             object : DataFlowSocketConfig {
