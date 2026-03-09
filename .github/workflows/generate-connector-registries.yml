@@ -41,4 +41,4 @@ jobs:
         shell: bash
         run: >
           uvx --from airbyte-internal-ops
-            airbyte-ops registry store compile --store coral:prod --with-secrets-mask
+          airbyte-ops registry store compile --store coral:prod --with-secrets-mask
