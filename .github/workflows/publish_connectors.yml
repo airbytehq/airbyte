@@ -519,8 +519,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
-  notify-failure-pager-duty:
-    name: "Notify PagerDuty on Publish Failures"
+  notify-failure-incident-io:
+    name: "Notify Incident.io on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
       - publish_connector_registry_entries
@@ -532,12 +532,12 @@ jobs:
         with:
           ref: ${{ inputs.gitref || '' }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
-      - name: Notify PagerDuty
-        id: pager-duty
-        uses: ./.github/actions/send-pager-duty-event
+      - name: Notify Incident.io
+        id: incident-io
+        uses: ./.github/actions/send-incident-io-alert
         with:
-          # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
-          integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
-          summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
-          severity: "critical"
-          source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          alert_source_config_id: ${{ secrets.INCIDENT_IO_PUBLISH_FAILURES_ALERT_SOURCE_CONFIG_ID }}
+          alert_source_token: ${{ secrets.INCIDENT_IO_PUBLISH_FAILURES_ALERT_SOURCE_TOKEN }}
+          title: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
+          source_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          deduplication_key: "publish-failure-${{ github.run_id }}"
