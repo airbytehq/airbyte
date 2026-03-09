@@ -26,6 +26,7 @@ from source_facebook_marketing.streams import (
     Activities,
     AdAccount,
     AdCreatives,
+    AdCreativesFromAds,
     Ads,
     AdSets,
     AdsInsights,
@@ -182,6 +183,13 @@ class SourceFacebookMarketing(AbstractSource):
                 api=api,
                 account_ids=config.account_ids,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
+                page_size=config.page_size,
+            ),
+            AdCreativesFromAds(
+                api=api,
+                account_ids=config.account_ids,
+                fetch_thumbnail_images=config.fetch_thumbnail_images,
+                filter_statuses=config.ad_statuses,
                 page_size=config.page_size,
             ),
             AdsInsights(
