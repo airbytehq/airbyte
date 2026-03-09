@@ -40,8 +40,8 @@ jobs:
         shell: bash
         run: >
           uvx --from airbyte-internal-ops
-            airbyte-ops local connector list
-            --repo-path "${{ github.workspace }}"
-            --unpublished
-            --store coral:prod
-            --assert-none
+          airbyte-ops local connector list
+          --repo-path "${{ github.workspace }}"
+          --unpublished
+          --store coral:prod
+          --assert-none
