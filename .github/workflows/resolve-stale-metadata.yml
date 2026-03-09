@@ -39,26 +39,12 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
         # TK-TODO: Revert to GA version of airbyte-internal-ops before merging. # IGNORE:TK
+        # TODO: GitHub Step Summary output should be handled internally by the ops CLI.
+        #   See: https://github.com/airbytehq/airbyte-ops-mcp/issues/473
         run: |
-          set +e  # Don't exit on error so we can capture the exit code
           uvx --from "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main" \
             airbyte-ops local connector list \
             --repo-path "${{ github.workspace }}" \
             --unpublished \
             --store coral:prod \
-            --assert-none \
-            2>&1 | tee /tmp/unpublished-report.txt
-          EXIT_CODE=${PIPESTATUS[0]}
-
-          # Write results to GitHub Step Summary for visibility
-          echo '## Unpublished Connector Versions Check' >> $GITHUB_STEP_SUMMARY
-          if [ "$EXIT_CODE" -ne 0 ]; then
-            echo '⚠️ **Unpublished connector versions detected:**' >> $GITHUB_STEP_SUMMARY
-          else
-            echo '✅ All connector versions are published.' >> $GITHUB_STEP_SUMMARY
-          fi
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat /tmp/unpublished-report.txt >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
-          exit $EXIT_CODE
+            --assert-none
