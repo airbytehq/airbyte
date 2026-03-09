@@ -1,5 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import fnmatch
 import logging
 from copy import deepcopy
 from dataclasses import dataclass
@@ -42,6 +43,11 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
 LOGGER = logging.getLogger("airbyte_logger")
+
+
+def matches_any_pattern(name: str, patterns: List[str]) -> bool:
+    """Return True if `name` matches any pattern in `patterns`. Supports fnmatch wildcards (e.g. 'acme-*')."""
+    return any(fnmatch.fnmatch(name, pattern) for pattern in patterns)
 
 
 class JoinChannelsStream(HttpStream):
@@ -102,6 +108,38 @@ class ChannelsRetriever(SimpleRetriever):
         super().__post_init__(parameters)
         self.record_selector.transformations = []
 
+    def is_channel_included(self, config: Mapping[str, Any], record: Record) -> bool:
+        """
+        Returns True if the channel should be included in the sync based on channel type toggles and name filters.
+
+        Channel type toggles (all default to True except include_private_channels):
+        - include_shared_channels: externally shared channels (is_ext_shared=True)
+        - include_public_channels: standard public channels (not externally shared)
+        - include_private_channels: private channels
+
+        Name filters (both support wildcard patterns, e.g. 'acme-*'):
+        - channel_exclude_filter (blacklist) takes precedence over channel_filter (whitelist)
+        """
+        is_ext_shared = record.get("is_ext_shared", False)
+        is_private = record.get("is_private", False)
+
+        if is_ext_shared and not config.get("include_shared_channels", True):
+            return False
+        if not is_ext_shared and not is_private and not config.get("include_public_channels", True):
+            return False
+
+        channel_name = record.get("name", "")
+
+        exclude_filter = config.get("channel_exclude_filter") or []
+        if exclude_filter and matches_any_pattern(channel_name, exclude_filter):
+            return False
+
+        include_filter = config.get("channel_filter") or []
+        if include_filter:
+            return matches_any_pattern(channel_name, include_filter)
+
+        return True
+
     def should_join_to_channel(self, config: Mapping[str, Any], record: Record) -> bool:
         """
         The `is_member` property indicates whether the API Bot is already assigned / joined to the channel.
@@ -143,6 +181,9 @@ class ChannelsRetriever(SimpleRetriever):
         )
 
         for stream_data in self._read_pages(record_generator, _slice):
+            if not self.is_channel_included(self.config, stream_data):
+                continue
+
             if self.should_join_to_channel(self.config, stream_data):
                 self.join_channel(self.config, stream_data)
 
