@@ -243,6 +243,16 @@ To authenticate with Apache Polaris, follow these steps.
 
 6. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your S3 bucket.
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+
 ## Output schema
 
 ### How Airbyte generates the Iceberg schema
@@ -367,6 +377,9 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 | 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | 2            | True          |
 | 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | 1            | False         |
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
