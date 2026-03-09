@@ -398,8 +398,8 @@ jobs:
         run: |
           echo "Generating registry artifacts for ${{ matrix.connector }}"
           DOCKER_IMAGE="${{ steps.connector-metadata.outputs.docker-repository }}:${{ steps.connector-metadata.outputs.docker-image-tag }}"
-          uvx --from airbyte-internal-ops \
-            airbyte-ops registry connector-version artifacts generate \
+          uvx airbyte-internal-ops \
+            registry connector-version artifacts generate \
             --metadata-file "${{ env.CONNECTOR_DIR }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
             --output-dir ./registry-artifacts \
@@ -420,8 +420,8 @@ jobs:
         shell: bash
         run: |
           echo "Publishing registry artifacts for ${{ matrix.connector }}"
-          uvx --from airbyte-internal-ops \
-            airbyte-ops registry connector-version artifacts publish \
+          uvx airbyte-internal-ops \
+            registry connector-version artifacts publish \
             --name "${{ matrix.connector }}" \
             --version "${{ steps.connector-metadata.outputs.docker-image-tag }}" \
             --artifacts-dir ./registry-artifacts \
