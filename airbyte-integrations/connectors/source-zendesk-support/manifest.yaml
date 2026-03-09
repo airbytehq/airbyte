@@ -1070,21 +1070,17 @@ definitions:
         - "%s"
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S%z"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_field: "generated_timestamp"
+      datetime_format: "%s"
+      cursor_field: "updated_at"
       start_datetime:
         datetime: "{{ config.get('start_date') or day_delta(-730, '%Y-%m-%dT%H:%M:%SZ') }}"
       end_datetime:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
       step: "P30D"
       cursor_granularity: "PT1S"
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - "generated_timestamp"
-            value: "{{ format_datetime(record['updated_at'], '%s') }}"
-            value_type: "integer"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TicketsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1182,7 +1178,7 @@ definitions:
               parent_key: "id"
               partition_field: "ticket_id"
               extra_fields:
-                - ["generated_timestamp"]
+                - ["updated_at"]
               stream:
                 $ref: "#/definitions/tickets_stream"
               incremental_dependency: true
@@ -1191,7 +1187,7 @@ definitions:
           fields:
             - path:
                 - "_ab_updated_at"
-              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'] }}"
+              value: "{{ format_datetime(record['updated_at'], '%s') if 'updated_at' in record else format_datetime(stream_slice.extra_fields['updated_at'], '%s') }}"
               value_type: "integer"
 
   topics_stream:

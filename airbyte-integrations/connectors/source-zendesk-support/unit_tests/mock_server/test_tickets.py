@@ -97,12 +97,12 @@ class TestTicketsStreamIncremental(TestCase):
     @HttpMocker()
     def test_given_no_state_when_read_tickets_then_return_records_and_emit_state(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
-        cursor_value = 1723660897
+        record_updated_at = "2024-08-14T20:21:37Z"
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketsResponseBuilder.tickets_response()
-            .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), cursor_value))
+            .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("updated_at"), record_updated_at))
             .build(),
         )
 
@@ -111,23 +111,23 @@ class TestTicketsStreamIncremental(TestCase):
         assert len(output.records) == 1
         assert output.most_recent_state is not None
         assert output.most_recent_state.stream_descriptor.name == "tickets"
-        assert "generated_timestamp" in output.most_recent_state.stream_state.__dict__
+        assert "updated_at" in output.most_recent_state.stream_state.__dict__
 
     @HttpMocker()
     def test_given_state_when_read_tickets_then_use_state_cursor(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
         # Use a recent state cursor (within 30 days of NOW) to ensure 1 partition
         state_cursor_value = _NOW.subtract(timedelta(days=5))
-        new_cursor_value = int(state_cursor_value.add(timedelta(days=1)).timestamp())
+        new_updated_at = state_cursor_value.add(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         http_mocker.get(
             ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_any_query_params().build(),
             TicketsResponseBuilder.tickets_response()
-            .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("generated_timestamp"), new_cursor_value))
+            .with_record(TicketsRecordBuilder.tickets_record().with_field(FieldPath("updated_at"), new_updated_at))
             .build(),
         )
 
-        state = StateBuilder().with_stream_state("tickets", {"generated_timestamp": str(int(state_cursor_value.timestamp()))}).build()
+        state = StateBuilder().with_stream_state("tickets", {"updated_at": str(int(state_cursor_value.timestamp()))}).build()
 
         output = read_stream("tickets", SyncMode.incremental, self._config, state)
 
