@@ -24,13 +24,15 @@ All streams will be output into a corpus in Vectara whose name must be specified
 
 Note that there are no restrictions in naming the Vectara corpus and if a corpus with the specified name is not found, a new corpus with that name will be created. Also, if multiple corpora exists with the same name, an error will be returned as Airbyte will be unable to determine the preferred corpus.
 
-### Features
+## Supported sync modes
 
-| Feature                   | Supported? |
-| :------------------------ | :--------- |
-| Full Refresh Sync         | Yes        |
-| Incremental - Append Sync | Yes        |
-| Incremental - Dedupe Sync | Yes        |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting started
 
@@ -60,6 +62,10 @@ In addition, in the connector UI you define two set of fields for this connector
 - `text_fields` define the source fields which are turned into text in the Vectara side and are used for query or summarization.
 - `title_field` define the source field which will be used as a title of the document on the Vectara side
 - `metadata_fields` define the source fields which will be added to each document as meta-data.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

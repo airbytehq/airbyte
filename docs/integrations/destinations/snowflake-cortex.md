@@ -24,16 +24,17 @@ You'll need the following information to configure the destination:
 - **Snowflake Password** - The password for your Snowflake account
 - **Snowflake Database** - The database name in Snowflake to load data into
 - **Snowflake Warehouse** - The warehouse name in Snowflake to use
-- **Snowflake Role** - The role name in Snowflake to use. 
+- **Snowflake Role** - The role name in Snowflake to use.
 
+## Supported sync modes
 
-## Features
-
-| Feature                        | Supported?           | Notes |
-| :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | Yes                  |       |
-| Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Data type mapping
 
@@ -76,6 +77,9 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 - page_content (string) - the text content of the chunk
 - embedding (vector) - the embedding of the chunk, stored as a list of floats
 
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

@@ -109,9 +109,13 @@ concurrent rate limit, making it easier to start many queries at once.
 The BigQuery destination connector supports the following
 [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh Sync
-- Incremental - Append Sync
-- Incremental - Append + Deduped
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Output schema
 
@@ -202,6 +206,10 @@ tutorials:
 - [Load data from Facebook Ads to BigQuery](https://airbyte.com/tutorials/facebook-ads-to-bigquery)
 - [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 - [Partition and cluster BigQuery tables with Airbyte and dbt](https://airbyte.com/tutorials/bigquery-partition-cluster)
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a BigQuery dataset.
 
 ## Changelog
 

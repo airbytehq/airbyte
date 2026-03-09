@@ -69,7 +69,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
+    "customer_name": "<CUSTOMER_NAME>",
     "connector_type": "Gmail",
     "name": "My Gmail Connector",
     "credentials": {
@@ -87,15 +87,15 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 
 #### Bring your own OAuth flow
-To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Implement your own OAuth flow](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-server-side-oauth).
+To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own).
 
-**Step 1: Initiate the OAuth flow**
+##### Step 1: Initiate the OAuth flow
 
 Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
+| `customer_name` | `string` | Yes | Your unique identifier for the customer |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Gmail") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -106,40 +106,23 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
+    "customer_name": "<CUSTOMER_NAME>",
     "connector_type": "Gmail",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
 ```
 
-Redirect your user to the `consent_url` from the response. After they authorize, they'll be redirected back to your app with a `secret_id` query parameter.
+Redirect your user to the `consent_url` from the response.
 
-**Step 2: Create a connector with the secret ID**
+##### Step 2: Handle the callback
 
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `external_user_id` | `string` | Yes | Your unique identifier for the end user |
-| `connector_type` | `string` | Yes | The connector type (e.g., "Gmail") |
-| `name` | `string` | Yes | A name for this connector instance |
-| `server_side_oauth_secret_id` | `string` | Yes | The secret_id from the OAuth callback |
-| `replication_config.include_spam_and_trash` | `bool` | No | Include messages from SPAM and TRASH in the results. Defaults to false. |
+After the user authorizes access, Airbyte automatically creates the connector and redirects them to your `redirect_url` with a `connector_id` query parameter. You don't need to make a separate API call to create the connector.
 
-Example request:
-
-```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
-  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "external_user_id": "<EXTERNAL_USER_ID>",
-    "connector_type": "Gmail",
-    "name": "My Gmail Connector",
-    "server_side_oauth_secret_id": "<secret_id_from_callback>",
-    "replication_config": {
-      "include_spam_and_trash": "<Include messages from SPAM and TRASH in the results. Defaults to false.>"
-    }
-  }'
+```text
+https://yourapp.com/oauth/callback?connector_id=<connector_id>
 ```
+
+Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
 
 #### Token
 This authentication method isn't available for this connector.
@@ -147,6 +130,7 @@ This authentication method isn't available for this connector.
 #### Execution
 
 After creating the connector, execute operations using either the Python SDK or API.
+If your Airbyte client can access multiple organizations, include `organization_id` in `AirbyteAuthConfig` and `X-Organization-Id` in raw API calls.
 
 **Python SDK**
 
@@ -155,7 +139,8 @@ from airbyte_agent_gmail import GmailConnector, AirbyteAuthConfig
 
 connector = GmailConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -172,6 +157,7 @@ async def gmail_execute(entity: str, action: str, params: dict | None = None):
 ```bash
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   -H 'Authorization: Bearer <YOUR_BEARER_TOKEN>' \
+  -H 'X-Organization-Id: <YOUR_ORGANIZATION_ID>' \
   -H 'Content-Type: application/json' \
   -d '{"entity": "<entity>", "action": "<action>", "params": {}}'
 ```
