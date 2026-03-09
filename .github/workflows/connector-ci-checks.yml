@@ -441,15 +441,13 @@ jobs:
       - name: Install Ops CLI
         if: matrix.connector
         run: |
-          # TK-TODO: Revert to GA version before merging: # IGNORE:TK
-          #   uv tool install airbyte-internal-ops
-          uv tool install "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp@main"
+          uv tool install airbyte-internal-ops
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
         run: |
           connector_name=${{ matrix.connector }}
-          airbyte-ops local connector qa --name ${connector_name%-strict-encrypt}
+          airbyte-internal-ops local connector qa --name ${connector_name%-strict-encrypt}
 
       - name: Detect Python CDK Prerelease Versions
         if: matrix.connector
@@ -479,7 +477,7 @@ jobs:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
           DOCKER_REPO: airbyte/${{ matrix.connector }}
         run: |
-          airbyte-ops registry connector-version artifacts generate \
+          airbyte-internal-ops registry connector-version artifacts generate \
             --metadata-file "${CONNECTOR_DIR}/metadata.yaml" \
             --docker-image "${DOCKER_REPO}:${{ steps.connector-metadata.outputs.connector-version }}" \
             --output-dir ./registry-artifacts \
