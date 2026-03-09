@@ -376,6 +376,12 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
 
+### "Please reduce the amount of data" error on the Ad Creatives stream
+
+If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation. The output schema is identical to `ad_creatives`.
+
+Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
+
 ### Missing data for 7-day and 28-day view-through attribution windows
 
 Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. In v4.1.3, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. In v5.0.0, the `7d_view` and `28d_view` columns were also removed from stream schemas. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
@@ -426,6 +432,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0 | 2026-03-05 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
 | 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
 | 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
 | 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
