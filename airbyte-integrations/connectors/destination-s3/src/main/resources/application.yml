@@ -1,0 +1,113 @@
+---
+airbyte:
+  connector:
+    exception-classifiers:
+      regex:
+        # The following rules are for the RegexExceptionClassifier which are applied
+        # sequentially on a Throwable's message and its nested messages by cause.
+        #
+        # See: https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/output/RegexExceptionClassifier.kt
+
+        rules:
+          ## REGEX RULE TEMPLATE:
+          # pattern: Required; regex pattern, c.f. https://www.freeformatter.com/java-regex-tester.html.
+          #          Note that regex patterns are not case-sensitive and are multiline.
+          # input-example: Required, string matching regex pattern.
+          # error: Required, one of (transient|config|system).
+          # group: Optional, string prefixing user-facing error message.
+          # output: Optional, user-facing error message; when not set, the exception message is used instead.
+          # reference-links: Optional, list of URLs appended to user-facing message after a newline.
+
+          - pattern: is not authorized to perform
+            input-example: >-
+              User: arn:aws:iam::930382660498:user/airbyte-s3-writer is not authorized
+              to perform: s3:PutObject because no identity-based policy allows the
+              s3:PutObject action
+            error: config
+            group: AWS Authorization Error
+            output: >-
+              The configured AWS credentials lack a required S3 permission on the target bucket.
+            reference-links:
+              - https://docs.aws.amazon.com/IAM/latest/UserGuide/troubleshoot_access-denied.html
+
+          - pattern: (?i)Access Denied
+            input-example: >-
+              S3Exception: Access Denied (Service: S3, Status Code: 403)
+            error: config
+            group: AWS Access Denied
+            output: >-
+              Access to the S3 bucket was denied. The configured AWS credentials lack the required permissions.
+            reference-links:
+              - https://docs.aws.amazon.com/AmazonS3/latest/userguide/troubleshoot-403-errors.html
+
+          - pattern: (?i)The specified bucket does not exist
+            input-example: >-
+              S3Exception: The specified bucket does not exist (Service: S3, Status Code: 404)
+            error: config
+            group: S3 Bucket Not Found
+            output: >-
+              The specified S3 bucket does not exist. Verify the bucket name and region in the connector configuration.
+            reference-links:
+              - https://docs.aws.amazon.com/AmazonS3/latest/userguide/troubleshoot-404-errors.html
+
+          - pattern: (?i)invalid access key id
+            input-example: >-
+              S3Exception: The AWS Access Key Id you provided does not exist in our records.
+              (Service: S3, Status Code: 403, Error Code: InvalidAccessKeyId)
+            error: config
+            group: AWS Invalid Credentials
+            output: >-
+              The configured AWS Access Key ID is not valid.
+            reference-links:
+              - https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+
+          - pattern: (?i)signature.*does not match
+            input-example: >-
+              S3Exception: The request signature we calculated does not match the signature
+              you provided. Check your key and signing method.
+            error: config
+            group: AWS Signature Mismatch
+            output: >-
+              The AWS request signature does not match. The configured AWS Secret Access Key may be incorrect.
+            reference-links:
+              - https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+
+          - pattern: (?i)expired token
+            input-example: >-
+              S3Exception: The provided token has expired. (Service: S3, Status Code: 403,
+              Error Code: ExpiredToken)
+            error: config
+            group: AWS Token Expired
+            output: >-
+              The configured AWS security token has expired.
+            reference-links:
+              - https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html
+
+          - pattern: (?i)(?:request has expired|request timeout|timed? ?out)
+            input-example: >-
+              S3Exception: Your socket connection to the server was not read from or written
+              to within the timeout period. Request timeout.
+            error: transient
+            group: S3 Request Timeout
+            output: >-
+              The S3 request timed out. This is typically a transient issue.
+
+          - pattern: (?i)(?:slow down|reduce your request rate)
+            input-example: >-
+              S3Exception: Please reduce your request rate. (Service: S3, Status Code: 503,
+              Error Code: SlowDown)
+            error: transient
+            group: S3 Rate Limit
+            output: >-
+              S3 request rate limit exceeded.
+            reference-links:
+              - https://docs.aws.amazon.com/AmazonS3/latest/userguide/optimizing-performance.html
+
+          - pattern: (?i)(?:internal error|internal server error|service unavailable)
+            input-example: >-
+              S3Exception: We encountered an internal error. Please try again.
+              (Service: S3, Status Code: 500, Error Code: InternalError)
+            error: transient
+            group: S3 Service Error
+            output: >-
+              The S3 service returned an internal error. This is typically a transient issue.
