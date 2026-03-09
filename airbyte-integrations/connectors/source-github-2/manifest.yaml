@@ -227,14 +227,16 @@ streams:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - id
+          - node_id
         properties:
           type:
             type:
               - string
               - "null"
           id:
-            type: number
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
@@ -244,9 +246,7 @@ streams:
               - string
               - "null"
           node_id:
-            type:
-              - string
-              - "null"
+            type: string
           html_url:
             type:
               - string
@@ -325,15 +325,14 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - name
-          - updated_at
+          - airbyte_unique_id
         properties:
           description:
             type:
@@ -352,7 +351,9 @@ streams:
               - boolean
               - "null"
           name:
-            type: string
+            type:
+              - string
+              - "null"
           size:
             type:
               - number
@@ -596,7 +597,9 @@ streams:
               - string
               - "null"
           updated_at:
-            type: string
+            type:
+              - string
+              - "null"
           visibility:
             type:
               - string
@@ -750,6 +753,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
           collaborators_url:
             type:
               - string
@@ -783,6 +788,13 @@ streams:
               - string
               - "null"
         additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ record['node_id'] | hash }}"
   - type: DeclarativeStream
     name: assignees
     retriever:
@@ -1012,15 +1024,14 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - repository
-          - login
+          - airbyte_unique_id
         properties:
           type:
             type:
@@ -1035,7 +1046,9 @@ streams:
               - string
               - "null"
           login:
-            type: string
+            type:
+              - string
+              - "null"
           node_id:
             type:
               - string
@@ -1065,7 +1078,9 @@ streams:
               - string
               - "null"
           repository:
-            type: string
+            type:
+              - string
+              - "null"
           site_admin:
             type:
               - boolean
@@ -1115,6 +1130,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
           organizations_url:
             type:
               - string
@@ -1135,6 +1152,10 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.repo }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
   - type: DeclarativeStream
     name: contributor_activity
     retriever:
@@ -1332,18 +1353,20 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - id
+          - airbyte_unique_id
           - updated_at
         properties:
           id:
-            type: number
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
@@ -1449,39 +1472,6 @@ streams:
             type:
               - array
               - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                description:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                color:
-                  type:
-                    - string
-                    - "null"
-                default:
-                  type:
-                    - boolean
-                    - "null"
-                node_id:
-                  type:
-                    - string
-                    - "null"
           locked:
             type:
               - boolean
@@ -1494,87 +1484,6 @@ streams:
             type:
               - string
               - "null"
-          assignee:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              login:
-                type:
-                  - string
-                  - "null"
-              node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
-                type:
-                  - string
-                  - "null"
-              avatar_url:
-                type:
-                  - string
-                  - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
-              gravatar_id:
-                type:
-                  - string
-                  - "null"
-              starred_url:
-                type:
-                  - string
-                  - "null"
-              followers_url:
-                type:
-                  - string
-                  - "null"
-              following_url:
-                type:
-                  - string
-                  - "null"
-              user_view_type:
-                type:
-                  - string
-                  - "null"
-              organizations_url:
-                type:
-                  - string
-                  - "null"
-              subscriptions_url:
-                type:
-                  - string
-                  - "null"
-              received_events_url:
-                type:
-                  - string
-                  - "null"
           comments:
             type:
               - number
@@ -1587,168 +1496,6 @@ streams:
             type:
               - array
               - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-                login:
-                  type:
-                    - string
-                    - "null"
-                node_id:
-                  type:
-                    - string
-                    - "null"
-                html_url:
-                  type:
-                    - string
-                    - "null"
-                gists_url:
-                  type:
-                    - string
-                    - "null"
-                repos_url:
-                  type:
-                    - string
-                    - "null"
-                avatar_url:
-                  type:
-                    - string
-                    - "null"
-                events_url:
-                  type:
-                    - string
-                    - "null"
-                site_admin:
-                  type:
-                    - boolean
-                    - "null"
-                gravatar_id:
-                  type:
-                    - string
-                    - "null"
-                starred_url:
-                  type:
-                    - string
-                    - "null"
-                followers_url:
-                  type:
-                    - string
-                    - "null"
-                following_url:
-                  type:
-                    - string
-                    - "null"
-                user_view_type:
-                  type:
-                    - string
-                    - "null"
-                organizations_url:
-                  type:
-                    - string
-                    - "null"
-                subscriptions_url:
-                  type:
-                    - string
-                    - "null"
-                received_events_url:
-                  type:
-                    - string
-                    - "null"
-          closed_by:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              login:
-                type:
-                  - string
-                  - "null"
-              node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
-                type:
-                  - string
-                  - "null"
-              avatar_url:
-                type:
-                  - string
-                  - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
-              gravatar_id:
-                type:
-                  - string
-                  - "null"
-              starred_url:
-                type:
-                  - string
-                  - "null"
-              followers_url:
-                type:
-                  - string
-                  - "null"
-              following_url:
-                type:
-                  - string
-                  - "null"
-              user_view_type:
-                type:
-                  - string
-                  - "null"
-              organizations_url:
-                type:
-                  - string
-                  - "null"
-              subscriptions_url:
-                type:
-                  - string
-                  - "null"
-              received_events_url:
-                type:
-                  - string
-                  - "null"
           reactions:
             type:
               - object
@@ -1837,10 +1584,6 @@ streams:
                 type:
                   - string
                   - "null"
-          state_reason:
-            type:
-              - string
-              - "null"
           timeline_url:
             type:
               - string
@@ -1849,48 +1592,12 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
           author_association:
             type:
               - string
               - "null"
-          sub_issues_summary:
-            type:
-              - object
-              - "null"
-            properties:
-              total:
-                type:
-                  - number
-                  - "null"
-              completed:
-                type:
-                  - number
-                  - "null"
-              percent_completed:
-                type:
-                  - number
-                  - "null"
-          issue_dependencies_summary:
-            type:
-              - object
-              - "null"
-            properties:
-              blocking:
-                type:
-                  - number
-                  - "null"
-              blocked_by:
-                type:
-                  - number
-                  - "null"
-              total_blocking:
-                type:
-                  - number
-                  - "null"
-              total_blocked_by:
-                type:
-                  - number
-                  - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -1899,8 +1606,13 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.repo }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -1914,7 +1626,6 @@ streams:
       cursor_granularity: PT1S
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
-      step: P1M
   - type: DeclarativeStream
     name: issue_labels
     retriever:
@@ -1947,15 +1658,14 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - repository
-          - name
+          - airbyte_unique_id
         properties:
           description:
             type:
@@ -1970,7 +1680,9 @@ streams:
               - string
               - "null"
           name:
-            type: string
+            type:
+              - string
+              - "null"
           color:
             type:
               - string
@@ -1984,6 +1696,10 @@ streams:
               - string
               - "null"
           repository:
+            type:
+              - string
+              - "null"
+          airbyte_unique_id:
             type: string
         additionalProperties: true
     transformations:
@@ -1993,6 +1709,10 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.repo }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
   - type: DeclarativeStream
     name: tags
     retriever:
@@ -2105,7 +1825,7 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: sha
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2114,6 +1834,7 @@ streams:
         required:
           - sha
           - author_datetime
+          - airbyte_unique_id
         properties:
           sha:
             type: string
@@ -2411,6 +2132,8 @@ streams:
               - "null"
           author_datetime:
             type: string
+          airbyte_unique_id:
+            type: string
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -2423,8 +2146,13 @@ streams:
             path:
               - author_datetime
             value: "{{ record['commit']['author']['date'] }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['sha'], stream_slice.repo] | join('_') | hash }}"
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: author_datetime
       start_datetime:
         type: MinMaxDatetime
@@ -2438,7 +2166,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: deployments
     retriever:
@@ -2474,19 +2201,20 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - repository
-          - id
+          - airbyte_unique_id
           - created_at
         properties:
           id:
-            type: number
+            type:
+              - number
+              - "null"
           ref:
             type:
               - string
@@ -2595,7 +2323,9 @@ streams:
           created_at:
             type: string
           repository:
-            type: string
+            type:
+              - string
+              - "null"
           updated_at:
             type:
               - string
@@ -2612,6 +2342,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
           original_environment:
             type:
               - string
@@ -2795,8 +2527,13 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.repo }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: created_at
       start_datetime:
         type: MinMaxDatetime
@@ -2807,7 +2544,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: pull_requests
     retriever:
@@ -2845,19 +2581,20 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - repository
-          - id
+          - airbyte_unique_id
           - updated_at
         properties:
           id:
-            type: number
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
@@ -4231,7 +3968,9 @@ streams:
               - string
               - "null"
           repository:
-            type: string
+            type:
+              - string
+              - "null"
           updated_at:
             type: string
           commits_url:
@@ -4254,6 +3993,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
           author_association:
             type:
               - string
@@ -4359,8 +4100,13 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.repo }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -4371,7 +4117,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: reviews
     retriever:
@@ -4410,7 +4155,7 @@ streams:
                 - - repository
               partition_field: pr_number
               lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4418,6 +4163,7 @@ streams:
         $schema: http://json-schema.org/schema#
         required:
           - node_id
+          - airbyte_unique_id
         properties:
           id:
             type:
@@ -4561,6 +4307,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            - string
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -4568,9 +4316,16 @@ streams:
           - type: AddedFieldDefinition
             path:
               - repository
-            value: "{{ stream_slice.repo }}"
+            value: "{{stream_slice.extra_fields.repository}}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: >-
+              {{ [record['node_id'], stream_slice.extra_fields.repository,
+              stream_slice.pr_number] | join('_') | hash }}
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: submitted_at
       start_datetime:
         type: MinMaxDatetime
@@ -4581,7 +4336,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: workflows
     retriever:
@@ -4618,18 +4372,20 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - repository
-          - id
+          - airbyte_unique_id
           - updated_at
         properties:
           id:
-            type: number
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
@@ -4663,8 +4419,12 @@ streams:
               - string
               - "null"
           repository:
-            type: string
+            type:
+              - string
+              - "null"
           updated_at:
+            type: string
+          airbyte_unique_id:
             type: string
         additionalProperties: true
     transformations:
@@ -4674,8 +4434,13 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.repo }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -4685,7 +4450,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: workflow_jobs
     retriever:
@@ -4725,7 +4489,7 @@ streams:
               - - repository
             partition_field: workflow_run
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4734,6 +4498,7 @@ streams:
         required:
           - run_id
           - id
+          - airbyte_unique_id
         properties:
           id:
             type: number
@@ -4839,8 +4604,15 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.repo }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: >-
+              {{ [record['node_id'], stream_slice.extra_fields.repository,
+              stream_slice.workflow_run] | join('_') | hash }}
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: started_at
       start_datetime:
         type: MinMaxDatetime
@@ -4850,7 +4622,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: workflow_runs
     retriever:
@@ -4889,18 +4660,20 @@ streams:
             parent_key: name
             partition_field: repo
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - id
+          - airbyte_unique_id
           - created_at
         properties:
           id:
-            type: number
+            type:
+              - number
+              - "null"
           url:
             type:
               - string
@@ -5385,83 +5158,6 @@ streams:
             type:
               - array
               - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                id:
-                  type:
-                    - number
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-                base:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    ref:
-                      type:
-                        - string
-                        - "null"
-                    sha:
-                      type:
-                        - string
-                        - "null"
-                    repo:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        id:
-                          type:
-                            - number
-                            - "null"
-                        url:
-                          type:
-                            - string
-                            - "null"
-                        name:
-                          type:
-                            - string
-                            - "null"
-                head:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    ref:
-                      type:
-                        - string
-                        - "null"
-                    sha:
-                      type:
-                        - string
-                        - "null"
-                    repo:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        id:
-                          type:
-                            - number
-                            - "null"
-                        url:
-                          type:
-                            - string
-                            - "null"
-                        name:
-                          type:
-                            - string
-                            - "null"
-                number:
-                  type:
-                    - number
-                    - "null"
           check_suite_id:
             type:
               - number
@@ -5821,11 +5517,9 @@ streams:
                 type:
                   - string
                   - "null"
+          airbyte_unique_id:
+            type: string
           check_suite_node_id:
-            type:
-              - string
-              - "null"
-          previous_attempt_url:
             type:
               - string
               - "null"
@@ -5833,27 +5527,17 @@ streams:
             type:
               - array
               - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                ref:
-                  type:
-                    - string
-                    - "null"
-                sha:
-                  type:
-                    - string
-                    - "null"
-                path:
-                  type:
-                    - string
-                    - "null"
         additionalProperties: true
-    transformations: []
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: created_at
       start_datetime:
         type: MinMaxDatetime
@@ -5863,7 +5547,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: deployment_statuses
     retriever:
@@ -5902,14 +5585,14 @@ streams:
               - - repository
             partition_field: deployment_id
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
         $schema: http://json-schema.org/schema#
         required:
-          - node_id
+          - airbyte_unique_id
           - updated_at
         properties:
           description:
@@ -6014,7 +5697,9 @@ streams:
               - string
               - "null"
           node_id:
-            type: string
+            type:
+              - string
+              - "null"
           created_at:
             type:
               - string
@@ -6049,6 +5734,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -6061,8 +5748,15 @@ streams:
             path:
               - deployment_id
             value: "{{ stream_slice.deployment_id }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: >-
+              {{ [record['node_id'], stream_slice.extra_fields.repository,
+              stream_slice.deployment_id] | join('_') | hash }}
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -6072,7 +5766,6 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: P1M
   - type: DeclarativeStream
     name: issue_comments
     retriever:
@@ -6111,7 +5804,7 @@ streams:
               - - repository
             partition_field: issue_number
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6119,6 +5812,7 @@ streams:
         $schema: http://json-schema.org/schema#
         required:
           - node_id
+          - airbyte_unique_id
         properties:
           id:
             type:
@@ -6300,18 +5994,24 @@ streams:
             path:
               - issue_number
             value: "{{ stream_slice.issue_number }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: >-
+              {{ [record['node_id'], stream_slice.extra_fields.repository,
+              stream_slice.issue_number] | join('_') | hash }}
     incremental_sync:
       type: DatetimeBasedCursor
+      step: P1M
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: PT1S
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
-      cursor_granularity: PT1S
-      step: P1M
   - type: DeclarativeStream
     name: pr_comments
     retriever:
@@ -6350,7 +6050,7 @@ streams:
               - - repository
             partition_field: pr_number
             lazy_read_pointer: []
-    primary_key: node_id
+    primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -6358,8 +6058,8 @@ streams:
         $schema: http://json-schema.org/schema#
         required:
           - url
-          - node_id
           - updated_at
+          - airbyte_unique_id
         properties:
           id:
             type:
@@ -6453,7 +6153,9 @@ streams:
                   - string
                   - "null"
           node_id:
-            type: string
+            type:
+              - string
+              - "null"
           html_url:
             type:
               - string
@@ -6521,6 +6223,10 @@ streams:
               - "null"
           updated_at:
             type: string
+          airbyte_unique_id:
+            type:
+              - string
+              - "null"
           author_association:
             type:
               - string
@@ -6537,6 +6243,12 @@ streams:
             path:
               - repository
             value: "{{ stream_slice.extra_fields.repository }}"
+          - type: AddedFieldDefinition
+            path:
+              - airbyte_unique_id
+            value: >-
+              {{ [record['node_id'], stream_slice.extra_fields.repository,
+              stream_slice.pr_number] | join('_') | hash }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -6597,33 +6309,33 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     users:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 8ba640e46038a5fcd5321cc4ea0fbdd993e82bce
+      streamHash: 4ed1945415b17376ff63a9d0b8c4b48bc23ae664
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     issues:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 7036799fd58c540fc9d8389f25d6d1a9829aba71
+      streamHash: f70e2b25dec8ec4a3625698b25ff5323827346de
       hasResponse: true
-      primaryKeysAreUnique: true
+      primaryKeysAreUnique: false
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     commits:
       isStale: true
       hasRecords: true
-      streamHash: 69989ff8010225f903c06d78d3db4888a1571e4e
+      streamHash: 8c13f56fa6bd42c553c3fcdba77b5d7f1c8bc48c
       hasResponse: true
-      primaryKeysAreUnique: true
+      primaryKeysAreUnique: false
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reviews:
-      isStale: true
+      isStale: false
       hasRecords: false
-      streamHash: a6241db9a88d0877f9d1e14c51d02df915cbff1a
+      streamHash: 87a44f9c3ce00d9e90fd9d85ee5950c965fe3f6a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6647,17 +6359,17 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     workflows:
-      isStale: false
-      hasRecords: false
-      streamHash: 9dd09c855876b877dbe39ed4af0a0307e14d29cb
+      isStale: true
+      hasRecords: true
+      streamHash: b5ae42328b5e53dfe0e8f1e6a317e525904f2c3b
       hasResponse: true
-      primaryKeysAreUnique: true
+      primaryKeysAreUnique: false
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     deployments:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 87ff47cfa03ad119a9326bb582779c4879018f9c
+      streamHash: 8b9f4e39dc2ad85f8f717b25a882236ae3d29499
       hasResponse: true
       primaryKeysAreUnique: false
       primaryKeysArePresent: true
@@ -6665,71 +6377,71 @@ metadata:
     pr_comments:
       isStale: true
       hasRecords: true
-      streamHash: bd121f7032b338bcb8a9a378bdd2f1ef3b66958e
+      streamHash: bd2055234a9e3299a654b2ab251243fd18a4d2b5
       hasResponse: true
       primaryKeysAreUnique: false
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     issue_labels:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 7d4d880652443089c8c18d10968b51bac440bd41
+      streamHash: 735d9859ecaf18741b9c8aa89d33dcb11939e427
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     repositories:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 9491e17d6ca2448e1a2f6331d83ab74d07738dd7
+      streamHash: 1b1aed432022699dd3f7822b03cf4f014c22c6cc
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     collaborators:
       isStale: true
-      hasRecords: false
-      streamHash: a8162ebe29e8f2d71a6c4f09e53a25a4a4f0835e
+      hasRecords: true
+      streamHash: 0995375dac4f78124d4f585bb49837fcb97df91e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: false
+      responsesAreSuccessful: true
     pull_requests:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 5ae6df341382c89214c36ade61bcda7ed24fdfe1
+      streamHash: 30f4e2f34549f2ac41fa218bcf044383af2ec98f
       hasResponse: true
       primaryKeysAreUnique: false
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     workflow_jobs:
-      isStale: true
+      isStale: false
       hasRecords: false
-      streamHash: 39872e06e71bb2abb41c96a18ac1992cae6fa3c9
+      streamHash: 8b7e8dfc05bd1b7ae3e225d242ec16f2c276c24d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: false
     workflow_runs:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: a05df6311d4290745e473b4709e840d059718e50
+      streamHash: 6e221f0aa4c381dec5c45cab030340a818256fe7
       hasResponse: true
-      primaryKeysAreUnique: true
+      primaryKeysAreUnique: false
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     issue_comments:
-      isStale: true
-      hasRecords: true
-      streamHash: c8f03625630700e2bace725ef023864316c5c973
+      isStale: false
+      hasRecords: false
+      streamHash: 280d8c9792b4684509ae56ee9702dcd5c35898b6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     deployment_statuses:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 806d3fd440587c3a712e3f10973ddc328e0b4d82
+      streamHash: de1ed15a6df5ab3f53e97bb3fad7657e70fc851e
       hasResponse: true
       primaryKeysAreUnique: false
       primaryKeysArePresent: true
