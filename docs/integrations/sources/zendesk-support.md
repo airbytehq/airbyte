@@ -15,10 +15,15 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ### Set up Zendesk Support
 
-The Zendesk Support source connector supports two authentication methods:
+The Zendesk Support source connector supports three authentication methods:
 
-- OAuth 2.0
-- API token
+- OAuth 2.0 with refresh token (recommended for Airbyte Cloud)
+- API token (recommended for Airbyte Open Source)
+- OAuth 2.0 Legacy (for existing OAuth connections that haven't migrated to the refresh token flow)
+
+:::note
+Zendesk is [enforcing OAuth token expiration](https://support.zendesk.com/hc/en-us/articles/9182123625370) and requiring the refresh token flow. If you use the legacy OAuth method, plan to migrate to OAuth 2.0 with refresh token before Zendesk's deadline.
+:::
 
 <!-- env:cloud -->
 
@@ -84,7 +89,9 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. Click **Set up source** and wait for the tests to complete.
+8. (Optional) For **Number of concurrent workers**, enter the number of parallel threads to use for the sync. The default is 3. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
+9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
+10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -116,7 +123,7 @@ The Zendesk Support source connector supports the following streams:
 - [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Article Attachments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_attachments/#list-article-attachments) \(Incremental\) \(Supports file transfer\)
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
-- [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
+- [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs) \(Incremental\) \(Enterprise only\)
 - [Automations](https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 - [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
@@ -146,8 +153,8 @@ The Zendesk Support source connector supports the following streams:
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
-- [UserIdentities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
-- [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
+- [User Identities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
+- [User Fields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 - [Categories](https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories)
 - [Sections](https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections)
 
@@ -174,13 +181,22 @@ Expand to see details about Zendesk Support connector limitations and troublesho
 
 #### Rate limiting
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/api-reference/introduction/rate-limits/).
+Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) based on your plan tier:
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute. This applies to the `tickets`, `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The connector includes a built-in API budget that automatically throttles requests to stay within this limit.
+| Plan | Requests per minute |
+| :--- | :--- |
+| Team | 200 |
+| Growth / Professional | 400 |
+| Enterprise | 700 |
+| Enterprise Plus / High Volume API add-on | 2500 |
+
+The connector's **Number of concurrent workers** setting (default: 3) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
+
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The connector includes a built-in API budget that automatically throttles requests to stay within this limit.
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
-The Zendesk connector ideally should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ### Troubleshooting
 
@@ -195,7 +211,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.7-rc.1 | 2026-03-09 | [11103](https://github.com/airbytehq/oncall/issues/11103) | Pin CDK to 7.8.1.post54 for regression testing of StateDelegatingStream and DeclarativeStream |
+| 5.1.7-rc.1 | 2026-03-10 | [74398](https://github.com/airbytehq/airbyte/pull/74398) | Pin CDK to 7.8.1.post54 for regression testing of StateDelegatingStream and DeclarativeStream |
 | 5.1.6 | 2026-03-09 | [73686](https://github.com/airbytehq/airbyte/pull/73686) | Add 504 exponential backoff error handling to `ticket_comments` stream and API budget (10 req/min) for all incremental export streams |
 | 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
 | 5.1.4 | 2026-02-24 | [73911](https://github.com/airbytehq/airbyte/pull/73911) | Update dependencies |
@@ -206,7 +222,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 5.0.3 | 2026-01-28 | [72423](https://github.com/airbytehq/airbyte/pull/72423) | Update breaking change deadline from Jan 31 to Jan 30 |
 | 5.0.2 | 2026-01-27 | [72380](https://github.com/airbytehq/airbyte/pull/72380) | Fix OAuth race condition with concurrent token refresh |
 | 5.0.1 | 2026-01-22 | [71714](https://github.com/airbytehq/airbyte/pull/71714) | Update dependencies |
-| 5.0.0 | 2026-01-21 | [70990](https://github.com/airbytehq/airbyte/pull/70990) | Add OAuth2.0 with refresh token support. Users using OAuth must re-authenticate to use the new flow with rotating refresh tokens. |
+| 5.0.0 | 2026-01-22 | [70990](https://github.com/airbytehq/airbyte/pull/70990) | Add OAuth2.0 with refresh token support. Users using OAuth must re-authenticate to use the new flow with rotating refresh tokens. |
 | 4.10.18 | 2025-12-18 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
 | 4.10.17 | 2025-12-02 | [70066](https://github.com/airbytehq/airbyte/pull/70066) | Update dependencies |
 | 4.10.16 | 2025-11-18 | [69538](https://github.com/airbytehq/airbyte/pull/69538) | Update dependencies |
