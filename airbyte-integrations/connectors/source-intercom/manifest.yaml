@@ -868,13 +868,10 @@ spec:
       num_workers:
         type: integer
         title: Number of Concurrent Workers
-        description: Number of concurrent threads for syncing. Default of 10 is
-          conservative relative to Intercom's 10,000 req/min limit. The companies
-          scroll endpoint only allows one active scroll per workspace, which limits
-          parallelism on that stream regardless of this setting.
+        description: Number of concurrent threads for syncing. Higher values can speed up syncs. Adjust based on your API tier.
         default: 10
-        minimum: 1
-        maximum: 25
+        minimum: 2
+        maximum: 40
         order: 6
     additionalProperties: true
   advanced_auth:
@@ -3757,13 +3754,14 @@ api_budget:
     - 429
 
 # Concurrency Configuration
-# Intercom has a single uniform rate limit of 10,000 req/min (no per-endpoint variation).
-# Formula: 8000 / 60 / ~4 req per record ≈ 33, so default of 10 is conservative.
-# Key constraint: companies/scroll endpoint allows only one active scroll per workspace,
-# so parallelism on companies-related streams is limited regardless of this setting.
-# Max concurrency of 25 keeps total request rate well under the 10,000/min cap.
+# Based on the rate limits and the connector's stream structure:
+# - Most streams use simple pagination without date-based slicing
+# - The companies stream uses scroll-based pagination (single-threaded)
+# - conversation_parts is a substream of conversations
+# - A default concurrency of 10 provides good parallelism while staying within rate limits
+# - Max concurrency of 25 allows for higher throughput when rate limits permit
 
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 10) }}"
-  max_concurrency: 25
+  max_concurrency: 40
