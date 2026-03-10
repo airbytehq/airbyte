@@ -198,7 +198,11 @@ properties:
 10. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
-For more detailed information and guidelines on creating custom reports, please refer to the
+Custom reports support columns that are not available in built-in analytics streams. For example,
+`TOTAL_IMPRESSION` is available only in custom reports, not in streams like `user_account_analytics`
+or `ad_account_analytics`.
+
+For more detailed information and guidelines on creating custom reports, refer to the
 [Pinterest API documentation](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report).
 
 ## Performance considerations
@@ -216,7 +220,7 @@ details, see the [Pinterest rate limits documentation](https://developers.pinter
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.25 | 2026-03-09 | [74339](https://github.com/airbytehq/airbyte/pull/74339) | Add TOTAL_IMPRESSION column to custom reports |
+| 2.1.25 | 2026-03-10 | [74339](https://github.com/airbytehq/airbyte/pull/74339) | Add TOTAL_IMPRESSION column to custom reports |
 | 2.1.24 | 2026-03-09 | [74120](https://github.com/airbytehq/airbyte/pull/74120) | Fix custom reports `engagement_window_days` and `view_window_days` default values from array `[30]` to integer `30`; fix `or 30` fallback to correctly handle `0` as a valid value |
 | 2.1.23 | 2026-02-24 | [73845](https://github.com/airbytehq/airbyte/pull/73845) | Update dependencies |
 | 2.1.22 | 2026-02-17 | [73595](https://github.com/airbytehq/airbyte/pull/73595) | Update dependencies |
