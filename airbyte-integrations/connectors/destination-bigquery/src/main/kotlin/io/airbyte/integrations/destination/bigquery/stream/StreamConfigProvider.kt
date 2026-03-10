@@ -44,6 +44,15 @@ class StreamConfigProvider(private val config: BigqueryConfiguration) {
     }
 
     /**
+     * Get the effective base table name for a stream before suffixing. Priority: stream config >
+     * source stream name.
+     */
+    fun getBaseTableName(descriptor: DestinationStream.Descriptor): String {
+        return getStreamConfig(descriptor)?.baseTableName?.takeIf { it.isNotBlank() }
+            ?: descriptor.name
+    }
+
+    /**
      * Get the effective partitioning field for a stream. Priority: stream config > default config >
      * "_airbyte_extracted_at"
      */

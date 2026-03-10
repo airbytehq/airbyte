@@ -161,6 +161,12 @@ data class SingleStreamConfiguration(
     @get:JsonSchemaTitle("Clustering Field")
     @JsonProperty("clustering_field")
     val clusteringField: String? = null,
+    @get:JsonSchemaTitle("Base Table Name")
+    @get:JsonPropertyDescription(
+        "Optional destination base table name override for this stream. The configured suffix, if any, is still appended after this value."
+    )
+    @JsonProperty("base_table_name")
+    val baseTableName: String? = null,
     @get:JsonSchemaTitle("Table Suffix")
     @JsonProperty("table_suffix")
     val tableSuffix: String? = null,

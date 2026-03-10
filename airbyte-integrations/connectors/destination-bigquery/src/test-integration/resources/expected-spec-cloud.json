@@ -208,6 +208,11 @@
               "type" : "string",
               "title" : "Clustering Field"
             },
+            "base_table_name" : {
+              "type" : "string",
+              "description" : "Optional destination base table name override for this stream. The configured suffix, if any, is still appended after this value.",
+              "title" : "Base Table Name"
+            },
             "table_suffix" : {
               "type" : "string",
               "title" : "Table Suffix"

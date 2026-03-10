@@ -42,10 +42,11 @@ class BigqueryFinalTableNameGenerator(
     val streamConfigProvider: StreamConfigProvider
 ) : FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        val baseTableName = streamConfigProvider.getBaseTableName(streamDescriptor)
         val suffix = streamConfigProvider.getTableSuffix(streamDescriptor)
         return TableName(
             nameTransformer.getNamespace(streamConfigProvider.getDataset(streamDescriptor)),
-            nameTransformer.convertStreamName(streamDescriptor.name + suffix),
+            nameTransformer.convertStreamName(baseTableName + suffix),
         )
     }
 }

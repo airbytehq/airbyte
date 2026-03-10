@@ -35,6 +35,7 @@ data class StreamLevelConfig(
     val partitioningField: String? = null,
     val partitioningGranularity: PartitioningGranularity? = null,
     val clusteringField: String? = null,
+    val baseTableName: String? = null,
     val tableSuffix: String? = null,
     val dataset: String? = null,
 )
@@ -90,6 +91,7 @@ class BigqueryConfigurationFactory :
                             partitioningField = it.partitioningField,
                             partitioningGranularity = it.partitioningGranularity,
                             clusteringField = it.clusteringField,
+                            baseTableName = it.baseTableName,
                             tableSuffix = it.tableSuffix,
                             dataset = it.dataset
                         )
