@@ -51,6 +51,7 @@ Copy your key and secret and paste them into the respective fields.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.31 | 2026-03-10 | [74592](https://github.com/airbytehq/airbyte/pull/74592) | Update dependencies |
 | 0.2.30 | 2026-02-24 | [73945](https://github.com/airbytehq/airbyte/pull/73945) | Update dependencies |
 | 0.2.29 | 2026-02-17 | [73523](https://github.com/airbytehq/airbyte/pull/73523) | Update dependencies |
 | 0.2.28 | 2026-02-10 | [73202](https://github.com/airbytehq/airbyte/pull/73202) | Update dependencies |
