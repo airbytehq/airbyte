@@ -83,8 +83,7 @@ class HubSpotState(
                 200 -> null
                 207 -> null // FIXME generate dlq record with error from hubspot
                 409 -> {
-                    val responseBody =
-                        response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()
+                    val responseBody = response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()
                     logger.warn {
                         "HubSpot batch upsert returned 409 Conflict, " +
                             "routing ${records.size} record(s) to DLQ: $responseBody"
