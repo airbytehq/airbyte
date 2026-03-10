@@ -86,9 +86,14 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting).
+The connector is restricted by normal Intercom [request limitations](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting):
 
-The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+- **API limit**: 10,000 requests per minute per app, 25,000 per workspace
+- **Burst limit**: Distributed into 10-second windows (~1,666 requests per 10 seconds)
+
+The connector includes built-in rate limiting (`HTTPAPIBudget`) to proactively manage these limits and avoid HTTP 429 errors.
+
+You can configure the number of concurrent workers using the `num_workers` parameter (default: 10, maximum: 40). Higher values may improve sync speed but increase API usage.
 
 ## Changelog
 
@@ -97,6 +102,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.16-rc.5 | 2026-03-07 | [70859](https://github.com/airbytehq/airbyte/pull/70859) | Add HTTPAPIBudget, concurrency_level, and configurable num_workers parameter |
 | 0.13.16-rc.4 | 2026-03-03 | [74143](https://github.com/airbytehq/airbyte/pull/74143) | fix(source-intercom): fix UnboundLocalError in rate limiter when response is not available |
 | 0.13.16-rc.3 | 2026-03-03| [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams |
 | 0.13.16-rc.2 | 2026-02-18 | [73635](https://github.com/airbytehq/airbyte/pull/73635) | fix(source-intercom): bump heartbeat timeout from 6h to 9h |
