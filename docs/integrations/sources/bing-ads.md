@@ -319,6 +319,10 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.23.14 | 2026-03-10 | [74483](https://github.com/airbytehq/airbyte/pull/74483) | Update dependencies |
+| 2.23.13 | 2026-03-03 | [73654](https://github.com/airbytehq/airbyte/pull/73654) | Use streaming decompression in BingAdsGzipCsvDecoder to prevent OOM on large accounts |
+| 2.23.12 | 2026-03-03 | [73829](https://github.com/airbytehq/airbyte/pull/73829) | Update dependencies |
+| 2.23.11 | 2026-02-17 | [69578](https://github.com/airbytehq/airbyte/pull/69578) | Update dependencies |
 | 2.23.10 | 2026-02-05 | [72264](https://github.com/airbytehq/airbyte/pull/72264) | Update CDK version from 7.4.1 to 7.6.5 |
 | 2.23.9 | 2025-10-29 | [68883](https://github.com/airbytehq/airbyte/pull/68883) | Update dependencies |
 | 2.23.8 | 2025-10-21 | [68406](https://github.com/airbytehq/airbyte/pull/68406) | Update dependencies |

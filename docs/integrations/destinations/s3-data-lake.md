@@ -243,6 +243,16 @@ To authenticate with Apache Polaris, follow these steps.
 
 6. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your S3 bucket.
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+
 ## Output schema
 
 ### How Airbyte generates the Iceberg schema
@@ -367,6 +377,9 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 | 1    | Alice  | 2024-03-02 12:00 | 2024-03-02 12:10        | 2            | True          |
 | 1    | Alice  | 2024-03-03 14:00 | 2024-03-03 14:10        | 1            | False         |
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 
@@ -375,6 +388,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
 | 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
 | 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
 | 0.3.42  | 2026-01-12 | [70205](https://github.com/airbytehq/airbyte/pull/70205)   | Implement support for scope and OAuth server URI attributes for Polaris catalog                                                 |

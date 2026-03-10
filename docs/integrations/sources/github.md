@@ -67,16 +67,16 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 
-- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
+- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 
 ### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-Click Sources and then click + New source.
+2. Click Sources and then click + New source.
 3. On the Set up the source page, select GitHub from the Source type dropdown.
 4. Enter a name for the GitHub connector.
 
@@ -129,7 +129,7 @@ This connector outputs the following incremental streams:
 - [Pull request comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
 - [Pull requests](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests)
-- [Releases](https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases)
+- [Releases](https://docs.github.com/en/graphql/reference/objects#release)
 - [Repositories](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories)
 - [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
 - [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
@@ -148,7 +148,7 @@ This connector outputs the following incremental streams:
    - read only new records;
    - output only new records.
 
-2. Streams `workflow_runs` and `worflow_jobs` is almost pure incremental:
+2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
 
    - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
@@ -169,7 +169,6 @@ This connector outputs the following incremental streams:
 - `issue_labels`
 - `organizations`
 - `pull_request_commits`
-- `pull_request_stats`
 - `repositories`
 - `tags`
 - `teams`
@@ -187,9 +186,10 @@ Expand to see details about GitHub connector limitations and troubleshooting.
 #### Rate limiting
 
 You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make API requests on your behalf.
-All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization ).
+All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization).
 
-:::info `REST API` and `GraphQL API` rate limits are counted separately
+:::info
+`REST API` and `GraphQL API` rate limits are counted separately. The REST API uses a request-based limit, while the GraphQL API uses a [point-based limit](https://docs.github.com/en/graphql/overview/rate-limits-and-node-limits-for-the-graphql-api) where each query costs a calculated number of points. Streams that use the GraphQL API include `pull_request_stats`, `reviews`, `pull_request_comment_reactions`, `issue_reactions`, `releases`, and `projects_v2`.
 :::
 
 :::tip
@@ -201,6 +201,10 @@ In the event that limits are reached before all streams have been read, it is re
    :::
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+#### Releases stream asset limit
+
+The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
 
 #### Permissions and scopes
 
@@ -225,6 +229,11 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
+| 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
+| 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
+| 2.1.11 | 2026-02-24 | [73785](https://github.com/airbytehq/airbyte/pull/73785) | Update dependencies |
+| 2.1.10 | 2026-02-10 | [73061](https://github.com/airbytehq/airbyte/pull/73061) | Update dependencies |
 | 2.1.9 | 2026-01-27 | [72375](https://github.com/airbytehq/airbyte/pull/72375) | Update dependencies |
 | 2.1.8 | 2026-01-20 | [71986](https://github.com/airbytehq/airbyte/pull/71986) | Update dependencies |
 | 2.1.7 | 2026-01-14 | [71400](https://github.com/airbytehq/airbyte/pull/71400) | Update dependencies |
