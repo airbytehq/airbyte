@@ -5,8 +5,8 @@
 import io
 import json
 import logging
-import re
 import queue as queue_module
+import re
 import socket
 import threading
 import time
@@ -1238,13 +1238,19 @@ class GoogleAdsStreamingDecoder(Decoder):
                     chunk_queue.put(("chunk", chunk))
                 to_logger.info(
                     "ReaderThread [resp=%s]: iter_content() completed normally, total_chunks=%d, total_bytes=%d",
-                    resp_id, reader_chunks, reader_bytes,
+                    resp_id,
+                    reader_chunks,
+                    reader_bytes,
                 )
                 chunk_queue.put(("done", _DONE))
             except Exception as exc:
                 to_logger.warning(
                     "ReaderThread [resp=%s]: iter_content() raised %s after %d chunks (%d bytes): %s",
-                    resp_id, type(exc).__name__, reader_chunks, reader_bytes, exc,
+                    resp_id,
+                    type(exc).__name__,
+                    reader_chunks,
+                    reader_bytes,
+                    exc,
                 )
                 chunk_queue.put(("error", exc))
 
@@ -1264,20 +1270,24 @@ class GoogleAdsStreamingDecoder(Decoder):
                     resp_id,
                     timeout,
                 )
-                raise socket.timeout(
-                    f"iter_content() produced no data for {timeout}s [resp={resp_id}]"
-                )
+                raise socket.timeout(f"iter_content() produced no data for {timeout}s [resp={resp_id}]")
 
             if msg_type == "done":
                 to_logger.info(
                     "Consumer [resp=%s]: stream done, consumed %d chunks (%d bytes) in %.1fs",
-                    resp_id, consumer_chunks, consumer_bytes, time.monotonic() - consumer_start,
+                    resp_id,
+                    consumer_chunks,
+                    consumer_bytes,
+                    time.monotonic() - consumer_start,
                 )
                 return
             if msg_type == "error":
                 to_logger.warning(
                     "Consumer [resp=%s]: received error after %d chunks (%d bytes): %s",
-                    resp_id, consumer_chunks, consumer_bytes, payload,
+                    resp_id,
+                    consumer_chunks,
+                    consumer_bytes,
+                    payload,
                 )
                 raise payload  # type: ignore[misc]
             # msg_type == "chunk"
@@ -1287,8 +1297,12 @@ class GoogleAdsStreamingDecoder(Decoder):
             if consumer_chunks <= 2 or now - last_consumer_log >= 30.0:
                 to_logger.info(
                     "Consumer [resp=%s]: yielding chunk #%d (%d bytes, total=%d bytes, qsize=%d, elapsed=%.1fs)",
-                    resp_id, consumer_chunks, len(payload), consumer_bytes,
-                    chunk_queue.qsize(), now - consumer_start,
+                    resp_id,
+                    consumer_chunks,
+                    len(payload),
+                    consumer_bytes,
+                    chunk_queue.qsize(),
+                    now - consumer_start,
                 )
                 last_consumer_log = now
             yield payload  # type: ignore[misc]
