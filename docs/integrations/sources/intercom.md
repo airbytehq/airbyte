@@ -90,6 +90,24 @@ The connector is restricted by normal Intercom [request limitations](https://dev
 
 The Intercom connector should not run into Intercom API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## Troubleshooting and limitations
+
+### Companies and Company Segments use client-side incremental sync
+
+The Companies and Company Segments streams rely on the [Scroll over all companies](https://developers.intercom.com/docs/references/rest-api/api.intercom.io/companies/scrolloverallcompanies) endpoint, which does not support server-side datetime filtering. Incremental sync for these streams works by fetching all records from the API and filtering locally, emitting only the records that are newer than the last sync checkpoint.
+
+This means that even if you only need one day of new data, the connector must read all company records from the beginning before it can identify and emit the new ones. For workspaces with a large number of companies, this can result in long sync times.
+
+### Only one scroll can be open per app at a time
+
+The Intercom API allows only one company scroll to be open per app at a time. If a second scroll request is made while one is already active, the API returns a `400` error with the message "scroll already exists for this workspace." The connector retries this error automatically with a one-minute backoff, since scrolls expire after one minute of inactivity.
+
+Running multiple Intercom syncs in parallel for the same workspace that include the Companies or Company Segments streams may still result in errors due to this limitation.
+
+### Recommendation for reducing sync times
+
+Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams.
+
 ## Changelog
 
 <details>
