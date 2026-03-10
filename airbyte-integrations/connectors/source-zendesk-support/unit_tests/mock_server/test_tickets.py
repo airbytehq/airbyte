@@ -164,12 +164,7 @@ class TestTicketsStreamQueryParameters(TestCase):
 
     @property
     def _config(self):
-        return (
-            ConfigBuilder()
-            .with_basic_auth_credentials("user@example.com", "password")
-            .with_subdomain("d3v-airbyte")
-            .build()
-        )
+        return ConfigBuilder().with_basic_auth_credentials("user@example.com", "password").with_subdomain("d3v-airbyte").build()
 
     def _build_config_with_start_date(self):
         """Build config with start_date set directly (bypassing AirbyteDateTime conversion)."""
