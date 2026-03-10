@@ -356,21 +356,25 @@ def test_set_state(config):
     assert stream._state == expected_state
 
 
-def test_leads_stream_fields_returns_rest_fields(config, requests_mock, caplog):
-    # Example response with two valid rest fields and one soap-only field
+def test_leads_stream_fields_returns_schema_keys(config, requests_mock):
+    """stream_fields should return all keys from get_json_schema() which includes
+    both static and dynamically discovered custom fields."""
     describe_json = {
-        "requestId": "def456",
+        "requestId": "abc123",
         "success": True,
         "result": [
             {
                 "id": 1,
                 "displayName": "Email",
-                "dataType": "string",
+                "dataType": "email",
                 "rest": {"name": "email", "readOnly": False},
-                "soap": {"name": "Email", "readOnly": False},
             },
-            {"id": 2, "displayName": "Phone", "dataType": "string", "rest": {"name": "phone", "readOnly": False}},
-            {"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}},
+            {
+                "id": 100,
+                "displayName": "Custom Score",
+                "dataType": "score",
+                "rest": {"name": "customScore__c", "readOnly": False},
+            },
         ],
     }
 
@@ -379,39 +383,48 @@ def test_leads_stream_fields_returns_rest_fields(config, requests_mock, caplog):
         json=describe_json,
     )
 
-    caplog.set_level("WARNING")
     leads_stream = Leads(config)
     fields = leads_stream.stream_fields
 
-    # Only fields with a 'rest' key should be included
-    assert set(fields) == {"email", "phone"}
-    # No warning should be logged since valid fields exist
-    assert "No fields from describe endpoint" not in caplog.text
+    # Should include both static schema fields and custom fields
+    assert "email" in fields
+    assert "customScore__c" in fields
 
 
-def test_leads_stream_fields_fallback_on_no_rest_fields(config, requests_mock, caplog):
-    # Test with no valid rest fields — should fall back to static schema
-    describe_json_no_rest = {
-        "requestId": "def456",
+def test_leads_stream_fields_uses_configured_json_schema(config, requests_mock):
+    """When the user selects specific fields via the configured catalog,
+    stream_fields should return only those selected fields."""
+    describe_json = {
+        "requestId": "abc123",
         "success": True,
-        "result": [{"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}}],
+        "result": [
+            {"id": 1, "displayName": "Email", "dataType": "email", "rest": {"name": "email", "readOnly": False}},
+            {"id": 100, "displayName": "Custom Score", "dataType": "score", "rest": {"name": "customScore__c", "readOnly": False}},
+        ],
     }
+
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
-        json=describe_json_no_rest,
+        json=describe_json,
     )
 
-    caplog.set_level("WARNING")
     leads_stream = Leads(config)
+    # Simulate the platform passing user-selected fields via configured catalog
+    leads_stream.configured_json_schema = {
+        "properties": {
+            "email": {"type": ["string", "null"]},
+            "firstName": {"type": ["string", "null"]},
+        }
+    }
     fields = leads_stream.stream_fields
 
-    # Falls back to static schema field names
-    assert len(fields) > 0
-    assert "No fields from describe endpoint, falling back to static schema fields" in caplog.text
+    # Only the user-selected fields should be returned
+    assert set(fields) == {"email", "firstName"}
+    assert "customScore__c" not in fields
 
 
 def test_leads_describe_http_error_falls_back_to_static_schema(config, requests_mock, caplog):
-    # If the describe endpoint returns an HTTP error, fall back to static schema gracefully
+    """If the describe endpoint returns an HTTP error, fall back to static schema gracefully."""
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
         status_code=500,
@@ -431,7 +444,7 @@ def test_leads_describe_http_error_falls_back_to_static_schema(config, requests_
 
 
 def test_leads_describe_connection_error_falls_back_to_static_schema(config, requests_mock, caplog):
-    # If the describe endpoint is unreachable, fall back to static schema gracefully
+    """If the describe endpoint is unreachable, fall back to static schema gracefully."""
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
         exc=requests.ConnectionError("DNS resolution failed"),
@@ -447,7 +460,7 @@ def test_leads_describe_connection_error_falls_back_to_static_schema(config, req
 
 
 def test_leads_dynamic_schema_includes_custom_fields(config, requests_mock):
-    # Test that get_json_schema() dynamically adds custom fields from describe
+    """get_json_schema() should dynamically add custom fields from describe endpoint."""
     describe_json = {
         "requestId": "abc123",
         "success": True,

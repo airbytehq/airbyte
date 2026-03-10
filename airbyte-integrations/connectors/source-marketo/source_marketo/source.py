@@ -423,19 +423,15 @@ class Leads(MarketoExportBase):
 
     @property
     def stream_fields(self):
-        describe_results = self._describe_leads()
-        if describe_results:
-            available_fields = []
-            for describe_record in describe_results:
-                rest = describe_record.get("rest")
-                if rest and "name" in rest:
-                    available_fields.append(rest["name"])
-            if available_fields:
-                return available_fields
+        """Return the list of fields for bulk export requests.
 
-        # Fallback to static schema field names if describe endpoint is unavailable
-        self.logger.warning("No fields from describe endpoint, falling back to static schema fields")
-        return list(super().get_json_schema()["properties"].keys())
+        If the user has selected specific fields via the configured catalog,
+        only those fields are requested (selectable fields).  Otherwise all
+        fields from the dynamic schema are used.
+        """
+        if self.configured_json_schema and self.configured_json_schema.get("properties"):
+            return list(self.configured_json_schema["properties"].keys())
+        return list(self.get_json_schema()["properties"].keys())
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if self._schema is not None:
