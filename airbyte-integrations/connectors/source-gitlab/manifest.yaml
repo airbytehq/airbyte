@@ -123,11 +123,12 @@ spec:
         type: integer
         title: Number of Concurrent Workers
         description: Number of concurrent threads for syncing. Higher values can speed
-          up syncs but may hit rate limits. Adjust based on your GitLab instance
-          rate limits.
-        default: 8
-        minimum: 2
-        maximum: 25
+          up syncs but may hit rate limits. The default of 3 is based on the most
+          restrictive commonly-hit endpoints (groups, members at 200 req/min).
+          Increase only if your sync does not use those endpoints heavily.
+        default: 3
+        minimum: 1
+        maximum: 10
         order: 5
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -946,8 +947,8 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 8) }}"
-  max_concurrency: 25
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 10
 
 streams:
   # Groups-based streams
