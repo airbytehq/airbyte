@@ -29,6 +29,16 @@ definitions:
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and response['error']['code'] == 10
+                  and response['error']['message'] == "(#10) Application does
+                  not have permission for this action" }}
+                error_message: >-
+                  Skipping media for business account due to missing
+                  permissions: {{ response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -361,6 +371,16 @@ definitions:
             backoff_strategies:
               - type: ExponentialBackoffStrategy
                 factor: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and response['error']['code'] == 10
+                  and response['error']['message'] == "(#10) Application does
+                  not have permission for this action" }}
+                error_message: >-
+                  Skipping stories for business account due to missing
+                  permissions: {{ response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
