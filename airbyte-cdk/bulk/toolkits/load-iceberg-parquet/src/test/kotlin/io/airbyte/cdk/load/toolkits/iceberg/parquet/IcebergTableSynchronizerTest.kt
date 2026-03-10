@@ -421,4 +421,56 @@ class IcebergTableSynchronizerTest {
         assertThat(schema).isSameAs(mockNewSchema)
         assertThat(pendingUpdates).hasSize(1)
     }
+
+    @Test
+    fun `test overwrite with replaced column as identifier field defers identifier update`() {
+        // Simulates the scenario where a PK column's type changes (e.g. Double -> String)
+        // and the column is also an identifier field. Iceberg's requireColumn() fails for
+        // columns pending deletion, so we must commit the column replacement first, then
+        // handle identifier fields in a follow-up update.
+        val existingSchema =
+            buildSchema(Types.NestedField.required(1, "pk_col", Types.DoubleType.get()))
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.required(1, "pk_col", Types.StringType.get()),
+                identifierFields = setOf(1)
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        // After the first commit (column replacement), table.updateSchema() returns a new mock
+        val mockIdentifierUpdateSchema = mockk<UpdateSchema>(relaxed = true)
+        val mockIdentifierNewSchema = mockk<Schema>(relaxed = true)
+        every { mockIdentifierUpdateSchema.apply() } returns mockIdentifierNewSchema
+
+        // First call returns mockUpdateSchema, second call (after commit+refresh) returns
+        // the identifier update mock.
+        every { mockTable.updateSchema().allowIncompatibleChanges() } returnsMany
+            listOf(mockUpdateSchema, mockIdentifierUpdateSchema)
+
+        val (schema, pendingUpdates) =
+            synchronizer.maybeApplySchemaChanges(
+                mockTable,
+                incomingSchema,
+                ColumnTypeChangeBehavior.OVERWRITE
+            )
+
+        // First update: delete + add column (committed immediately due to deferred identifiers)
+        verify { mockUpdateSchema.deleteColumn("pk_col") }
+        verify { mockUpdateSchema.addColumn("pk_col", Types.StringType.get()) }
+        verify { mockUpdateSchema.commit() }
+
+        // Table is refreshed after the first commit
+        verify { mockTable.refresh() }
+
+        // Second update: identifier fields handled in a follow-up
+        verify { mockIdentifierUpdateSchema.requireColumn("pk_col") }
+        verify { mockIdentifierUpdateSchema.setIdentifierFields(listOf("pk_col")) }
+        // OVERWRITE mode doesn't commit immediately — returns as pending
+        verify(exactly = 0) { mockIdentifierUpdateSchema.commit() }
+
+        assertThat(schema).isSameAs(mockIdentifierNewSchema)
+        assertThat(pendingUpdates).hasSize(1)
+        assertThat(pendingUpdates.first()).isSameAs(mockIdentifierUpdateSchema)
+    }
 }
