@@ -1,6 +1,6 @@
 ---
 sidebar_label: "Hosted connectors"
-sidebar_position: 3
+sidebar_position: 5
 ---
 
 import Tabs from '@theme/Tabs';
@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Hosted agent connectors in the Agent Engine
 
-When you run connector operations with the [Python SDK](tutorial-python), you store API credentials locally and provide them directly to the API through agent connectors. This approach, while viable at first, reaches limits quickly. You may find yourself dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and or store them at all.
+When you run connector operations with the [Python SDK](tutorial-pydantic), you store API credentials locally and provide them directly to the API through agent connectors. This approach, while viable at first, reaches limits quickly. You may find yourself dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and or store them at all.
 
 With hosted execution, sensitive API credentials never leave Airbyte, multiple end-users can have separate credentials managed centrally, and Airbyte handles credential lifecycle (refresh, rotation) automatically.
 
