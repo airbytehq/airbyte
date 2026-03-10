@@ -283,6 +283,18 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - http_codes: [403]
+              action: IGNORE
+              failure_type: config_error
+              error_message: "Unable to read deleted tickets. The authenticated user may not have the 'view_deleted_tickets' permission. You can disable the deleted_tickets stream on the Schema Tab. Error: {{ response.get('error') }}"
       paginator:
         $ref: "#/definitions/links_next_paginator"
     schema_loader:
