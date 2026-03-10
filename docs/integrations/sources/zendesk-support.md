@@ -195,6 +195,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.7-rc.1 | 2026-03-10 | [74714](https://github.com/airbytehq/airbyte/pull/74714) | Add comprehensive HTTPAPIBudget with 200 req/min catch-all policy for all non-incremental endpoints (Team tier default), add 429 status code handling, and enable progressive rollout |
 | 5.1.6 | 2026-03-09 | [73686](https://github.com/airbytehq/airbyte/pull/73686) | Add 504 exponential backoff error handling to `ticket_comments` stream and API budget (10 req/min) for all incremental export streams |
 | 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
 | 5.1.4 | 2026-02-24 | [73911](https://github.com/airbytehq/airbyte/pull/73911) | Update dependencies |
