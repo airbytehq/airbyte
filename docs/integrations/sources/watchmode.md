@@ -29,6 +29,7 @@ API Reference: https://api.watchmode.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2026-03-10 | [74508](https://github.com/airbytehq/airbyte/pull/74508) | Update dependencies |
 | 0.0.30 | 2026-02-24 | [73921](https://github.com/airbytehq/airbyte/pull/73921) | Update dependencies |
 | 0.0.29 | 2026-02-17 | [73436](https://github.com/airbytehq/airbyte/pull/73436) | Update dependencies |
 | 0.0.28 | 2026-02-03 | [72657](https://github.com/airbytehq/airbyte/pull/72657) | Update dependencies |
