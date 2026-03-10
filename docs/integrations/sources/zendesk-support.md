@@ -195,6 +195,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.7-rc.1 | 2026-03-09 | [11103](https://github.com/airbytehq/oncall/issues/11103) | Pin CDK to 7.8.1.post54 for regression testing of StateDelegatingStream and DeclarativeStream |
 | 5.1.7 | 2026-03-09 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | feat(source-zendesk-support): switch tickets stream to Export Search Results endpoint (AI-Triage PR) |
 | 5.1.6 | 2026-03-09 | [73686](https://github.com/airbytehq/airbyte/pull/73686) | Add 504 exponential backoff error handling to `ticket_comments` stream and API budget (10 req/min) for all incremental export streams |
 | 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
