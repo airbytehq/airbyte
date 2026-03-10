@@ -16,6 +16,18 @@ api_budget:
           interval: PT1M
       matchers:
         - url_path_pattern: "^/api/v2/incremental/*"
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Zendesk Support plan rate limits:
+        # - Team: 200 req/min
+        # - Professional: 400 req/min
+        # - Enterprise: 700 req/min
+        # - High Volume API add-on: 2500 req/min
+        # Default to Team tier (200 req/min) as the safe baseline.
+        - limit: 200
+          interval: PT1M
+      matchers: []
+  status_codes_for_ratelimit_hit: [429]
 
 definitions:
   bearer_authenticator:
