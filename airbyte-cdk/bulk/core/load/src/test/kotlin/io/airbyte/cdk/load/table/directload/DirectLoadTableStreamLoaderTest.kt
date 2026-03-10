@@ -94,9 +94,7 @@ class DirectLoadTableStreamLoaderTest {
         loader.start()
         loader.teardown(completedSuccessfully = false)
 
-        coVerify(exactly = 0) {
-            tableOperationsClient.overwriteTable(any(), any())
-        }
+        coVerify(exactly = 0) { tableOperationsClient.overwriteTable(any(), any()) }
         coVerify(exactly = 0) { tableOperationsClient.dropTable(any()) }
     }
 
@@ -131,7 +129,12 @@ class DirectLoadTableStreamLoaderTest {
 
             // Verify the performUpsertWithTemporaryTable path was taken
             coVerify(exactly = 1) {
-                tableOperationsClient.createTable(stream, tempTempTableName, columnNameMapping, replace = true)
+                tableOperationsClient.createTable(
+                    stream,
+                    tempTempTableName,
+                    columnNameMapping,
+                    replace = true
+                )
             }
             coVerify(exactly = 1) {
                 tableOperationsClient.upsertTable(
