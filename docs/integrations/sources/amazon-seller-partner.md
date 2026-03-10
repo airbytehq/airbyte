@@ -10,6 +10,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 - Amazon Seller Partner account
 - For Brand Analytics streams (Market Basket Analysis, Search Terms, Repeat Purchase, Alternate Purchase, Item Comparison reports): Registration in [Amazon Brand Registry](https://brandservices.amazon.com/) and the Brand Analytics role in your SP-API application
+- For PII access in Orders and OrderItems streams (BuyerInfo, ShippingAddress): An approved [Restricted Role](https://developer-docs.amazon.com/sp-api/docs/roles-in-the-selling-partner-api), either Direct-to-Consumer Shipping or Tax Invoicing, in your SP-API developer profile
 
 <!-- env:cloud -->
 
@@ -76,8 +77,9 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 10. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
 11. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-12. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-13. Click `Set up source`.
+12. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+13. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+14. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -96,8 +98,9 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 8. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
 9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-10. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-11. Click `Set up source`.
+10. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+12. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -143,6 +146,7 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Open Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Orders](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) \(incremental\)
 - [Order Items](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference#getorderitems) \(incremental\)
+- [Sales and Traffic Report By Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
 - [Restock Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Scheduled XML Order Report (Shipping)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
 - [Subscribe and Save Forecast Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
@@ -206,6 +210,22 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 | `datetime`               | `datetime`   |
 | `array`                  | `array`      |
 | `object`                 | `object`     |
+
+## PII access for Orders and OrderItems
+
+The Orders and OrderItems streams can return personally identifiable information (PII) such as buyer names, shipping addresses, and phone numbers. Amazon gates these fields behind [Restricted Data Tokens (RDTs)](https://developer-docs.amazon.com/sp-api/docs/tokens-api-use-case-guide).
+
+To access PII fields, enable **Include PII** in the connector configuration. The connector then requests an RDT scoped to the Orders and OrderItems endpoints. The following prerequisites apply:
+
+- Your Amazon SP-API developer profile must have an approved Restricted Role: **Direct-to-Consumer Shipping** or **Tax Invoicing**. To request access, update your [developer profile](https://developer-docs.amazon.com/sp-api/docs/roles-in-the-selling-partner-api) and submit for Amazon's review.
+- The selling partner must have authorized your application.
+
+When **Include PII** is enabled:
+
+- The `ShippingAddress` object in Orders includes `Name`, `AddressLine1`, `AddressLine2`, `AddressLine3`, and `Phone` in addition to the standard address fields.
+- The `BuyerInfo` object includes buyer email and name information.
+
+If your application lacks the required Restricted Role, the connector logs a warning and falls back to standard authentication. PII fields remain empty, and non-PII data syncs normally. No manual intervention is required.
 
 ## Limitations & Troubleshooting
 
@@ -300,9 +320,9 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.0 | 2026-03-04 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
-| 5.5.1 | 2026-02-26 | [72961](https://github.com/airbytehq/airbyte/pull/72961) | Add time-windowed partitioning to Orders stream for proper state checkpointing of OrderItems substream |
-| 5.5.0 | 2026-02-25 | [72258](https://github.com/airbytehq/airbyte/pull/72258) | feat(source-amazon-seller-partner): Add GET_SALES_AND_TRAFFIC_REPORT_BY_DATE stream |
+| 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
+| 5.5.1 | 2026-03-03 | [72961](https://github.com/airbytehq/airbyte/pull/72961) | Add time-windowed partitioning to Orders stream for proper state checkpointing of OrderItems substream |
+| 5.5.0 | 2026-02-26 | [72258](https://github.com/airbytehq/airbyte/pull/72258) | Add GET_SALES_AND_TRAFFIC_REPORT_BY_DATE stream |
 | 5.4.1 | 2026-02-24 | [73757](https://github.com/airbytehq/airbyte/pull/73757) | Update dependencies |
 | 5.4.0 | 2026-02-20 | [72837](https://github.com/airbytehq/airbyte/pull/72837) | Add marketplaceId to GET_SALES_AND_TRAFFIC_REPORT stream and add new GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH stream for monthly granularity |
 | 5.3.1 | 2026-02-10 | [73006](https://github.com/airbytehq/airbyte/pull/73006) | Update dependencies |
