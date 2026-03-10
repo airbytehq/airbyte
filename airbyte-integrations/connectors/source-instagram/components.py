@@ -146,9 +146,7 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
                     media_data = get_http_response(f"MediaInsights.{children_id}", children_id, {"fields": fields}, config=config)
                 except Exception as e:
                     logger = logging.getLogger(f"airbyte.HttpClient.MediaInsights.{children_id}")
-                    logger.warning(
-                        f"Skipping carousel child media {children_id} for parent media {record.get('id', 'unknown')}: {e}"
-                    )
+                    logger.warning(f"Skipping carousel child media {children_id} for parent media {record.get('id', 'unknown')}: {e}")
                     continue
                 media_data = InstagramClearUrlTransformation().transform(media_data)
                 if media_data.get("timestamp"):
