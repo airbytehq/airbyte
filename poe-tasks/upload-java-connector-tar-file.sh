@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Uploads the java tar for java connectors.
-# Usage: ./poe-tasks/upload-java-connector-tar-file.sh --name destination-bigquery --release-type <pre-release|main-release>
+# Usage: ./poe-tasks/upload-java-connector-tar-file.sh --name destination-bigquery --with-semver-suffix <none|preview|rc>
 # You must have set the env var GCS_CREDENTIALS, which contains a JSON-formatted GCP service account key.
 # GCS_CREDENTIALS needs write access to `gs://$metadata_bucket/resources/java`.
 set -euo pipefail
@@ -25,11 +25,21 @@ if test -z "$base_tag" || test "$base_tag" = "null"; then
   echo "Error: dockerImageTag missing in ${meta}" >&2
   exit 1
 fi
-if test "$publish_mode" = "main-release"; then
-  docker_tag="$base_tag"
-else
-  docker_tag=$(generate_dev_tag "$base_tag")
-fi
+case "$semver_suffix" in
+  none)
+    docker_tag="$base_tag"
+    ;;
+  preview)
+    docker_tag=$(generate_dev_tag "$base_tag")
+    ;;
+  rc)
+    docker_tag=$(generate_rc_tag "$base_tag")
+    ;;
+  *)
+    echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+    exit 1
+    ;;
+esac
 
 gcloud_activate_service_account "$GCS_CREDENTIALS"
 gcloud storage cp "$tar_file_path" "gs://${metadata_bucket}/resources/java/${connector}/${docker_tag}/"

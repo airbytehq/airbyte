@@ -19,7 +19,9 @@ You may also need the following. This article explains how to get them.
 
 ## Setup guide
 
-### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
+### Set up Salesforce
+
+#### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
 
 Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
 
@@ -29,7 +31,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
-#### Step 1: Create a new user
+##### Step 1: Create a new user
 
 1. On the top right of the screen, click the gear icon and then click **Setup**.
 2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
@@ -39,7 +41,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
       4. Decide whether to generate a new password and notify the user.
       5. Select `save`
 
-#### Step 2: Create a new permission set
+##### Step 2: Create a new permission set
 
 1. Using the left navigation bar, select **Users** > **Permission Sets**
 2. Click `New` to create a new Permission Set.
@@ -57,7 +59,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
    3. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
    4. Click `Save`
 
-#### Step 3: Assign the permission set to the new user
+##### Step 3: Assign the permission set to the new user
 
 1. From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 2. Click "Add Assignments."
@@ -73,7 +75,7 @@ Log into the email you used above and verify your new Salesforce account user. Y
 
 <!-- env:oss -->
 
-### Get Salesforce OAuth credentials (Airbyte Open Source only)
+#### Get Salesforce OAuth credentials (Airbyte Open Source only)
 
 If you are using Airbyte Open Source, obtain the following OAuth credentials to authenticate:
 
@@ -104,7 +106,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:cloud -->
 
@@ -121,7 +124,8 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 6. Toggle whether your Salesforce account is a [Sandbox account](https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5) or a production account.
 7. (Optional) For **Start Date**, use the provided datepicker or enter the date programmatically in either `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default. Please note that timestamps are in [UTC](https://www.utctime.net/).
 8. (Optional) In the **Filter Salesforce Object** section, you may choose to target specific data for replication. To do so, click **Add**, then select the relevant criteria from the **Search criteria** dropdown. For **Search value**, add the search terms relevant to you. You may add multiple filters. If no filters are specified, Airbyte will replicate all data.
-9. Click **Set up source** and wait for the tests to complete.
+9. (Optional) For **Lookback Window**, enter an ISO 8601 duration (e.g., `PT10M`, `PT30M`, `PT1H`) to control how far back the connector re-reads data on each incremental sync. The default is `PT10M` (10 minutes). Increase this value if you observe missing records in your destination, which can occur due to Salesforce API eventual consistency delays.
+10. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
 
@@ -239,6 +243,28 @@ More information on the differences between various Salesforce APIs can be found
 If you set the `Force Use Bulk API` option to `true`, the connector will ignore unsupported properties and sync streams using BULK API.
 :::
 
+### Missing Records (Salesforce API Eventual Consistency)
+
+Salesforce does not guarantee that recently created or updated records are immediately available through its API. A record may have its `SystemModStamp` set, but the underlying transaction may not yet be committed. During an incremental sync, the connector can advance its cursor past such records, causing them to be permanently missed in subsequent syncs.
+
+**Symptoms:**
+
+- Records are missing in the destination but present when queried directly in Salesforce
+- The same source synced to a different destination at a later time does not have missing records
+- No errors appear in sync logs
+
+**Solution:** Increase the **Lookback Window** in the connector configuration. This controls how far back the connector re-reads data from the last cursor position on each incremental sync. The default is `PT10M` (10 minutes). If you observe missing records, try increasing it to `PT30M` (30 minutes) or `PT1H` (1 hour). Because the connector uses append-dedup mode, re-reading overlapping data does not create duplicates in the destination.
+
+The lookback window uses the ISO 8601 duration format. The format is `PT<number><unit>`, where `P` marks the start of the duration and `T` separates date from time components. Common examples:
+
+| Value  | Meaning    |
+|:-------|:-----------|
+| PT10M  | 10 minutes |
+| PT30M  | 30 minutes |
+| PT1H   | 1 hour     |
+| PT2H   | 2 hours    |
+| P1D    | 1 day      |
+
 </details>
 
 ## Changelog
@@ -248,6 +274,8 @@ If you set the `Force Use Bulk API` option to `true`, the connector will ignore 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | fix(source-salesforce): skip time-based slicing for full_refresh syncs (AI-Triage PR) |
+| 2.7.17 | 2026-02-10 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
 | 2.7.16-rc.1 | 2025-10-27 | [66136](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning|
 | 2.7.15      | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|

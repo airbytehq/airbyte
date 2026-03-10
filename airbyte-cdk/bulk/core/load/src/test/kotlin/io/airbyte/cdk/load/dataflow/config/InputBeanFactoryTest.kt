@@ -7,6 +7,9 @@ package io.airbyte.cdk.load.dataflow.config
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
+import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
+import io.airbyte.cdk.load.dataflow.config.model.ConnectorInputStreams
+import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
 import io.airbyte.cdk.load.dataflow.input.JsonDestinationMessageInputFlow

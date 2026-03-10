@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
@@ -34,20 +33,17 @@ class DestinationCatalogTest {
                         .withMinimumGenerationId(34)
                         .withGenerationId(56)
                         .withDestinationSyncMode(DestinationSyncMode.APPEND)
-                        .withIncludeFiles(false)
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                 .withNamespace("namespace1")
                                 .withName("name1")
-                                .withIsFileBased(false)
                         ),
                     ConfiguredAirbyteStream()
                         .withSyncId(12)
                         .withMinimumGenerationId(34)
                         .withGenerationId(56)
                         .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
-                        .withIncludeFiles(true)
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema(
@@ -55,7 +51,6 @@ class DestinationCatalogTest {
                                 )
                                 .withNamespace("namespace2")
                                 .withName("name2")
-                                .withIsFileBased(true)
                         )
                         .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
                         .withCursorField(listOf("cursor")),
@@ -64,20 +59,17 @@ class DestinationCatalogTest {
                         .withMinimumGenerationId(34)
                         .withGenerationId(56)
                         .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-                        .withIncludeFiles(false)
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema("""{"type": "object"}""".deserializeToNode())
                                 .withNamespace("namespace3")
                                 .withName("name3")
-                                .withIsFileBased(false)
                         ),
                     ConfiguredAirbyteStream()
                         .withSyncId(12)
                         .withMinimumGenerationId(34)
                         .withGenerationId(56)
                         .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
-                        .withIncludeFiles(false)
                         .withStream(
                             AirbyteStream()
                                 .withJsonSchema(
@@ -85,7 +77,6 @@ class DestinationCatalogTest {
                                 )
                                 .withNamespace("namespace4")
                                 .withName("name4")
-                                .withIsFileBased(true)
                         )
                         .withPrimaryKey(listOf(listOf("id1"), listOf("id2")))
                         .withCursorField(listOf("cursor")),
@@ -98,20 +89,9 @@ class DestinationCatalogTest {
             DestinationStream(
                 unmappedNamespace = "namespace",
                 unmappedName = "name",
-                importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 1,
-                includeFiles = false,
-                schema =
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "z" to FieldType(StringType, nullable = true),
-                                "y" to FieldType(BooleanType, nullable = true),
-                                "x" to FieldType(IntegerType, nullable = true),
-                            )
-                    ),
                 namespaceMapper = NamespaceMapper(),
                 tableSchema =
                     StreamTableSchema(
@@ -151,12 +131,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType = Append,
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            includeFiles = false,
-                            schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(
@@ -174,12 +151,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType = Append,
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            includeFiles = false,
-                            schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(
@@ -209,13 +183,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType =
-                                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            includeFiles = false,
-                            schema = ObjectType(linkedMapOf()),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(
@@ -252,19 +222,9 @@ class DestinationCatalogTest {
                         DestinationStream(
                             unmappedNamespace = null,
                             unmappedName = "foo",
-                            importType =
-                                Dedupe(
-                                    primaryKey = listOf(listOf("id")),
-                                    cursor = listOf("updated_at"),
-                                ),
                             generationId = 1,
                             minimumGenerationId = 0,
                             syncId = 1,
-                            includeFiles = false,
-                            schema =
-                                ObjectType(
-                                    linkedMapOf("id" to FieldType(IntegerType, nullable = true))
-                                ),
                             namespaceMapper = NamespaceMapper(),
                             tableSchema =
                                 StreamTableSchema(

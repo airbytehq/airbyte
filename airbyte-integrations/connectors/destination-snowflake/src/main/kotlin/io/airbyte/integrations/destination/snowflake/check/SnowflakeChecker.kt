@@ -4,13 +4,12 @@
 
 package io.airbyte.integrations.destination.snowflake.check
 
-import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
@@ -37,7 +36,7 @@ class SnowflakeChecker(
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
-) : DestinationCheckerV2 {
+) : DestinationChecker {
 
     override fun check() {
         val data =
@@ -90,11 +89,6 @@ class SnowflakeChecker(
             DestinationStream(
                 unmappedNamespace = outputSchema,
                 unmappedName = tableName,
-                importType = Append,
-                schema =
-                    ObjectType(
-                        linkedMapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false))
-                    ),
                 generationId = 0L,
                 minimumGenerationId = 0L,
                 syncId = 0L,

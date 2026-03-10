@@ -54,13 +54,19 @@ get_only_connector() {
   echo "${connectors[@]:0:1}"
 }
 
-# Generate the prerelease image tag (e.g. `1.2.3-preview.abcde12`).
+# Generate the preview image tag (e.g. `1.2.3-preview.abcde12`).
 generate_dev_tag() {
   local base="$1"
   # Use 7-char short hash to match the new prerelease format.
   local hash
   hash=$(git rev-parse --short=7 HEAD)
   echo "${base}-preview.${hash}"
+}
+
+# Generate the release candidate image tag (e.g. `1.2.3-rc1`).
+generate_rc_tag() {
+  local base="$1"
+  echo "${base}-rc1"
 }
 
 # Authenticate to gcloud using the contents of a variable.

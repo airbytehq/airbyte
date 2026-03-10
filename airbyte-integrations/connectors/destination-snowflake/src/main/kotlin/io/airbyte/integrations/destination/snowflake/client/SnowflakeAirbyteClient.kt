@@ -42,38 +42,42 @@ class SnowflakeAirbyteClient(
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val columnManager: SnowflakeColumnManager,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
+    private val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 
-    override suspend fun countTable(tableName: TableName): Long? =
-        try {
-            dataSource.connection.use { connection ->
-                val statement = connection.createStatement()
-                statement.use {
-                    val resultSet = it.executeQuery(sqlGenerator.countTable(tableName))
+    override suspend fun countTable(tableName: TableName): Long? {
+        if (!tableExists(tableName)) {
+            return null
+        }
+        return dataSource.connection.use { connection ->
+            val statement = connection.createStatement()
+            statement.use {
+                val resultSet = it.executeQuery(sqlGenerator.countTable(tableName))
 
-                    if (resultSet.next()) {
-                        resultSet.getLong(COUNT_TOTAL_ALIAS)
-                    } else {
-                        0L
-                    }
+                if (resultSet.next()) {
+                    resultSet.getLong(COUNT_TOTAL_ALIAS)
+                } else {
+                    0L
                 }
             }
-        } catch (e: SnowflakeSQLException) {
-            log.debug(e) {
-                "Table ${tableName.toPrettyString()} does not exist.  Returning a null count to signal a missing table."
-            }
-            null
         }
+    }
 
-    /**
-     * TEST ONLY. We have a much more performant implementation in
-     * [io.airbyte.integrations.destination.snowflake.db.SnowflakeDirectLoadDatabaseInitialStatusGatherer]
-     * .
-     */
-    override suspend fun tableExists(table: TableName) = countTable(table) != null
+    override suspend fun tableExists(table: TableName): Boolean =
+        dataSource.connection.use { connection ->
+            val statement =
+                connection.prepareStatement(
+                    """
+                    show tables
+                    like ?
+                    in schema "$databaseName"."${table.namespace}"
+                    """.trimIndent()
+                )
+            statement.setString(1, table.name)
+            statement.use { it.executeQuery().next() }
+        }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
         return dataSource.connection.use { connection ->
-            val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
             val statement =
                 connection.prepareStatement(
                     """
