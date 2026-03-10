@@ -175,7 +175,7 @@ definitions:
             $ref: "#/definitions/employees_stream"
     incremental_sync:
       type: DatetimeBasedCursor
-      # _year_partition is a synthetic cursor field used to partition API requests by year.
+      # year is a synthetic cursor field used to partition API requests by year.
       # It does not exist in the API response but is added via transformation to enable year-by-year iteration.
       cursor_field: year
       start_datetime:
