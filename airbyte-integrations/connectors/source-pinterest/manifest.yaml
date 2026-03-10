@@ -4122,7 +4122,7 @@ definitions:
     type: object
     properties:
       DATE:
-        description: The date of the report entry
+        description: Date of the data record
         type:
           - "null"
           - string
@@ -4135,7 +4135,6 @@ definitions:
       AD_ACCOUNT_ID:
         description: Unique identifier for the ad account
         type:
-          - "null"
           - string
       AD_GROUP_ENTITY_STATUS:
         description: Status of the ad group entity
@@ -4146,12 +4145,12 @@ definitions:
         description: Unique identifier for the ad group
         type:
           - "null"
-          - number
+          - string
       AD_ID:
         description: Unique identifier for the ad
         type:
           - "null"
-          - number
+          - string
       CAMPAIGN_DAILY_SPEND_CAP:
         description: Daily spend cap for the campaign
         type:
@@ -4203,7 +4202,7 @@ definitions:
           - "null"
           - number
       CPM_IN_DOLLAR:
-        description: Cost per mille in dollars
+        description: Cost per mille (cost per thousand impressions) in dollars
         type:
           - "null"
           - number
@@ -4283,12 +4282,12 @@ definitions:
           - "null"
           - number
       IDEA_PIN_PRODUCT_TAG_VISIT_1:
-        description: Number of visits from idea pin product tags
+        description: Number of visits to pinned product tags
         type:
           - "null"
           - number
       IDEA_PIN_PRODUCT_TAG_VISIT_2:
-        description: Second type of visits from idea pin product tags
+        description: Second type of visits to pinned product tags
         type:
           - "null"
           - number
@@ -4313,12 +4312,12 @@ definitions:
           - "null"
           - number
       OUTBOUND_CLICK_1:
-        description: Number of outbound click events
+        description: Number of outbound clicks
         type:
           - "null"
           - number
       OUTBOUND_CLICK_2:
-        description: Second type of outbound click events
+        description: Second type of outbound clicks
         type:
           - "null"
           - number
@@ -4338,37 +4337,37 @@ definitions:
           - "null"
           - number
       PIN_ID:
-        description: Unique identifier for the pin
+        description: Unique identifier for the pinned image
         type:
           - "null"
           - number
       PIN_PROMOTION_ID:
-        description: Unique identifier for the pin promotion
+        description: Unique identifier for the pinned promotion
         type:
           - "null"
           - number
       REPIN_1:
-        description: Number of repin events
+        description: Number of repins
         type:
           - "null"
           - number
       REPIN_2:
-        description: Second type of repin events
+        description: Second type of repins
         type:
           - "null"
           - number
       REPIN_RATE:
-        description: Rate of repin events
+        description: Repins rate
         type:
           - "null"
           - number
       SPEND_IN_DOLLAR:
-        description: Amount spent in dollars
+        description: Total spend in dollars
         type:
           - "null"
           - number
       SPEND_IN_MICRO_DOLLAR:
-        description: Amount spent in micro dollars
+        description: Total spend in micro dollars
         type:
           - "null"
           - number
@@ -4587,50 +4586,50 @@ definitions:
           - "null"
           - number
       TOTAL_WEB_CHECKOUT:
-        description: Total number of web checkout actions
+        description: Total number of checkout actions on the web
         type:
           - "null"
           - number
       TOTAL_WEB_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
-        description: Total value of web checkout actions in micro dollars
+        description: Total value of checkout actions on the web in micro dollars
         type:
           - "null"
           - number
       TOTAL_WEB_CLICK_CHECKOUT:
-        description: Total number of web click checkout actions
+        description: Total number of click events leading to checkout on the web
         type:
           - "null"
           - number
       TOTAL_WEB_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
         description:
-          Total value of web click checkout actions in micro dollars
+          Total value of click events leading to checkout on the web in micro dollars
         type:
           - "null"
           - number
       TOTAL_WEB_ENGAGEMENT_CHECKOUT:
-        description: Total number of web engagement checkout actions
+        description: Total number of engagement actions leading to checkout on the web
         type:
           - "null"
           - number
       TOTAL_WEB_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
         description:
-          Total value of web engagement checkout actions in micro dollars
+          Total value of engagement actions leading to checkout on the web in micro dollars
         type:
           - "null"
           - number
       TOTAL_WEB_SESSIONS:
-        description: Total number of web sessions
+        description: Total number of sessions on the web
         type:
           - "null"
           - number
       TOTAL_WEB_VIEW_CHECKOUT:
-        description: Total number of web view checkout actions
+        description: Total number of view events leading to checkout on the web
         type:
           - "null"
           - number
       TOTAL_WEB_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR:
         description:
-          Total value of web view checkout actions in micro dollars
+          Total value of view events leading to checkout on the web in micro dollars
         type:
           - "null"
           - number
