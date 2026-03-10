@@ -7,6 +7,13 @@ check:
   stream_names:
     - tags
 
+stream_groups:
+  companies_group:
+    streams:
+      - $ref: "#/definitions/streams/companies"
+    action:
+      type: BlockSimultaneousSyncsAction
+
 definitions:
   streams:
     activity_logs:
@@ -263,6 +270,9 @@ definitions:
             Intercom-Version: "2.11"
           error_handler:
             type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
@@ -281,11 +291,10 @@ definitions:
               - type: HttpResponseFilter
                 http_codes:
                   - 400
-                action: FAIL
+                action: RETRY
                 failure_type: transient_error
                 error_message: >-
-                  Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
-                  Intercom API does not allow for you to run the Companies or Company Parts streams in parallel.
+                  Scroll already exists for this workspace. Retrying after backoff to allow the existing scroll to expire.
               - type: HttpResponseFilter
                 http_codes:
                   - 500
@@ -444,6 +453,12 @@ definitions:
                 error_message: >-
                   Failed to perform request. Error: Permission Scope Error.
                   Please validate you have "Read and list users and companies" permission here: https://app.intercom.com/a/apps/_/developer-hub
+              - type: HttpResponseFilter
+                http_codes:
+                  - 404
+                action: IGNORE
+                failure_type: transient_error
+                error_message: "Ignoring 404 response for contacts search."
         record_selector:
           type: RecordSelector
           extractor:
@@ -584,7 +599,8 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
+              - type: CustomErrorHandler
+                class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -801,6 +817,7 @@ streams:
   - $ref: "#/definitions/streams/company_segments"
   - $ref: "#/definitions/streams/tickets"
 
+
 spec:
   type: Spec
   connection_specification:
@@ -865,6 +882,20 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2020-11-16T00:00:00Z"
+      num_workers:
+        type: integer
+        description: >-
+          The number of worker threads to use for concurrent stream processing.
+          Increase this to speed up syncs for workspaces with large volumes of
+          conversations. The default should work for most use cases.
+        order: 6
+        title: Num Workers
+        default: 10
+        minimum: 1
+        maximum: 40
+        examples:
+          - 10
+          - 20
     additionalProperties: true
   advanced_auth:
       auth_flow_type: "oauth2.0"
@@ -928,6 +959,7 @@ metadata:
         - errorHandler
         - incrementalSync
       conversation_parts:
+        - errorHandler
         - incrementalSync
         - parentStreams
       company_segments:
@@ -1028,6 +1060,32 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
   assist: {}
+# Intercom API rate limits:
+# - Both private and public apps: 10,000 API calls/min per app, 25,000/min per workspace
+# - Rate limit headers: X-RateLimit-Limit (per 10s window), X-RateLimit-Remaining, X-RateLimit-Reset
+# Two rate windows to match Intercom's enforcement:
+#   - 9500 req/min: 95% of the 10,000/min per-app limit
+#   - 1583 req/10s: 95% of ~1,667/10s (derived from 10,000/min per-app limit)
+# The ErrorHandlerWithRateLimiter custom component also proactively throttles based on remaining capacity headers.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 9500
+          interval: PT1M
+        - limit: 1583
+          interval: PT10S
+      matchers: []
+  status_codes_for_ratelimit_hit: [429]
+
+# Concurrency level controls how many partition slices are processed in parallel.
+# This is critical for substream-based streams like conversation_parts and company_segments,
+# which make a separate API call per parent record. Without concurrency, these are sequential.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 40
 
 schemas:
   activity_logs:
