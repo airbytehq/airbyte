@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from unittest import TestCase
 
 import freezegun
