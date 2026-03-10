@@ -331,8 +331,6 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - airbyte_unique_id
         properties:
           description:
             type:
@@ -342,25 +340,21 @@ streams:
             type:
               - number
               - "null"
-          url:
+          node_id:
             type:
               - string
-              - "null"
-          fork:
-            type:
-              - boolean
               - "null"
           name:
             type:
               - string
               - "null"
-          size:
+          full_name:
             type:
-              - number
+              - string
               - "null"
-          forks:
+          private:
             type:
-              - number
+              - boolean
               - "null"
           owner:
             type:
@@ -371,31 +365,15 @@ streams:
                 type:
                   - string
                   - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
               login:
                 type:
                   - string
                   - "null"
+              id:
+                type:
+                  - number
+                  - "null"
               node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
                 type:
                   - string
                   - "null"
@@ -403,19 +381,15 @@ streams:
                 type:
                   - string
                   - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
               gravatar_id:
                 type:
                   - string
                   - "null"
-              starred_url:
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
                 type:
                   - string
                   - "null"
@@ -427,11 +401,11 @@ streams:
                 type:
                   - string
                   - "null"
-              user_view_type:
+              gists_url:
                 type:
                   - string
                   - "null"
-              organizations_url:
+              starred_url:
                 type:
                   - string
                   - "null"
@@ -439,21 +413,273 @@ streams:
                 type:
                   - string
                   - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
               received_events_url:
                 type:
                   - string
                   - "null"
-          topics:
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+          html_url:
             type:
-              - array
+              - string
               - "null"
-            items:
-              type:
-                - string
-                - "null"
+          fork:
+            type:
+              - boolean
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          forks_url:
+            type:
+              - string
+              - "null"
+          keys_url:
+            type:
+              - string
+              - "null"
+          collaborators_url:
+            type:
+              - string
+              - "null"
+          teams_url:
+            type:
+              - string
+              - "null"
+          hooks_url:
+            type:
+              - string
+              - "null"
+          issue_events_url:
+            type:
+              - string
+              - "null"
+          events_url:
+            type:
+              - string
+              - "null"
+          assignees_url:
+            type:
+              - string
+              - "null"
+          branches_url:
+            type:
+              - string
+              - "null"
+          tags_url:
+            type:
+              - string
+              - "null"
+          blobs_url:
+            type:
+              - string
+              - "null"
+          git_tags_url:
+            type:
+              - string
+              - "null"
+          git_refs_url:
+            type:
+              - string
+              - "null"
+          trees_url:
+            type:
+              - string
+              - "null"
+          statuses_url:
+            type:
+              - string
+              - "null"
+          languages_url:
+            type:
+              - string
+              - "null"
+          stargazers_url:
+            type:
+              - string
+              - "null"
+          contributors_url:
+            type:
+              - string
+              - "null"
+          subscribers_url:
+            type:
+              - string
+              - "null"
+          subscription_url:
+            type:
+              - string
+              - "null"
+          commits_url:
+            type:
+              - string
+              - "null"
+          git_commits_url:
+            type:
+              - string
+              - "null"
+          comments_url:
+            type:
+              - string
+              - "null"
+          issue_comment_url:
+            type:
+              - string
+              - "null"
+          contents_url:
+            type:
+              - string
+              - "null"
+          compare_url:
+            type:
+              - string
+              - "null"
+          merges_url:
+            type:
+              - string
+              - "null"
+          archive_url:
+            type:
+              - string
+              - "null"
+          downloads_url:
+            type:
+              - string
+              - "null"
+          issues_url:
+            type:
+              - string
+              - "null"
+          pulls_url:
+            type:
+              - string
+              - "null"
+          milestones_url:
+            type:
+              - string
+              - "null"
+          notifications_url:
+            type:
+              - string
+              - "null"
+          labels_url:
+            type:
+              - string
+              - "null"
+          releases_url:
+            type:
+              - string
+              - "null"
+          deployments_url:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          pushed_at:
+            type:
+              - string
+              - "null"
           git_url:
             type:
               - string
+              - "null"
+          ssh_url:
+            type:
+              - string
+              - "null"
+          clone_url:
+            type:
+              - string
+              - "null"
+          svn_url:
+            type:
+              - string
+              - "null"
+          homepage:
+            type:
+              - string
+              - "null"
+          size:
+            type:
+              - number
+              - "null"
+          stargazers_count:
+            type:
+              - number
+              - "null"
+          watchers_count:
+            type:
+              - number
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          has_issues:
+            type:
+              - boolean
+              - "null"
+          has_projects:
+            type:
+              - boolean
+              - "null"
+          has_downloads:
+            type:
+              - boolean
+              - "null"
+          has_wiki:
+            type:
+              - boolean
+              - "null"
+          has_pages:
+            type:
+              - boolean
+              - "null"
+          has_discussions:
+            type:
+              - boolean
+              - "null"
+          forks_count:
+            type:
+              - number
+              - "null"
+          archived:
+            type:
+              - boolean
+              - "null"
+          disabled:
+            type:
+              - boolean
+              - "null"
+          open_issues_count:
+            type:
+              - number
               - "null"
           license:
             type:
@@ -464,15 +690,7 @@ streams:
                 type:
                   - string
                   - "null"
-              url:
-                type:
-                  - string
-                  - "null"
               name:
-                type:
-                  - string
-                  - "null"
-              node_id:
                 type:
                   - string
                   - "null"
@@ -480,306 +698,27 @@ streams:
                 type:
                   - string
                   - "null"
-          node_id:
-            type:
-              - string
-              - "null"
-          private:
-            type:
-              - boolean
-              - "null"
-          ssh_url:
-            type:
-              - string
-              - "null"
-          svn_url:
-            type:
-              - string
-              - "null"
-          archived:
+              url:
+                type:
+                  - string
+                  - "null"
+              node_id:
+                type:
+                  - string
+                  - "null"
+          allow_forking:
             type:
               - boolean
-              - "null"
-          disabled:
-            type:
-              - boolean
-              - "null"
-          has_wiki:
-            type:
-              - boolean
-              - "null"
-          homepage:
-            type:
-              - string
-              - "null"
-          html_url:
-            type:
-              - string
-              - "null"
-          keys_url:
-            type:
-              - string
-              - "null"
-          language:
-            type:
-              - string
-              - "null"
-          tags_url:
-            type:
-              - string
-              - "null"
-          watchers:
-            type:
-              - number
-              - "null"
-          blobs_url:
-            type:
-              - string
-              - "null"
-          clone_url:
-            type:
-              - string
-              - "null"
-          forks_url:
-            type:
-              - string
-              - "null"
-          full_name:
-            type:
-              - string
-              - "null"
-          has_pages:
-            type:
-              - boolean
-              - "null"
-          hooks_url:
-            type:
-              - string
-              - "null"
-          pulls_url:
-            type:
-              - string
-              - "null"
-          pushed_at:
-            type:
-              - string
-              - "null"
-          teams_url:
-            type:
-              - string
-              - "null"
-          trees_url:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
-          events_url:
-            type:
-              - string
-              - "null"
-          has_issues:
-            type:
-              - boolean
-              - "null"
-          issues_url:
-            type:
-              - string
-              - "null"
-          labels_url:
-            type:
-              - string
-              - "null"
-          merges_url:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-          visibility:
-            type:
-              - string
-              - "null"
-          archive_url:
-            type:
-              - string
-              - "null"
-          commits_url:
-            type:
-              - string
-              - "null"
-          compare_url:
-            type:
-              - string
-              - "null"
-          forks_count:
-            type:
-              - number
               - "null"
           is_template:
             type:
               - boolean
               - "null"
-          open_issues:
-            type:
-              - number
-              - "null"
-          permissions:
-            type:
-              - object
-              - "null"
-            properties:
-              pull:
-                type:
-                  - boolean
-                  - "null"
-              push:
-                type:
-                  - boolean
-                  - "null"
-              admin:
-                type:
-                  - boolean
-                  - "null"
-              triage:
-                type:
-                  - boolean
-                  - "null"
-              maintain:
-                type:
-                  - boolean
-                  - "null"
-          branches_url:
-            type:
-              - string
-              - "null"
-          comments_url:
-            type:
-              - string
-              - "null"
-          contents_url:
-            type:
-              - string
-              - "null"
-          git_refs_url:
-            type:
-              - string
-              - "null"
-          git_tags_url:
-            type:
-              - string
-              - "null"
-          has_projects:
+          web_commit_signoff_required:
             type:
               - boolean
-              - "null"
-          releases_url:
-            type:
-              - string
-              - "null"
-          statuses_url:
-            type:
-              - string
-              - "null"
-          allow_forking:
-            type:
-              - boolean
-              - "null"
-          assignees_url:
-            type:
-              - string
-              - "null"
-          downloads_url:
-            type:
-              - string
-              - "null"
-          has_downloads:
-            type:
-              - boolean
-              - "null"
-          languages_url:
-            type:
-              - string
-              - "null"
-          default_branch:
-            type:
-              - string
-              - "null"
-          milestones_url:
-            type:
-              - string
-              - "null"
-          stargazers_url:
-            type:
-              - string
-              - "null"
-          watchers_count:
-            type:
-              - number
-              - "null"
-          deployments_url:
-            type:
-              - string
-              - "null"
-          git_commits_url:
-            type:
-              - string
-              - "null"
-          has_discussions:
-            type:
-              - boolean
-              - "null"
-          subscribers_url:
-            type:
-              - string
-              - "null"
-          contributors_url:
-            type:
-              - string
-              - "null"
-          issue_events_url:
-            type:
-              - string
-              - "null"
-          stargazers_count:
-            type:
-              - number
-              - "null"
-          subscription_url:
-            type:
-              - string
-              - "null"
-          airbyte_unique_id:
-            type: string
-          collaborators_url:
-            type:
-              - string
-              - "null"
-          custom_properties:
-            type:
-              - object
               - "null"
           has_pull_requests:
-            type:
-              - boolean
-              - "null"
-          issue_comment_url:
-            type:
-              - string
-              - "null"
-          notifications_url:
-            type:
-              - string
-              - "null"
-          open_issues_count:
-            type:
-              - number
-              - "null"
-          web_commit_signoff_required:
             type:
               - boolean
               - "null"
@@ -787,6 +726,67 @@ streams:
             type:
               - string
               - "null"
+          topics:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          visibility:
+            type:
+              - string
+              - "null"
+          forks:
+            type:
+              - number
+              - "null"
+          open_issues:
+            type:
+              - number
+              - "null"
+          watchers:
+            type:
+              - number
+              - "null"
+          default_branch:
+            type:
+              - string
+              - "null"
+          permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              admin:
+                type:
+                  - boolean
+                  - "null"
+              maintain:
+                type:
+                  - boolean
+                  - "null"
+              push:
+                type:
+                  - boolean
+                  - "null"
+              triage:
+                type:
+                  - boolean
+                  - "null"
+              pull:
+                type:
+                  - boolean
+                  - "null"
+          custom_properties:
+            type:
+              - object
+              - "null"
+          airbyte_unique_id:
+            type: string
+        required:
+          - airbyte_unique_id
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -794,7 +794,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ record['node_id'] | hash }}"
+            value: "{{ record['node_id'] | hash('md5') }}"
   - type: DeclarativeStream
     name: assignees
     retriever:
@@ -1155,7 +1155,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash('md5') }}"
   - type: DeclarativeStream
     name: contributor_activity
     retriever:
@@ -1359,19 +1359,44 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - airbyte_unique_id
-          - updated_at
         properties:
-          id:
-            type:
-              - number
-              - "null"
           url:
             type:
               - string
               - "null"
-          body:
+          repository_url:
+            type:
+              - string
+              - "null"
+          labels_url:
+            type:
+              - string
+              - "null"
+          comments_url:
+            type:
+              - string
+              - "null"
+          events_url:
+            type:
+              - string
+              - "null"
+          html_url:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          node_id:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - number
+              - "null"
+          title:
             type:
               - string
               - "null"
@@ -1384,31 +1409,15 @@ streams:
                 type:
                   - string
                   - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
               login:
                 type:
                   - string
                   - "null"
+              id:
+                type:
+                  - number
+                  - "null"
               node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
                 type:
                   - string
                   - "null"
@@ -1416,19 +1425,15 @@ streams:
                 type:
                   - string
                   - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
               gravatar_id:
                 type:
                   - string
                   - "null"
-              starred_url:
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
                 type:
                   - string
                   - "null"
@@ -1440,11 +1445,11 @@ streams:
                 type:
                   - string
                   - "null"
-              user_view_type:
+              gists_url:
                 type:
                   - string
                   - "null"
-              organizations_url:
+              starred_url:
                 type:
                   - string
                   - "null"
@@ -1452,72 +1457,234 @@ streams:
                 type:
                   - string
                   - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
               received_events_url:
                 type:
                   - string
                   - "null"
-          draft:
-            type:
-              - boolean
-              - "null"
-          state:
-            type:
-              - string
-              - "null"
-          title:
-            type:
-              - string
-              - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
           labels:
             type:
               - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                node_id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                color:
+                  type:
+                    - string
+                    - "null"
+                default:
+                  type:
+                    - boolean
+                    - "null"
+          state:
+            type:
+              - string
               - "null"
           locked:
             type:
               - boolean
               - "null"
-          number:
+          assignees:
             type:
-              - number
-              - "null"
-          node_id:
-            type:
-              - string
+              - array
               - "null"
           comments:
             type:
               - number
               - "null"
-          html_url:
+          created_at:
             type:
               - string
               - "null"
-          assignees:
+          updated_at:
+            type: string
+          author_association:
             type:
-              - array
+              - string
               - "null"
-          reactions:
+          sub_issues_summary:
             type:
               - object
               - "null"
             properties:
-              "+1":
+              total:
                 type:
                   - number
                   - "null"
-              "-1":
+              completed:
                 type:
                   - number
+                  - "null"
+              percent_completed:
+                type:
+                  - number
+                  - "null"
+          issue_dependencies_summary:
+            type:
+              - object
+              - "null"
+            properties:
+              blocked_by:
+                type:
+                  - number
+                  - "null"
+              total_blocked_by:
+                type:
+                  - number
+                  - "null"
+              blocking:
+                type:
+                  - number
+                  - "null"
+              total_blocking:
+                type:
+                  - number
+                  - "null"
+          body:
+            type:
+              - string
+              - "null"
+          closed_by:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              login:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              node_id:
+                type:
+                  - string
+                  - "null"
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              gravatar_id:
+                type:
+                  - string
                   - "null"
               url:
                 type:
                   - string
                   - "null"
-              eyes:
+              html_url:
+                type:
+                  - string
+                  - "null"
+              followers_url:
+                type:
+                  - string
+                  - "null"
+              following_url:
+                type:
+                  - string
+                  - "null"
+              gists_url:
+                type:
+                  - string
+                  - "null"
+              starred_url:
+                type:
+                  - string
+                  - "null"
+              subscriptions_url:
+                type:
+                  - string
+                  - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
+              received_events_url:
+                type:
+                  - string
+                  - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+          reactions:
+            type:
+              - object
+              - "null"
+            properties:
+              url:
+                type:
+                  - string
+                  - "null"
+              total_count:
                 type:
                   - number
                   - "null"
-              heart:
+              "+1":
+                type:
+                  - number
+                  - "null"
+              "-1":
                 type:
                   - number
                   - "null"
@@ -1529,27 +1696,27 @@ streams:
                 type:
                   - number
                   - "null"
-              rocket:
-                type:
-                  - number
-                  - "null"
               confused:
                 type:
                   - number
                   - "null"
-              total_count:
+              heart:
                 type:
                   - number
                   - "null"
-          created_at:
+              rocket:
+                type:
+                  - number
+                  - "null"
+              eyes:
+                type:
+                  - number
+                  - "null"
+          timeline_url:
             type:
               - string
               - "null"
-          events_url:
-            type:
-              - string
-              - "null"
-          labels_url:
+          state_reason:
             type:
               - string
               - "null"
@@ -1557,11 +1724,11 @@ streams:
             type:
               - string
               - "null"
-          updated_at:
+          airbyte_unique_id:
             type: string
-          comments_url:
+          draft:
             type:
-              - string
+              - boolean
               - "null"
           pull_request:
             type:
@@ -1572,11 +1739,11 @@ streams:
                 type:
                   - string
                   - "null"
-              diff_url:
+              html_url:
                 type:
                   - string
                   - "null"
-              html_url:
+              diff_url:
                 type:
                   - string
                   - "null"
@@ -1584,20 +1751,9 @@ streams:
                 type:
                   - string
                   - "null"
-          timeline_url:
-            type:
-              - string
-              - "null"
-          repository_url:
-            type:
-              - string
-              - "null"
-          airbyte_unique_id:
-            type: string
-          author_association:
-            type:
-              - string
-              - "null"
+        required:
+          - airbyte_unique_id
+          - updated_at
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -1609,7 +1765,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
+            value: >-
+              {{ [record['node_id'], stream_slice.repo] | join('_') |
+              hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -1712,7 +1870,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash('md5') }}"
   - type: DeclarativeStream
     name: tags
     retriever:
@@ -1831,104 +1989,55 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - sha
-          - author_datetime
-          - airbyte_unique_id
         properties:
           sha:
-            type: string
-          url:
             type:
               - string
               - "null"
-          author:
+          node_id:
             type:
-              - object
+              - string
               - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              login:
-                type:
-                  - string
-                  - "null"
-              node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
-                type:
-                  - string
-                  - "null"
-              avatar_url:
-                type:
-                  - string
-                  - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
-              gravatar_id:
-                type:
-                  - string
-                  - "null"
-              starred_url:
-                type:
-                  - string
-                  - "null"
-              followers_url:
-                type:
-                  - string
-                  - "null"
-              following_url:
-                type:
-                  - string
-                  - "null"
-              user_view_type:
-                type:
-                  - string
-                  - "null"
-              organizations_url:
-                type:
-                  - string
-                  - "null"
-              subscriptions_url:
-                type:
-                  - string
-                  - "null"
-              received_events_url:
-                type:
-                  - string
-                  - "null"
           commit:
             type:
               - object
               - "null"
             properties:
-              url:
+              author:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              committer:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  date:
+                    type:
+                      - string
+                      - "null"
+              message:
                 type:
                   - string
                   - "null"
@@ -1945,50 +2054,28 @@ streams:
                     type:
                       - string
                       - "null"
-              author:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  date:
-                    type:
-                      - string
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-              message:
+              url:
                 type:
                   - string
                   - "null"
-              committer:
+              comment_count:
                 type:
-                  - object
+                  - number
                   - "null"
-                properties:
-                  date:
-                    type:
-                      - string
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
               verification:
                 type:
                   - object
                   - "null"
                 properties:
+                  verified:
+                    type:
+                      - boolean
+                      - "null"
                   reason:
+                    type:
+                      - string
+                      - "null"
+                  signature:
                     type:
                       - string
                       - "null"
@@ -1996,26 +2083,184 @@ streams:
                     type:
                       - string
                       - "null"
-                  verified:
-                    type:
-                      - boolean
-                      - "null"
-                  signature:
-                    type:
-                      - string
-                      - "null"
                   verified_at:
                     type:
                       - string
                       - "null"
-              comment_count:
-                type:
-                  - number
-                  - "null"
-          node_id:
+          url:
             type:
               - string
               - "null"
+          html_url:
+            type:
+              - string
+              - "null"
+          comments_url:
+            type:
+              - string
+              - "null"
+          author:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              login:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              node_id:
+                type:
+                  - string
+                  - "null"
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              gravatar_id:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
+                type:
+                  - string
+                  - "null"
+              followers_url:
+                type:
+                  - string
+                  - "null"
+              following_url:
+                type:
+                  - string
+                  - "null"
+              gists_url:
+                type:
+                  - string
+                  - "null"
+              starred_url:
+                type:
+                  - string
+                  - "null"
+              subscriptions_url:
+                type:
+                  - string
+                  - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
+              received_events_url:
+                type:
+                  - string
+                  - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+          committer:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              login:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              node_id:
+                type:
+                  - string
+                  - "null"
+              avatar_url:
+                type:
+                  - string
+                  - "null"
+              gravatar_id:
+                type:
+                  - string
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
+                type:
+                  - string
+                  - "null"
+              followers_url:
+                type:
+                  - string
+                  - "null"
+              following_url:
+                type:
+                  - string
+                  - "null"
+              gists_url:
+                type:
+                  - string
+                  - "null"
+              starred_url:
+                type:
+                  - string
+                  - "null"
+              subscriptions_url:
+                type:
+                  - string
+                  - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
+              received_events_url:
+                type:
+                  - string
+                  - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
           parents:
             type:
               - array
@@ -2037,96 +2282,7 @@ streams:
                   type:
                     - string
                     - "null"
-          html_url:
-            type:
-              - string
-              - "null"
-          committer:
-            type:
-              - object
-              - "null"
-            properties:
-              type:
-                type:
-                  - string
-                  - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
-              login:
-                type:
-                  - string
-                  - "null"
-              node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
-                type:
-                  - string
-                  - "null"
-              avatar_url:
-                type:
-                  - string
-                  - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
-              gravatar_id:
-                type:
-                  - string
-                  - "null"
-              starred_url:
-                type:
-                  - string
-                  - "null"
-              followers_url:
-                type:
-                  - string
-                  - "null"
-              following_url:
-                type:
-                  - string
-                  - "null"
-              user_view_type:
-                type:
-                  - string
-                  - "null"
-              organizations_url:
-                type:
-                  - string
-                  - "null"
-              subscriptions_url:
-                type:
-                  - string
-                  - "null"
-              received_events_url:
-                type:
-                  - string
-                  - "null"
           repository:
-            type:
-              - string
-              - "null"
-          comments_url:
             type:
               - string
               - "null"
@@ -2134,6 +2290,9 @@ streams:
             type: string
           airbyte_unique_id:
             type: string
+        required:
+          - airbyte_unique_id
+          - author_datetime
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -2149,7 +2308,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['sha'], stream_slice.repo] | join('_') | hash }}"
+            value: "{{ [record['sha'], stream_slice.repo] | join('_') | hash('md5') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -2207,27 +2366,42 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - airbyte_unique_id
-          - created_at
         properties:
-          id:
-            type:
-              - number
-              - "null"
-          ref:
-            type:
-              - string
-              - "null"
-          sha:
-            type:
-              - string
-              - "null"
           url:
             type:
               - string
               - "null"
+          id:
+            type:
+              - number
+              - "null"
+          node_id:
+            type:
+              - string
+              - "null"
           task:
+            type:
+              - string
+              - "null"
+          original_environment:
+            type:
+              - string
+              - "null"
+          environment:
+            type:
+              - string
+              - "null"
+          created_at:
+            type: string
+          updated_at:
+            type:
+              - string
+              - "null"
+          statuses_url:
+            type:
+              - string
+              - "null"
+          repository_url:
             type:
               - string
               - "null"
@@ -2240,31 +2414,15 @@ streams:
                 type:
                   - string
                   - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
               login:
                 type:
                   - string
                   - "null"
+              id:
+                type:
+                  - number
+                  - "null"
               node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
                 type:
                   - string
                   - "null"
@@ -2272,19 +2430,15 @@ streams:
                 type:
                   - string
                   - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
               gravatar_id:
                 type:
                   - string
                   - "null"
-              starred_url:
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
                 type:
                   - string
                   - "null"
@@ -2296,11 +2450,11 @@ streams:
                 type:
                   - string
                   - "null"
-              user_view_type:
+              gists_url:
                 type:
                   - string
                   - "null"
-              organizations_url:
+              starred_url:
                 type:
                   - string
                   - "null"
@@ -2308,45 +2462,41 @@ streams:
                 type:
                   - string
                   - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
               received_events_url:
                 type:
                   - string
                   - "null"
-          node_id:
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+          sha:
+            type:
+              - string
+              - "null"
+          ref:
             type:
               - string
               - "null"
           payload:
             type:
               - object
-              - "null"
-          created_at:
-            type: string
-          repository:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
-          environment:
-            type:
-              - string
-              - "null"
-          statuses_url:
-            type:
-              - string
-              - "null"
-          repository_url:
-            type:
-              - string
-              - "null"
-          airbyte_unique_id:
-            type: string
-          original_environment:
-            type:
-              - string
               - "null"
           transient_environment:
             type:
@@ -2369,11 +2519,15 @@ streams:
                 type:
                   - number
                   - "null"
-              name:
+              client_id:
                 type:
                   - string
                   - "null"
               slug:
+                type:
+                  - string
+                  - "null"
+              node_id:
                 type:
                   - string
                   - "null"
@@ -2386,31 +2540,15 @@ streams:
                     type:
                       - string
                       - "null"
-                  id:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
                   login:
                     type:
                       - string
                       - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
                   node_id:
-                    type:
-                      - string
-                      - "null"
-                  html_url:
-                    type:
-                      - string
-                      - "null"
-                  gists_url:
-                    type:
-                      - string
-                      - "null"
-                  repos_url:
                     type:
                       - string
                       - "null"
@@ -2418,19 +2556,15 @@ streams:
                     type:
                       - string
                       - "null"
-                  events_url:
-                    type:
-                      - string
-                      - "null"
-                  site_admin:
-                    type:
-                      - boolean
-                      - "null"
                   gravatar_id:
                     type:
                       - string
                       - "null"
-                  starred_url:
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  html_url:
                     type:
                       - string
                       - "null"
@@ -2442,11 +2576,11 @@ streams:
                     type:
                       - string
                       - "null"
-                  user_view_type:
+                  gists_url:
                     type:
                       - string
                       - "null"
-                  organizations_url:
+                  starred_url:
                     type:
                       - string
                       - "null"
@@ -2454,23 +2588,39 @@ streams:
                     type:
                       - string
                       - "null"
+                  organizations_url:
+                    type:
+                      - string
+                      - "null"
+                  repos_url:
+                    type:
+                      - string
+                      - "null"
+                  events_url:
+                    type:
+                      - string
+                      - "null"
                   received_events_url:
                     type:
                       - string
                       - "null"
-              events:
+                  user_view_type:
+                    type:
+                      - string
+                      - "null"
+                  site_admin:
+                    type:
+                      - boolean
+                      - "null"
+              name:
                 type:
-                  - array
+                  - string
                   - "null"
-              node_id:
+              external_url:
                 type:
                   - string
                   - "null"
               html_url:
-                type:
-                  - string
-                  - "null"
-              client_id:
                 type:
                   - string
                   - "null"
@@ -2491,7 +2641,19 @@ streams:
                     type:
                       - string
                       - "null"
-                  pages:
+                  actions:
+                    type:
+                      - string
+                      - "null"
+                  administration:
+                    type:
+                      - string
+                      - "null"
+                  artifact_metadata:
+                    type:
+                      - string
+                      - "null"
+                  attestations:
                     type:
                       - string
                       - "null"
@@ -2499,15 +2661,11 @@ streams:
                     type:
                       - string
                       - "null"
-                  members:
-                    type:
-                      - string
-                      - "null"
                   contents:
                     type:
                       - string
                       - "null"
-                  statuses:
+                  copilot_requests:
                     type:
                       - string
                       - "null"
@@ -2515,10 +2673,71 @@ streams:
                     type:
                       - string
                       - "null"
-              external_url:
+                  discussions:
+                    type:
+                      - string
+                      - "null"
+                  issues:
+                    type:
+                      - string
+                      - "null"
+                  merge_queues:
+                    type:
+                      - string
+                      - "null"
+                  models:
+                    type:
+                      - string
+                      - "null"
+                  packages:
+                    type:
+                      - string
+                      - "null"
+                  pages:
+                    type:
+                      - string
+                      - "null"
+                  pull_requests:
+                    type:
+                      - string
+                      - "null"
+                  repository_hooks:
+                    type:
+                      - string
+                      - "null"
+                  repository_projects:
+                    type:
+                      - string
+                      - "null"
+                  security_events:
+                    type:
+                      - string
+                      - "null"
+                  statuses:
+                    type:
+                      - string
+                      - "null"
+                  vulnerability_alerts:
+                    type:
+                      - string
+                      - "null"
+              events:
                 type:
-                  - string
+                  - array
                   - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          repository:
+            type:
+              - string
+              - "null"
+          airbyte_unique_id:
+            type: string
+        required:
+          - airbyte_unique_id
+          - created_at
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -2530,7 +2749,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
+            value: >-
+              {{ [record['node_id'], stream_slice.repo] | join('_') |
+              hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -2587,1006 +2808,51 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - airbyte_unique_id
-          - updated_at
         properties:
-          id:
-            type:
-              - number
-              - "null"
           url:
             type:
               - string
               - "null"
-          base:
+          id:
             type:
-              - object
+              - number
               - "null"
-            properties:
-              ref:
-                type:
-                  - string
-                  - "null"
-              sha:
-                type:
-                  - string
-                  - "null"
-              repo:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  description:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  fork:
-                    type:
-                      - boolean
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  size:
-                    type:
-                      - number
-                      - "null"
-                  forks:
-                    type:
-                      - number
-                      - "null"
-                  owner:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      type:
-                        type:
-                          - string
-                          - "null"
-                      id:
-                        type:
-                          - number
-                          - "null"
-                      url:
-                        type:
-                          - string
-                          - "null"
-                      login:
-                        type:
-                          - string
-                          - "null"
-                      node_id:
-                        type:
-                          - string
-                          - "null"
-                      html_url:
-                        type:
-                          - string
-                          - "null"
-                      gists_url:
-                        type:
-                          - string
-                          - "null"
-                      repos_url:
-                        type:
-                          - string
-                          - "null"
-                      avatar_url:
-                        type:
-                          - string
-                          - "null"
-                      events_url:
-                        type:
-                          - string
-                          - "null"
-                      site_admin:
-                        type:
-                          - boolean
-                          - "null"
-                      gravatar_id:
-                        type:
-                          - string
-                          - "null"
-                      starred_url:
-                        type:
-                          - string
-                          - "null"
-                      followers_url:
-                        type:
-                          - string
-                          - "null"
-                      following_url:
-                        type:
-                          - string
-                          - "null"
-                      user_view_type:
-                        type:
-                          - string
-                          - "null"
-                      organizations_url:
-                        type:
-                          - string
-                          - "null"
-                      subscriptions_url:
-                        type:
-                          - string
-                          - "null"
-                      received_events_url:
-                        type:
-                          - string
-                          - "null"
-                  topics:
-                    type:
-                      - array
-                      - "null"
-                  git_url:
-                    type:
-                      - string
-                      - "null"
-                  node_id:
-                    type:
-                      - string
-                      - "null"
-                  private:
-                    type:
-                      - boolean
-                      - "null"
-                  ssh_url:
-                    type:
-                      - string
-                      - "null"
-                  svn_url:
-                    type:
-                      - string
-                      - "null"
-                  archived:
-                    type:
-                      - boolean
-                      - "null"
-                  disabled:
-                    type:
-                      - boolean
-                      - "null"
-                  has_wiki:
-                    type:
-                      - boolean
-                      - "null"
-                  homepage:
-                    type:
-                      - string
-                      - "null"
-                  html_url:
-                    type:
-                      - string
-                      - "null"
-                  keys_url:
-                    type:
-                      - string
-                      - "null"
-                  tags_url:
-                    type:
-                      - string
-                      - "null"
-                  watchers:
-                    type:
-                      - number
-                      - "null"
-                  blobs_url:
-                    type:
-                      - string
-                      - "null"
-                  clone_url:
-                    type:
-                      - string
-                      - "null"
-                  forks_url:
-                    type:
-                      - string
-                      - "null"
-                  full_name:
-                    type:
-                      - string
-                      - "null"
-                  has_pages:
-                    type:
-                      - boolean
-                      - "null"
-                  hooks_url:
-                    type:
-                      - string
-                      - "null"
-                  pulls_url:
-                    type:
-                      - string
-                      - "null"
-                  pushed_at:
-                    type:
-                      - string
-                      - "null"
-                  teams_url:
-                    type:
-                      - string
-                      - "null"
-                  trees_url:
-                    type:
-                      - string
-                      - "null"
-                  created_at:
-                    type:
-                      - string
-                      - "null"
-                  events_url:
-                    type:
-                      - string
-                      - "null"
-                  has_issues:
-                    type:
-                      - boolean
-                      - "null"
-                  issues_url:
-                    type:
-                      - string
-                      - "null"
-                  labels_url:
-                    type:
-                      - string
-                      - "null"
-                  merges_url:
-                    type:
-                      - string
-                      - "null"
-                  updated_at:
-                    type:
-                      - string
-                      - "null"
-                  visibility:
-                    type:
-                      - string
-                      - "null"
-                  archive_url:
-                    type:
-                      - string
-                      - "null"
-                  commits_url:
-                    type:
-                      - string
-                      - "null"
-                  compare_url:
-                    type:
-                      - string
-                      - "null"
-                  forks_count:
-                    type:
-                      - number
-                      - "null"
-                  is_template:
-                    type:
-                      - boolean
-                      - "null"
-                  open_issues:
-                    type:
-                      - number
-                      - "null"
-                  branches_url:
-                    type:
-                      - string
-                      - "null"
-                  comments_url:
-                    type:
-                      - string
-                      - "null"
-                  contents_url:
-                    type:
-                      - string
-                      - "null"
-                  git_refs_url:
-                    type:
-                      - string
-                      - "null"
-                  git_tags_url:
-                    type:
-                      - string
-                      - "null"
-                  has_projects:
-                    type:
-                      - boolean
-                      - "null"
-                  releases_url:
-                    type:
-                      - string
-                      - "null"
-                  statuses_url:
-                    type:
-                      - string
-                      - "null"
-                  allow_forking:
-                    type:
-                      - boolean
-                      - "null"
-                  assignees_url:
-                    type:
-                      - string
-                      - "null"
-                  downloads_url:
-                    type:
-                      - string
-                      - "null"
-                  has_downloads:
-                    type:
-                      - boolean
-                      - "null"
-                  languages_url:
-                    type:
-                      - string
-                      - "null"
-                  default_branch:
-                    type:
-                      - string
-                      - "null"
-                  milestones_url:
-                    type:
-                      - string
-                      - "null"
-                  stargazers_url:
-                    type:
-                      - string
-                      - "null"
-                  watchers_count:
-                    type:
-                      - number
-                      - "null"
-                  deployments_url:
-                    type:
-                      - string
-                      - "null"
-                  git_commits_url:
-                    type:
-                      - string
-                      - "null"
-                  has_discussions:
-                    type:
-                      - boolean
-                      - "null"
-                  subscribers_url:
-                    type:
-                      - string
-                      - "null"
-                  contributors_url:
-                    type:
-                      - string
-                      - "null"
-                  issue_events_url:
-                    type:
-                      - string
-                      - "null"
-                  stargazers_count:
-                    type:
-                      - number
-                      - "null"
-                  subscription_url:
-                    type:
-                      - string
-                      - "null"
-                  collaborators_url:
-                    type:
-                      - string
-                      - "null"
-                  has_pull_requests:
-                    type:
-                      - boolean
-                      - "null"
-                  issue_comment_url:
-                    type:
-                      - string
-                      - "null"
-                  notifications_url:
-                    type:
-                      - string
-                      - "null"
-                  open_issues_count:
-                    type:
-                      - number
-                      - "null"
-                  web_commit_signoff_required:
-                    type:
-                      - boolean
-                      - "null"
-                  pull_request_creation_policy:
-                    type:
-                      - string
-                      - "null"
-              user:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  login:
-                    type:
-                      - string
-                      - "null"
-                  node_id:
-                    type:
-                      - string
-                      - "null"
-                  html_url:
-                    type:
-                      - string
-                      - "null"
-                  gists_url:
-                    type:
-                      - string
-                      - "null"
-                  repos_url:
-                    type:
-                      - string
-                      - "null"
-                  avatar_url:
-                    type:
-                      - string
-                      - "null"
-                  events_url:
-                    type:
-                      - string
-                      - "null"
-                  site_admin:
-                    type:
-                      - boolean
-                      - "null"
-                  gravatar_id:
-                    type:
-                      - string
-                      - "null"
-                  starred_url:
-                    type:
-                      - string
-                      - "null"
-                  followers_url:
-                    type:
-                      - string
-                      - "null"
-                  following_url:
-                    type:
-                      - string
-                      - "null"
-                  user_view_type:
-                    type:
-                      - string
-                      - "null"
-                  organizations_url:
-                    type:
-                      - string
-                      - "null"
-                  subscriptions_url:
-                    type:
-                      - string
-                      - "null"
-                  received_events_url:
-                    type:
-                      - string
-                      - "null"
-              label:
-                type:
-                  - string
-                  - "null"
-          body:
+          node_id:
             type:
               - string
               - "null"
-          head:
+          html_url:
             type:
-              - object
+              - string
               - "null"
-            properties:
-              ref:
-                type:
-                  - string
-                  - "null"
-              sha:
-                type:
-                  - string
-                  - "null"
-              repo:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  description:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  fork:
-                    type:
-                      - boolean
-                      - "null"
-                  name:
-                    type:
-                      - string
-                      - "null"
-                  size:
-                    type:
-                      - number
-                      - "null"
-                  forks:
-                    type:
-                      - number
-                      - "null"
-                  owner:
-                    type:
-                      - object
-                      - "null"
-                    properties:
-                      type:
-                        type:
-                          - string
-                          - "null"
-                      id:
-                        type:
-                          - number
-                          - "null"
-                      url:
-                        type:
-                          - string
-                          - "null"
-                      login:
-                        type:
-                          - string
-                          - "null"
-                      node_id:
-                        type:
-                          - string
-                          - "null"
-                      html_url:
-                        type:
-                          - string
-                          - "null"
-                      gists_url:
-                        type:
-                          - string
-                          - "null"
-                      repos_url:
-                        type:
-                          - string
-                          - "null"
-                      avatar_url:
-                        type:
-                          - string
-                          - "null"
-                      events_url:
-                        type:
-                          - string
-                          - "null"
-                      site_admin:
-                        type:
-                          - boolean
-                          - "null"
-                      gravatar_id:
-                        type:
-                          - string
-                          - "null"
-                      starred_url:
-                        type:
-                          - string
-                          - "null"
-                      followers_url:
-                        type:
-                          - string
-                          - "null"
-                      following_url:
-                        type:
-                          - string
-                          - "null"
-                      user_view_type:
-                        type:
-                          - string
-                          - "null"
-                      organizations_url:
-                        type:
-                          - string
-                          - "null"
-                      subscriptions_url:
-                        type:
-                          - string
-                          - "null"
-                      received_events_url:
-                        type:
-                          - string
-                          - "null"
-                  topics:
-                    type:
-                      - array
-                      - "null"
-                  git_url:
-                    type:
-                      - string
-                      - "null"
-                  node_id:
-                    type:
-                      - string
-                      - "null"
-                  private:
-                    type:
-                      - boolean
-                      - "null"
-                  ssh_url:
-                    type:
-                      - string
-                      - "null"
-                  svn_url:
-                    type:
-                      - string
-                      - "null"
-                  archived:
-                    type:
-                      - boolean
-                      - "null"
-                  disabled:
-                    type:
-                      - boolean
-                      - "null"
-                  has_wiki:
-                    type:
-                      - boolean
-                      - "null"
-                  homepage:
-                    type:
-                      - string
-                      - "null"
-                  html_url:
-                    type:
-                      - string
-                      - "null"
-                  keys_url:
-                    type:
-                      - string
-                      - "null"
-                  tags_url:
-                    type:
-                      - string
-                      - "null"
-                  watchers:
-                    type:
-                      - number
-                      - "null"
-                  blobs_url:
-                    type:
-                      - string
-                      - "null"
-                  clone_url:
-                    type:
-                      - string
-                      - "null"
-                  forks_url:
-                    type:
-                      - string
-                      - "null"
-                  full_name:
-                    type:
-                      - string
-                      - "null"
-                  has_pages:
-                    type:
-                      - boolean
-                      - "null"
-                  hooks_url:
-                    type:
-                      - string
-                      - "null"
-                  pulls_url:
-                    type:
-                      - string
-                      - "null"
-                  pushed_at:
-                    type:
-                      - string
-                      - "null"
-                  teams_url:
-                    type:
-                      - string
-                      - "null"
-                  trees_url:
-                    type:
-                      - string
-                      - "null"
-                  created_at:
-                    type:
-                      - string
-                      - "null"
-                  events_url:
-                    type:
-                      - string
-                      - "null"
-                  has_issues:
-                    type:
-                      - boolean
-                      - "null"
-                  issues_url:
-                    type:
-                      - string
-                      - "null"
-                  labels_url:
-                    type:
-                      - string
-                      - "null"
-                  merges_url:
-                    type:
-                      - string
-                      - "null"
-                  updated_at:
-                    type:
-                      - string
-                      - "null"
-                  visibility:
-                    type:
-                      - string
-                      - "null"
-                  archive_url:
-                    type:
-                      - string
-                      - "null"
-                  commits_url:
-                    type:
-                      - string
-                      - "null"
-                  compare_url:
-                    type:
-                      - string
-                      - "null"
-                  forks_count:
-                    type:
-                      - number
-                      - "null"
-                  is_template:
-                    type:
-                      - boolean
-                      - "null"
-                  open_issues:
-                    type:
-                      - number
-                      - "null"
-                  branches_url:
-                    type:
-                      - string
-                      - "null"
-                  comments_url:
-                    type:
-                      - string
-                      - "null"
-                  contents_url:
-                    type:
-                      - string
-                      - "null"
-                  git_refs_url:
-                    type:
-                      - string
-                      - "null"
-                  git_tags_url:
-                    type:
-                      - string
-                      - "null"
-                  has_projects:
-                    type:
-                      - boolean
-                      - "null"
-                  releases_url:
-                    type:
-                      - string
-                      - "null"
-                  statuses_url:
-                    type:
-                      - string
-                      - "null"
-                  allow_forking:
-                    type:
-                      - boolean
-                      - "null"
-                  assignees_url:
-                    type:
-                      - string
-                      - "null"
-                  downloads_url:
-                    type:
-                      - string
-                      - "null"
-                  has_downloads:
-                    type:
-                      - boolean
-                      - "null"
-                  languages_url:
-                    type:
-                      - string
-                      - "null"
-                  default_branch:
-                    type:
-                      - string
-                      - "null"
-                  milestones_url:
-                    type:
-                      - string
-                      - "null"
-                  stargazers_url:
-                    type:
-                      - string
-                      - "null"
-                  watchers_count:
-                    type:
-                      - number
-                      - "null"
-                  deployments_url:
-                    type:
-                      - string
-                      - "null"
-                  git_commits_url:
-                    type:
-                      - string
-                      - "null"
-                  has_discussions:
-                    type:
-                      - boolean
-                      - "null"
-                  subscribers_url:
-                    type:
-                      - string
-                      - "null"
-                  contributors_url:
-                    type:
-                      - string
-                      - "null"
-                  issue_events_url:
-                    type:
-                      - string
-                      - "null"
-                  stargazers_count:
-                    type:
-                      - number
-                      - "null"
-                  subscription_url:
-                    type:
-                      - string
-                      - "null"
-                  collaborators_url:
-                    type:
-                      - string
-                      - "null"
-                  has_pull_requests:
-                    type:
-                      - boolean
-                      - "null"
-                  issue_comment_url:
-                    type:
-                      - string
-                      - "null"
-                  notifications_url:
-                    type:
-                      - string
-                      - "null"
-                  open_issues_count:
-                    type:
-                      - number
-                      - "null"
-                  web_commit_signoff_required:
-                    type:
-                      - boolean
-                      - "null"
-                  pull_request_creation_policy:
-                    type:
-                      - string
-                      - "null"
-              user:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - number
-                      - "null"
-                  url:
-                    type:
-                      - string
-                      - "null"
-                  login:
-                    type:
-                      - string
-                      - "null"
-                  node_id:
-                    type:
-                      - string
-                      - "null"
-                  html_url:
-                    type:
-                      - string
-                      - "null"
-                  gists_url:
-                    type:
-                      - string
-                      - "null"
-                  repos_url:
-                    type:
-                      - string
-                      - "null"
-                  avatar_url:
-                    type:
-                      - string
-                      - "null"
-                  events_url:
-                    type:
-                      - string
-                      - "null"
-                  site_admin:
-                    type:
-                      - boolean
-                      - "null"
-                  gravatar_id:
-                    type:
-                      - string
-                      - "null"
-                  starred_url:
-                    type:
-                      - string
-                      - "null"
-                  followers_url:
-                    type:
-                      - string
-                      - "null"
-                  following_url:
-                    type:
-                      - string
-                      - "null"
-                  user_view_type:
-                    type:
-                      - string
-                      - "null"
-                  organizations_url:
-                    type:
-                      - string
-                      - "null"
-                  subscriptions_url:
-                    type:
-                      - string
-                      - "null"
-                  received_events_url:
-                    type:
-                      - string
-                      - "null"
-              label:
-                type:
-                  - string
-                  - "null"
+          diff_url:
+            type:
+              - string
+              - "null"
+          patch_url:
+            type:
+              - string
+              - "null"
+          issue_url:
+            type:
+              - string
+              - "null"
+          number:
+            type:
+              - number
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          locked:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
           user:
             type:
               - object
@@ -3596,31 +2862,15 @@ streams:
                 type:
                   - string
                   - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
               login:
                 type:
                   - string
                   - "null"
+              id:
+                type:
+                  - number
+                  - "null"
               node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
                 type:
                   - string
                   - "null"
@@ -3628,19 +2878,15 @@ streams:
                 type:
                   - string
                   - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
               gravatar_id:
                 type:
                   - string
                   - "null"
-              starred_url:
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
                 type:
                   - string
                   - "null"
@@ -3652,11 +2898,11 @@ streams:
                 type:
                   - string
                   - "null"
-              user_view_type:
+              gists_url:
                 type:
                   - string
                   - "null"
-              organizations_url:
+              starred_url:
                 type:
                   - string
                   - "null"
@@ -3664,28 +2910,1335 @@ streams:
                 type:
                   - string
                   - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
               received_events_url:
                 type:
                   - string
                   - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+          body:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type: string
+          closed_at:
+            type:
+              - string
+              - "null"
+          merged_at:
+            type:
+              - string
+              - "null"
+          merge_commit_sha:
+            type:
+              - string
+              - "null"
+          assignees:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                login:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                node_id:
+                  type:
+                    - string
+                    - "null"
+                avatar_url:
+                  type:
+                    - string
+                    - "null"
+                gravatar_id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                html_url:
+                  type:
+                    - string
+                    - "null"
+                followers_url:
+                  type:
+                    - string
+                    - "null"
+                following_url:
+                  type:
+                    - string
+                    - "null"
+                gists_url:
+                  type:
+                    - string
+                    - "null"
+                starred_url:
+                  type:
+                    - string
+                    - "null"
+                subscriptions_url:
+                  type:
+                    - string
+                    - "null"
+                organizations_url:
+                  type:
+                    - string
+                    - "null"
+                repos_url:
+                  type:
+                    - string
+                    - "null"
+                events_url:
+                  type:
+                    - string
+                    - "null"
+                received_events_url:
+                  type:
+                    - string
+                    - "null"
+                user_view_type:
+                  type:
+                    - string
+                    - "null"
+                site_admin:
+                  type:
+                    - boolean
+                    - "null"
+          requested_reviewers:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                login:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                node_id:
+                  type:
+                    - string
+                    - "null"
+                avatar_url:
+                  type:
+                    - string
+                    - "null"
+                gravatar_id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                html_url:
+                  type:
+                    - string
+                    - "null"
+                followers_url:
+                  type:
+                    - string
+                    - "null"
+                following_url:
+                  type:
+                    - string
+                    - "null"
+                gists_url:
+                  type:
+                    - string
+                    - "null"
+                starred_url:
+                  type:
+                    - string
+                    - "null"
+                subscriptions_url:
+                  type:
+                    - string
+                    - "null"
+                organizations_url:
+                  type:
+                    - string
+                    - "null"
+                repos_url:
+                  type:
+                    - string
+                    - "null"
+                events_url:
+                  type:
+                    - string
+                    - "null"
+                received_events_url:
+                  type:
+                    - string
+                    - "null"
+                user_view_type:
+                  type:
+                    - string
+                    - "null"
+                site_admin:
+                  type:
+                    - boolean
+                    - "null"
+          requested_teams:
+            type:
+              - array
+              - "null"
+          labels:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                node_id:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                color:
+                  type:
+                    - string
+                    - "null"
+                default:
+                  type:
+                    - boolean
+                    - "null"
           draft:
             type:
               - boolean
               - "null"
-          state:
+          commits_url:
             type:
               - string
               - "null"
-          title:
+          review_comments_url:
             type:
               - string
               - "null"
+          review_comment_url:
+            type:
+              - string
+              - "null"
+          comments_url:
+            type:
+              - string
+              - "null"
+          statuses_url:
+            type:
+              - string
+              - "null"
+          head:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              ref:
+                type:
+                  - string
+                  - "null"
+              sha:
+                type:
+                  - string
+                  - "null"
+              user:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  login:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  node_id:
+                    type:
+                      - string
+                      - "null"
+                  avatar_url:
+                    type:
+                      - string
+                      - "null"
+                  gravatar_id:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  html_url:
+                    type:
+                      - string
+                      - "null"
+                  followers_url:
+                    type:
+                      - string
+                      - "null"
+                  following_url:
+                    type:
+                      - string
+                      - "null"
+                  gists_url:
+                    type:
+                      - string
+                      - "null"
+                  starred_url:
+                    type:
+                      - string
+                      - "null"
+                  subscriptions_url:
+                    type:
+                      - string
+                      - "null"
+                  organizations_url:
+                    type:
+                      - string
+                      - "null"
+                  repos_url:
+                    type:
+                      - string
+                      - "null"
+                  events_url:
+                    type:
+                      - string
+                      - "null"
+                  received_events_url:
+                    type:
+                      - string
+                      - "null"
+                  user_view_type:
+                    type:
+                      - string
+                      - "null"
+                  site_admin:
+                    type:
+                      - boolean
+                      - "null"
+              repo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  node_id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  full_name:
+                    type:
+                      - string
+                      - "null"
+                  private:
+                    type:
+                      - boolean
+                      - "null"
+                  owner:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      login:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      node_id:
+                        type:
+                          - string
+                          - "null"
+                      avatar_url:
+                        type:
+                          - string
+                          - "null"
+                      gravatar_id:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      html_url:
+                        type:
+                          - string
+                          - "null"
+                      followers_url:
+                        type:
+                          - string
+                          - "null"
+                      following_url:
+                        type:
+                          - string
+                          - "null"
+                      gists_url:
+                        type:
+                          - string
+                          - "null"
+                      starred_url:
+                        type:
+                          - string
+                          - "null"
+                      subscriptions_url:
+                        type:
+                          - string
+                          - "null"
+                      organizations_url:
+                        type:
+                          - string
+                          - "null"
+                      repos_url:
+                        type:
+                          - string
+                          - "null"
+                      events_url:
+                        type:
+                          - string
+                          - "null"
+                      received_events_url:
+                        type:
+                          - string
+                          - "null"
+                      user_view_type:
+                        type:
+                          - string
+                          - "null"
+                      site_admin:
+                        type:
+                          - boolean
+                          - "null"
+                  html_url:
+                    type:
+                      - string
+                      - "null"
+                  fork:
+                    type:
+                      - boolean
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  forks_url:
+                    type:
+                      - string
+                      - "null"
+                  keys_url:
+                    type:
+                      - string
+                      - "null"
+                  collaborators_url:
+                    type:
+                      - string
+                      - "null"
+                  teams_url:
+                    type:
+                      - string
+                      - "null"
+                  hooks_url:
+                    type:
+                      - string
+                      - "null"
+                  issue_events_url:
+                    type:
+                      - string
+                      - "null"
+                  events_url:
+                    type:
+                      - string
+                      - "null"
+                  assignees_url:
+                    type:
+                      - string
+                      - "null"
+                  branches_url:
+                    type:
+                      - string
+                      - "null"
+                  tags_url:
+                    type:
+                      - string
+                      - "null"
+                  blobs_url:
+                    type:
+                      - string
+                      - "null"
+                  git_tags_url:
+                    type:
+                      - string
+                      - "null"
+                  git_refs_url:
+                    type:
+                      - string
+                      - "null"
+                  trees_url:
+                    type:
+                      - string
+                      - "null"
+                  statuses_url:
+                    type:
+                      - string
+                      - "null"
+                  languages_url:
+                    type:
+                      - string
+                      - "null"
+                  stargazers_url:
+                    type:
+                      - string
+                      - "null"
+                  contributors_url:
+                    type:
+                      - string
+                      - "null"
+                  subscribers_url:
+                    type:
+                      - string
+                      - "null"
+                  subscription_url:
+                    type:
+                      - string
+                      - "null"
+                  commits_url:
+                    type:
+                      - string
+                      - "null"
+                  git_commits_url:
+                    type:
+                      - string
+                      - "null"
+                  comments_url:
+                    type:
+                      - string
+                      - "null"
+                  issue_comment_url:
+                    type:
+                      - string
+                      - "null"
+                  contents_url:
+                    type:
+                      - string
+                      - "null"
+                  compare_url:
+                    type:
+                      - string
+                      - "null"
+                  merges_url:
+                    type:
+                      - string
+                      - "null"
+                  archive_url:
+                    type:
+                      - string
+                      - "null"
+                  downloads_url:
+                    type:
+                      - string
+                      - "null"
+                  issues_url:
+                    type:
+                      - string
+                      - "null"
+                  pulls_url:
+                    type:
+                      - string
+                      - "null"
+                  milestones_url:
+                    type:
+                      - string
+                      - "null"
+                  notifications_url:
+                    type:
+                      - string
+                      - "null"
+                  labels_url:
+                    type:
+                      - string
+                      - "null"
+                  releases_url:
+                    type:
+                      - string
+                      - "null"
+                  deployments_url:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+                  pushed_at:
+                    type:
+                      - string
+                      - "null"
+                  git_url:
+                    type:
+                      - string
+                      - "null"
+                  ssh_url:
+                    type:
+                      - string
+                      - "null"
+                  clone_url:
+                    type:
+                      - string
+                      - "null"
+                  svn_url:
+                    type:
+                      - string
+                      - "null"
+                  homepage:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - number
+                      - "null"
+                  stargazers_count:
+                    type:
+                      - number
+                      - "null"
+                  watchers_count:
+                    type:
+                      - number
+                      - "null"
+                  language:
+                    type:
+                      - string
+                      - "null"
+                  has_issues:
+                    type:
+                      - boolean
+                      - "null"
+                  has_projects:
+                    type:
+                      - boolean
+                      - "null"
+                  has_downloads:
+                    type:
+                      - boolean
+                      - "null"
+                  has_wiki:
+                    type:
+                      - boolean
+                      - "null"
+                  has_pages:
+                    type:
+                      - boolean
+                      - "null"
+                  has_discussions:
+                    type:
+                      - boolean
+                      - "null"
+                  forks_count:
+                    type:
+                      - number
+                      - "null"
+                  archived:
+                    type:
+                      - boolean
+                      - "null"
+                  disabled:
+                    type:
+                      - boolean
+                      - "null"
+                  open_issues_count:
+                    type:
+                      - number
+                      - "null"
+                  license:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      key:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      spdx_id:
+                        type:
+                          - string
+                          - "null"
+                      node_id:
+                        type:
+                          - string
+                          - "null"
+                  allow_forking:
+                    type:
+                      - boolean
+                      - "null"
+                  is_template:
+                    type:
+                      - boolean
+                      - "null"
+                  web_commit_signoff_required:
+                    type:
+                      - boolean
+                      - "null"
+                  has_pull_requests:
+                    type:
+                      - boolean
+                      - "null"
+                  pull_request_creation_policy:
+                    type:
+                      - string
+                      - "null"
+                  topics:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  visibility:
+                    type:
+                      - string
+                      - "null"
+                  forks:
+                    type:
+                      - number
+                      - "null"
+                  open_issues:
+                    type:
+                      - number
+                      - "null"
+                  watchers:
+                    type:
+                      - number
+                      - "null"
+                  default_branch:
+                    type:
+                      - string
+                      - "null"
+          base:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              ref:
+                type:
+                  - string
+                  - "null"
+              sha:
+                type:
+                  - string
+                  - "null"
+              user:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  login:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  node_id:
+                    type:
+                      - string
+                      - "null"
+                  avatar_url:
+                    type:
+                      - string
+                      - "null"
+                  gravatar_id:
+                    type:
+                      - string
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  html_url:
+                    type:
+                      - string
+                      - "null"
+                  followers_url:
+                    type:
+                      - string
+                      - "null"
+                  following_url:
+                    type:
+                      - string
+                      - "null"
+                  gists_url:
+                    type:
+                      - string
+                      - "null"
+                  starred_url:
+                    type:
+                      - string
+                      - "null"
+                  subscriptions_url:
+                    type:
+                      - string
+                      - "null"
+                  organizations_url:
+                    type:
+                      - string
+                      - "null"
+                  repos_url:
+                    type:
+                      - string
+                      - "null"
+                  events_url:
+                    type:
+                      - string
+                      - "null"
+                  received_events_url:
+                    type:
+                      - string
+                      - "null"
+                  user_view_type:
+                    type:
+                      - string
+                      - "null"
+                  site_admin:
+                    type:
+                      - boolean
+                      - "null"
+              repo:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  node_id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  full_name:
+                    type:
+                      - string
+                      - "null"
+                  private:
+                    type:
+                      - boolean
+                      - "null"
+                  owner:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      login:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      node_id:
+                        type:
+                          - string
+                          - "null"
+                      avatar_url:
+                        type:
+                          - string
+                          - "null"
+                      gravatar_id:
+                        type:
+                          - string
+                          - "null"
+                      url:
+                        type:
+                          - string
+                          - "null"
+                      html_url:
+                        type:
+                          - string
+                          - "null"
+                      followers_url:
+                        type:
+                          - string
+                          - "null"
+                      following_url:
+                        type:
+                          - string
+                          - "null"
+                      gists_url:
+                        type:
+                          - string
+                          - "null"
+                      starred_url:
+                        type:
+                          - string
+                          - "null"
+                      subscriptions_url:
+                        type:
+                          - string
+                          - "null"
+                      organizations_url:
+                        type:
+                          - string
+                          - "null"
+                      repos_url:
+                        type:
+                          - string
+                          - "null"
+                      events_url:
+                        type:
+                          - string
+                          - "null"
+                      received_events_url:
+                        type:
+                          - string
+                          - "null"
+                      user_view_type:
+                        type:
+                          - string
+                          - "null"
+                      site_admin:
+                        type:
+                          - boolean
+                          - "null"
+                  html_url:
+                    type:
+                      - string
+                      - "null"
+                  fork:
+                    type:
+                      - boolean
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  forks_url:
+                    type:
+                      - string
+                      - "null"
+                  keys_url:
+                    type:
+                      - string
+                      - "null"
+                  collaborators_url:
+                    type:
+                      - string
+                      - "null"
+                  teams_url:
+                    type:
+                      - string
+                      - "null"
+                  hooks_url:
+                    type:
+                      - string
+                      - "null"
+                  issue_events_url:
+                    type:
+                      - string
+                      - "null"
+                  events_url:
+                    type:
+                      - string
+                      - "null"
+                  assignees_url:
+                    type:
+                      - string
+                      - "null"
+                  branches_url:
+                    type:
+                      - string
+                      - "null"
+                  tags_url:
+                    type:
+                      - string
+                      - "null"
+                  blobs_url:
+                    type:
+                      - string
+                      - "null"
+                  git_tags_url:
+                    type:
+                      - string
+                      - "null"
+                  git_refs_url:
+                    type:
+                      - string
+                      - "null"
+                  trees_url:
+                    type:
+                      - string
+                      - "null"
+                  statuses_url:
+                    type:
+                      - string
+                      - "null"
+                  languages_url:
+                    type:
+                      - string
+                      - "null"
+                  stargazers_url:
+                    type:
+                      - string
+                      - "null"
+                  contributors_url:
+                    type:
+                      - string
+                      - "null"
+                  subscribers_url:
+                    type:
+                      - string
+                      - "null"
+                  subscription_url:
+                    type:
+                      - string
+                      - "null"
+                  commits_url:
+                    type:
+                      - string
+                      - "null"
+                  git_commits_url:
+                    type:
+                      - string
+                      - "null"
+                  comments_url:
+                    type:
+                      - string
+                      - "null"
+                  issue_comment_url:
+                    type:
+                      - string
+                      - "null"
+                  contents_url:
+                    type:
+                      - string
+                      - "null"
+                  compare_url:
+                    type:
+                      - string
+                      - "null"
+                  merges_url:
+                    type:
+                      - string
+                      - "null"
+                  archive_url:
+                    type:
+                      - string
+                      - "null"
+                  downloads_url:
+                    type:
+                      - string
+                      - "null"
+                  issues_url:
+                    type:
+                      - string
+                      - "null"
+                  pulls_url:
+                    type:
+                      - string
+                      - "null"
+                  milestones_url:
+                    type:
+                      - string
+                      - "null"
+                  notifications_url:
+                    type:
+                      - string
+                      - "null"
+                  labels_url:
+                    type:
+                      - string
+                      - "null"
+                  releases_url:
+                    type:
+                      - string
+                      - "null"
+                  deployments_url:
+                    type:
+                      - string
+                      - "null"
+                  created_at:
+                    type:
+                      - string
+                      - "null"
+                  updated_at:
+                    type:
+                      - string
+                      - "null"
+                  pushed_at:
+                    type:
+                      - string
+                      - "null"
+                  git_url:
+                    type:
+                      - string
+                      - "null"
+                  ssh_url:
+                    type:
+                      - string
+                      - "null"
+                  clone_url:
+                    type:
+                      - string
+                      - "null"
+                  svn_url:
+                    type:
+                      - string
+                      - "null"
+                  homepage:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - number
+                      - "null"
+                  stargazers_count:
+                    type:
+                      - number
+                      - "null"
+                  watchers_count:
+                    type:
+                      - number
+                      - "null"
+                  language:
+                    type:
+                      - string
+                      - "null"
+                  has_issues:
+                    type:
+                      - boolean
+                      - "null"
+                  has_projects:
+                    type:
+                      - boolean
+                      - "null"
+                  has_downloads:
+                    type:
+                      - boolean
+                      - "null"
+                  has_wiki:
+                    type:
+                      - boolean
+                      - "null"
+                  has_pages:
+                    type:
+                      - boolean
+                      - "null"
+                  has_discussions:
+                    type:
+                      - boolean
+                      - "null"
+                  forks_count:
+                    type:
+                      - number
+                      - "null"
+                  archived:
+                    type:
+                      - boolean
+                      - "null"
+                  disabled:
+                    type:
+                      - boolean
+                      - "null"
+                  open_issues_count:
+                    type:
+                      - number
+                      - "null"
+                  license:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      key:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      spdx_id:
+                        type:
+                          - string
+                          - "null"
+                      node_id:
+                        type:
+                          - string
+                          - "null"
+                  allow_forking:
+                    type:
+                      - boolean
+                      - "null"
+                  is_template:
+                    type:
+                      - boolean
+                      - "null"
+                  web_commit_signoff_required:
+                    type:
+                      - boolean
+                      - "null"
+                  has_pull_requests:
+                    type:
+                      - boolean
+                      - "null"
+                  pull_request_creation_policy:
+                    type:
+                      - string
+                      - "null"
+                  topics:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - string
+                        - "null"
+                  visibility:
+                    type:
+                      - string
+                      - "null"
+                  forks:
+                    type:
+                      - number
+                      - "null"
+                  open_issues:
+                    type:
+                      - number
+                      - "null"
+                  watchers:
+                    type:
+                      - number
+                      - "null"
+                  default_branch:
+                    type:
+                      - string
+                      - "null"
           _links:
             type:
               - object
               - "null"
             properties:
-              html:
+              self:
                 type:
                   - object
                   - "null"
@@ -3694,7 +4247,7 @@ streams:
                     type:
                       - string
                       - "null"
-              self:
+              html:
                 type:
                   - object
                   - "null"
@@ -3712,34 +4265,7 @@ streams:
                     type:
                       - string
                       - "null"
-              commits:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  href:
-                    type:
-                      - string
-                      - "null"
               comments:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  href:
-                    type:
-                      - string
-                      - "null"
-              statuses:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  href:
-                    type:
-                      - string
-                      - "null"
-              review_comment:
                 type:
                   - object
                   - "null"
@@ -3757,19 +4283,34 @@ streams:
                     type:
                       - string
                       - "null"
-          labels:
-            type:
-              - array
-              - "null"
-          locked:
-            type:
-              - boolean
-              - "null"
-          number:
-            type:
-              - number
-              - "null"
-          node_id:
+              review_comment:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              commits:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              statuses:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          author_association:
             type:
               - string
               - "null"
@@ -3782,31 +4323,15 @@ streams:
                 type:
                   - string
                   - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
               login:
                 type:
                   - string
                   - "null"
+              id:
+                type:
+                  - number
+                  - "null"
               node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
                 type:
                   - string
                   - "null"
@@ -3814,19 +4339,15 @@ streams:
                 type:
                   - string
                   - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
               gravatar_id:
                 type:
                   - string
                   - "null"
-              starred_url:
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
                 type:
                   - string
                   - "null"
@@ -3838,11 +4359,11 @@ streams:
                 type:
                   - string
                   - "null"
-              user_view_type:
+              gists_url:
                 type:
                   - string
                   - "null"
-              organizations_url:
+              starred_url:
                 type:
                   - string
                   - "null"
@@ -3850,248 +4371,39 @@ streams:
                 type:
                   - string
                   - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
               received_events_url:
                 type:
                   - string
                   - "null"
-          diff_url:
-            type:
-              - string
-              - "null"
-          html_url:
-            type:
-              - string
-              - "null"
-          assignees:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
+              user_view_type:
                 type:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-                login:
-                  type:
-                    - string
-                    - "null"
-                node_id:
-                  type:
-                    - string
-                    - "null"
-                html_url:
-                  type:
-                    - string
-                    - "null"
-                gists_url:
-                  type:
-                    - string
-                    - "null"
-                repos_url:
-                  type:
-                    - string
-                    - "null"
-                avatar_url:
-                  type:
-                    - string
-                    - "null"
-                events_url:
-                  type:
-                    - string
-                    - "null"
-                site_admin:
-                  type:
-                    - boolean
-                    - "null"
-                gravatar_id:
-                  type:
-                    - string
-                    - "null"
-                starred_url:
-                  type:
-                    - string
-                    - "null"
-                followers_url:
-                  type:
-                    - string
-                    - "null"
-                following_url:
-                  type:
-                    - string
-                    - "null"
-                user_view_type:
-                  type:
-                    - string
-                    - "null"
-                organizations_url:
-                  type:
-                    - string
-                    - "null"
-                subscriptions_url:
-                  type:
-                    - string
-                    - "null"
-                received_events_url:
-                  type:
-                    - string
-                    - "null"
-          closed_at:
-            type:
-              - string
-              - "null"
-          issue_url:
-            type:
-              - string
-              - "null"
-          merged_at:
-            type:
-              - string
-              - "null"
-          patch_url:
-            type:
-              - string
-              - "null"
-          created_at:
-            type:
-              - string
-              - "null"
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
           repository:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type: string
-          commits_url:
-            type:
-              - string
-              - "null"
-          comments_url:
-            type:
-              - string
-              - "null"
-          statuses_url:
-            type:
-              - string
-              - "null"
-          requested_teams:
-            type:
-              - array
-              - "null"
-          merge_commit_sha:
             type:
               - string
               - "null"
           airbyte_unique_id:
             type: string
-          author_association:
-            type:
-              - string
-              - "null"
-          review_comment_url:
-            type:
-              - string
-              - "null"
-          requested_reviewers:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                type:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-                login:
-                  type:
-                    - string
-                    - "null"
-                node_id:
-                  type:
-                    - string
-                    - "null"
-                html_url:
-                  type:
-                    - string
-                    - "null"
-                gists_url:
-                  type:
-                    - string
-                    - "null"
-                repos_url:
-                  type:
-                    - string
-                    - "null"
-                avatar_url:
-                  type:
-                    - string
-                    - "null"
-                events_url:
-                  type:
-                    - string
-                    - "null"
-                site_admin:
-                  type:
-                    - boolean
-                    - "null"
-                gravatar_id:
-                  type:
-                    - string
-                    - "null"
-                starred_url:
-                  type:
-                    - string
-                    - "null"
-                followers_url:
-                  type:
-                    - string
-                    - "null"
-                following_url:
-                  type:
-                    - string
-                    - "null"
-                user_view_type:
-                  type:
-                    - string
-                    - "null"
-                organizations_url:
-                  type:
-                    - string
-                    - "null"
-                subscriptions_url:
-                  type:
-                    - string
-                    - "null"
-                received_events_url:
-                  type:
-                    - string
-                    - "null"
-          review_comments_url:
-            type:
-              - string
-              - "null"
+        required:
+          - airbyte_unique_id
+          - updated_at
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -4103,7 +4415,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
+            value: >-
+              {{ [record['node_id'], stream_slice.repo] | join('_') |
+              hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -4161,15 +4475,12 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
-        required:
-          - node_id
-          - airbyte_unique_id
         properties:
           id:
             type:
               - number
               - "null"
-          body:
+          node_id:
             type:
               - string
               - "null"
@@ -4182,31 +4493,15 @@ streams:
                 type:
                   - string
                   - "null"
-              id:
-                type:
-                  - number
-                  - "null"
-              url:
-                type:
-                  - string
-                  - "null"
               login:
                 type:
                   - string
                   - "null"
+              id:
+                type:
+                  - number
+                  - "null"
               node_id:
-                type:
-                  - string
-                  - "null"
-              html_url:
-                type:
-                  - string
-                  - "null"
-              gists_url:
-                type:
-                  - string
-                  - "null"
-              repos_url:
                 type:
                   - string
                   - "null"
@@ -4214,19 +4509,15 @@ streams:
                 type:
                   - string
                   - "null"
-              events_url:
-                type:
-                  - string
-                  - "null"
-              site_admin:
-                type:
-                  - boolean
-                  - "null"
               gravatar_id:
                 type:
                   - string
                   - "null"
-              starred_url:
+              url:
+                type:
+                  - string
+                  - "null"
+              html_url:
                 type:
                   - string
                   - "null"
@@ -4238,11 +4529,11 @@ streams:
                 type:
                   - string
                   - "null"
-              user_view_type:
+              gists_url:
                 type:
                   - string
                   - "null"
-              organizations_url:
+              starred_url:
                 type:
                   - string
                   - "null"
@@ -4250,11 +4541,47 @@ streams:
                 type:
                   - string
                   - "null"
+              organizations_url:
+                type:
+                  - string
+                  - "null"
+              repos_url:
+                type:
+                  - string
+                  - "null"
+              events_url:
+                type:
+                  - string
+                  - "null"
               received_events_url:
                 type:
                   - string
                   - "null"
+              user_view_type:
+                type:
+                  - string
+                  - "null"
+              site_admin:
+                type:
+                  - boolean
+                  - "null"
+          body:
+            type:
+              - string
+              - "null"
           state:
+            type:
+              - string
+              - "null"
+          html_url:
+            type:
+              - string
+              - "null"
+          pull_request_url:
+            type:
+              - string
+              - "null"
+          author_association:
             type:
               - string
               - "null"
@@ -4281,12 +4608,8 @@ streams:
                     type:
                       - string
                       - "null"
-          node_id:
+          submitted_at:
             type: string
-          html_url:
-            type:
-              - string
-              - "null"
           commit_id:
             type:
               - string
@@ -4295,20 +4618,11 @@ streams:
             type:
               - string
               - "null"
-          submitted_at:
-            type:
-              - string
-              - "null"
-          pull_request_url:
-            type:
-              - string
-              - "null"
-          author_association:
-            type:
-              - string
-              - "null"
           airbyte_unique_id:
-            - string
+            type: string
+        required:
+          - airbyte_unique_id
+          - submitted_at
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -4322,7 +4636,7 @@ streams:
               - airbyte_unique_id
             value: >-
               {{ [record['node_id'], stream_slice.extra_fields.repository,
-              stream_slice.pr_number] | join('_') | hash }}
+              stream_slice.pr_number] | join('_') | hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -4437,7 +4751,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
+            value: >-
+              {{ [record['node_id'], stream_slice.repo] | join('_') |
+              hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -4596,6 +4912,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -4609,7 +4927,7 @@ streams:
               - airbyte_unique_id
             value: >-
               {{ [record['node_id'], stream_slice.extra_fields.repository,
-              stream_slice.workflow_run] | join('_') | hash }}
+              stream_slice.workflow_run] | join('_') | hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -5534,7 +5852,9 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
+            value: >-
+              {{ [record['node_id'], stream_slice.repo] | join('_') |
+              hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -5753,7 +6073,7 @@ streams:
               - airbyte_unique_id
             value: >-
               {{ [record['node_id'], stream_slice.extra_fields.repository,
-              stream_slice.deployment_id] | join('_') | hash }}
+              stream_slice.deployment_id] | join('_') | hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -5982,6 +6302,8 @@ streams:
             type:
               - string
               - "null"
+          airbyte_unique_id:
+            type: string
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -5999,7 +6321,7 @@ streams:
               - airbyte_unique_id
             value: >-
               {{ [record['node_id'], stream_slice.extra_fields.repository,
-              stream_slice.issue_number] | join('_') | hash }}
+              stream_slice.issue_number] | join('_') | hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -6248,7 +6570,7 @@ streams:
               - airbyte_unique_id
             value: >-
               {{ [record['node_id'], stream_slice.extra_fields.repository,
-              stream_slice.pr_number] | join('_') | hash }}
+              stream_slice.pr_number] | join('_') | hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
       step: P1M
@@ -6319,23 +6641,23 @@ metadata:
     issues:
       isStale: false
       hasRecords: true
-      streamHash: f70e2b25dec8ec4a3625698b25ff5323827346de
+      streamHash: e0bc0396fa8a6aa2ead239c694c8f0d0a56ff97e
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     commits:
-      isStale: true
+      isStale: false
       hasRecords: true
-      streamHash: 8c13f56fa6bd42c553c3fcdba77b5d7f1c8bc48c
+      streamHash: 256e95ff48d6ec079efba94e32832fc9ed9a6118
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reviews:
       isStale: false
-      hasRecords: false
-      streamHash: 87a44f9c3ce00d9e90fd9d85ee5950c965fe3f6a
+      hasRecords: true
+      streamHash: a6d6595198c289336bdc8851e4fddd7415cc5f66
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6359,29 +6681,29 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     workflows:
-      isStale: true
-      hasRecords: true
-      streamHash: b5ae42328b5e53dfe0e8f1e6a317e525904f2c3b
+      isStale: false
+      hasRecords: false
+      streamHash: de16e39e683298f9aee80af0d2d13bacae3d72a0
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      responsesAreSuccessful: false
     deployments:
       isStale: false
       hasRecords: true
-      streamHash: 8b9f4e39dc2ad85f8f717b25a882236ae3d29499
+      streamHash: adc5558ce507cb07d7af09b63ddb7ef787605292
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     pr_comments:
-      isStale: true
-      hasRecords: true
-      streamHash: bd2055234a9e3299a654b2ab251243fd18a4d2b5
-      hasResponse: true
+      isStale: false
+      hasRecords: false
+      streamHash: 98971a1ee16ca2e42527d80704b65189cd3942e9
+      hasResponse: false
       primaryKeysAreUnique: false
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
     issue_labels:
       isStale: false
       hasRecords: true
@@ -6393,7 +6715,7 @@ metadata:
     repositories:
       isStale: false
       hasRecords: true
-      streamHash: 1b1aed432022699dd3f7822b03cf4f014c22c6cc
+      streamHash: bab74454aca1223c1e5886d4e5cdc12dac07b9ea
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -6409,21 +6731,21 @@ metadata:
     pull_requests:
       isStale: false
       hasRecords: true
-      streamHash: 30f4e2f34549f2ac41fa218bcf044383af2ec98f
+      streamHash: 4a2b0e81bcbef4bde07351545ba0b758d731afad
       hasResponse: true
-      primaryKeysAreUnique: false
+      primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     workflow_jobs:
       isStale: false
       hasRecords: false
-      streamHash: 8b7e8dfc05bd1b7ae3e225d242ec16f2c276c24d
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
+      streamHash: 8486f7653e33e7c3602c28bf270e05857d2853b7
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
       responsesAreSuccessful: false
     workflow_runs:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: 6e221f0aa4c381dec5c45cab030340a818256fe7
       hasResponse: true
@@ -6433,19 +6755,19 @@ metadata:
     issue_comments:
       isStale: false
       hasRecords: false
-      streamHash: 280d8c9792b4684509ae56ee9702dcd5c35898b6
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      streamHash: 9bffa869b27b38981f312f94aade10f28124fd75
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
     deployment_statuses:
       isStale: false
-      hasRecords: true
-      streamHash: de1ed15a6df5ab3f53e97bb3fad7657e70fc851e
-      hasResponse: true
+      hasRecords: false
+      streamHash: af7691ee5e6e0d21b4547daa6c72019774f249a0
+      hasResponse: false
       primaryKeysAreUnique: false
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
     contributor_activity:
       isStale: true
       hasRecords: true
