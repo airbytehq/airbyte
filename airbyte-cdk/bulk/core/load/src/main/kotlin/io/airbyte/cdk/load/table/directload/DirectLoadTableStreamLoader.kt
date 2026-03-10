@@ -242,6 +242,12 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 sourceTableName = tempTableName,
                 targetTableName = realTableName,
             )
+
+            // Clean up temporary table to prevent duplicate records on the next sync.
+            // Without this, the next sync's start() would find a non-empty temp table
+            // with matching generation ID and reuse it, causing old records to accumulate
+            // alongside new ones.
+            tableOperationsClient.dropTable(tempTableName)
         }
     }
 }
@@ -408,5 +414,11 @@ class DirectLoadTableDedupTruncateStreamLoader(
             sourceTableName = tempTempTable,
             targetTableName = realTableName,
         )
+
+        // Clean up temporary table to prevent duplicate records on the next sync.
+        // Without this, the next sync's start() would find a non-empty temp table
+        // with matching generation ID and reuse it, causing old records to accumulate
+        // alongside new ones.
+        tableOperationsClient.dropTable(tempTableName)
     }
 }
