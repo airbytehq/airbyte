@@ -105,6 +105,7 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.27 | 2026-03-10 | []() | Add HTTPAPIBudget and concurrency_level for rate limiting and parallel stream processing |
 | 1.3.26 | 2026-02-24 | [73950](https://github.com/airbytehq/airbyte/pull/73950) | Update dependencies |
 | 1.3.25 | 2026-02-10 | [73157](https://github.com/airbytehq/airbyte/pull/73157) | Update dependencies |
 | 1.3.24 | 2026-02-03 | [72566](https://github.com/airbytehq/airbyte/pull/72566) | Update dependencies |
