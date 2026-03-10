@@ -428,10 +428,16 @@ class InsightAsyncJob(AsyncJob):
         """
         since = AirbyteDateTime.from_datetime(datetime.combine(self._interval.start - timedelta(days=28 + 1), datetime.min.time()))
         since = validate_start_date(since)
+        until = self._interval.end
+        # After retention-period clamping, `since` may have been pushed forward
+        # past `until`. Clamp so that `since <= until` to satisfy the FB API
+        # constraint: "since must be less than or equal to until in time_range".
+        if since.date() > until:
+            since = AirbyteDateTime.from_datetime(datetime.combine(until, datetime.min.time()))
         params = {
             "fields": [pk_name],
             "level": level,
-            "time_range": {"since": since.strftime("%Y-%m-%d"), "until": self._interval.end.strftime("%Y-%m-%d")},
+            "time_range": {"since": since.strftime("%Y-%m-%d"), "until": until.strftime("%Y-%m-%d")},
         }
 
         try:
