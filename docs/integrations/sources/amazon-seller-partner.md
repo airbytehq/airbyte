@@ -300,6 +300,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.6.0 | 2026-03-04 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
 | 5.5.1 | 2026-02-26 | [72961](https://github.com/airbytehq/airbyte/pull/72961) | Add time-windowed partitioning to Orders stream for proper state checkpointing of OrderItems substream |
 | 5.5.0 | 2026-02-25 | [72258](https://github.com/airbytehq/airbyte/pull/72258) | feat(source-amazon-seller-partner): Add GET_SALES_AND_TRAFFIC_REPORT_BY_DATE stream |
 | 5.4.1 | 2026-02-24 | [73757](https://github.com/airbytehq/airbyte/pull/73757) | Update dependencies |
