@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import calendar
 import logging
 from datetime import date, datetime, timedelta
 from functools import cache, cached_property
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
+from source_facebook_marketing.spec import TimeIncrementPeriod
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
@@ -38,6 +40,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         "28d_click",
         "1d_view",
     ]
+
+    INCREMENTALITY_WINDOW = "incrementality"
 
     breakdowns = []
     action_breakdowns = [
@@ -75,9 +79,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         action_breakdowns: List[str] = None,
         action_breakdowns_allow_empty: bool = False,
         time_increment: Optional[int] = None,
+        time_increment_period: Optional[TimeIncrementPeriod] = None,
         insights_lookback_window: int = None,
         insights_job_timeout: int = 60,
         level: str = "ad",
+        include_incrementality: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -93,12 +99,26 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self.action_breakdowns = action_breakdowns
         if breakdowns is not None:
             self.breakdowns = breakdowns
-        self.time_increment = time_increment or self.time_increment
+        if time_increment_period is not None and not isinstance(time_increment_period, TimeIncrementPeriod):
+            self.time_increment_period = TimeIncrementPeriod(time_increment_period)
+        else:
+            self.time_increment_period = time_increment_period
+        if self.time_increment_period == TimeIncrementPeriod.daily:
+            self.time_increment = 1
+        elif self.time_increment_period is not None:
+            # For weekly/monthly, time_increment is not used for date chunking
+            # but we set a nominal value for state tracking compatibility
+            self.time_increment = 7 if self.time_increment_period == TimeIncrementPeriod.weekly else 30
+        else:
+            self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
         self._insights_job_timeout = insights_job_timeout
         self.level = level
         self.entity_prefix = level
+
+        if include_incrementality:
+            self.action_attribution_windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS) + [self.INCREMENTALITY_WINDOW]
 
         # state
         self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
@@ -249,6 +269,8 @@ class AdsInsights(FBMarketingIncrementalStream):
 
                 new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
             new_state["time_increment"] = self.time_increment
+            if self.time_increment_period is not None:
+                new_state["time_increment_period"] = self.time_increment_period.value
             return new_state
 
         if self._completed_slices:
@@ -256,25 +278,35 @@ class AdsInsights(FBMarketingIncrementalStream):
                 new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
 
             new_state["time_increment"] = self.time_increment
+            if self.time_increment_period is not None:
+                new_state["time_increment_period"] = self.time_increment_period.value
             return new_state
 
         return {}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        """State setter, will ignore saved state if time_increment is different from previous."""
+        """State setter, will ignore saved state if time_increment or time_increment_period is different from previous."""
         # if the time increment configured for this stream is different from the one in the previous state
         # then the previous state object is invalid, and we should start replicating data from scratch
         # to achieve this, we skip setting the state
-        transformed_state = self._transform_state_from_one_account_format(value, ["time_increment"])
+        transformed_state = self._transform_state_from_one_account_format(value, ["time_increment", "time_increment_period"])
         if transformed_state.get("time_increment", 1) != self.time_increment:
             logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment` option.")
             return
 
+        saved_period = transformed_state.get("time_increment_period")
+        current_period = self.time_increment_period.value if self.time_increment_period is not None else None
+        if saved_period != current_period:
+            logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment_period` option.")
+            return
+
         self._cursor_values = {
-            account_id: ab_datetime_parse(transformed_state[account_id][self.cursor_field]).date()
-            if transformed_state.get(account_id, {}).get(self.cursor_field)
-            else None
+            account_id: (
+                ab_datetime_parse(transformed_state[account_id][self.cursor_field]).date()
+                if transformed_state.get(account_id, {}).get(self.cursor_field)
+                else None
+            )
             for account_id in self._account_ids
         }
         self._completed_slices = {
@@ -310,17 +342,57 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._account_end_dates[account_id] = end_date
         return end_date
 
+    @staticmethod
+    def _next_monday(d: date) -> date:
+        """Return the Monday on or before the given date."""
+        days_since_monday = d.weekday()  # Monday=0
+        return d - timedelta(days=days_since_monday)
+
+    @staticmethod
+    def _next_month_start(d: date) -> date:
+        """Return the first day of the next month after the given date."""
+        if d.month == 12:
+            return date(d.year + 1, 1, 1)
+        return date(d.year, d.month + 1, 1)
+
+    @staticmethod
+    def _month_end(d: date) -> date:
+        """Return the last day of the month containing the given date."""
+        last_day = calendar.monthrange(d.year, d.month)[1]
+        return date(d.year, d.month, last_day)
+
     def _date_intervals(self, account_id: str) -> Iterator[date]:
-        """Get date period to sync"""
+        """Get date period to sync.
+
+        For time_increment_period:
+        - daily: yields each day (same as time_increment=1)
+        - weekly: yields each Monday-aligned week start
+        - monthly: yields each 1st-of-month-aligned month start
+        For integer time_increment: yields every N days.
+        """
         end_date = self._get_end_date_for_account(account_id)
         if end_date < self._next_cursor_values[account_id]:
             return
 
-        # Generate date intervals manually using standard datetime arithmetic
         current_date = self._next_cursor_values[account_id]
-        while current_date <= end_date:
-            yield current_date
-            current_date += timedelta(days=self.time_increment)
+
+        if self.time_increment_period == TimeIncrementPeriod.weekly:
+            # Snap to Monday boundary
+            current_date = self._next_monday(current_date)
+            while current_date <= end_date:
+                yield current_date
+                current_date += timedelta(days=7)
+        elif self.time_increment_period == TimeIncrementPeriod.monthly:
+            # Snap to 1st of current month
+            current_date = date(current_date.year, current_date.month, 1)
+            while current_date <= end_date:
+                yield current_date
+                current_date = self._next_month_start(current_date)
+        else:
+            # Default: N-day rolling windows (original behavior)
+            while current_date <= end_date:
+                yield current_date
+                current_date += timedelta(days=self.time_increment)
 
     def _advance_cursor(self, account_id: str):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
@@ -348,7 +420,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period
             ):
                 continue
-            ts_end = ts_start + timedelta(days=self.time_increment - 1)
+            ts_end = self._compute_interval_end(ts_start)
             interval = DateInterval(start=ts_start, end=ts_end)
             yield InsightAsyncJob(
                 api=self._api.api,
@@ -450,13 +522,36 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_dates_for_account[account_id] = max(oldest_date, start_date)
         return start_dates_for_account
 
+    def _compute_interval_end(self, ts_start: date) -> date:
+        """Compute the end date of a date interval starting at ts_start."""
+        if self.time_increment_period == TimeIncrementPeriod.weekly:
+            return ts_start + timedelta(days=6)  # Monday through Sunday
+        if self.time_increment_period == TimeIncrementPeriod.monthly:
+            return self._month_end(ts_start)
+        return ts_start + timedelta(days=self.time_increment - 1)
+
+    def _get_api_time_increment(self) -> Union[int, str]:
+        """Return the value to pass to the Facebook API for time_increment.
+
+        The API accepts integer (1-90) or string enum ('monthly', 'all_days').
+        For 'monthly' period, we pass the string 'monthly' to leverage native API support.
+        For 'weekly' and 'daily', we pass the integer equivalent.
+        """
+        if self.time_increment_period == TimeIncrementPeriod.monthly:
+            return "monthly"
+        if self.time_increment_period == TimeIncrementPeriod.weekly:
+            return 7
+        if self.time_increment_period == TimeIncrementPeriod.daily:
+            return 1
+        return self.time_increment
+
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         req_params = {
             "level": self.level,
             "action_breakdowns": self.action_breakdowns,
             "breakdowns": self.breakdowns,
             "fields": self.fields(),
-            "time_increment": self.time_increment,
+            "time_increment": self._get_api_time_increment(),
             "action_attribution_windows": self.action_attribution_windows,
         }
         req_params.update(self._filter_all_statuses())

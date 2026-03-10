@@ -127,7 +127,7 @@ See the official [Intercom API reference](https://developers.intercom.com/docs/r
 
 ## Version information
 
-- **Package version:** 0.1.81
-- **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** a735c402798904c84a7f4df7969653341d95b11d
+- **Package version:** 0.1.85
+- **Connector version:** 0.1.9
+- **Generated with Connector SDK commit SHA:** d395373bfd40767c9ecfddb735e4085811544872
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/intercom/CHANGELOG.md)

@@ -1,6 +1,6 @@
 ---
-sidebar_label: "MCP server"
-sidebar_position: 2
+sidebar_label: "Agent Engine MCP"
+sidebar_position: 4
 ---
 
 import Tabs from '@theme/Tabs';
@@ -43,28 +43,24 @@ mkdir my-mcp-server && cd my-mcp-server
 uv init --python 3.13
 ```
 
-Add `airbyte-agent-mcp` as a dependency. This installs the package and makes the `adp` command-line tool, available through `uv run`. You use `adp` to discover connectors, generate configurations, and register the MCP server with your agent.
+Add `airbyte-agent-mcp` as a dependency. This installs the package and makes the `agent-engine` command-line tool available through `uv run`. You use `agent-engine` to discover connectors, generate configurations, and register the MCP server with your agent.
 
 ```bash
-uv add --prerelease allow airbyte-agent-mcp
+uv add airbyte-agent-mcp
 ```
-
-:::note
-The `--prerelease allow` flag is required because `airbyte-agent-mcp` depends on a pre-release version of one of its upstream libraries. This flag is only needed during installation.
-:::
 
 ## Part 2: List available connectors
 
 Run the following command to see the available open source connectors. This queries the Airbyte connector registry and displays a table of available connectors, their package names, versions, and definition IDs.
 
 ```bash
-uv run adp connectors list-oss
+uv run agent-engine connectors list-oss
 ```
 
 To filter connectors by name, use the `--pattern` flag
 
 ```bash
-uv run adp connectors list-oss --pattern github
+uv run agent-engine connectors list-oss --pattern github
 ```
 
 ## Part 3: Generate a connector configuration
@@ -72,7 +68,7 @@ uv run adp connectors list-oss --pattern github
 Generate a configuration file for the GitHub connector:
 
 ```bash
-uv run adp connectors configure --package airbyte-agent-github
+uv run agent-engine connectors configure --package airbyte-agent-github
 ```
 
 This installs the connector package, inspects its authentication requirements, and generates a YAML configuration file called `connector-github-package.yaml`. The file looks like this:
@@ -98,7 +94,7 @@ Create a `.env` file in the same directory as your connector configuration. Repl
 GITHUB_ACCESS_TOKEN=your-github-personal-access-token
 ```
 
-The `adp` command line tool automatically loads `.env` files from the current directory. The `${env.VAR}` syntax in your YAML configuration resolves to the values in this file.
+The `agent-engine` command line tool automatically loads `.env` files from the current directory. The `${env.VAR}` syntax in your YAML configuration resolves to the values in this file.
 
 :::warning
 Never commit your `.env` file to version control. If you do this by mistake, rotate your secrets immediately.
@@ -114,7 +110,7 @@ Register the MCP server with your preferred agent.
 This command runs `claude mcp add` under the hood and registers the server at the user scope.
 
 ```bash
-uv run adp mcp add-to claude-code connector-github-package.yaml
+uv run agent-engine mcp add-to claude-code connector-github-package.yaml
 ```
 
 To register at the project scope instead, add `--scope project` to that command.
@@ -125,7 +121,7 @@ To register at the project scope instead, add `--scope project` to that command.
 This command modifies your Claude Desktop configuration file directly.
 
 ```bash
-uv run adp mcp add-to claude-desktop connector-github-package.yaml
+uv run agent-engine mcp add-to claude-desktop connector-github-package.yaml
 ```
 
 </TabItem>
@@ -134,7 +130,7 @@ uv run adp mcp add-to claude-desktop connector-github-package.yaml
 This modifies the Cursor MCP configuration file.
 
 ```bash
-uv run adp mcp add-to cursor connector-github-package.yaml
+uv run agent-engine mcp add-to cursor connector-github-package.yaml
 ```
 
 To register at the project scope instead of user scope, add a `--scope project` flag.
@@ -145,7 +141,7 @@ To register at the project scope instead of user scope, add a `--scope project` 
 This command runs `codex mcp add` to register the server.
 
 ```bash
-uv run adp mcp add-to codex connector-github-package.yaml
+uv run agent-engine mcp add-to codex connector-github-package.yaml
 ```
 
 </TabItem>
@@ -154,7 +150,7 @@ uv run adp mcp add-to codex connector-github-package.yaml
 You can optionally specify a custom name for the server with `--name`. If you don't specify a name, the server name is based on the connector. For example, `airbyte-github`.
 
 ```bash
-uv run adp mcp add-to claude-code connector-github-package.yaml --name my-server-name
+uv run agent-engine mcp add-to claude-code connector-github-package.yaml --name my-server-name
 ```
 
 ## Part 6: Use the MCP server
@@ -177,7 +173,7 @@ In this tutorial, you learned how to:
 
 - Set up a project with the Agent Engine MCP server
 
-- Discover available connectors with the `adp` command line tool
+- Discover available connectors with the `agent-engine` command line tool
 
 - Generate a connector configuration file
 
@@ -189,7 +185,7 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Try other connectors. Run `uv run adp connectors list-oss` to see all available connectors and repeat these steps with a different data source.
+- Try other connectors. Run `uv run agent-engine connectors list-oss` to see all available connectors and repeat these steps with a different data source.
 
 - Learn how to [configure the MCP server](../../mcp-server/configuration) for advanced scenarios like Agent Engine hosted execution, git-based packages, and aggregate configurations with multiple connectors.
 
