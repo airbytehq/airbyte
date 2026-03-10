@@ -391,7 +391,7 @@ class IcebergTypesComparatorTest {
     }
 
     @Test
-    fun testUnsupportedTypeDecimal() {
+    fun testDecimalTypeIsUnsupported() {
         val existingSchema =
             buildSchema(
                 field("decimal_col", Types.DecimalType.of(10, 2), false),

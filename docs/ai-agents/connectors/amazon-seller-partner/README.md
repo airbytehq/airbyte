@@ -113,7 +113,7 @@ See the official [Amazon-Seller-Partner API reference](https://developer-docs.am
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** f84710e40f853d4aba27e1b9952576cae7598d1a
+- **Package version:** 0.1.1
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** 7f2011ced97dd7ea49e76852dcb4590504d27d54
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/amazon-seller-partner/CHANGELOG.md)

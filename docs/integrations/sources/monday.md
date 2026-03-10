@@ -8,8 +8,8 @@ This connector uses the [Monday.com GraphQL API](https://developer.monday.com/ap
 
 To set up the Monday source connector, you need either:
 
-- A **Personal API Token**, which you can generate from your Monday.com account under **Profile picture** (bottom left corner) > **Admin** > **API**.
-- An **OAuth 2.0 application**, which you can find or create under **Profile picture** (bottom left corner) > **Developers** > **My Apps**.
+- A **Personal API Token**, which you can generate from your Monday.com account under **Profile picture** (top right corner) > **Developers** > **API token**.
+- An **OAuth 2.0 application**, which you can find or create under **Profile picture** (top right corner) > **Developers** > **My Apps**.
 
 For more details, see Monday.com's [authentication documentation](https://developer.monday.com/api-reference/docs/authentication).
 
@@ -63,7 +63,10 @@ The following streams are available:
 
 - The Boards stream includes column definitions for each board. In your destination, these appear as nested data, typically named `boards.columns`.
 
-- The Items stream includes column values for each item. In your destination, these appear as nested data, typically named `items.column_values`.
+- The Items stream includes column values for each item. In your destination, these appear as nested data, typically named `items.column_values`. Each column value includes `id`, `text`, `type`, and `value` fields. Some column types provide additional fields through typed values:
+
+  - **Connect Boards** (`board_relation`) and **Dependency** (`dependency`) columns include a `linked_item_ids` array containing the IDs of linked items. Use these IDs to join back to the Items stream for details about linked items. Note that the `value` field returns `null` for these column types.
+  - **Mirror**, **Connect Boards**, and **Dependency** columns include a `display_value` field with a human-readable text representation.
 
 - Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
 
