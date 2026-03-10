@@ -814,10 +814,18 @@ schemas:
         type:
           - "null"
           - string
+      metadata:
+        type:
+          - "null"
+          - object
       product_key:
         type:
           - "null"
           - object
+      test:
+        type:
+          - "null"
+          - boolean
       updated_at:
         type:
           - "null"

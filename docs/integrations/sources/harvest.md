@@ -98,7 +98,8 @@ You can configure the number of concurrent workers using the `num_workers` param
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.31-rc.1 | 2026-03-06 | [70857](https://github.com/airbytehq/airbyte/pull/70857) | Add HTTPAPIBudget, concurrency_level, and configurable num_workers parameter |
+| 1.2.32-rc.1 | 2026-03-10 | [70857](https://github.com/airbytehq/airbyte/pull/70857) | Add HTTPAPIBudget, concurrency_level, and configurable num_workers parameter |
+| 1.2.31 | 2026-03-10 | [74687](https://github.com/airbytehq/airbyte/pull/74687) | Update dependencies |
 | 1.2.30 | 2026-02-24 | [73930](https://github.com/airbytehq/airbyte/pull/73930) | Update dependencies |
 | 1.2.29 | 2026-02-10 | [73113](https://github.com/airbytehq/airbyte/pull/73113) | Update dependencies |
 | 1.2.28 | 2026-02-03 | [72645](https://github.com/airbytehq/airbyte/pull/72645) | Update dependencies |
