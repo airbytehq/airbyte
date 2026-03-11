@@ -45,8 +45,7 @@ class MySqlSourceDebeziumOperationsTest {
         every { binaryLogs.next() } returnsMany listOf(true, false)
         every { binaryLogs.getString(1) } returns "mysql-bin.000001"
 
-        val operations =
-            MySqlSourceDebeziumOperations(jdbcConnectionFactory, cdcConfiguration())
+        val operations = MySqlSourceDebeziumOperations(jdbcConnectionFactory, cdcConfiguration())
 
         val state: OpaqueStateValue =
             Jsons.readTree(
@@ -79,13 +78,16 @@ class MySqlSourceDebeziumOperationsTest {
                 setIncrementalValue(Cdc())
             }
 
-        return MySqlSourceConfigurationFactory().make(configSpec).copy(
-            incrementalConfiguration =
-                CdcIncrementalConfiguration(
-                    initialLoadTimeout = Duration.ofMinutes(5),
-                    serverTimezone = null,
-                    invalidCdcCursorPositionBehavior = InvalidCdcCursorPositionBehavior.FAIL_SYNC,
-                )
-        )
+        return MySqlSourceConfigurationFactory()
+            .make(configSpec)
+            .copy(
+                incrementalConfiguration =
+                    CdcIncrementalConfiguration(
+                        initialLoadTimeout = Duration.ofMinutes(5),
+                        serverTimezone = null,
+                        invalidCdcCursorPositionBehavior =
+                            InvalidCdcCursorPositionBehavior.FAIL_SYNC,
+                    )
+            )
     }
 }
