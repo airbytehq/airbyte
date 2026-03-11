@@ -101,6 +101,12 @@ jobs:
               continue
             fi
 
+            # Only notify for stable releases (strict X.Y.Z semver)
+            if ! [[ "$CURRENT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Skipping $CONNECTOR_NAME (non-stable version: $CURRENT_VERSION)"
+              continue
+            fi
+
             echo "Version changed for $CONNECTOR_NAME: ${PREVIOUS_VERSION:-<new>} -> $CURRENT_VERSION"
             CHANGES=$(echo "$CHANGES" | jq -c --arg name "$CONNECTOR_NAME" --arg version "$CURRENT_VERSION" '. + [{"connector": $name, "version": $version}]')
           done <<< "$CHANGED_FILES"
