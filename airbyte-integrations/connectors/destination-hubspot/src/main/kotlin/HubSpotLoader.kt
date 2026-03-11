@@ -22,8 +22,8 @@ import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.write.dlq.DlqLoader
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.hubspot.io.airbyte.integrations.destination.hubspot.http.HubSpotObjectTypeIdMapper
-import java.util.UUID
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -97,8 +97,7 @@ class HubSpotState(
 
         val failedRecords = mutableListOf<DestinationRecordRaw>()
         for (error in errors) {
-            val traceId =
-                error.get("context")?.get("objectWriteTraceId")?.firstOrNull()?.asText()
+            val traceId = error.get("context")?.get("objectWriteTraceId")?.firstOrNull()?.asText()
             if (traceId != null) {
                 val record = recordsByTraceId[traceId]
                 if (record != null) {
