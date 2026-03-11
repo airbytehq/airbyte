@@ -867,12 +867,12 @@ class TestSalesAndTrafficReportRequestBody:
         )
 
     @staticmethod
-    def _get_report_request_body(report_options: dict) -> dict:
+    def _get_report_request_body(report_options: dict, data_end_time: str = "2023-01-30T00:00:00Z") -> dict:
         return {
             "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
             "marketplaceIds": [MARKETPLACE_ID],
             "dataStartTime": "2023-01-01T00:00:00Z",
-            "dataEndTime": "2023-01-30T00:00:00Z",
+            "dataEndTime": data_end_time,
             "reportOptions": report_options,
         }
 
@@ -881,13 +881,13 @@ class TestSalesAndTrafficReportRequestBody:
         """With default config (no asinGranularity set), reportOptions.asinGranularity = PARENT."""
         stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
         http_mocker.clear_all_matchers()
-        mock_auth(http_mocker)
 
-        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"})
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"}, data_end_time="2023-01-02T00:00:00Z")
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
         )
+        mock_auth(http_mocker)
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
             _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
@@ -901,7 +901,7 @@ class TestSalesAndTrafficReportRequestBody:
             _download_document_response(stream_name, data_format=self.data_format),
         )
 
-        output = self._read(stream_name, config())
+        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @HttpMocker()
@@ -909,13 +909,13 @@ class TestSalesAndTrafficReportRequestBody:
         """With asinGranularity set to CHILD, reportOptions.asinGranularity = CHILD."""
         stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
         http_mocker.clear_all_matchers()
-        mock_auth(http_mocker)
 
-        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"})
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"}, data_end_time="2023-01-02T00:00:00Z")
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
         )
+        mock_auth(http_mocker)
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
             _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
@@ -929,7 +929,7 @@ class TestSalesAndTrafficReportRequestBody:
             _download_document_response(stream_name, data_format=self.data_format),
         )
 
-        output = self._read(stream_name, config().with_asin_granularity("CHILD"))
+        output = self._read(stream_name, config().with_asin_granularity("CHILD").with_end_date(pendulum.datetime(2023, 1, 2)))
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
 
     @HttpMocker()
@@ -937,13 +937,13 @@ class TestSalesAndTrafficReportRequestBody:
         """GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH includes both dateGranularity=MONTH and configured asinGranularity."""
         stream_name = "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH"
         http_mocker.clear_all_matchers()
-        mock_auth(http_mocker)
 
         create_report_request_body = self._get_report_request_body({"dateGranularity": "MONTH", "asinGranularity": "SKU"})
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
         )
+        mock_auth(http_mocker)
         http_mocker.get(
             _check_report_status_request(_REPORT_ID).build(),
             _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
