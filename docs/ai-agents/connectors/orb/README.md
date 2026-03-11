@@ -120,7 +120,7 @@ See the official [Orb API reference](https://docs.withorb.com/api-reference).
 
 ## Version information
 
-- **Package version:** 0.1.45
+- **Package version:** 0.1.46
 - **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** d395373bfd40767c9ecfddb735e4085811544872
+- **Generated with Connector SDK commit SHA:** 44677ecbb4b815bb4fb2a54c6e5339681bcf36a8
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/orb/CHANGELOG.md)

@@ -17,7 +17,7 @@ This authentication method isn't available for this connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `auth_token` | `str` | Yes | Sentry authentication token. Log into Sentry and create one at Settings > Account > API > Auth Tokens. |
+| `auth_token` | `str` | Yes | Sentry authentication token. Log into Sentry and create one at Settings \> Account \> API \> Auth Tokens. |
 
 Example request:
 
@@ -50,7 +50,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `auth_token` | `str` | Yes | Sentry authentication token. Log into Sentry and create one at Settings > Account > API > Auth Tokens. |
+| `auth_token` | `str` | Yes | Sentry authentication token. Log into Sentry and create one at Settings \> Account \> API \> Auth Tokens. |
 
 `replication_config` fields you need:
 
