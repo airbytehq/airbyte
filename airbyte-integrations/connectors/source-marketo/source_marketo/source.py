@@ -397,29 +397,33 @@ class Leads(MarketoExportBase):
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config, self.name)
-        self._describe_cache = None
+        self._available_fields: Optional[Mapping[str, str]] = None
         self._schema = None
 
-    def _describe_leads(self) -> List[Mapping[str, Any]]:
-        """Fetch all field descriptions from the leads/describe.json endpoint.
+    def _get_available_fields(self) -> Mapping[str, str]:
+        """Return a mapping of field_name -> marketo_data_type from the describe endpoint.
 
-        Results are cached to avoid redundant API calls during schema generation
-        and export field selection.  Returns an empty list on request failures
-        (HTTP errors, network issues, malformed responses) so that callers can
-        fall back to the static schema gracefully.
+        Results are cached to avoid redundant API calls.  Returns an empty dict
+        on request failures (HTTP errors, network issues, malformed responses)
+        so that callers can fall back to the static schema gracefully.
         """
-        if self._describe_cache is None:
+        if self._available_fields is None:
             try:
                 resp = self._session.get(
                     f"{self._url_base}rest/v1/leads/describe.json",
                     headers=self._session.auth.get_auth_header(),
                 )
                 resp.raise_for_status()
-                self._describe_cache = resp.json().get("result", [])
+                fields = {}
+                for record in resp.json().get("result", []):
+                    rest = record.get("rest")
+                    if rest and "name" in rest:
+                        fields[rest["name"]] = record.get("dataType", "string")
+                self._available_fields = fields
             except (requests.RequestException, ValueError):
                 self.logger.warning("leads/describe.json request failed, falling back to static schema")
-                self._describe_cache = []
-        return self._describe_cache
+                self._available_fields = {}
+        return self._available_fields
 
     @property
     def stream_fields(self):
@@ -434,15 +438,9 @@ class Leads(MarketoExportBase):
         if self.configured_json_schema and self.configured_json_schema.get("properties"):
             return list(self.configured_json_schema["properties"].keys())
 
-        describe_results = self._describe_leads()
-        if describe_results:
-            available_fields = []
-            for describe_record in describe_results:
-                rest = describe_record.get("rest")
-                if rest and "name" in rest:
-                    available_fields.append(rest["name"])
-            if available_fields:
-                return available_fields
+        available = self._get_available_fields()
+        if available:
+            return list(available.keys())
 
         # Fallback to static schema field names if describe endpoint is unavailable
         return list(super().get_json_schema()["properties"].keys())
@@ -456,8 +454,8 @@ class Leads(MarketoExportBase):
         static_schema = super().get_json_schema()
         properties = dict(static_schema.get("properties", {}))
 
-        describe_results = self._describe_leads()
-        if not describe_results:
+        available = self._get_available_fields()
+        if not available:
             # Describe endpoint failed; fall back to the static schema so the
             # connector can still run (with standard fields only).
             self._schema = static_schema
@@ -465,18 +463,9 @@ class Leads(MarketoExportBase):
 
         # Append custom fields discovered from the describe endpoint.
         # Static schema properties are kept as-is; only new fields are added.
-        for describe_record in describe_results:
-            rest = describe_record.get("rest")
-            if not rest or "name" not in rest:
-                continue
-
-            field_name = rest["name"]
-            if field_name in properties:
-                continue  # Preserve existing static schema definitions
-
-            # Map Marketo data type to JSON Schema for custom fields
-            data_type = describe_record.get("dataType", "string")
-            properties[field_name] = self._map_marketo_type(data_type)
+        for field_name, data_type in available.items():
+            if field_name not in properties:
+                properties[field_name] = self._map_marketo_type(data_type)
 
         self._schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
