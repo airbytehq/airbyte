@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
 import io.micronaut.http.HttpHeaders
 import java.lang.IllegalStateException
+import java.time.Instant
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response as OkHttpResponse
@@ -35,6 +36,7 @@ class OAuthAuthenticator(
 
     private val decoder: JsonDecoder = JsonDecoder()
     private var accessToken: String? = null
+    private var tokenExpiresAt: Instant? = null
 
     override fun intercept(chain: Interceptor.Chain): OkHttpResponse {
         if (needToQueryAccessToken()) {
@@ -55,8 +57,9 @@ class OAuthAuthenticator(
     }
 
     private fun isTokenExpired(): Boolean {
-        return false // TODO as we only supports Salesforce today, the token is keep active until
-        // there is no activity for a while which should not happen in our context
+        val expiresAt = tokenExpiresAt ?: return false
+        // Refresh 60 seconds early to avoid edge-case expiration mid-request
+        return Instant.now().isAfter(expiresAt.minusSeconds(60))
     }
 
     /**
@@ -92,6 +95,11 @@ class OAuthAuthenticator(
     }
 
     private fun refreshAccessToken() {
-        accessToken = queryForAccessToken().get("access_token").asText()
+        val tokenResponse = queryForAccessToken()
+        accessToken = tokenResponse.get("access_token").asText()
+        val expiresIn = tokenResponse.get("expires_in")
+        if (expiresIn != null && expiresIn.isNumber) {
+            tokenExpiresAt = Instant.now().plusSeconds(expiresIn.asLong())
+        }
     }
 }
