@@ -35,6 +35,18 @@ object DatabricksConnectorClientsFactory {
         return WorkspaceClient(config)
     }
 
+    // Connection timeout for establishing the JDBC connection (seconds).
+    // Databricks SQL warehouses may auto-pause and take time to resume; this value must be
+    // large enough to allow for warehouse startup while still failing faster than the platform
+    // job deadline.
+    private const val CONNECT_TIMEOUT_SECONDS = 120
+
+    // Socket timeout for JDBC read operations (seconds).
+    // Large MERGE / T+D queries can legitimately run for tens of minutes, so we set a generous
+    // ceiling. A value of 0 means "wait forever", which caused the 20+ hour hang in
+    // https://github.com/airbytehq/oncall/issues/11610.
+    private const val SOCKET_TIMEOUT_SECONDS = 7200
+
     fun createDataSource(config: DatabricksConnectorConfig): DataSource {
         val className = Driver::class.java.canonicalName
         Class.forName(className)
@@ -44,8 +56,13 @@ object DatabricksConnectorClientsFactory {
         // EnableArrow=0 flag is undocumented and disables ArrowBuf when reading data
         // Destinations only reads data for metadata or for comparison of actual data in tests. so
         // we don't need it to be optimized.
+        //
+        // ConnectTimeout / SocketTimeout prevent indefinite hangs when the warehouse is paused
+        // or unresponsive. See https://kb.databricks.com/dbsql/job-timeout-when-connecting-to-a-sql-endpoint-over-jdbc
         val jdbcUrl =
-            "jdbc:databricks://${config.hostname}:${config.port}/${config.database};transportMode=http;httpPath=${config.httpPath};EnableArrow=0"
+            "jdbc:databricks://${config.hostname}:${config.port}/${config.database}" +
+                ";transportMode=http;httpPath=${config.httpPath};EnableArrow=0" +
+                ";ConnectTimeout=$CONNECT_TIMEOUT_SECONDS;SocketTimeout=$SOCKET_TIMEOUT_SECONDS"
         when (config.authentication) {
             is BasicAuthentication -> {
                 datasource.setURL(
