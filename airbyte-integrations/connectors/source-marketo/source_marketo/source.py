@@ -7,7 +7,7 @@ import json
 import re
 from abc import ABC
 from time import sleep
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
@@ -437,22 +437,33 @@ class Leads(MarketoExportBase):
         if self._schema is not None:
             return self._schema
 
-        # Start with the static schema as base for standard field definitions
         static_schema = super().get_json_schema()
-        properties = dict(static_schema.get("properties", {}))
+        static_properties = static_schema.get("properties", {})
 
-        # Dynamically discover and add custom fields from the describe endpoint
-        for describe_record in self._describe_leads():
+        describe_results = self._describe_leads()
+        if not describe_results:
+            # Describe endpoint failed; fall back to the static schema so the
+            # connector can still run (with standard fields only).
+            self._schema = static_schema
+            return self._schema
+
+        # Build properties from describe endpoint only — this ensures we only
+        # include fields that actually exist in the Marketo instance and are
+        # available via the bulk export API.
+        properties: Dict[str, Any] = {}
+        for describe_record in describe_results:
             rest = describe_record.get("rest")
             if not rest or "name" not in rest:
                 continue
 
             field_name = rest["name"]
-            if field_name in properties:
-                continue  # Preserve existing static schema definitions for standard fields
-
-            data_type = describe_record.get("dataType", "string")
-            properties[field_name] = self._map_marketo_type(data_type)
+            if field_name in static_properties:
+                # Use the static schema definition for known standard fields
+                properties[field_name] = static_properties[field_name]
+            else:
+                # Map Marketo data type to JSON Schema for custom fields
+                data_type = describe_record.get("dataType", "string")
+                properties[field_name] = self._map_marketo_type(data_type)
 
         self._schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
