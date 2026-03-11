@@ -6,9 +6,13 @@ on:
     types: [completed]
     branches: [master]
 
+permissions:
+  contents: read
+  actions: read
+
 concurrency:
   group: ${{ github.workflow }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   notify-version-change:
@@ -26,13 +30,15 @@ jobs:
         id: published-connectors
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
           set -euo pipefail
 
           # Query the publish workflow run's jobs to find which source connectors
           # had their registry entries published successfully.
           # Job names follow the pattern: "Publish connector registry entries (source-xyz)"
-          PUBLISHED=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/jobs" \
+          PUBLISHED=$(gh api "repos/$REPO/actions/runs/$WORKFLOW_RUN_ID/jobs" \
             --paginate \
             --jq '[.jobs[]
               | select(.name | startswith("Publish connector registry entries (source-"))
@@ -47,10 +53,10 @@ jobs:
 
       - name: Detect dockerImageTag changes for published connectors
         id: detect-changes
+        env:
+          PUBLISHED: ${{ steps.published-connectors.outputs.published }}
         run: |
           set -euo pipefail
-
-          PUBLISHED='${{ steps.published-connectors.outputs.published }}'
           CHANGES="[]"
 
           if [[ "$PUBLISHED" == "[]" ]]; then
@@ -115,12 +121,12 @@ jobs:
         if: fromJSON(steps.detect-changes.outputs.changes)[0] != null
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          CHANGES: ${{ steps.detect-changes.outputs.changes }}
         run: |
           set -euo pipefail
 
-          CHANGES='${{ steps.detect-changes.outputs.changes }}'
           echo "Dispatching to airbytehq/sonar with changes: $CHANGES"
 
           jq -n --argjson changes "$CHANGES" \
-            '{"event_type": "replication-version-changed", "client_payload": {"changes": $changes}}' \
+            '{"event_type": "replication-version-changed", "client_payload": $changes}' \
           | gh api repos/airbytehq/sonar/dispatches --method POST --input -
