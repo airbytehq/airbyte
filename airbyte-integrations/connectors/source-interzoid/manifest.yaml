@@ -16,9 +16,6 @@ check:
   type: CheckStream
   stream_names:
     - Company Name Matching
-    - Individual Name Matching
-    - Street Address Matching
-    - Standardize Company Names
 
 definitions:
   linked:
@@ -206,6 +203,12 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
+      - company
+      - company_match_algorithm
+      - fullname
+      - address
+      - address_match_algorithm
+      - org
     properties:
       api_key:
         type: string
