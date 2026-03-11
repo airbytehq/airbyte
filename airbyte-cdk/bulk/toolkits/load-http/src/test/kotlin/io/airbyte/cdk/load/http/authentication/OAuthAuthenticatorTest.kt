@@ -176,8 +176,9 @@ class OAuthAuthenticatorTest {
         val oauthResponse: Response = mockk<Response>()
         every { oauthResponse.statusCode } returns 200
         every { oauthResponse.body } returns
-            "{\"access_token\":\"${AN_ACCESS_TOKEN}\",\"expires_in\":$expiresIn}"
-                .byteInputStream(Charsets.UTF_8)
+            "{\"access_token\":\"${AN_ACCESS_TOKEN}\",\"expires_in\":$expiresIn}".byteInputStream(
+                Charsets.UTF_8
+            )
         every { oauthResponse.close() } returns Unit
         every { httpClient.send(any()) } returns (oauthResponse)
     }
