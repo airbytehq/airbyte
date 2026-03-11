@@ -58,7 +58,8 @@ object DatabricksConnectorClientsFactory {
         // we don't need it to be optimized.
         //
         // ConnectTimeout / SocketTimeout prevent indefinite hangs when the warehouse is paused
-        // or unresponsive. See https://kb.databricks.com/dbsql/job-timeout-when-connecting-to-a-sql-endpoint-over-jdbc
+        // or unresponsive. See
+        // https://kb.databricks.com/dbsql/job-timeout-when-connecting-to-a-sql-endpoint-over-jdbc
         val jdbcUrl =
             "jdbc:databricks://${config.hostname}:${config.port}/${config.database}" +
                 ";transportMode=http;httpPath=${config.httpPath};EnableArrow=0" +
