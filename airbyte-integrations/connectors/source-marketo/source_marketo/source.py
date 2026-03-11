@@ -7,7 +7,7 @@ import json
 import re
 from abc import ABC
 from time import sleep
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
