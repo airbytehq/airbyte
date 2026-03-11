@@ -53,8 +53,28 @@ jobs:
           PR_INFO=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$PR_URL")
           HEAD_SHA=$(echo "$PR_INFO" | jq -r '.head.sha')
           HEAD_REF=$(echo "$PR_INFO" | jq -r '.head.ref')
-          echo "head-sha=$HEAD_SHA" >> $GITHUB_OUTPUT
-          echo "head-ref=$HEAD_REF" >> $GITHUB_OUTPUT
+          IS_DRAFT=$(echo "$PR_INFO" | jq -r '.draft')
+          NODE_ID=$(echo "$PR_INFO" | jq -r '.node_id')
+          echo "head-sha=$HEAD_SHA" | tee -a $GITHUB_OUTPUT
+          echo "head-ref=$HEAD_REF" | tee -a $GITHUB_OUTPUT
+          echo "is-draft=$IS_DRAFT" | tee -a $GITHUB_OUTPUT
+          echo "node-id=$NODE_ID" | tee -a $GITHUB_OUTPUT
+
+      - name: Mark PR as ready for review
+        if: steps.pr-details.outputs.is-draft == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          NODE_ID: ${{ steps.pr-details.outputs.node-id }}
+        run: |
+          echo "PR is draft — marking as ready for review..."
+          # The REST API does not support changing draft status;
+          # the GraphQL markPullRequestReadyForReview mutation is required.
+          curl -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/graphql \
+            -d "{\"query\": \"mutation { markPullRequestReadyForReview(input: { pullRequestId: \\\"$NODE_ID\\\" }) { pullRequest { isDraft } } }\"}"
+          echo "PR marked as ready for review."
 
       - name: Post start comment
         if: ${{ inputs.comment-id }}
