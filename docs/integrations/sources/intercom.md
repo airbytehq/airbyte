@@ -10,12 +10,12 @@ This page contains the setup guide and reference information for the [Intercom](
 
 - An Intercom account with the data you want to replicate.
 - An Intercom app with the required permissions. The connector needs read access to the data you want to sync. At minimum, grant these permissions in the [Developer Hub](https://app.intercom.com/a/apps/_/developer-hub):
-  - **Read and list users and companies** — required for Companies, Company Segments, Company Attributes, Contact Attributes, Contacts, Segments, and Teams.
-  - **Read conversations** — required for Conversations and Conversation Parts.
-  - **Read admins** — required for Admins.
-  - **Read admin activity logs** — required for Activity Logs.
-  - **Read tags** — required for Tags.
-  - **Read Tickets** — required for Tickets.
+  - **Read and list users and companies**—required for Companies, Company Segments, Company Attributes, Contact Attributes, Contacts, Segments, and Teams.
+  - **Read conversations**—required for Conversations and Conversation Parts.
+  - **Read admins**—required for Admins.
+  - **Read admin activity logs**—required for Activity Logs.
+  - **Read tags**—required for Tags.
+  - **Read Tickets**—required for Tickets.
 - A **Start date** in UTC format (`YYYY-MM-DDTHH:mm:ssZ`). Only data created on or after this date is replicated.
 
 ## Setup guide
