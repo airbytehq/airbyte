@@ -109,9 +109,7 @@ class MySqlSourceConfigurationTest {
             Assertions.assertThrows(ConfigErrorException::class.java) {
                 factory.makeWithoutExceptionHandling(pojo)
             }
-        Assertions.assertTrue(
-            exception.message!!.contains("Initial Waiting Time must be between")
-        )
+        Assertions.assertTrue(exception.message!!.contains("Initial Waiting Time must be between"))
     }
 
     @Test
