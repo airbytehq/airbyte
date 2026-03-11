@@ -262,7 +262,7 @@ sealed class MsSqlServerJdbcResumablePartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
                 NoWhere,
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())
@@ -433,7 +433,8 @@ sealed class MsSqlServerJdbcCursorPartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                from,
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
+//                from,
                 NoWhere,
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())

@@ -136,7 +136,13 @@ data class Limit(
 data object NoLimit : LimitNode
 
 fun SelectQuerySpec.optimize(): SelectQuerySpec =
-    SelectQuerySpec(select.optimize(), from, where.optimize(), orderBy.optimize(), limit)
+    SelectQuerySpec(select.optimize(), from.optimize(), where.optimize(), orderBy.optimize(), limit)
+
+fun FromNode.optimize(): FromNode =
+    when (this) {
+        is FromSample -> FromSample(this.name, this.namespace, this.sampleRateInvPow2, this.sampleSize, this.where?.optimize())
+        else -> this
+    }
 
 fun SelectNode.optimize(): SelectNode =
     when (this) {
