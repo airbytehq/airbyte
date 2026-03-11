@@ -274,7 +274,10 @@ class MySqlSourceDebeziumOperations(
 
     private fun parseSavedOffset(debeziumState: UnvalidatedDeserializedState): SavedOffset {
         val position: MySqlSourceCdcPosition = position(debeziumState.offset)
-        val gtidSet: String? = debeziumState.offset.wrapped.values.first()["gtids"]?.asText()
+        val gtidSet: String? =
+            debeziumState.offset.wrapped.values.first()["gtids"]?.asText()?.takeUnless {
+                it == "null" || it.isBlank()
+            }
         return SavedOffset(position, gtidSet)
     }
 

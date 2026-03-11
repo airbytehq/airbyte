@@ -15,9 +15,12 @@ airbyteBulkConnector {
 
 dependencies {
     api "com.google.protobuf:protobuf-java:4.27.5" // for fixing vulnerability of protobuf-java used by Debezium
+    implementation 'io.micronaut:micronaut-inject:4.6.1'
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation 'com.mysql:mysql-connector-j:9.1.0'
     implementation 'io.debezium:debezium-connector-mysql'
 
+    testImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'io.mockk:mockk:1.12.0'
 }
