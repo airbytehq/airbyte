@@ -846,3 +846,119 @@ class TestVendorSalesReportsFullRefresh:
 
         assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestSalesAndTrafficReportRequestBody:
+    """
+    Tests validating that GET_SALES_AND_TRAFFIC_REPORT and GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH
+    streams include the correct reportOptions (asinGranularity) in the create report POST request body.
+    """
+
+    data_format = "json"
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+            expecting_exception=expecting_exception,
+        )
+
+    @staticmethod
+    def _get_report_request_body(report_options: dict) -> str:
+        body = {
+            "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-30T00:00:00Z",
+            "reportOptions": report_options,
+        }
+        return json.dumps(body)
+
+    @HttpMocker()
+    def test_default_config_sends_asin_granularity_parent(self, http_mocker: HttpMocker) -> None:
+        """With default config (no asinGranularity set), reportOptions.asinGranularity = PARENT."""
+        stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "PARENT"})
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_child_granularity_config_sends_asin_granularity_child(self, http_mocker: HttpMocker) -> None:
+        """With asinGranularity set to CHILD, reportOptions.asinGranularity = CHILD."""
+        stream_name = "GET_SALES_AND_TRAFFIC_REPORT"
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        create_report_request_body = self._get_report_request_body({"asinGranularity": "CHILD"})
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config().with_asin_granularity("CHILD"))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_by_month_stream_sends_date_granularity_and_asin_granularity(self, http_mocker: HttpMocker) -> None:
+        """GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH includes both dateGranularity=MONTH and configured asinGranularity."""
+        stream_name = "GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH"
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+
+        create_report_request_body = self._get_report_request_body(
+            {"dateGranularity": "MONTH", "asinGranularity": "SKU"}
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_report_request_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response("GET_SALES_AND_TRAFFIC_REPORT", data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config().with_asin_granularity("SKU"))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
