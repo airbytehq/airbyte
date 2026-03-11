@@ -1106,7 +1106,7 @@ definitions:
         $ref: "#/definitions/retriever/requester"
         path: "search/export"
         request_parameters:
-          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} updated_at<{{ format_datetime(stream_interval['end_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }}"
+          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} updated_at<={{ format_datetime(stream_interval['end_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }}"
           "filter[type]": "ticket"
       paginator:
         $ref: "#/definitions/export_search_paginator"
