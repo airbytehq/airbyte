@@ -319,6 +319,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.23.15-rc.1 | 2026-03-11 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Increase default concurrency from 2 to 40 to test rate limit behavior |
 | 2.23.14 | 2026-03-10 | [74483](https://github.com/airbytehq/airbyte/pull/74483) | Update dependencies |
 | 2.23.13 | 2026-03-03 | [73654](https://github.com/airbytehq/airbyte/pull/73654) | Use streaming decompression in BingAdsGzipCsvDecoder to prevent OOM on large accounts |
 | 2.23.12 | 2026-03-03 | [73829](https://github.com/airbytehq/airbyte/pull/73829) | Update dependencies |
