@@ -75,11 +75,12 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 9. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
-10. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
-11. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-12. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-13. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-14. Click `Set up source`.
+10. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents and ListFinancialEventGroups streams (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+11. **Orders Max Results Per Page**: Set the maximum number of results per page for the Orders stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+14. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+15. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -96,11 +97,12 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 7. **Financial Events Step Size**: Select the time window size for fetching financial events data for the ListFinancialEvents and ListFinancialEventGroups streams. Options include:
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
-8. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
-9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-10. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-12. Click `Set up source`.
+8. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents and ListFinancialEventGroups streams (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+9. **Orders Max Results Per Page**: Set the maximum number of results per page for the Orders stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
+10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+12. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+13. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -294,13 +296,13 @@ CLUSTER BY expression must be groupable, but type is JSON.
 
 Use **Append** sync mode instead of **Dedup** for the `ListFinancialEvents` stream when syncing to BigQuery. If you need deduplicated data, perform deduplication in BigQuery using SQL after the data lands in append mode.
 
-### InvalidInput error for ListFinancialEvents stream
+### InvalidInput error for ListFinancialEvents or ListFinancialEventGroups stream
 
 ```text
 The API returned an InvalidInput error. This typically occurs when the response exceeds the maximum number of transactions or 10 MB per page.
 ```
 
-This error occurs when the ListFinancialEvents stream returns more data than the API can handle in a single page response. According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference), if the response exceeds the maximum number of transactions or 10 MB, the API returns an `InvalidInput` error.
+This error occurs when the ListFinancialEvents or ListFinancialEventGroups stream returns more data than the API can handle in a single page response. According to the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/finances-api-reference), if the response exceeds the maximum number of transactions or 10 MB, the API returns an `InvalidInput` error.
 
 **Solution:**
 
@@ -312,6 +314,23 @@ Lower the **Financial Events Max Results Per Page** setting in your connector co
 4. Save and retry the sync.
 
 You may also combine this with a smaller **Financial Events Step Size** (e.g., 1H or 6H) to further reduce the amount of data fetched per request.
+
+### InvalidInput error for Orders stream
+
+```text
+The API returned an InvalidInput error. This typically occurs when the response exceeds 10 MB per page.
+```
+
+This error occurs when the Orders stream returns more data than the API can handle in a single page response.
+
+**Solution:**
+
+Lower the **Orders Max Results Per Page** setting in your connector configuration:
+
+1. Go to the connector settings page.
+2. Find the **Orders Max Results Per Page** option.
+3. Reduce the value from the default of 100 to a smaller number (e.g., 50, 25, or 10).
+4. Save and retry the sync.
 
 ## Changelog
 
