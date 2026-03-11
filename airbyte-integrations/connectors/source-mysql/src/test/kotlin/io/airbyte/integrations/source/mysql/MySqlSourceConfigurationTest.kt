@@ -95,25 +95,23 @@ class MySqlSourceConfigurationTest {
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
 
-    fun testInvalidWaitingSeconds() {
-        @Test
-        @Property(name = "airbyte.connector.config.host", value = "localhost")
-        @Property(name = "airbyte.connector.config.port", value = "12345")
-        @Property(name = "airbyte.connector.config.username", value = "FOO")
-        @Property(name = "airbyte.connector.config.password", value = "BAR")
-        @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
-        @Property(name = "airbyte.connector.config.json", value = CONFIG_INVALID_WAITING_SECONDS)
-        fun testInvalidInitialWaitingSeconds() {
-            val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_INVALID_WAITING_SECONDS)
+    fun testInvalidInitialWaitingSeconds() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
 
-            val exception =
-                Assertions.assertThrows(ConfigErrorException::class.java) {
-                    factory.makeWithoutExceptionHandling(pojo)
-                }
-            Assertions.assertTrue(
-                exception.message!!.contains("Initial Waiting Time must be between")
-            )
-        }
+        val exception =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                factory.makeWithoutExceptionHandling(pojo)
+            }
+        Assertions.assertTrue(
+            exception.message!!.contains("Initial Waiting Time must be between")
+        )
     }
 
     @Test
