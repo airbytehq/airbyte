@@ -1,0 +1,5 @@
+{
+  "host": "invalid.host.example.com",
+  "username": "invalid_user",
+  "database": "invalid_db"
+}
