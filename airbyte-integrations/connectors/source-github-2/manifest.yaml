@@ -1155,7 +1155,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash('md5') }}"
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
   - type: DeclarativeStream
     name: contributor_activity
     retriever:
@@ -1770,12 +1770,13 @@ streams:
               hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
+      step: P1Y
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -1870,7 +1871,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - airbyte_unique_id
-            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash('md5') }}"
+            value: "{{ [record['node_id'], stream_slice.repo] | join('_') | hash }}"
   - type: DeclarativeStream
     name: tags
     retriever:
@@ -2316,6 +2317,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
+        min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
@@ -2754,7 +2756,7 @@ streams:
               hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
+      step: P1Y
       cursor_field: created_at
       start_datetime:
         type: MinMaxDatetime
@@ -2792,7 +2794,7 @@ streams:
           field_path: []
         record_filter:
           type: RecordFilter
-          condition: "{{ record['updated_at'] > stream_interval.start_time }}"
+          condition: "{{ record['submitted_at'] > stream_interval.start_time }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -4420,7 +4422,7 @@ streams:
               hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
+      step: P1Y
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -4645,6 +4647,7 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
       cursor_datetime_formats:
@@ -4756,7 +4759,7 @@ streams:
               hash('md5') }}
     incremental_sync:
       type: DatetimeBasedCursor
-      step: P1M
+      step: P1Y
       cursor_field: updated_at
       start_datetime:
         type: MinMaxDatetime
@@ -4935,6 +4938,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
+        min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
       cursor_datetime_formats:
@@ -5862,6 +5866,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
+        min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
       cursor_datetime_formats:
@@ -6081,6 +6086,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
+        min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
       cursor_datetime_formats:
@@ -6329,6 +6335,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
+        min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
       cursor_datetime_formats:
@@ -6639,7 +6646,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     issues:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: e0bc0396fa8a6aa2ead239c694c8f0d0a56ff97e
       hasResponse: true
@@ -6647,7 +6654,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     commits:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: 256e95ff48d6ec079efba94e32832fc9ed9a6118
       hasResponse: true
@@ -6655,7 +6662,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reviews:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: a6d6595198c289336bdc8851e4fddd7415cc5f66
       hasResponse: true
@@ -6681,7 +6688,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     workflows:
-      isStale: false
+      isStale: true
       hasRecords: false
       streamHash: de16e39e683298f9aee80af0d2d13bacae3d72a0
       hasResponse: true
@@ -6689,7 +6696,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: false
     deployments:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: adc5558ce507cb07d7af09b63ddb7ef787605292
       hasResponse: true
@@ -6729,15 +6736,15 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     pull_requests:
-      isStale: false
-      hasRecords: true
-      streamHash: 4a2b0e81bcbef4bde07351545ba0b758d731afad
+      isStale: true
+      hasRecords: false
+      streamHash: d909bdb8011202058ff7ca4a00b4450b7b2d1c1b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     workflow_jobs:
-      isStale: false
+      isStale: true
       hasRecords: false
       streamHash: 8486f7653e33e7c3602c28bf270e05857d2853b7
       hasResponse: false
@@ -6753,7 +6760,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     issue_comments:
-      isStale: false
+      isStale: true
       hasRecords: false
       streamHash: 9bffa869b27b38981f312f94aade10f28124fd75
       hasResponse: false
@@ -6761,7 +6768,7 @@ metadata:
       primaryKeysArePresent: false
       responsesAreSuccessful: false
     deployment_statuses:
-      isStale: false
+      isStale: true
       hasRecords: false
       streamHash: af7691ee5e6e0d21b4547daa6c72019774f249a0
       hasResponse: false
@@ -6802,4 +6809,4 @@ metadata:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 2
+  default_concurrency: 1
