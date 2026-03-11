@@ -940,9 +940,7 @@ class TestSalesAndTrafficReportRequestBody:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
 
-        create_report_request_body = self._get_report_request_body(
-            {"dateGranularity": "MONTH", "asinGranularity": "SKU"}
-        )
+        create_report_request_body = self._get_report_request_body({"dateGranularity": "MONTH", "asinGranularity": "SKU"})
         http_mocker.post(
             _create_report_request(stream_name).with_body(create_report_request_body).build(),
             _create_report_response(_REPORT_ID),
