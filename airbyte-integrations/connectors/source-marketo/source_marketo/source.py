@@ -426,19 +426,35 @@ class Leads(MarketoExportBase):
         """Return the list of fields for bulk export requests.
 
         If the user has selected specific fields via the configured catalog,
-        only those fields are requested (selectable fields).  Otherwise all
-        fields from the dynamic schema are used.
+        only those fields are requested (selectable fields).  Otherwise we
+        request only fields confirmed by the describe endpoint — this avoids
+        Marketo bulk-export validation errors for fields that exist in the
+        static schema but not in a particular Marketo instance.
         """
         if self.configured_json_schema and self.configured_json_schema.get("properties"):
             return list(self.configured_json_schema["properties"].keys())
-        return list(self.get_json_schema()["properties"].keys())
+
+        describe_results = self._describe_leads()
+        if describe_results:
+            available_fields = []
+            for describe_record in describe_results:
+                rest = describe_record.get("rest")
+                if rest and "name" in rest:
+                    available_fields.append(rest["name"])
+            if available_fields:
+                return available_fields
+
+        # Fallback to static schema field names if describe endpoint is unavailable
+        return list(super().get_json_schema()["properties"].keys())
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if self._schema is not None:
             return self._schema
 
+        # Start with the full static schema — all standard fields are always
+        # present in the schema so downstream consumers see a consistent shape.
         static_schema = super().get_json_schema()
-        static_properties = static_schema.get("properties", {})
+        properties = dict(static_schema.get("properties", {}))
 
         describe_results = self._describe_leads()
         if not describe_results:
@@ -447,23 +463,20 @@ class Leads(MarketoExportBase):
             self._schema = static_schema
             return self._schema
 
-        # Build properties from describe endpoint only — this ensures we only
-        # include fields that actually exist in the Marketo instance and are
-        # available via the bulk export API.
-        properties: Dict[str, Any] = {}
+        # Append custom fields discovered from the describe endpoint.
+        # Static schema properties are kept as-is; only new fields are added.
         for describe_record in describe_results:
             rest = describe_record.get("rest")
             if not rest or "name" not in rest:
                 continue
 
             field_name = rest["name"]
-            if field_name in static_properties:
-                # Use the static schema definition for known standard fields
-                properties[field_name] = static_properties[field_name]
-            else:
-                # Map Marketo data type to JSON Schema for custom fields
-                data_type = describe_record.get("dataType", "string")
-                properties[field_name] = self._map_marketo_type(data_type)
+            if field_name in properties:
+                continue  # Preserve existing static schema definitions
+
+            # Map Marketo data type to JSON Schema for custom fields
+            data_type = describe_record.get("dataType", "string")
+            properties[field_name] = self._map_marketo_type(data_type)
 
         self._schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",

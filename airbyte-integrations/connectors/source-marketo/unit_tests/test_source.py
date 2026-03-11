@@ -356,9 +356,10 @@ def test_set_state(config):
     assert stream._state == expected_state
 
 
-def test_leads_stream_fields_returns_schema_keys(config, requests_mock):
-    """stream_fields should return all keys from get_json_schema() which includes
-    both static and dynamically discovered custom fields."""
+def test_leads_stream_fields_returns_describe_fields(config, requests_mock):
+    """stream_fields should return only fields confirmed by the describe endpoint,
+    not all static schema fields — this avoids bulk export validation errors for
+    fields that exist in the static schema but not in a particular Marketo instance."""
     describe_json = {
         "requestId": "abc123",
         "success": True,
@@ -386,9 +387,14 @@ def test_leads_stream_fields_returns_schema_keys(config, requests_mock):
     leads_stream = Leads(config)
     fields = leads_stream.stream_fields
 
-    # Should include both static schema fields and custom fields
-    assert "email" in fields
-    assert "customScore__c" in fields
+    # stream_fields should contain only describe-confirmed fields
+    assert set(fields) == {"email", "customScore__c"}
+
+    # But the full schema should still include all static fields + custom fields
+    schema = leads_stream.get_json_schema()
+    assert "customScore__c" in schema["properties"]
+    # Static-only fields not in describe should still be in the schema
+    assert "firstName" in schema["properties"]
 
 
 def test_leads_stream_fields_uses_configured_json_schema(config, requests_mock):
