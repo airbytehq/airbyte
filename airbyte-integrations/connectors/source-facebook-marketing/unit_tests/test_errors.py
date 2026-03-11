@@ -239,6 +239,24 @@ CONFIG_ERRORS = [
             },
         },
     ),
+    (
+        "error_400_invalid_oauth_access_token_cannot_parse",
+        "The access token for this connection is invalid or corrupted. "
+        "Please re-authenticate your Facebook connection in Airbyte. "
+        "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
+        "remove the Airbyte app, and then re-authenticate again.",
+        {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "Invalid OAuth access token - Cannot parse access token",
+                    "type": "OAuthException",
+                    "code": 190,
+                    "fbtrace_id": "ANDUkKsQWt5hhp9CkhgTjdt",
+                }
+            },
+        },
+    ),
     # ("error_400_unsupported request",
     #  "Re-authenticate because current credential missing permissions",
     #  {

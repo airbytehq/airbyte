@@ -1,0 +1,46 @@
+def kotlinCoroutinesVersion = "1.10.2"
+
+dependencies {
+    // Needed for Micronaut annotations and logging
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+
+    // legacy-task-load-object-storage is a legacy toolkit - get all dependencies through legacy-task-loader
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader')
+
+    // TODO: Separate individual format types from the core format spec
+    // and migrate them to their respective toolkits, so that these
+    // dependencies can be removed.
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-avro')
+    // Exclude core-load: legacy-task-* toolkits and core-load are mutually exclusive
+    // (they define conflicting beans). load-csv only needs core-load for data types
+    // which are also available in legacy-task-loader.
+    api(project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-csv')) {
+        exclude module: 'bulk-cdk-core-load'
+    }
+    api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-parquet')
+
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$kotlinCoroutinesVersion"
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion")
+
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-loader"))
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-avro"))
+    testFixturesImplementation(testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-csv"))) {
+        exclude module: 'bulk-cdk-core-load'
+    }
+    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-parquet"))
+}
+
+project.tasks.matching {
+    it.name == 'spotbugsIntegrationTestLegacy' ||
+            it.name == 'spotbugsIntegrationTest' ||
+            it.name == 'spotbugsTest' ||
+            it.name == 'spotbugsMain'
+}.configureEach {
+    enabled = false
+}
+
+test {
+    systemProperties(["mockk.junit.extension.requireParallelTesting":"true"])
+}

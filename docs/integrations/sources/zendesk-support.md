@@ -13,12 +13,17 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ## Setup guide
 
-## Set up Zendesk Support
+### Set up Zendesk Support
 
-The Zendesk Support source connector supports two authentication methods:
+The Zendesk Support source connector supports three authentication methods:
 
-- OAuth 2.0
-- API token
+- OAuth 2.0 with refresh token (recommended for Airbyte Cloud)
+- API token (recommended for Airbyte Open Source)
+- OAuth 2.0 Legacy (for existing OAuth connections that haven't migrated to the refresh token flow)
+
+:::note
+Zendesk is [enforcing OAuth token expiration](https://support.zendesk.com/hc/en-us/articles/9182123625370) and requiring the refresh token flow. If you use the legacy OAuth method, plan to migrate to OAuth 2.0 with refresh token before Zendesk's deadline.
+:::
 
 <!-- env:cloud -->
 
@@ -84,7 +89,9 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. Click **Set up source** and wait for the tests to complete.
+8. (Optional) For **Number of concurrent workers**, enter the number of parallel threads to use for the sync. The default is 3. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
+9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
+10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -114,8 +121,9 @@ The Zendesk Support source connector supports the following streams:
 - [Article Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Article Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_comments/#list-comments) \(Incremental\)
 - [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
+- [Article Attachments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_attachments/#list-article-attachments) \(Incremental\) \(Supports file transfer\)
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
-- [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
+- [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs) \(Incremental\) \(Enterprise only\)
 - [Automations](https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 - [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
@@ -134,6 +142,7 @@ The Zendesk Support source connector supports the following streams:
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
 - [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+- [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
@@ -144,8 +153,8 @@ The Zendesk Support source connector supports the following streams:
 - [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
-- [UserIdentities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
-- [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
+- [User Identities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
+- [User Fields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 - [Categories](https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories)
 - [Sections](https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections)
 
@@ -172,9 +181,22 @@ Expand to see details about Zendesk Support connector limitations and troublesho
 
 #### Rate limiting
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
+Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) based on your plan tier:
 
-The Zendesk connector ideally should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+| Plan | Requests per minute |
+| :--- | :--- |
+| Team | 200 |
+| Growth / Professional | 400 |
+| Enterprise | 700 |
+| Enterprise Plus / High Volume API add-on | 2500 |
+
+The connector's **Number of concurrent workers** setting (default: 3) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
+
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The connector includes a built-in API budget that automatically throttles requests to stay within this limit.
+
+If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
+
+The connector should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ### Troubleshooting
 
@@ -189,7 +211,19 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.10.18 | 2025-12-16 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
+| 5.1.7-rc.1 | 2026-03-10 | [74398](https://github.com/airbytehq/airbyte/pull/74398) | Pin CDK to 7.8.1.post54 for regression testing of StateDelegatingStream and DeclarativeStream |
+| 5.1.6 | 2026-03-09 | [73686](https://github.com/airbytehq/airbyte/pull/73686) | Add 504 exponential backoff error handling to `ticket_comments` stream and API budget (10 req/min) for all incremental export streams |
+| 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
+| 5.1.4 | 2026-02-24 | [73911](https://github.com/airbytehq/airbyte/pull/73911) | Update dependencies |
+| 5.1.3 | 2026-02-17 | [73508](https://github.com/airbytehq/airbyte/pull/73508) | Update dependencies |
+| 5.1.2 | 2026-02-10 | [72624](https://github.com/airbytehq/airbyte/pull/72624) | Update dependencies |
+| 5.1.1 | 2026-02-03 | [72783](https://github.com/airbytehq/airbyte/pull/72783) | Upgrade CDK version to 7.8.1 |
+| 5.1.0 | 2026-02-02 | [71752](https://github.com/airbytehq/airbyte/pull/71752) | Add user-configurable page_size option for ticket_comments stream |
+| 5.0.3 | 2026-01-28 | [72423](https://github.com/airbytehq/airbyte/pull/72423) | Update breaking change deadline from Jan 31 to Jan 30 |
+| 5.0.2 | 2026-01-27 | [72380](https://github.com/airbytehq/airbyte/pull/72380) | Fix OAuth race condition with concurrent token refresh |
+| 5.0.1 | 2026-01-22 | [71714](https://github.com/airbytehq/airbyte/pull/71714) | Update dependencies |
+| 5.0.0 | 2026-01-22 | [70990](https://github.com/airbytehq/airbyte/pull/70990) | Add OAuth2.0 with refresh token support. Users using OAuth must re-authenticate to use the new flow with rotating refresh tokens. |
+| 4.10.18 | 2025-12-18 | [70717](https://github.com/airbytehq/airbyte/pull/70717) | Update dependencies |
 | 4.10.17 | 2025-12-02 | [70066](https://github.com/airbytehq/airbyte/pull/70066) | Update dependencies |
 | 4.10.16 | 2025-11-18 | [69538](https://github.com/airbytehq/airbyte/pull/69538) | Update dependencies |
 | 4.10.15 | 2025-10-29 | [68945](https://github.com/airbytehq/airbyte/pull/68945) | Update dependencies |
@@ -199,8 +233,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 4.10.11 | 2025-09-24 | [66461](https://github.com/airbytehq/airbyte/pull/66461) | Update dependencies |
 | 4.10.10 | 2025-09-09 | [65729](https://github.com/airbytehq/airbyte/pull/65729) | Update dependencies |
 | 4.10.9 | 2025-08-26 | [65558](https://github.com/airbytehq/airbyte/pull/65558) | Update dependencies |
-| 4.10.8 | 2025-08-23 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
-| 4.10.7 | 2025-08-09 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
+| 4.10.8 | 2025-08-24 | [65403](https://github.com/airbytehq/airbyte/pull/65403) | Update dependencies |
+| 4.10.7 | 2025-08-10 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
 | 4.10.6 | 2025-08-02 | [64366](https://github.com/airbytehq/airbyte/pull/64366) | Update dependencies |
 | 4.10.5 | 2025-07-26 | [64067](https://github.com/airbytehq/airbyte/pull/64067) | Update dependencies |
 | 4.10.4 | 2025-07-20 | [63673](https://github.com/airbytehq/airbyte/pull/63673) | Update dependencies |
@@ -343,7 +377,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 0.1.12      | 2022-01-25 | [9785](https://github.com/airbytehq/airbyte/pull/9785)   | Add additional log messages                                                                                                                                                                                                        |
 | 0.1.11      | 2021-12-21 | [8987](https://github.com/airbytehq/airbyte/pull/8987)   | Update connector fields title/description                                                                                                                                                                                          |
 | 0.1.9       | 2021-12-16 | [8616](https://github.com/airbytehq/airbyte/pull/8616)   | Adds Brands, CustomRoles and Schedules streams                                                                                                                                                                                     |
-| 0.1.8       | 2021-11-23 | [8050](https://github.com/airbytehq/airbyte/pull/8168)   | Adds TicketMetricEvents stream                                                                                                                                                                                                     |
+| 0.1.8       | 2021-11-23 | [8168](https://github.com/airbytehq/airbyte/pull/8168)   | Adds TicketMetricEvents stream                                                                                                                                                                                                     |
 | 0.1.7       | 2021-11-23 | [8058](https://github.com/airbytehq/airbyte/pull/8058)   | Added support of AccessToken authentication                                                                                                                                                                                        |
 | 0.1.6       | 2021-11-18 | [8050](https://github.com/airbytehq/airbyte/pull/8050)   | Fix wrong types for schemas, add TypeTransformer                                                                                                                                                                                   |
 | 0.1.5       | 2021-10-26 | [7679](https://github.com/airbytehq/airbyte/pull/7679)   | Add ticket_id and ticket_comments                                                                                                                                                                                                  |
