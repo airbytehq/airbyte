@@ -173,14 +173,16 @@ class OAuthAuthenticatorTest {
     }
 
     private fun mockCallWithExpiresIn(expiresIn: Int) {
-        val oauthResponse: Response = mockk<Response>()
-        every { oauthResponse.statusCode } returns 200
-        every { oauthResponse.body } returns
-            "{\"access_token\":\"${AN_ACCESS_TOKEN}\",\"expires_in\":$expiresIn}".byteInputStream(
-                Charsets.UTF_8
-            )
-        every { oauthResponse.close() } returns Unit
-        every { httpClient.send(any()) } returns (oauthResponse)
+        every { httpClient.send(any()) } answers
+            {
+                val oauthResponse: Response = mockk<Response>()
+                every { oauthResponse.statusCode } returns 200
+                every { oauthResponse.body } returns
+                    "{\"access_token\":\"${AN_ACCESS_TOKEN}\",\"expires_in\":$expiresIn}"
+                        .byteInputStream(Charsets.UTF_8)
+                every { oauthResponse.close() } returns Unit
+                oauthResponse
+            }
     }
 
     private fun mockBuilder(originalRequest: Request): Request.Builder {
