@@ -296,12 +296,25 @@ class MarketoExportCreate(MarketoStream):
     def path(self, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/create.json"
 
+    # Marketo API error codes that indicate authentication/authorization failures.
+    # These should not be retried — they require the user to fix their credentials.
+    # Reference: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/error-codes
+    _AUTH_ERROR_CODES = {"601", "602"}
+
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 429 or 500 <= response.status_code < 600:
             return True
         if errors := response.json().get("errors"):
-            if errors[0].get("code") == "1029" and re.match("Export daily quota \d+MB exceeded", errors[0].get("message")):
+            error_code = errors[0].get("code", "")
+            error_message = errors[0].get("message", "")
+            if error_code == "1029" and re.match(r"Export daily quota \d+MB exceeded", error_message):
                 message = "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
+                raise AirbyteTracedException(internal_message=response.text, message=message, failure_type=FailureType.config_error)
+            if error_code in self._AUTH_ERROR_CODES:
+                message = (
+                    f"Failed to authenticate with the Marketo API: {error_message} (error code {error_code}). "
+                    "Please verify that your Marketo client ID and client secret are correct and have not been revoked."
+                )
                 raise AirbyteTracedException(internal_message=response.text, message=message, failure_type=FailureType.config_error)
         result = response.json().get("result")
         if not result:
