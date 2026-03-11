@@ -867,15 +867,14 @@ class TestSalesAndTrafficReportRequestBody:
         )
 
     @staticmethod
-    def _get_report_request_body(report_options: dict) -> str:
-        body = {
+    def _get_report_request_body(report_options: dict) -> dict:
+        return {
             "reportType": "GET_SALES_AND_TRAFFIC_REPORT",
             "marketplaceIds": [MARKETPLACE_ID],
             "dataStartTime": "2023-01-01T00:00:00Z",
             "dataEndTime": "2023-01-30T00:00:00Z",
             "reportOptions": report_options,
         }
-        return json.dumps(body)
 
     @HttpMocker()
     def test_default_config_sends_asin_granularity_parent(self, http_mocker: HttpMocker) -> None:
