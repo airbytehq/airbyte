@@ -35,9 +35,5 @@ ENV DD_PROFILING_TIMELINE_ENABLED="true"
 ENV DD_TRACE_SQLITE3_ENABLED="false"
 ENV DD_PROFILING_HEAP_SAMPLE_SIZE="262144"
 ENV DD_PROFILING_STACK_ENABLED="false"
-# Use jemalloc (installed in base image) to replace glibc's malloc for ALL allocations.
-# jemalloc returns freed memory to the OS much more aggressively than glibc, preventing
-# unbounded RSS growth from native C allocation fragmentation (urllib3, OpenSSL, orjson, etc.).
-ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 ENV AIRBYTE_ENTRYPOINT="ddtrace-run python /airbyte/integration_code/main.py"
 ENTRYPOINT ["ddtrace-run", "python", "/airbyte/integration_code/main.py"]
