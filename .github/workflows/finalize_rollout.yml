@@ -91,4 +91,4 @@ jobs:
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        run: uvx airbyte-internal-ops registry rc "${ACTION}" --name "${CONNECTOR_NAME}" --store coral:prod
+        run: uvx airbyte-internal-ops registry rc "${ACTION}" --name "${CONNECTOR_NAME}" --store coral:dev/soft-launch-trial
