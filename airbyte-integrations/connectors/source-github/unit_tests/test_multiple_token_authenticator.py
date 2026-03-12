@@ -90,11 +90,9 @@ def test_multiple_token_authenticator_with_rate_limiter(requests_mock):
     with pytest.raises(AirbyteTracedException) as e:
         list(read_full_refresh(stream))
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(0, 500), (0, 500), (0, 500)]
-    message = (
-        "Stream: `organizations`, slice: `{'organization': 'org1'}`. Limits for all provided tokens are reached, please try again later"
-    )
-    assert e.value.failure_type == FailureType.config_error
-    assert e.value.internal_message == message
+    assert e.value.failure_type == FailureType.transient_error
+    assert "Stream: `organizations`" in e.value.internal_message
+    assert "Rate limits for all tokens" in e.value.internal_message
 
 
 @freeze_time("2021-01-01 12:00:00")
@@ -148,7 +146,10 @@ def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, ca
     )
 
     list(read_full_refresh(stream))
-    sleep_mock.assert_called_once_with(ACCEPTED_WAITING_TIME_IN_SECONDS)
+    # Sleep is now called in intervals of SLEEP_INTERVAL_SECONDS (60s) instead of a single long sleep
+    assert sleep_mock.call_count >= 1
+    total_slept = sum(call.args[0] for call in sleep_mock.call_args_list)
+    assert abs(total_slept - ACCEPTED_WAITING_TIME_IN_SECONDS) < 1
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(500, 500), (500, 500), (498, 500)]
 
 

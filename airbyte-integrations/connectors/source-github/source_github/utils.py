@@ -170,6 +170,10 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         for token in self._tokens:
             self._check_token_limits(token)
 
+    # Maximum duration for a single sleep interval when waiting for rate limit reset.
+    # Kept short to allow the platform's heartbeat mechanism to detect the connector is still alive.
+    SLEEP_INTERVAL_SECONDS = 60
+
     def process_token(self, current_token, count_attr, reset_attr):
         if getattr(current_token, count_attr) > 0:
             setattr(current_token, count_attr, getattr(current_token, count_attr) - 1)
@@ -177,10 +181,30 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
             min_time_to_wait = min((getattr(x, reset_attr) - ab_datetime_now()).total_seconds() for x in self._tokens.values())
             if min_time_to_wait < self.max_time:
-                time.sleep(min_time_to_wait if min_time_to_wait > 0 else 0)
+                wait_time = max(min_time_to_wait, 0)
+                self._sleep_with_heartbeat(wait_time, count_attr)
                 self.check_all_tokens()
             else:
                 raise GitHubAPILimitException(f"Rate limits for all tokens ({count_attr}) were reached")
         else:
             self.update_token()
         return False
+
+    def _sleep_with_heartbeat(self, total_wait: float, count_attr: str) -> None:
+        """Sleep in small intervals, logging periodically so the platform heartbeat sees activity."""
+        remaining = total_wait
+        self._logger.info(
+            "Rate limit reached for all tokens (%s). Waiting %.0f seconds for reset.",
+            count_attr,
+            total_wait,
+        )
+        while remaining > 0:
+            interval = min(remaining, self.SLEEP_INTERVAL_SECONDS)
+            time.sleep(interval)
+            remaining -= interval
+            if remaining > 0:
+                self._logger.info(
+                    "Still waiting for rate limit reset (%s). %.0f seconds remaining.",
+                    count_attr,
+                    remaining,
+                )
