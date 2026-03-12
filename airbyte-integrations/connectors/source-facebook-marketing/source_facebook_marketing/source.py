@@ -26,6 +26,7 @@ from source_facebook_marketing.streams import (
     Activities,
     AdAccount,
     AdCreatives,
+    AdCreativesFromAds,
     Ads,
     AdSets,
     AdsInsights,
@@ -106,7 +107,10 @@ class SourceFacebookMarketing(AbstractSource):
                 return False, "End date must be equal or after start date."
 
             if config.credentials is not None:
-                api = API(access_token=config.credentials.access_token, page_size=config.page_size)
+                api = API(
+                    access_token=config.credentials.access_token,
+                    page_size=config.page_size,
+                )
             else:
                 api = API(access_token=config.access_token, page_size=config.page_size)
 
@@ -158,6 +162,7 @@ class SourceFacebookMarketing(AbstractSource):
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
+            include_incrementality=config.include_incrementality,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
@@ -181,6 +186,13 @@ class SourceFacebookMarketing(AbstractSource):
                 api=api,
                 account_ids=config.account_ids,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
+                page_size=config.page_size,
+            ),
+            AdCreativesFromAds(
+                api=api,
+                account_ids=config.account_ids,
+                fetch_thumbnail_images=config.fetch_thumbnail_images,
+                filter_statuses=config.ad_statuses,
                 page_size=config.page_size,
             ),
             AdsInsights(
@@ -273,7 +285,10 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "access_token": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "access_token"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "access_token",
+                                ],
                             },
                         },
                     },
@@ -290,11 +305,17 @@ class SourceFacebookMarketing(AbstractSource):
                         "properties": {
                             "client_id": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_id"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_id",
+                                ],
                             },
                             "client_secret": {
                                 "type": "string",
-                                "path_in_connector_config": ["credentials", "client_secret"],
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "client_secret",
+                                ],
                             },
                         },
                     },
@@ -326,11 +347,13 @@ class SourceFacebookMarketing(AbstractSource):
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
+                time_increment_period=insight.time_increment_period,
                 start_date=insight.start_date or config.start_date or (ab_datetime_now() - timedelta(days=365 * 2)),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
                 level=insight.level,
+                include_incrementality=insight.include_incrementality,
             )
             streams.append(stream)
         return streams

@@ -28,6 +28,9 @@ No documented strict rate limit.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.47 | 2026-03-10 | [74447](https://github.com/airbytehq/airbyte/pull/74447) | Update dependencies |
+| 0.2.46 | 2026-02-24 | [73916](https://github.com/airbytehq/airbyte/pull/73916) | Update dependencies |
+| 0.2.45 | 2026-02-17 | [73476](https://github.com/airbytehq/airbyte/pull/73476) | Update dependencies |
 | 0.2.44 | 2026-02-03 | [72628](https://github.com/airbytehq/airbyte/pull/72628) | Update dependencies |
 | 0.2.43 | 2026-01-20 | [71920](https://github.com/airbytehq/airbyte/pull/71920) | Update dependencies |
 | 0.2.42 | 2026-01-14 | [71580](https://github.com/airbytehq/airbyte/pull/71580) | Update dependencies |

@@ -21,6 +21,8 @@ Connector for PayFit.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2026-03-03 | [73883](https://github.com/airbytehq/airbyte/pull/73883) | Update dependencies |
+| 0.0.34 | 2026-02-17 | [73194](https://github.com/airbytehq/airbyte/pull/73194) | Update dependencies |
 | 0.0.33 | 2026-02-03 | [72582](https://github.com/airbytehq/airbyte/pull/72582) | Update dependencies |
 | 0.0.32 | 2026-01-20 | [72175](https://github.com/airbytehq/airbyte/pull/72175) | Update dependencies |
 | 0.0.31 | 2026-01-14 | [71646](https://github.com/airbytehq/airbyte/pull/71646) | Update dependencies |

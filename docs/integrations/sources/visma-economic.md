@@ -52,6 +52,10 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.51 | 2026-03-10 | [74513](https://github.com/airbytehq/airbyte/pull/74513) | Update dependencies |
+| 0.3.50 | 2026-03-02 | [73712](https://github.com/airbytehq/airbyte/pull/73712) | Add memory bump for check_connection to prevent OOM |
+| 0.3.49 | 2026-02-24 | [73919](https://github.com/airbytehq/airbyte/pull/73919) | Update dependencies |
+| 0.3.48 | 2026-02-17 | [73437](https://github.com/airbytehq/airbyte/pull/73437) | Update dependencies |
 | 0.3.47 | 2026-02-03 | [72680](https://github.com/airbytehq/airbyte/pull/72680) | Update dependencies |
 | 0.3.46 | 2026-01-20 | [72060](https://github.com/airbytehq/airbyte/pull/72060) | Update dependencies |
 | 0.3.45 | 2026-01-14 | [71490](https://github.com/airbytehq/airbyte/pull/71490) | Update dependencies |
