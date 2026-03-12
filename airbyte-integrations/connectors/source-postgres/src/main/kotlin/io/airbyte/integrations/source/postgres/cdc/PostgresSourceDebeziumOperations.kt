@@ -247,7 +247,8 @@ class PostgresSourceDebeziumOperations(
             )
         resultRow[PostgresSourceCdcMetaFields.CDC_LSN.id] =
             FieldValueEncoder(
-                source[LSN].asLong(),
+                // Legacy Airbyte type is Number but values are all Long. Here we convert.
+                source[LSN].asLong().toBigDecimal(),
                 PostgresSourceCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>,
             )
 
