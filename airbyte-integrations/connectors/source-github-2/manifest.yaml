@@ -2330,7 +2330,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('created_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
@@ -2762,7 +2778,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: true
+      global_substream_cursor: false
   - type: DeclarativeStream
     name: pull_requests
     retriever:
@@ -2770,7 +2786,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('submitted_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
@@ -4428,7 +4460,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: true
+      global_substream_cursor: false
   - type: DeclarativeStream
     name: reviews
     retriever:
@@ -4436,7 +4468,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('submitted_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
@@ -4457,16 +4505,16 @@ streams:
           type: RecordFilter
           condition: "{{ record['submitted_at'] > stream_interval.start_time }}"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/streams/12"
-              parent_key: number
-              extra_fields:
-                - - repository
-              partition_field: pr_number
-              lazy_read_pointer: []
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/12"
+            parent_key: number
+            partition_field: pr_number
+            lazy_read_pointer: []
+            extra_fields:
+              - - repository
     primary_key: airbyte_unique_id
     schema_loader:
       type: InlineSchemaLoader
@@ -4656,7 +4704,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('updated_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
@@ -4764,7 +4828,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: true
+      global_substream_cursor: false
   - type: DeclarativeStream
     name: workflow_jobs
     retriever:
@@ -4772,7 +4836,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('started_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
@@ -4947,7 +5027,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('created_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
@@ -4958,8 +5054,6 @@ streams:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
         error_handler:
           $ref: "#/definitions/linked/HttpRequester/error_handler"
-        request_parameters:
-          created: ">{{ stream_interval['start_time'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -5867,7 +5961,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: true
+      global_substream_cursor: false
   - type: DeclarativeStream
     name: deployment_statuses
     retriever:
@@ -5875,7 +5969,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('updated_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
@@ -6344,7 +6454,23 @@ streams:
       decoder:
         type: JsonDecoder
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+        stop_condition: >-
+          {{ response.json() | selectattr('updated_at', 'lt',
+          stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
         url: >-
