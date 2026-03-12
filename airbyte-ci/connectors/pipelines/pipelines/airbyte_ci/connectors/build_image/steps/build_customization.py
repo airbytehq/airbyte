@@ -69,6 +69,7 @@ def apply_airbyte_entrypoint(connector_container: Container, connector: Connecto
         .with_env_variable("DD_TRACE_SQLITE3_ENABLED", "false")
         .with_env_variable("DD_PROFILING_HEAP_SAMPLE_SIZE", "262144")
         .with_env_variable("AIRBYTE_USE_IN_MEMORY_CACHE", "true")
+        .with_env_variable("AIRBYTE_DISABLE_CACHE", "true")
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
         .with_entrypoint(entrypoint)
     )
