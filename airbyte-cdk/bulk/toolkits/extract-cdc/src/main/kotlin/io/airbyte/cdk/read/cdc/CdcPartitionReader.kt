@@ -413,7 +413,9 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                 if (currentPosition == null) {
                     return null
                 }
-                val isProgressing = currentPosition.isGreater(lastHeartbeatPosition)
+                val isProgressing =
+                    lastHeartbeatPosition == null ||
+                        currentPosition.isGreater(lastHeartbeatPosition)
                 if (isProgressing) {
                     lastHeartbeatPosition = currentPosition
                     lastHeartbeatTime = now
