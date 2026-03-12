@@ -45,7 +45,7 @@ object DatabricksConnectorClientsFactory {
     // Large MERGE / T+D queries can legitimately run for tens of minutes, so we set a generous
     // ceiling. A value of 0 means "wait forever", which caused the 20+ hour hang in
     // https://github.com/airbytehq/oncall/issues/11610.
-    private const val SOCKET_TIMEOUT_SECONDS = 7200
+    private const val SOCKET_TIMEOUT_SECONDS = 3600
 
     fun createDataSource(config: DatabricksConnectorConfig): DataSource {
         val className = Driver::class.java.canonicalName
