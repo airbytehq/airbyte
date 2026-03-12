@@ -41,7 +41,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.use
 import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
@@ -133,7 +132,6 @@ class PostgresSourceDebeziumOperations(
         //  https://github.com/airbytehq/airbyte-internal-issues/issues/15680
         validate(offset)
         advanceReplicationSlot(offset)
-        advanceLsn()
     }
 
     override fun position(offset: DebeziumOffset): PostgresSourceCdcPosition {
@@ -196,33 +194,6 @@ class PostgresSourceDebeziumOperations(
             position(offset).lsn
                 ?: throw IllegalArgumentException("Offset does not contain LSN: $offset")
         replicationSlotManager.validate(lsn)
-    }
-
-    // For PG < v15, force the DB to advance its LSN beyond the startup LSN
-    private fun advanceLsn() {
-        connectionFactory.get().use { connection ->
-            if (connection.metaData.databaseMajorVersion < 15) return
-            connection.isReadOnly = false
-            connection.autoCommit = false
-            try {
-                connection.createStatement().use {
-                    it.execute("DROP aggregate IF EXISTS EPHEMERAL_HEARTBEAT(float4)")
-                }
-                connection.createStatement().use {
-                    it.execute(
-                        "CREATE AGGREGATE EPHEMERAL_HEARTBEAT(float4)" +
-                            "(SFUNC = float4pl, STYPE = float4)"
-                    )
-                }
-                connection.createStatement().use {
-                    it.execute("DROP aggregate EPHEMERAL_HEARTBEAT(float4)")
-                }
-                connection.commit()
-            } catch (e: Exception) {
-                connection.rollback()
-                throw e
-            }
-        }
     }
 
     override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
