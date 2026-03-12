@@ -15,7 +15,21 @@ api_budget:
         - limit: 10
           interval: PT1M
       matchers:
-        - url_path_pattern: "^/api/v2/incremental/*"
+        - url_path_pattern: "^/api/v2/incremental/.*"
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/search/export$"
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/deleted_tickets$"
 
 definitions:
   bearer_authenticator:
