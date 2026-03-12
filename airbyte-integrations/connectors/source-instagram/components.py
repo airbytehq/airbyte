@@ -3,7 +3,7 @@
 import logging
 import urllib.parse as urlparse
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
@@ -277,6 +277,7 @@ class UserInsightsExtractor(RecordExtractor):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        now_utc = datetime.now(timezone.utc)
         for body in self.decoder.decode(response):
             results = []
             if len(self._field_path) == 0:
@@ -302,6 +303,21 @@ class UserInsightsExtractor(RecordExtractor):
                 complete_record[metric_key] = metric_value
                 if "date" not in complete_record:
                     complete_record["date"] = result.get("values")[0].get("end_time")
+
+            # Skip records whose date (end_time from Meta) is in the future.
+            # Meta returns end_time as the day boundary in the account's timezone
+            # (expressed in UTC), which can be ahead of current UTC.  Emitting such
+            # records would advance the cursor to a future value, causing the next
+            # sync to send a future ``since`` parameter that Meta rejects (HTTP 400).
+            record_date = complete_record.get("date")
+            if record_date:
+                try:
+                    parsed = ab_datetime_parse(record_date)
+                    if parsed > now_utc:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+
             yield complete_record
 
 
