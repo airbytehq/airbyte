@@ -52,11 +52,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -235,11 +235,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -499,11 +499,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -858,11 +858,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -1071,11 +1071,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -1217,11 +1217,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -1615,11 +1615,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -1980,11 +1980,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -2126,11 +2126,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -2424,11 +2424,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -2636,11 +2636,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -3083,11 +3083,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -3646,11 +3646,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -3855,11 +3855,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -4184,11 +4184,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -4317,11 +4317,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -4622,11 +4622,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -5079,11 +5079,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -5482,11 +5482,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -5840,11 +5840,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -6286,11 +6286,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -6423,11 +6423,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -6608,11 +6608,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -6804,11 +6804,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -6961,11 +6961,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -7154,11 +7154,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -7327,11 +7327,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -7599,11 +7599,11 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
               - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
+                action: RETRY
                 failure_type: transient_error
                 http_codes:
                   - 401
-                error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+                error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
         record_selector:
           type: RecordSelector
           extractor:
@@ -7893,11 +7893,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -8076,11 +8076,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -8340,11 +8340,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -8699,11 +8699,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -8912,11 +8912,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -9058,11 +9058,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -9456,11 +9456,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -9821,11 +9821,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -9967,11 +9967,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -10265,11 +10265,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -10477,11 +10477,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -10924,11 +10924,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -11487,11 +11487,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -11696,11 +11696,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -12025,11 +12025,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -12158,11 +12158,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -12463,11 +12463,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -12920,11 +12920,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -13323,11 +13323,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -13681,11 +13681,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -14127,11 +14127,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -14264,11 +14264,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -14449,11 +14449,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -14645,11 +14645,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -14802,11 +14802,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -14995,11 +14995,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -15168,11 +15168,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
@@ -15440,11 +15440,11 @@ streams:
         type: DefaultErrorHandler
         response_filters:
           - type: HttpResponseFilter
-            action: REFRESH_TOKEN_THEN_RETRY
+            action: RETRY
             failure_type: transient_error
             http_codes:
               - 401
-            error_message: "QuickBooks OAuth token expired or invalid. Refreshing token and retrying."
+            error_message: "QuickBooks OAuth token expired or invalid. Retrying request."
     record_selector:
       type: RecordSelector
       extractor:
