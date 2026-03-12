@@ -3207,16 +3207,6 @@ schemas:
         type:
           - "null"
           - integer
-      metrics.interaction_event_types:
-        description: Types of interaction events.
-        type:
-          - "null"
-          - array
-        items:
-          description: Specific interaction event type.
-          type:
-            - "null"
-            - string
       metrics.interaction_rate:
         description: The rate of interactions.
         type:
