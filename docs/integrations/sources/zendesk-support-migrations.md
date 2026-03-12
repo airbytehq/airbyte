@@ -28,10 +28,6 @@ Users who rely on the `tickets` stream to identify deleted tickets by filtering 
 The `deleted_tickets` stream requires the `view_deleted_tickets` permission in Zendesk. If your account lacks this permission, the stream is automatically skipped without failing the sync.
 :::
 
-### Connector upgrade guide
-
-<MigrationGuide />
-
 ## Upgrading to 5.0.0
 
 This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens.
