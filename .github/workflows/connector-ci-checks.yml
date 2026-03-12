@@ -443,7 +443,6 @@ jobs:
         run: |
           uv tool install airbyte-internal-ops
           uv tool install "airbyte-cdk[dev]"
-
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
@@ -463,9 +462,14 @@ jobs:
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
 
-      - name: Detect connector language
+      # --- Soft launch: ops CLI artifact generation + validation (parallel validation) ---
+      # Runs alongside existing pre-release checks to validate the new ops CLI path.
+      # continue-on-error: true ensures this does not block the CI pipeline.
+      # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+      - name: "[Soft Launch] Detect connector language"
         if: matrix.connector
         id: connector-language
+        continue-on-error: true
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           LANGUAGE="$(poe -qq get-language)"
@@ -476,9 +480,10 @@ jobs:
             echo "is-jvm=false" | tee -a $GITHUB_OUTPUT
           fi
 
-      - name: Get connector metadata
+      - name: "[Soft Launch] Get connector metadata"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         id: connector-metadata
+        continue-on-error: true
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
           DOCKER_REPO: airbyte/${{ matrix.connector }}
@@ -488,15 +493,17 @@ jobs:
           echo "connector-version=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
           echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
 
-      - name: Build connector Docker image
+      - name: "[Soft Launch] Build connector Docker image"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
+        continue-on-error: true
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: >
           airbyte-cdk image build
           --tag ${{ steps.connector-metadata.outputs.connector-version }}
 
-      - name: Generate and Validate Registry Artifacts
+      - name: "[Soft Launch] Generate and Validate Registry Artifacts (ops CLI)"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
+        continue-on-error: true
         shell: bash
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -507,8 +514,9 @@ jobs:
           --output-dir ./registry-artifacts
           --with-validate
 
-      - name: Upload Registry Artifacts
+      - name: "[Soft Launch] Upload Registry CI Artifacts"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector-version }}
