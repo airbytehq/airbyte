@@ -17,6 +17,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +56,14 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    final LocalDateTime date = LocalDateTime.parse(value);
-    preparedStatement.setTimestamp(parameterIndex, Timestamp.valueOf(date));
+    try {
+      preparedStatement.setTimestamp(parameterIndex, Timestamp.valueOf(LocalDateTime.parse(value)));
+    } catch (final DateTimeParseException e) {
+      // Fallback: parse timezone-aware timestamps (e.g. "2026-03-11T17:05:58Z").
+      // Redshift may report timestamptz columns, whose serialized cursor values
+      // contain a UTC offset or 'Z' suffix that LocalDateTime.parse cannot handle.
+      preparedStatement.setTimestamp(parameterIndex, Timestamp.from(OffsetDateTime.parse(value).toInstant()));
+    }
   }
 
   @Override
