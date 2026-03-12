@@ -154,3 +154,33 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         # Note: --project because we're on poetry 2.x
         run: poetry run --project airbyte-ci/connectors/metadata_service/lib metadata_service generate-registry-report prod-airbyte-cloud-connector-metadata-service
+
+  # --- Soft launch: ops CLI compile (parallel validation) ---
+  # Runs the new ops CLI registry compile in parallel with the legacy jobs above.
+  # continue-on-error: true ensures this does not block the workflow.
+  # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+  compile-registries-ops-cli:
+    name: "[Ops Registry Soft Launch] Compile Registries (ops CLI)"
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    env:
+      # Swap to coral:prod when parallel validation completes and we're ready for full cutover.
+      REGISTRY_STORE: "coral:dev/soft-launch-trial"
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Compile Registries
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        shell: bash
+        run: >
+          uvx airbyte-internal-ops
+          registry store compile --store "${REGISTRY_STORE}" --with-secrets-mask
