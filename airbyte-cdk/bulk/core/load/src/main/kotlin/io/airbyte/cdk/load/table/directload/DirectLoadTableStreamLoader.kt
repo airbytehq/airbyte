@@ -238,16 +238,12 @@ class DirectLoadTableAppendTruncateStreamLoader(
             logger.info {
                 "Overwriting ${tempTableName.toPrettyString()} with ${realTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
             }
+            // overwriteTable consumes the source table (drops/renames it),
+            // so temp table is already gone after this call.
             tableOperationsClient.overwriteTable(
                 sourceTableName = tempTableName,
                 targetTableName = realTableName,
             )
-
-            // Clean up temporary table to prevent duplicate records on the next sync.
-            // Without this, the next sync's start() would find a non-empty temp table
-            // with matching generation ID and reuse it, causing old records to accumulate
-            // alongside new ones.
-            tableOperationsClient.dropTable(tempTableName)
         }
     }
 }
@@ -415,10 +411,11 @@ class DirectLoadTableDedupTruncateStreamLoader(
             targetTableName = realTableName,
         )
 
-        // Clean up temporary table to prevent duplicate records on the next sync.
-        // Without this, the next sync's start() would find a non-empty temp table
-        // with matching generation ID and reuse it, causing old records to accumulate
-        // alongside new ones.
+        // Clean up the original temp table to prevent duplicate records on the next sync.
+        // Note: overwriteTable above consumed tempTempTable (not tempTableName), so
+        // tempTableName still exists with all its data. Without this drop, the next
+        // sync's start() would find a non-empty temp table with matching generation ID
+        // and reuse it, causing old records to accumulate alongside new ones.
         tableOperationsClient.dropTable(tempTableName)
     }
 }

@@ -39,7 +39,7 @@ class DirectLoadTableStreamLoaderTest {
         }
 
     @Test
-    fun `AppendTruncateStreamLoader teardown drops temp table after successful overwrite`() =
+    fun `AppendTruncateStreamLoader teardown overwrites real table with temp on success`() =
         runTest {
             val initialStatus =
                 DirectLoadInitialStatus(
@@ -68,7 +68,9 @@ class DirectLoadTableStreamLoaderTest {
                     targetTableName = realTableName,
                 )
             }
-            coVerify(exactly = 1) { tableOperationsClient.dropTable(tempTableName) }
+            // No explicit dropTable needed: overwriteTable consumes the source table
+            // (drops/renames it), so temp is already gone.
+            coVerify(exactly = 0) { tableOperationsClient.dropTable(any()) }
         }
 
     @Test
