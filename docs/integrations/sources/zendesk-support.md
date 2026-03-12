@@ -211,6 +211,7 @@ The connector should not run into Zendesk API limitations under normal usage. [C
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.7 | 2026-03-12 | [74766](https://github.com/airbytehq/airbyte/pull/74766) | Promoting release candidate 5.1.7-rc.1 to a main version. |
 | 5.1.7-rc.1 | 2026-03-10 | [74398](https://github.com/airbytehq/airbyte/pull/74398) | Pin CDK to 7.8.1.post54 for regression testing of StateDelegatingStream and DeclarativeStream |
 | 5.1.6 | 2026-03-09 | [73686](https://github.com/airbytehq/airbyte/pull/73686) | Add 504 exponential backoff error handling to `ticket_comments` stream and API budget (10 req/min) for all incremental export streams |
 | 5.1.5 | 2026-02-24 | [45667](https://github.com/airbytehq/airbyte/issues/45667) | Add missing SLA fields (`sla`, `group_sla`, `status`, `deleted`) to `ticket_metric_events` schema |
