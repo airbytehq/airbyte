@@ -42,9 +42,9 @@ object DatabricksConnectorClientsFactory {
     private const val SOCKET_TIMEOUT_SECONDS = 3600
 
     // Maximum time (seconds) the driver will retry connecting to a temporarily-unavailable
-    // warehouse (e.g. auto-paused). Default is 0 (no retry). 120 s allows time for warehouse
-    // resume while still failing faster than the platform job deadline.
-    private const val TEMPORARILY_UNAVAILABLE_RETRY_TIMEOUT_SECONDS = 120
+    // warehouse (e.g. auto-paused). Default is 0 (no retry). 300 s (5 min) allows time for
+    // warehouse resume while still failing faster than the platform job deadline.
+    private const val TEMPORARILY_UNAVAILABLE_RETRY_TIMEOUT_SECONDS = 300
 
     fun createDataSource(config: DatabricksConnectorConfig): DataSource {
         val className = Driver::class.java.canonicalName
