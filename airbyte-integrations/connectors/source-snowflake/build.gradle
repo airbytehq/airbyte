@@ -21,7 +21,7 @@ application {
 }
 
 dependencies {
-    implementation 'net.snowflake:snowflake-jdbc:3.23.1'
+    implementation 'net.snowflake:snowflake-jdbc:3.28.0'
     implementation 'org.apache.commons:commons-lang3:3.17.0'
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
