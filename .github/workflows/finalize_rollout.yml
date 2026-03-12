@@ -85,7 +85,7 @@ jobs:
         with:
           github-token: ${{ steps.get-app-token.outputs.token }}
 
-      - name: "[Soft Launch] ${ACTION} ${CONNECTOR_NAME} release candidate (ops CLI)"
+      - name: "[Ops Registry Soft Launch] ${ACTION} ${CONNECTOR_NAME} release candidate (ops CLI)"
         id: finalize-release-candidate-ops-cli
         continue-on-error: true
         shell: bash
