@@ -17,9 +17,9 @@ This authentication method isn't available for this connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+| `api_key` | `str` | Yes | Your Amplitude project API key. Find it in Settings \> Projects in your Amplitude account.
  |
-| `secret_key` | `str` | Yes | Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+| `secret_key` | `str` | Yes | Your Amplitude project secret key. Find it in Settings \> Projects in your Amplitude account.
  |
 
 Example request:
@@ -56,9 +56,9 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Amplitude project API key. Find it in Settings > Projects in your Amplitude account.
+| `api_key` | `str` | Yes | Your Amplitude project API key. Find it in Settings \> Projects in your Amplitude account.
  |
-| `secret_key` | `str` | Yes | Your Amplitude project secret key. Find it in Settings > Projects in your Amplitude account.
+| `secret_key` | `str` | Yes | Your Amplitude project secret key. Find it in Settings \> Projects in your Amplitude account.
  |
 
 `replication_config` fields you need:
