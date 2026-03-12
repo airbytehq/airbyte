@@ -1522,7 +1522,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |----------------|------|----------|-------------|
 | `q` | `string` | Yes | SOQL query for events. Default returns up to 200 records.
 To change the limit, provide your own query with a LIMIT clause.
-Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime > TODAY LIMIT 50"
+Example: "SELECT FIELDS(STANDARD) FROM Event WHERE StartDateTime \> TODAY LIMIT 50"
  |
 
 
