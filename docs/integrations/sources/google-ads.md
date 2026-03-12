@@ -339,6 +339,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.7-rc.1 | 2026-03-12 | [73321](https://github.com/airbytehq/airbyte/pull/73321) | Add metrics and dimension fields to geographic_view stream |
 | 4.1.6 | 2026-02-12 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add metrics and additional dimension fields to geographic_view stream |
 | 4.1.5-rc.2  | 2026-02-11 | [73269](https://github.com/airbytehq/airbyte/pull/73269) | Fix decoder wiring to prevent OOM when using CustomRetriever |
 | 4.1.5-rc.1  | 2026-02-10 | [72840](https://github.com/airbytehq/airbyte/pull/72840) | Add retry for ChunkedEncodingError in response streaming |
