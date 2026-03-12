@@ -85,10 +85,13 @@ jobs:
         with:
           github-token: ${{ steps.get-app-token.outputs.token }}
 
-      - name: "[Ops Registry Soft Launch] ${ACTION} ${CONNECTOR_NAME} release candidate (ops CLI)"
+      - name: "[Ops Registry Soft Launch] ${{ env.ACTION }} release candidate (ops CLI)"
         id: finalize-release-candidate-ops-cli
         continue-on-error: true
         shell: bash
         env:
+          CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        run: uvx airbyte-internal-ops registry rc "${ACTION}" --name "${CONNECTOR_NAME}" --store coral:dev/soft-launch-trial
+          # Swap to coral:prod when parallel validation completes and we're ready for full cutover.
+          REGISTRY_STORE: "coral:dev/soft-launch-trial"
+        run: uvx airbyte-internal-ops registry rc "${ACTION}" --name "${CONNECTOR_NAME}" --store "${REGISTRY_STORE}"
