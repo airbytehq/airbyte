@@ -92,13 +92,9 @@ This connector can be used to sync the following tables from Marketo:
 
 ## Troubleshooting and Limitations
 
-### Leads stream: static schema fields may appear as null
+### Leads stream: field availability and schema behavior
 
-The Leads stream schema includes all fields from the static schema (standard Marketo fields) plus any custom fields discovered via the `leads/describe.json` API. However, some standard fields defined in the static schema may not exist in every Marketo instance. These fields will appear in the schema for consistency but will always contain `null` values in synced records.
-
-### Leads stream: unavailable fields are excluded from bulk exports
-
-When syncing the Leads stream, only fields confirmed by the Marketo `leads/describe.json` endpoint are requested in bulk export API calls. If you select fields (via the configured catalog) that exist in the schema but are not available in your Marketo instance's describe endpoint, those fields will be silently excluded from the export request. This prevents Marketo API error 1003 ("Invalid fields") which would otherwise fail the sync.
+The Leads stream schema includes all fields from the static schema (standard Marketo fields) plus any custom fields discovered via the Marketo `leads/describe.json` API. However, not all standard fields defined in the static schema exist in every Marketo instance. These unavailable fields will still appear in the schema for consistency but will always contain `null` values in synced records, because only fields confirmed by the `leads/describe.json` endpoint are requested in bulk export API calls. If you select fields (via the configured catalog) that are not available in your Marketo instance's describe endpoint, those fields will be silently excluded from the export request to prevent Marketo API error 1003 ("Invalid fields").
 
 ## Performance considerations
 
