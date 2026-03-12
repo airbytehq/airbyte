@@ -399,7 +399,9 @@ def test_leads_stream_fields_returns_describe_fields(config, requests_mock):
 
 def test_leads_stream_fields_uses_configured_json_schema(config, requests_mock):
     """When the user selects specific fields via the configured catalog,
-    stream_fields should return only those selected fields."""
+    stream_fields should return the intersection of selected fields and
+    describe-confirmed fields — this prevents requesting fields that exist
+    in the static schema but not in this Marketo instance."""
     describe_json = {
         "requestId": "abc123",
         "success": True,
@@ -415,7 +417,8 @@ def test_leads_stream_fields_uses_configured_json_schema(config, requests_mock):
     )
 
     leads_stream = Leads(config)
-    # Simulate the platform passing user-selected fields via configured catalog
+    # Simulate the platform passing user-selected fields via configured catalog.
+    # "firstName" is a static schema field NOT in the describe endpoint for this instance.
     leads_stream.configured_json_schema = {
         "properties": {
             "email": {"type": ["string", "null"]},
@@ -424,8 +427,10 @@ def test_leads_stream_fields_uses_configured_json_schema(config, requests_mock):
     }
     fields = leads_stream.stream_fields
 
-    # Only the user-selected fields should be returned
-    assert set(fields) == {"email", "firstName"}
+    # Only fields that are BOTH user-selected AND describe-confirmed should be returned.
+    # "firstName" is excluded because it's not in the describe endpoint.
+    assert fields == ["email"]
+    assert "firstName" not in fields
     assert "customScore__c" not in fields
 
 

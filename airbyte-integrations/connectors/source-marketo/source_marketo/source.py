@@ -429,16 +429,25 @@ class Leads(MarketoExportBase):
     def stream_fields(self):
         """Return the list of fields for bulk export requests.
 
-        If the user has selected specific fields via the configured catalog,
-        only those fields are requested (selectable fields).  Otherwise we
-        request only fields confirmed by the describe endpoint — this avoids
-        Marketo bulk-export validation errors for fields that exist in the
-        static schema but not in a particular Marketo instance.
-        """
-        if self.configured_json_schema and self.configured_json_schema.get("properties"):
-            return list(self.configured_json_schema["properties"].keys())
+        Only fields confirmed by the describe endpoint are safe to request in
+        the bulk export — Marketo rejects fields that exist in the static
+        schema but not in a particular instance (API error 1003).
 
+        When the user has selected specific fields via the configured catalog,
+        those selections are intersected with describe-confirmed fields so
+        that only valid, user-requested fields are exported.
+        """
         available = self._get_available_fields()
+
+        if self.configured_json_schema and self.configured_json_schema.get("properties"):
+            configured_fields = list(self.configured_json_schema["properties"].keys())
+            if available:
+                # Intersect: only request fields the user selected AND that
+                # actually exist in this Marketo instance.
+                available_set = set(available.keys())
+                return [f for f in configured_fields if f in available_set]
+            return configured_fields
+
         if available:
             return list(available.keys())
 
