@@ -134,5 +134,5 @@ jobs:
           echo "Dispatching to airbytehq/sonar with changes: $CHANGES"
 
           jq -n --argjson changes "$CHANGES" \
-            '{"event_type": "replication-version-changed", "client_payload": $changes}' \
+            '{"event_type": "replication-version-changed", "client_payload": {"changes": $changes}}' \
           | gh api repos/airbytehq/sonar/dispatches --method POST --input -
