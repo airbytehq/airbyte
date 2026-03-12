@@ -441,8 +441,10 @@ jobs:
       - name: Install QA Checks
         if: matrix.connector
         run: |
-          # Install airbyte-internal-ops from PyPI (replaces local connectors_qa)
-          uv tool install airbyte-internal-ops
+          # TK: Revert to PyPI version once ops-mcp smoke test changes are merged and released.
+          # Currently installing from working branch to pick up unreleased smoke test schema support.
+          # uv tool install airbyte-internal-ops
+          uv tool install "airbyte-internal-ops @ git+https://github.com/airbytehq/airbyte-ops-mcp.git@devin/1772317708-smoke-test-runner"
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow

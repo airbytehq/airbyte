@@ -67,7 +67,7 @@ data:
         - name: sendgrid_old_config_dev_null
           id: 5f1f419f-2477-4528-b348-d9900ec86c61
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE-SENDGRID_LOWCODE__CREDS
           fileName: lowcode_config.json
@@ -89,4 +89,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: lowcode_config.json
+        - name: old_config
+          configFile: old_config.json
+        - name: python_config
+          configFile: python_config.json
 metadataSpecVersion: "1.0"

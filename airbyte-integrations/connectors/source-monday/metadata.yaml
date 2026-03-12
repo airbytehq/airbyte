@@ -65,7 +65,7 @@ data:
         - name: monday_config_api_token_dev_null
           id: 81b8f4db-d37f-4135-9a55-d62e0a163701
     - suite: unitTests
-    - suite: acceptanceTests
+    - suite: smokeTests
       testSecrets:
         - name: SECRET_SOURCE_MONDAY_API_CREDS
           fileName: config_api_token.json
@@ -82,6 +82,11 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+      scenarios:
+        - name: default
+          configFile: config_api_token.json
+        - name: oauth_config
+          configFile: config_oauth.json
   externalDocumentationUrls:
     - title: monday.com API reference
       url: https://developer.monday.com/api-reference/docs
