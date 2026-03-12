@@ -90,6 +90,16 @@ This connector can be used to sync the following tables from Marketo:
 - **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs, including user-defined tags and period costs.
 - **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo segmentations.
 
+## Troubleshooting and Limitations
+
+### Leads stream: static schema fields may appear as null
+
+The Leads stream schema includes all fields from the static schema (standard Marketo fields) plus any custom fields discovered via the `leads/describe.json` API. However, some standard fields defined in the static schema may not exist in every Marketo instance. These fields will appear in the schema for consistency but will always contain `null` values in synced records.
+
+### Leads stream: unavailable fields are excluded from bulk exports
+
+When syncing the Leads stream, only fields confirmed by the Marketo `leads/describe.json` endpoint are requested in bulk export API calls. If you select fields (via the configured catalog) that exist in the schema but are not available in your Marketo instance's describe endpoint, those fields will be silently excluded from the export request. This prevents Marketo API error 1003 ("Invalid fields") which would otherwise fail the sync.
+
 ## Performance considerations
 
 By default, Marketo caps all accounts to 50,000 API calls per day.
