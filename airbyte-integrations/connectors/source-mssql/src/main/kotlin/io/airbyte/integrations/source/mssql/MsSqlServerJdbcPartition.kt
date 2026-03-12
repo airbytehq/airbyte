@@ -264,7 +264,13 @@ sealed class MsSqlServerJdbcResumablePartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, optimizedWhere),
+                FromSample(
+                    stream.name,
+                    stream.namespace,
+                    sampleRateInvPow2,
+                    sampleSize,
+                    optimizedWhere
+                ),
                 NoWhere, // WHERE is already in FromSample, don't duplicate in outer query
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())
