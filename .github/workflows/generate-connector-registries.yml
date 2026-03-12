@@ -160,7 +160,7 @@ jobs:
   # continue-on-error: true ensures this does not block the workflow.
   # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
   compile-registries-ops-cli:
-    name: "[Soft Launch] Compile Registries (ops CLI)"
+    name: "[Ops Registry Soft Launch] Compile Registries (ops CLI)"
     runs-on: ubuntu-24.04
     continue-on-error: true
 

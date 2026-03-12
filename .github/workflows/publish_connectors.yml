@@ -473,7 +473,7 @@ jobs:
       # Runs alongside the legacy Poetry-based registry entry generation above.
       # continue-on-error: true ensures this does not block the publish pipeline.
       # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
-      - name: "[Soft Launch] Generate Registry Artifacts (ops CLI)"
+      - name: "[Ops Registry Soft Launch] Generate Registry Artifacts (ops CLI)"
         id: generate-registry-artifacts-ops-cli
         continue-on-error: true
         shell: bash
@@ -490,7 +490,7 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
-      - name: "[Soft Launch] Upload Registry CI Artifacts"
+      - name: "[Ops Registry Soft Launch] Upload Registry CI Artifacts"
         if: steps.generate-registry-artifacts-ops-cli.outcome == 'success'
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -499,7 +499,7 @@ jobs:
           path: ./registry-artifacts/
           retention-days: 7
 
-      - name: "[Soft Launch] Publish Registry Artifacts (ops CLI)"
+      - name: "[Ops Registry Soft Launch] Publish Registry Artifacts (ops CLI)"
         id: publish-registry-artifacts-ops-cli
         if: needs.publish_options.outputs.dry-run != 'true' && steps.generate-registry-artifacts-ops-cli.outcome == 'success'
         continue-on-error: true
