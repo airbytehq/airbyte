@@ -130,10 +130,13 @@ class ReplicationSlotManager(
     )
 
     private fun getSlotInfo(): ReplicationSlotInfo {
+        // SELECT * so we can gracefully handle columns that don't exist in older PG versions:
+        //   confirmed_flush_lsn added in 9.6
+        //   wal_status added in 13
+        //   invalidation_reason added in 17
         val sql =
             """
-            SELECT slot_name, xmin, catalog_xmin, restart_lsn, confirmed_flush_lsn, wal_status,
-                invalidation_reason
+            SELECT *
             FROM pg_replication_slots
             WHERE plugin = 'pgoutput' AND slot_name = ? AND database = ?
         """.trimIndent()
@@ -146,15 +149,24 @@ class ReplicationSlotManager(
                 stmt.setString(2, config.database)
             },
             withResultSet = { rs ->
+                val columns =
+                    (1..rs.metaData.columnCount)
+                        .map { rs.metaData.getColumnName(it).lowercase() }
+                        .toSet()
+                fun getString(col: String): String? =
+                    if (col in columns) rs.getString(col) else null
+                fun getObject(col: String): Any? = if (col in columns) rs.getObject(col) else null
                 ReplicationSlotInfo(
                     name = rs.getString("slot_name"),
-                    xmin = rs.getObject("xmin"),
-                    catalogXmin = rs.getObject("catalog_xmin"),
-                    restartLsn = rs.getString("restart_lsn")?.let { Lsn.valueOf(it) },
-                    confirmedFlushLsn =
-                        rs.getString("confirmed_flush_lsn")?.let { Lsn.valueOf(it) },
-                    walStatus = rs.getString("wal_status"),
-                    invalidationReason = rs.getString("invalidation_reason"),
+                    xmin = getObject("xmin"),
+                    catalogXmin = getObject("catalog_xmin"),
+                    restartLsn = getString("restart_lsn")?.let { Lsn.valueOf(it) },
+                    // since PostgreSQL 9.6
+                    confirmedFlushLsn = getString("confirmed_flush_lsn")?.let { Lsn.valueOf(it) },
+                    // since PostgreSQL 13
+                    walStatus = getString("wal_status"),
+                    // since PostgreSQL 17
+                    invalidationReason = getString("invalidation_reason"),
                 )
             },
             noResultsCase = {
