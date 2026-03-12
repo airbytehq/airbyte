@@ -118,7 +118,7 @@ If not provided, uses default fields.
 ### Repositories API Search
 
 Search for GitHub repositories using GitHub's powerful search syntax.
-Examples: "language:python stars:>1000", "topic:machine-learning", "org:facebook is:public"
+Examples: "language:python stars:\>1000", "topic:machine-learning", "org:facebook is:public"
 
 
 #### Python SDK
