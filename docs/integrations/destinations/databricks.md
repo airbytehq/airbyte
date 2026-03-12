@@ -21,9 +21,13 @@ the connector, you must agree to the
 only use this connector to connect third party applications to Apache Spark SQL within a Databricks
 offering using the ODBC and/or JDBC protocols.
 
-## Airbyte Setup
+## Prerequisites
 
-When setting up a Databricks destination, you need these pieces of information:
+- A Databricks workspace with [Unity Catalog](https://docs.databricks.com/en/data-governance/unity-catalog/index.html) enabled.
+- A Databricks SQL warehouse. The warehouse must be running or configured to auto-resume when the connector syncs data. If the warehouse is paused, the connector retries for up to 5 minutes before failing.
+- An authentication credential: either an OAuth client ID and secret, or a personal access token.
+
+## Setup guide
 
 ### Server Hostname / HTTP Path / Port
 
@@ -36,7 +40,7 @@ When setting up a Databricks destination, you need these pieces of information:
 
    ![](/.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
 
-4. Finally, you'll need to provide the `Databricks Unity Catalog Path`, which is the path to the database you wish to use within the Unity Catalog. This is often the same as the workspace name.
+4. Finally, you'll need to provide the **Databricks Unity Catalog Name**, which is the name of the Unity Catalog you want to write to.
 
 ### Authentication
 
@@ -48,7 +52,7 @@ to generate a client ID and secret.
 #### Access Token (Recommended for Google Cloud deployments of Databricks)
 
 1. Open your workspace console.
-2. Click on your icon in the top-right corner, and head to `settings`, then `developer`, then `manage` under `access tokens`
+2. Click on your icon in the top-right corner, and go to **Settings** > **Developer** > **Access Tokens** > **Manage**.
 
    ![](/.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
 
@@ -58,8 +62,9 @@ to generate a client ID and secret.
 
 ### Other Options
 
-- `Default Schema` - The schema that will contain your data. You can later override this on a per-connection basis.
-- `Purge Staging Files and Tables` - Whether Airbyte should delete files after loading them into tables. Note: if deselected, Databricks will still delete your files after your retention period has passed (default - 7 days).
+- **Default Schema** - The schema to write data to. Defaults to `default`. You can override this on a per-connection basis.
+- **Purge Staging Files and Tables** - Whether Airbyte should delete staging files after loading them into tables. Enabled by default. If disabled, Databricks will still delete your files after your retention period expires (default: 7 days).
+- **Raw Table Schema Name** - The schema to write raw tables into. Defaults to `airbyte_internal`.
 
 ## Supported sync modes
 
@@ -73,7 +78,7 @@ to generate a client ID and secret.
 
 ## Output Schema
 
-Each table will have the following columns, in addition to your whatever columns were in your data:
+Each table will have the following columns, in addition to the columns from your data:
 
 | Column                   |   Type    | Notes                                                                  |
 | :----------------------- | :-------: | :--------------------------------------------------------------------- |
@@ -96,7 +101,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                                                                                |
 |:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.8   | 2026-03-11 | [74732](https://github.com/airbytehq/airbyte/pull/74732)                                                            | Add JDBC ConnectTimeout and SocketTimeout to prevent indefinite hangs when Databricks SQL warehouse is paused or unresponsive                                                          |
+| 3.3.8   | 2026-03-12 | [74732](https://github.com/airbytehq/airbyte/pull/74732)                                                            | Add JDBC timeout configuration to prevent indefinite hangs when Databricks SQL warehouse is paused or unresponsive                                                                     |
 | 3.3.7   | 2025-07-15 | [63311](https://github.com/airbytehq/airbyte/pull/63311)                                                            | Support arbitrary number of streams in findExisitngTable query                                                                                                                         |
 | 3.3.6   | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)                                                            | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                      |
 | 3.3.5   | 2025-03-07 | [55232](https://github.com/airbytehq/airbyte/pull/55232)                                                            | fix table name collision multiple connections same schema                                                                                                                              |
