@@ -215,12 +215,21 @@ jobs:
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
 
       # We're intentionally not using the `google-github-actions/auth` action.
-      # The artifacts publish step handles auth via GCS_CREDENTIALS env var.
+      # The upload-connector-metadata step runs a script which handles auth manually.
       # This is because we're writing files to multiple buckets, using different credentials
       # for each bucket.
+      # (it's unclear whether that's actually necessary)
       - name: Install gcloud
         # v2.1.5
         uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
+
+      - name: Install metadata_service
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+
+      - name: Validate connector metadata
+        id: validate-connector-metadata
+        shell: bash
+        run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
 
       - name: Publish to Python Registry
         id: publish-python-registry
@@ -294,6 +303,21 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
+      - name: Upload connector metadata
+        id: upload-connector-metadata
+        if: needs.publish_options.outputs.dry-run != 'true'
+        shell: bash
+        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+
+      - name: "[DRY-RUN] Skip Upload connector metadata"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping connector metadata upload for ${{ matrix.connector }}"
+
   # The connector registries are generated from the spec cache,
   # and in some cases, there are cross-connector dependencies.
   # Specifically, connectors with a strict-encrypt variant need the strict-encrypt's spec cache
@@ -307,8 +331,6 @@ jobs:
     name: Publish connector registry entries
     needs: [publish_options, publish_connectors]
     runs-on: ubuntu-24.04
-    env:
-      CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
     strategy:
       matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
       max-parallel: 5
@@ -343,6 +365,15 @@ jobs:
           check-latest: true
           update-environment: true
 
+      - name: Install and configure Poetry
+        # v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
+        with:
+          version: 1.8.5
+
+      - name: Install metadata_service
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
         with:
@@ -356,7 +387,7 @@ jobs:
 
       - name: Enable progressive rollout for RC builds
         if: needs.publish_options.outputs.with-semver-suffix == 'rc'
-        working-directory: ${{ env.CONNECTOR_DIR }}
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           echo "Enabling progressive rollout for RC build..."
           echo "=== enableProgressiveRollout BEFORE update ==="
@@ -369,54 +400,109 @@ jobs:
 
       - name: Get connector metadata
         id: connector-metadata
-        working-directory: ${{ env.CONNECTOR_DIR }}
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           set -euo pipefail
+          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
+          echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
           CONNECTOR_VERSION=$(poe -qq get-version)
           SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
-          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' metadata.yaml)
 
           # Generate docker image tag based on semver suffix mode
           case "$SEMVER_SUFFIX" in
             preview)
               hash=$(git rev-parse --short=7 HEAD)
               echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
               ;;
             rc)
               echo "docker-image-tag=${CONNECTOR_VERSION}-rc1" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
               ;;
             none|*)
               echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
               ;;
           esac
 
-          echo "docker-repository=${DOCKER_REPOSITORY}" | tee -a $GITHUB_OUTPUT
+      - name: Generate OSS Registry Entry
+        id: generate-oss-registry-entry
+        if: needs.publish_options.outputs.dry-run != 'true'
+        shell: bash
+        run: |
+          echo "Generating OSS registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type oss \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
-      - name: Generate Registry Artifacts
-        id: generate-registry-artifacts
+      - name: "[DRY-RUN] Skip Generate OSS Registry Entry"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping OSS registry entry generation for ${{ matrix.connector }}"
+
+      - name: Generate Cloud Registry Entry
+        id: generate-cloud-registry-entry
+        if: needs.publish_options.outputs.dry-run != 'true'
+        shell: bash
+        run: |
+          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type cloud \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: "[DRY-RUN] Skip Generate Cloud Registry Entry"
+        if: needs.publish_options.outputs.dry-run == 'true'
+        run: |
+          echo "DRY-RUN: Skipping Cloud registry entry generation for ${{ matrix.connector }}"
+
+      # --- Soft launch: ops CLI artifacts generate + publish (parallel validation) ---
+      # Runs alongside the legacy Poetry-based registry entry generation above.
+      # continue-on-error: true ensures this does not block the publish pipeline.
+      # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+      - name: "[Soft Launch] Generate Registry Artifacts (ops CLI)"
+        id: generate-registry-artifacts-ops-cli
+        continue-on-error: true
         shell: bash
         run: |
           echo "Generating registry artifacts for ${{ matrix.connector }}"
-          DOCKER_IMAGE="${{ steps.connector-metadata.outputs.docker-repository }}:${{ steps.connector-metadata.outputs.docker-image-tag }}"
+          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
+          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.connector-metadata.outputs.docker-image-tag }}"
           uvx airbyte-internal-ops \
             registry connector-version artifacts generate \
-            --metadata-file "${{ env.CONNECTOR_DIR }}/metadata.yaml" \
+            --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
             --output-dir ./registry-artifacts \
             --with-validate
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
-      - name: Upload Registry CI Artifacts
+      - name: "[Soft Launch] Upload Registry CI Artifacts"
+        if: steps.generate-registry-artifacts-ops-cli.outcome == 'success'
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.docker-image-tag }}
           path: ./registry-artifacts/
           retention-days: 7
 
-      - name: Publish Registry Artifacts
-        id: publish-registry-artifacts
-        if: needs.publish_options.outputs.dry-run != 'true'
+      - name: "[Soft Launch] Publish Registry Artifacts (ops CLI)"
+        id: publish-registry-artifacts-ops-cli
+        if: needs.publish_options.outputs.dry-run != 'true' && steps.generate-registry-artifacts-ops-cli.outcome == 'success'
+        continue-on-error: true
         shell: bash
         run: |
           echo "Publishing registry artifacts for ${{ matrix.connector }}"
@@ -429,11 +515,6 @@ jobs:
             --with-validate
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-
-      - name: "[DRY-RUN] Skip Publish Registry Artifacts"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping registry artifact publish for ${{ matrix.connector }} (CI artifacts were generated and uploaded above)"
 
   generate_connector_registry:
     name: Generate connector registry
