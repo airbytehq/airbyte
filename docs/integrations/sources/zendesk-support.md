@@ -211,6 +211,7 @@ The connector should not run into Zendesk API limitations under normal usage. [C
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.0 | 2026-03-10 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | Switch `tickets` stream to Export Search Results endpoint for concurrency and performance. **Breaking**: deleted tickets are no longer returned in the `tickets` stream — use the new `deleted_tickets` stream instead. Added `deleted_tickets` as a suggested stream for auto-enablement on Cloud. |
 | 5.1.8 | 2026-03-12 | [74771](https://github.com/airbytehq/airbyte/pull/74771) | Upgrade CDK to 7.13.0 |
 | 5.1.7 | 2026-03-12 | [74766](https://github.com/airbytehq/airbyte/pull/74766) | Promoting release candidate 5.1.7-rc.1 to a main version. |
 | 5.1.7-rc.1 | 2026-03-10 | [74398](https://github.com/airbytehq/airbyte/pull/74398) | Pin CDK to 7.8.1.post54 for regression testing of StateDelegatingStream and DeclarativeStream |
