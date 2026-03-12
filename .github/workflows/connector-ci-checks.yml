@@ -466,7 +466,7 @@ jobs:
       # Runs alongside existing pre-release checks to validate the new ops CLI path.
       # continue-on-error: true ensures this does not block the CI pipeline.
       # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
-      - name: "[Soft Launch] Detect connector language"
+      - name: "[Ops Registry Soft Launch] Detect connector language"
         if: matrix.connector
         id: connector-language
         continue-on-error: true
@@ -480,7 +480,7 @@ jobs:
             echo "is-jvm=false" | tee -a $GITHUB_OUTPUT
           fi
 
-      - name: "[Soft Launch] Get connector metadata"
+      - name: "[Ops Registry Soft Launch] Get connector metadata"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         id: connector-metadata
         continue-on-error: true
@@ -493,7 +493,7 @@ jobs:
           echo "connector-version=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
           echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
 
-      - name: "[Soft Launch] Build connector Docker image"
+      - name: "[Ops Registry Soft Launch] Build connector Docker image"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         continue-on-error: true
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -501,7 +501,7 @@ jobs:
           airbyte-cdk image build
           --tag ${{ steps.connector-metadata.outputs.connector-version }}
 
-      - name: "[Soft Launch] Generate and Validate Registry Artifacts (ops CLI)"
+      - name: "[Ops Registry Soft Launch] Generate and Validate Registry Artifacts (ops CLI)"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         continue-on-error: true
         shell: bash
@@ -514,7 +514,7 @@ jobs:
           --output-dir ./registry-artifacts
           --with-validate
 
-      - name: "[Soft Launch] Upload Registry CI Artifacts"
+      - name: "[Ops Registry Soft Launch] Upload Registry CI Artifacts"
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
