@@ -46,16 +46,10 @@ object DatabricksConnectorClientsFactory {
     // resume while still failing faster than the platform job deadline.
     private const val TEMPORARILY_UNAVAILABLE_RETRY_TIMEOUT_SECONDS = 120
 
-    // Connection establishment timeout (seconds). Caps the TCP handshake + TLS negotiation
-    // phase. Uses the standard JDBC DataSource.setLoginTimeout() API since the Simba driver
-    // does not support a ConnectTimeout URL parameter.
-    private const val LOGIN_TIMEOUT_SECONDS = 120
-
     fun createDataSource(config: DatabricksConnectorConfig): DataSource {
         val className = Driver::class.java.canonicalName
         Class.forName(className)
         val datasource = com.databricks.client.jdbc.DataSource()
-        datasource.setLoginTimeout(LOGIN_TIMEOUT_SECONDS)
         // https://community.databricks.com/t5/data-engineering/java-21-support-with-databricks-jdbc-driver/td-p/49297
         // Jdbc driver 2.3.36 still uses Apache Arrow which isn't compatible with Java 21
         // EnableArrow=0 flag is undocumented and disables ArrowBuf when reading data
