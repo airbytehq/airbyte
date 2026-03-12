@@ -2801,7 +2801,7 @@ streams:
           start_from_page: 1
           inject_on_first_request: true
         stop_condition: >-
-          {{ response.json() | selectattr('submitted_at', 'lt',
+          {{ response.json() | selectattr('updated_at', 'lt',
           stream_interval.start_time) | list | length > 0 }}
       requester:
         type: HttpRequester
@@ -2822,7 +2822,7 @@ streams:
           field_path: []
         record_filter:
           type: RecordFilter
-          condition: "{{ record['submitted_at'] > stream_interval.start_time }}"
+          condition: "{{ record['updated_at'] > stream_interval.start_time }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
