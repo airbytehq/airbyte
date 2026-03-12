@@ -180,4 +180,4 @@ jobs:
         shell: bash
         run: >
           uvx airbyte-internal-ops
-          registry store compile --store coral:prod --with-secrets-mask
+          registry store compile --store coral:dev/soft-launch-trial --with-secrets-mask
