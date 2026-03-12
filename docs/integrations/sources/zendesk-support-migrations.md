@@ -4,6 +4,8 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 5.2.0
 
+This is not a breaking change. No stream reset is required, and existing state is migrated automatically. This guide is provided because the behavioral change to the `tickets` stream may affect downstream pipelines that depend on deleted ticket data.
+
 Version 5.2.0 switches the `tickets` stream from the Zendesk Incremental Export API to the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint. This improves sync performance by enabling concurrent time-range partitioning.
 
 ### What changed
