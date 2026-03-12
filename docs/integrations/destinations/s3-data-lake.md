@@ -266,7 +266,7 @@ This is the full mapping between Airbyte types and Iceberg types.
 | Boolean                    | Boolean                        |
 | Date                       | Date                           |
 | Integer                    | Long                           |
-| Number                     | Double                         |
+| Number                     | Double (String for primary keys)|
 | String                     | String                         |
 | Time with timezone*        | Time                           |
 | Time without timezone      | Time                           |
@@ -310,6 +310,10 @@ This connector uses a merge-on-read strategy to support deduplication.
 
 - Airbyte translates the stream's primary keys to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
 - An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files) on that row's primary key, followed by an insertion of the new data.
+
+### Number-type primary keys
+
+When a primary key field has the Airbyte `Number` type, the connector stores it as an Iceberg `StringType` instead of `DoubleType`. This preserves deduplication correctness (Iceberg identifier fields don't support `DoubleType`), but means that ordering and comparison on these columns is lexicographic, not numeric (e.g., `"9" > "10"`). Downstream queries that assume numeric comparison on these fields may need adjustment.
 
 ### Assumptions about primary keys
 
@@ -388,6 +392,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.46      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
 | 0.3.45      | 2026-03-05 | [72354](https://github.com/airbytehq/airbyte/pull/72354) | Upgrade CDK to 1.0.3                                                                                                                                 |
 | 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
 | 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
