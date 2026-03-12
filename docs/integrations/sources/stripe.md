@@ -70,7 +70,11 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
    Streams like `customers`, `subscriptions`, `products`, and `plans` may not need validation because some accounts legitimately have no new records in 30+ days, and forcing a full refresh would be unnecessary.
 
-11. Click **Set up source** and wait for the tests to complete.
+11. (Optional) For **Number of Concurrent Workers**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
+
+12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+
+13. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -145,6 +149,10 @@ The Stripe source connector supports the following streams:
 ### Data type map
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+
+### Stripe API version
+
+This connector uses Stripe API version `2022-11-15`. Stripe returns data shaped according to this version regardless of the version configured in your Stripe dashboard. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
 
 ## Limitations & Troubleshooting
 
