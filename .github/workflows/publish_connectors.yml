@@ -477,6 +477,8 @@ jobs:
         id: generate-registry-artifacts-ops-cli
         continue-on-error: true
         shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         run: |
           echo "Generating registry artifacts for ${{ matrix.connector }}"
           DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
@@ -487,8 +489,6 @@ jobs:
             --docker-image "${DOCKER_IMAGE}" \
             --output-dir ./registry-artifacts \
             --with-validate
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
       - name: "[Ops Registry Soft Launch] Upload Registry CI Artifacts"
         if: steps.generate-registry-artifacts-ops-cli.outcome == 'success'
@@ -504,6 +504,10 @@ jobs:
         if: needs.publish_options.outputs.dry-run != 'true' && steps.generate-registry-artifacts-ops-cli.outcome == 'success'
         continue-on-error: true
         shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          # Swap to coral:prod when parallel validation completes and we're ready for full cutover.
+          REGISTRY_STORE: "coral:dev/soft-launch-trial"
         run: |
           echo "Publishing registry artifacts for ${{ matrix.connector }}"
           uvx airbyte-internal-ops \
@@ -511,10 +515,8 @@ jobs:
             --name "${{ matrix.connector }}" \
             --version "${{ steps.connector-metadata.outputs.docker-image-tag }}" \
             --artifacts-dir ./registry-artifacts \
-            --store coral:dev/soft-launch-trial \
+            --store "${REGISTRY_STORE}" \
             --with-validate
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
   generate_connector_registry:
     name: Generate connector registry

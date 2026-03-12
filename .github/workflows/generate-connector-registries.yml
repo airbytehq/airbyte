@@ -163,6 +163,9 @@ jobs:
     name: "[Ops Registry Soft Launch] Compile Registries (ops CLI)"
     runs-on: ubuntu-24.04
     continue-on-error: true
+    env:
+      # Swap to coral:prod when parallel validation completes and we're ready for full cutover.
+      REGISTRY_STORE: "coral:dev/soft-launch-trial"
 
     steps:
       - name: Checkout Airbyte
@@ -180,4 +183,4 @@ jobs:
         shell: bash
         run: >
           uvx airbyte-internal-ops
-          registry store compile --store coral:dev/soft-launch-trial --with-secrets-mask
+          registry store compile --store "${REGISTRY_STORE}" --with-secrets-mask
