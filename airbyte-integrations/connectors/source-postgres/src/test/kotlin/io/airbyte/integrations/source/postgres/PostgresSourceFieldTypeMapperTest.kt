@@ -202,11 +202,26 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "BIT VARYING ARRAY"
             )
         )
-        scalarAndArray(
-            "BYTEA",
-            LeafAirbyteSchemaType.STRING,
-            mapOf(
-                "decode('someBase64xx', 'base64')" to "\"\\\\xb2899e05ab1eeb8c71\"",
+
+
+
+        add(
+            testCase(
+                "BYTEA",
+                LeafAirbyteSchemaType.STRING,
+                mapOf("decode('someBase64xx', 'base64')" to "\"\\\\xb2899e05ab1eeb8c71\""),
+                "BYTEA",
+            )
+        )
+        add(
+            testCase(
+                "BYTEA[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
+                //  Legacy representation of array values inconsistent with scalar.
+                mapOf("decode('someBase64xx', 'base64')" to "\"someBase64xx\"")
+                    .toArrayVals("BYTEA[]"),
+                "BYTEA ARRAY",
             )
         )
 
@@ -256,6 +271,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "TIME",
             LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
+            //AnsiSql.timeValues.withDecimalDigits(0).mapKeys { "${it.key}::time" }
             AnsiSql.timeValues.mapKeys { "${it.key}::time" }
         )
         scalarAndArray(
