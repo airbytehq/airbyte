@@ -1,6 +1,6 @@
-# Mailchimp authentication
+# Clickup-Api authentication
 
-This page documents the authentication and configuration options for the Mailchimp agent connector.
+This page documents the authentication and configuration options for the Clickup-Api agent connector.
 
 ## Authentication
 
@@ -17,17 +17,17 @@ This authentication method isn't available for this connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Mailchimp API key. You can find this in your Mailchimp account under Account \> Extras \> API keys. |
+| `api_key` | `str` | Yes | Your ClickUp personal API token |
 
 Example request:
 
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector
-from airbyte_agent_mailchimp.models import MailchimpAuthConfig
+from airbyte_agent_clickup_api import ClickupApiConnector
+from airbyte_agent_clickup_api.models import ClickupApiAuthConfig
 
-connector = MailchimpConnector(
-    auth_config=MailchimpAuthConfig(
-        api_key="<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
+connector = ClickupApiConnector(
+    auth_config=ClickupApiAuthConfig(
+        api_key="<Your ClickUp personal API token>"
     )
 )
 ```
@@ -50,7 +50,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Mailchimp API key. You can find this in your Mailchimp account under Account \> Extras \> API keys. |
+| `api_key` | `str` | Yes | Your ClickUp personal API token |
 
 Example request:
 
@@ -61,10 +61,10 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Content-Type: application/json" \
   -d '{
     "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Mailchimp",
-    "name": "My Mailchimp Connector",
+    "connector_type": "Clickup-Api",
+    "name": "My Clickup-Api Connector",
     "credentials": {
-      "api_key": "<Your Mailchimp API key. You can find this in your Mailchimp account under Account > Extras > API keys.>"
+      "api_key": "<Your ClickUp personal API token>"
     }
   }'
 ```
@@ -77,9 +77,9 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_mailchimp import MailchimpConnector, AirbyteAuthConfig
+from airbyte_agent_clickup_api import ClickupApiConnector, AirbyteAuthConfig
 
-connector = MailchimpConnector(
+connector = ClickupApiConnector(
     auth_config=AirbyteAuthConfig(
         customer_name="<your_customer_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
@@ -89,8 +89,8 @@ connector = MailchimpConnector(
 )
 
 @agent.tool_plain # assumes you're using Pydantic AI
-@MailchimpConnector.tool_utils
-async def mailchimp_execute(entity: str, action: str, params: dict | None = None):
+@ClickupApiConnector.tool_utils
+async def clickup_api_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
@@ -105,10 +105,3 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ```
 
 
-## Configuration
-
-The Mailchimp connector requires the following configuration variables. These variables are used to construct the base API URL. Pass them via the `config` parameter when initializing the connector.
-
-| Variable | Type | Required | Default | Description |
-|----------|------|----------|---------|-------------|
-| `data_center` | `string` | Yes | us1 | The data center for your Mailchimp account (e.g., us1, us2, us6) |
