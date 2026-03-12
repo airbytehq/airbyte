@@ -4,7 +4,6 @@
 import itertools
 import json
 import logging
-import tempfile
 import urllib.parse
 from datetime import datetime, timedelta
 from io import IOBase, StringIO
@@ -41,7 +40,6 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         super().__init__()
         self._gcs_client = None
         self._config = None
-        self.tmp_dir = tempfile.TemporaryDirectory()
 
     @property
     def config(self) -> Config:
@@ -110,7 +108,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                         )
 
                         if remote_file.mime_type == "zip" and not isinstance(self.config.delivery_method, DeliverRawFiles):
-                            yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
+                            yield from ZipHelper(blob, remote_file).get_gcs_remote_files()
                         else:
                             yield remote_file
         except Exception as exc:
