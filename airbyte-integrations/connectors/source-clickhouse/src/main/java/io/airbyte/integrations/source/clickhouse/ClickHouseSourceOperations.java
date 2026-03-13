@@ -5,9 +5,13 @@
 package io.airbyte.integrations.source.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.JdbcConstants;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import java.sql.JDBCType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 
 /**
@@ -51,6 +55,35 @@ public class ClickHouseSourceOperations extends JdbcSourceOperations {
 
     // Default to VARCHAR for any other types that unexpectedly return as OTHER
     return JDBCType.VARCHAR;
+  }
+
+  /**
+   * Overrides copyToJsonField to work around an off-by-one bug in the ClickHouse JDBC v2 driver's
+   * ArrayResultSet.next() method.
+   *
+   * <p>
+   * The driver's ArrayResultSet.next() returns true one extra time past the end of the array,
+   * causing a "No current row" SQLException when getString(2) is called on the phantom row.
+   * For ARRAY columns, this override uses Array.getArray() to get a Java Object[] directly,
+   * bypassing the buggy ArrayResultSet entirely. All other types delegate to the parent.
+   *
+   * @see <a href="https://github.com/airbytehq/airbyte/issues/61419">#61419</a>
+   */
+  @Override
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex,
+      final ObjectNode json) throws SQLException {
+    final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
+    if (columnTypeInt == Types.ARRAY) {
+      final String columnName = resultSet.getMetaData().getColumnName(colIndex);
+      final var arrayNode = new ObjectMapper().createArrayNode();
+      final Object[] elements = (Object[]) resultSet.getArray(colIndex).getArray();
+      for (final Object element : elements) {
+        arrayNode.add(element == null ? null : element.toString());
+      }
+      json.set(columnName, arrayNode);
+    } else {
+      super.copyToJsonField(resultSet, colIndex, json);
+    }
   }
 
 }
