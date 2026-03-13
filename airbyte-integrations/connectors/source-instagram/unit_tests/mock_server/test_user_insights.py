@@ -213,21 +213,18 @@ class TestIncremental(TestCase):
         """Test incremental sync with prior state (subsequent sync).
 
         With prior state at 2024-01-15T00:00:00+00:00 and frozen time at 2024-01-15T12:00:00Z,
-        the stream should request data with since=2024-01-15T00:00:00Z.
-        We verify the outbound request includes the expected since parameter derived from state
-        by mocking specific query params for each QueryProperties chunk.
-
-        The DatetimeBasedCursor uses the state value as the starting point, and day_delta(1)
-        determines the end datetime. With step P1D, there are two time slices from state to
-        end_datetime (frozen_time + 1 day).
+        the stream uses now_utc() as end_datetime and a P1D lookback_window.
+        The lookback_window shifts the effective start back by 1 day from the state value,
+        so slicing starts at 2024-01-14T00:00:00+00:00 and ends at now_utc() (2024-01-15T12:00:00Z).
+        With step P1D, this produces two slices.
         """
         prior_state_value = "2024-01-15T00:00:00+00:00"
-        # Expected since value derived from state - the API uses the state value format directly
-        expected_since_slice1 = "2024-01-15T00:00:00+00:00"
-        expected_until_slice1 = "2024-01-16T00:00:00+00:00"
-        # Second slice covers the remainder up to day_delta(1) from frozen time
-        expected_since_slice2 = "2024-01-16T00:00:00+00:00"
-        expected_until_slice2 = "2024-01-16T12:00:00+00:00"
+        # With lookback_window P1D, the effective start is state - P1D = 2024-01-14T00:00:00+00:00
+        expected_since_slice1 = "2024-01-14T00:00:00+00:00"
+        expected_until_slice1 = "2024-01-15T00:00:00+00:00"
+        # Second slice covers from state to now_utc() (frozen time)
+        expected_since_slice2 = "2024-01-15T00:00:00+00:00"
+        expected_until_slice2 = "2024-01-15T12:00:00+00:00"
 
         state = (
             StateBuilder()
@@ -271,7 +268,7 @@ class TestIncremental(TestCase):
         test_config = ConfigBuilder().with_start_date("2024-01-14T00:00:00Z")
         output = self._read(config_=test_config, state=state)
 
-        # With day_delta(1), two P1D slices are generated from state to end_datetime.
+        # With lookback_window P1D, two P1D slices are generated from (state - P1D) to now_utc().
         # Each slice returns records merged by date, producing 1 record per slice.
         # Both slices return mock data with the same date, yielding 2 records total.
         assert len(output.records) == 2
