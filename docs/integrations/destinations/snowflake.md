@@ -21,8 +21,8 @@ By default, Snowflake allows users to connect to the service from any computer o
 A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
 policy to allow or deny access to a single IP address or a list of addresses.
 
-If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses
-is on the allowed list
+If you have any issues connecting with Airbyte Cloud, make sure that the
+[Airbyte IP addresses](/platform/operating-airbyte/ip-allowlist) are on your allowed list.
 
 To determine whether a network policy is set on your account or for a specific user, execute the
 _SHOW PARAMETERS_ command.
@@ -39,8 +39,8 @@ SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
 SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 ```
 
-To read more please check official
-[Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+For more information, see
+[Snowflake's network policy documentation](https://docs.snowflake.com/en/user-guide/network-policies.html)
 
 ## Setup guide
 
@@ -125,22 +125,22 @@ This allows us to manage tables and other objects required for the integration t
 
 ### Step 2: Set up a data loading method
 
-Airbyte uses Snowflake’s
+This connector uses Snowflake's
 [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html)
-to load data.
+to load data. No external staging (S3, GCS) is required.
 
-Make sure the database and schema have the `USAGE` privilege.
+Make sure the Airbyte role has the `USAGE` privilege on the database and schema.
 
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
 username/password or key pair authentication:
 
-### Login and Password
+#### Login and Password
 
 | Field | Description |
 | :---- | :---------- |
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with `snowflakecomputing.com`). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the Snowflake instance (must end with `snowflakecomputing.com`). Examples: `accountname.us-east-2.aws.snowflakecomputing.com` or `accountname.snowflakecomputing.com` |
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
@@ -153,7 +153,7 @@ username/password or key pair authentication:
 | Airbyte Internal Table Dataset Name (Optional) | The schema used for Airbyte's internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 
-### Key pair authentication
+#### Key pair authentication
 
 <KeypairExample/>
 
@@ -372,7 +372,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 3.7.2           | 2024-05-06 | [\#37857](https://github.com/airbytehq/airbyte/pull/37857) | Use safe executeMetadata call                                                                                                                                                          |
 | 3.7.1           | 2024-04-30 | [\#36910](https://github.com/airbytehq/airbyte/pull/36910) | Bump CDK version                                                                                                                                                                       |
 | 3.7.0           | 2024-04-08 | [\#35754](https://github.com/airbytehq/airbyte/pull/35754) | Allow configuring `data_retention_time_in_days`; apply to both raw and final tables. _Note_: Existing tables will not be affected; you must manually alter them.                       |
-| 3.6.6           | 2024-03-26 | [\#36466](https://github.com/airbytehq/airbyte/pull/36466) | Correctly hhandle instances with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled globally                                                                                                     |
+| 3.6.6           | 2024-03-26 | [\#36466](https://github.com/airbytehq/airbyte/pull/36466) | Correctly handle instances with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled globally                                                                                                      |
 | 3.6.5           | 2024-03-25 | [\#36461](https://github.com/airbytehq/airbyte/pull/36461) | Internal code change (use published CDK artifact instead of source dependency)                                                                                                         |
 | 3.6.4           | 2024-03-25 | [\#36396](https://github.com/airbytehq/airbyte/pull/36396) | Handle instances with `QUOTED_IDENTIFIERS_IGNORE_CASE` enabled globally                                                                                                                |
 | 3.6.3           | 2024-03-25 | [\#36452](https://github.com/airbytehq/airbyte/pull/36452) | Remove Query timeout                                                                                                                                                                   |
