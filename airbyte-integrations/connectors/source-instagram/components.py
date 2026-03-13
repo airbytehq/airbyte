@@ -3,7 +3,7 @@
 import logging
 import urllib.parse as urlparse
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
@@ -304,16 +304,20 @@ class UserInsightsExtractor(RecordExtractor):
                 if "date" not in complete_record:
                     complete_record["date"] = result.get("values")[0].get("end_time")
 
-            # Skip records whose date (end_time from Meta) is in the future.
-            # Meta returns end_time as the day boundary in the account's timezone
-            # (expressed in UTC), which can be ahead of current UTC.  Emitting such
-            # records would advance the cursor to a future value, causing the next
-            # sync to send a future ``since`` parameter that Meta rejects (HTTP 400).
+            # Skip records whose date (end_time from Meta) is more than 1 day
+            # ahead of current UTC.  Meta returns end_time as the day boundary in
+            # the account's timezone (expressed in UTC), which can be up to ~14 h
+            # ahead of UTC for UTC+ accounts — those are legitimate "today" records.
+            # However, records a full day+ ahead indicate the cursor has drifted
+            # into the future; emitting them would advance the cursor further,
+            # causing the next sync to send a future ``since`` that Meta rejects
+            # (HTTP 400).  The 1-day threshold matches ``end_datetime: day_delta(1)``
+            # and ``step: P1D`` configured in the manifest.
             record_date = complete_record.get("date")
             if record_date:
                 try:
                     parsed = ab_datetime_parse(record_date)
-                    if parsed > now_utc:
+                    if parsed > now_utc + timedelta(days=1):
                         continue
                 except (ValueError, TypeError):
                     pass

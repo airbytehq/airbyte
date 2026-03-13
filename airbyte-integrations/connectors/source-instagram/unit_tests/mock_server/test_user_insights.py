@@ -297,12 +297,16 @@ class TestFutureStateRegression(TestCase):
     1. ``lookback_window: P1D`` in the manifest pulls the effective start
        back by one day, so even a slightly-future cursor produces a non-future
        ``since`` parameter.
-    2. ``UserInsightsExtractor`` filters out records whose ``date`` is ahead
-       of the current UTC time, preventing the cursor from advancing further
-       into the future.
+    2. ``UserInsightsExtractor`` filters out records whose ``date`` is more
+       than 1 day ahead of current UTC (matching the ``day_delta(1)``
+       boundary), preventing the cursor from advancing further into the
+       future while still allowing legitimate UTC+ account records that are
+       only hours ahead.
 
-    These tests verify that with a future state the outbound ``since`` is
-    never in the future.
+    These tests verify that:
+    - A future state does not produce a future ``since`` parameter.
+    - Records from UTC+ accounts (hours ahead of UTC) pass through.
+    - Records more than 1 day ahead are filtered out.
     """
 
     @staticmethod
@@ -409,7 +413,7 @@ class TestFutureStateRegression(TestCase):
         output = self._read(config_=test_config, state=state)
 
         # Slice 1 returns records with date 2024-01-15T07:00:00+00:00 (not future) → emitted.
-        # Slice 2 returns records with date 2024-01-17T07:00:00+00:00 (future) → filtered out.
+        # Slice 2 returns records with date 2024-01-17T07:00:00+00:00 (>1 day ahead) → filtered out.
         # So we should get exactly 1 record from slice 1.
         assert len(output.records) == 1
         record = output.records[0].record.data
@@ -419,6 +423,53 @@ class TestFutureStateRegression(TestCase):
 
         # Verify state was emitted (cursor should not advance to the future date)
         assert len(output.state_messages) >= 1
+
+    @HttpMocker()
+    @freezegun.freeze_time(_FROZEN_TIME)
+    def test_utc_plus_record_not_filtered(self, http_mocker: HttpMocker) -> None:
+        """A record ~8 h ahead of UTC (simulating UTC+8) must NOT be filtered.
+
+        Frozen time: 2024-01-15T12:00:00Z
+        Record end_time: 2024-01-15T20:00:00+0000 (8 h ahead — UTC+8 day boundary)
+
+        The filter threshold is ``now_utc + timedelta(days=1)`` =
+        2024-01-16T12:00:00Z.  Since 2024-01-15T20:00:00 < 2024-01-16T12:00:00,
+        this record should pass through and be emitted.
+        """
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+
+        # Build a response with end_time 8 hours ahead of frozen time (UTC+8 account)
+        utc_plus_body = {
+            "data": [
+                {
+                    "name": "follower_count",
+                    "period": "day",
+                    "values": [{"value": 42, "end_time": "2024-01-15T20:00:00+0000"}],
+                    "title": "Follower Count",
+                    "description": "Total number of followers",
+                    "id": f"{BUSINESS_ACCOUNT_ID}/insights/follower_count/day",
+                },
+            ]
+        }
+        utc_plus_response = HttpResponse(json.dumps(utc_plus_body), 200)
+
+        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
+            http_mocker.get(
+                _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
+                utc_plus_response,
+            )
+
+        test_config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z")
+        output = self._read(config_=test_config)
+
+        # The record is 8 h ahead of UTC but within the 1-day filter threshold → emitted
+        assert len(output.records) >= 1
+        record = output.records[0].record.data
+        assert record.get("business_account_id") == BUSINESS_ACCOUNT_ID
+        assert record.get("date") == "2024-01-15T20:00:00+00:00"
 
 
 class TestErrorHandling(TestCase):
