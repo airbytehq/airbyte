@@ -40,6 +40,11 @@ class DestinationLifecycle(
         // Move data
         runBlocking { pipeline.run() }
 
+        // At this point all pipelines have completed and all aggregates have been flushed.
+        // Notify each input-complete stream so connectors can perform per-stream finalization
+        // (e.g., merging a staging branch into main in Iceberg) before teardown.
+        notifyPerStreamFlushCompletion(streamLoaders)
+
         finalizeIndividualStreams(streamLoaders)
 
         teardownDestination()
@@ -75,6 +80,33 @@ class DestinationLifecycle(
                     .awaitAll()
 
             return@runBlocking result
+        }
+    }
+
+    /**
+     * After all pipelines have completed (all records received and all aggregates flushed), call
+     * [StreamLoader.onStreamFlushed] for each stream whose source sent a completion message. This
+     * allows connectors to perform per-stream finalization before the overall teardown.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun notifyPerStreamFlushCompletion(streamLoaders: List<StreamLoader>) {
+        runBlocking {
+            streamLoaders
+                .filter { completionTracker.isStreamComplete(it.stream.mappedDescriptor) }
+                .map {
+                    async(streamFinalizeDispatcher) {
+                        val desc = it.stream.mappedDescriptor
+                        log.info {
+                            "Stream ${desc.namespace}:${desc.name} is fully flushed. " +
+                                "Invoking onStreamFlushed callback."
+                        }
+                        it.onStreamFlushed()
+                        log.info {
+                            "Stream ${desc.namespace}:${desc.name} onStreamFlushed completed."
+                        }
+                    }
+                }
+                .awaitAll()
         }
     }
 
