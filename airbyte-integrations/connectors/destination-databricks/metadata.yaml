@@ -1,3 +1,4 @@
+# Soft launch test - safe to ignore
 data:
   connectorSubtype: database
   connectorType: destination
