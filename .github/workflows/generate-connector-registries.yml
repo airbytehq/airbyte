@@ -177,10 +177,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
+      - name: Install Ops CLI
+        run: uv tool install airbyte-internal-ops
+
       - name: Compile Registries
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
         run: >
-          uvx airbyte-internal-ops
+          airbyte-ops
           registry store compile --store "${REGISTRY_STORE}" --with-secrets-mask
