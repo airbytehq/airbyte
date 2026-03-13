@@ -631,6 +631,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -695,6 +697,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -759,6 +763,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -823,6 +829,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -900,6 +908,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -964,6 +974,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1028,6 +1040,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1092,6 +1106,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1156,6 +1172,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1220,6 +1238,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1284,6 +1304,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1348,6 +1370,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1412,6 +1436,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1476,6 +1502,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1593,6 +1621,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
