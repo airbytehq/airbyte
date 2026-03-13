@@ -130,7 +130,7 @@ See the official [Harvest API reference](https://help.getharvest.com/api-v2/).
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 374d05b13c1242b8077216e6603cdff3ec4179b8
+- **Package version:** 0.1.3
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/harvest/CHANGELOG.md)

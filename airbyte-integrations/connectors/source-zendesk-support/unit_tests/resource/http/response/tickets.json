@@ -1,10 +1,5 @@
 {
-  "after_cursor": "MTU3NjYxMzUzOS4wfHw0Njd8",
-  "after_url": "https://d3v-airbyte.zendesk.com/api/v2/incremental/tickets/cursor.json?cursor=MTU3NjYxMzUzOS4wfHw0Njd8",
-  "before_cursor": null,
-  "before_url": null,
-  "end_of_stream": true,
-  "tickets": [
+  "results": [
     {
       "generated_timestamp": 1723660897,
       "assignee_id": 235323,
@@ -34,6 +29,7 @@
       "raw_subject": "{{dc.printer_on_fire}}",
       "recipient": "support@company.com",
       "requester_id": 20978392,
+      "result_type": "ticket",
       "satisfaction_rating": {
         "comment": "Great support!",
         "id": 1234,
@@ -51,5 +47,14 @@
         "channel": "web"
       }
     }
-  ]
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": "MTU3NjYxMzUzOS4wfHw0Njd8",
+    "before_cursor": null
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
 }

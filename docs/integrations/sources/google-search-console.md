@@ -244,6 +244,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1.11.0 | 2026-03-09 | [72907](https://github.com/airbytehq/airbyte/pull/72907) | Update site_urls validation |
+| 1.10.25 | 2026-03-10 | [74685](https://github.com/airbytehq/airbyte/pull/74685) | Update dependencies |
 | 1.10.24 | 2026-02-24 | [73935](https://github.com/airbytehq/airbyte/pull/73935) | Update dependencies |
 | 1.10.23 | 2026-02-17 | [73372](https://github.com/airbytehq/airbyte/pull/73372) | Update dependencies |
 | 1.10.22 | 2026-02-10 | [72683](https://github.com/airbytehq/airbyte/pull/72683) | Update dependencies |
@@ -350,7 +351,6 @@ Google Search Console only retains data for websites from the last 16 months. An
 | 0.1.2       | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222)   | Correct Spec File                                                                                                                                                      |
 | 0.1.1       | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315)   | Verify access to all sites when performing connection check                                                                                                            |
 | 0.1.0       | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350)   | Initial Release                                                                                                                                                        |
->>>>>>> master
 
 </details>
 
