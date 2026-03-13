@@ -1,20 +1,34 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.postgres.operations.types
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.jdbc.JdbcAccessor
 import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
+import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
 import io.airbyte.integrations.source.postgres.cdc.DateTimeConverter
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.time.LocalDateTime
 
 object PostgresTimestampFieldType :
     SymmetricJdbcFieldType<String>(
         LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         PgTimestampAccessor,
-        TextCodec,
+        PgTimestampCodec,
     )
+
+object PgTimestampCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
+    override fun encode(decoded: String): JsonNode = TextNode(decoded)
+    override fun decode(encoded: JsonNode): String = encoded.asText()
+    override fun valueForProtobufEncoding(v: String): Any? {
+        val isBce = v.endsWith(" BC")
+        val str = if (isBce) v.removeSuffix(" BC") else v
+        val parsed = LocalDateTime.parse(str)
+        return if (isBce) parsed.withYear(1 - parsed.year) else parsed
+    }
+}
 
 private object PgTimestampAccessor : JdbcAccessor<String> {
     override fun get(rs: ResultSet, colIdx: Int): String? {

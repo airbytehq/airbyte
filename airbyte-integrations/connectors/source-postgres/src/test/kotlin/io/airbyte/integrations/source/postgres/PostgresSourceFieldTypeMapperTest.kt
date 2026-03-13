@@ -203,8 +203,6 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             )
         )
 
-
-
         add(
             testCase(
                 "BYTEA",

@@ -74,8 +74,7 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             JDBCType.REAL -> FloatFieldType
             JDBCType.FLOAT,
             JDBCType.DOUBLE ->
-                if (type.scalarTypeName == "money") PostgresMoneyFieldType
-                else DoubleFieldType
+                if (type.scalarTypeName == "money") PostgresMoneyFieldType else DoubleFieldType
             JDBCType.NUMERIC,
             JDBCType.DECIMAL -> {
                 // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
