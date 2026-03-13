@@ -490,6 +490,20 @@ jobs:
         if: matrix.connector
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
+      # Java deps (needed for JVM connector Docker image builds via Gradle)
+      # TODO: Consider making this conditional on connector language to skip for non-JVM connectors.
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        if: matrix.connector
+        with:
+          gradle-version: "8.14"
+
       - name: Install Poe
         if: matrix.connector
         run: uv tool install poethepoet
