@@ -52,7 +52,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -235,7 +235,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -499,7 +499,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -858,7 +858,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -1071,7 +1071,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -1217,7 +1217,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -1615,7 +1615,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -1980,7 +1980,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -2126,7 +2126,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -2424,7 +2424,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -2636,7 +2636,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -3083,7 +3083,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -3646,7 +3646,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -3855,7 +3855,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -4184,7 +4184,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -4317,7 +4317,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -4622,7 +4622,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -5079,7 +5079,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -5482,7 +5482,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -5840,7 +5840,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -6286,7 +6286,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -6423,7 +6423,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -6608,7 +6608,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -6804,7 +6804,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -6961,7 +6961,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -7154,7 +7154,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -7327,7 +7327,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -7599,7 +7599,7 @@ definitions:
             type: DefaultErrorHandler
             response_filters:
             - type: HttpResponseFilter
-              action: REFRESH_TOKEN_THEN_RETRY
+              action: RETRY
               http_codes:
               - 401
               failure_type: transient_error
@@ -7893,7 +7893,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -8076,7 +8076,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -8340,7 +8340,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -8699,7 +8699,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -8912,7 +8912,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -9058,7 +9058,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -9456,7 +9456,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -9821,7 +9821,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -9967,7 +9967,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -10265,7 +10265,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -10477,7 +10477,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -10924,7 +10924,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -11487,7 +11487,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -11696,7 +11696,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -12025,7 +12025,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -12158,7 +12158,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -12463,7 +12463,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -12920,7 +12920,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -13323,7 +13323,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -13681,7 +13681,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -14127,7 +14127,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -14264,7 +14264,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -14449,7 +14449,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -14645,7 +14645,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -14802,7 +14802,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -14995,7 +14995,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -15168,7 +15168,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
@@ -15440,7 +15440,7 @@ streams:
         type: DefaultErrorHandler
         response_filters:
         - type: HttpResponseFilter
-          action: REFRESH_TOKEN_THEN_RETRY
+          action: RETRY
           http_codes:
           - 401
           failure_type: transient_error
