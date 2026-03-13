@@ -8,16 +8,13 @@ This page contains the setup guide and reference information for the [Instagram]
 
 ## Prerequisites
 
-- [Meta for Developers account](https://developers.facebook.com)
-- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your
-  Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll
-  use this to configure Instagram as a source in Airbyte
+- A [Meta for Developers](https://developers.facebook.com) account
+- An [Instagram Business or Creator account](https://www.facebook.com/business/help/898752960195806) connected to a Facebook Page
 
 <!-- env:oss -->
 
-- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/)
+- A Facebook App with the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) enabled
+- An access token with the following permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`. See the [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/) for details.
 
 <!-- /env:oss -->
 
@@ -89,6 +86,7 @@ and [Instagram Insights API documentation](https://developers.facebook.com/docs/
 
 - [User](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
     - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
+    - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) — follower demographics broken down by city, country, and age/gender
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
     - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
@@ -119,25 +117,21 @@ must handle records that conform to this type system.
 
 ## Limitations & Troubleshooting
 
-<details>
-<summary>
-Expand to see details about Instagram connector limitations and troubleshooting.
-</summary>
-
-### Connector limitations
-
-#### Rate limiting
+### Rate limiting
 
 Instagram limits the number of requests that can be made at a time. See
 Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api)
 for more information.
 
+### Insights data limitations
+
+- The User Insights stream uses `period=day` aggregation. Meta determines day boundaries using the Instagram account's timezone, not UTC. For accounts in UTC+ timezones, day-boundary timestamps can appear ahead of the current UTC time. The connector handles this automatically with a one-day lookback window.
+- The `follower_demographics` metric used by User Lifetime Insights requires the account to have at least 100 followers.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Instagram source connector on
   our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
-
-</details>
 
 ## Changelog
 
@@ -146,7 +140,7 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.21 | 2026-03-12 | [74800](https://github.com/airbytehq/airbyte/pull/74800) | Add lookback window and filter future-dated records in user_insights to prevent cursor from advancing past current UTC |
+| 4.2.21 | 2026-03-13 | [74800](https://github.com/airbytehq/airbyte/pull/74800) | Add lookback window and filter future-dated records in user_insights to prevent cursor from advancing past current UTC |
 | 4.2.20 | 2026-03-10 | [74502](https://github.com/airbytehq/airbyte/pull/74502) | Update dependencies |
 | 4.2.19 | 2026-03-03 | [73045](https://github.com/airbytehq/airbyte/pull/73045) | Update dependencies |
 | 4.2.18 | 2026-02-24 | [74006](https://github.com/airbytehq/airbyte/pull/74006) | Fix user_insights end_datetime to cover current day for UTC+ accounts |
