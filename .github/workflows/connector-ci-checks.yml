@@ -471,43 +471,30 @@ jobs:
       # Runs alongside existing pre-release checks to validate the new ops CLI path.
       # continue-on-error: true ensures this does not block the CI pipeline.
       # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
-      - name: "[Ops Registry Soft Launch] Detect connector language"
-        if: matrix.connector
-        id: connector-language
-        continue-on-error: true
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          LANGUAGE="$(poe -qq get-language)"
-          echo "language=${LANGUAGE}" | tee -a $GITHUB_OUTPUT
-          if [[ "${LANGUAGE}" == "java" ]]; then
-            echo "is-jvm=true" | tee -a $GITHUB_OUTPUT
-          else
-            echo "is-jvm=false" | tee -a $GITHUB_OUTPUT
-          fi
-
       - name: "[Ops Registry Soft Launch] Get connector metadata"
-        if: matrix.connector && steps.connector-language.outcome == 'success' && steps.connector-language.outputs.is-jvm != 'true'
+        if: matrix.connector
         id: connector-metadata
         continue-on-error: true
-        env:
-          CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           set -euo pipefail
-          CONNECTOR_VERSION="$(poe -qq --root "${CONNECTOR_DIR}" get-version)"
+          # Uses ops CLI to get connector info; writes to GITHUB_OUTPUT automatically in CI
+          airbyte-ops local connector info ${{ matrix.connector }}
+          # Also compute docker-image for downstream steps
+          CONNECTOR_DIR="airbyte-integrations/connectors/${{ matrix.connector }}"
           DOCKER_REPO=$(yq -r '.data.dockerRepository' "${CONNECTOR_DIR}/metadata.yaml")
-          echo "connector-version=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+          CONNECTOR_VERSION=$(yq -r '.data.dockerImageTag' "${CONNECTOR_DIR}/metadata.yaml")
           echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
 
       - name: "[Ops Registry Soft Launch] Build connector Docker image"
-        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        if: matrix.connector && steps.connector-metadata.outcome == 'success' && steps.connector-metadata.outputs.connector_language != 'java'
         continue-on-error: true
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: >
           airbyte-cdk image build
-          --tag ${{ steps.connector-metadata.outputs.connector-version }}
+          --tag ${{ steps.connector-metadata.outputs.connector_version }}
 
       - name: "[Ops Registry Soft Launch] Generate and Validate Registry Artifacts (ops CLI)"
-        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        if: matrix.connector && steps.connector-metadata.outcome == 'success' && steps.connector-metadata.outputs.connector_language != 'java'
         continue-on-error: true
         shell: bash
         env:
@@ -520,11 +507,11 @@ jobs:
           --with-validate
 
       - name: "[Ops Registry Soft Launch] Upload Registry CI Artifacts"
-        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        if: matrix.connector && steps.connector-metadata.outcome == 'success' && steps.connector-metadata.outputs.connector_language != 'java'
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector-version }}
+          name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector_version }}
           path: ./registry-artifacts/
           retention-days: 7
           if-no-files-found: ignore
