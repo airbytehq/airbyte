@@ -570,16 +570,6 @@ definitions:
                 error_message: >-
                   Check provided permissions for: {{
                   response['error']['message'] }}
-              - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'error' in response and
-                  response['error']['code'] == 100 and
-                  'since param is not valid' in response['error']['message'] }}
-                http_codes: []
-                error_message: >-
-                  Skipping future time slice: {{
-                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -612,7 +602,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ day_delta(1, format='%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
         cursor_datetime_formats:
@@ -627,6 +617,7 @@ definitions:
           type: RequestOption
           field_name: until
           inject_into: request_parameter
+        lookback_window: "P1D"
       transformations:
         - type: AddFields
           fields:

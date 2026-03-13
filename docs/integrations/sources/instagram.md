@@ -146,7 +146,7 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.21 | 2026-03-12 | [74801](https://github.com/airbytehq/airbyte/pull/74801) | Handle Meta API error for future `since` values in user_insights by adding response filter to gracefully skip future time slices |
+| 4.2.21 | 2026-03-12 | [74801](https://github.com/airbytehq/airbyte/pull/74801) | Fix future `since` values in user_insights by reverting end_datetime to now_utc() and adding P1D lookback window |
 | 4.2.20 | 2026-03-10 | [74502](https://github.com/airbytehq/airbyte/pull/74502) | Update dependencies |
 | 4.2.19 | 2026-03-03 | [73045](https://github.com/airbytehq/airbyte/pull/73045) | Update dependencies |
 | 4.2.18 | 2026-02-24 | [74006](https://github.com/airbytehq/airbyte/pull/74006) | Fix user_insights end_datetime to cover current day for UTC+ accounts |
