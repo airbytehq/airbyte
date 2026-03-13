@@ -487,7 +487,8 @@ jobs:
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
-            --output-dir ./registry-artifacts
+            --output-dir ./registry-artifacts \
+            --with-validate
 
       - name: "[Ops Registry Soft Launch] Upload Registry CI Artifacts"
         if: steps.generate-registry-artifacts-ops-cli.outcome == 'success'
@@ -514,7 +515,8 @@ jobs:
             --name "${{ matrix.connector }}" \
             --version "${{ steps.connector-metadata.outputs.docker-image-tag }}" \
             --artifacts-dir ./registry-artifacts \
-            --store "${REGISTRY_STORE}"
+            --store "${REGISTRY_STORE}" \
+            --with-validate
 
   generate_connector_registry:
     name: Generate connector registry
