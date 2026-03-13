@@ -110,7 +110,7 @@ class PostgresSourceDebeziumOperations(
             .with("snapshot.mode", "initial")
             .with("publication.autocreate.mode", "disabled")
             .with("converters", "datetime")
-            .with("datetime.type", PostgresDebeziumDatetimeConverter::class.java.name)
+            .with("datetime.type", PostgresCustomConverter::class.java.name)
             .with("include.unknown.datatypes", "true")
             // TODO: This will eventually be deprecated in favor of lsn.flush.mode
             .with("flush.lsn.source", cdcConfig.debeziumCommitsLsn.toString())

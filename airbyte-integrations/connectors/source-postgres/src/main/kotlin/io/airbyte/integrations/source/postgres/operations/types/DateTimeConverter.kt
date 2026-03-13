@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.cdc
+package io.airbyte.integrations.source.postgres.operations.types
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Date

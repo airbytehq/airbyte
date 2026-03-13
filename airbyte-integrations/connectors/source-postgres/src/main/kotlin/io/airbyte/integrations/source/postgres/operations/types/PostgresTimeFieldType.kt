@@ -7,7 +7,6 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.jdbc.JdbcAccessor
 import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
-import io.airbyte.integrations.source.postgres.cdc.DateTimeConverter
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.time.LocalTime
