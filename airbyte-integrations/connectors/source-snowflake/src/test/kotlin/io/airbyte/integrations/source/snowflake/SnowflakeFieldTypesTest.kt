@@ -106,7 +106,7 @@ class SnowflakeFieldTypesTest {
         `when`(rs.getTimestamp(1)).thenReturn(timestamp)
         `when`(rs.wasNull()).thenReturn(false)
 
-        val result = SnowflakeOffsetDateTimeFieldType.get(rs, 1) as OffsetDateTime?
+        val result = SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1) as OffsetDateTime?
 
         val expected = OffsetDateTime.of(2025, 11, 6, 22, 30, 46, 123456000, ZoneOffset.UTC)
         assertEquals(expected, result)
@@ -122,7 +122,7 @@ class SnowflakeFieldTypesTest {
         `when`(rs.getTimestamp(1)).thenReturn(timestamp)
         `when`(rs.wasNull()).thenReturn(false)
 
-        val result = SnowflakeOffsetDateTimeFieldType.get(rs, 1) as OffsetDateTime?
+        val result = SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1) as OffsetDateTime?
 
         val expected = OffsetDateTime.of(2025, 11, 6, 22, 30, 46, 123456000, ZoneOffset.UTC)
         assertEquals(expected, result)
@@ -134,7 +134,7 @@ class SnowflakeFieldTypesTest {
         `when`(rs.getTimestamp(1)).thenReturn(null)
         `when`(rs.wasNull()).thenReturn(true)
 
-        val result = SnowflakeOffsetDateTimeFieldType.get(rs, 1) as OffsetDateTime?
+        val result = SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1) as OffsetDateTime?
 
         assertNull(result)
     }
@@ -148,7 +148,7 @@ class SnowflakeFieldTypesTest {
         `when`(rs.getTimestamp(1)).thenReturn(timestamp)
         `when`(rs.wasNull()).thenReturn(false)
 
-        val result = SnowflakeOffsetDateTimeFieldType.get(rs, 1) as OffsetDateTime?
+        val result = SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1) as OffsetDateTime?
 
         assertEquals(ZoneOffset.UTC, result?.offset)
         assertEquals(500000000, result?.nano) // exactly 6 decimal places, no truncation needed
