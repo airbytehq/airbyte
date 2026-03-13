@@ -118,7 +118,7 @@ See the official [Freshdesk API reference](https://developers.freshdesk.com/api/
 
 ## Version information
 
-- **Package version:** 0.1.13
+- **Package version:** 0.1.14
 - **Connector version:** 1.0.2
-- **Generated with Connector SDK commit SHA:** 44677ecbb4b815bb4fb2a54c6e5339681bcf36a8
+- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/freshdesk/CHANGELOG.md)
