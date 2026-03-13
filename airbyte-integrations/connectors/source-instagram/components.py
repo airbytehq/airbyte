@@ -3,7 +3,7 @@
 import logging
 import urllib.parse as urlparse
 from dataclasses import InitVar, dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
@@ -277,6 +277,7 @@ class UserInsightsExtractor(RecordExtractor):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        now_utc = datetime.now(timezone.utc)
         for body in self.decoder.decode(response):
             results = []
             if len(self._field_path) == 0:
@@ -302,6 +303,30 @@ class UserInsightsExtractor(RecordExtractor):
                 complete_record[metric_key] = metric_value
                 if "date" not in complete_record:
                     complete_record["date"] = result.get("values")[0].get("end_time")
+
+            # Skip records whose date (end_time from Meta) is more than 1 day
+            # ahead of current UTC.  Meta returns end_time as the day boundary in
+            # the account's timezone (expressed in UTC), which can be up to ~14 h
+            # ahead of UTC for UTC+ accounts — those are legitimate "today" records.
+            # However, records a full day+ ahead indicate the cursor has drifted
+            # into the future; emitting them would advance the cursor further,
+            # causing the next sync to send a future ``since`` that Meta rejects
+            # (HTTP 400).  The 1-day threshold matches ``end_datetime: day_delta(1)``
+            # and ``step: P1D`` configured in the manifest.
+            record_date = complete_record.get("date")
+            if record_date:
+                try:
+                    parsed = ab_datetime_parse(record_date)
+                    if parsed > now_utc + timedelta(days=1):
+                        continue
+                except (ValueError, TypeError):
+                    # Fail-open: if the date cannot be parsed, emit the record
+                    # unfiltered rather than silently dropping it.
+                    logging.getLogger("airbyte.source-instagram").debug(
+                        "Could not parse record date %r for future-date filtering; skipping filter for this record",
+                        record_date,
+                    )
+
             yield complete_record
 
 
