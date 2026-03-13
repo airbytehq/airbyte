@@ -518,12 +518,11 @@ jobs:
       - name: Get connector metadata
         if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
         id: connector-metadata
-        env:
-          CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           set -euo pipefail
-          CONNECTOR_VERSION="$(poe -qq --root "${CONNECTOR_DIR}" get-version)"
-          DOCKER_REPO=$(yq -r '.data.dockerRepository' "${CONNECTOR_DIR}/metadata.yaml")
+          CONNECTOR_VERSION="$(poe -qq get-version)"
+          DOCKER_REPO=$(yq -r '.data.dockerRepository' metadata.yaml)
           echo "connector-version=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
           echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
 
