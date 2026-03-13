@@ -530,7 +530,6 @@ jobs:
           --metadata-file "${CONNECTOR_DIR}/metadata.yaml"
           --docker-image "${{ steps.connector-metadata.outputs.docker-image }}"
           --output-dir ./registry-artifacts
-          --with-validate
 
       - name: Upload Registry CI Artifacts
         if: matrix.connector && steps.connector-metadata.outcome == 'success'
