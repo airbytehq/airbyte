@@ -491,6 +491,7 @@ jobs:
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       # Java deps (needed for JVM connector Docker image builds via Gradle)
+      # TODO: Consider making this conditional on connector language to skip for non-JVM connectors.
       - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         if: matrix.connector
         with:
