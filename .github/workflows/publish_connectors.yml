@@ -469,6 +469,59 @@ jobs:
         run: |
           echo "DRY-RUN: Skipping Cloud registry entry generation for ${{ matrix.connector }}"
 
+      # --- Soft launch: ops CLI artifacts generate + publish (parallel validation) ---
+      # Runs alongside the legacy Poetry-based registry entry generation above.
+      # continue-on-error: true ensures this does not block the publish pipeline.
+      # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+      - name: Install Ops CLI
+        continue-on-error: true
+        run: uv tool install airbyte-internal-ops
+
+      - name: "[Ops Registry Soft Launch] Generate Registry Artifacts (ops CLI)"
+        id: generate-registry-artifacts-ops-cli
+        continue-on-error: true
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: |
+          echo "Generating registry artifacts for ${{ matrix.connector }}"
+          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
+          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.connector-metadata.outputs.docker-image-tag }}"
+          airbyte-ops \
+            registry connector-version artifacts generate \
+            --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --docker-image "${DOCKER_IMAGE}" \
+            --output-dir ./registry-artifacts \
+            --with-validate
+
+      - name: "[Ops Registry Soft Launch] Upload Registry CI Artifacts"
+        if: steps.generate-registry-artifacts-ops-cli.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.docker-image-tag }}
+          path: ./registry-artifacts/
+          retention-days: 7
+
+      - name: "[Ops Registry Soft Launch] Publish Registry Artifacts (ops CLI)"
+        id: publish-registry-artifacts-ops-cli
+        if: needs.publish_options.outputs.dry-run != 'true' && steps.generate-registry-artifacts-ops-cli.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          # Swap to coral:prod when parallel validation completes and we're ready for full cutover.
+          REGISTRY_STORE: "coral:dev/soft-launch-trial"
+        run: |
+          echo "Publishing registry artifacts for ${{ matrix.connector }}"
+          airbyte-ops \
+            registry connector-version artifacts publish \
+            --name "${{ matrix.connector }}" \
+            --version "${{ steps.connector-metadata.outputs.docker-image-tag }}" \
+            --artifacts-dir ./registry-artifacts \
+            --store "${REGISTRY_STORE}" \
+            --with-validate
+
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connector_registry_entries]
