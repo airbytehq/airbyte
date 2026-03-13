@@ -61,6 +61,7 @@ class MsSqlSourceOperations :
     }
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
+        log.info { "*** type: $type" }
         val retVal =
             MsSqlServerSqlType.fromName(type.typeName)?.jdbcType
                 ?: when (type.jdbcType) {
