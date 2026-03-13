@@ -456,11 +456,10 @@ class TestFutureStateRegression(TestCase):
         }
         utc_plus_response = HttpResponse(json.dumps(utc_plus_body), 200)
 
-        for period, metric in [("day", "follower_count,reach"), ("week", "reach"), ("days_28", "reach"), ("lifetime", "online_followers")]:
-            http_mocker.get(
-                _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
-                utc_plus_response,
-            )
+        http_mocker.get(
+            _get_user_insights_request_any_params(BUSINESS_ACCOUNT_ID).build(),
+            utc_plus_response,
+        )
 
         test_config = ConfigBuilder().with_start_date("2024-01-15T00:00:00Z")
         output = self._read(config_=test_config)

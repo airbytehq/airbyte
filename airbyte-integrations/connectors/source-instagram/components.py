@@ -320,7 +320,12 @@ class UserInsightsExtractor(RecordExtractor):
                     if parsed > now_utc + timedelta(days=1):
                         continue
                 except (ValueError, TypeError):
-                    pass
+                    # Fail-open: if the date cannot be parsed, emit the record
+                    # unfiltered rather than silently dropping it.
+                    logging.getLogger("airbyte.source-instagram").debug(
+                        "Could not parse record date %r for future-date filtering; skipping filter for this record",
+                        record_date,
+                    )
 
             yield complete_record
 
