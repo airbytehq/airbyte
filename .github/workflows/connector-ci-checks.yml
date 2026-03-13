@@ -490,10 +490,6 @@ jobs:
         if: matrix.connector
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
-      - name: Install Poe
-        if: matrix.connector
-        run: uv tool install poethepoet
-
       - name: Install Ops CLI
         if: matrix.connector
         run: uv tool install airbyte-internal-ops
@@ -502,40 +498,29 @@ jobs:
         if: matrix.connector
         run: uv tool install "airbyte-cdk[dev]"
 
-      - name: Detect connector language
-        if: matrix.connector
-        id: connector-language
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          LANGUAGE="$(poe -qq get-language)"
-          echo "language=${LANGUAGE}" | tee -a $GITHUB_OUTPUT
-          if [[ "${LANGUAGE}" == "java" ]]; then
-            echo "is-jvm=true" | tee -a $GITHUB_OUTPUT
-          else
-            echo "is-jvm=false" | tee -a $GITHUB_OUTPUT
-          fi
-
       - name: Get connector metadata
-        if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
+        if: matrix.connector
         id: connector-metadata
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           set -euo pipefail
-          CONNECTOR_VERSION="$(poe -qq --root "${CONNECTOR_DIR}" get-version)"
+          LANGUAGE=$(yq -r '.data.tags[] | select(test("^language:"))' "${CONNECTOR_DIR}/metadata.yaml" | sed 's/^language://')
+          CONNECTOR_VERSION=$(yq -r '.data.dockerImageTag' "${CONNECTOR_DIR}/metadata.yaml")
           DOCKER_REPO=$(yq -r '.data.dockerRepository' "${CONNECTOR_DIR}/metadata.yaml")
+          echo "language=${LANGUAGE}" | tee -a $GITHUB_OUTPUT
           echo "connector-version=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
           echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
 
       - name: Build connector Docker image
-        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        if: matrix.connector && steps.connector-metadata.outcome == 'success' && steps.connector-metadata.outputs.language != 'java'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: >
           airbyte-cdk image build
           --tag ${{ steps.connector-metadata.outputs.connector-version }}
 
       - name: Generate and Validate Registry Artifacts (ops CLI)
-        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        if: matrix.connector && steps.connector-metadata.outcome == 'success' && steps.connector-metadata.outputs.language != 'java'
         shell: bash
         env:
           CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
@@ -547,7 +532,7 @@ jobs:
           --with-validate
 
       - name: Upload Registry CI Artifacts
-        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        if: matrix.connector && steps.connector-metadata.outcome == 'success' && steps.connector-metadata.outputs.language != 'java'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector-version }}
