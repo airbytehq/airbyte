@@ -1,41 +1,44 @@
-# Sample Data
+# Sample Data (Faker)
 
-## Sync overview
+The Sample Data source generates realistic fake data using the Python [`mimesis`](https://mimesis.name/en/master/) library. It produces an e-commerce-like dataset useful for testing, demos, and development.
 
-The Sample Data source generates sample data using the Python
-[`mimesis`](https://mimesis.name/en/master/) library.
+## Prerequisites
 
-### Output schema
+None. This connector generates data locally and does not connect to an external API.
 
-This source generates an e-commerce-like dataset with three streams: `users`, `products`, and `purchases`.
+## Supported streams
 
-#### Users
+This source has three streams: `users`, `products`, and `purchases`. All streams support full refresh and incremental sync, with `id` as the primary key and `updated_at` as the cursor field.
 
-Each user record contains identity and demographic fields such as `name`, `email`, `age`, `gender`, `occupation`, `nationality`, and an embedded `address` object. The number of user records is controlled by the `count` configuration option. User records use `id` as their primary key and `updated_at` as the cursor field for incremental syncs.
+### Users
 
-#### Products
+Each user record contains identity and demographic fields: `name`, `title`, `email`, `telephone`, `age`, `gender`, `language`, `academic_degree`, `nationality`, `occupation`, `height`, `blood_type`, `weight`, and an embedded `address` object with `street_number`, `street_name`, `city`, `state`, `province`, `postal_code`, and `country_code`. The number of user records is controlled by the `count` configuration option.
 
-Product records represent vehicles with fields including `make`, `model`, `year`, and `price`. The products stream draws from a fixed catalog of 100 products. The `count` configuration option limits how many of those 100 products are emitted; setting `count` higher than 100 still produces at most 100 products. Product records use `id` as their primary key and `updated_at` as the cursor field.
+### Products
 
-#### Purchases
+Product records represent vehicles with fields: `make`, `model`, `year`, and `price`. The products stream draws from a fixed catalog of 100 products. The `count` option limits how many of those 100 products are emitted; setting `count` higher than 100 still produces at most 100 products.
 
-Purchase records link users to products and include timestamps for `added_to_cart_at`, `purchased_at`, and `returned_at`. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`. Purchase records use `id` as their primary key and `updated_at` as the cursor field.
+### Purchases
 
-### Features
+Purchase records link users to products through `user_id` and `product_id` fields. Each record also includes timestamps: `created_at`, `added_to_cart_at`, `purchased_at`, and `returned_at`. Not every cart addition results in a purchase (approximately 70% do), and not every purchase results in a return (approximately 15% do). The `purchased_at` and `returned_at` fields are nullable. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`.
 
-| Feature           | Supported? | Notes |
-| :---------------- | :--------- | :---- |
-| Full Refresh Sync | Yes        |       |
-| Incremental Sync  | Yes        |       |
-| Namespaces        | No         |       |
+## Features
 
-When using incremental sync, the connector maintains state between syncs. If `always_updated` is set to `false`, the connector stops emitting records after the initial sync produces `count` records. If `always_updated` is `true` (the default), every sync emits all records with fresh `updated_at` timestamps.
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+| Namespaces        | No         |
 
-You can set a specific `seed` value to guarantee that the same records are generated on each sync. Leave `seed` at its default value of `-1` to generate random data on each sync.
+## Configuration
 
-### Requirements
-
-None!
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| **Count** | integer | 1000 | The total number of user records to generate. The purchases stream scales proportionally. Does not affect the products stream beyond its 100-product catalog. |
+| **Seed** | integer | -1 | Controls random data generation. Set a specific value to produce the same records on each sync. Leave at `-1` for random data. |
+| **Always Updated** | boolean | true | When `true`, every sync emits all records with fresh `updated_at` timestamps. When `false`, the connector stops emitting records after the initial sync produces `count` records. |
+| **Records Per Stream Slice** | integer | 1000 | The number of records per stream slice before a state checkpoint is emitted. |
+| **Parallelism** | integer | 4 | The number of parallel workers for data generation. Set this to the number of CPUs allocated to the connector. |
 
 ## Changelog
 
