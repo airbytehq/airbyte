@@ -6,7 +6,16 @@ import calendar
 import logging
 from datetime import date, datetime, timedelta
 from functools import cache, cached_property
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import (
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Union,
+)
 from zoneinfo import ZoneInfo
 
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
@@ -16,7 +25,11 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import (
+    AirbyteDateTime,
+    ab_datetime_now,
+    ab_datetime_parse,
+)
 from source_facebook_marketing.spec import TimeIncrementPeriod
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
@@ -24,7 +37,6 @@ from source_facebook_marketing.streams.common import traced_exception
 from source_facebook_marketing.utils import DateInterval
 
 from .base_streams import FBMarketingIncrementalStream
-
 
 logger = logging.getLogger("airbyte")
 
@@ -99,7 +111,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 self.action_breakdowns = action_breakdowns
         if breakdowns is not None:
             self.breakdowns = breakdowns
-        if time_increment_period is not None and not isinstance(time_increment_period, TimeIncrementPeriod):
+        if time_increment_period is not None and not isinstance(
+            time_increment_period, TimeIncrementPeriod
+        ):
             self.time_increment_period = TimeIncrementPeriod(time_increment_period)
         else:
             self.time_increment_period = time_increment_period
@@ -108,7 +122,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         elif self.time_increment_period is not None:
             # For weekly/monthly, time_increment is not used for date chunking
             # but we set a nominal value for state tracking compatibility
-            self.time_increment = 7 if self.time_increment_period == TimeIncrementPeriod.weekly else 30
+            self.time_increment = (
+                7 if self.time_increment_period == TimeIncrementPeriod.weekly else 30
+            )
         else:
             self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
@@ -118,10 +134,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         self.entity_prefix = level
 
         if include_incrementality:
-            self.action_attribution_windows = list(self.ALL_ACTION_ATTRIBUTION_WINDOWS) + [self.INCREMENTALITY_WINDOW]
+            self.action_attribution_windows = list(
+                self.ALL_ACTION_ATTRIBUTION_WINDOWS
+            ) + [self.INCREMENTALITY_WINDOW]
 
         # state
-        self._cursor_values: Optional[Mapping[str, date]] = None  # latest period that was read for each account
+        self._cursor_values: Optional[Mapping[str, date]] = (
+            None  # latest period that was read for each account
+        )
         self._next_cursor_values = self._get_start_date()
         self._completed_slices = {account_id: set() for account_id in self._account_ids}
 
@@ -190,7 +210,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                     record[self.object_breakdowns[breakdown]] = val["id"]
         return record
 
-    def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _transform_objective_results(
+        self, record: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         """
         Transform 'results' field to 'objective_results' in API responses.
 
@@ -213,7 +235,11 @@ class AdsInsights(FBMarketingIncrementalStream):
         has_objective_results_in_fields = "objective_results" in self._custom_fields
         has_results_in_fields = "results" in self._custom_fields
 
-        should_rename = has_objective_results_in_schema and has_objective_results_in_fields and not has_results_in_fields
+        should_rename = (
+            has_objective_results_in_schema
+            and has_objective_results_in_fields
+            and not has_results_in_fields
+        )
 
         if should_rename and "results" in record and "objective_results" not in record:
             record["objective_results"] = record.pop("results")
@@ -266,10 +292,17 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._cursor_values:
             for account_id in self._account_ids:
-                if account_id in self._cursor_values and self._cursor_values[account_id]:
-                    new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
+                if (
+                    account_id in self._cursor_values
+                    and self._cursor_values[account_id]
+                ):
+                    new_state[account_id] = {
+                        self.cursor_field: self._cursor_values[account_id].isoformat()
+                    }
 
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = sorted(
+                    list({d.isoformat() for d in self._completed_slices[account_id]})
+                )
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
                 new_state["time_increment_period"] = self.time_increment_period.value
@@ -277,7 +310,9 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = sorted(list({d.isoformat() for d in self._completed_slices[account_id]}))
+                new_state[account_id]["slices"] = sorted(
+                    list({d.isoformat() for d in self._completed_slices[account_id]})
+                )
 
             new_state["time_increment"] = self.time_increment
             if self.time_increment_period is not None:
@@ -292,27 +327,42 @@ class AdsInsights(FBMarketingIncrementalStream):
         # if the time increment configured for this stream is different from the one in the previous state
         # then the previous state object is invalid, and we should start replicating data from scratch
         # to achieve this, we skip setting the state
-        transformed_state = self._transform_state_from_one_account_format(value, ["time_increment", "time_increment_period"])
+        transformed_state = self._transform_state_from_one_account_format(
+            value, ["time_increment", "time_increment_period"]
+        )
         if transformed_state.get("time_increment", 1) != self.time_increment:
-            logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment` option.")
+            logger.info(
+                f"Ignoring bookmark for {self.name} because of different `time_increment` option."
+            )
             return
 
         saved_period = transformed_state.get("time_increment_period")
-        current_period = self.time_increment_period.value if self.time_increment_period is not None else None
+        current_period = (
+            self.time_increment_period.value
+            if self.time_increment_period is not None
+            else None
+        )
         if saved_period != current_period:
-            logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment_period` option.")
+            logger.info(
+                f"Ignoring bookmark for {self.name} because of different `time_increment_period` option."
+            )
             return
 
         self._cursor_values = {
             account_id: (
-                ab_datetime_parse(transformed_state[account_id][self.cursor_field]).date()
+                ab_datetime_parse(
+                    transformed_state[account_id][self.cursor_field]
+                ).date()
                 if transformed_state.get(account_id, {}).get(self.cursor_field)
                 else None
             )
             for account_id in self._account_ids
         }
         self._completed_slices = {
-            account_id: set(ab_datetime_parse(v).date() for v in transformed_state.get(account_id, {}).get("slices", []))
+            account_id: set(
+                ab_datetime_parse(v).date()
+                for v in transformed_state.get(account_id, {}).get("slices", [])
+            )
             for account_id in self._account_ids
         }
 
@@ -408,7 +458,9 @@ class AdsInsights(FBMarketingIncrementalStream):
             else:
                 self._cursor_values = {account_id: ts_start}
 
-    def _generate_async_jobs(self, params: Mapping, account_id: str) -> Iterator[AsyncJob]:
+    def _generate_async_jobs(
+        self, params: Mapping, account_id: str
+    ) -> Iterator[AsyncJob]:
         """Generator of async jobs
 
         :param params:
@@ -419,7 +471,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         for ts_start in self._date_intervals(account_id):
             if (
                 ts_start in self._completed_slices.get(account_id, [])
-                and ts_start < self._next_cursor_values.get(account_id, self._start_date) - self.insights_lookback_period
+                and ts_start
+                < self._next_cursor_values.get(account_id, self._start_date)
+                - self.insights_lookback_period
             ):
                 continue
             ts_end = self._compute_interval_end(ts_start)
@@ -444,7 +498,9 @@ class AdsInsights(FBMarketingIncrementalStream):
             "breakdowns": self.breakdowns,
             "fields": ["account_id"],
         }
-        self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+        self._api.get_account(account_id=account_id).get_insights(
+            params=params, is_async=False
+        )
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
         """
@@ -477,7 +533,9 @@ class AdsInsights(FBMarketingIncrementalStream):
             try:
                 manager = InsightAsyncJobManager(
                     api=self._api,
-                    jobs=self._generate_async_jobs(params=self.request_params(), account_id=account_id),
+                    jobs=self._generate_async_jobs(
+                        params=self.request_params(), account_id=account_id
+                    ),
                     account_id=account_id,
                 )
                 for job in manager.completed_jobs():
@@ -502,7 +560,9 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         start_dates_for_account = {}
         for account_id in self._account_ids:
-            cursor_value = self._cursor_values.get(account_id) if self._cursor_values else None
+            cursor_value = (
+                self._cursor_values.get(account_id) if self._cursor_values else None
+            )
             if cursor_value:
                 start_date = cursor_value
                 refresh_date: date = cursor_value - self.insights_lookback_period
@@ -515,7 +575,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 start_date = self._start_date
 
             if start_date < self._start_date:
-                logger.warning(f"Ignore provided state and start sync from start_date ({self._start_date}).")
+                logger.warning(
+                    f"Ignore provided state and start sync from start_date ({self._start_date})."
+                )
             start_date = max(start_date, self._start_date)
             if start_date < oldest_date:
                 logger.warning(
@@ -578,7 +640,9 @@ class AdsInsights(FBMarketingIncrementalStream):
             if entity_id_field:
                 required_fields.append(entity_id_field)
             custom_fields = set(self._custom_fields + required_fields)
-            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in custom_fields}
+            schema["properties"] = {
+                k: v for k, v in schema["properties"].items() if k in custom_fields
+            }
 
             # Load extra fields for custom insights that are not in the base ads_insights schema
             extra_schema = loader.get_schema("ads_insights_custom_fields")
@@ -590,13 +654,23 @@ class AdsInsights(FBMarketingIncrementalStream):
                     schema["properties"][field] = extra_properties[field]
 
         if self.breakdowns:
-            breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
-            schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
+            breakdowns_properties = loader.get_schema("ads_insights_breakdowns")[
+                "properties"
+            ]
+            schema["properties"].update(
+                {prop: breakdowns_properties[prop] for prop in self.breakdowns}
+            )
             # adding object breakdown id to schema
             for prop in self.breakdowns:
                 object_breakdown_id = self.object_breakdowns.get(prop)
                 if object_breakdown_id:
-                    schema["properties"].update({object_breakdown_id: breakdowns_properties[object_breakdown_id]})
+                    schema["properties"].update(
+                        {
+                            object_breakdown_id: breakdowns_properties[
+                                object_breakdown_id
+                            ]
+                        }
+                    )
         return schema
 
     @cache
@@ -611,8 +685,11 @@ class AdsInsights(FBMarketingIncrementalStream):
             return self._fields
         schema = (
             self.configured_json_schema
-            if self.configured_json_schema and self.configured_json_schema.get("properties")
-            else ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+            if self.configured_json_schema
+            and self.configured_json_schema.get("properties")
+            else ResourceSchemaLoader(
+                package_name_from_class(self.__class__)
+            ).get_schema("ads_insights")
         )
         self._fields = list(schema.get("properties", {}).keys())
 

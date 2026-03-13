@@ -14,13 +14,17 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from facebook_business.api import (
+    FacebookAdsApi,
+    FacebookAdsApiBatch,
+    FacebookBadObjectError,
+    FacebookResponse,
+)
 
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from source_facebook_marketing.streams.common import retry_pattern
 
 from ..utils import DateInterval, validate_start_date
-
 
 logger = logging.getLogger("airbyte")
 
@@ -29,7 +33,9 @@ logger = logging.getLogger("airbyte")
 # Also, it does not happen while making a call to the API, but later - when parsing the result,
 # that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
 
-backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
+backoff_policy = retry_pattern(
+    backoff.expo, FacebookBadObjectError, max_tries=10, factor=5
+)
 
 
 # ----------------------------- batching -------------------------------------
@@ -181,7 +187,9 @@ class ParentAsyncJob(AsyncJob):
 
     @property
     def failed(self) -> bool:
-        return all(child.completed for child in self._jobs) and any(child.failed for child in self._jobs)
+        return all(child.completed for child in self._jobs) and any(
+            child.failed for child in self._jobs
+        )
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
         for child in self._jobs:
@@ -197,7 +205,9 @@ class ParentAsyncJob(AsyncJob):
                 new_children.append(job)
         self._jobs = new_children
 
-    def _inject_object_breakdown_ids(self, data: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _inject_object_breakdown_ids(
+        self, data: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
         """
         Use the stream-provided mapping (e.g. {'image_asset': 'image_asset_id'})
         to inject the *_id fields when the row only has the object dict.
@@ -220,7 +230,11 @@ class ParentAsyncJob(AsyncJob):
         merged: dict[Tuple[Any, ...], dict] = {}
         for child in self._jobs:
             for row in child.get_result():
-                raw = row.export_all_data() if hasattr(row, "export_all_data") else dict(row)
+                raw = (
+                    row.export_all_data()
+                    if hasattr(row, "export_all_data")
+                    else dict(row)
+                )
                 data = self._inject_object_breakdown_ids(raw)
 
                 key = tuple(data.get(k) for k in self._primary_key)
@@ -283,7 +297,9 @@ class InsightAsyncJob(AsyncJob):
     def start(self, api_limit: "APILimit") -> None:
         self._api_limit = api_limit
         if self.started:
-            raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
+            raise RuntimeError(
+                f"{self}: Incorrect usage of start - the job already started, use restart instead"
+            )
         if not api_limit.try_consume():
             return  # Manager will try again later
 
@@ -356,12 +372,16 @@ class InsightAsyncJob(AsyncJob):
             self._failed = True
             released = True
         elif job_status == Status.COMPLETED:
-            self._finish_time = ab_datetime_now()  # TODO: is not actual running time, but interval between check_status calls
+            self._finish_time = (
+                ab_datetime_now()
+            )  # TODO: is not actual running time, but interval between check_status calls
             released = True
         elif job_status in [Status.FAILED, Status.SKIPPED]:
             self._finish_time = ab_datetime_now()
             self._failed = True
-            logger.info(f"{self}: has status {job_status} after {self.elapsed_time.total_seconds()} seconds.")
+            logger.info(
+                f"{self}: has status {job_status} after {self.elapsed_time.total_seconds()} seconds."
+            )
             released = True
 
         if released and self._api_limit:
@@ -394,7 +414,9 @@ class InsightAsyncJob(AsyncJob):
         else:
             raise ValueError("Unsupported edge for splitting")
 
-    def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List["AsyncJob"]:
+    def _split_by_edge_class(
+        self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]
+    ) -> List["AsyncJob"]:
         if edge_class == Campaign:
             pk_name, level = "campaign_id", "campaign"
         elif edge_class == AdSet:
@@ -426,18 +448,29 @@ class InsightAsyncJob(AsyncJob):
         Start a tiny async insights job to collect child IDs, poll until terminal,
         then return the list of IDs. Separated for unit testing.
         """
-        since = AirbyteDateTime.from_datetime(datetime.combine(self._interval.start - timedelta(days=28 + 1), datetime.min.time()))
+        since = AirbyteDateTime.from_datetime(
+            datetime.combine(
+                self._interval.start - timedelta(days=28 + 1), datetime.min.time()
+            )
+        )
         since = validate_start_date(since)
         params = {
             "fields": [pk_name],
             "level": level,
-            "time_range": {"since": since.strftime("%Y-%m-%d"), "until": self._interval.end.strftime("%Y-%m-%d")},
+            "time_range": {
+                "since": since.strftime("%Y-%m-%d"),
+                "until": self._interval.end.strftime("%Y-%m-%d"),
+            },
         }
 
         try:
-            id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
+            id_job: AdReportRun = self._edge_object.get_insights(
+                params=params, is_async=True
+            )
         except Exception as e:
-            raise ValueError(f"Failed to start ID-collection at level={level}: {e}") from e
+            raise ValueError(
+                f"Failed to start ID-collection at level={level}: {e}"
+            ) from e
 
         start_ts = ab_datetime_now()
         while True:
@@ -456,7 +489,9 @@ class InsightAsyncJob(AsyncJob):
         try:
             result_cursor = id_job.get_result(params={"limit": self.page_size})
         except FacebookBadObjectError as e:
-            raise ValueError(f"Failed to fetch ID-collection results for level={level}: {e}") from e
+            raise ValueError(
+                f"Failed to fetch ID-collection results for level={level}: {e}"
+            ) from e
 
         ids = {row[pk_name] for row in result_cursor if pk_name in row}
         logger.info(f"[Split:{level}] collected {len(ids)} {pk_name}(s)")
@@ -500,7 +535,13 @@ class InsightAsyncJob(AsyncJob):
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
         )
-        logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
+        logger.info(
+            "%s split by fields: common=%d, A=%d, B=%d",
+            self,
+            len(self._primary_key),
+            len(part_a),
+            len(part_b),
+        )
         return ParentAsyncJob(
             jobs=[job_a, job_b],
             api=self._api,
@@ -514,7 +555,9 @@ class InsightAsyncJob(AsyncJob):
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
         if not self._job or self.failed:
-            raise RuntimeError(f"{self}: Incorrect usage of get_result - the job is not started or failed")
+            raise RuntimeError(
+                f"{self}: Incorrect usage of get_result - the job is not started or failed"
+            )
         return self._job.get_result(params={"limit": self.page_size})
 
     def __str__(self) -> str:
