@@ -502,21 +502,8 @@ jobs:
         if: matrix.connector
         run: uv tool install "airbyte-cdk[dev]"
 
-      - name: Detect connector language
-        if: matrix.connector
-        id: connector-language
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: |
-          LANGUAGE="$(poe -qq get-language)"
-          echo "language=${LANGUAGE}" | tee -a $GITHUB_OUTPUT
-          if [[ "${LANGUAGE}" == "java" ]]; then
-            echo "is-jvm=true" | tee -a $GITHUB_OUTPUT
-          else
-            echo "is-jvm=false" | tee -a $GITHUB_OUTPUT
-          fi
-
       - name: Get connector metadata
-        if: matrix.connector && steps.connector-language.outputs.is-jvm != 'true'
+        if: matrix.connector
         id: connector-metadata
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
