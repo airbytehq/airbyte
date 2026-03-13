@@ -121,6 +121,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.17.3 | 2026-03-13 | [74832](https://github.com/airbytehq/airbyte/pull/74832) | Handle HTTP 400 errors for unsupported conversion metrics in reporting streams |
 | 2.17.2 | 2026-03-10 | [74435](https://github.com/airbytehq/airbyte/pull/74435) | Update dependencies |
 | 2.17.1 | 2026-03-03 | [73958](https://github.com/airbytehq/airbyte/pull/73958) | Update dependencies |
 | 2.17.0 | 2026-02-19 | [73642](https://github.com/airbytehq/airbyte/pull/73642) | Add new analytics streams: Flow Series Reports and Campaign Values Reports |
