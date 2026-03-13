@@ -17,10 +17,11 @@ logger = logging.getLogger("airbyte")
 class ZipHelper:
     BUFFER_SIZE_DEFAULT = 1024 * 1024
 
-    def __init__(self, blob: Blob, zip_file: GCSUploadableRemoteFile):
+    def __init__(self, blob: Blob, zip_file: GCSUploadableRemoteFile, tmp_dir_path: str):
         self._blob = blob
         self._size = blob.size
         self._zip_file = zip_file
+        self._tmp_dir_path = tmp_dir_path
 
     def _chunk_download(self) -> bytes:
         start = 0
@@ -42,19 +43,18 @@ class ZipHelper:
                 zf.extractall(tmp_dir_path)
 
     def get_gcs_remote_files(self) -> Iterable[GCSUploadableRemoteFile]:
-        with tempfile.TemporaryDirectory() as tmp_dir_path:
-            self._extract_files_to_tmp_directory(self._chunk_download(), tmp_dir_path)
+        self._extract_files_to_tmp_directory(self._chunk_download(), self._tmp_dir_path)
 
-            for dirpath, _dirnames, filenames in os.walk(tmp_dir_path):
-                for unzipped_file in filenames:
-                    file_path = os.path.join(dirpath, unzipped_file)
-                    logger.info(f"Picking up file {unzipped_file} from zip archive {self._blob.public_url}.")
-                    file_extension = unzipped_file.split(".")[-1]
+        for dirpath, _dirnames, filenames in os.walk(self._tmp_dir_path):
+            for unzipped_file in filenames:
+                file_path = os.path.join(dirpath, unzipped_file)
+                logger.info(f"Picking up file {unzipped_file} from zip archive {self._blob.public_url}.")
+                file_extension = unzipped_file.split(".")[-1]
 
-                    yield GCSUploadableRemoteFile(
-                        uri=file_path,
-                        last_modified=self._zip_file.last_modified,
-                        mime_type=file_extension,
-                        displayed_uri=self._zip_file.uri,  # uri to remote file .zip
-                        blob=self._blob,
-                    )
+                yield GCSUploadableRemoteFile(
+                    uri=file_path,
+                    last_modified=self._zip_file.last_modified,
+                    mime_type=file_extension,
+                    displayed_uri=self._zip_file.uri,  # uri to remote file .zip
+                    blob=self._blob,
+                )
