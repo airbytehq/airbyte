@@ -145,15 +145,20 @@ class AdjustableSliceGenerator(SliceGenerator):
         RANGE_REDUCE_FACTOR (2 times).
         Returns updated slice to try again.
         """
-        self._current_range = int(max(self._current_range / self.RANGE_REDUCE_FACTOR, self.INITIAL_RANGE_DAYS))
         start_date = self._prev_start_date
-        end_date = min(self._end_date, start_date + (pendulum.Duration(days=self._current_range)))
+        # Derive reduction from the actual failing slice duration, not
+        # _current_range which may be much larger than the real slice
+        # (e.g. _current_range=30 days but _end_date caps the slice to hours).
+        actual_end = min(self._end_date, start_date + pendulum.Duration(days=self._current_range))
+        actual_duration = (actual_end - start_date).total_seconds() / 86400
+        self._current_range = actual_duration / self.RANGE_REDUCE_FACTOR
+        end_date = start_date + pendulum.Duration(days=self._current_range)
         self._start_date = end_date
         return StreamSlice(start_date=start_date, end_date=end_date)
 
     def __next__(self) -> StreamSlice:
         """
-        Generates next slice based on prevouis slice processing result. All the
+        Generates next slice based on previous slice processing result. All the
         next slice range calculations should be done after calling adjust_range
         and reduce_range methods.
         """
