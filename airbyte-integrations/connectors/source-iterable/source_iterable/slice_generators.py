@@ -111,14 +111,16 @@ class AdjustableSliceGenerator(SliceGenerator):
     DEFAULT_RANGE_DAYS: int = 90
     MAX_RANGE_DAYS: int = 180
     RANGE_REDUCE_FACTOR = 2
+    SECONDS_PER_DAY = 86_400
 
     # This variable play important roles: stores length of previos range before
     # next adjusting next slice lenght and provide length of next slice after
     # adjusting
     _current_range: int = INITIAL_RANGE_DAYS
-    # Save previous start date in case if slice processing fail and we need to
-    # go back to previous range.
+    # Save previous slice boundaries in case if slice processing fail and we
+    # need to go back to previous range.
     _prev_start_date: DateTime = None
+    _prev_end_date: DateTime = None
     # In case if adjust_range method havent been called (no records for slice)
     # next range would have MAX_RANGE_DAYS length
     # Default is True so for first slice it would length would be INITIAL_RANGE_DAYS (30 days)
@@ -146,13 +148,12 @@ class AdjustableSliceGenerator(SliceGenerator):
         Returns updated slice to try again.
         """
         start_date = self._prev_start_date
-        # Derive reduction from the actual failing slice duration, not
-        # _current_range which may be much larger than the real slice
-        # (e.g. _current_range=30 days but _end_date caps the slice to hours).
-        actual_end = min(self._end_date, start_date + pendulum.Duration(days=self._current_range))
-        actual_duration = (actual_end - start_date).total_seconds() / 86400
+        # Use the actual slice duration (which __next__ may have capped at
+        # _end_date) rather than _current_range, which can be much larger.
+        actual_duration = (self._prev_end_date - start_date).total_seconds() / self.SECONDS_PER_DAY
         self._current_range = actual_duration / self.RANGE_REDUCE_FACTOR
         end_date = start_date + pendulum.Duration(days=self._current_range)
+        self._prev_end_date = end_date
         self._start_date = end_date
         return StreamSlice(start_date=start_date, end_date=end_date)
 
@@ -170,6 +171,7 @@ class AdjustableSliceGenerator(SliceGenerator):
         next_start_date = min(self._end_date, self._start_date + pendulum.Duration(days=self._current_range))
         slice = StreamSlice(start_date=self._start_date, end_date=next_start_date)
         self._prev_start_date = self._start_date
+        self._prev_end_date = next_start_date
         self._start_date = next_start_date
         self._range_adjusted = False
         return slice
