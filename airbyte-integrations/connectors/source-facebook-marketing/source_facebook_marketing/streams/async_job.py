@@ -511,7 +511,7 @@ class InsightAsyncJob(AsyncJob):
         logger.info(
             "%s split by fields: common=%d, A=%d, B=%d",
             self,
-            len(self._primary_key),
+            len(api_pk_fields),
             len(part_a),
             len(part_b),
         )
