@@ -1038,6 +1038,11 @@ definitions:
                 header: Retry-After
             response_filters:
               - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                error_message_contains: does not support querying for values data
+              - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
                   - 429
@@ -1179,6 +1184,11 @@ definitions:
               - type: WaitTimeFromHeader
                 header: Retry-After
             response_filters:
+              - type: HttpResponseFilter
+                action: IGNORE
+                http_codes:
+                  - 400
+                error_message_contains: does not support querying for values data
               - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
