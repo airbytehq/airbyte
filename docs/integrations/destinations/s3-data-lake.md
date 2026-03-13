@@ -237,6 +237,8 @@ To authenticate with Apache Polaris, follow these steps.
     - **Catalog Name**: The name of the catalog you created in Polaris (e.g., `quickstart_catalog`)
     - **Client ID**: The OAuth Client ID provided when creating the principal
     - **Client Secret**: The OAuth Client Secret provided when creating the principal
+    - **Scope** (optional): The OAuth2 scope to request when authenticating. If your Polaris deployment requires a specific scope, set it here.
+    - **OAuth Server URI** (optional): The URI of the OAuth2 token endpoint. Set this if your Polaris deployment uses a separate authorization server instead of the default Polaris token endpoint.
     - **Default namespace**: The namespace to be used for table identifiers when the destination namespace is set to "Destination-defined" or "Source-defined"
 
 5. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
@@ -336,8 +338,11 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 ### Branch replacement
 
-At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
-**Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
+At the end of each stream sync, the connector replaces the `main` branch with the `airbyte_staging` branch. It intentionally avoids fast-forwarding to better handle potential compaction issues.
+
+:::warning
+Any changes made to the `main` branch outside of Airbyte's operations after a sync begins are lost during this process.
+:::
 
 ## Compaction
 
@@ -348,7 +353,7 @@ During a truncate refresh sync, the system deletes all files that don't belong t
 - Files without generation IDs (compacted files)
 - Files from previous generations
 
-If compaction runs simultaneously with the sync, it will delete files from the current generation, causing data loss. The system identifies generations by parsing file names for generation IDs.
+If compaction runs simultaneously with a truncate refresh sync, the compacted files lack generation IDs. The sync then deletes these compacted files because it treats files without generation IDs as obsolete, causing data loss.
 :::
 
 ## Considerations and limitations
@@ -392,7 +397,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.45      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
+| 0.3.45      | 2026-03-13 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
 | 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
 | 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
 | 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
