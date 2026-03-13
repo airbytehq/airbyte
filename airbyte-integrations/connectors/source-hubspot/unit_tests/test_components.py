@@ -8,6 +8,7 @@ import pytest
 import requests
 from requests import Response
 
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
 
@@ -456,6 +457,59 @@ def test_associations_extractor(config, components_module):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
+def test_associations_extractor_with_permissions_error(requests_mock, config, components_module):
+    response = requests.Response()
+    response._content = (
+        b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
+    )
+    response.status_code = 200
+
+    companies_associations_responses = [
+        {"json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."}, "status_code": 401},
+        {
+            "json": {
+                "results": [
+                    {
+                        "from": {"id": "123"},
+                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "408"}],
+                    },
+                    {
+                        "from": {"id": "456"},
+                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "888"}],
+                    },
+                ]
+            },
+            "status_code": 200,
+        },
+    ]
+
+    contacts_associations_responses = [{"json": {"results": []}, "status_code": 200}]
+
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
+    )
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", contacts_associations_responses
+    )
+
+    extractor = components_module.HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="deals",
+        associations_list=["companies", "contacts"],
+        decoder=JsonDecoder(parameters={}),
+        config=config,
+        parameters={},
+    )
+
+    records = list(extractor.extract_records(response=response))
+
+    assert len(records) == 2
+    assert records[0]["id"] == "123"
+    assert records[0]["companies"] == ["408"]
+    assert records[1]["id"] == "456"
+    assert records[1]["companies"] == ["888"]
+
+
 def test_extractor_supports_entity_interpolation(config, components_module):
     parameters = {"entity": "engagements_emails"}
 
@@ -519,6 +573,18 @@ def test_extractor_supports_associations_list_interpolation(config, associations
             {"type": ["null", "date-time"], "format": "date-time"},
             "174824652345600.0",
             id="test_unparsable_overflow_error_returns_original_value",
+        ),
+        pytest.param(
+            "12345;6789;1525",
+            {"type": ["null", "number"]},
+            "12345;6789;1525",
+            id="test_semicolon_separated_string_returns_original_value_for_number_type",
+        ),
+        pytest.param(
+            "abc123",
+            {"type": ["null", "number"]},
+            "abc123",
+            id="test_non_numeric_string_returns_original_value_for_number_type",
         ),
     ],
 )

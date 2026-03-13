@@ -71,6 +71,31 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.2.45 | 2026-03-10 | [74448](https://github.com/airbytehq/airbyte/pull/74448) | Update dependencies |
+| 1.2.44 | 2026-02-24 | [73991](https://github.com/airbytehq/airbyte/pull/73991) | Update dependencies |
+| 1.2.43 | 2026-02-17 | [73592](https://github.com/airbytehq/airbyte/pull/73592) | Update dependencies |
+| 1.2.42 | 2026-02-10 | [73211](https://github.com/airbytehq/airbyte/pull/73211) | Update dependencies |
+| 1.2.41 | 2026-02-03 | [72082](https://github.com/airbytehq/airbyte/pull/72082) | Update dependencies |
+| 1.2.40 | 2026-01-14 | [71380](https://github.com/airbytehq/airbyte/pull/71380) | Update dependencies |
+| 1.2.39 | 2025-12-18 | [70796](https://github.com/airbytehq/airbyte/pull/70796) | Update dependencies |
+| 1.2.38 | 2025-11-25 | [70145](https://github.com/airbytehq/airbyte/pull/70145) | Update dependencies |
+| 1.2.37 | 2025-11-18 | [69428](https://github.com/airbytehq/airbyte/pull/69428) | Update dependencies |
+| 1.2.36 | 2025-10-29 | [68840](https://github.com/airbytehq/airbyte/pull/68840) | Update dependencies |
+| 1.2.35 | 2025-10-21 | [68502](https://github.com/airbytehq/airbyte/pull/68502) | Update dependencies |
+| 1.2.34 | 2025-10-14 | [67984](https://github.com/airbytehq/airbyte/pull/67984) | Update dependencies |
+| 1.2.33 | 2025-10-07 | [67477](https://github.com/airbytehq/airbyte/pull/67477) | Update dependencies |
+| 1.2.32 | 2025-09-30 | [66942](https://github.com/airbytehq/airbyte/pull/66942) | Update dependencies |
+| 1.2.31 | 2025-09-24 | [66312](https://github.com/airbytehq/airbyte/pull/66312) | Update dependencies |
+| 1.2.30 | 2025-09-09 | [65697](https://github.com/airbytehq/airbyte/pull/65697) | Update dependencies |
+| 1.2.29 | 2025-08-24 | [65399](https://github.com/airbytehq/airbyte/pull/65399) | Update dependencies |
+| 1.2.28 | 2025-08-10 | [64833](https://github.com/airbytehq/airbyte/pull/64833) | Update dependencies |
+| 1.2.27 | 2025-08-02 | [64316](https://github.com/airbytehq/airbyte/pull/64316) | Update dependencies |
+| 1.2.26 | 2025-07-27 | [64092](https://github.com/airbytehq/airbyte/pull/64092) | Update dependencies |
+| 1.2.25 | 2025-07-20 | [63671](https://github.com/airbytehq/airbyte/pull/63671) | Update dependencies |
+| 1.2.24 | 2025-07-12 | [63182](https://github.com/airbytehq/airbyte/pull/63182) | Update dependencies |
+| 1.2.23 | 2025-07-05 | [62729](https://github.com/airbytehq/airbyte/pull/62729) | Update dependencies |
+| 1.2.22 | 2025-06-28 | [62221](https://github.com/airbytehq/airbyte/pull/62221) | Update dependencies |
+| 1.2.21 | 2025-06-21 | [61777](https://github.com/airbytehq/airbyte/pull/61777) | Update dependencies |
 | 1.2.20 | 2025-06-15 | [61205](https://github.com/airbytehq/airbyte/pull/61205) | Update dependencies |
 | 1.2.19 | 2025-05-24 | [60763](https://github.com/airbytehq/airbyte/pull/60763) | Update dependencies |
 | 1.2.18 | 2025-05-10 | [59936](https://github.com/airbytehq/airbyte/pull/59936) | Update dependencies |

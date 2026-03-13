@@ -1,67 +1,85 @@
-# Clickhouse Migration Guide
+# ClickHouse Migration Guide
 
-## Upgrading to 1.0.0
+## SSH support
 
-This version removes the option to use "normalization" with clickhouse. It also changes
-the schema and database of Airbyte's "raw" tables to be compatible with the new
-[Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
-format. These changes will likely require updates to downstream dbt / SQL models. After this update,
-Airbyte will only produce the ‘raw’ v2 tables, which store all content in JSON. These changes remove
-the ability to do deduplicated syncs with Clickhouse. (Clickhouse has an overview)[[https://clickhouse.com/docs/en/integrations/dbt]]
-for integrating with dbt If you are interested in the Clickhouse destination gaining the full features
-of Destinations V2 (including final tables), click [[https://github.com/airbytehq/airbyte/discussions/35339]]
-to register your interest.
+:::warning
+SSH tunneling support for the ClickHouse connector is currently in **Beta**.
+:::
 
-This upgrade will ignore any existing raw tables and will not migrate any data to the new schema.
-For each stream, you could perform the following query to migrate the data from the old raw table
-to the new raw table:
+## Upgrading to 2.0.0
+
+Version 2.0.0 represents a fundamental architectural change from version 1.0.0.
+
+**Version 1.0.0 behavior:**
+
+- Wrote all data as JSON to raw tables in the `airbyte_internal` database
+- Used table names like `airbyte_internal.{database}_raw__stream_{table}`
+
+**Version 2.0.0 behavior:**
+
+- Writes data to typed columns matching your source schema
+- Creates tables in the configured database with clean table names: `{database}.{table}`
+- No longer uses the `airbyte_internal` database or `_raw__stream_` prefixes
+
+While this is a breaking change, existing connections continue to function after upgrading. However, data is written to a completely different location in a different format. **You must update any downstream pipelines** (SQL queries, BI dashboards, data transformations) to reference the new table locations and schema structure.
+
+### Migrating Existing Data to the New Format
+
+Airbyte cannot automatically migrate data from the v1 raw table format to the v2 typed table format. To get your data into the new format, you must perform a full refresh sync from your source.
+
+**Migration steps:**
+
+1. Upgrade your ClickHouse destination connector to version 2.0.0 or later
+2. Trigger a full refresh sync to populate the new typed tables
+3. Verify the new tables contain the expected data
+4. Update your downstream pipelines to reference the new table locations
+5. Optional: Remove the old v1 raw tables (see below)
+
+#### Optional: Removing the Old v1 Raw Tables
+
+The v2 connector does not automatically remove tables created by the v1 connector. After successfully migrating to v2 and verifying your data, you can optionally remove the old raw tables created by v1 to free up storage space.
+
+For most users, old tables are located in the `airbyte_internal` database with names matching the pattern `airbyte_internal.{database}_raw__stream_{table}`. However, the exact location may vary based on your v1 configuration.
+
+:::caution
+The v2 ClickHouse destination uses the `airbyte_internal` database for temporary scratch space (for example, streams running in `dedup` mode, truncate refreshes, and overwrite syncs). Dropping the entire `airbyte_internal` database can interrupt active syncs and cause data loss. Only drop the specific v1 raw tables you no longer need.
+:::
+
+To remove old v1 tables:
 
 ```sql
--- assumes your database was 'default'
--- replace `{{stream_name}}` with replace your stream name
+-- List tables in the airbyte_internal database
+SHOW TABLES FROM airbyte_internal;
 
-CREATE TABLE airbyte_internal.default_raw__stream_{{stream_name}}
-(
-    `_airbyte_raw_id` String,
-    `_airbyte_extracted_at` DateTime64(3, 'GMT') DEFAULT now(),
-    `_airbyte_loaded_at` DateTime64(3, 'GMT') NULL,
-    `_airbyte_data` String,
-    PRIMARY KEY(`_airbyte_raw_id`)
-)
-ENGINE = MergeTree;
-
-INSERT INTO `airbyte_internal`.`default_raw__stream_{{stream_name}}`
-    SELECT
-        `_airbyte_ab_id` AS "_airbyte_raw_id",
-        `_airbyte_emitted_at` AS "_airbyte_extracted_at",
-        NULL AS "_airbyte_loaded_at",
-        _airbyte_data AS "_airbyte_data"
-    FROM default._airbyte_raw_{{stream_name}};
+-- Drop individual v1 raw tables
+DROP TABLE airbyte_internal.{database}_raw__stream_{table};
 ```
 
-Airbyte will not delete any of your v1 data.
+### Gotchas
 
-### Database/Schema and the Internal Schema
+Users commonly encounter the following issues when migrating to version 2. Use these steps to understand and resolve them.
 
-We have split the raw and final tables into their own schemas,
-which in clickhouse is analogous to a `database`. For the Clickhouse destination, this means that
-we will only write into the raw table which will live in the `airbyte_internal` database.
-The tables written into this schema will be prefixed with either the default database provided in
-the `DB Name` field when configuring clickhouse (but can also be overridden in the connection). You can
-change the "raw" database from the default `airbyte_internal` by supplying a value for
-`Raw Table Schema Name`.
+#### Namespaces and Databases
 
-For Example:
+In version 2.0.0, namespaces are treated as ClickHouse databases. If you configure a custom namespace for your connection, the connector uses that namespace as the database name instead of the database specified in the destination settings.
 
-- DB Name: `default`
-- Stream Name: `my_stream`
+**Version 1.0.0 behavior:**
 
-Writes to `airbyte_intneral.default_raw__stream_my_stream`
+- Namespaces were added as prefixes to table names
+- Example: namespace `my_namespace` created tables like `default.my_namespace_table_name`
 
-where as:
+**Version 2.0.0 behavior:**
 
-- DB Name: `default`
-- Stream Name: `my_stream`
-- Raw Table Schema Name: `raw_data`
+- Namespaces map directly to ClickHouse databases
+- Example: namespace `my_namespace` creates tables like `my_namespace.table_name`
 
-Writes to: `raw_data.default_raw__stream_my_stream`
+If you have existing connections that use custom namespaces, review your configuration and update downstream pipelines accordingly.
+
+#### Hostname Configuration
+
+The hostname field in version 2.0.0 must **not** include the protocol prefix (`http://` or `https://`).
+
+**Incorrect:** `https://my-clickhouse-server.com`
+**Correct:** `my-clickhouse-server.com`
+
+Version 1.0.0 incidentally tolerated protocols in the hostname field, but version 2.0.0 requires clean hostnames. If your configuration includes a protocol in the hostname, remove it before upgrading or the connection check will fail.

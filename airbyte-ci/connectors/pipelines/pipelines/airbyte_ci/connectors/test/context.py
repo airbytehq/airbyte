@@ -34,6 +34,25 @@ class ConnectorTestContext(ConnectorContext):
         self.run_step_options = self._skip_metadata_disabled_test_suites(self.run_step_options)
         self.step_id_to_secrets_mapping = self._get_step_id_to_secret_mapping()
 
+    @property
+    def test_only_change(self) -> bool:
+        """Check if the only modified files are in unit_tests or integration_tests directories.
+
+        Returns:
+            bool: True if all modified files are in unit_tests or integration_tests, False otherwise.
+        """
+        test_directories = ("unit_tests", "integration_tests")
+        for modified_file in self.modified_files:
+            try:
+                rel_path = modified_file.relative_to(self.connector.code_directory)
+                top_level_dir = rel_path.parts[0] if rel_path.parts else ""
+                if top_level_dir not in test_directories:
+                    return False
+            except ValueError:
+                # File not under connector directory, treat as non-test change
+                return False
+        return True
+
     @staticmethod
     def _handle_missing_secret_store(
         secret_info: Dict[str, str | Dict[str, str]], raise_on_missing: bool, logger: Optional[Logger] = None

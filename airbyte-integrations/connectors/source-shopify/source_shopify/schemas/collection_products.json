@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "collection_id": {
+      "description": "The unique identifier for the collection.",
+      "type": ["null", "integer"]
+    },
+    "collection_admin_graphql_api_id": {
+      "description": "The Admin GraphQL API ID for the collection.",
+      "type": ["null", "string"]
+    },
+    "collection_handle": {
+      "description": "The handle (URL-friendly name) for the collection.",
+      "type": ["null", "string"]
+    },
+    "collection_updated_at": {
+      "description": "The date and time when the collection was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "product_id": {
+      "description": "The unique identifier for the product.",
+      "type": ["null", "integer"]
+    },
+    "product_admin_graphql_api_id": {
+      "description": "The Admin GraphQL API ID for the product.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop associated with this collection-product association.",
+      "type": ["null", "string"]
+    }
+  }
+}

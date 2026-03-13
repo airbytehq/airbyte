@@ -1,4 +1,8 @@
-# Sample Data (Faker) Migration Guide
+# Sample Data Migration Guide
+
+## Upgrading to 7.0.0
+
+This is a test breaking change to validate breaking change infrastructure. No actual schema or functionality changes were made. No user action is required.
 
 ## Upgrading to 6.0.0
 

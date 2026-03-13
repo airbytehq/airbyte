@@ -17,18 +17,18 @@ runs:
   using: "composite"
   steps:
     - if: inputs.install_java == 'true'
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
       with:
         distribution: "zulu"
         java-version: "21"
 
     - if: inputs.install_node == 'true'
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3.9.1
       with:
         node-version: "lts/*"
 
     - if: inputs.install_python == 'true'
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
       with:
         python-version: "3.9"
 

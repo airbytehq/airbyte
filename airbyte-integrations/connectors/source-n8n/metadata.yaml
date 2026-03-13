@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-n8n
   githubIssueLabel: source-n8n
   icon: n8n.svg
-  license: MIT
+  license: ELv2
   name: n8n
   remoteRegistries:
     pypi:
@@ -38,4 +38,8 @@ data:
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.48.6@sha256:18b5219ed52d5dd26e9a513f5d9c590ddd78da1779e72795f2669bc4420bc576
+  externalDocumentationUrls:
+    - title: n8n API documentation
+      url: https://docs.n8n.io/api/
+      type: api_reference
 metadataSpecVersion: "1.0"

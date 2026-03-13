@@ -10,6 +10,16 @@ Read more about the [limitations](#limitations) of using Google Sheets below.
 
 :::
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+
 ## Prerequisites
 
 - Google Account or GCP Service Account for authentication
@@ -100,7 +110,7 @@ Airbyte only supports replicating `Grid Sheets`, which means only text is replic
 
 The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 60 requests per 60 seconds per user and 300 requests per 60 seconds per project, which will result in slow sync speeds. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits.
 
-### <a name="limitations"></a>Limitations
+### Limitations {#limitations}
 
 Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync may fail or, in some cases, data will be truncated to comply with limits.
 
@@ -167,14 +177,9 @@ EXAMPLE:
 | :--------------- | :----------- |
 | Any Type         | `string`     |
 
-### Features & Supported sync modes
+## Namespace support
 
-| Feature                        | Supported?\(Yes/No\) |
-| :----------------------------- | :------------------- |
-| Ful-Refresh Overwrite          | Yes                  |
-| Ful-Refresh Append             | Yes                  |
-| Incremental Append             | Yes                  |
-| Incremental Append-Deduplicate | Yes                  |
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

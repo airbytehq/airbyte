@@ -1,16 +1,18 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 plugins {
     id("application")
     id("airbyte-bulk-connector")
+    id("io.airbyte.gradle.docker")
+    id("airbyte-connector-docker-convention")
 }
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-azure-blob-storage", "load-db")
-    cdk = "local"
+    toolkits = listOf("legacy-task-load-azure-blob-storage", "legacy-task-load-db")
+    useLegacyTaskLoader = true
 }
 
 application {
@@ -60,8 +62,4 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
-}
-
-tasks.named<Test>("test") {
-    systemProperties(mapOf("mockk.junit.extension.keepmocks" to "true", "mockk.junit.extension.requireParallelTesting" to "true"))
 }

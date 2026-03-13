@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2
@@ -223,8 +223,8 @@ class MSSQLQueryBuilder(
     data class NamedValue(val name: String, val value: AirbyteValue)
     data class NamedSqlField(val name: String, val type: MssqlType)
 
-    val outputSchema: String = stream.descriptor.namespace ?: defaultSchema
-    val tableName: String = stream.descriptor.name
+    val outputSchema: String = stream.mappedDescriptor.namespace ?: defaultSchema
+    val tableName: String = stream.mappedDescriptor.name
     val uniquenessKey: List<String> =
         when (stream.importType) {
             is Dedupe ->

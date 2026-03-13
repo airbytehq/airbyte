@@ -32,6 +32,26 @@ Incremental sync in `scheduled_events` uses `start_time` as a cursor. This may l
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 | ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.34 | 2026-03-10 | [74632](https://github.com/airbytehq/airbyte/pull/74632) | Update dependencies |
+| 0.1.33 | 2026-03-03 | [73791](https://github.com/airbytehq/airbyte/pull/73791) | Update dependencies |
+| 0.1.32 | 2026-02-03 | [72615](https://github.com/airbytehq/airbyte/pull/72615) | Update dependencies |
+| 0.1.31 | 2026-01-20 | [72052](https://github.com/airbytehq/airbyte/pull/72052) | Update dependencies |
+| 0.1.30 | 2026-01-14 | [71456](https://github.com/airbytehq/airbyte/pull/71456) | Update dependencies |
+| 0.1.29 | 2025-12-18 | [70622](https://github.com/airbytehq/airbyte/pull/70622) | Update dependencies |
+| 0.1.28 | 2025-11-25 | [69971](https://github.com/airbytehq/airbyte/pull/69971) | Update dependencies |
+| 0.1.27 | 2025-11-18 | [69431](https://github.com/airbytehq/airbyte/pull/69431) | Update dependencies |
+| 0.1.26 | 2025-10-29 | [68715](https://github.com/airbytehq/airbyte/pull/68715) | Update dependencies |
+| 0.1.25 | 2025-10-21 | [68240](https://github.com/airbytehq/airbyte/pull/68240) | Update dependencies |
+| 0.1.24 | 2025-10-14 | [67837](https://github.com/airbytehq/airbyte/pull/67837) | Update dependencies |
+| 0.1.23 | 2025-10-07 | [67205](https://github.com/airbytehq/airbyte/pull/67205) | Update dependencies |
+| 0.1.22 | 2025-09-30 | [66320](https://github.com/airbytehq/airbyte/pull/66320) | Update dependencies |
+| 0.1.21 | 2025-08-09 | [64664](https://github.com/airbytehq/airbyte/pull/64664) | Update dependencies |
+| 0.1.20 | 2025-08-02 | [64409](https://github.com/airbytehq/airbyte/pull/64409) | Update dependencies |
+| 0.1.19 | 2025-07-26 | [63801](https://github.com/airbytehq/airbyte/pull/63801) | Update dependencies |
+| 0.1.18 | 2025-07-19 | [63484](https://github.com/airbytehq/airbyte/pull/63484) | Update dependencies |
+| 0.1.17 | 2025-07-12 | [63040](https://github.com/airbytehq/airbyte/pull/63040) | Update dependencies |
+| 0.1.16 | 2025-06-28 | [62148](https://github.com/airbytehq/airbyte/pull/62148) | Update dependencies |
+| 0.1.15 | 2025-06-21 | [61888](https://github.com/airbytehq/airbyte/pull/61888) | Update dependencies |
 | 0.1.14 | 2025-05-28 | [60946](https://github.com/airbytehq/airbyte/pull/60946) | update scheduled events to ingest future events |
 | 0.1.13 | 2025-05-24 | [60689](https://github.com/airbytehq/airbyte/pull/60689) | Update dependencies |
 | 0.1.12 | 2025-05-10 | [59878](https://github.com/airbytehq/airbyte/pull/59878) | Update dependencies |

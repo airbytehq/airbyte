@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -36,8 +36,11 @@ public class MongoConnectionUtils {
         .build();
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
-        .applyConnectionString(mongoConnectionString)
-        .readPreference(ReadPreference.secondaryPreferred());
+        .applyConnectionString(mongoConnectionString);
+
+    if (mongoConnectionString.getReadPreference() == null) {
+      mongoClientSettingsBuilder.readPreference(ReadPreference.secondaryPreferred());
+    }
 
     if (config.hasAuthCredentials()) {
       final String authSource = config.getAuthSource();

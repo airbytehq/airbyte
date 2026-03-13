@@ -43,8 +43,12 @@ jobs:
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
+      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
+      # permissions to add commits to our main repo as well as forks. This will only work on
+      # forks if the user installs the app into their fork. Until we document this as a clear
+      # path, we will have to keep using the PAT.
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           repository: ${{ steps.job-vars.outputs.repo }}
           ref: ${{ steps.job-vars.outputs.branch }}
@@ -57,7 +61,7 @@ jobs:
         # If comment-id is not provided, this will create a new
         # comment with the job run link.
         id: first-comment-action
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
@@ -69,19 +73,19 @@ jobs:
 
       # Compare the below to the `format_check.yml` workflow
       - name: Setup Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@17f84c3641ba7b8f6deff6309fc4c864478f5d62 # v3.14.1
         with:
           distribution: "zulu"
           java-version: "21"
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
           cache: "pip"
           check-latest: true
           update-environment: true
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         continue-on-error: true
         id: format-fix
 
@@ -113,10 +117,10 @@ jobs:
         if: steps.git-diff.outputs.changes == 'true'
         run: |
           git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          git push contributor HEAD:${{ steps.job-vars.outputs.branch }}
+          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
 
       - name: Append success comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: steps.git-diff.outputs.changes == 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -125,7 +129,7 @@ jobs:
             > ✅ Changes applied successfully. (${{ steps.commit-step.outputs.sha }})
 
       - name: Append success comment (no-op)
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: steps.git-diff.outputs.changes != 'true'
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
@@ -134,7 +138,7 @@ jobs:
             > 🟦 Job completed successfully (no changes).
 
       - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: failure()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}

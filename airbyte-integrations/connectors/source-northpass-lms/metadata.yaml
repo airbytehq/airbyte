@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-northpass-lms
   githubIssueLabel: source-northpass-lms
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Northpass LMS
   releaseDate: 2024-08-06
   releaseStage: alpha
@@ -32,4 +32,8 @@ data:
   tags:
     - cdk:low-code
     - language:manifest-only
+  externalDocumentationUrls:
+    - title: Northpass API documentation
+      url: https://developers.northpass.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

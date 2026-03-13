@@ -89,11 +89,11 @@
       "period": "lifetime",
       "values": [
         {
-          "value": 2006
+          "value": 5000
         }
       ],
       "title": "Views",
-      "description": "The number of times your reel was viewed.",
+      "description": "The number of views of your reel.",
       "id": "84386203808767123/insights/views/lifetime"
     }
   ]

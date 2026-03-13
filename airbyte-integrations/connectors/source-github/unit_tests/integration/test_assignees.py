@@ -185,7 +185,7 @@ class AssigneesTest(TestCase):
 
         # There should only be on state message since the first two parents were already successfully synced
         assert len(actual_messages.state_messages) == 1
-        final_list_of_per_partition_state = actual_messages.state_messages[0].state.stream.stream_state.model_dump().get("states")
+        final_list_of_per_partition_state = actual_messages.state_messages[0].state.stream.stream_state.states
         assert per_partition_state_0 in final_list_of_per_partition_state
         assert per_partition_state_1 in final_list_of_per_partition_state
         assert per_partition_state_2 in final_list_of_per_partition_state

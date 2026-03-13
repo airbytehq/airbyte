@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from unittest.mock import ANY, patch
 
 from requests.status_codes import codes as status_codes
@@ -15,9 +16,11 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
 
 from .conftest import GoogleSheetsBaseTest
+from .conftest.request_builder import RequestBuilder
 
 
 _SPREADSHEET_ID = "a_spreadsheet_id"
@@ -43,7 +46,7 @@ def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
         )
 
     if code == status_codes.TOO_MANY_REQUESTS:
-        return "Exception while syncing stream a_stream_name: Rate limit has been reached. Please try later or request a higher quota for your account."
+        return "Rate limit has been reached. Please try later or request a higher quota for your account."
 
     return ""
 
@@ -94,20 +97,12 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
 
         with patch("time.sleep"):
             output = self._discover(self._config, expecting_exception=True)
-            expected_message = exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)
+            expected_internal_message = exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)
 
-            trace_message = AirbyteTraceMessage(
-                type=TraceType.ERROR,
-                emitted_at=ANY,
-                error=AirbyteErrorTraceMessage(
-                    message="Something went wrong in the connector. See the logs for more details.",
-                    internal_message=expected_message,
-                    failure_type=FailureType.system_error,
-                    stack_trace=ANY,
-                ),
-            )
-            expected_message = AirbyteMessage(type=Type.TRACE, trace=trace_message)
-            assert output.errors[-1] == expected_message
+            # The actual error message includes the retry exhaustion context
+            assert "Exhausted available request attempts" in output.errors[-1].trace.error.message
+            assert expected_internal_message in output.errors[-1].trace.error.internal_message
+            assert output.errors[-1].trace.error.failure_type == FailureType.transient_error
 
     @HttpMocker()
     def test_discover_404_error(self, http_mocker: HttpMocker) -> None:
@@ -151,9 +146,7 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
 
     @HttpMocker()
     def test_read_429_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
-        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
-        GoogleSheetsBaseTest.get_stream_data(http_mocker, "rate_limit_error", status_codes.TOO_MANY_REQUESTS)
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "rate_limit_error", status_codes.TOO_MANY_REQUESTS)
 
         configured_catalog = (
             CatalogBuilder()
@@ -168,15 +161,16 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         with patch("time.sleep"):
             output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
-        expected_message = f"{exception_description_by_status_code(status_codes.TOO_MANY_REQUESTS, _STREAM_NAME)}"
+        expected_base_message = exception_description_by_status_code(status_codes.TOO_MANY_REQUESTS, _STREAM_NAME)
 
-        assert output.errors[0].trace.error.internal_message == expected_message
+        # The actual error message includes the retry exhaustion context
+        assert "Exhausted available request attempts" in output.errors[0].trace.error.internal_message
+        assert expected_base_message in output.errors[0].trace.error.internal_message
 
     @HttpMocker()
     def test_read_403_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
-        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
-        GoogleSheetsBaseTest.get_stream_data(http_mocker, "invalid_permissions", status_codes.FORBIDDEN)
+        # Mock the spreadsheet info request to return 403 error
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "invalid_permissions", status_codes.FORBIDDEN)
 
         configured_catalog = (
             CatalogBuilder()
@@ -192,13 +186,13 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         expected_message = (
             f"{exception_description_by_status_code(status_codes.FORBIDDEN, _SPREADSHEET_ID)}. The caller does not have right permissions."
         )
-        assert output.errors[0].trace.error.message == expected_message
+        assert (
+            output.errors[0].trace.error.message == expected_message
+        ), f"Expected message: {expected_message}, Actual message: {output.errors[0].trace.error.message}"
 
     @HttpMocker()
     def test_read_500_error(self, http_mocker: HttpMocker) -> None:
-        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "read_records_meta", 200)
-        GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, "read_records_range", 200)
-        GoogleSheetsBaseTest.get_stream_data(http_mocker, "internal_server_error", status_codes.INTERNAL_SERVER_ERROR)
+        GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "internal_server_error", status_codes.INTERNAL_SERVER_ERROR)
 
         configured_catalog = (
             CatalogBuilder()
@@ -213,5 +207,8 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
         with patch("time.sleep"):
             output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
-        expected_message = f"Exception while syncing stream a_stream_name: {exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)}"
-        assert output.errors[0].trace.error.internal_message == expected_message
+        expected_base_message = exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)
+
+        # The actual error message includes the retry exhaustion context
+        assert "Exhausted available request attempts" in output.errors[0].trace.error.internal_message
+        assert expected_base_message in output.errors[0].trace.error.internal_message

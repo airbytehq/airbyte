@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -60,6 +60,9 @@ class JdbcConcurrentPartitionsCreatorFactory<
 }
 
 @Singleton
+// TODO: For now, trigger-based CDC connectors will use mode=concurrent_with_cdc and
+//  provide their own supplier. In the future, the CDK will directly support this execution mode.
+@Requires(property = MODE_PROPERTY, pattern = "^(sequential|concurrent)$")
 class JdbcPartitionCreatorFactorySupplier<
     T : JdbcPartitionsCreatorFactory<A, S, P>,
     A : JdbcSharedState,

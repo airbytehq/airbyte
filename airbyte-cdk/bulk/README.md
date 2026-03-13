@@ -4,6 +4,9 @@ The Bulk CDK is the "new java CDK" that's currently incubating.
 As the name suggests, its purpose is to help develop connectors which extract or load data in bulk.
 The Bulk CDK is written in Kotlin and uses the Micronaut framework for dependency injection.
 
+- **API Reference Docs**: [Kotlin CDK API Reference](https://airbyte-kotlin-cdk.vercel.app/)
+- **Contributing**: See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Structure
 
 The Bulk CDK consists of a _core_ and a bunch of _toolkits_.
@@ -38,7 +41,7 @@ instead of relying on the generic JDBC metadata methods.
 ## Dependencies
 
 The Bulk CDK gradle build relies heavily on so-called [BOM dependencies](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#bill-of-materials-bom-poms).
-This pattern is strongly encouraged to keep transitive version conflicts to a minimum.  This is beneficial for many reasons, including reproducible builds and a good security posture. 
+This pattern is strongly encouraged to keep transitive version conflicts to a minimum.  This is beneficial for many reasons, including reproducible builds and a good security posture.
 
 Consider for example the whole Jackson ecosystem.
 Using a BOM allows us to add specific Jackson dependencies without having to figure out which
@@ -87,19 +90,21 @@ If there's truly a need to develop both simultaneously, then the way to go may b
 
 ## Publishing
 
-While the CDK is incubating, its published version numbers are 0.X where X is the _build number_.
-This build number is monotonically increasing and is based on the maximum version value found on
-the [maven repository that the jars are published to](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/).
+The CDK version is a SemVer version which is published here: [maven repository that the jars are published to](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/).
+Some legacy versions don't follow the SemVer format. Any CDK version with 0.x e.g. 0.600 is an example.
 
 Artifact publication happens via a [github workflow](../../.github/workflows/publish-bulk-cdk.yml)
 which gets triggered by any push to the master branch, i.e. after merging a pull request.
 
-From a contributor's perspective, this means that there's no need to worry about versions or
-changelogs.
-From a client's perspective, just always use the latest version.
+The bulk CDK is split into three independently versioned packages: base, extract, and load.
+Each package has its own `version.properties` file:
+- `core/base/version.properties`
+- `core/extract/version.properties`
+- `core/load/version.properties`
 
-Once the incubation period winds down and the CDK stabilizes, we can start thinking about contracts,
-semantic versioning, and so forth; but not until then.
+The contributor needs to manually bump the version in the appropriate `version.properties` file before merging.
+
+In the build process, we check that the version doesn't already exist in the Maven repository.
 
 ## Licensing
 

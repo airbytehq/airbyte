@@ -22,7 +22,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
   githubIssueLabel: source-public-apis
   icon: public-apis.svg
-  license: MIT
+  license: ELv2
   name: Public Apis
   releaseStage: alpha
   supportLevel: community
@@ -43,4 +43,8 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+  externalDocumentationUrls:
+    - title: Public APIs directory
+      url: https://github.com/public-apis/public-apis
+      type: api_reference
 metadataSpecVersion: "1.0"

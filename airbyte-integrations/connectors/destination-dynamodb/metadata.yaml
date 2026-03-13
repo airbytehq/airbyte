@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-dynamodb
   githubIssueLabel: destination-dynamodb
   icon: dynamodb.svg
-  license: MIT
+  license: ELv2
   name: DynamoDB
   registryOverrides:
     cloud:
@@ -33,4 +33,20 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: DynamoDB documentation
+      url: https://docs.aws.amazon.com/dynamodb/
+      type: api_reference
+    - title: IAM authentication
+      url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+      type: authentication_guide
+    - title: IAM policies
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/iam-policy-structure.html
+      type: permissions_scopes
+    - title: Service quotas
+      url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html
+      type: rate_limits
+    - title: AWS Service Health Dashboard
+      url: https://health.aws.amazon.com/health/status
+      type: status_page
 metadataSpecVersion: "1.0"

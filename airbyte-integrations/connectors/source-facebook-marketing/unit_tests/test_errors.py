@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from unittest.mock import MagicMock
 
+import freezegun
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
@@ -218,6 +219,40 @@ CONFIG_ERRORS = [
                     "type": "OAuthException",
                     "code": 3018,
                     "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P",
+                }
+            },
+        },
+    ),
+    (
+        "error_100_subcode_2446289_no_access_to_resource",
+        "No access to resource.",
+        {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "(#100) No access to resource.",
+                    "type": "OAuthException",
+                    "code": 100,
+                    "error_subcode": 2446289,
+                    "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P",
+                }
+            },
+        },
+    ),
+    (
+        "error_400_invalid_oauth_access_token_cannot_parse",
+        "The access token for this connection is invalid or corrupted. "
+        "Please re-authenticate your Facebook connection in Airbyte. "
+        "If re-authentication does not resolve the issue, go to facebook.com > Settings > Business Integrations, "
+        "remove the Airbyte app, and then re-authenticate again.",
+        {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "Invalid OAuth access token - Cannot parse access token",
+                    "type": "OAuthException",
+                    "code": 190,
+                    "fbtrace_id": "ANDUkKsQWt5hhp9CkhgTjdt",
                 }
             },
         },
@@ -453,6 +488,7 @@ class TestRealErrors:
             assert error.failure_type == failure_type
             assert (friendly_msg) in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
@@ -476,6 +512,7 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[0]])
     def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
@@ -501,6 +538,7 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     def test_retry_for_cannot_include_error(self, requests_mock):
         """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868"""
 

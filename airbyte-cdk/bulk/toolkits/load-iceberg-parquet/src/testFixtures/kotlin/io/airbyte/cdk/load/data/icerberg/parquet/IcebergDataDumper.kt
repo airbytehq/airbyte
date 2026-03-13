@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data.icerberg.parquet
@@ -81,7 +81,7 @@ class IcebergDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val catalog = getCatalog(spec)
-        val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.descriptor))
+        val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
 
         val outputRecords = mutableListOf<OutputRecord>()
         IcebergGenerics.read(table).build().use { records ->

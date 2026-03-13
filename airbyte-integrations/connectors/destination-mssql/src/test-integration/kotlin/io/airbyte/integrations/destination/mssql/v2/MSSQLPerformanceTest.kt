@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2
@@ -18,6 +18,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class MSSQLDataValidator(
@@ -87,7 +88,7 @@ class MSSQLStandardInsertPerformanceTest :
             val configOverrides =
                 mutableMapOf("host" to MSSQLContainerHelper.getHost()).apply {
                     MSSQLContainerHelper.getPort()?.let { port -> put("port", port.toString()) }
-                    stream.descriptor.namespace?.let { schema -> put("schema", schema) }
+                    stream.mappedDescriptor.namespace?.let { schema -> put("schema", schema) }
                 }
             MSSQLConfigurationFactory()
                 .makeWithOverrides(spec = spec as MSSQLSpecification, overrides = configOverrides)
@@ -103,6 +104,8 @@ class MSSQLStandardInsertPerformanceTest :
     }
 }
 
+// Re-enable once we fix our Azure account
+@Disabled("Our Azure creds are not functioning right now")
 class MSSQLBulkInsertPerformanceTest :
     MSSQLPerformanceTest(
         configContents = Files.readString(Path.of("secrets/bulk_upload_config.json")),

@@ -37,6 +37,28 @@ First of all you need to register an application in the Microsoft Entra Admin Ce
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 0.0.44 | 2026-02-24 | [73817](https://github.com/airbytehq/airbyte/pull/73817) | Update dependencies |
+| 0.0.43 | 2026-02-03 | [72696](https://github.com/airbytehq/airbyte/pull/72696) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [71996](https://github.com/airbytehq/airbyte/pull/71996) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71511](https://github.com/airbytehq/airbyte/pull/71511) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70771](https://github.com/airbytehq/airbyte/pull/70771) | Update dependencies |
+| 0.0.39 | 2025-11-25 | [70093](https://github.com/airbytehq/airbyte/pull/70093) | Update dependencies |
+| 0.0.38 | 2025-11-18 | [69542](https://github.com/airbytehq/airbyte/pull/69542) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [69067](https://github.com/airbytehq/airbyte/pull/69067) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68465](https://github.com/airbytehq/airbyte/pull/68465) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [67827](https://github.com/airbytehq/airbyte/pull/67827) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67389](https://github.com/airbytehq/airbyte/pull/67389) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66344](https://github.com/airbytehq/airbyte/pull/66344) | Update dependencies |
+| 0.0.32 | 2025-09-09 | [65885](https://github.com/airbytehq/airbyte/pull/65885) | Update dependencies |
+| 0.0.31 | 2025-08-23 | [65162](https://github.com/airbytehq/airbyte/pull/65162) | Update dependencies |
+| 0.0.30 | 2025-08-09 | [64700](https://github.com/airbytehq/airbyte/pull/64700) | Update dependencies |
+| 0.0.29 | 2025-08-02 | [64271](https://github.com/airbytehq/airbyte/pull/64271) | Update dependencies |
+| 0.0.28 | 2025-07-26 | [63882](https://github.com/airbytehq/airbyte/pull/63882) | Update dependencies |
+| 0.0.27 | 2025-07-19 | [63441](https://github.com/airbytehq/airbyte/pull/63441) | Update dependencies |
+| 0.0.26 | 2025-07-12 | [63188](https://github.com/airbytehq/airbyte/pull/63188) | Update dependencies |
+| 0.0.25 | 2025-07-05 | [62586](https://github.com/airbytehq/airbyte/pull/62586) | Update dependencies |
+| 0.0.24 | 2025-06-28 | [62414](https://github.com/airbytehq/airbyte/pull/62414) | Update dependencies |
+| 0.0.23 | 2025-06-21 | [61872](https://github.com/airbytehq/airbyte/pull/61872) | Update dependencies |
 | 0.0.22 | 2025-06-14 | [60484](https://github.com/airbytehq/airbyte/pull/60484) | Update dependencies |
 | 0.0.21 | 2025-05-10 | [60185](https://github.com/airbytehq/airbyte/pull/60185) | Update dependencies |
 | 0.0.20 | 2025-05-03 | [59253](https://github.com/airbytehq/airbyte/pull/59253) | Update dependencies |

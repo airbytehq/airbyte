@@ -10,7 +10,7 @@ As a part of connection setup, you select where in the destination you want to w
 
 | Destination Namespace | Description                                                                                                                                                                                                                                                                                                                                 |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Custom                | All streams will be replicated to a single user-defined namespace. See<a href="/using-airbyte/core-concepts/namespaces#custom"> Custom format</a> for more details                                                                                                                                                                       |
+| Custom                | All streams will be replicated to a single user-defined namespace. See<a href="/platform/using-airbyte/core-concepts/namespaces#custom"> Custom format</a> for more details                                                                                                                                                                       |
 | Destination-defined   | All streams will be replicated to the single default namespace defined in the Destination's settings.                                                                                                                                                                                                                                       |
 | Source-defined        | Some sources (for example, databases) provide namespace information for a stream. If a source provides namespace information, the destination will mirror the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will default to the "Destination default" option. |
 
@@ -52,6 +52,7 @@ All streams will be replicated and stored in the default namespace defined on th
 | Redshift              | schema            |
 | Snowflake             | schema            |
 | S3                    | path prefix       |
+| ClickHouse            | database          |
 
 :::tip
 If you prefer to replicate multiple sources into the same namespace, use the `Stream Prefix` configuration to differentiate data from these sources to ensure no streams collide when writing to the destination.

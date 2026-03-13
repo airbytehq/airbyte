@@ -1,8 +1,8 @@
 import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
-import React, { useEffect, useState } from "react";
-import { REGISTRY_URL } from "../connector_registry";
+import { useEffect, useState } from "react";
+import { REGISTRY_URL } from "../constants";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
@@ -30,7 +30,7 @@ function connectorSort(a, b) {
   if (a.name_oss > b.name_oss) return 1;
 }
 
-function ConnectorTable({ connectors, connectorSupportLevel }) {
+function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnectors = [] }) {
   return (
     <table>
       <thead>
@@ -45,11 +45,17 @@ function ConnectorTable({ connectors, connectorSupportLevel }) {
       <tbody>
         {connectors
           .sort(connectorSort)
-          .filter(
-            (c) =>
-              connectorSupportLevel === "enterprise" ||
-              c.supportLevel_oss === connectorSupportLevel,
-          )
+          .filter((c) => {
+            if (connectorSupportLevel === "enterprise") {
+              return true;
+            }
+            
+            const isEnterpriseConnector = enterpriseConnectors.some(
+              ec => ec && c && (ec.definitionId === c.definitionId || ec.name_oss === c.name_oss)
+            );
+            
+            return !isEnterpriseConnector && c.supportLevel_oss === connectorSupportLevel;
+          })
           .map((connector) => {
             const docsLink = connector.documentationUrl_oss?.replace(
               "https://docs.airbyte.com",
@@ -120,25 +126,40 @@ export default function ConnectorRegistry({ type }) {
   }, []);
 
   useEffect(() => {
-    if (pluginData.enterpriseConnectors.length > 0 && registry.length > 0) {
-      const _connectors = pluginData.enterpriseConnectors
-        .filter((name) => name.includes(type))
-        .map((name) => {
-          const _name = name.replace(`${type}-`, "");
+    if (registry.length > 0) {
+      const enterpriseFromRegistry = registry.filter(
+        (c) =>
+          c.connector_type === type &&
+          (c.documentationUrl_oss?.includes("/integrations/enterprise-connectors/") ||
+           c.documentationUrl_cloud?.includes("/integrations/enterprise-connectors/"))
+      );
 
-          const info = registry.find(
-            (c) =>
-              c.name_oss?.includes(_name) ||
-              c.name_cloud?.includes(_name) ||
-              c.documentationUrl_oss?.includes(_name) ||
-              c.documentationUrl_cloud?.includes(_name),
-          );
-          return info;
-        })
-        .filter(Boolean);
-      setEnterpriseConnectors(_connectors);
+      const enterpriseFromPlugin = pluginData.enterpriseConnectors.length > 0
+        ? pluginData.enterpriseConnectors
+            .filter((name) => name.includes(type))
+            .map((name) => {
+              const _name = name.replace(`${type}-`, "");
+
+              const info = registry.find(
+                (c) =>
+                  c.name_oss?.includes(_name) ||
+                  c.name_cloud?.includes(_name) ||
+                  c.documentationUrl_oss?.includes(_name) ||
+                  c.documentationUrl_cloud?.includes(_name),
+              );
+              return info;
+            })
+            .filter(Boolean)
+        : [];
+
+      const allEnterpriseConnectors = [...enterpriseFromRegistry, ...enterpriseFromPlugin];
+      const uniqueEnterpriseConnectors = Array.from(
+        new Map(allEnterpriseConnectors.map(c => [c.definitionId, c])).values()
+      );
+
+      setEnterpriseConnectors(uniqueEnterpriseConnectors);
     }
-  }, [registry, pluginData]);
+  }, [registry, pluginData, type]);
 
   if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;
 
@@ -153,18 +174,21 @@ export default function ConnectorRegistry({ type }) {
         <ConnectorTable
           connectors={connectors}
           connectorSupportLevel={"certified"}
+          enterpriseConnectors={enterpriseConnectors}
         />
       </TabItem>
       <TabItem value="community" label="Marketplace" default>
         <ConnectorTable
           connectors={connectors}
           connectorSupportLevel={"community"}
+          enterpriseConnectors={enterpriseConnectors}
         />
       </TabItem>
       <TabItem value="enterprise" label="Enterprise" default>
         <ConnectorTable
           connectors={enterpriseConnectors}
           connectorSupportLevel={"enterprise"}
+          enterpriseConnectors={enterpriseConnectors}
         />
       </TabItem>
       {/* There are no archived connectors to show at the moment, so hiding for now */}

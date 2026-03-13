@@ -78,7 +78,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"]
+            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -89,7 +89,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"]
+            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -100,7 +100,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"]
+            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -192,8 +192,12 @@ allprojects {
         if (project.hasProperty('JunitMethodExecutionTimeout')) {
             junitMethodExecutionTimeout = project.property('JunitMethodExecutionTimeout').toString()
         } else {
-            junitMethodExecutionTimeout = '1 m'
+            junitMethodExecutionTimeout = '1m'
         }
+
+        systemProperty 'junit.jupiter.execution.timeout.default', junitMethodExecutionTimeout
+        systemProperty 'kotlinx.coroutines.test.default_timeout', junitMethodExecutionTimeout
+        // This is used by the "old" cdk (i.e. airbyte-cdk/java)
         systemProperty 'JunitMethodExecutionTimeout', junitMethodExecutionTimeout
     }
 
@@ -246,5 +250,13 @@ static def getJavaCompilerArgs() {
         return ["-Werror"]
     } else {
         return []
+    }
+}
+
+static def getKotlinCompilerArgs() {
+    if (isInCi()) {
+        return []
+    } else {
+        return ["-Xdebug"]
     }
 }

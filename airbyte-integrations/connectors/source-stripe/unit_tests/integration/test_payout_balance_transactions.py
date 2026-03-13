@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
-from source_stripe import SourceStripe
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -51,7 +51,7 @@ _EVENT_TYPES = [
 
 
 def _config() -> ConfigBuilder:
-    return ConfigBuilder().with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET)
+    return ConfigBuilder().with_account_id(_ACCOUNT_ID).with_client_secret(_CLIENT_SECRET).with_slice_range_in_days(365)
 
 
 def _create_catalog(sync_mode: SyncMode = SyncMode.full_refresh) -> ConfiguredAirbyteCatalog:
@@ -136,7 +136,7 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
             _balance_transactions_response().with_record(_balance_transaction_record()).with_record(_balance_transaction_record()).build(),
         )
 
-        source = SourceStripe(config=config, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=config, state=_NO_STATE)
         output = read(source, config=config, catalog=_create_catalog())
 
         assert len(output.records) == 3
@@ -153,7 +153,7 @@ class PayoutBalanceTransactionsFullRefreshTest(TestCase):
             _balance_transactions_response().with_record(_balance_transaction_record()).build(),
         )
 
-        source = SourceStripe(config=config, catalog=_create_catalog(), state=_NO_STATE)
+        source = get_source(config=config, state=_NO_STATE)
         output = read(source, config=config, catalog=_create_catalog())
 
         assert output.records[0].record.data["payout"]
@@ -177,7 +177,7 @@ class PayoutBalanceTransactionsIncrementalTest(TestCase):
             _balance_transactions_response().with_record(_balance_transaction_record()).build(),
         )
 
-        source = SourceStripe(config=config, catalog=catalog, state=state)
+        source = get_source(config=config, state=state)
         output = read(source, config=config, catalog=catalog, state=state)
 
         assert len(output.records) == 1

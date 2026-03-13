@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.util
 
 import java.net.URL
@@ -17,6 +17,7 @@ object ResourceUtils {
                 )
                 .firstOrNull()
                 ?: throw RuntimeException("no ClassLoader found")
-        return loader.getResource(resourceName) ?: throw RuntimeException("resource not found")
+        return loader.getResource(resourceName)
+            ?: throw RuntimeException("resource not found $resourceName")
     }
 }

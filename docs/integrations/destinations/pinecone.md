@@ -24,14 +24,15 @@ You'll need the following information to configure the destination:
 - **Pinecone Environment** - The name of the Pinecone environment to use
 - **Pinecone Index name** - The name of the Pinecone index to load data into
 
-## Features
+## Supported sync modes
 
-| Feature                        | Supported? | Notes                                                                                                             |
-| :----------------------------- | :--------- | :---------------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync              | Yes        |                                                                                                                   |
-| Incremental - Append Sync      | Yes        |                                                                                                                   |
-| Incremental - Append + Deduped | Yes        | Deleting records via CDC is not supported (see issue [#29827](https://github.com/airbytehq/airbyte/issues/29827)) |
-| Namespaces                     | Yes        |                                                                                                                   |
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Data type mapping
 
@@ -72,6 +73,10 @@ To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/q
 
 OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+
 ## Changelog
 
 <details>
@@ -79,6 +84,8 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.46 | 2025-10-21 | [68334](https://github.com/airbytehq/airbyte/pull/68334) | Update dependencies |
+| 0.1.45 | 2025-10-14 | [61096](https://github.com/airbytehq/airbyte/pull/61096) | Update dependencies |
 | 0.1.44 | 2025-05-17 | [57171](https://github.com/airbytehq/airbyte/pull/57171) | Update dependencies |
 | 0.1.43 | 2025-03-29 | [56630](https://github.com/airbytehq/airbyte/pull/56630) | Update dependencies |
 | 0.1.42 | 2025-03-22 | [56150](https://github.com/airbytehq/airbyte/pull/56150) | Update dependencies |

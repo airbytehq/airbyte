@@ -9,7 +9,7 @@ from unittest.mock import call
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
-from source_facebook_marketing.spec import ConnectorConfig
+from source_facebook_marketing.spec import ConnectorConfig, TimeIncrementPeriod
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import (
@@ -24,31 +24,6 @@ from airbyte_cdk.models import (
 )
 
 from .utils import command_check
-
-
-@pytest.fixture(name="config")
-def config_fixture(requests_mock):
-    config = {
-        "account_ids": ["123"],
-        "access_token": "ACCESS_TOKEN",
-        "credentials": {
-            "auth_type": "Service",
-            "access_token": "ACCESS_TOKEN",
-        },
-        "start_date": "2019-10-10T00:00:00Z",
-        "end_date": "2020-10-10T00:00:00Z",
-    }
-    requests_mock.register_uri(
-        "GET",
-        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users",
-        json={"data": []},
-    )
-    requests_mock.register_uri(
-        "GET",
-        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
-        json={"account": 123},
-    )
-    return config
 
 
 @pytest.fixture
@@ -148,7 +123,7 @@ class TestSourceFacebookMarketing:
     def test_streams(self, config, api, fb_marketing):
         streams = fb_marketing.streams(config)
 
-        assert len(streams) == 30
+        assert len(streams) == 31
 
     def test_spec(self, fb_marketing):
         spec = fb_marketing.spec()
@@ -166,6 +141,22 @@ class TestSourceFacebookMarketing:
         ]
         config = ConnectorConfig.parse_obj(config)
         assert fb_marketing.get_custom_insights_streams(api, config)
+
+    def test_get_custom_insights_streams_with_time_increment_period(self, api, config, fb_marketing):
+        config["custom_insights"] = [
+            {
+                "name": "test_weekly",
+                "fields": ["account_id"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+                "time_increment_period": "weekly",
+            },
+        ]
+        config = ConnectorConfig.parse_obj(config)
+        streams = fb_marketing.get_custom_insights_streams(api, config)
+        assert len(streams) == 1
+        assert streams[0].time_increment_period == TimeIncrementPeriod.weekly
+        assert streams[0].time_increment == 7
 
     def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config, fb_marketing):
         config["custom_insights"] = [

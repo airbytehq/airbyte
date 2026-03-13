@@ -17,21 +17,21 @@ This page contains the setup guide and reference information for the [Bing Ads](
 
 For Airbyte Open Source set up your application to get **Client ID**, **Client Secret**, **Refresh Token**
 
-1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
-2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
-3. Use the authorization code to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13).
+1. [Register your application](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
+2. [Request user consent](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13) to get the authorization code.
+3. Use the authorization code to [get a refresh token](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13).
 
 :::note
 
-The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token).
-Please be sure to authenticate with the email (personal or work) that you used to sign in to the Bing ads/Microsoft ads platform.
+The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token).
+Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
 :::
 
 <!-- /env:oss -->
 
 ### Step 1: Set up Bing Ads
 
-1. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token). To use Bing Ads APIs, you must have a developer token and valid user credentials. See [Microsoft Advertising docs](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token) for more info.
+1. Get your [Microsoft developer token](https://ads.microsoft.com/cc/Settings/DevSettings). To use Bing Ads APIs, you must have a developer token and valid user credentials. See [Microsoft Advertising docs](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token) for more info.
 
    1. Sign in with [Super Admin](https://learn.microsoft.com/en-us/advertising/guides/account-hierarchy-permissions?view=bingads-13#user-roles-permissions) credentials at the [Microsoft Advertising Developer Portal](https://developers.ads.microsoft.com/Account) account tab.
    2. Choose the user that you want associated with the developer token. Typically an application only needs one universal token regardless how many users will be supported.
@@ -57,17 +57,18 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for the Bing Ads connector.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Add the developer token from [Step 1](#step-1-set-up-bing-ads).
-7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
+7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-10. For _Custom Reports_ - see [custom reports](#custom-reports) section, list of custom reports object:
-11. For _Report Name_ enter the name that you want for your custom report.
-12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_ add list columns of Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_ add time aggregation. See [report aggregation](#report-aggregation) section.
-15. Click **Authenticate your Bing Ads account**.
-16. Log in and authorize the Bing Ads account.
-17. Click **Set up source**.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
+11. For _Report Name_, enter the name that you want for your custom report.
+12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
+13. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
+14. For _Aggregation_, add the time aggregation. See the [report aggregation](#report-aggregation) section.
+15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
+16. Click **Authenticate your Bing Ads account**.
+17. Log in and authorize the Bing Ads account.
+18. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -80,16 +81,17 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 4. Enter a name for the Bing Ads connector.
 5. For **Tenant ID**, enter the custom tenant or use the common tenant.
 6. Enter the **Client ID**, **Client Secret**, **Refresh Token**, and **Developer Token** from [Step 1](#step-1-set-up-bing-ads).
-7. For **Account Names Predicates** - see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in bing ads docs. Will be used to filter your accounts by specified operator and account name. You can use multiple predicates pairs. The **Operator** is a one of Contains or Equals. The **Account Name** is a value to compare Accounts Name field in rows by specified operator. For example, for operator=Contains and name=Dev, all accounts where name contains dev will be replicated. And for operator=Equals and name=Airbyte, all accounts where name is equal to Airbyte will be replicated. Account Name value is not case-sensitive.
+7. For **Account Names Predicates**, see [predicates](https://learn.microsoft.com/en-us/advertising/customer-management-service/predicate?view=bingads-13) in the Bing Ads docs. This filters your accounts by a specified operator and account name. You can use multiple predicate pairs. The **Operator** is one of Contains or Equals. The **Account Name** is a value to compare the Account Name field in rows by the specified operator. For example, for operator=Contains and name=Dev, all accounts where the name contains "Dev" will be replicated. For operator=Equals and name=Airbyte, all accounts where the name equals "Airbyte" will be replicated. Account Name values are not case-sensitive.
 8. For **Reports Replication Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data from previous and current calendar years.
-9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, let it with 0 default value.
-10. For _Custom Reports_ - see [custom reports](#custom-reports) section:
-11. For _Report Name_ enter the name that you want for your custom report.
-12. For _Reporting Data Object_ add the Bing Ads Reporting Object that you want to sync in the custom report.
-13. For _Columns_ add columns of Reporting Data Object that you want to see in the custom report.
-14. For _Aggregation_ select time aggregation. See [report aggregation](#report-aggregation) section.
+9. For **Lookback window** (also known as attribution or conversion window) enter the number of **days** to look into the past. If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. If you're not using performance report streams in incremental mode and Reports Start Date is not provided, leave it at the default value of 0.
+10. For _Custom Reports_, see the [custom reports](#custom-reports) section.
+11. For _Report Name_, enter the name that you want for your custom report.
+12. For _Reporting Data Object_, add the Bing Ads Reporting Object that you want to sync in the custom report.
+13. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
+14. For _Aggregation_, select the time aggregation. See the [report aggregation](#report-aggregation) section.
+15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
 
-15. Click **Set up source**.
+16. Click **Set up source**.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -105,18 +107,18 @@ The Bing Ads source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-The Bing Ads source connector supports the following streams. For more information, see the [Bing Ads API](https://docs.microsoft.com/en-us/advertising/guides/?view=bingads-13).
+The Bing Ads source connector supports the following streams. For more information, see the [Bing Ads API](https://learn.microsoft.com/en-us/advertising/guides/?view=bingads-13).
 
 ### Basic streams
 
-- [Accounts](https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13) (Full Refresh)
-- [Ad Groups](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13) (Full Refresh)
+- [Accounts](https://learn.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13) (Full Refresh)
+- [Ad Groups](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13) (Full Refresh)
 - [Ad Group Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13)
-- [Ads](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13) (Full Refresh)
+- [Ads](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13) (Full Refresh)
 - [App Install Ads](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13)
 - [App Install Ad Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13)
 - [Budget](https://learn.microsoft.com/en-us/advertising/bulk-service/budget?view=bingads-13&viewFallbackFrom=bingads-13)
-- [Campaigns](https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13) (Full Refresh)
+- [Campaigns](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13) (Full Refresh)
 - [Campaign Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13)
 - [Keywords](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13)
 - [Keyword Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13)
@@ -126,32 +128,32 @@ The Bing Ads source connector supports the following streams. For more informati
 
 :::note
 
-Be careful with removing fields that you don't want to sync in the Replication Stream Settings.
-Report will be generated by request with all fields in the Stream Schema. Removing fields from in the setting does not affect actual request for the report.
-The results of such a report can be not accurate due to not visible values in removed fields.
-If you faced this issue please use custom report, where you can define only that fields that you want to see in the report, and no other fields will be used in the request.
+Be careful when removing fields that you don't want to sync in the replication stream settings.
+Reports are generated with all fields in the stream schema. Removing fields in the replication settings does not change the actual API request for the report.
+The results of such a report may be inaccurate due to invisible values in the removed fields.
+If you encounter this issue, use a custom report where you can define only the fields that you want to see in the report. No other fields will be included in the request.
 :::
 
-- [Account Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Account Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Account Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Account Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Account Impression Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Account Impression Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Account Impression Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Account Impression Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
-- [Ad Group Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [Ad Group Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [Ad Group Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [Ad Group Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Account Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Account Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
+- [Ad Group Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
 - [Ad Group Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
 - [Ad Group Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
 - [Ad Group Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
 - [Ad Group Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13)
-- [Ad Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [Ad Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [Ad Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
-- [Ad Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [Ad Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
 - [Age Gender Audience Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
 - [Age Gender Audience Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
 - [Age Gender Audience Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
@@ -168,19 +170,19 @@ If you faced this issue please use custom report, where you can define only that
 - [Goals And Funnels Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13)
 - [Goals And Funnels Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13)
 - [Goals And Funnels Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13)
-- [Budget Summary Report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
-- [Campaign Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [Campaign Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [Campaign Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [Campaign Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Budget Summary Report](https://learn.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
+- [Campaign Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [Campaign Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [Campaign Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [Campaign Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [Campaign Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
-- [Keyword Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [Keyword Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [Keyword Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
-- [Keyword Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [Keyword Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [User Location Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
 - [User Location Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
 - [User Location Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/userlocationperformancereportrequest?view=bingads-13)
@@ -227,9 +229,64 @@ You can build your own report by providing:
   The report must include the Required Columns (you can find it under list of all columns of reporting object) at a minimum. As a general rule, each report must include at least one attribute column and at least one non-impression share performance statistics column. Be careful you can't add extra columns that not specified in Bing Ads docs and not all fields can be skipped.
 - _Aggregation_ - Hourly, Daily, Weekly, Monthly, DayOfWeek, HourOfDay, WeeklyStartingMonday, Summary. See [report aggregation](#report-aggregation).
 
+#### Custom Report Name Conversion
+
+**By default, custom report names are automatically converted from camelCase to snake_case.** For example:
+- `MyCustomReport` becomes `my_custom_report`
+- `CampaignPerformanceDaily` becomes `campaign_performance_daily`
+- `keywordAnalysisReport` becomes `keyword_analysis_report`
+
+This conversion ensures consistency with Airbyte's naming conventions and compatibility with most data destinations.
+
+#### Disabling Name Conversion
+
+If you prefer to use your exact custom report names without automatic conversion, you can disable this feature on a **per-report basis** by setting the **Disable Custom Report Names Camel to Snake Case Conversion** option to `true` for each individual custom report.
+
+When disabled for a specific report:
+- That report's name will be used exactly as specified
+- No camelCase to snake_case conversion will be applied to that report
+- You have full control over the resulting stream name for that specific report
+- Other custom reports without this setting will still use the default conversion
+
+:::warning Breaking Change Warning
+
+**Changing this setting for an existing custom report will create a new stream and remove the old one.** This is a breaking change that may affect your data pipelines and downstream processes.
+
+For example, if you have an existing custom report named `MyCustomReport` (which creates a stream called `my_custom_report`) and you later enable the disable conversion setting, it will create a new stream called `MyCustomReport` and the old `my_custom_report` stream will no longer be available.
+
+**Be careful when modifying this setting for existing custom reports in production environments.**
+
+:::
+
+**Example configuration:**
+```json
+{
+  "custom_reports": [
+    {
+      "name": "MyExactReportName",
+      "reporting_object": "CampaignPerformanceReportRequest",
+      "report_columns": ["CampaignName", "Impressions", "Clicks"],
+      "report_aggregation": "Daily",
+      "disable_custom_report_names_camel_to_snake_conversion": true
+    },
+    {
+      "name": "AnotherReport",
+      "reporting_object": "AccountPerformanceReportRequest", 
+      "report_columns": ["AccountName", "Impressions", "Clicks"],
+      "report_aggregation": "Daily"
+      // This report will use default conversion: another_report
+    }
+  ]
+}
+```
+
+In this example:
+- The first report will be named exactly `MyExactReportName` (conversion disabled)
+- The second report will be named `another_report` (default conversion applied)
+
 ### Report aggregation
 
-All reports synced by this connector can be [aggregated](https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13) using hourly, daily, weekly, or monthly time windows.
+All reports synced by this connector can be [aggregated](https://learn.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13) using hourly, daily, weekly, or monthly time windows.
 
 For example, if you select a report with daily aggregation, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
 
@@ -246,12 +303,12 @@ Expand to see details about Bing Ads connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Bing Ads API limits the number of requests for all Microsoft Advertising clients. You can find detailed info [here](https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling).
+The Bing Ads API limits the number of requests for all Microsoft Advertising clients. You can find detailed info [here](https://learn.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling). Microsoft does not publish specific rate limits for the Bing Ads API. If you exceed the service call limit, the API returns error code 117 (`CallRateExceeded`). When this occurs, wait 60 seconds before retrying the request.
 
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
-- Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budgets) will ignore (fallback: none) the `LastSyncTimeInUTC` for dates > 30 days ago, which will trigger a full download request.
+- Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) ignore the `LastSyncTimeInUTC` for dates more than 30 days ago, which triggers a full download request.
 
 </details>
 
@@ -262,6 +319,33 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.23.15-rc.1 | 2026-03-12 | [74745](https://github.com/airbytehq/airbyte/pull/74745) | Increase default concurrency from 2 to 40 to test rate limit behavior |
+| 2.23.14 | 2026-03-10 | [74483](https://github.com/airbytehq/airbyte/pull/74483) | Update dependencies |
+| 2.23.13 | 2026-03-03 | [73654](https://github.com/airbytehq/airbyte/pull/73654) | Use streaming decompression in BingAdsGzipCsvDecoder to prevent OOM on large accounts |
+| 2.23.12 | 2026-03-03 | [73829](https://github.com/airbytehq/airbyte/pull/73829) | Update dependencies |
+| 2.23.11 | 2026-02-17 | [69578](https://github.com/airbytehq/airbyte/pull/69578) | Update dependencies |
+| 2.23.10 | 2026-02-05 | [72264](https://github.com/airbytehq/airbyte/pull/72264) | Update CDK version from 7.4.1 to 7.6.5 |
+| 2.23.9 | 2025-10-29 | [68883](https://github.com/airbytehq/airbyte/pull/68883) | Update dependencies |
+| 2.23.8 | 2025-10-21 | [68406](https://github.com/airbytehq/airbyte/pull/68406) | Update dependencies |
+| 2.23.7 | 2025-10-14 | [68008](https://github.com/airbytehq/airbyte/pull/68008) | Update dependencies |
+| 2.23.6 | 2025-10-07 | [67170](https://github.com/airbytehq/airbyte/pull/67170) | Update dependencies |
+| 2.23.5 | 2025-09-30 | [66038](https://github.com/airbytehq/airbyte/pull/66038) | Update dependencies |
+| 2.23.4 | 2025-09-16 | [66234](https://github.com/airbytehq/airbyte/pull/66234) | Promoting release candidate 2.23.4-rc.1 to a main version. |
+| 2.23.4-rc.1 | 2025-09-10 | [65894](https://github.com/airbytehq/airbyte/pull/65894) | Fix Custom Report Names - Add Option to Disable camel_case_to_snake_case |
+| 2.23.3 | 2025-09-10 | [65995](https://github.com/airbytehq/airbyte/pull/65995) | Update to CDK v7 |
+| 2.23.2 | 2025-08-16 | [64952](https://github.com/airbytehq/airbyte/pull/64952) | Always decompress bulk download response |
+| 2.23.1 | 2025-07-26 | [60669](https://github.com/airbytehq/airbyte/pull/60669) | Update dependencies |
+| 2.23.0 | 2025-07-09 | [62872](https://github.com/airbytehq/airbyte/pull/62872) | Promoting release candidate 2.23.0-rc.1 to a main version. |
+| 2.23.0-rc.1 | 2025-07-07 | [62520](https://github.com/airbytehq/airbyte/pull/62520)                                                                         | Migrate Source Bing Ads to manifest-only                                                                                                                               |
+| 2.22.0      | 2025-07-02 | [62087](https://github.com/airbytehq/airbyte/pull/62087)                                                                         | Migrate custom report streams to manifest                                                                                                                              |
+| 2.21.0      | 2025-06-26 | [62079](https://github.com/airbytehq/airbyte/pull/62079)                                                                         | Migrate `search_query_performance_report` and `product_search_query_performance_report` streams to manifest                                                            |
+| 2.20.0      | 2025-06-26 | [62060](https://github.com/airbytehq/airbyte/pull/62060)                                                                         | Migrate `budget_summary_report` stream to manifest, refactor `ad_performance_report` and `account_performance_report` to use dynamic definition                        |
+| 2.19.0      | 2025-06-25 | [62073](https://github.com/airbytehq/airbyte/pull/62073)                                                                         | Migrate `audience_peformance_report`, `goals_and_funnels_report`, `account_impression_performance_report` and `user_location_performance_report` streams to manifest   |
+| 2.18.0      | 2025-06-25 | [62013](https://github.com/airbytehq/airbyte/pull/62013)                                                                         | Migrate `product_dimension_performance_report`, `ad_group_impression_performance_report` and `campaign_impression_performance_report` streams to manifest              |
+| 2.17.0      | 2025-06-25 | [61719](https://github.com/airbytehq/airbyte/pull/61719)                                                                         | Migrate `keywords`, `keyword_labels`, `campaign_labels` and `budget` streams to manifest                                                                               |
+| 2.16.0      | 2025-06-24 | [61725](https://github.com/airbytehq/airbyte/pull/61725)                                                                         | Migrate `keyword_performance_report` and `geographic_performance_report` streams to manifest                                                                           |
+| 2.15.0      | 2025-06-23 | [61675](https://github.com/airbytehq/airbyte/pull/61675)                                                                         | Migrate `ad_group_performance_report` streams to manifest                                                                                                              |
+| 2.14.0      | 2025-06-18 | [61693](https://github.com/airbytehq/airbyte/pull/61693)                                                                         | Migrate `ad_group_labels`, `app_install_ad_labels`, and `app_install_ads` streams to manifest                                                                          |
 | 2.13.0      | 2025-06-16 | [61495](https://github.com/airbytehq/airbyte/pull/61495)                                                                         | Migrate `campaign_performance_report` and `age_gender_audience_report` streams to manifest                                                                             |
 | 2.12.0      | 2025-06-12 | [61578](https://github.com/airbytehq/airbyte/pull/61578)                                                                         | Promoting release candidate 2.12.0-rc.1 to a main version.                                                                                                             |
 | 2.12.0-rc.1 | 2025-06-12 | [60947](https://github.com/airbytehq/airbyte/pull/60947)                                                                         | Migrate `ads` and `ad_groups` streams to manifest                                                                                                                      |

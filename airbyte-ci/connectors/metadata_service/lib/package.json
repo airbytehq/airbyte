@@ -1,0 +1,12 @@
+{
+  "name": "metadata-service-schema-tools",
+  "version": "1.0.0",
+  "description": "Schema bundling tools for Airbyte metadata service",
+  "private": true,
+  "scripts": {
+    "bundle-schemas": "node bin/bundle-schemas.js"
+  },
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.0.0"
+  }
+}

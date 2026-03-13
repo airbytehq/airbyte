@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2
@@ -18,7 +18,7 @@ class MSSQLStreamLoader(
     override suspend fun start() {
         super.start()
         streamStateStore.put(
-            stream.descriptor,
+            stream.mappedDescriptor,
             MSSQLDirectLoaderStreamState(dataSource, sqlBuilder)
         )
     }
