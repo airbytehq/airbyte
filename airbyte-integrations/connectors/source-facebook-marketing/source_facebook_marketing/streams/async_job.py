@@ -471,10 +471,16 @@ class InsightAsyncJob(AsyncJob):
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
+        # Object breakdown IDs (e.g. image_asset_id) are derived fields, not
+        # valid Facebook API fields.  Requesting them causes API errors.
+        # They are injected later by _inject_object_breakdown_ids.
+        object_breakdown_ids = set(self._object_breakdowns.values())
+        api_pk_fields = [f for f in self._primary_key if f not in object_breakdown_ids]
+
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = api_pk_fields + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = api_pk_fields + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,

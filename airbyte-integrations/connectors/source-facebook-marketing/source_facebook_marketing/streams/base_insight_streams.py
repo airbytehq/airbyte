@@ -185,7 +185,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         for breakdown in self.breakdowns:
             if breakdown in self.object_breakdowns.keys():
-                record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
+                val = record.get(breakdown)
+                if isinstance(val, dict) and "id" in val:
+                    record[self.object_breakdowns[breakdown]] = val["id"]
         return record
 
     def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
