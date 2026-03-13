@@ -473,6 +473,10 @@ jobs:
       # Runs alongside the legacy Poetry-based registry entry generation above.
       # continue-on-error: true ensures this does not block the publish pipeline.
       # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+      - name: Install Ops CLI
+        continue-on-error: true
+        run: uv tool install airbyte-internal-ops
+
       - name: "[Ops Registry Soft Launch] Generate Registry Artifacts (ops CLI)"
         id: generate-registry-artifacts-ops-cli
         continue-on-error: true
@@ -483,7 +487,7 @@ jobs:
           echo "Generating registry artifacts for ${{ matrix.connector }}"
           DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
           DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.connector-metadata.outputs.docker-image-tag }}"
-          uvx airbyte-internal-ops \
+          airbyte-ops \
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
@@ -510,7 +514,7 @@ jobs:
           REGISTRY_STORE: "coral:dev/soft-launch-trial"
         run: |
           echo "Publishing registry artifacts for ${{ matrix.connector }}"
-          uvx airbyte-internal-ops \
+          airbyte-ops \
             registry connector-version artifacts publish \
             --name "${{ matrix.connector }}" \
             --version "${{ steps.connector-metadata.outputs.docker-image-tag }}" \
