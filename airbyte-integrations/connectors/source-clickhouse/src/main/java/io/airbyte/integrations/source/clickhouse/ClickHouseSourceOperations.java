@@ -62,16 +62,18 @@ public class ClickHouseSourceOperations extends JdbcSourceOperations {
    * ArrayResultSet.next() method.
    *
    * <p>
-   * The driver's ArrayResultSet.next() returns true one extra time past the end of the array,
-   * causing a "No current row" SQLException when getString(2) is called on the phantom row.
-   * For ARRAY columns, this override uses Array.getArray() to get a Java Object[] directly,
-   * bypassing the buggy ArrayResultSet entirely. All other types delegate to the parent.
+   * The driver's ArrayResultSet.next() returns true one extra time past the end of the array, causing
+   * a "No current row" SQLException when getString(2) is called on the phantom row. For ARRAY
+   * columns, this override uses Array.getArray() to get a Java Object[] directly, bypassing the buggy
+   * ArrayResultSet entirely. All other types delegate to the parent.
    *
    * @see <a href="https://github.com/airbytehq/airbyte/issues/61419">#61419</a>
    */
   @Override
-  public void copyToJsonField(final ResultSet resultSet, final int colIndex,
-      final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet,
+                              final int colIndex,
+                              final ObjectNode json)
+      throws SQLException {
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     if (columnTypeInt == Types.ARRAY) {
       final String columnName = resultSet.getMetaData().getColumnName(colIndex);
