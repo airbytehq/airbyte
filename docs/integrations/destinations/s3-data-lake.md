@@ -392,8 +392,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.46      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
-| 0.3.45      | 2026-03-05 | [72354](https://github.com/airbytehq/airbyte/pull/72354) | Upgrade CDK to 1.0.3                                                                                                                                 |
+| 0.3.45      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
 | 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
 | 0.3.43      | 2026-01-29 | [72482](https://github.com/airbytehq/airbyte/pull/72482)   | Release on dataflow.                                                                                                            |
 | 0.3.43-rc.1 | 2026-01-28 | [72443](https://github.com/airbytehq/airbyte/pull/72443)   | Update to dataflow.                                                                                                             |
