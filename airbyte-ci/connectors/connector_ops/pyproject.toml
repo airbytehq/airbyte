@@ -21,7 +21,7 @@ pydash = "^6.0.2"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
 pandas = "^2.0.3"
-simpleeval = "^0.9.13"
+simpleeval = "^1.0.5"
 semver = "^3.0.2"
 
 [tool.poetry.group.dev.dependencies]
