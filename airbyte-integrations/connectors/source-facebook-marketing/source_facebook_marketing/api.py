@@ -8,9 +8,8 @@ from dataclasses import dataclass
 from datetime import timedelta
 from time import sleep
 
-import requests
-
 import backoff
+import requests
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
