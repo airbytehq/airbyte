@@ -3,6 +3,7 @@ import csv
 import gzip
 import io
 import logging
+import tempfile
 import zipfile
 from copy import deepcopy
 from dataclasses import dataclass
@@ -489,8 +490,6 @@ class BingAdsReportZipCsvDecoder(Decoder):
         return True
 
     def decode(self, response: Any) -> Generator[MutableMapping[str, Any], None, None]:
-        import tempfile
-
         spool = tempfile.SpooledTemporaryFile(max_size=5 * 1024 * 1024)
         try:
             raw = response.raw
