@@ -103,8 +103,23 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
             "Default is SQL Password. For Azure SQL, you can also use Active Directory Service Principal.",
     )
     @JsonSchemaInject(json = """{"order":4,"display_type":"radio"}""")
-    fun getAuthenticationValue(): AuthenticationSpecification =
-        authenticationJson ?: authentication.asAuthenticationSpecification()
+    fun getAuthenticationValue(): AuthenticationSpecification {
+        // If explicit authentication JSON was provided (new format), use it
+        authenticationJson?.let { return it }
+
+        // Backward compatibility: if top-level username/password are set,
+        // create a SqlPasswordAuthentication from them
+        val topUsername = username
+        if (topUsername != null) {
+            return SqlPasswordAuthentication().also {
+                it.username = topUsername
+                it.password = password ?: ""
+            }
+        }
+
+        // Fall through to Micronaut properties
+        return authentication.asAuthenticationSpecification()
+    }
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
@@ -390,6 +405,7 @@ sealed interface AuthenticationSpecification
 @JsonSchemaDescription(
     "Authenticate using a SQL Server username and password.",
 )
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "lateinit")
 class SqlPasswordAuthentication : AuthenticationSpecification {
     @JsonProperty("username")
     @JsonSchemaTitle("Username")
@@ -409,6 +425,7 @@ class SqlPasswordAuthentication : AuthenticationSpecification {
     "Authenticate using a Microsoft Entra ID (Azure Active Directory) service principal. " +
         "This is recommended for Azure SQL Database and Azure Synapse Analytics.",
 )
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "lateinit")
 class ActiveDirectoryServicePrincipalAuthentication : AuthenticationSpecification {
     @JsonProperty("tenant_id")
     @JsonSchemaTitle("Tenant ID")
