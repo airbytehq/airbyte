@@ -53,6 +53,10 @@ Airbyte saves the following JSON blob:
 
 Upon any operation, Airbyte reads the obfuscated JSON spec, extracts the secret coordinate and hydrates the correct secret value before passing it to consumers.
 
+## External Secret References
+
+Enterprise customers can leverage external secrets managers such as AWS Secrets Manager, Google Secret Manager, and Azure Key Vault to store and manage connector credentials. For detailed setup instructions and usage examples, see [External Secret Management](../enterprise-flex/external-secrets.md).
+
 ## Operational Details
 
 1. When configuration is updated, Airbyte increments a secret coordinate's version while preserving the prefix.

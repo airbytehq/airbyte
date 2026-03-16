@@ -205,6 +205,85 @@ Configuration format will be provided by your Airbyte representative.
 
 ---
 
+## Using External Secret References in Connector Configurations {#external-secret-references}
+
+Once your secret storage is configured, you can reference secrets stored in your external secret manager when creating or updating connectors via the API or Terraform. Instead of passing a raw secret value, use the `secret_coordinate::` prefix followed by the name of the secret in your configured secret manager.
+
+This is useful when:
+
+- You manage secrets externally (e.g. via Terraform, CI/CD pipelines, or a secrets team) and want Airbyte connectors to reference them without Airbyte ever seeing the plaintext value.
+- You want to rotate secrets in your secret manager without updating Airbyte connector configurations.
+- Compliance requirements prevent you from sending secret values through the Airbyte API.
+
+### How It Works
+
+Any field in a connector spec marked `airbyte_secret: true` can accept a value prefixed with `secret_coordinate::`. When Airbyte sees this prefix, it stores an external reference to the secret in your configured secret manager rather than writing the value to Airbyte's own secret persistence.
+
+At runtime, Airbyte resolves the reference by reading the secret value from your configured secret manager.
+
+### Supported APIs
+
+External secret references work with all source and destination create and update endpoints:
+
+- **Create Source** (`POST /v1/sources`)
+- **Update Source** (`PUT /v1/sources/{sourceId}`)
+- **Create Destination** (`POST /v1/destinations`)
+- **Update Destination** (`PUT /v1/destinations/{destinationId}`)
+
+### API Example
+
+```bash
+curl --request POST \
+  --url https://api.airbyte.com/v1/sources \
+  --header 'Authorization: Bearer <YOUR_ACCESS_TOKEN>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "My Postgres Source",
+    "workspaceId": "<YOUR_WORKSPACE_ID>",
+    "definitionId": "<POSTGRES_SOURCE_DEFINITION_ID>",
+    "configuration": {
+      "host": "db.example.com",
+      "port": 5432,
+      "database": "mydb",
+      "username": "airbyte_user",
+      "password": "secret_coordinate::my-pg-password"
+    }
+  }'
+```
+
+In this example, `password` is an `airbyte_secret` field. Instead of providing the actual password, you pass `secret_coordinate::my-pg-password`, and Airbyte resolves it from your configured secret manager.
+
+### Terraform Example
+
+The same approach works with the [Airbyte Terraform Provider](https://registry.terraform.io/providers/airbytehq/airbyte/latest):
+
+```hcl
+resource "airbyte_source" "postgres" {
+  name          = "My Postgres Source"
+  workspace_id  = var.workspace_id
+  definition_id = var.postgres_source_definition_id
+
+  configuration = jsonencode({
+    host     = "db.example.com"
+    port     = 5432
+    database = "mydb"
+    username = "airbyte_user"
+    password = "secret_coordinate::my-pg-password"
+  })
+}
+```
+
+:::tip
+You can also read back the stored secret coordinates (rather than `***` placeholders) by setting `include_secret_coordinates = true` on the `airbyte_source` or `airbyte_destination` data sources.
+:::
+
+### Limitations
+
+- The secret name you pass after the `secret_coordinate::` prefix must match the name of a secret that exists (or will exist) in the secret manager configured for your workspace or organization.
+- If no custom secret storage is configured for your workspace/organization, the `secret_coordinate::` prefix will not resolve correctly at runtime.
+
+---
+
 ## Verification Steps
 
 After providing your configuration to Airbyte:
