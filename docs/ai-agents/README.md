@@ -26,4 +26,6 @@ The Agent engine is new and growing. Airbyte is actively seeking feedback. Expec
 
 <CardWithIcon title="Connectors" description="Browse our catalog of connectors, copy code samples, and start powering your agents." ctaText="Connectors" ctaLink="/ai-agents/connectors/" icon="fa-python" />
 
+<CardWithIcon title="Claude Code skills" description="Install skills that teach Claude Code how to set up and operate Airbyte's agent connectors." ctaText="Skills" ctaLink="/ai-agents/skills/" icon="fa-wand-magic-sparkles" />
+
 </Grid>
