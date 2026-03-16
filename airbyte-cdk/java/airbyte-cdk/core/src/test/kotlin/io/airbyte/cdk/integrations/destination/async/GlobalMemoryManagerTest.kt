@@ -31,11 +31,19 @@ class GlobalMemoryManagerTest {
         // Allocate 10 MB, then free 20 MB — should clamp to 0, not go to -10 MB.
         mgr.requestMemory() // 10 MB allocated
         mgr.free(20 * BYTES_MB)
-        Assertions.assertEquals(0, mgr.getCurrentMemoryBytes(), "currentMemoryBytes must not go negative")
+        Assertions.assertEquals(
+            0,
+            mgr.getCurrentMemoryBytes(),
+            "currentMemoryBytes must not go negative"
+        )
 
         // Verify that subsequent allocations still work correctly after clamping.
         val allocated = mgr.requestMemory()
-        Assertions.assertEquals(10 * BYTES_MB, allocated, "Should allocate a full block after clamping to zero")
+        Assertions.assertEquals(
+            10 * BYTES_MB,
+            allocated,
+            "Should allocate a full block after clamping to zero"
+        )
     }
 
     @Test
@@ -55,6 +63,9 @@ class GlobalMemoryManagerTest {
 
         // After repeated over-frees, memory accounting should still be functional.
         val allocated = mgr.requestMemory()
-        Assertions.assertTrue(allocated > 0, "Should still be able to allocate memory after repeated over-frees")
+        Assertions.assertTrue(
+            allocated > 0,
+            "Should still be able to allocate memory after repeated over-frees"
+        )
     }
 }
