@@ -70,8 +70,8 @@ class GlobalMemoryManager(val maxMemoryBytes: Long) {
 
     /**
      * Releases a block of memory of the given size. If the amount of memory released exceeds the
-     * current memory allocation, the counter is clamped to zero to prevent negative accounting
-     * from disabling backpressure in [requestMemory].
+     * current memory allocation, the counter is clamped to zero to prevent negative accounting from
+     * disabling backpressure in [requestMemory].
      *
      * @param bytes the size of the block to free, in bytes
      */
