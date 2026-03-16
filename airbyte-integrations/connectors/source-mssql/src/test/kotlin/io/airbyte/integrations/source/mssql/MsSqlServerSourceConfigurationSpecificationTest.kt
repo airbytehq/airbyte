@@ -126,6 +126,62 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         Assertions.assertEquals(emptySet<String>(), config.namespaces)
     }
 
+    /** Verifies backward compatibility: configs with top-level username/password still work. */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON)
+    fun testBackwardCompatibilityWithTopLevelCredentials() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val factory = MsSqlServerSourceConfigurationFactory()
+        val config = factory.make(pojo)
+
+        // Top-level username/password should be used when no authentication block is present
+        Assertions.assertEquals("sa", config.jdbcProperties["user"])
+        Assertions.assertEquals("Password123!", config.jdbcProperties["password"])
+        Assertions.assertNull(config.jdbcProperties["authentication"])
+    }
+
+    /** Verifies that SQL Password authentication block works correctly. */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_SQL_PASSWORD_AUTH)
+    fun testSqlPasswordAuthentication() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val factory = MsSqlServerSourceConfigurationFactory()
+        val config = factory.make(pojo)
+
+        val auth: AuthenticationSpecification = pojo.getAuthenticationValue()
+        Assertions.assertTrue(
+            auth is SqlPasswordAuthentication,
+            auth::class.toString()
+        )
+
+        Assertions.assertEquals("sa", config.jdbcProperties["user"])
+        Assertions.assertEquals("Password123!", config.jdbcProperties["password"])
+        Assertions.assertNull(config.jdbcProperties["authentication"])
+    }
+
+    /** Verifies that Active Directory Service Principal authentication block works correctly. */
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_SERVICE_PRINCIPAL_AUTH)
+    fun testActiveDirectoryServicePrincipalAuthentication() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val factory = MsSqlServerSourceConfigurationFactory()
+        val config = factory.make(pojo)
+
+        val auth: AuthenticationSpecification = pojo.getAuthenticationValue()
+        Assertions.assertTrue(
+            auth is ActiveDirectoryServicePrincipalAuthentication,
+            auth::class.toString()
+        )
+
+        Assertions.assertEquals("my-client-id", config.jdbcProperties["user"])
+        Assertions.assertEquals("my-client-secret", config.jdbcProperties["password"])
+        Assertions.assertEquals(
+            "ActiveDirectoryServicePrincipal",
+            config.jdbcProperties["authentication"]
+        )
+        Assertions.assertEquals("my-tenant-id", config.jdbcProperties["tenantId"])
+    }
+
     companion object {
 
         const val CONFIG_JSON: String =
@@ -249,6 +305,47 @@ class MsSqlServerSourceConfigurationSpecificationTest {
   },
   "replication_method": {
     "method": "CDC"
+  }
+}
+"""
+
+        const val CONFIG_JSON_SQL_PASSWORD_AUTH: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "database": "master",
+  "authentication": {
+    "auth_method": "sql_password",
+    "username": "sa",
+    "password": "Password123!"
+  },
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  }
+}
+"""
+
+        const val CONFIG_JSON_SERVICE_PRINCIPAL_AUTH: String =
+            """
+{
+  "host": "myserver.database.windows.net",
+  "port": 1433,
+  "database": "mydb",
+  "authentication": {
+    "auth_method": "active_directory_service_principal",
+    "tenant_id": "my-tenant-id",
+    "client_id": "my-client-id",
+    "client_secret": "my-client-secret"
+  },
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "STANDARD"
   }
 }
 """

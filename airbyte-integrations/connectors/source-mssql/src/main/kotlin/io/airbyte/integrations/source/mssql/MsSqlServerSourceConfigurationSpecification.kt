@@ -77,13 +77,34 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonSchemaTitle("Username")
     @JsonPropertyDescription("The username which is used to access the database.")
     @JsonSchemaInject(json = """{"order":4}""")
-    lateinit var username: String
+    var username: String? = null
 
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
     @JsonPropertyDescription("The password associated with the username.")
     @JsonSchemaInject(json = """{"order":5,"airbyte_secret":true}""")
-    lateinit var password: String
+    var password: String? = null
+
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "authentication")
+    var authentication = MicronautPropertiesFriendlyAuthenticationSpecification()
+
+    @JsonIgnore var authenticationJson: AuthenticationSpecification? = null
+
+    @JsonSetter("authentication")
+    fun setAuthenticationValue(value: AuthenticationSpecification) {
+        authenticationJson = value
+    }
+
+    @JsonGetter("authentication")
+    @JsonSchemaTitle("Authentication Method")
+    @JsonPropertyDescription(
+        "The authentication method to use when connecting to the database. " +
+            "Default is SQL Password. For Azure SQL, you can also use Active Directory Service Principal.",
+    )
+    @JsonSchemaInject(json = """{"order":4,"display_type":"radio"}""")
+    fun getAuthenticationValue(): AuthenticationSpecification =
+        authenticationJson ?: authentication.asAuthenticationSpecification()
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
@@ -346,5 +367,89 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
             "STANDARD" -> UserDefinedCursor()
             "CDC" -> Cdc()
             else -> throw ConfigErrorException("invalid value $method")
+        }
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_method")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = SqlPasswordAuthentication::class, name = "sql_password"),
+    JsonSubTypes.Type(
+        value = ActiveDirectoryServicePrincipalAuthentication::class,
+        name = "active_directory_service_principal"
+    ),
+)
+@JsonSchemaTitle("Authentication Method")
+@JsonSchemaDescription(
+    "The authentication method used to connect to the database. " +
+        "Use SQL Password for traditional username/password authentication. " +
+        "Use Active Directory Service Principal for Azure Entra ID authentication.",
+)
+sealed interface AuthenticationSpecification
+
+@JsonSchemaTitle("SQL Password")
+@JsonSchemaDescription(
+    "Authenticate using a SQL Server username and password.",
+)
+class SqlPasswordAuthentication : AuthenticationSpecification {
+    @JsonProperty("username")
+    @JsonSchemaTitle("Username")
+    @JsonPropertyDescription("The username which is used to access the database.")
+    @JsonSchemaInject(json = """{"order":0}""")
+    lateinit var username: String
+
+    @JsonProperty("password")
+    @JsonSchemaTitle("Password")
+    @JsonPropertyDescription("The password associated with the username.")
+    @JsonSchemaInject(json = """{"order":1,"airbyte_secret":true}""")
+    lateinit var password: String
+}
+
+@JsonSchemaTitle("Active Directory Service Principal")
+@JsonSchemaDescription(
+    "Authenticate using a Microsoft Entra ID (Azure Active Directory) service principal. " +
+        "This is recommended for Azure SQL Database and Azure Synapse Analytics.",
+)
+class ActiveDirectoryServicePrincipalAuthentication : AuthenticationSpecification {
+    @JsonProperty("tenant_id")
+    @JsonSchemaTitle("Tenant ID")
+    @JsonPropertyDescription("The Microsoft Entra ID (Azure AD) tenant ID.")
+    @JsonSchemaInject(json = """{"order":0}""")
+    lateinit var tenantId: String
+
+    @JsonProperty("client_id")
+    @JsonSchemaTitle("Client ID")
+    @JsonPropertyDescription("The client (application) ID of the service principal.")
+    @JsonSchemaInject(json = """{"order":1}""")
+    lateinit var clientId: String
+
+    @JsonProperty("client_secret")
+    @JsonSchemaTitle("Client Secret")
+    @JsonPropertyDescription("The client secret of the service principal.")
+    @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
+    lateinit var clientSecret: String
+}
+
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.authentication")
+class MicronautPropertiesFriendlyAuthenticationSpecification {
+    var authMethod: String = "sql_password"
+    var username: String? = null
+    var password: String? = null
+    var tenantId: String? = null
+    var clientId: String? = null
+    var clientSecret: String? = null
+
+    fun asAuthenticationSpecification(): AuthenticationSpecification =
+        when (authMethod) {
+            "sql_password" -> SqlPasswordAuthentication().also {
+                username?.let { u -> it.username = u }
+                password?.let { p -> it.password = p }
+            }
+            "active_directory_service_principal" ->
+                ActiveDirectoryServicePrincipalAuthentication().also {
+                    tenantId?.let { t -> it.tenantId = t }
+                    clientId?.let { c -> it.clientId = c }
+                    clientSecret?.let { s -> it.clientSecret = s }
+                }
+            else -> throw ConfigErrorException("invalid authentication method: $authMethod")
         }
 }
