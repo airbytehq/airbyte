@@ -1,0 +1,133 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/azure-onelake",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Azure OneLake Destination Spec",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "azure_blob_storage_endpoint_domain_name" : {
+        "type" : "string",
+        "description" : "Azure Storage endpoint domain name. For Azure Blob Storage the default is `blob.core.windows.net`. For Microsoft Fabric OneLake, the DFS endpoint is typically `onelake.dfs.fabric.microsoft.com`. Leave empty to use the default.",
+        "title" : "Azure Storage Endpoint Domain Name"
+      },
+      "azure_blob_storage_account_name" : {
+        "type" : "string",
+        "description" : "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>.",
+        "title" : "Azure Blob Storage Account Name",
+        "examples" : [ "mystorageaccount" ]
+      },
+      "azure_blob_storage_container_name" : {
+        "type" : "string",
+        "description" : "The name of the Azure Blob Storage Container. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#containers\">here</a>.",
+        "title" : "Azure Blob Storage Container Name",
+        "examples" : [ "mycontainer" ]
+      },
+      "shared_access_signature" : {
+        "type" : "string",
+        "description" : "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the \"Azure Blob Storage Account Key\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields.",
+        "title" : "Shared Access Signature",
+        "examples" : [ "sv=2021-08-06&st=2025-04-11T00%3A00%3A00Z&se=2025-04-12T00%3A00%3A00Z&sr=b&sp=rw&sig=abcdefghijklmnopqrstuvwxyz1234567890%2Fabcdefg%3D" ],
+        "airbyte_secret" : true,
+        "always_show" : true
+      },
+      "azure_blob_storage_account_key" : {
+        "type" : "string",
+        "description" : "The Azure Blob Storage account key. If you set this value, you must not set the \"Shared Access Signature\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields.",
+        "title" : "Azure Blob Storage Account Key",
+        "examples" : [ "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd==" ],
+        "airbyte_secret" : true,
+        "always_show" : true
+      },
+      "azure_tenant_id" : {
+        "type" : "string",
+        "description" : "The Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication.",
+        "title" : "Azure Tenant ID",
+        "examples" : [ "12345678-1234-1234-1234-123456789012" ],
+        "airbyte_secret" : false
+      },
+      "azure_client_id" : {
+        "type" : "string",
+        "description" : "The Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication.",
+        "title" : "Azure Client ID",
+        "examples" : [ "87654321-4321-4321-4321-210987654321" ],
+        "airbyte_secret" : false
+      },
+      "azure_client_secret" : {
+        "type" : "string",
+        "description" : "The Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication.",
+        "title" : "Azure Client Secret",
+        "examples" : [ "your-client-secret" ],
+        "airbyte_secret" : true,
+        "always_show" : true
+      },
+      "azure_blob_storage_spill_size" : {
+        "type" : "integer",
+        "description" : "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable.",
+        "title" : "Target Object Size (MB)",
+        "default" : 500
+      },
+      "destination_path_format" : {
+        "type" : "string",
+        "description" : "Format of the output directory/path inside the container. You can use the following variables: ${NAMESPACE}, ${STREAM_NAME}, ${YEAR}, ${MONTH}, ${DAY}, ${HOUR}, ${MINUTE}, ${SECOND}, ${MILLISECOND}, ${EPOCH}, ${UUID}. Leave empty to use the default: ${NAMESPACE}/${STREAM_NAME}/",
+        "title" : "Output Path Format",
+        "examples" : [ "${NAMESPACE}/${STREAM_NAME}/", "${NAMESPACE}/${STREAM_NAME}/${YEAR}/${MONTH}/${DAY}/", "${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}/" ],
+        "default" : ""
+      },
+      "file_name_pattern" : {
+        "type" : "string",
+        "description" : "Pattern for the output file names. You can use the following variables: {date}, {date:yyyy_MM}, {timestamp}, {part_number}, {sync_id}, {format_extension}. Leave empty to use the default: {date}_{timestamp}_{part_number}{format_extension}",
+        "title" : "File Name Pattern",
+        "examples" : [ "{date}_{timestamp}_{part_number}{format_extension}", "{sync_id}_{date}_{part_number}{format_extension}" ],
+        "default" : ""
+      },
+      "format" : {
+        "oneOf" : [ {
+          "title" : "CSV: Comma-Separated Values",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "CSV" ],
+              "default" : "CSV"
+            },
+            "flattening" : {
+              "type" : "string",
+              "default" : "No flattening",
+              "enum" : [ "No flattening", "Root level flattening" ],
+              "title" : "Flattening"
+            }
+          },
+          "required" : [ "format_type", "flattening" ]
+        }, {
+          "title" : "JSON Lines: Newline-delimited JSON",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "format_type" : {
+              "type" : "string",
+              "enum" : [ "JSONL" ],
+              "default" : "JSONL"
+            },
+            "flattening" : {
+              "type" : "string",
+              "default" : "No flattening",
+              "enum" : [ "No flattening", "Root level flattening" ],
+              "title" : "Flattening"
+            }
+          },
+          "required" : [ "format_type" ]
+        } ],
+        "description" : "Format of the data output.",
+        "title" : "Output Format",
+        "type" : "object"
+      }
+    },
+    "required" : [ "azure_blob_storage_account_name", "azure_blob_storage_container_name", "format" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append" ]
+}

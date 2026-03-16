@@ -1,0 +1,7 @@
+{
+  "azure_blob_storage_endpoint_domain_name": "onelake.dfs.fabric.microsoft.com",
+  "azure_blob_storage_account_name": "your_account_name_here",
+  "azure_blob_storage_container_name": "testcontainername",
+  "shared_access_signature": "your_sas_here"
+}
+

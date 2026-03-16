@@ -1,0 +1,10 @@
+{
+  "azure_blob_storage_account_name": "EG_Dataplatform_Dev",
+  "azure_blob_storage_container_name": "lakehouse_raw",
+  "azure_tenant_id": "a9b292af-1f66-4d76-90c6-3cbfc0cbcaf2",
+  "azure_client_id": "cc9dc0ad-c996-472b-8224-9855982a7577",
+  "azure_client_secret": "yIN8Q~QlyRsIv8emkyA3241D68C2EyQ5_IpGVbeu",
+  "format": {
+    "format_type": "JSONL"
+  }
+}

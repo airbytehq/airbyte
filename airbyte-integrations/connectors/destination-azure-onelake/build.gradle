@@ -1,0 +1,60 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = ['legacy-task-load-object-storage', 'legacy-task-load-azure-blob-storage']
+    useLegacyTaskLoader = true
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.azure_onelake.MicrosoftOneLakeDestinationKt'
+
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+//            Uncomment to run locally:
+//          '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+//            Uncomment to enable remote profiling:
+//            '-XX:NativeMemoryTracking=detail',
+//            '-Djava.rmi.server.hostname=localhost',
+//            '-Dcom.sun.management.jmxremote=true',
+//            '-Dcom.sun.management.jmxremote.port=6000',
+//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
+//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.authenticate=false',
+//            '-Dcom.sun.management.jmxremote.ssl=false'
+    ]
+}
+
+// Uncomment to run locally
+//run {
+//    standardInput = System.in
+//}
+
+// Exclude conflicting log4j-over-slf4j dependency
+configurations.all {
+    exclude group: "org.slf4j", module: "slf4j-reload4j"
+}
+
+dependencies {
+    // Needed for annotations used in Kotlin sources:
+    // @Factory, @Requires, @Value
+    implementation "io.micronaut:micronaut-context"
+    implementation "io.micronaut:micronaut-inject"
+    compileOnly "jakarta.inject:jakarta.inject-api"
+
+    // Needed for AirbyteDestinationRunner (if this artifact name differs in your repo,
+    // we’ll swap it after the next error output)
+   // implementation "io.airbyte.cdk:airbyte-cdk-dependencies"
+   // implementation project(":airbyte-cdk:bulk:core:base")
+    implementation project(":airbyte-cdk:bulk:core:bulk-cdk-core-base")
+    // Existing integration test deps
+    integrationTestImplementation 'org.testcontainers:azure:1.20.6'
+    integrationTestImplementation 'io.mockk:mockk:1.13.12'
+
+}
+
