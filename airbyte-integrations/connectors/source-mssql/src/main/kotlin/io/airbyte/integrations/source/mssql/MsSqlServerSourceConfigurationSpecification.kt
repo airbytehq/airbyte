@@ -105,7 +105,9 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonSchemaInject(json = """{"order":4,"display_type":"radio"}""")
     fun getAuthenticationValue(): AuthenticationSpecification {
         // If explicit authentication JSON was provided (new format), use it
-        authenticationJson?.let { return it }
+        authenticationJson?.let {
+            return it
+        }
 
         // Backward compatibility: if top-level username/password are set,
         // create a SqlPasswordAuthentication from them
