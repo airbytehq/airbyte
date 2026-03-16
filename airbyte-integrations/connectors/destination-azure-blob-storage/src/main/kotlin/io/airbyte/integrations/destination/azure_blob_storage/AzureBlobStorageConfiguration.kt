@@ -93,7 +93,7 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
         ObjectStoragePathConfiguration(
             prefix = "",
             pathPattern = resolvePathPattern(pathFormat),
-            fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
+            fileNamePattern = resolveFileNamePattern(fileNamePattern),
             resolveNamesMethod = { Transformations.toAzureBlobSafePath(it) },
         )
 
