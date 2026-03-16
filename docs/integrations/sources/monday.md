@@ -83,6 +83,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.5 | 2026-03-16 | [74325](https://github.com/airbytehq/airbyte/pull/74325) | Migrate to scopes object array format |
 | 2.5.4 | 2026-03-07 | [74325](https://github.com/airbytehq/airbyte/pull/74325) | feat: migrate source-monday to scopes object array |
 | 2.5.3 | 2026-03-05 | [73658](https://github.com/airbytehq/airbyte/pull/73658) | Add `linked_item_ids` to `BoardRelationValue` and `DependencyValue` column types to restore linked item data lost after API version 2025-04+ |
 | 2.5.2 | 2026-02-24 | [73582](https://github.com/airbytehq/airbyte/pull/73582) | Update dependencies |
