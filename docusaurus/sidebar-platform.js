@@ -466,6 +466,7 @@ module.exports = {
             "enterprise-flex/external-secrets",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
+            "enterprise-flex/log-collection",
           ],
         },
         {
