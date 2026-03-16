@@ -149,10 +149,7 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         val config = factory.make(pojo)
 
         val auth: AuthenticationSpecification = pojo.getAuthenticationValue()
-        Assertions.assertTrue(
-            auth is SqlPasswordAuthentication,
-            auth::class.toString()
-        )
+        Assertions.assertTrue(auth is SqlPasswordAuthentication, auth::class.toString())
 
         Assertions.assertEquals("sa", config.jdbcProperties["user"])
         Assertions.assertEquals("Password123!", config.jdbcProperties["password"])
