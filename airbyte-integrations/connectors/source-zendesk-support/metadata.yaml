@@ -7,11 +7,11 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.1@sha256:bd69f6b52bdd92ce06c30786d67546427b828ffb553363c8950b2816c552d6e0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.1.5
+  dockerImageTag: 5.2.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -59,6 +59,7 @@ data:
   suggestedStreams:
     streams:
       - brands
+      - deleted_tickets
       - groups
       - organizations
       - satisfaction_ratings

@@ -10,7 +10,7 @@ from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
-from pydantic.v1 import BaseModel, Field, PositiveInt, constr
+from pydantic.v1 import BaseModel, Field, PositiveInt, constr, validator
 
 from airbyte_cdk.sources.config import BaseConfig
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
@@ -37,6 +37,20 @@ ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
 ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
+
+
+class TimeIncrementPeriod(str, Enum):
+    """Calendar-aligned time periods for InsightConfig.
+
+    These produce calendar-aligned date buckets rather than N-day rolling windows:
+    - daily: equivalent to time_increment=1 (1-day buckets)
+    - weekly: Monday-through-Sunday calendar weeks
+    - monthly: calendar month boundaries (1st to last day)
+    """
+
+    daily = "daily"
+    weekly = "weekly"
+    monthly = "monthly"
 
 
 class OAuthCredentials(BaseModel):
@@ -134,12 +148,34 @@ class InsightConfig(BaseModel):
         description=(
             "Time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. "
             "For example, if you set this value to 7, then all statistics will be reported as 7-day aggregates by starting from the start_date. If the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only). "
-            "The minimum allowed value for this field is 1, and the maximum is 89."
+            "The minimum allowed value for this field is 1, and the maximum is 89. "
+            "Cannot be used together with time_increment_period."
         ),
         maximum=89,
         minimum=1,
         default=1,
     )
+
+    time_increment_period: Optional[TimeIncrementPeriod] = Field(
+        title="Time Increment Period",
+        description=(
+            "Calendar-aligned aggregation period for statistics. Use this instead of time_increment to produce "
+            "consistently aligned time buckets regardless of start_date. "
+            "'daily' is equivalent to time_increment=1. "
+            "'weekly' aligns to Monday-through-Sunday calendar weeks. "
+            "'monthly' aligns to calendar month boundaries (1st to last day of each month) and is natively supported by the Facebook API. "
+            "Cannot be used together with time_increment."
+        ),
+        default=None,
+    )
+
+    @validator("time_increment_period", always=True)
+    def validate_time_increment_mutual_exclusion(cls, time_increment_period, values):
+        """Ensure time_increment and time_increment_period are not both explicitly set."""
+        time_increment = values.get("time_increment")
+        if time_increment_period is not None and time_increment is not None and time_increment != 1:
+            raise ValueError("Fields 'time_increment' and 'time_increment_period' are mutually exclusive. Set only one.")
+        return time_increment_period
 
     start_date: Optional[datetime] = Field(
         title="Start Date",

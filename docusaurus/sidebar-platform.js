@@ -523,6 +523,10 @@ module.exports = {
               type: "doc",
               id: "operating-airbyte/ip-allowlist",
             },
+            {
+              type: "doc",
+              id: "operating-airbyte/privatelink",
+            },
           ],
         },
         {

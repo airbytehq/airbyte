@@ -15,7 +15,9 @@ In open source mode, you provide API credentials directly to the connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Harvest OAuth2 access token |
+| `client_id` | `str` | Yes | N/A |
+| `client_secret` | `str` | Yes | N/A |
+| `refresh_token` | `str` | Yes | Your Harvest OAuth2 refresh token |
 | `account_id` | `str` | Yes | Your Harvest account ID |
 
 Example request:
@@ -26,7 +28,9 @@ from airbyte_agent_harvest.models import HarvestOauth20AuthConfig
 
 connector = HarvestConnector(
     auth_config=HarvestOauth20AuthConfig(
-        access_token="<Your Harvest OAuth2 access token>",
+        client_id="<client_id>",
+        client_secret="<client_secret>",
+        refresh_token="<Your Harvest OAuth2 refresh token>",
         account_id="<Your Harvest account ID>"
     )
 )
@@ -67,7 +71,9 @@ Create a connector with OAuth credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `access_token` | `str` | Yes | Your Harvest OAuth2 access token |
+| `client_id` | `str` | Yes | N/A |
+| `client_secret` | `str` | Yes | N/A |
+| `refresh_token` | `str` | Yes | Your Harvest OAuth2 refresh token |
 | `account_id` | `str` | Yes | Your Harvest account ID |
 
 `replication_config` fields you need:
@@ -87,7 +93,9 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     "connector_type": "Harvest",
     "name": "My Harvest Connector",
     "credentials": {
-      "access_token": "<Your Harvest OAuth2 access token>",
+      "client_id": "<client_id>",
+      "client_secret": "<client_secret>",
+      "refresh_token": "<Your Harvest OAuth2 refresh token>",
       "account_id": "<Your Harvest account ID>"
     },
     "replication_config": {
