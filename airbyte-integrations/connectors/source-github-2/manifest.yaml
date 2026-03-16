@@ -17,7 +17,7 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
-            max_retries: 10
+            max_retries: 5
             response_filters:
               - type: HttpResponseFilter
                 action: IGNORE
@@ -31,8 +31,12 @@ definitions:
                   - 429
                   - 502
             backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+              - type: WaitTimeFromHeader
+                header: X-RateLimit-Reset
+                regex: ([0-9]+)
+                min_wait: 1
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
       request_parameters:
         state: all
     SimpleRetriever:
@@ -2778,7 +2782,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: false
+      global_substream_cursor: true
   - type: DeclarativeStream
     name: pull_requests
     retriever:
@@ -4470,7 +4474,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: false
+      global_substream_cursor: true
   - type: DeclarativeStream
     name: reviews
     retriever:
@@ -4806,7 +4810,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: false
+      global_substream_cursor: true
   - type: DeclarativeStream
     name: workflow_jobs
     retriever:
@@ -6008,7 +6012,7 @@ streams:
         - "%Y-%m-%dT%H:%M:%SZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       is_client_side_incremental: true
-      global_substream_cursor: false
+      global_substream_cursor: true
   - type: DeclarativeStream
     name: deployment_statuses
     retriever:
@@ -7157,7 +7161,7 @@ metadata:
     workflow_runs:
       isStale: false
       hasRecords: true
-      streamHash: 338dd0224bc79d4bc8ca9c109a42a11f2005d536
+      streamHash: c448db7048527271bb03a33a9669bdf3395829e9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
