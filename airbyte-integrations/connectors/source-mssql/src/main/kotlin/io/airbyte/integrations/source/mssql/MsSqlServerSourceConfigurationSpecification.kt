@@ -440,10 +440,11 @@ class MicronautPropertiesFriendlyAuthenticationSpecification {
 
     fun asAuthenticationSpecification(): AuthenticationSpecification =
         when (authMethod) {
-            "sql_password" -> SqlPasswordAuthentication().also {
-                username?.let { u -> it.username = u }
-                password?.let { p -> it.password = p }
-            }
+            "sql_password" ->
+                SqlPasswordAuthentication().also {
+                    username?.let { u -> it.username = u }
+                    password?.let { p -> it.password = p }
+                }
             "active_directory_service_principal" ->
                 ActiveDirectoryServicePrincipalAuthentication().also {
                     tenantId?.let { t -> it.tenantId = t }

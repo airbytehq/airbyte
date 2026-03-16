@@ -225,14 +225,16 @@ constructor(
             }
         } else {
             // Backward compatibility: use top-level username/password fields
-            val username = pojo.username
-                ?: throw ConfigErrorException(
-                    "Username is required when no authentication block is provided."
-                )
-            val password = pojo.password
-                ?: throw ConfigErrorException(
-                    "Password is required when no authentication block is provided."
-                )
+            val username =
+                pojo.username
+                    ?: throw ConfigErrorException(
+                        "Username is required when no authentication block is provided."
+                    )
+            val password =
+                pojo.password
+                    ?: throw ConfigErrorException(
+                        "Password is required when no authentication block is provided."
+                    )
             jdbcProperties["user"] = username
             jdbcProperties["password"] = password
         }
