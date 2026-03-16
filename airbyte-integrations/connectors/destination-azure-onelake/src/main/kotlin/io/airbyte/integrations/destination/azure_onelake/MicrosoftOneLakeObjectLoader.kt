@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import kotlin.math.min
 
 /**

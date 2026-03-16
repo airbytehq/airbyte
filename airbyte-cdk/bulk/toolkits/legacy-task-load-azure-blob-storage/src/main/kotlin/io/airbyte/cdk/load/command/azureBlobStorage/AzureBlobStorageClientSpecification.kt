@@ -16,6 +16,13 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
  * interface.
  */
 interface AzureBlobStorageClientSpecification {
+
+    /** Whether to use Managed Identity (DefaultAzureCredential) instead of explicit credentials. */
+    val useManagedIdentity: Boolean get() = false
+
+    /** Client ID for user-assigned Managed Identity. Leave null for system-assigned. */
+    val managedIdentityClientId: String? get() = null
+
     @get:JsonSchemaTitle("Azure Blob Storage Account Name")
     @get:JsonPropertyDescription(
         "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>."
@@ -92,7 +99,9 @@ interface AzureBlobStorageClientSpecification {
             azureBlobStorageAccountKey,
             azureTenantId,
             azureClientId,
-            azureClientSecret
+            azureClientSecret,
+            useManagedIdentity = useManagedIdentity,
+            managedIdentityClientId = managedIdentityClientId,
         )
     }
 }
@@ -109,6 +118,10 @@ data class AzureBlobStorageClientConfiguration(
     // The following is only used by the azure blob storage destination
     var endpointDomainName: String? = null,
     var spillSize: Int? = null,
+
+    // Managed Identity support
+    val useManagedIdentity: Boolean = false,
+    val managedIdentityClientId: String? = null,
 ) {
     init {
         val hasAccountKey = !accountKey.isNullOrBlank()
@@ -117,8 +130,8 @@ data class AzureBlobStorageClientConfiguration(
             !tenantId.isNullOrBlank() && !clientId.isNullOrBlank() && !clientSecret.isNullOrBlank()
 
         val authMethods = listOf(hasAccountKey, hasSas, hasEntraId).count { it }
-        check(authMethods == 1) {
-            "AzureBlobStorageClientConfiguration must have exactly one of: account key, SAS token, or Entra ID authentication (tenant ID, client ID, and client secret)"
+        check(useManagedIdentity || authMethods == 1) {
+            "AzureBlobStorageClientConfiguration must have exactly one of: account key, SAS token, Entra ID authentication (tenant ID, client ID, and client secret), or use Managed Identity"
         }
     }
 }

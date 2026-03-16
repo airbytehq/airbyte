@@ -132,7 +132,7 @@ class MicrosoftOneLakeConfigurationFactory(
 
         // OneLake Blob API: container = workspace, blob path = item.itemtype/Files/subPath/...
         val clientConfig = pojo.toAzureBlobStorageClientConfiguration().apply {
-            endpointUrl = "https://onelake.blob.fabric.microsoft.com"
+            endpointDomainName = "https://onelake.blob.fabric.microsoft.com"
             spillSize = pojo.azureBlobStorageSpillSize
         }.copy(
             containerName = pojo.azureBlobStorageAccountName

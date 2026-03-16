@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.identity.ClientSecretCredentialBuilder
+import com.azure.identity.DefaultAzureCredentialBuilder
+import com.azure.identity.ManagedIdentityCredentialBuilder
 import com.azure.storage.blob.BlobServiceClientBuilder
 import com.azure.storage.common.StorageSharedKeyCredential
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
@@ -21,13 +23,34 @@ class AzureBlobStorageClientFactory(
     @Singleton
     @Secondary
     fun make(): AzureBlobClient {
-        val endpoint =
-            "https://${azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration.accountName}.blob.core.windows.net"
-
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
+
+        // If endpointDomainName is a full URL (e.g. OneLake), use it directly;
+        // otherwise build the standard account-scoped blob endpoint.
+        val endpointDomainName = config.endpointDomainName
+        val endpoint = when {
+            !endpointDomainName.isNullOrBlank() && endpointDomainName.startsWith("https://") ->
+                endpointDomainName
+            !endpointDomainName.isNullOrBlank() ->
+                "https://${config.accountName}.$endpointDomainName"
+            else ->
+                "https://${config.accountName}.blob.core.windows.net"
+        }
 
         val clientBuilder = BlobServiceClientBuilder().endpoint(endpoint)
         when {
+            // Managed Identity (DefaultAzureCredential / user-assigned)
+            config.useManagedIdentity -> {
+                val credential = if (!config.managedIdentityClientId.isNullOrBlank()) {
+                    ManagedIdentityCredentialBuilder()
+                        .clientId(config.managedIdentityClientId)
+                        .build()
+                } else {
+                    DefaultAzureCredentialBuilder().build()
+                }
+                clientBuilder.credential(credential)
+            }
+
             // EntraId config is available
             !config.tenantId.isNullOrBlank() &&
                 !config.clientId.isNullOrBlank() &&
