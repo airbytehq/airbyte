@@ -7,6 +7,7 @@ import io
 import json
 import logging
 import os
+import tempfile
 from datetime import datetime
 from io import IOBase
 from os.path import getsize
@@ -211,7 +212,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)
-        handle = io.BytesIO()
+        # Use a temporary file instead of BytesIO to avoid loading the entire
+        # file into memory.  This prevents OOM kills (exit code 137) when the
+        # connector encounters large files, especially during CHECK operations.
+        handle = tempfile.TemporaryFile()
         downloader = MediaIoBaseDownload(handle, request)
         done = False
         while done is False:
@@ -222,10 +226,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         if mode == FileReadMode.READ_BINARY:
             return handle
         else:
-            # repack the bytes into a string with the right encoding
-            text_handle = io.StringIO(handle.read().decode(encoding or "utf-8"))
-            handle.close()
-            return text_handle
+            # Wrap the binary temp file in a TextIOWrapper so that data is
+            # decoded on-the-fly instead of reading everything into memory.
+            return io.TextIOWrapper(handle, encoding=encoding or "utf-8")
 
     def _get_export_mime_type(self, original_mime_type: str):
         """
