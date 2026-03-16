@@ -201,9 +201,9 @@ class DestinationStreamFactory(
                     DestinationSyncMode.UPDATE -> Update
                     DestinationSyncMode.SOFT_DELETE -> SoftDelete
                 },
-            generationId = stream.generationId,
-            minimumGenerationId = stream.minimumGenerationId,
-            syncId = stream.syncId,
+            generationId = stream.generationId ?: 0,
+            minimumGenerationId = stream.minimumGenerationId ?: 0,
+            syncId = stream.syncId ?: 0,
             schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
             isFileBased = stream.stream.isFileBased ?: false,
             includeFiles = stream.includeFiles ?: false,

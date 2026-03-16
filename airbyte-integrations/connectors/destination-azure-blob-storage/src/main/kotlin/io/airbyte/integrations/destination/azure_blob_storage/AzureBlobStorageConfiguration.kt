@@ -33,6 +33,10 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration,
     override val objectStorageCompressionConfiguration: ObjectStorageCompressionConfiguration<T>,
 
+    // User-configurable path and filename patterns
+    private val pathFormat: String? = null,
+    private val fileNamePattern: String? = null,
+
     // Internal configuration
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration(),
@@ -52,18 +56,44 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
     ObjectStorageFormatConfigurationProvider,
     ObjectStorageUploadConfigurationProvider,
     ObjectStorageCompressionConfigurationProvider<T> {
-    // for now, we're not exposing this as a user-configurable option
-    // so just return a hardcoded default path config
+
+    companion object {
+        /** Default path when user does not provide one. */
+        const val DEFAULT_PATH_PATTERN = "\${NAMESPACE}/\${STREAM_NAME}/"
+        /** Default file-name when user does not provide one. */
+        const val DEFAULT_FILE_NAME_PATTERN = "{date}_{timestamp}_{part_number}{format_extension}"
+    }
+
+    /**
+     * Normalise the user-supplied path format:
+     *  - Variables may come as {VAR}, ${VAR}, or ${var}; always convert to ${VAR}.
+     *  - Ensure a trailing '/'.
+     *  - Fall back to the default pattern when blank.
+     */
+    private fun resolvePathPattern(raw: String?): String {
+        val trimmed = raw?.trim()?.takeIf { it.isNotBlank() } ?: return DEFAULT_PATH_PATTERN
+        // Normalise {var} / ${var} / ${VAR} → ${VAR}
+        // The \$? optionally consumes an existing $ so we don't double it
+        val normalised =
+            trimmed.replace("""\$?\{(\w+)}""".toRegex()) { match ->
+                "\${${match.groupValues[1].uppercase()}}"
+            }
+        return if (normalised.endsWith('/')) normalised else "$normalised/"
+    }
+
+    /**
+     * Normalise the user-supplied filename pattern.
+     * Falls back to the default when blank.
+     */
+    private fun resolveFileNamePattern(raw: String?): String {
+        return raw?.trim()?.takeIf { it.isNotBlank() } ?: DEFAULT_FILE_NAME_PATTERN
+    }
+
     override val objectStoragePathConfiguration =
         ObjectStoragePathConfiguration(
             prefix = "",
-            // This is equivalent to the default,
-            // but is nicer for tests,
-            // and also matches user intuition more closely.
-            // The default puts the `<date>_<epoch>_` into the path format,
-            // which is (a) confusing, and (b) makes the file transfer tests more annoying.
-            pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/",
-            fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
+            pathPattern = resolvePathPattern(pathFormat),
+            fileNamePattern = resolveFileNamePattern(fileNamePattern),
             resolveNamesMethod = { Transformations.toAzureBlobSafePath(it) },
         )
 
@@ -86,6 +116,8 @@ class AzureBlobStorageConfigurationFactory(private val destinationCatalog: Desti
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
             objectStorageCompressionConfiguration =
                 ObjectStorageCompressionConfiguration(NoopProcessor),
+            pathFormat = pojo.pathFormat,
+            fileNamePattern = pojo.fileNamePattern,
             maxMemoryRatioReservedForParts =
                 if (destinationCatalog.streams.any { it.isFileBased }) {
                     FILE_DEFAULT_MAX_MEMORY_RESERVED_FOR_PARTS

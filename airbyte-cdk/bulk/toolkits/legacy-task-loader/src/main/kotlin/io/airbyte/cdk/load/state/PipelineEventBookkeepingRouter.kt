@@ -148,6 +148,28 @@ class PipelineEventBookkeepingRouter(
         }
     }
 
+    /**
+     * Returns the list of stream descriptors that did not receive a STREAM_STATUS COMPLETE
+     * message. For STDIO mode, this also marks them as end-of-stream since EOF on stdin
+     * means all data for all streams has been received.
+     * Must be called BEFORE close() so the caller can broadcast PipelineEndOfStream events
+     * to the pipeline queue while it is still open.
+     */
+    fun synthesizeMissingCompletions(): List<DestinationStream.Descriptor> {
+        if (markEndOfStreamAtEndOfSync) return emptyList()
+        val missing = mutableListOf<DestinationStream.Descriptor>()
+        catalog.streams.forEach {
+            val manager = syncManager.getStreamManager(it.mappedDescriptor)
+            if (!sawEndOfStreamComplete.contains(it.mappedDescriptor) && !manager.endOfStreamRead()) {
+                log.warn { "Stream ${it.mappedDescriptor} did not receive STREAM_STATUS COMPLETE; synthesizing on EOF" }
+                sawEndOfStreamComplete.add(it.mappedDescriptor)
+                manager.markEndOfStream(true)
+                missing.add(it.mappedDescriptor)
+            }
+        }
+        return missing
+    }
+
     suspend fun handleCheckpoint(reservation: Reserved<CheckpointMessage>) {
         when (val checkpoint = reservation.value) {
             is StreamCheckpoint -> {
