@@ -77,6 +77,6 @@ For reference, examine the structure of the skills in the [airbyte-agent-connect
 
 ## Requirements
 
-- Python 3.11 or later
+- Python 3.13 or later
 - [uv](https://github.com/astral-sh/uv) for package management
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
