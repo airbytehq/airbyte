@@ -141,7 +141,7 @@ def test_streams(connector_config_without_start_date):
 
 def test_streams_count(connector_config_without_start_date, monkeypatch):
     streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
-    assert len(streams) == 51
+    assert len(streams) == 53
 
 
 # TODO: Renable this test once this type of validation is supported
@@ -353,17 +353,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
 
     # Mock the Orders API endpoint for OrderItems stream
     if stream_name == "OrderItems":
-        start_date = config.get("replication_start_date", default_start_date(now))
-        end_date = config.get("replication_end_date", default_end_date("Orders", now))
-        # Adjust start_date to default if earlier than now - 730 days
-        default_start = default_start_date(now)
-        start_date = max(start_date, default_start)
-
-        orders_url = (
-            f"https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders?"
-            f"MarketplaceIds={config['marketplace_id']}&MaxResultsPerPage=100&"
-            f"LastUpdatedAfter={start_date}&LastUpdatedBefore={end_date}"
-        )
+        orders_url = "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders"
         requests_mock.get(orders_url, json={"payload": {"Orders": [{"AmazonOrderId": "123-4567890-1234567"}]}}, status_code=200)
 
     # Initialize the source with the mock catalog, test config, and no state

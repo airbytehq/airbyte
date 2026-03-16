@@ -56,10 +56,12 @@ class RegistryEntryInfo:
     metadata_file_path: str
 
 
-def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_name: str, metadata_blob: storage.Blob) -> dict:
+def _apply_metadata_overrides(
+    metadata_data: dict, registry_type: str, bucket_name: str, metadata_blob: storage.Blob, skip_docker_image_tag: bool = True
+) -> dict:
     connector_type = metadata_data["connectorType"]
 
-    overridden_metadata_data = _apply_overrides_from_registry(metadata_data, registry_type)
+    overridden_metadata_data = _apply_overrides_from_registry(metadata_data, registry_type, skip_docker_image_tag=skip_docker_image_tag)
 
     # remove fields that are not needed in the registry
     del overridden_metadata_data["registryOverrides"]
@@ -108,21 +110,27 @@ def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_na
 
 
 @deep_copy_params
-def _apply_overrides_from_registry(metadata_data: dict, override_registry_key: str) -> dict:
+def _apply_overrides_from_registry(metadata_data: dict, override_registry_key: str, skip_docker_image_tag: bool = True) -> dict:
     """Apply the overrides from the registry to the metadata data.
 
     Args:
-        metadata_data (dict): The metadata data field.
-        override_registry_key (str): The key of the registry to override the metadata with.
+        metadata_data: The metadata data field.
+        override_registry_key: The key of the registry to override the metadata with.
+        skip_docker_image_tag: If True (default), skip applying dockerImageTag override.
+            This should be True for the version being published, and False for latest
+            entries (which should reflect the overridden/pinned version, if applicable).
 
     Returns:
-        dict: The metadata data field with the overrides applied.
+        The metadata data field with the overrides applied.
     """
     override_registry = metadata_data["registryOverrides"][override_registry_key]
     del override_registry["enabled"]
 
     # remove any None values from the override registry
     override_registry = {k: v for k, v in override_registry.items() if v is not None}
+
+    if skip_docker_image_tag and "dockerImageTag" in override_registry:
+        del override_registry["dockerImageTag"]
 
     metadata_data.update(override_registry)
 
@@ -194,7 +202,7 @@ def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
                 if package.get("package_name") == "airbyte-cdk":
                     # Note: Prefix the version with the python slug as the python cdk is the only one we have
                     # versions available for.
-                    cdk_version = f'{PYTHON_CDK_SLUG}:{package.get("version")}'
+                    cdk_version = f"{PYTHON_CDK_SLUG}:{package.get('version')}"
                     break
             package_info_fields = set_with(package_info_fields, "cdk_version", cdk_version, default_none_to_dict)
     except Exception as e:
@@ -467,7 +475,9 @@ def generate_and_persist_registry_entry(
     if metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
         metadata_data = metadata_dict["data"]
         try:
-            overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name, metadata_blob)
+            overridden_metadata_data = _apply_metadata_overrides(
+                metadata_data, registry_type, bucket_name, metadata_blob, skip_docker_image_tag=True
+            )
         except Exception as e:
             logger.exception(f"Error applying metadata overrides")
             message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
@@ -494,19 +504,33 @@ def generate_and_persist_registry_entry(
         for registry_entry_info in registry_entry_blob_paths:
             registry_entry_blob_path = registry_entry_info.entry_blob_path
             metadata_blob_path = registry_entry_info.metadata_file_path
+
+            # For latest entries, apply the dockerImageTag override (version pinning behavior)
+            if "/latest/" in registry_entry_blob_path:
+                latest_metadata = _apply_metadata_overrides(
+                    metadata_data, registry_type, bucket_name, metadata_blob, skip_docker_image_tag=False
+                )
+                latest_spec = spec_cache.find_spec_cache_with_fallback(
+                    latest_metadata["dockerRepository"], latest_metadata["dockerImageTag"], registry_type
+                )
+                latest_metadata["spec"] = spec_cache.download_spec(latest_spec)
+                current_registry_entry_model = RegistryEntryModel.parse_obj(latest_metadata)
+            else:
+                current_registry_entry_model = registry_entry_model
+
             try:
                 logger.info(
                     f"Persisting `{metadata_data['dockerRepository']}` {registry_type} registry entry to `{registry_entry_blob_path}`"
                 )
 
                 # set the correct metadata blob path on the registry entry
-                registry_entry_model = copy.deepcopy(registry_entry_model)
-                generated_fields: Optional[GeneratedFields] = registry_entry_model.generated
+                current_registry_entry_model = copy.deepcopy(current_registry_entry_model)
+                generated_fields: Optional[GeneratedFields] = current_registry_entry_model.generated
                 if generated_fields is not None:
                     source_file_info: Optional[SourceFileInfo] = generated_fields.source_file_info
                     if source_file_info is not None:
                         source_file_info.metadata_file_path = metadata_blob_path
-                _persist_connector_registry_entry(bucket_name, registry_entry_model, registry_entry_blob_path)
+                _persist_connector_registry_entry(bucket_name, current_registry_entry_model, registry_entry_blob_path)
 
                 message = f"*🤖 🟢 _Registry Entry Generation_ SUCCESS*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)

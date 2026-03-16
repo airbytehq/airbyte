@@ -120,6 +120,9 @@ The YouTube Data API source connector supports the following sync modes:
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.49 | 2026-03-03 | [73914](https://github.com/airbytehq/airbyte/pull/73914) | Update dependencies |
+| 0.0.48 | 2026-02-17 | [73507](https://github.com/airbytehq/airbyte/pull/73507) | Update dependencies |
+| 0.0.47 | 2026-02-10 | [73175](https://github.com/airbytehq/airbyte/pull/73175) | Update dependencies |
 | 0.0.46 | 2026-01-27 | [72066](https://github.com/airbytehq/airbyte/pull/72066) | Update dependencies |
 | 0.0.45 | 2026-01-14 | [70677](https://github.com/airbytehq/airbyte/pull/70677) | Update dependencies |
 | 0.0.44 | 2026-01-05 | [71016](https://github.com/airbytehq/airbyte/pull/71016) | Fixed schemas |

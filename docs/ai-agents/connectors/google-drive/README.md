@@ -1,9 +1,11 @@
-# Google-Drive agent connector
+# Google-Drive
+
+The Google-Drive agent connector is a Python package that equips AI agents to interact with Google-Drive through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Google Drive is a cloud-based file storage and synchronization service that allows users
 to store files, share content, and collaborate on documents. This connector provides
-read-only access to files, shared drives, permissions, comments, replies, revisions,
-and change tracking for data analysis and integration workflows.
+access to files, shared drives, permissions, comments, replies, revisions,
+and change tracking, including the ability to create, update, delete, and upload files.
 
 
 ## Example questions
@@ -24,6 +26,10 @@ The Google-Drive connector is optimized to handle prompts like these.
 - Show revision history for a recent file
 - Get my Drive storage quota and user info
 - List files in a folder I have access to
+- Create a new file in Google Drive
+- Upload a document to Drive
+- Delete a file from Drive
+- Move a file to a different folder
 - Show me files modified in the last week
 - What changes have been made since my last sync?
 
@@ -31,12 +37,8 @@ The Google-Drive connector is optimized to handle prompts like these.
 
 The Google-Drive connector isn't currently able to handle prompts like these.
 
-- Create a new file in Google Drive
-- Upload a document to Drive
-- Delete a file from Drive
 - Update file permissions
 - Add a comment to a file
-- Move a file to a different folder
 
 ## Installation
 
@@ -74,6 +76,7 @@ async def google_drive_execute(entity: str, action: str, params: dict | None = N
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -82,7 +85,8 @@ from airbyte_agent_google_drive import GoogleDriveConnector, AirbyteAuthConfig
 
 connector = GoogleDriveConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -102,7 +106,8 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Download](./REFERENCE.md#files-download) |
+| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Create](./REFERENCE.md#files-create), [Update](./REFERENCE.md#files-update), [Delete](./REFERENCE.md#files-delete), [Download](./REFERENCE.md#files-download) |
+| Files Upload | [Create](./REFERENCE.md#files-upload-create) |
 | Files Export | [Download](./REFERENCE.md#files-export-download) |
 | Drives | [List](./REFERENCE.md#drives-list), [Get](./REFERENCE.md#drives-get) |
 | Permissions | [List](./REFERENCE.md#permissions-list), [Get](./REFERENCE.md#permissions-get) |
@@ -114,9 +119,9 @@ This connector supports the following entities and actions. For more details, se
 | About | [Get](./REFERENCE.md#about-get) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Google-Drive API docs
 
@@ -124,7 +129,7 @@ See the official [Google-Drive API reference](https://developers.google.com/work
 
 ## Version information
 
-- **Package version:** 0.1.63
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Package version:** 0.1.88
+- **Connector version:** 0.2.2
+- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-drive/CHANGELOG.md)

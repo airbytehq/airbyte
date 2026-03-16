@@ -144,6 +144,10 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.24 | 2026-03-10 | [74540](https://github.com/airbytehq/airbyte/pull/74540) | Update dependencies |
+| 4.6.23 | 2026-02-24 | [73755](https://github.com/airbytehq/airbyte/pull/73755) | Update dependencies |
+| 4.6.22 | 2026-02-17 | [73390](https://github.com/airbytehq/airbyte/pull/73390) | Update dependencies |
+| 4.6.21 | 2026-02-10 | [72993](https://github.com/airbytehq/airbyte/pull/72993) | Update dependencies |
 | 4.6.20 | 2026-02-03 | [72632](https://github.com/airbytehq/airbyte/pull/72632) | Update dependencies |
 | 4.6.19 | 2026-01-20 | [71999](https://github.com/airbytehq/airbyte/pull/71999) | Update dependencies |
 | 4.6.18 | 2026-01-14 | [71506](https://github.com/airbytehq/airbyte/pull/71506) | Update dependencies |

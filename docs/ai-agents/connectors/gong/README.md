@@ -1,4 +1,6 @@
-# Gong agent connector
+# Gong
+
+The Gong agent connector is a Python package that equips AI agents to interact with Gong through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Gong is a revenue intelligence platform that captures and analyzes customer interactions
 across calls, emails, and web conferences. This connector provides access to users,
@@ -67,6 +69,7 @@ async def gong_execute(entity: str, action: str, params: dict | None = None):
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -75,7 +78,8 @@ from airbyte_agent_gong import GongConnector, AirbyteAuthConfig
 
 connector = GongConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -95,9 +99,9 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get) |
-| Calls | [List](./REFERENCE.md#calls-list), [Get](./REFERENCE.md#calls-get) |
-| Calls Extensive | [List](./REFERENCE.md#calls-extensive-list) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
+| Calls | [List](./REFERENCE.md#calls-list), [Get](./REFERENCE.md#calls-get), [Search](./REFERENCE.md#calls-search) |
+| Calls Extensive | [List](./REFERENCE.md#calls-extensive-list), [Search](./REFERENCE.md#calls-extensive-search) |
 | Call Audio | [Download](./REFERENCE.md#call-audio-download) |
 | Call Video | [Download](./REFERENCE.md#call-video-download) |
 | Workspaces | [List](./REFERENCE.md#workspaces-list) |
@@ -105,17 +109,17 @@ This connector supports the following entities and actions. For more details, se
 | Stats Activity Aggregate | [List](./REFERENCE.md#stats-activity-aggregate-list) |
 | Stats Activity Day By Day | [List](./REFERENCE.md#stats-activity-day-by-day-list) |
 | Stats Interaction | [List](./REFERENCE.md#stats-interaction-list) |
-| Settings Scorecards | [List](./REFERENCE.md#settings-scorecards-list) |
+| Settings Scorecards | [List](./REFERENCE.md#settings-scorecards-list), [Search](./REFERENCE.md#settings-scorecards-search) |
 | Settings Trackers | [List](./REFERENCE.md#settings-trackers-list) |
 | Library Folders | [List](./REFERENCE.md#library-folders-list) |
 | Library Folder Content | [List](./REFERENCE.md#library-folder-content-list) |
 | Coaching | [List](./REFERENCE.md#coaching-list) |
-| Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list) |
+| Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list), [Search](./REFERENCE.md#stats-activity-scorecards-search) |
 
 
-### Authentication and configuration
+### Authentication
 
-For all authentication and configuration options, see the connector's [authentication documentation](AUTH.md).
+For all authentication options, see the connector's [authentication documentation](AUTH.md).
 
 ### Gong API docs
 
@@ -123,7 +127,7 @@ See the official [Gong API reference](https://gong.app.gong.io/settings/api/docu
 
 ## Version information
 
-- **Package version:** 0.19.100
-- **Connector version:** 0.1.17
-- **Generated with Connector SDK commit SHA:** 883f64f29a8a65efcb5a7b62bf9fee14e94f4812
+- **Package version:** 0.19.123
+- **Connector version:** 0.1.19
+- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/gong/CHANGELOG.md)
