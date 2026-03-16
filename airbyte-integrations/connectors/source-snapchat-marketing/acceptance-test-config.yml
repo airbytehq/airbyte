@@ -18,6 +18,7 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        timeout_seconds: 3600
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
@@ -38,6 +39,7 @@ acceptance_tests:
           bypass_reason: "This test does not make sense using Concurrent CDK"
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/catalog_daily.json"
+        timeout_seconds: 3600
         future_state:
           bypass_reason: "This test does not make sense using Concurrent CDK"
   full_refresh:
@@ -48,3 +50,4 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/catalog_lifetime.json"
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/catalog_daily.json"
+        timeout_seconds: 3600
