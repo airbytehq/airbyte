@@ -58,7 +58,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.7.30 | 2026-03-17 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Revert concurrency_level and HTTPAPIBudget that caused HeartbeatTimeout on events stream |
+| 0.7.30 | 2026-03-17 | [75123](https://github.com/airbytehq/airbyte/pull/75123) | Revert concurrency_level and HTTPAPIBudget that caused HeartbeatTimeout on events stream |
 | 0.7.29 | 2026-03-02 | [70841](https://github.com/airbytehq/airbyte/pull/70841) | feat(source-amplitude): Add HTTPAPIBudget and concurrency_level (AI-Triage PR) |
 | 0.7.28 | 2026-01-20 | [71912](https://github.com/airbytehq/airbyte/pull/71912) | Update dependencies |
 | 0.7.27 | 2026-01-14 | [71434](https://github.com/airbytehq/airbyte/pull/71434) | Update dependencies |
