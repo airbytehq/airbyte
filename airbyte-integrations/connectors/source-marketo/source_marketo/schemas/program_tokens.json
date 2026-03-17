@@ -7,20 +7,6 @@
       "description": "The ID of the parent program from which the tokens were retrieved.",
       "type": ["integer", "null"]
     },
-    "folder": {
-      "description": "Details about the folder or program containing the tokens.",
-      "type": ["object", "null"],
-      "properties": {
-        "type": {
-          "description": "The type of the container (e.g., Folder, Program).",
-          "type": ["string", "null"]
-        },
-        "value": {
-          "description": "The unique identifier of the container.",
-          "type": ["integer", "null"]
-        }
-      }
-    },
     "name": {
       "description": "The name of the token.",
       "type": ["string", "null"]

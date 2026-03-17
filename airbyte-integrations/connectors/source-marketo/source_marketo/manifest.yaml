@@ -210,7 +210,10 @@ definitions:
         record_filter:
           type: RecordFilter
           condition: "{{ record is not none }}"
-      requester: "#/definitions/requester"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          folderType: "Program"
       paginator:
         type: NoPagination
       partition_router:
