@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "The full name of the repository (owner/name).",
+      "type": "string"
+    },
+    "node_id": {
+      "description": "The Node ID of the comment.",
+      "type": ["null", "string"]
+    },
+    "discussion_number": {
+      "description": "The number of the discussion this comment belongs to.",
+      "type": ["null", "integer"]
+    },
+    "discussion_url": {
+      "description": "The URL of the discussion this comment belongs to.",
+      "type": ["null", "string"]
+    },
+    "body": {
+      "description": "The body content of the comment in Markdown.",
+      "type": ["null", "string"]
+    },
+    "body_html": {
+      "description": "The body content of the comment rendered as HTML.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when the comment was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the comment was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "is_answer": {
+      "description": "Whether this comment has been chosen as the answer.",
+      "type": ["null", "boolean"]
+    },
+    "upvote_count": {
+      "description": "The number of upvotes on the comment.",
+      "type": ["null", "integer"]
+    },
+    "author_association": {
+      "description": "The association of the comment author with the repository.",
+      "type": ["null", "string"]
+    },
+    "user": {
+      "description": "The author of the comment.",
+      "$ref": "shared/user_graphql.json"
+    },
+    "reactions": {
+      "description": "Reaction counts on the comment.",
+      "$ref": "shared/reactions.json"
+    }
+  }
+}
