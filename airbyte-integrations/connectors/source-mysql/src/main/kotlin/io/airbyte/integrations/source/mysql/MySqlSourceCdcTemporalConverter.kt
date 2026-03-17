@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.cdc.NullFallThrough
 import io.airbyte.cdk.read.cdc.PartialConverter
 import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
 import io.debezium.spi.converter.RelationalColumn
+import java.sql.Timestamp
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -175,6 +176,12 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                 PartialConverter {
                     if (it is ZonedDateTime) {
                         val offsetDateTime: OffsetDateTime = it.toOffsetDateTime()
+                        Converted(offsetDateTime.format(OffsetDateTimeCodec.formatter))
+                    } else if (it is Timestamp) {
+                        val offsetDateTime: OffsetDateTime = it.toLocalDateTime().atOffset(ZoneOffset.UTC)
+                        Converted(offsetDateTime.format(OffsetDateTimeCodec.formatter))
+                    } else if (it is Instant) {
+                        val offsetDateTime: OffsetDateTime = OffsetDateTime.ofInstant(it, ZoneOffset.UTC)
                         Converted(offsetDateTime.format(OffsetDateTimeCodec.formatter))
                     } else {
                         NoConversion
