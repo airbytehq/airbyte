@@ -2,31 +2,31 @@
 
 ## Sync overview
 
-This source syncs data from the [Secoda API](https://docs.secoda.co/secoda-api). It supports both full refresh and incremental sync modes. Incremental syncs use client-side filtering on the `updated_at` (or `created_at`) cursor field, meaning all records are fetched from the API but only new or updated records are emitted to the destination.
+This source syncs data from the [Secoda API](https://docs.secoda.co/api). It supports both full refresh and incremental sync modes. Incremental syncs use client-side filtering on the `updated_at` (or `created_at`) cursor field, meaning all records are fetched from the API but only new or updated records are emitted to the destination.
 
 ## This Source Supports the Following Streams
 
-- [collections](https://docs.secoda.co/secoda-api) - Workspace collections
-- [tables](https://docs.secoda.co/secoda-api) - Tables from integrations
-- [columns](https://docs.secoda.co/secoda-api) - Columns from integrations
-- [terms](https://docs.secoda.co/secoda-api) - Glossary terms (via resource catalog)
-- [integrations](https://docs.secoda.co/secoda-api) - Active integrations
-- [documents](https://docs.secoda.co/secoda-api) - Documentation pages
-- [tags](https://docs.secoda.co/secoda-api) - Custom tags
-- [users](https://docs.secoda.co/secoda-api) - Workspace members
-- [teams](https://docs.secoda.co/secoda-api) - Workspace teams
-- [groups](https://docs.secoda.co/secoda-api) - User groups
-- [questions](https://docs.secoda.co/secoda-api) - Questions and answers
-- [monitors](https://docs.secoda.co/secoda-api) - Data monitors
-- [incidents](https://docs.secoda.co/secoda-api) - Monitor incidents
-- [lineage](https://docs.secoda.co/secoda-api) - Manual lineage relationships
-- [dashboards](https://docs.secoda.co/secoda-api) - Dashboards from integrations
-- [charts](https://docs.secoda.co/secoda-api) - Charts from integrations
-- [ai_chat_metrics](https://docs.secoda.co/secoda-api) - Aggregate AI chat usage metrics
-- [ai_chat_timeseries](https://docs.secoda.co/secoda-api) - AI chat usage over time
-- [ai_chats](https://docs.secoda.co/secoda-api) - Detailed AI chat conversations
-- [ai_rated_messages](https://docs.secoda.co/secoda-api) - AI chats with user feedback
-- [ai_prompts_by_member](https://docs.secoda.co/secoda-api) - AI prompt counts per member
+- [collections](https://docs.secoda.co/api) - Workspace collections
+- [tables](https://docs.secoda.co/api) - Tables from integrations
+- [columns](https://docs.secoda.co/api) - Columns from integrations
+- [terms](https://docs.secoda.co/api) - Glossary terms (via resource catalog)
+- [integrations](https://docs.secoda.co/api) - Active integrations
+- [documents](https://docs.secoda.co/api) - Documentation pages
+- [tags](https://docs.secoda.co/api) - Custom tags
+- [users](https://docs.secoda.co/api) - Workspace members
+- [teams](https://docs.secoda.co/api) - Workspace teams
+- [groups](https://docs.secoda.co/api) - User groups
+- [questions](https://docs.secoda.co/api) - Questions and answers
+- [monitors](https://docs.secoda.co/api) - Data monitors
+- [incidents](https://docs.secoda.co/api) - Monitor incidents
+- [lineage](https://docs.secoda.co/api) - Manual lineage relationships
+- [dashboards](https://docs.secoda.co/api) - Dashboards from integrations
+- [charts](https://docs.secoda.co/api) - Charts from integrations
+- [ai_chat_metrics](https://docs.secoda.co/api) - Aggregate AI chat usage metrics
+- [ai_chat_timeseries](https://docs.secoda.co/api) - AI chat usage over time
+- [ai_chats](https://docs.secoda.co/api) - Detailed AI chat conversations
+- [ai_rated_messages](https://docs.secoda.co/api) - AI chats with user feedback
+- [ai_prompts_by_member](https://docs.secoda.co/api) - AI prompt counts per member
 
 ### Features
 
@@ -45,7 +45,7 @@ The resource catalog endpoint (`/api/v1/resource/catalog`) has a maximum limit o
 
 ### Requirements
 
-- Secoda API Key ([how to generate](https://docs.secoda.co/secoda-api/authentication))
+- Secoda API Key ([how to generate](https://docs.secoda.co/api/authentication))
 
 ### Configuration
 

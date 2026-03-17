@@ -641,7 +641,7 @@ spec:
         airbyte_secret: true
         description: >-
           Your API Access Key. See <a
-          href="https://docs.secoda.co/secoda-api/authentication">here</a>. The
+          href="https://docs.secoda.co/api/authentication">here</a>. The
           key is case sensitive.
         order: 0
       api_host:
