@@ -19,7 +19,6 @@ definitions:
           authenticator:
             type: ApiKeyAuthenticator
             api_token: "{{ config['api_key'] }}"
-            path: workspaces/{{ config['workspace_id'] }}/users
             inject_into:
               type: RequestOption
               field_name: X-Api-Key
@@ -44,6 +43,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -271,7 +271,6 @@ definitions:
           authenticator:
             type: ApiKeyAuthenticator
             api_token: "{{ config['api_key'] }}"
-            path: workspaces/{{ config['workspace_id'] }}/users
             inject_into:
               type: RequestOption
               field_name: X-Api-Key
@@ -296,6 +295,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -528,7 +528,6 @@ definitions:
           authenticator:
             type: ApiKeyAuthenticator
             api_token: "{{ config['api_key'] }}"
-            path: workspaces/{{ config['workspace_id'] }}/users
             inject_into:
               type: RequestOption
               field_name: X-Api-Key
@@ -553,6 +552,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -608,7 +608,6 @@ definitions:
           authenticator:
             type: ApiKeyAuthenticator
             api_token: "{{ config['api_key'] }}"
-            path: workspaces/{{ config['workspace_id'] }}/users
             inject_into:
               type: RequestOption
               field_name: X-Api-Key
@@ -633,6 +632,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -673,7 +673,6 @@ definitions:
           authenticator:
             type: ApiKeyAuthenticator
             api_token: "{{ config['api_key'] }}"
-            path: workspaces/{{ config['workspace_id'] }}/users
             inject_into:
               type: RequestOption
               field_name: X-Api-Key
@@ -698,6 +697,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -743,7 +743,6 @@ definitions:
           authenticator:
             type: ApiKeyAuthenticator
             api_token: "{{ config['api_key'] }}"
-            path: workspaces/{{ config['workspace_id'] }}/users
             inject_into:
               type: RequestOption
               field_name: X-Api-Key
@@ -770,6 +769,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -789,7 +789,6 @@ definitions:
                       authenticator:
                         type: ApiKeyAuthenticator
                         api_token: "{{ config['api_key'] }}"
-                        path: workspaces/{{ config['workspace_id'] }}/users
                         inject_into:
                           type: RequestOption
                           field_name: X-Api-Key
@@ -814,6 +813,7 @@ definitions:
                       pagination_strategy:
                         type: PageIncrement
                         page_size: 50
+                        start_from_page: 1
                   schema_loader:
                     type: InlineSchemaLoader
                     schema:
@@ -881,16 +881,12 @@ definitions:
                               type:
                                 - "null"
                                 - boolean
-                              description:
-                                User's preference for collapsing all project
-                                lists.
+                              description: User's preference for collapsing all project lists.
                             dashboardPinToTop:
                               type:
                                 - "null"
                                 - boolean
-                              description:
-                                User's preference for pinning dashboard to
-                                the top.
+                              description: User's preference for pinning dashboard to the top.
                             dashboardSelection:
                               type:
                                 - "null"
@@ -980,9 +976,7 @@ definitions:
                               type:
                                 - "null"
                                 - boolean
-                              description:
-                                User's preference for showing only working
-                                days.
+                              description: User's preference for showing only working days.
                             summaryReportSettings:
                               type:
                                 - "null"
@@ -1143,7 +1137,6 @@ definitions:
           authenticator:
             type: ApiKeyAuthenticator
             api_token: "{{ config['api_key'] }}"
-            path: workspaces/{{ config['workspace_id'] }}/users
             inject_into:
               type: RequestOption
               field_name: X-Api-Key
@@ -1170,6 +1163,7 @@ definitions:
           pagination_strategy:
             type: PageIncrement
             page_size: 50
+            start_from_page: 1
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -1189,7 +1183,6 @@ definitions:
                       authenticator:
                         type: ApiKeyAuthenticator
                         api_token: "{{ config['api_key'] }}"
-                        path: workspaces/{{ config['workspace_id'] }}/users
                         inject_into:
                           type: RequestOption
                           field_name: X-Api-Key
@@ -1214,6 +1207,7 @@ definitions:
                       pagination_strategy:
                         type: PageIncrement
                         page_size: 50
+                        start_from_page: 1
                   schema_loader:
                     type: InlineSchemaLoader
                     schema:
@@ -1412,9 +1406,7 @@ definitions:
                               type:
                                 - "null"
                                 - boolean
-                              description:
-                                Indicates if the time estimate is active or
-                                not.
+                              description: Indicates if the time estimate is active or not.
                             estimate:
                               type:
                                 - "null"
@@ -1424,9 +1416,7 @@ definitions:
                               type:
                                 - "null"
                                 - boolean
-                              description:
-                                Indicates if non-billable time is included
-                                in the estimate.
+                              description: Indicates if non-billable time is included in the estimate.
                             resetOption:
                               type:
                                 - "null"
@@ -1548,7 +1538,6 @@ definitions:
     authenticator:
       type: ApiKeyAuthenticator
       api_token: "{{ config['api_key'] }}"
-      path: workspaces/{{ config['workspace_id'] }}/users
       inject_into:
         type: RequestOption
         field_name: X-Api-Key
@@ -1566,7 +1555,6 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           api_token: "{{ config['api_key'] }}"
-          path: workspaces/{{ config['workspace_id'] }}/users
           inject_into:
             type: RequestOption
             field_name: X-Api-Key
@@ -1591,6 +1579,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1817,7 +1806,6 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           api_token: "{{ config['api_key'] }}"
-          path: workspaces/{{ config['workspace_id'] }}/users
           inject_into:
             type: RequestOption
             field_name: X-Api-Key
@@ -1842,6 +1830,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2073,7 +2062,6 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           api_token: "{{ config['api_key'] }}"
-          path: workspaces/{{ config['workspace_id'] }}/users
           inject_into:
             type: RequestOption
             field_name: X-Api-Key
@@ -2098,6 +2086,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2152,7 +2141,6 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           api_token: "{{ config['api_key'] }}"
-          path: workspaces/{{ config['workspace_id'] }}/users
           inject_into:
             type: RequestOption
             field_name: X-Api-Key
@@ -2177,6 +2165,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2216,7 +2205,6 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           api_token: "{{ config['api_key'] }}"
-          path: workspaces/{{ config['workspace_id'] }}/users
           inject_into:
             type: RequestOption
             field_name: X-Api-Key
@@ -2241,6 +2229,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2285,7 +2274,6 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           api_token: "{{ config['api_key'] }}"
-          path: workspaces/{{ config['workspace_id'] }}/users
           inject_into:
             type: RequestOption
             field_name: X-Api-Key
@@ -2312,6 +2300,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -2331,7 +2320,6 @@ streams:
                     authenticator:
                       type: ApiKeyAuthenticator
                       api_token: "{{ config['api_key'] }}"
-                      path: workspaces/{{ config['workspace_id'] }}/users
                       inject_into:
                         type: RequestOption
                         field_name: X-Api-Key
@@ -2356,6 +2344,7 @@ streams:
                     pagination_strategy:
                       type: PageIncrement
                       page_size: 50
+                      start_from_page: 1
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
@@ -2428,9 +2417,7 @@ streams:
                             type:
                               - "null"
                               - boolean
-                            description:
-                              User's preference for pinning dashboard to the
-                              top.
+                            description: User's preference for pinning dashboard to the top.
                           dashboardSelection:
                             type:
                               - "null"
@@ -2678,7 +2665,6 @@ streams:
         authenticator:
           type: ApiKeyAuthenticator
           api_token: "{{ config['api_key'] }}"
-          path: workspaces/{{ config['workspace_id'] }}/users
           inject_into:
             type: RequestOption
             field_name: X-Api-Key
@@ -2705,6 +2691,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           page_size: 50
+          start_from_page: 1
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -2724,7 +2711,6 @@ streams:
                     authenticator:
                       type: ApiKeyAuthenticator
                       api_token: "{{ config['api_key'] }}"
-                      path: workspaces/{{ config['workspace_id'] }}/users
                       inject_into:
                         type: RequestOption
                         field_name: X-Api-Key
@@ -2749,6 +2735,7 @@ streams:
                     pagination_strategy:
                       type: PageIncrement
                       page_size: 50
+                      start_from_page: 1
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
@@ -2957,9 +2944,7 @@ streams:
                             type:
                               - "null"
                               - boolean
-                            description:
-                              Indicates if non-billable time is included in the
-                              estimate.
+                            description: Indicates if non-billable time is included in the estimate.
                           resetOption:
                             type:
                               - "null"
