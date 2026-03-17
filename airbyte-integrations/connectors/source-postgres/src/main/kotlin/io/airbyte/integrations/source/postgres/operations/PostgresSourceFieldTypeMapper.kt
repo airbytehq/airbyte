@@ -10,6 +10,7 @@ import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
@@ -82,7 +83,7 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 //  Precision and scale for array types are not accurately reported by JDBC.
                 //  If we are able to fetch the real values, we should remove this clause.
                 if (type.isArray) BigDecimalFieldType
-                else if (type.precision != 0 && type.scale == 0) IntFieldType
+                else if (type.precision != 0 && type.scale == 0) BigIntegerFieldType
                 else BigDecimalFieldType
             }
             JDBCType.DATE -> PostgresDateFieldType

@@ -97,8 +97,15 @@ class JsonCodecTest {
             testJsonRoundTrip(Jsons.numberNode(1))
             testBadEncoding(Jsons.numberNode(BigDecimal(Long.MAX_VALUE).multiply(BigDecimal(1.1))))
             testBadEncoding(Jsons.numberNode(123.456))
+            // String representations of integers should be accepted (CDC path).
+            Assertions.assertEquals(BigDecimal("0"), decode(Jsons.textNode("0")))
+            Assertions.assertEquals(BigDecimal("123"), decode(Jsons.textNode("123")))
+            Assertions.assertEquals(
+                BigDecimal("99999999999999999999"),
+                decode(Jsons.textNode("99999999999999999999"))
+            )
+            testBadEncoding(Jsons.textNode("123.456")) // non-integral
             testBadEncoding(Jsons.textNode("foo"))
-            testBadEncoding(Jsons.textNode("123"))
             testBadEncoding(Jsons.nullNode())
         }
     }

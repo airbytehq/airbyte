@@ -86,6 +86,17 @@ data object BigDecimalIntegerCodec : JsonCodec<BigDecimal> {
     override fun encode(decoded: BigDecimal): JsonNode = Jsons.numberNode(decoded)
 
     override fun decode(encoded: JsonNode): BigDecimal {
+        if (encoded.isTextual) {
+            try {
+                val parsed = BigDecimal(encoded.textValue())
+                if (parsed.stripTrailingZeros().scale() > 0) {
+                    throw IllegalArgumentException("invalid integral value $encoded")
+                }
+                return parsed
+            } catch (e: NumberFormatException) {
+                throw IllegalArgumentException("invalid number value $encoded", e)
+            }
+        }
         if (!encoded.isNumber) {
             throw IllegalArgumentException("invalid number value $encoded")
         }
