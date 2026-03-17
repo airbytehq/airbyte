@@ -100,7 +100,7 @@ The IVR, IVR Menus, and IVR Routes streams require the Zendesk Talk Professional
 The connector is subject to [Zendesk Talk API rate limits](https://developer.zendesk.com/api-reference/voice/talk-api/introduction/#rate-limits):
 
 | Endpoint | Rate limit |
-|:--|:--|
+|:---------|:-----------|
 | Most endpoints | 15,000 requests per 5 minutes |
 | Current Queue Activity | 2,500 requests per 5 minutes |
 | Incremental Exports (Calls, Call Legs) | 10 requests per minute |
