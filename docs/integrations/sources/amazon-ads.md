@@ -169,6 +169,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.15 | 2026-03-17 | [74975](https://github.com/airbytehq/airbyte/pull/74975) | Update dependencies |
 | 7.3.14 | 2026-02-24 | [73761](https://github.com/airbytehq/airbyte/pull/73761) | Update dependencies |
 | 7.3.13 | 2026-02-10 | [73018](https://github.com/airbytehq/airbyte/pull/73018) | Update dependencies |
 | 7.3.12 | 2026-01-14 | [71502](https://github.com/airbytehq/airbyte/pull/71502) | Update dependencies |

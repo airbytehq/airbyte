@@ -696,8 +696,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `date_created_lt` | `integer` | No | Created before (Unix ms) |
 | `date_updated_gt` | `integer` | No | Updated after (Unix ms) |
 | `date_updated_lt` | `integer` | No | Updated before (Unix ms) |
-| `custom_fields` | `array<object>` | No | JSON array of custom field filters. Each object: \{"field_id": "<UUID>", "operator": "<OP>", "value": "<DATA>"\}.
-Operators: = (contains), == (exact), <, <=, >, >=, !=, !==, IS NULL, IS NOT NULL, RANGE, ANY, ALL, NOT ANY, NOT ALL
+| `custom_fields` | `array<object>` | No | JSON array of custom field filters. Each object: \{"field_id": "\<UUID\>", "operator": "\<OP\>", "value": "\<DATA\>"\}.
+Operators: = (contains), == (exact), \<, \<=, \>, \>=, !=, !==, IS NULL, IS NOT NULL, RANGE, ANY, ALL, NOT ANY, NOT ALL
  |
 | `include_closed` | `boolean` | No | Include closed tasks (excluded by default) |
 | `page` | `integer` | No | Page number (0-indexed), results capped at 100/page |
