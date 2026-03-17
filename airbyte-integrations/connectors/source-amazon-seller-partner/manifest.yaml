@@ -2564,7 +2564,7 @@ definitions:
               incremental_dependency: true
         requester:
           type: HttpRequester
-          path: "reports/2021-06-30/{{ stream_slice['reportId'] }}"
+          path: "reports/2021-06-30/reports/{{ stream_slice['reportId'] }}"
           url_base: "{{ config['endpoint'] }}"
           http_method: GET
           authenticator: "#/definitions/authenticator"
