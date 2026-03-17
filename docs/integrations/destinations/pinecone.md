@@ -96,6 +96,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.48 | 2026-03-17 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add logging to check and write operations and fix `__init__` bug |
 | 0.1.47 | 2026-03-17 | [75136](https://github.com/airbytehq/airbyte/pull/75136) | Emit TRACE error instead of LOG on write failure for proper error surfacing |
 | 0.1.46 | 2025-10-21 | [68334](https://github.com/airbytehq/airbyte/pull/68334) | Update dependencies |
 | 0.1.45 | 2025-10-14 | [61096](https://github.com/airbytehq/airbyte/pull/61096) | Update dependencies |
@@ -141,8 +142,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.1.5 | 2024-06-25 | [40430](https://github.com/airbytehq/airbyte/pull/40430) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40150](https://github.com/airbytehq/airbyte/pull/40150) | Update dependencies |
 | 0.1.3 | 2024-06-06 | [39148](https://github.com/airbytehq/airbyte/pull/39148) | [autopull] Upgrade base image to v1.2.2 |
-| 0.1.2   | 2023-05-17 | [38336](https://github.com/airbytehq/airbyte/pull/38336) | Fix for regression: Custom namespaces not created automatically |
-| 0.1.1   | 2023-05-14 | [38151](https://github.com/airbytehq/airbyte/pull/38151) | Add airbyte source tag for attribution |
+| 0.1.2 | 2023-05-17 | [38336](https://github.com/airbytehq/airbyte/pull/38336) | Fix for regression: Custom namespaces not created automatically |
+| 0.1.1 | 2023-05-14 | [38151](https://github.com/airbytehq/airbyte/pull/38151) | Add airbyte source tag for attribution |
 | 0.1.0   | 2023-05-06 | [#37756](https://github.com/airbytehq/airbyte/pull/37756) | Add support for Pinecone Serverless                                                                                          |
 | 0.0.24  | 2023-04-15 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Update CDK & pytest version to fix security vulnerabilities.                                                                 |
 | 0.0.23  | 2023-03-22 | [#35911](https://github.com/airbytehq/airbyte/pull/35911) | Bump versions to latest, resolves test failures.                                                                             |
