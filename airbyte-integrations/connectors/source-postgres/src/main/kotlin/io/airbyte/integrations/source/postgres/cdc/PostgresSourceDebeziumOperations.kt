@@ -8,9 +8,11 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
@@ -36,6 +38,7 @@ import io.debezium.connector.postgresql.connection.Lsn
 import io.debezium.time.Conversions
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -215,6 +218,20 @@ class PostgresSourceDebeziumOperations(
         val resultRow: NativeRecordPayload = mutableMapOf()
         for (field in stream.schema) {
             data[field.id] ?: continue
+            // PostgresCustomConverter serializes NUMERIC/DECIMAL values as strings to preserve
+            // precision. Convert string representations of numbers to BigDecimal numeric nodes
+            // before passing to the codec, which expects numeric JSON nodes.
+            when (field.type.airbyteSchemaType) {
+                LeafAirbyteSchemaType.INTEGER,
+                LeafAirbyteSchemaType.NUMBER -> {
+                    val textNode: TextNode? = data[field.id] as? TextNode
+                    if (textNode != null) {
+                        val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
+                        data.put(field.id, bigDecimal)
+                    }
+                }
+                else -> {}
+            }
             when (data[field.id]) {
                 is NullNode -> {
                     resultRow[field.id] = FieldValueEncoder(null, NullCodec)
