@@ -132,7 +132,7 @@ class JsonCodecTest {
             Assertions.assertEquals(123, decode(Jsons.textNode("123")))
             Assertions.assertEquals(-42, decode(Jsons.textNode("-42")))
             testBadEncoding(Jsons.textNode("foo"))
-            testBadEncoding(Jsons.textNode("99999999999"))  // exceeds Int range
+            testBadEncoding(Jsons.textNode("99999999999")) // exceeds Int range
             testBadEncoding(Jsons.nullNode())
         }
     }
