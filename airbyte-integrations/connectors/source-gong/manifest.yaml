@@ -352,7 +352,8 @@ definitions:
                       - 404
           request_body_json:
             filter:
-              fromDateTime: "{{ config['start_date'] }}"
+              callIds:
+                - "{{ stream_partition.call_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -369,6 +370,40 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: call_id
+              stream:
+                $ref: "#/definitions/streams/calls"
+              incremental_dependency: true
+              extra_fields:
+                - type: ExtraFieldConfiguration
+                  path:
+                    - started
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - started
+              value: "{{ stream_slice.extra_fields['started'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -623,6 +658,7 @@ metadata:
         - errorHandler
       callTranscripts:
         - errorHandler
+        - incrementalSync
   testedStreams:
     users:
       streamHash: c6b2bab08397024790447b2ea909e5e2056b3778
@@ -1620,6 +1656,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      started:
+        type:
+          - "null"
+          - string
+        description: The start time of the call associated with the transcript.
+        format: date-time
       callId:
         type:
           - "null"
