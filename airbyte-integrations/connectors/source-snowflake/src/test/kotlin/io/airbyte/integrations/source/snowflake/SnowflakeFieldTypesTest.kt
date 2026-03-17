@@ -32,7 +32,6 @@ class SnowflakeFieldTypesTest {
 
         val expected = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 123456000)
         assertEquals(expected, result)
-        assertEquals(123456000, result?.nano)
     }
 
     @Test
@@ -47,7 +46,6 @@ class SnowflakeFieldTypesTest {
         val result = SnowflakeLocalDateTimeAccessor.get(rs, 1)
 
         assertEquals(dateTimeWith6Decimals, result)
-        assertEquals(123456000, result?.nano)
     }
 
     @Test
@@ -62,7 +60,6 @@ class SnowflakeFieldTypesTest {
         val result = SnowflakeLocalDateTimeAccessor.get(rs, 1)
 
         assertEquals(dateTimeWith3Decimals, result)
-        assertEquals(123000000, result?.nano)
     }
 
     @Test
@@ -141,7 +138,7 @@ class SnowflakeFieldTypesTest {
 
     @Test
     fun `SnowflakeOffsetDateTimeFieldType converts to UTC offset`() {
-        val localDateTime = LocalDateTime.of(2025, 6, 15, 10, 0, 0, 500000000)
+        val localDateTime = LocalDateTime.of(2025, 6, 15, 10, 0, 0, 500000123)
         val timestamp = Timestamp.valueOf(localDateTime)
 
         val rs = mock(ResultSet::class.java)
@@ -151,6 +148,6 @@ class SnowflakeFieldTypesTest {
         val result = SnowflakeOffsetDateTimeFieldType.jdbcGetter.get(rs, 1)
 
         assertEquals(ZoneOffset.UTC, result?.offset)
-        assertEquals(500000000, result?.nano) // exactly 6 decimal places, no truncation needed
+        assertEquals(500000000, result?.nano) // nanos truncated to microsecond precision
     }
 }
