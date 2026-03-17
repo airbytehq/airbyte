@@ -5,7 +5,6 @@ import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.jdbc.ArrayFieldType
-import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
@@ -17,6 +16,8 @@ import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresBigDecimalFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresIntFieldType
 import io.airbyte.integrations.source.postgres.operations.types.BoxFieldType
 import io.airbyte.integrations.source.postgres.operations.types.CircleFieldType
 import io.airbyte.integrations.source.postgres.operations.types.HstoreFieldType
@@ -55,7 +56,7 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
     private fun scalarType(type: PgSystemType): JdbcFieldType<*> {
         // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
         //  Remove this - preserves legacy mapping of "_oid" array inconsistent with "oid" scalar
-        if (type.isArray && type.scalarTypeName == "oid") return BigDecimalFieldType
+        if (type.isArray && type.scalarTypeName == "oid") return PostgresBigDecimalFieldType
         // _bytea arrays use base64 encoding; scalar bytea uses hex string (legacy inconsistency)
         if (type.isArray && type.scalarTypeName == "bytea") return PostgresByteaFieldType
         return when (type.scalarJdbcType) {
@@ -81,9 +82,9 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 //  Fix type handling for numeric arrays.
                 //  Precision and scale for array types are not accurately reported by JDBC.
                 //  If we are able to fetch the real values, we should remove this clause.
-                if (type.isArray) BigDecimalFieldType
-                else if (type.precision != 0 && type.scale == 0) IntFieldType
-                else BigDecimalFieldType
+                if (type.isArray) PostgresBigDecimalFieldType
+                else if (type.precision != 0 && type.scale == 0) PostgresIntFieldType
+                else PostgresBigDecimalFieldType
             }
             JDBCType.DATE -> PostgresDateFieldType
             JDBCType.TIMESTAMP ->
