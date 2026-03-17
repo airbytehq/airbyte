@@ -4,6 +4,8 @@
 
 
 import logging
+import time
+import traceback
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
@@ -11,9 +13,19 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import Document
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    FailureType,
+    Status,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from airbyte_protocol.models.airbyte_protocol import AirbyteLogMessage, Level
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.indexer import PineconeIndexer
 
@@ -43,8 +55,18 @@ class DestinationPinecone(Destination):
             )
             yield from writer.write(configured_catalog, input_messages)
         except Exception as e:
-            log_message = AirbyteLogMessage(level=Level.ERROR, message=str(e))
-            yield AirbyteMessage(type="LOG", message=log_message)
+            yield AirbyteMessage(
+                type=Type.TRACE,
+                trace=AirbyteTraceMessage(
+                    type=TraceType.ERROR,
+                    emitted_at=time.time() * 1000,
+                    error=AirbyteErrorTraceMessage(
+                        message=f"Pinecone destination write failed: {e}",
+                        internal_message=traceback.format_exc(),
+                        failure_type=FailureType.system_error,
+                    ),
+                ),
+            )
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
