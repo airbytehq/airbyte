@@ -24,6 +24,7 @@ Self-Managed Enterprise
 Elastic License 2.0
 ELv2
 MIT
+Agent Engine
 
 #
 # Common terms Airbyte uses
@@ -48,6 +49,7 @@ ETL
 ELT
 [Dd]ata activation
 ID
+[Aa]gent(ic)?
 
 # Common acronyms and initialisms that don't need definitions
 
@@ -69,6 +71,7 @@ IP[s]
 CDC
 CRM[s]
 FAQ
+MCP
 
 # Airbyte connectors
 
@@ -92,6 +95,10 @@ Entra
 Slack
 Fargate
 MinIO
+Pydantic
+LangChain
+LangGraph
+FastMCP
 
 # Acceptable non-words that shouldn't trigger spellcheck
 

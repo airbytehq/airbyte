@@ -51,4 +51,10 @@ data:
     - title: Webflow rate limits
       url: https://developers.webflow.com/data/docs/rate-limits
       type: rate_limits
+    - title: Webflow API Changelog
+      url: https://developers.webflow.com/data/changelog
+      type: api_release_history
+    - title: Webflow v1 API Deprecation Notice
+      url: https://developers.webflow.com/data/docs/webflow-v1-api-deprecation-notice
+      type: api_deprecations
 metadataSpecVersion: "1.0"

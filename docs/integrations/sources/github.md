@@ -67,16 +67,16 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_requeststats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 
-- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
+- The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 
 ### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-Click Sources and then click + New source.
+2. Click Sources and then click + New source.
 3. On the Set up the source page, select GitHub from the Source type dropdown.
 4. Enter a name for the GitHub connector.
 
@@ -129,7 +129,7 @@ This connector outputs the following incremental streams:
 - [Pull request comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
 - [Pull requests](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests)
-- [Releases](https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases)
+- [Releases](https://docs.github.com/en/graphql/reference/objects#release)
 - [Repositories](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories)
 - [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
 - [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
@@ -148,7 +148,7 @@ This connector outputs the following incremental streams:
    - read only new records;
    - output only new records.
 
-2. Streams `workflow_runs` and `worflow_jobs` is almost pure incremental:
+2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
 
    - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
@@ -169,7 +169,6 @@ This connector outputs the following incremental streams:
 - `issue_labels`
 - `organizations`
 - `pull_request_commits`
-- `pull_request_stats`
 - `repositories`
 - `tags`
 - `teams`
@@ -187,9 +186,10 @@ Expand to see details about GitHub connector limitations and troubleshooting.
 #### Rate limiting
 
 You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make API requests on your behalf.
-All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization ).
+All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization).
 
-:::info `REST API` and `GraphQL API` rate limits are counted separately
+:::info
+`REST API` and `GraphQL API` rate limits are counted separately. The REST API uses a request-based limit, while the GraphQL API uses a [point-based limit](https://docs.github.com/en/graphql/overview/rate-limits-and-node-limits-for-the-graphql-api) where each query costs a calculated number of points. Streams that use the GraphQL API include `pull_request_stats`, `reviews`, `pull_request_comment_reactions`, `issue_reactions`, `releases`, and `projects_v2`.
 :::
 
 :::tip
@@ -201,6 +201,10 @@ In the event that limits are reached before all streams have been read, it is re
    :::
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
+
+#### Releases stream asset limit
+
+The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per release. Releases with more than 100 assets will only include the first 100. Sub-pagination for release assets is not currently supported.
 
 #### Permissions and scopes
 
@@ -225,12 +229,22 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
+| 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
+| 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
+| 2.1.11 | 2026-02-24 | [73785](https://github.com/airbytehq/airbyte/pull/73785) | Update dependencies |
+| 2.1.10 | 2026-02-10 | [73061](https://github.com/airbytehq/airbyte/pull/73061) | Update dependencies |
+| 2.1.9 | 2026-01-27 | [72375](https://github.com/airbytehq/airbyte/pull/72375) | Update dependencies |
+| 2.1.8 | 2026-01-20 | [71986](https://github.com/airbytehq/airbyte/pull/71986) | Update dependencies |
+| 2.1.7 | 2026-01-14 | [71400](https://github.com/airbytehq/airbyte/pull/71400) | Update dependencies |
+| 2.1.6 | 2025-12-18 | [70729](https://github.com/airbytehq/airbyte/pull/70729) | Update dependencies |
+| 2.1.5 | 2025-12-02 | [70286](https://github.com/airbytehq/airbyte/pull/70286) | Update dependencies |
 | 2.1.4 | 2025-11-25 | [69887](https://github.com/airbytehq/airbyte/pull/69887) | Update dependencies |
 | 2.1.3 | 2025-11-18 | [69421](https://github.com/airbytehq/airbyte/pull/69421) | Update dependencies |
 | 2.1.2 | 2025-11-11 | [69271](https://github.com/airbytehq/airbyte/pull/69271) | Update dependencies |
 | 2.1.1 | 2025-11-04 | [69002](https://github.com/airbytehq/airbyte/pull/69002) | Update dependencies |
-| 2.1.0 | 2025-10-24 | [68637](https://github.com/airbytehq/airbyte/pull/68637) | Update dependencies |
-| 2.0.0 | 2025-10-14 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | **Breaking Change**: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
+| 2.1.0 | 2025-10-29 | [68637](https://github.com/airbytehq/airbyte/pull/68637) | Update dependencies |
+| 2.0.0 | 2025-10-22 | [68095](https://github.com/airbytehq/airbyte/pull/68095) | **Breaking Change**: Renames `+1` and `-1` fields to `plus_one` and `minus_one` respectively. |
 | 1.9.2 | 2025-10-21 | [68332](https://github.com/airbytehq/airbyte/pull/68332) | Update dependencies |
 | 1.9.1 | 2025-10-20 | [68197](https://github.com/airbytehq/airbyte/pull/68197) | Promoting release candidate 1.9.1-rc.1 to a main version. |
 | 1.9.1-rc.1 | 2025-10-13 | [67584](https://github.com/airbytehq/airbyte/pull/67584)                                                          | Graceful error handling of invalid credentials when running operations                                                                                                 |
@@ -331,7 +345,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.4.11     | 2023-05-12 | [26025](https://github.com/airbytehq/airbyte/pull/26025)                                                          | Added more transparent depiction of the personal access token expired                                                                                                  |
 | 0.4.10     | 2023-05-15 | [26075](https://github.com/airbytehq/airbyte/pull/26075)                                                          | Add more specific error message description for no repos case.                                                                                                         |
 | 0.4.9      | 2023-05-01 | [24523](https://github.com/airbytehq/airbyte/pull/24523)                                                          | Add undeclared columns to spec                                                                                                                                         |
-| 0.4.8      | 2023-04-19 | [00000](https://github.com/airbytehq/airbyte/pull/25312)                                                          | Fix repo name validation                                                                                                                                               |
+| 0.4.8      | 2023-04-19 | [25312](https://github.com/airbytehq/airbyte/pull/25312)                                                          | Fix repo name validation                                                                                                                                               |
 | 0.4.7      | 2023-03-24 | [24457](https://github.com/airbytehq/airbyte/pull/24457)                                                          | Add validation and transformation for repositories config                                                                                                              |
 | 0.4.6      | 2023-03-24 | [24398](https://github.com/airbytehq/airbyte/pull/24398)                                                          | Fix caching for `get_starting_point` in stream "Commits"                                                                                                               |
 | 0.4.5      | 2023-03-23 | [24417](https://github.com/airbytehq/airbyte/pull/24417)                                                          | Add pattern_descriptors to fields with an expected format                                                                                                              |
@@ -404,7 +418,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.1.9      | 2021-09-02 | [5788](https://github.com/airbytehq/airbyte/pull/5788)                                                            | Handling empty repository, check method using RepositoryStats stream                                                                                                   |
 | 0.1.8      | 2021-09-01 | [5757](https://github.com/airbytehq/airbyte/pull/5757)                                                            | Add more streams                                                                                                                                                       |
 | 0.1.7      | 2021-08-27 | [5696](https://github.com/airbytehq/airbyte/pull/5696)                                                            | Handle negative backoff values                                                                                                                                         |
-| 0.1.6      | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5223)                                                            | Add MultipleTokenAuthenticator                                                                                                                                         |
+| 0.1.6      | 2021-08-18 | [5223](https://github.com/airbytehq/airbyte/pull/5223)                                                            | Add MultipleTokenAuthenticator                                                                                                                                         |
 | 0.1.5      | 2021-08-18 | [5456](https://github.com/airbytehq/airbyte/pull/5456)                                                            | Fix set up validation                                                                                                                                                  |
 | 0.1.4      | 2021-08-13 | [5136](https://github.com/airbytehq/airbyte/pull/5136)                                                            | Support syncing multiple repositories/organizations                                                                                                                    |
 | 0.1.3      | 2021-08-03 | [5156](https://github.com/airbytehq/airbyte/pull/5156)                                                            | Extended existing schemas with `users` property for certain streams                                                                                                    |

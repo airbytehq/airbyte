@@ -34,6 +34,14 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.7.48 | 2026-03-10 | [74531](https://github.com/airbytehq/airbyte/pull/74531) | Update dependencies |
+| 0.7.47 | 2026-02-24 | [73758](https://github.com/airbytehq/airbyte/pull/73758) | Update dependencies |
+| 0.7.46 | 2026-02-17 | [73407](https://github.com/airbytehq/airbyte/pull/73407) | Update dependencies |
+| 0.7.45 | 2026-02-10 | [73039](https://github.com/airbytehq/airbyte/pull/73039) | Update dependencies |
+| 0.7.44 | 2026-02-03 | [72575](https://github.com/airbytehq/airbyte/pull/72575) | Update dependencies |
+| 0.7.43 | 2026-01-20 | [71979](https://github.com/airbytehq/airbyte/pull/71979) | Update dependencies |
+| 0.7.42 | 2026-01-14 | [71433](https://github.com/airbytehq/airbyte/pull/71433) | Update dependencies |
+| 0.7.41 | 2025-12-18 | [70668](https://github.com/airbytehq/airbyte/pull/70668) | Update dependencies |
 | 0.7.40 | 2025-11-25 | [69873](https://github.com/airbytehq/airbyte/pull/69873) | Update dependencies |
 | 0.7.39 | 2025-11-18 | [69376](https://github.com/airbytehq/airbyte/pull/69376) | Update dependencies |
 | 0.7.38 | 2025-10-29 | [69052](https://github.com/airbytehq/airbyte/pull/69052) | Update dependencies |

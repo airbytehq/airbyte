@@ -1,0 +1,23 @@
+[
+  {
+    "id": "release789",
+    "version": "3.0.0",
+    "dateCreated": "2024-01-18T14:00:00Z",
+    "dateReleased": "2024-01-18T15:00:00Z",
+    "newGroups": 10
+  },
+  {
+    "id": "release456",
+    "version": "2.0.0",
+    "dateCreated": "2024-01-16T14:00:00Z",
+    "dateReleased": "2024-01-16T15:00:00Z",
+    "newGroups": 8
+  },
+  {
+    "id": "release123",
+    "version": "1.0.0",
+    "dateCreated": "2024-01-15T14:00:00Z",
+    "dateReleased": "2024-01-15T15:00:00Z",
+    "newGroups": 5
+  }
+]

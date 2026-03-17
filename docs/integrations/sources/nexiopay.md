@@ -28,6 +28,14 @@ API Reference: https://docs.nexiopay.com/reference/api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2026-03-10 | [74619](https://github.com/airbytehq/airbyte/pull/74619) | Update dependencies |
+| 0.0.32 | 2026-02-24 | [73873](https://github.com/airbytehq/airbyte/pull/73873) | Update dependencies |
+| 0.0.31 | 2026-02-17 | [73550](https://github.com/airbytehq/airbyte/pull/73550) | Update dependencies |
+| 0.0.30 | 2026-02-10 | [73041](https://github.com/airbytehq/airbyte/pull/73041) | Update dependencies |
+| 0.0.29 | 2026-02-03 | [72547](https://github.com/airbytehq/airbyte/pull/72547) | Update dependencies |
+| 0.0.28 | 2026-01-20 | [71954](https://github.com/airbytehq/airbyte/pull/71954) | Update dependencies |
+| 0.0.27 | 2026-01-14 | [71642](https://github.com/airbytehq/airbyte/pull/71642) | Update dependencies |
+| 0.0.26 | 2025-12-18 | [70594](https://github.com/airbytehq/airbyte/pull/70594) | Update dependencies |
 | 0.0.25 | 2025-11-25 | [69903](https://github.com/airbytehq/airbyte/pull/69903) | Update dependencies |
 | 0.0.24 | 2025-11-18 | [69408](https://github.com/airbytehq/airbyte/pull/69408) | Update dependencies |
 | 0.0.23 | 2025-10-29 | [68718](https://github.com/airbytehq/airbyte/pull/68718) | Update dependencies |
@@ -35,7 +43,7 @@ API Reference: https://docs.nexiopay.com/reference/api-reference
 | 0.0.21 | 2025-10-14 | [67780](https://github.com/airbytehq/airbyte/pull/67780) | Update dependencies |
 | 0.0.20 | 2025-10-07 | [67428](https://github.com/airbytehq/airbyte/pull/67428) | Update dependencies |
 | 0.0.19 | 2025-09-30 | [66920](https://github.com/airbytehq/airbyte/pull/66920) | Update dependencies |
-| 0.0.18 | 2025-09-23 | [66611](https://github.com/airbytehq/airbyte/pull/66611) | Update dependencies |
+| 0.0.18 | 2025-09-24 | [66611](https://github.com/airbytehq/airbyte/pull/66611) | Update dependencies |
 | 0.0.17 | 2025-09-09 | [65749](https://github.com/airbytehq/airbyte/pull/65749) | Update dependencies |
 | 0.0.16 | 2025-08-23 | [65212](https://github.com/airbytehq/airbyte/pull/65212) | Update dependencies |
 | 0.0.15 | 2025-08-09 | [64690](https://github.com/airbytehq/airbyte/pull/64690) | Update dependencies |

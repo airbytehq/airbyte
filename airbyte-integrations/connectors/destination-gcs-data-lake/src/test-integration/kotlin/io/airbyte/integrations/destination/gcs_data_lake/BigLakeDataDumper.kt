@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
@@ -55,9 +54,9 @@ class BigLakeDataDumper(
     private fun buildReverseMapping(stream: DestinationStream): Map<String, String> {
         val mapping = mutableMapOf<String, String>()
 
-        val schema = stream.schema as? ObjectType ?: return mapping
+        val inputSchema = stream.tableSchema.columnSchema.inputSchema
 
-        schema.properties.keys.forEach { originalName ->
+        inputSchema.keys.forEach { originalName ->
             val sanitized = Transformations.toAlphanumericAndUnderscore(originalName)
             mapping[sanitized] = originalName
         }

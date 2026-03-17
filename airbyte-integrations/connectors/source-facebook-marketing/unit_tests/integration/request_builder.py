@@ -16,7 +16,7 @@ API_VERSION = "v23.0"
 
 
 def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
-    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
+    return RequestBuilder.get_account_endpoint(access_token=ACCESS_TOKEN, account_id=account_id).with_fields(["timezone_name"])
 
 
 def get_ads_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:

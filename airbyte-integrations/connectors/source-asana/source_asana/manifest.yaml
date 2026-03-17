@@ -2641,6 +2641,8 @@ spec:
         title: Organization Export IDs
         description: Globally unique identifiers for the organization exports
         type: array
+        items:
+          type: string
       num_workers:
         type: integer
         title: Number of concurrent workers

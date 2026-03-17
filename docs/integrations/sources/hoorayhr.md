@@ -27,6 +27,12 @@ Use the credentials of your HoorayHR account to configure the connector. Make su
 
 | Version | Date       | Pull Request | Subject                                                                                             |
 | ------- | ---------- | ------------ | --------------------------------------------------------------------------------------------------- |
+| 0.1.44 | 2026-03-17 | [74521](https://github.com/airbytehq/airbyte/pull/74521) | Update dependencies |
+| 0.1.43 | 2026-02-24 | [73903](https://github.com/airbytehq/airbyte/pull/73903) | Update dependencies |
+| 0.1.42 | 2026-02-17 | [73379](https://github.com/airbytehq/airbyte/pull/73379) | Update dependencies |
+| 0.1.41 | 2026-01-20 | [71922](https://github.com/airbytehq/airbyte/pull/71922) | Update dependencies |
+| 0.1.40 | 2026-01-14 | [71720](https://github.com/airbytehq/airbyte/pull/71720) | Update dependencies |
+| 0.1.39 | 2025-12-18 | [70472](https://github.com/airbytehq/airbyte/pull/70472) | Update dependencies |
 | 0.1.38 | 2025-11-25 | [70078](https://github.com/airbytehq/airbyte/pull/70078) | Update dependencies |
 | 0.1.37 | 2025-11-18 | [69390](https://github.com/airbytehq/airbyte/pull/69390) | Update dependencies |
 | 0.1.36 | 2025-10-29 | [68763](https://github.com/airbytehq/airbyte/pull/68763) | Update dependencies |

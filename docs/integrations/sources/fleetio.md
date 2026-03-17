@@ -51,6 +51,14 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.2.47 | 2026-03-17 | [74637](https://github.com/airbytehq/airbyte/pull/74637) | Update dependencies |
+| 0.2.46 | 2026-02-24 | [73754](https://github.com/airbytehq/airbyte/pull/73754) | Update dependencies |
+| 0.2.45 | 2026-02-17 | [73378](https://github.com/airbytehq/airbyte/pull/73378) | Update dependencies |
+| 0.2.44 | 2026-02-10 | [73166](https://github.com/airbytehq/airbyte/pull/73166) | Update dependencies |
+| 0.2.43 | 2026-02-03 | [72548](https://github.com/airbytehq/airbyte/pull/72548) | Update dependencies |
+| 0.2.42 | 2026-01-20 | [71974](https://github.com/airbytehq/airbyte/pull/71974) | Update dependencies |
+| 0.2.41 | 2026-01-14 | [71615](https://github.com/airbytehq/airbyte/pull/71615) | Update dependencies |
+| 0.2.40 | 2025-12-18 | [70597](https://github.com/airbytehq/airbyte/pull/70597) | Update dependencies |
 | 0.2.39 | 2025-11-25 | [69492](https://github.com/airbytehq/airbyte/pull/69492) | Update dependencies |
 | 0.2.38 | 2025-10-29 | [68813](https://github.com/airbytehq/airbyte/pull/68813) | Update dependencies |
 | 0.2.37 | 2025-10-21 | [68449](https://github.com/airbytehq/airbyte/pull/68449) | Update dependencies |

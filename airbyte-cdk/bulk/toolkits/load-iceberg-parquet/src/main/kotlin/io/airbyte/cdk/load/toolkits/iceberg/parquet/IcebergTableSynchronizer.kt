@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
@@ -94,6 +94,7 @@ class IcebergTableSynchronizer(
         // 2) Update types => find a supertype for each changed column
         val columnsToReplaceInSecondCommit =
             mutableMapOf<String, org.apache.iceberg.types.Types.NestedField>()
+        val replacedColumns = mutableSetOf<String>()
 
         diff.updatedDataTypes.forEach { columnName ->
             val existingField =
@@ -134,6 +135,7 @@ class IcebergTableSynchronizer(
                         update.deleteColumn(columnName)
                         update.addColumn(columnName, incomingField.type())
                     }
+                    replacedColumns.add(columnName)
                 }
             }
         }
@@ -188,8 +190,17 @@ class IcebergTableSynchronizer(
         }
 
         // 5) Update identifier fields
-        if (diff.identifierFieldsChanged) {
-            val updatedIdentifierFields = incomingSchema.identifierFieldNames().toList()
+        // Iceberg's requireColumn() fails for columns pending deletion (even if they're
+        // being re-added in the same update). When replaced columns are also identifier
+        // fields, we must defer the identifier field update to a follow-up commit.
+        val updatedIdentifierFields =
+            if (diff.identifierFieldsChanged) incomingSchema.identifierFieldNames().toList()
+            else emptyList()
+        val hasReplacedIdentifierFields =
+            replacedColumns.any { it in updatedIdentifierFields.toSet() }
+
+        if (diff.identifierFieldsChanged && !hasReplacedIdentifierFields) {
+            // No conflict: can update identifier fields in the same update
             updatedIdentifierFields.forEach { update.requireColumn(it) }
             update.setIdentifierFields(updatedIdentifierFields)
         }
@@ -211,6 +222,12 @@ class IcebergTableSynchronizer(
                 addUpdate.addColumn(null, columnName, field.type())
             }
 
+            // If identifier fields were deferred, handle them now (columns have been re-added)
+            if (hasReplacedIdentifierFields) {
+                updatedIdentifierFields.forEach { addUpdate.requireColumn(it) }
+                addUpdate.setIdentifierFields(updatedIdentifierFields)
+            }
+
             // Commit or defer the add operation based on columnTypeChangeBehavior
             val finalSchema = addUpdate.apply()
             return if (columnTypeChangeBehavior.commitImmediately) {
@@ -218,6 +235,25 @@ class IcebergTableSynchronizer(
                 SchemaUpdateResult(finalSchema, pendingUpdates = emptyList())
             } else {
                 SchemaUpdateResult(finalSchema, pendingUpdates = listOf(addUpdate))
+            }
+        }
+
+        // If replaced columns are also identifier fields, commit column replacements first,
+        // then handle identifier fields in a follow-up update.
+        if (hasReplacedIdentifierFields) {
+            update.commit()
+            table.refresh()
+
+            val identifierUpdate = table.updateSchema().allowIncompatibleChanges()
+            updatedIdentifierFields.forEach { identifierUpdate.requireColumn(it) }
+            identifierUpdate.setIdentifierFields(updatedIdentifierFields)
+
+            val newSchema = identifierUpdate.apply()
+            return if (columnTypeChangeBehavior.commitImmediately) {
+                identifierUpdate.commit()
+                SchemaUpdateResult(newSchema, pendingUpdates = emptyList())
+            } else {
+                SchemaUpdateResult(newSchema, pendingUpdates = listOf(identifierUpdate))
             }
         }
 

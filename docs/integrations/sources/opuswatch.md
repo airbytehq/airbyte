@@ -59,6 +59,14 @@ By leveraging the OPUSWatch Airbyte connector, horticultural businesses can brea
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.28 | 2026-03-17 | [74987](https://github.com/airbytehq/airbyte/pull/74987) | Update dependencies |
+| 0.0.27 | 2026-03-10 | [74626](https://github.com/airbytehq/airbyte/pull/74626) | Update dependencies |
+| 0.0.26 | 2026-02-24 | [73575](https://github.com/airbytehq/airbyte/pull/73575) | Update dependencies |
+| 0.0.25 | 2026-02-10 | [73070](https://github.com/airbytehq/airbyte/pull/73070) | Update dependencies |
+| 0.0.24 | 2026-02-03 | [72584](https://github.com/airbytehq/airbyte/pull/72584) | Update dependencies |
+| 0.0.23 | 2026-01-20 | [72183](https://github.com/airbytehq/airbyte/pull/72183) | Update dependencies |
+| 0.0.22 | 2026-01-14 | [71690](https://github.com/airbytehq/airbyte/pull/71690) | Update dependencies |
+| 0.0.21 | 2025-12-18 | [70518](https://github.com/airbytehq/airbyte/pull/70518) | Update dependencies |
 | 0.0.20 | 2025-11-25 | [70113](https://github.com/airbytehq/airbyte/pull/70113) | Update dependencies |
 | 0.0.19 | 2025-11-18 | [69702](https://github.com/airbytehq/airbyte/pull/69702) | Update dependencies |
 | 0.0.18 | 2025-10-29 | [69035](https://github.com/airbytehq/airbyte/pull/69035) | Update dependencies |

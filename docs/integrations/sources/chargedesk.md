@@ -30,6 +30,14 @@ You can find more about the API here https://chargedesk.com/api-docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-03-17 | [75103](https://github.com/airbytehq/airbyte/pull/75103) | Update dependencies |
+| 0.0.51 | 2026-03-10 | [74425](https://github.com/airbytehq/airbyte/pull/74425) | Update dependencies |
+| 0.0.50 | 2026-02-24 | [73819](https://github.com/airbytehq/airbyte/pull/73819) | Update dependencies |
+| 0.0.49 | 2026-02-17 | [73474](https://github.com/airbytehq/airbyte/pull/73474) | Update dependencies |
+| 0.0.48 | 2026-02-03 | [72697](https://github.com/airbytehq/airbyte/pull/72697) | Update dependencies |
+| 0.0.47 | 2026-01-20 | [72160](https://github.com/airbytehq/airbyte/pull/72160) | Update dependencies |
+| 0.0.46 | 2026-01-14 | [71705](https://github.com/airbytehq/airbyte/pull/71705) | Update dependencies |
+| 0.0.45 | 2025-12-18 | [70660](https://github.com/airbytehq/airbyte/pull/70660) | Update dependencies |
 | 0.0.44 | 2025-11-25 | [69905](https://github.com/airbytehq/airbyte/pull/69905) | Update dependencies |
 | 0.0.43 | 2025-11-18 | [69601](https://github.com/airbytehq/airbyte/pull/69601) | Update dependencies |
 | 0.0.42 | 2025-10-29 | [68864](https://github.com/airbytehq/airbyte/pull/68864) | Update dependencies |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql
@@ -164,7 +164,7 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonSchemaTitle("Concurrency")
     @JsonSchemaInject(json = """{"order":12}""")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
-    var concurrency: Int? = 1
+    var concurrency: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")

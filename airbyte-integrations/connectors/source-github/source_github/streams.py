@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import re
+import struct
 from abc import ABC, abstractmethod
 from datetime import timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -39,6 +41,7 @@ from .graphql import (
     get_query_issue_reactions,
     get_query_projectsV2,
     get_query_pull_requests,
+    get_query_releases,
     get_query_reviews,
 )
 from .utils import GitHubAPILimitException, getter
@@ -502,24 +505,6 @@ class Users(Organizations):
 # Below are semi incremental streams
 
 
-class Releases(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
-    """
-
-    cursor_field = "created_at"
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-
-        assets = record.get("assets", [])
-        for asset in assets:
-            uploader = asset.pop("uploader", None)
-            asset["uploader_id"] = uploader.get("id") if uploader else None
-
-        return record
-
-
 class Events(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events
@@ -808,13 +793,162 @@ class GitHubGraphQLStream(GithubStream, ABC):
         return {}
 
 
+class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
+    """
+    API docs: https://docs.github.com/en/graphql/reference/objects#release
+    Uses GraphQL API to avoid the REST API's 10,000 result pagination limit.
+    """
+
+    cursor_field = "created_at"
+    is_sorted = "asc"
+
+    GRAPHQL_REACTION_TO_REST = {
+        "THUMBS_UP": "plus_one",
+        "THUMBS_DOWN": "minus_one",
+        "LAUGH": "laugh",
+        "HOORAY": "hooray",
+        "CONFUSED": "confused",
+        "HEART": "heart",
+        "ROCKET": "rocket",
+        "EYES": "eyes",
+    }
+
+    @staticmethod
+    def _extract_database_id_from_node_id(node_id: str) -> Optional[int]:
+        """Extract the numeric database ID from a GitHub GraphQL Node ID.
+
+        GitHub Node IDs with type prefixes (e.g. 'RA_...') are URL-safe base64
+        encodings of a msgpack array: [type_flag, repo_database_id, entity_database_id].
+        The last 4 bytes encode the entity's numeric database ID as a big-endian uint32.
+        """
+        if not node_id or "_" not in node_id:
+            return None
+        try:
+            encoded = node_id.split("_", 1)[1]
+            decoded = base64.urlsafe_b64decode(encoded + "==")
+            if len(decoded) >= 4:
+                return struct.unpack(">I", decoded[-4:])[0]
+        except Exception:
+            return None
+        return None
+
+    def _get_assets_from_release(self, record: Mapping) -> list:
+        assets_data = record.get("assets", {})
+        if assets_data.get("pageInfo", {}).get("hasNextPage"):
+            self.logger.warning(
+                "Release %s in %s has >100 assets; only the first 100 were synced. "
+                "Sub-pagination for release assets is not yet implemented.",
+                record.get("id"),
+                record.get("repository"),
+            )
+        assets = assets_data.get("nodes", [])
+        for asset in assets:
+            uploader = asset.pop("uploader", None)
+            asset["uploader_id"] = uploader.get("id") if uploader else None
+            asset["id"] = self._extract_database_id_from_node_id(asset.get("node_id"))
+        return assets
+
+    def _get_reactions_from_release(self, record: Mapping) -> Optional[Mapping]:
+        reaction_groups = record.pop("reaction_groups", None)
+        if reaction_groups is None:
+            return None
+        reactions = {rest_key: 0 for rest_key in self.GRAPHQL_REACTION_TO_REST.values()}
+        total = 0
+        for group in reaction_groups:
+            content = group.get("content")
+            count = group.get("reactors", {}).get("totalCount", 0)
+            rest_key = self.GRAPHQL_REACTION_TO_REST.get(content)
+            if rest_key:
+                reactions[rest_key] = count
+                total += count
+        reactions["total_count"] = total
+        return reactions
+
+    def _build_rest_urls(self, repository: str, release_id: int, tag_name: str) -> Mapping[str, str]:
+        """Synthesize REST-compatible URL fields from GraphQL data.
+
+        The GraphQL API does not return reference URLs the way the REST API does,
+        but we can construct them from the repository, release ID, and tag name
+        to retain backwards compatibility with the previous REST-based schema.
+        """
+        api_url = self.api_url.rstrip("/")
+        upload_url = api_url.replace("api.github.com", "uploads.github.com")
+        return {
+            "url": f"{api_url}/repos/{repository}/releases/{release_id}",
+            "assets_url": f"{api_url}/repos/{repository}/releases/{release_id}/assets",
+            "upload_url": f"{upload_url}/repos/{repository}/releases/{release_id}/assets{{?name,label}}",
+            "tarball_url": f"{api_url}/repos/{repository}/tarball/{tag_name}" if tag_name else None,
+            "zipball_url": f"{api_url}/repos/{repository}/zipball/{tag_name}" if tag_name else None,
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        repository = response.json().get("data", {}).get("repository")
+        if repository:
+            nodes = repository.get("releases", {}).get("nodes", [])
+            for record in nodes:
+                record["repository"] = self._get_repository_name(repository)
+                if record.get("author"):
+                    record["author"]["type"] = record["author"].pop("__typename", "User")
+                record["assets"] = self._get_assets_from_release(record)
+                record["reactions"] = self._get_reactions_from_release(record)
+                mentions_connection = record.pop("mentions_connection", None)
+                if mentions_connection is not None:
+                    record["mentions_count"] = mentions_connection.get("totalCount", 0)
+                tag_commit = record.pop("tagCommit", None)
+                record["target_commitish"] = tag_commit.get("target_commitish") if tag_commit else None
+                record.update(self._build_rest_urls(record["repository"], record.get("id"), record.get("tag_name")))
+                yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json().get("data", {}).get("repository")
+        if repository:
+            page_info = repository.get("releases", {}).get("pageInfo", {})
+            if page_info.get("hasNextPage"):
+                return {"after": page_info["endCursor"]}
+        return None
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        after = next_page_token["after"] if next_page_token else None
+        query = get_query_releases(owner=organization, name=name, first=self.page_size, after=after)
+        return {"query": query}
+
+
 class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
     """
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
     large_stream = True
-    is_sorted = "asc"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._first_read = True
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Decide if this is a first read or not by the presence of the state object
+        """
+        self._first_read = not bool(stream_state)
+        yield from super().read_records(stream_state=stream_state, **kwargs)
+
+    @property
+    def is_sorted(self) -> str:
+        """
+        On first read (no state), use ascending order with checkpoint support.
+        On subsequent reads (has state), use descending order so newest records come first,
+        allowing early exit when we reach already-seen records.
+        This avoids re-reading all historical records on incremental syncs,
+        which was causing rate limit exhaustion and heartbeat timeouts for large organizations.
+        """
+        if self._first_read:
+            return "asc"
+        return "desc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json()["data"]["repository"]

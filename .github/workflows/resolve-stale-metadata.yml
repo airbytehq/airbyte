@@ -1,0 +1,50 @@
+name: Resolve Stale Metadata
+
+on:
+  workflow_dispatch:
+    inputs:
+      gitref:
+        description: "The git ref to check out from the repository"
+        required: false
+        type: string
+  schedule:
+    - cron: "0 */2 * * *" # Run every 2 hours
+
+permissions:
+  contents: read
+
+jobs:
+  generate-connector-registries:
+    name: Generate Connector Registries
+    uses: ./.github/workflows/generate-connector-registries.yml
+    secrets: inherit
+
+  check-stale-metadata:
+    name: Check for Stale Metadata
+    needs: [generate-connector-registries]
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.gitref || github.ref }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Install Ops CLI
+        continue-on-error: true
+        run: uv tool install airbyte-internal-ops
+
+      - name: Check for unpublished connector versions
+        continue-on-error: true
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        shell: bash
+        run: >
+          airbyte-ops local connector list
+          --repo-path "${{ github.workspace }}"
+          --unpublished
+          --store coral:prod
+          --assert-none

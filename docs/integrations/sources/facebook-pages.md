@@ -14,16 +14,16 @@ The Facebook Pages source connector is currently only compatible with v24 of the
 
 ### Step 1: Set up Facebook Pages
 
-1. Create Facebook Developer Account. Follow [instruction](https://developers.facebook.com/async/registration/) to create one.
-2. Create [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
-3. Connect a User [Page](https://developers.facebook.com/tools/explorer/). Choose your app at `Meta App` field. Choose your Page at `User or Page` field. Add next permission:
+1. Create a Facebook Developer Account. Follow [these instructions](https://developers.facebook.com/async/registration/) to create one.
+2. Create a [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
+3. Connect a User [Page](https://developers.facebook.com/tools/explorer/) using the Graph API Explorer. Choose your app in the `Meta App` field. Choose your Page in the `User or Page` field. Add the following permissions:
    - pages_read_engagement
    - pages_read_user_content
    - pages_show_list
    - read_insights
 4. Click Generate Access Token and follow instructions.
 
-After all the steps, it should look something like this
+After all the steps, it should look something like this:
 
 ![](/.gitbook/assets/facebook-pages-1.png)
 
@@ -38,15 +38,30 @@ After all the steps, it should look something like this
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
 4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
+6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
 
-### For Airbyte OSS:
+### For Airbyte OSS
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
 4. Fill in Page Access Token with Long-Lived Page Token
-5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`)
+6. (Optional) Set **Page Size** to control the number of records per page for the `post` and `post_insights` streams. The default is 100. Decrease this value if you encounter "Please reduce the amount of data you're asking for" errors.
+
+### Creating your own OAuth App
+
+Follow this [Facebook documentation](https://developers.facebook.com/docs/development/create-an-app/) to create an OAuth App.
+
+Required permissions for your OAuth App to sync data using the Facebook Pages source connector:
+
+- `pages_read_engagement`
+- `pages_read_user_content`
+- `pages_show_list`
+- `read_insights`
+
+If you encounter permission errors for specific Page fields, see [Meta's Permissions Reference](https://developers.facebook.com/docs/permissions) for additional permissions you might need. As a rule it's best to request the lowest number of permissions you can to function normally.
 
 ## Supported sync modes
 
@@ -62,6 +77,19 @@ The Facebook Pages source connector supports the following [sync modes](https://
 - [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights)
 - [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights)
 
+## Limitations & Troubleshooting
+
+### "Please reduce the amount of data you're asking for" error
+
+This error occurs when the Facebook Graph API considers the total response data too large. There are two ways to resolve it:
+
+- **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
+- **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+
+### Product catalogs field not available
+
+Starting from version 2.0.4, the `product_catalogs` field is no longer synced in the Page stream and will always be `null`. This is because the Facebook Graph API only returns product catalogs that are owned directly by the Page, not catalogs owned by a Business. Since most product catalogs are now created as Business-owned catalogs (Page-owned catalogs are a legacy feature), and this connector uses Page access tokens, the `product_catalogs` field would not return meaningful data for most users.
+
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
@@ -73,7 +101,7 @@ The Facebook Pages source connector supports the following [sync modes](https://
 
 ## Performance considerations
 
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
+Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
 
@@ -84,13 +112,18 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.0   | 2025-11-18 | [69714](https://github.com/airbytehq/airbyte/pull/69714)       | Upgrade Facebook API to v24.0                                                                                                                                          |
-| 1.1.4   | 2025-07-31 | [64141](https://github.com/airbytehq/airbyte/pull/64141)       | Upgrade Facebook API to v23.0                                                                                                                                          |
-| 1.1.3   | 2025-07-12 | [60391](https://github.com/airbytehq/airbyte/pull/60391)       | Update dependencies                                                                                                                                                    |
-| 1.1.2   | 2025-05-10 | [60043](https://github.com/airbytehq/airbyte/pull/60043)       | Update dependencies                                                                                                                                                    |
-| 1.1.1   | 2025-05-03 | [53787](https://github.com/airbytehq/airbyte/pull/53787)       | Update dependencies                                                                                                                                                    |
-| 1.1.0   | 2025-04-30 | [59126](https://github.com/airbytehq/airbyte/pull/59126)       | Re-enable in cloud and update versions                                                                                                                                 |
-| 1.0.32  | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793)       | Update dependencies                                                                                                                                                    |
+| 2.1.0 | 2026-02-09 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
+| 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |
+| 2.0.3 | 2025-12-01 | [70248](https://github.com/airbytehq/airbyte/pull/70248) | Use correct pagination parameter name (`limit` instead of `page_size`) |
+| 2.0.2 | 2025-12-01 | [70258](https://github.com/airbytehq/airbyte/pull/70258) | Use Post stream for check, handle 400 error in Page stream |
+| 2.0.1 | 2025-11-27 | [70242](https://github.com/airbytehq/airbyte/pull/70242) | Refresh in-app documentation to reflect v24 API version |
+| 2.0.0 | 2025-11-19 | [69714](https://github.com/airbytehq/airbyte/pull/69714) | Upgrade Facebook API to v24.0 |
+| 1.1.4 | 2025-08-14 | [64141](https://github.com/airbytehq/airbyte/pull/64141) | Upgrade Facebook API to v23.0 |
+| 1.1.3 | 2025-07-12 | [60391](https://github.com/airbytehq/airbyte/pull/60391) | Update dependencies |
+| 1.1.2 | 2025-05-10 | [60043](https://github.com/airbytehq/airbyte/pull/60043) | Update dependencies |
+| 1.1.1 | 2025-05-03 | [53787](https://github.com/airbytehq/airbyte/pull/53787) | Update dependencies |
+| 1.1.0 | 2025-04-30 | [59126](https://github.com/airbytehq/airbyte/pull/59126) | Re-enable in cloud and update versions |
+| 1.0.32 | 2025-02-01 | [52793](https://github.com/airbytehq/airbyte/pull/52793) | Update dependencies |
 | 1.0.31  | 2025-01-27 | [52122](https://github.com/airbytehq/airbyte/pull/52122/files) | Upgrade Facebook API to v21.0                                                                                                                                          |
 | 1.0.30  | 2025-01-25 | [52373](https://github.com/airbytehq/airbyte/pull/52373)       | Update dependencies                                                                                                                                                    |
 | 1.0.29  | 2025-01-18 | [51637](https://github.com/airbytehq/airbyte/pull/51637)       | Update dependencies                                                                                                                                                    |

@@ -33,6 +33,11 @@ Finnhub is a financial data platform that provides real-time stock market, forex
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-03-17 | [74943](https://github.com/airbytehq/airbyte/pull/74943) | Update dependencies |
+| 0.0.44 | 2026-02-24 | [73780](https://github.com/airbytehq/airbyte/pull/73780) | Update dependencies |
+| 0.0.43 | 2026-02-10 | [73168](https://github.com/airbytehq/airbyte/pull/73168) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [71665](https://github.com/airbytehq/airbyte/pull/71665) | Update dependencies |
+| 0.0.41 | 2025-12-18 | [70569](https://github.com/airbytehq/airbyte/pull/70569) | Update dependencies |
 | 0.0.40 | 2025-11-25 | [69995](https://github.com/airbytehq/airbyte/pull/69995) | Update dependencies |
 | 0.0.39 | 2025-11-18 | [69464](https://github.com/airbytehq/airbyte/pull/69464) | Update dependencies |
 | 0.0.38 | 2025-10-29 | [68773](https://github.com/airbytehq/airbyte/pull/68773) | Update dependencies |

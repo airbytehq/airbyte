@@ -34,6 +34,13 @@ You can find more about the API here https://developer.revolut.com/docs/merchant
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-03-17 | [74960](https://github.com/airbytehq/airbyte/pull/74960) | Update dependencies |
+| 0.0.45 | 2026-03-10 | [74689](https://github.com/airbytehq/airbyte/pull/74689) | Update dependencies |
+| 0.0.44 | 2026-02-24 | [73771](https://github.com/airbytehq/airbyte/pull/73771) | Update dependencies |
+| 0.0.43 | 2026-02-17 | [72674](https://github.com/airbytehq/airbyte/pull/72674) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [72042](https://github.com/airbytehq/airbyte/pull/72042) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71455](https://github.com/airbytehq/airbyte/pull/71455) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70740](https://github.com/airbytehq/airbyte/pull/70740) | Update dependencies |
 | 0.0.39 | 2025-11-25 | [70002](https://github.com/airbytehq/airbyte/pull/70002) | Update dependencies |
 | 0.0.38 | 2025-11-18 | [69616](https://github.com/airbytehq/airbyte/pull/69616) | Update dependencies |
 | 0.0.37 | 2025-10-29 | [68905](https://github.com/airbytehq/airbyte/pull/68905) | Update dependencies |
@@ -43,7 +50,7 @@ You can find more about the API here https://developer.revolut.com/docs/merchant
 | 0.0.33 | 2025-09-30 | [66435](https://github.com/airbytehq/airbyte/pull/66435) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [65668](https://github.com/airbytehq/airbyte/pull/65668) | Update dependencies |
 | 0.0.31 | 2025-08-24 | [65499](https://github.com/airbytehq/airbyte/pull/65499) | Update dependencies |
-| 0.0.30 | 2025-08-09 | [64848](https://github.com/airbytehq/airbyte/pull/64848) | Update dependencies |
+| 0.0.30 | 2025-08-10 | [64848](https://github.com/airbytehq/airbyte/pull/64848) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64444](https://github.com/airbytehq/airbyte/pull/64444) | Update dependencies |
 | 0.0.28 | 2025-07-05 | [62722](https://github.com/airbytehq/airbyte/pull/62722) | Update dependencies |
 | 0.0.27 | 2025-06-28 | [62219](https://github.com/airbytehq/airbyte/pull/62219) | Update dependencies |

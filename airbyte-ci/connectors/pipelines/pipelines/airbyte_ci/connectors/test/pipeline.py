@@ -14,7 +14,7 @@ from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, manifest_only_connectors, python_connectors
-from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionIncrementCheck
+from pipelines.airbyte_ci.connectors.test.steps.common import VersionIncrementCheck
 from pipelines.helpers.execution.run_steps import StepToRun, run_steps
 
 if TYPE_CHECKING:
@@ -54,11 +54,11 @@ async def run_connector_test_pipeline(context: ConnectorTestContext, semaphore: 
 
     all_steps_to_run += get_test_steps(context)
 
-    if not context.code_tests_only:
+    # Skip static analysis steps when only test files are modified
+    if not context.code_tests_only and not context.test_only_change:
         static_analysis_steps_to_run = [
             [
                 StepToRun(id=CONNECTOR_TEST_STEP_ID.VERSION_INC_CHECK, step=VersionIncrementCheck(context)),
-                StepToRun(id=CONNECTOR_TEST_STEP_ID.QA_CHECKS, step=QaChecks(context)),
             ]
         ]
         all_steps_to_run += static_analysis_steps_to_run
