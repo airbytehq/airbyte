@@ -896,6 +896,22 @@ spec:
         examples:
           - 10
           - 20
+      api_rate_limit:
+        type: integer
+        description: >-
+          The maximum number of API requests per minute allowed by your Intercom
+          plan. The default of 10000 matches the standard Intercom rate limit.
+          If your workspace has a higher rate limit (e.g. 150000/min), set this
+          to that value to allow the connector to use your full API throughput.
+          The connector will use 95% of this value as the effective budget and
+          derive a per-10-second window automatically.
+        order: 7
+        title: API Rate Limit (requests per minute)
+        default: 10000
+        minimum: 100
+        examples:
+          - 10000
+          - 150000
     additionalProperties: true
   advanced_auth:
       auth_flow_type: "oauth2.0"
@@ -1063,18 +1079,20 @@ metadata:
 # Intercom API rate limits:
 # - Both private and public apps: 10,000 API calls/min per app, 25,000/min per workspace
 # - Rate limit headers: X-RateLimit-Limit (per 10s window), X-RateLimit-Remaining, X-RateLimit-Reset
-# Two rate windows to match Intercom's enforcement:
-#   - 9500 req/min: 95% of the 10,000/min per-app limit
-#   - 1583 req/10s: 95% of ~1,667/10s (derived from 10,000/min per-app limit)
+# The api_rate_limit config option (default: 10,000 req/min) controls the budget.
+# Two rate windows are derived at 95% of the configured limit:
+#   - Per-minute: api_rate_limit * 0.95
+#   - Per-10s: api_rate_limit * 0.95 / 6  (derived from per-minute)
+# For customers with higher limits (e.g. 150k/min), set api_rate_limit in the connector config.
 # The ErrorHandlerWithRateLimiter custom component also proactively throttles based on remaining capacity headers.
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 9500
+        - limit: "{{ (config.get('api_rate_limit', 10000) * 0.95) | int }}"
           interval: PT1M
-        - limit: 1583
+        - limit: "{{ (config.get('api_rate_limit', 10000) * 0.95 / 6) | int }}"
           interval: PT10S
       matchers: []
   status_codes_for_ratelimit_hit: [429]
