@@ -2,28 +2,57 @@
 
 ## Sync overview
 
-This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source syncs data from the [Secoda API](https://docs.secoda.co/secoda-api). It supports both full refresh and incremental sync modes. Incremental syncs use client-side filtering on the `updated_at` (or `created_at`) cursor field, meaning all records are fetched from the API but only new or updated records are emitted to the destination.
 
 ## This Source Supports the Following Streams
 
-- collections
-- tables
-- terms
+- [collections](https://docs.secoda.co/secoda-api) - Workspace collections
+- [tables](https://docs.secoda.co/secoda-api) - Tables from integrations
+- [columns](https://docs.secoda.co/secoda-api) - Columns from integrations
+- [terms](https://docs.secoda.co/secoda-api) - Glossary terms (via resource catalog)
+- [integrations](https://docs.secoda.co/secoda-api) - Active integrations
+- [documents](https://docs.secoda.co/secoda-api) - Documentation pages
+- [tags](https://docs.secoda.co/secoda-api) - Custom tags
+- [users](https://docs.secoda.co/secoda-api) - Workspace members
+- [teams](https://docs.secoda.co/secoda-api) - Workspace teams
+- [groups](https://docs.secoda.co/secoda-api) - User groups
+- [questions](https://docs.secoda.co/secoda-api) - Questions and answers
+- [monitors](https://docs.secoda.co/secoda-api) - Data monitors
+- [incidents](https://docs.secoda.co/secoda-api) - Monitor incidents
+- [lineage](https://docs.secoda.co/secoda-api) - Manual lineage relationships
+- [dashboards](https://docs.secoda.co/secoda-api) - Dashboards from integrations
+- [charts](https://docs.secoda.co/secoda-api) - Charts from integrations
+- [ai_chat_metrics](https://docs.secoda.co/secoda-api) - Aggregate AI chat usage metrics
+- [ai_chat_timeseries](https://docs.secoda.co/secoda-api) - AI chat usage over time
+- [ai_chats](https://docs.secoda.co/secoda-api) - Detailed AI chat conversations
+- [ai_rated_messages](https://docs.secoda.co/secoda-api) - AI chats with user feedback
+- [ai_prompts_by_member](https://docs.secoda.co/secoda-api) - AI prompt counts per member
 
 ### Features
 
 | Feature           | Supported?\(Yes/No\) | Notes |
 | :---------------- | :------------------- | :---- |
 | Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
+| Incremental Sync  | Yes                  | Client-side filtering on `updated_at` or `created_at`. Streams `users`, `ai_chat_metrics`, and `ai_prompts_by_member` support full refresh only. |
 
 ### Performance considerations
+
+Secoda enforces a rate limit of 30 calls/min on PUT/PATCH/POST requests. The connector handles 429 responses with automatic retry using the `Retry-After` header.
+
+The resource catalog endpoint (`/api/v1/resource/catalog`) has a maximum limit of 10,000 resources across all pages. For workspaces exceeding this limit on the `terms` stream, consider using more specific filters.
 
 ## Getting started
 
 ### Requirements
 
-- API Access
+- Secoda API Key ([how to generate](https://docs.secoda.co/secoda-api/authentication))
+
+### Configuration
+
+| Parameter | Required | Default | Description |
+| :-------- | :------- | :------ | :---------- |
+| `api_key` | Yes | | Your Secoda API access key. The key is case sensitive. |
+| `api_host` | No | `api.secoda.co` | API host for your workspace region: `api.secoda.co` (US), `eapi.secoda.co` (EU), or `aapi.secoda.co` (APAC). |
 
 ## Changelog
 
@@ -32,6 +61,7 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
+| 0.3.0 | 2026-03-17 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add 18 new streams, incremental sync, multi-region support, fix API paths, fix pagination, add rate limit retry. Breaking: `terms` stream migrated to resource catalog endpoint. |
 | 0.2.25 | 2025-05-10 | [60140](https://github.com/airbytehq/airbyte/pull/60140) | Update dependencies |
 | 0.2.24 | 2025-05-04 | [59624](https://github.com/airbytehq/airbyte/pull/59624) | Update dependencies |
 | 0.2.23 | 2025-04-27 | [58987](https://github.com/airbytehq/airbyte/pull/58987) | Update dependencies |
