@@ -6,7 +6,16 @@ import calendar
 import logging
 from datetime import date, datetime, timedelta
 from functools import cache, cached_property
-from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
+from typing import (
+    Any,
+    Iterable,
+    Iterator,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Union,
+)
 from zoneinfo import ZoneInfo
 
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
@@ -16,7 +25,11 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import (
+    AirbyteDateTime,
+    ab_datetime_now,
+    ab_datetime_parse,
+)
 from source_facebook_marketing.spec import TimeIncrementPeriod
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
@@ -185,7 +198,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         for breakdown in self.breakdowns:
             if breakdown in self.object_breakdowns.keys():
-                record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
+                val = record.get(breakdown)
+                if isinstance(val, dict) and "id" in val:
+                    record[self.object_breakdowns[breakdown]] = val["id"]
         return record
 
     def _transform_objective_results(self, record: Mapping[str, Any]) -> Mapping[str, Any]:

@@ -14,7 +14,12 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from facebook_business.api import (
+    FacebookAdsApi,
+    FacebookAdsApiBatch,
+    FacebookBadObjectError,
+    FacebookResponse,
+)
 
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from source_facebook_marketing.streams.common import retry_pattern
@@ -431,7 +436,10 @@ class InsightAsyncJob(AsyncJob):
         params = {
             "fields": [pk_name],
             "level": level,
-            "time_range": {"since": since.strftime("%Y-%m-%d"), "until": self._interval.end.strftime("%Y-%m-%d")},
+            "time_range": {
+                "since": since.strftime("%Y-%m-%d"),
+                "until": self._interval.end.strftime("%Y-%m-%d"),
+            },
         }
 
         try:
@@ -471,10 +479,16 @@ class InsightAsyncJob(AsyncJob):
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
+        # Object breakdown IDs (e.g. image_asset_id) are derived fields, not
+        # valid Facebook API fields.  Requesting them causes API errors.
+        # They are injected later by _inject_object_breakdown_ids.
+        object_breakdown_ids = set(self._object_breakdowns.values())
+        api_pk_fields = [f for f in self._primary_key if f not in object_breakdown_ids]
+
         params_a = dict(self._params)
-        params_a["fields"] = self._primary_key + part_a
+        params_a["fields"] = api_pk_fields + part_a
         params_b = dict(self._params)
-        params_b["fields"] = self._primary_key + part_b
+        params_b["fields"] = api_pk_fields + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,
@@ -494,7 +508,13 @@ class InsightAsyncJob(AsyncJob):
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
         )
-        logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
+        logger.info(
+            "%s split by fields: common=%d, A=%d, B=%d",
+            self,
+            len(api_pk_fields),
+            len(part_a),
+            len(part_b),
+        )
         return ParentAsyncJob(
             jobs=[job_a, job_b],
             api=self._api,
