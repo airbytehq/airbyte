@@ -21,7 +21,7 @@ import java.time.ZoneOffset
 // Custom LocalDateTime accessor that truncates to 6 decimal places (microseconds).
 // Snowflake timestamps can have up to 9 decimal places (nanoseconds), but destinations may only
 // support 6 decimal places.
-data object SnowflakeLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
+object SnowflakeLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
     override fun get(
         rs: ResultSet,
         colIdx: Int,
@@ -44,7 +44,7 @@ data object SnowflakeLocalDateTimeAccessor : JdbcAccessor<LocalDateTime> {
 }
 
 /** Custom field type for Snowflake TIMESTAMP_NTZ / DATETIME types, truncated to microseconds. */
-data object SnowflakeLocalDateTimeFieldType :
+object SnowflakeLocalDateTimeFieldType :
     SymmetricJdbcFieldType<LocalDateTime>(
         LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
         SnowflakeLocalDateTimeAccessor,
@@ -62,7 +62,7 @@ data object SnowflakeLocalDateTimeFieldType :
  *
  * Related Snowflake issue: SNOW-895829
  */
-data object SnowflakeOffsetDateTimeFieldType :
+object SnowflakeOffsetDateTimeFieldType :
     LosslessJdbcFieldType<OffsetDateTime, OffsetDateTime>(
         LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
         // Use a custom getter that converts LocalDateTime to OffsetDateTime
