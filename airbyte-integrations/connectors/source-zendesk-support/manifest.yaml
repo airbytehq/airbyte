@@ -1061,7 +1061,18 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/links_next_paginator"
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['links']['next'] }}"
+          stop_condition: "{{ not response['meta']['has_more'] }}"
+          page_size: 1000
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
     schema_loader:
       type: InlineSchemaLoader
       schema:
