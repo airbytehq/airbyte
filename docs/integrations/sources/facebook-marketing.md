@@ -441,6 +441,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.2 | 2026-03-12 | [74760](https://github.com/airbytehq/airbyte/pull/74760) | Handle null api_error_message in is_transient_cannot_include_error to prevent TypeError |
 | 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
 | 5.2.0 | 2026-03-05 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
 | 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
