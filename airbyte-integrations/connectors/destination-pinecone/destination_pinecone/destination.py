@@ -60,7 +60,10 @@ class DestinationPinecone(Destination):
             config_model = ConfigModel.parse_obj(config)
 
             yield self._log(Level.INFO, "Initializing embedder and indexer...")
-            self._init_indexer(config_model)
+            init_status = self._init_indexer(config_model)
+            if init_status and init_status.status == Status.FAILED:
+                yield self._log(Level.ERROR, f"Initialization failed: {init_status.message}")
+                return
 
             yield self._log(Level.INFO, "Creating writer and starting sync...")
             writer = Writer(
