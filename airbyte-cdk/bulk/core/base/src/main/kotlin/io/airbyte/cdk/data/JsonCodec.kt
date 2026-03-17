@@ -70,10 +70,15 @@ data object BigDecimalCodec : JsonCodec<BigDecimal> {
     override fun encode(decoded: BigDecimal): JsonNode = Jsons.numberNode(decoded)
 
     override fun decode(encoded: JsonNode): BigDecimal {
-        if (!encoded.isNumber) {
-            throw IllegalArgumentException("invalid number value $encoded")
+        if (encoded.isNumber) return encoded.decimalValue()
+        if (encoded.isTextual) {
+            try {
+                return BigDecimal(encoded.textValue())
+            } catch (e: NumberFormatException) {
+                throw IllegalArgumentException("invalid number value $encoded", e)
+            }
         }
-        return encoded.decimalValue()
+        throw IllegalArgumentException("invalid number value $encoded")
     }
 }
 
@@ -112,6 +117,13 @@ data object IntCodec : JsonCodec<Int> {
     override fun encode(decoded: Int): JsonNode = Jsons.numberNode(decoded)
 
     override fun decode(encoded: JsonNode): Int {
+        if (encoded.isTextual) {
+            try {
+                return encoded.textValue().toInt()
+            } catch (e: NumberFormatException) {
+                throw IllegalArgumentException("invalid integer value $encoded", e)
+            }
+        }
         if (!encoded.isNumber) {
             throw IllegalArgumentException("invalid number value $encoded")
         }

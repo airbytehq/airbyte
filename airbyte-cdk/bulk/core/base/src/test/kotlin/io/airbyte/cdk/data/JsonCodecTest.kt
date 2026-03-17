@@ -78,8 +78,11 @@ class JsonCodecTest {
             testJsonRoundTrip(Jsons.numberNode(0))
             testJsonRoundTrip(Jsons.numberNode(1))
             testJsonRoundTrip(Jsons.numberNode(-123.456))
+            // String representations of numbers should be accepted (CDC path).
+            Assertions.assertEquals(BigDecimal("0"), decode(Jsons.textNode("0")))
+            Assertions.assertEquals(BigDecimal("123"), decode(Jsons.textNode("123")))
+            Assertions.assertEquals(BigDecimal("-99.5"), decode(Jsons.textNode("-99.5")))
             testBadEncoding(Jsons.textNode("foo"))
-            testBadEncoding(Jsons.textNode("123"))
             testBadEncoding(Jsons.nullNode())
         }
     }
@@ -124,8 +127,12 @@ class JsonCodecTest {
             testJsonRoundTrip(Jsons.numberNode(0))
             testJsonRoundTrip(Jsons.numberNode(1))
             testBadEncoding(Jsons.numberNode(Long.MAX_VALUE))
+            // String representations of integers should be accepted (CDC path).
+            Assertions.assertEquals(0, decode(Jsons.textNode("0")))
+            Assertions.assertEquals(123, decode(Jsons.textNode("123")))
+            Assertions.assertEquals(-42, decode(Jsons.textNode("-42")))
             testBadEncoding(Jsons.textNode("foo"))
-            testBadEncoding(Jsons.textNode("123"))
+            testBadEncoding(Jsons.textNode("99999999999"))  // exceeds Int range
             testBadEncoding(Jsons.nullNode())
         }
     }
