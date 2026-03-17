@@ -129,16 +129,12 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 ### SSL Modes
 
-Airbyte Cloud uses `required` SSL mode by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
-
 Here is a breakdown of available SSL connection modes:
 
-- `required` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
-- `preferred` to allow unencrypted communication only when the source doesn't support encryption
-- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate
-- `verify_identity` to always require encryption and verify the identity of the source
-- `disabled` to disable encrypted communication between Airbyte and the source
-- `allow` to enable encrypted communication only when required by the source
+- `preferred` to allow unencrypted communication only when the source doesn't support encryption. On Airbyte Cloud, this mode requires an SSH tunnel.
+- `required` to always require encryption. The connection fails if the source doesn't support encryption. This is the default.
+- `verify_ca` to always require encryption and verify that the source has a valid SSL certificate.
+- `verify_identity` to always require encryption and verify the identity of the source.
 
 </FieldAnchor>
 
