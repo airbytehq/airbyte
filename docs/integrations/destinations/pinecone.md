@@ -96,7 +96,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 0.1.48 | 2026-03-17 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add logging to check and write operations and fix `__init__` bug |
+| 0.1.48 | 2026-03-17 | [75170](https://github.com/airbytehq/airbyte/pull/75170) | Add logging to check and write operations and fix `__init__` bug |
 | 0.1.47 | 2026-03-17 | [75136](https://github.com/airbytehq/airbyte/pull/75136) | Emit TRACE error instead of LOG on write failure for proper error surfacing |
 | 0.1.46 | 2025-10-21 | [68334](https://github.com/airbytehq/airbyte/pull/68334) | Update dependencies |
 | 0.1.45 | 2025-10-14 | [61096](https://github.com/airbytehq/airbyte/pull/61096) | Update dependencies |
