@@ -380,9 +380,7 @@ definitions:
                 $ref: "#/definitions/streams/calls"
               incremental_dependency: true
               extra_fields:
-                - type: ExtraFieldConfiguration
-                  path:
-                    - started
+                - - started
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: started
