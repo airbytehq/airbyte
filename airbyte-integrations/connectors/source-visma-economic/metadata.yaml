@@ -29,8 +29,8 @@ data:
     jobSpecific:
       - jobType: check_connection
         resourceRequirements:
-          memory_limit: 2Gi
-          memory_request: 2Gi
+          memory_limit: 4Gi
+          memory_request: 4Gi
   supportLevel: community
   tags:
     - cdk:low-code
