@@ -108,6 +108,7 @@ def get_query_discussions(owner, name, first, after, direction):
     discussions = repository.discussions(**kwargs)
     discussions.nodes.__fields__(
         id="node_id",
+        database_id="id",
         number=True,
         title=True,
         body=True,
@@ -178,6 +179,7 @@ def get_query_discussion_comments(owner, name, first, after, number=None):
     comments.page_info.__fields__(has_next_page=True, end_cursor=True)
     comments.nodes.__fields__(
         id="node_id",
+        database_id="id",
         body=True,
         body_html="body_html",
         created_at="created_at",

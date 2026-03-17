@@ -6,6 +6,10 @@
       "description": "The full name of the repository (owner/name).",
       "type": "string"
     },
+    "id": {
+      "description": "The database ID of the comment.",
+      "type": ["null", "integer"]
+    },
     "node_id": {
       "description": "The Node ID of the comment.",
       "type": ["null", "string"]

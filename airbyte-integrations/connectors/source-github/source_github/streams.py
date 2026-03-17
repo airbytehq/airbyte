@@ -1237,7 +1237,8 @@ class DiscussionComments(SemiIncrementalMixin, GitHubGraphQLStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.discussions_cursor = {}
+        self.discussions_page_cursor = {}
+        self.comments_cursor = {}
 
     def _get_reactions(self, record: Mapping) -> Optional[Mapping]:
         reaction_groups = record.pop("reaction_groups", None)
@@ -1273,9 +1274,6 @@ class DiscussionComments(SemiIncrementalMixin, GitHubGraphQLStream):
             if "discussions" in repository:
                 for discussion in repository["discussions"]["nodes"]:
                     yield from self._get_comments_from_discussion(discussion, repository_name)
-                    comments_page_info = discussion["comments"]["pageInfo"]
-                    if comments_page_info["hasNextPage"]:
-                        self.discussions_cursor[discussion["number"]] = comments_page_info["endCursor"]
             elif "discussion" in repository:
                 discussion = repository["discussion"]
                 yield from self._get_comments_from_discussion(discussion, repository_name)
@@ -1283,17 +1281,22 @@ class DiscussionComments(SemiIncrementalMixin, GitHubGraphQLStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
         if repository:
+            repository_name = self._get_repository_name(repository)
+            comments_cursor = self.comments_cursor.setdefault(repository_name, {})
             if "discussions" in repository:
-                if self.discussions_cursor:
-                    number, cursor = self.discussions_cursor.popitem()
-                    return {"number": number, "after": cursor}
-                page_info = repository["discussions"]["pageInfo"]
-                if page_info["hasNextPage"]:
-                    return {"after": page_info["endCursor"]}
+                if repository["discussions"]["pageInfo"]["hasNextPage"]:
+                    self.discussions_page_cursor[repository_name] = repository["discussions"]["pageInfo"]["endCursor"]
+                for discussion in repository["discussions"]["nodes"]:
+                    if discussion["comments"]["pageInfo"]["hasNextPage"]:
+                        comments_cursor[discussion["number"]] = discussion["comments"]["pageInfo"]["endCursor"]
             elif "discussion" in repository:
-                page_info = repository["discussion"]["comments"]["pageInfo"]
-                if page_info["hasNextPage"]:
-                    return {"number": response.json()["data"]["repository"]["discussion"]["number"], "after": page_info["endCursor"]}
+                if repository["discussion"]["comments"]["pageInfo"]["hasNextPage"]:
+                    comments_cursor[repository["discussion"]["number"]] = repository["discussion"]["comments"]["pageInfo"]["endCursor"]
+            if comments_cursor:
+                number, after = comments_cursor.popitem()
+                return {"after": after, "number": number}
+            if repository_name in self.discussions_page_cursor:
+                return {"after": self.discussions_page_cursor.pop(repository_name)}
 
     def request_body_json(
         self,
