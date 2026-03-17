@@ -16,8 +16,6 @@ import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
-import io.airbyte.integrations.source.postgres.operations.types.PostgresBigDecimalFieldType
-import io.airbyte.integrations.source.postgres.operations.types.PostgresIntFieldType
 import io.airbyte.integrations.source.postgres.operations.types.BoxFieldType
 import io.airbyte.integrations.source.postgres.operations.types.CircleFieldType
 import io.airbyte.integrations.source.postgres.operations.types.HstoreFieldType
@@ -27,8 +25,10 @@ import io.airbyte.integrations.source.postgres.operations.types.LsegFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PathFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PointFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PolygonFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresBigDecimalFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresByteaFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDateFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresIntFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeTzFieldType
