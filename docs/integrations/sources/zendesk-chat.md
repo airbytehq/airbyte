@@ -83,8 +83,9 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.6 | 2026-03-16 | [74324](https://github.com/airbytehq/airbyte/pull/74324) | Migrate to scopes object array format |
-| 1.3.5 | 2026-03-06 | [74324](https://github.com/airbytehq/airbyte/pull/74324) | feat: migrate source-zendesk-chat to scopes object array |
+| 1.3.7 | 2026-03-17 | [74324](https://github.com/airbytehq/airbyte/pull/74324) | Migrate to scopes object array format |
+| 1.3.6 | 2026-03-17 | [75116](https://github.com/airbytehq/airbyte/pull/75116) | Update dependencies |
+| 1.3.5 | 2026-03-10 | [74671](https://github.com/airbytehq/airbyte/pull/74671) | Update dependencies |
 | 1.3.4 | 2026-03-03 | [74156](https://github.com/airbytehq/airbyte/pull/74156) | Update dependencies |
 | 1.3.3 | 2026-02-17 | [73534](https://github.com/airbytehq/airbyte/pull/73534) | Update dependencies |
 | 1.3.2 | 2026-02-10 | [73151](https://github.com/airbytehq/airbyte/pull/73151) | Update dependencies |

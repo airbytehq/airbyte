@@ -343,6 +343,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.3.2 | 2026-03-17 | [74526](https://github.com/airbytehq/airbyte/pull/74526) | Update dependencies |
 | 6.3.1 | 2026-03-09 | [74410](https://github.com/airbytehq/airbyte/pull/74410) | Promoting release candidate 6.3.1-rc.1 to a main version. |
 | 6.3.1-rc.1 | 2026-03-03 | [74032](https://github.com/airbytehq/airbyte/pull/74032) | fix(source-hubspot): use v3 properties API for CRM search streams |
 | 6.3.0 | 2026-02-26 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream `account_details` |
