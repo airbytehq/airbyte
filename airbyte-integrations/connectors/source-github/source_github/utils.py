@@ -4,7 +4,7 @@
 import logging
 import time
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import cycle
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
@@ -135,7 +135,6 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         """Parse the expires_at ISO 8601 timestamp from GitHub, falling back to 1 hour from now."""
         if expires_at:
             try:
-                from datetime import datetime, timezone
                 return datetime.fromisoformat(expires_at.replace("Z", "+00:00")).timestamp()
             except (ValueError, TypeError):
                 pass
