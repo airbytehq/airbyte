@@ -65,7 +65,7 @@ data:
       - ad_group_labels
       - ad_group_ad_labels
       - user_location_report
-      - geographic_report
+      - geographic_view_with_metrics
       - display_keyword_performance_report
       - shopping_performance_report
       - display_topics_performance_report

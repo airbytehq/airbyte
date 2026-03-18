@@ -755,9 +755,9 @@ definitions:
       schema:
         $ref: "#/schemas/geographic_view"
 
-  geographic_report_stream:
+  geographic_view_with_metrics_stream:
     $ref: "#/definitions/incremental_non_manager_stream_base"
-    name: geographic_report
+    name: geographic_view_with_metrics
     primary_key:
       - customer.id
       - geographic_view.country_criterion_id
@@ -766,7 +766,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $ref: "#/schemas/geographic_report"
+        $ref: "#/schemas/geographic_view_with_metrics"
 
   keyword_view_stream:
     $ref: "#/definitions/incremental_non_manager_stream_base"
@@ -1260,7 +1260,7 @@ streams:
   - "#/definitions/customer_label_stream"
   - "#/definitions/display_keyword_view_stream"
   - "#/definitions/geographic_view_stream"
-  - "#/definitions/geographic_report_stream"
+  - "#/definitions/geographic_view_with_metrics_stream"
   - "#/definitions/keyword_view_stream"
   - "#/definitions/label_stream"
   - "#/definitions/shopping_performance_view_stream"
@@ -3077,7 +3077,7 @@ schemas:
         format: date
     additionalProperties: true
 
-  geographic_report:
+  geographic_view_with_metrics:
     $schema: http://json-schema.org/schema#
     type: object
     properties:
