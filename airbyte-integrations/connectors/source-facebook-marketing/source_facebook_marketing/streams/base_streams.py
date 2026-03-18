@@ -9,13 +9,14 @@ from functools import cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.exceptions import FacebookRequestError
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
+from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.streams.common import traced_exception
 
 from .common import deep_merge
@@ -198,6 +199,12 @@ class FBMarketingStream(Stream, ABC):
                 self.fix_date_time(record)
                 self.add_account_id(record, stream_slice["account_id"])
                 yield record
+        except FacebookBadObjectError as e:
+            raise AirbyteTracedException(
+                message="Facebook API returned malformed data during pagination. This is typically a transient issue.",
+                internal_message=str(e),
+                failure_type=FailureType.transient_error,
+            ) from e
         except FacebookRequestError as exc:
             raise traced_exception(exc)
 
@@ -410,5 +417,11 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
                 yield record
 
             self._cursor_values[account_id] = max_cursor_value
+        except FacebookBadObjectError as e:
+            raise AirbyteTracedException(
+                message="Facebook API returned malformed data during pagination. This is typically a transient issue.",
+                internal_message=str(e),
+                failure_type=FailureType.transient_error,
+            ) from e
         except FacebookRequestError as exc:
             raise traced_exception(exc)
