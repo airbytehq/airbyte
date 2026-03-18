@@ -5,6 +5,7 @@ package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
+import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.UncheckedIOException
@@ -284,7 +285,8 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         open fun withoutSsl(): B {
-            return with(JdbcUtils.SSL_KEY, false)
+//            return with(JdbcUtils.SSL_KEY, false)
+            return withSsl(mutableMapOf(MODE_KEY to "disable"))
         }
 
         open fun withSsl(sslMode: MutableMap<Any?, Any?>): B {
@@ -292,7 +294,7 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         companion object {
-            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration = Duration.ofSeconds(5)
+            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration = Duration.ofSeconds(15)
         }
     }
 

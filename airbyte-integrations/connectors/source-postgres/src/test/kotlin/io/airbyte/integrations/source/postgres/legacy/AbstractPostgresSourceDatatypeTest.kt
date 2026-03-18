@@ -729,7 +729,7 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
         addNumericValuesTest()
     }
 
-    protected fun addHstoreTest() {
+    protected open fun addHstoreTest() {
         addDataTypeTestData(
             TestDataHolder.builder()
                 .sourceType("hstore")
@@ -751,7 +751,7 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
         )
     }
 
-    protected fun addMoneyTest() {
+    protected open fun addMoneyTest() {
         addDataTypeTestData(
             TestDataHolder.builder()
                 .sourceType("money")
@@ -784,7 +784,7 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
         )
     }
 
-    protected fun addTimeWithTimeZoneTest() {
+    protected open fun addTimeWithTimeZoneTest() {
         // time with time zone
         for (fullSourceType in mutableSetOf<String?>("timetz", "time with time zone")) {
             addDataTypeTestData(
@@ -1282,7 +1282,7 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
         )
     }
 
-    protected fun addNumericValuesTest() {
+    protected open fun addNumericValuesTest() {
         addDataTypeTestData(
             TestDataHolder.builder()
                 .sourceType("numeric")
