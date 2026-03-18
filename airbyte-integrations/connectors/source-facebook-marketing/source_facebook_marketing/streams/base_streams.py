@@ -201,7 +201,7 @@ class FBMarketingStream(Stream, ABC):
                 yield record
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
-                message="Facebook API returned malformed data during pagination. This is typically a transient issue.",
+                message="Facebook API returned malformed data during pagination.",
                 internal_message=str(e),
                 failure_type=FailureType.transient_error,
             ) from e
@@ -419,7 +419,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
             self._cursor_values[account_id] = max_cursor_value
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
-                message="Facebook API returned malformed data during pagination. This is typically a transient issue.",
+                message="Facebook API returned malformed data during pagination.",
                 internal_message=str(e),
                 failure_type=FailureType.transient_error,
             ) from e
