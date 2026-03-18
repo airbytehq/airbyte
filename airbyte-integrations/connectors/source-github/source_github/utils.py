@@ -214,7 +214,15 @@ def generate_github_app_token(app_id: str, private_key: str, installation_id: st
     url = f"{api_url}/app/installations/{installation_id}/access_tokens"
     logger.info(f"Requesting GitHub App installation token from {url}")
 
-    response = _post_with_retry(url, encoded_jwt)
+    try:
+        response = _post_with_retry(url, encoded_jwt)
+    except requests.exceptions.RequestException as e:
+        raise AirbyteTracedException(
+            message="Failed to generate GitHub App installation token after retries. "
+                    "Check network connectivity and GitHub API status.",
+            internal_message=str(e),
+            failure_type=FailureType.transient_error,
+        )
 
     if response.status_code != 201:
         raise AirbyteTracedException(

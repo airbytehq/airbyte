@@ -75,17 +75,19 @@
               "app_id": {
                 "type": "string",
                 "title": "App ID",
-                "description": "The App ID of your GitHub App."
+                "description": "The numeric App ID of your GitHub App (found in the app's General settings).",
+                "pattern": "^[0-9]+$"
               },
               "installation_id": {
                 "type": "string",
                 "title": "Installation ID",
-                "description": "The Installation ID of the GitHub App installed in your organization/account."
+                "description": "The numeric Installation ID of the GitHub App installed in your organization/account (found in the URL after installing the app).",
+                "pattern": "^[0-9]+$"
               },
               "private_key": {
                 "type": "string",
                 "title": "Private Key",
-                "description": "The private key (PEM format) of your GitHub App.",
+                "description": "The private key (PEM format) of your GitHub App. Note: GitHub App installation tokens expire after 1 hour. Syncs longer than 1 hour may fail with authentication errors.",
                 "airbyte_secret": true,
                 "multiline": true
               }

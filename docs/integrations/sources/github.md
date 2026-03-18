@@ -23,6 +23,7 @@ This page contains the setup guide and reference information for the [GitHub](ht
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- GitHub App (App ID, Installation ID, and private key)
 <!-- /env:oss -->
 
 ## Setup guide
@@ -56,7 +57,9 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
   <!-- /env:cloud -->
   <!-- env:oss -->
 
-- **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+- **For Airbyte Open Source:** Authenticate with **Personal Access Token** or **GitHub App**.
+  - **Personal Access Token:** Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+  - **GitHub App:** Enter your App ID, Installation ID, and private key (PEM format). The connector will generate a short-lived installation access token at sync time. Note: installation tokens expire after 1 hour; syncs longer than 1 hour are not currently supported with this auth method.
 <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
