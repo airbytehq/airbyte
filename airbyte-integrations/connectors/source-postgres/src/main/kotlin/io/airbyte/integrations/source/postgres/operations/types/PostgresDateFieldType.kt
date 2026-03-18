@@ -14,6 +14,7 @@ import java.time.LocalDate
 object PostgresDateFieldType :
     SymmetricJdbcFieldType<String>(LeafAirbyteSchemaType.DATE, PgDateAccessor, PgDateCodec)
 
+// TODO: Improve performance by not stringifying and parsing
 object PgDateCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
     override fun decode(encoded: JsonNode): String = encoded.asText()

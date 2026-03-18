@@ -18,6 +18,7 @@ object PostgresTimeFieldType :
         PgTimeCodec,
     )
 
+// TODO: Improve performance by not stringifying and parsing
 object PgTimeCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
     override fun decode(encoded: JsonNode): String = encoded.asText()
