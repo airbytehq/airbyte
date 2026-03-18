@@ -88,14 +88,16 @@ class BigQueryRecordFormatterTest {
         // 7 fractional digits (100-nanosecond precision from SQL Server DATETIME2(7))
         // should be truncated to 6 digits (microsecond precision) for BigQuery compatibility
 
-        val tsWithTz = EnrichedAirbyteValue(
-            abValue = TimestampWithTimezoneValue(
-                OffsetDateTime.parse("2026-03-03T14:59:33.4902601Z")
-            ),
-            type = TimestampTypeWithTimezone,
-            name = "test_ts_tz",
-            airbyteMetaField = null,
-        )
+        val tsWithTz =
+            EnrichedAirbyteValue(
+                abValue =
+                    TimestampWithTimezoneValue(
+                        OffsetDateTime.parse("2026-03-03T14:59:33.4902601Z")
+                    ),
+                type = TimestampTypeWithTimezone,
+                name = "test_ts_tz",
+                airbyteMetaField = null,
+            )
         val formattedTsWithTz = BigQueryRecordFormatter.formatTimestampWithTimezone(tsWithTz)
         // Should have at most 6 fractional digits
         assertFalse(
@@ -107,15 +109,18 @@ class BigQueryRecordFormatterTest {
             "Expected truncation to 6 digits (microseconds), got: $formattedTsWithTz"
         )
 
-        val tsWithoutTz = EnrichedAirbyteValue(
-            abValue = TimestampWithoutTimezoneValue(
-                LocalDateTime.parse("2026-03-03T14:59:33.4902601")
-            ),
-            type = TimestampTypeWithoutTimezone,
-            name = "test_ts_no_tz",
-            airbyteMetaField = null,
-        )
-        val formattedTsWithoutTz = BigQueryRecordFormatter.formatTimestampWithoutTimezone(tsWithoutTz)
+        val tsWithoutTz =
+            EnrichedAirbyteValue(
+                abValue =
+                    TimestampWithoutTimezoneValue(
+                        LocalDateTime.parse("2026-03-03T14:59:33.4902601")
+                    ),
+                type = TimestampTypeWithoutTimezone,
+                name = "test_ts_no_tz",
+                airbyteMetaField = null,
+            )
+        val formattedTsWithoutTz =
+            BigQueryRecordFormatter.formatTimestampWithoutTimezone(tsWithoutTz)
         assertFalse(
             formattedTsWithoutTz.contains(".4902601"),
             "Expected 7-digit nanoseconds to be truncated, got: $formattedTsWithoutTz"
@@ -125,28 +130,27 @@ class BigQueryRecordFormatterTest {
             "Expected truncation to 6 digits (microseconds), got: $formattedTsWithoutTz"
         )
 
-        val timeWithoutTz = EnrichedAirbyteValue(
-            abValue = TimeWithoutTimezoneValue(
-                LocalTime.parse("14:59:33.4902601")
-            ),
-            type = TimeTypeWithoutTimezone,
-            name = "test_time_no_tz",
-            airbyteMetaField = null,
-        )
-        val formattedTimeWithoutTz = BigQueryRecordFormatter.formatTimeWithoutTimezone(timeWithoutTz)
+        val timeWithoutTz =
+            EnrichedAirbyteValue(
+                abValue = TimeWithoutTimezoneValue(LocalTime.parse("14:59:33.4902601")),
+                type = TimeTypeWithoutTimezone,
+                name = "test_time_no_tz",
+                airbyteMetaField = null,
+            )
+        val formattedTimeWithoutTz =
+            BigQueryRecordFormatter.formatTimeWithoutTimezone(timeWithoutTz)
         assertFalse(
             formattedTimeWithoutTz.contains(".4902601"),
             "Expected 7-digit nanoseconds to be truncated, got: $formattedTimeWithoutTz"
         )
 
-        val timeWithTz = EnrichedAirbyteValue(
-            abValue = TimeWithTimezoneValue(
-                OffsetTime.parse("14:59:33.4902601+02:00")
-            ),
-            type = TimeTypeWithTimezone,
-            name = "test_time_tz",
-            airbyteMetaField = null,
-        )
+        val timeWithTz =
+            EnrichedAirbyteValue(
+                abValue = TimeWithTimezoneValue(OffsetTime.parse("14:59:33.4902601+02:00")),
+                type = TimeTypeWithTimezone,
+                name = "test_time_tz",
+                airbyteMetaField = null,
+            )
         val formattedTimeWithTz = BigQueryRecordFormatter.formatTimeWithTimezone(timeWithTz)
         assertFalse(
             formattedTimeWithTz.contains(".4902601"),
