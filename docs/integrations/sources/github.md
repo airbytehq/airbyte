@@ -219,6 +219,21 @@ Your token should have at least the `repo` scope. Depending on which streams you
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 
+**GitHub App permissions:** If you use GitHub App authentication, the app must be installed on the target organization or account and granted the following [repository permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps):
+
+| Permission | Access | Required for |
+|---|---|---|
+| Contents | Read | Repositories, branches, commits, tags |
+| Issues | Read | Issues, issue events, issue milestones, issue comments, issue reactions |
+| Pull requests | Read | Pull requests, pull request comments, reviews, review comments |
+| Metadata | Read | Required by default for all GitHub Apps |
+| Members | Read | Collaborators, teams, team members |
+| Organization administration | Read | Organizations |
+| Projects | Read | Projects (v2) |
+| Webhooks | Read | Repository webhook events |
+
+Not all permissions are required — only grant what is needed for the streams you plan to sync.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
