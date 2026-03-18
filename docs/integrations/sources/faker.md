@@ -47,6 +47,7 @@ Purchase records link users to products through `user_id` and `product_id` field
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.0.2 | 2026-03-18 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Ops CLI soft launch test - global version override edge case - no functional changes |
 | 7.0.1 | 2026-03-13 | [74818](https://github.com/airbytehq/airbyte/pull/74818) | Patch version bump (publish test) |
 | 7.0.0 | 2026-03-05 | [74318](https://github.com/airbytehq/airbyte/pull/74318) | Test breaking change to validate breaking change infrastructure |
 | 6.2.38 | 2025-11-12 | [69289](https://github.com/airbytehq/airbyte/pull/69289) | Add externalDocumentationUrls field to metadata |
