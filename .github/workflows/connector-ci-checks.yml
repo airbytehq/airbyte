@@ -438,11 +438,11 @@ jobs:
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
 
-      - name: Install QA Checks
+      - name: Install Ops CLI
         if: matrix.connector
         run: |
-          # Install airbyte-internal-ops from PyPI (replaces local connectors_qa)
           uv tool install airbyte-internal-ops
+
       - name: Run QA Checks
         if: matrix.connector
         # remove "-strict-encrypt" suffix, if present, for parity with the previous version of this workflow
@@ -461,6 +461,99 @@ jobs:
           else
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
+
+  # --- Soft launch: ops CLI artifact generation + validation (parallel job) ---
+  # Runs alongside existing pre-release checks to validate the new ops CLI path.
+  # continue-on-error: true ensures this does not block the CI pipeline.
+  # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+  build-and-verify-artifacts:
+    if: github.event.pull_request.draft == false
+    needs: [generate-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10
+      fail-fast: false
+    name: "Build and Verify Artifacts (${{ matrix.connector || 'No-Op' }})"
+    runs-on: ubuntu-24.04
+    continue-on-error: true
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      # Java deps (needed for JVM connector Docker image builds via Gradle)
+      # TODO: Consider making this conditional on connector language to skip for non-JVM connectors.
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        if: matrix.connector
+        with:
+          gradle-version: "8.14"
+
+      - name: Install Poe
+        if: matrix.connector
+        run: uv tool install poethepoet
+
+      - name: Install Ops CLI
+        if: matrix.connector
+        run: uv tool install airbyte-internal-ops
+
+      - name: Install Airbyte CDK
+        if: matrix.connector
+        run: uv tool install "airbyte-cdk[dev]"
+
+      - name: Get connector metadata
+        if: matrix.connector
+        id: connector-metadata
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          set -euo pipefail
+          CONNECTOR_VERSION="$(poe -qq get-version)"
+          DOCKER_REPO=$(yq -r '.data.dockerRepository' metadata.yaml)
+          echo "connector-version=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+          echo "docker-image=${DOCKER_REPO}:${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+
+      - name: Build connector Docker image
+        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: >
+          airbyte-cdk image build
+          --tag ${{ steps.connector-metadata.outputs.connector-version }}
+
+      - name: Generate and Validate Registry Artifacts (ops CLI)
+        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        shell: bash
+        env:
+          CONNECTOR_DIR: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: >
+          airbyte-ops registry connector-version artifacts generate
+          --metadata-file "${CONNECTOR_DIR}/metadata.yaml"
+          --docker-image "${{ steps.connector-metadata.outputs.docker-image }}"
+          --output-dir ./registry-artifacts
+          --with-validate
+
+      - name: Upload Registry CI Artifacts
+        if: matrix.connector && steps.connector-metadata.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: registry-artifacts-${{ matrix.connector }}-${{ steps.connector-metadata.outputs.connector-version }}
+          path: ./registry-artifacts/
+          retention-days: 7
+          if-no-files-found: ignore
 
   connector-ci-checks-summary:
     name: Aggregate Results
