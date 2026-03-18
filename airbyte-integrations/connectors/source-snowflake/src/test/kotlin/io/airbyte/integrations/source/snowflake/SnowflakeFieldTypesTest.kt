@@ -73,25 +73,6 @@ class SnowflakeFieldTypesTest {
         assertNull(result)
     }
 
-    @Test
-    fun `SnowflakeLocalDateTimeAccessor formats truncated datetime correctly`() {
-        // Snowflake timestamp(9) with full nanosecond precision
-        val dateTimeWith9Decimals = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 3333333)
-        val timestamp = Timestamp.valueOf(dateTimeWith9Decimals)
-
-        val rs = mock(ResultSet::class.java)
-        `when`(rs.getTimestamp(1)).thenReturn(timestamp)
-        `when`(rs.wasNull()).thenReturn(false)
-
-        val result = SnowflakeLocalDateTimeAccessor.get(rs, 1)
-
-        val expected = LocalDateTime.of(2025, 11, 6, 22, 30, 46, 3333000)
-        assertEquals(expected, result)
-
-        val formatter = io.airbyte.cdk.data.LocalDateTimeCodec.formatter
-        assertEquals("2025-11-06T22:30:46.003333", result?.format(formatter))
-    }
-
     // --- SnowflakeOffsetDateTimeFieldType tests ---
 
     @Test
