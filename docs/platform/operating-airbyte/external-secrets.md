@@ -10,10 +10,15 @@ import TabItem from '@theme/TabItem';
 
 This guide provides step-by-step instructions for configuring external secrets management with Airbyte. External secrets management allows Airbyte to securely store and manage connection credentials in your cloud provider's secrets manager (AWS Secrets Manager, Azure Key Vault, or Google Cloud Secret Manager) instead of storing them in Airbyte's internal database.
 
+:::info
+External secrets management is available for Airbyte Pro and Enterprise Flex customers.
+:::
+
 ---
 
 ## Prerequisites
 
+- Airbyte organization on a Pro or Enterprise Flex plan
 - Active account with your chosen cloud provider (AWS, Azure, or GCP)
 - Appropriate permissions to create and manage IAM roles/policies or service principals
 - Access to your cloud provider's secrets management service
