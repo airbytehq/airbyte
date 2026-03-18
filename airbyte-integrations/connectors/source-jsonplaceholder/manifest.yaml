@@ -4,7 +4,7 @@ type: DeclarativeSource
 definitions:
   base_requester:
     type: HttpRequester
-    url_base: https://jsonplaceholder.typicode.com
+    url: https://jsonplaceholder.typicode.com
     http_method: GET
     authenticator:
       type: NoAuth
@@ -30,7 +30,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /posts
+        url: https://jsonplaceholder.typicode.com/posts
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -62,7 +62,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /comments
+        url: https://jsonplaceholder.typicode.com/comments
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -98,7 +98,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /albums
+        url: https://jsonplaceholder.typicode.com/albums
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -126,7 +126,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /photos
+        url: https://jsonplaceholder.typicode.com/photos
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -162,7 +162,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /todos
+        url: https://jsonplaceholder.typicode.com/todos
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -194,7 +194,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /users
+        url: https://jsonplaceholder.typicode.com/users
     schema_loader:
       type: InlineSchemaLoader
       schema:
