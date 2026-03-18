@@ -207,9 +207,6 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["result", "*", "tokens", "*"]
-        record_filter:
-          type: RecordFilter
-          condition: "{{ record is not none }}"
       requester:
         $ref: "#/definitions/requester"
         path: "rest/asset/v1/folder/{{ stream_partition['program_id'] }}/tokens.json"
