@@ -755,6 +755,19 @@ definitions:
       schema:
         $ref: "#/schemas/geographic_view"
 
+  geographic_report_stream:
+    $ref: "#/definitions/incremental_non_manager_stream_base"
+    name: geographic_report
+    primary_key:
+      - customer.id
+      - geographic_view.country_criterion_id
+      - geographic_view.location_type
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/geographic_report"
+
   keyword_view_stream:
     $ref: "#/definitions/incremental_non_manager_stream_base"
     name: keyword_view
@@ -1247,6 +1260,7 @@ streams:
   - "#/definitions/customer_label_stream"
   - "#/definitions/display_keyword_view_stream"
   - "#/definitions/geographic_view_stream"
+  - "#/definitions/geographic_report_stream"
   - "#/definitions/keyword_view_stream"
   - "#/definitions/label_stream"
   - "#/definitions/shopping_performance_view_stream"
@@ -3038,16 +3052,6 @@ schemas:
         type:
           - "null"
           - string
-      customer.currency_code:
-        description: The currency code used by the customer.
-        type:
-          - "null"
-          - string
-      customer.time_zone:
-        description: The time zone set for the customer.
-        type:
-          - "null"
-          - string
       geographic_view.country_criterion_id:
         description: The criterion ID for the country in the geographic view data
         type:
@@ -3060,53 +3064,100 @@ schemas:
         type:
           - "null"
           - string
+      ad_group.id:
+        description: The ID of the ad group associated with the geographic view data
+        type:
+          - "null"
+          - integer
+      segments.date:
+        description: The date segment within the geographic view data
+        type:
+          - "null"
+          - string
+        format: date
+    additionalProperties: true
+
+  geographic_report:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      customer.id:
+        description: The ID of the customer associated with the geographic report data.
+        type:
+          - "null"
+          - integer
+      customer.descriptive_name:
+        description: The descriptive name of the customer.
+        type:
+          - "null"
+          - string
+      customer.currency_code:
+        description: The currency code used by the customer.
+        type:
+          - "null"
+          - string
+      customer.time_zone:
+        description: The time zone set for the customer.
+        type:
+          - "null"
+          - string
+      geographic_view.country_criterion_id:
+        description: The criterion ID for the country in the geographic view data.
+        type:
+          - "null"
+          - integer
+      geographic_view.location_type:
+        description: The type of location (such as city or region) in the geographic view data.
+        type:
+          - "null"
+          - string
       geographic_view.resource_name:
         description: The resource name of the geographic view.
         type:
           - "null"
           - string
       ad_group.id:
-        description: The ID of the ad group associated with the geographic view data
+        description: The ID of the ad group.
         type:
           - "null"
           - integer
       ad_group.name:
-        description: The name of the ad group associated with the geographic view data.
+        description: The name of the ad group.
         type:
           - "null"
           - string
       ad_group.status:
-        description: The status of the ad group related to the geographic view data.
+        description: The status of the ad group.
         type:
           - "null"
           - string
       ad_group.base_ad_group:
-        description: The base ad group information related to the geographic view data.
+        description: The base ad group resource name.
         type:
           - "null"
           - string
       campaign.base_campaign:
-        description: The base campaign information tied to the geographic view data.
+        description: The base campaign resource name.
         type:
           - "null"
           - string
       campaign.id:
-        description: The ID of the campaign linked to the geographic view data.
+        description: The ID of the campaign.
         type:
           - "null"
           - integer
       campaign.name:
-        description: The name of the campaign associated with the geographic view data.
+        description: The name of the campaign.
         type:
           - "null"
           - string
       campaign.status:
-        description: The status of the campaign related to the geographic view data.
+        description: The status of the campaign.
         type:
           - "null"
           - string
       segments.date:
-        description: The date segment within the geographic view data
+        description: The date segment for the geographic report data.
         type:
           - "null"
           - string
