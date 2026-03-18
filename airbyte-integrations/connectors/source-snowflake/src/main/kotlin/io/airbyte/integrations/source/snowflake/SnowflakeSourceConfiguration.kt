@@ -90,6 +90,11 @@ class SnowflakeSourceConfigurationFactory :
         // Disable Apache Arrow for now as it is causing issue in jdbc
         jdbcProperties["enableArrow"] = "false"
 
+        // Enable server-side metadata filtering to avoid full-database scans during discovery.
+        // Without this, getTables/getColumns/getPrimaryKeys scan all schemas in the account,
+        // causing timeouts for customers with large numbers of schemas/objects.
+        jdbcProperties["CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX"] = "true"
+
         pojo.schema?.let { jdbcProperties["schema"] = it }
         pojo.role.let { jdbcProperties["role"] = it }
 
