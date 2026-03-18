@@ -1,5 +1,5 @@
 ---
-products: cloud
+products: cloud-teams
 sidebar_label: External Secret Management
 ---
 
