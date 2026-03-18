@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
 package io.airbyte.integrations.source.postgres.cdc
 
 import io.airbyte.integrations.source.postgres.operations.types.DateTimeConverter
