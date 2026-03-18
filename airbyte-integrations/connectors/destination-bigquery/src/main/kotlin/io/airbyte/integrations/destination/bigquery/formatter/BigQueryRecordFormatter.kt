@@ -226,7 +226,9 @@ class BigQueryRecordFormatter(
 
         fun formatTimestampWithoutTimezone(value: EnrichedAirbyteValue): String {
             return DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimestampWithoutTimezoneValue).value.truncatedTo(ChronoUnit.MICROS)
+                (value.abValue as TimestampWithoutTimezoneValue)
+                    .value
+                    .truncatedTo(ChronoUnit.MICROS)
             )
         }
 
