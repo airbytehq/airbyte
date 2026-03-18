@@ -15,33 +15,35 @@ definitions:
         header: Authorization
         api_token: Token {{ config['api_token'] }}
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            max_retries: 20
-            response_filters:
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 429
-                failure_type: transient_error
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 502
-                  - 503
-                  - 504
-                failure_type: transient_error
-              - type: HttpResponseFilter
-                action: FAIL
-                http_codes:
-                  - 401
-                  - 403
-                failure_type: config_error
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+        type: DefaultErrorHandler
+        max_retries: 50
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+            failure_type: transient_error
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 500
+              - 502
+              - 503
+              - 504
+            failure_type: transient_error
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes:
+              - 401
+              - 403
+            failure_type: config_error
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            regex: ([0-9]+)
+            header: retry-after
+            max_waiting_time_in_seconds: 3600
+          - type: ExponentialBackoffStrategy
+            factor: 2
     SimpleRetriever:
       paginator:
         type: DefaultPaginator
@@ -84,30 +86,18 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - employee_id
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type:
               - string
               - "null"
-          employee_id:
-            type: string
           email:
             type:
               - string
               - "null"
-          first_name:
-            type:
-              - string
-              - "null"
-          last_name:
-            type:
-              - string
-              - "null"
-          final_process_date:
+          object:
             type:
               - string
               - "null"
@@ -115,7 +105,7 @@ streams:
             type:
               - boolean
               - "null"
-          linked_user:
+          last_name:
             type:
               - string
               - "null"
@@ -123,12 +113,24 @@ streams:
             type:
               - string
               - "null"
+          first_name:
+            type:
+              - string
+              - "null"
           updated_at:
             type:
               - string
               - "null"
-        required:
-          - employee_id
+          employee_id:
+            type: string
+          linked_user:
+            type:
+              - string
+              - "null"
+          final_process_date:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations: []
   - type: DeclarativeStream
@@ -590,6 +592,8 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
           type:
             type:
@@ -599,21 +603,13 @@ streams:
             type:
               - string
               - "null"
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
           name:
             type:
               - string
               - "null"
-          workbook:
-            type:
-              - string
-              - "null"
-          workbook_name:
+          object:
             type:
               - string
               - "null"
@@ -630,23 +626,11 @@ streams:
                   type:
                     - string
                     - "null"
-                object:
-                  type:
-                    - string
-                    - "null"
                 id:
                   type:
                     - string
                     - "null"
                 name:
-                  type:
-                    - string
-                    - "null"
-                variant:
-                  type:
-                    - string
-                    - "null"
-                data_type:
                   type:
                     - string
                     - "null"
@@ -671,7 +655,19 @@ streams:
                       type:
                         - string
                         - "null"
+                object:
+                  type:
+                    - string
+                    - "null"
                 formula:
+                  type:
+                    - string
+                    - "null"
+                variant:
+                  type:
+                    - string
+                    - "null"
+                data_type:
                   type:
                     - string
                     - "null"
@@ -687,6 +683,10 @@ streams:
                   type:
                     - string
                     - "null"
+          workbook:
+            type:
+              - string
+              - "null"
           created_at:
             type:
               - string
@@ -695,8 +695,10 @@ streams:
             type:
               - string
               - "null"
-        required:
-          - id
+          workbook_name:
+            type:
+              - string
+              - "null"
         additionalProperties: true
   - type: DeclarativeStream
     name: employee-assumptions
@@ -2886,7 +2888,18 @@ streams:
     retriever:
       type: SimpleRetriever
       paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 50
+          cursor_value: "{{ response['next'] }}"
+          stop_condition: "{{ 'next' not in response }}"
       requester:
         type: HttpRequester
         url: >-
@@ -2919,35 +2932,37 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - id
         properties:
-          object:
-            type:
-              - string
-              - "null"
           id:
             type: string
-          created_at:
-            type:
-              - string
-              - "null"
-          updated_at:
-            type:
-              - string
-              - "null"
           data:
             type:
               - object
               - "null"
             properties:
+              ID:
+                type:
+                  - string
+                  - "null"
               Unique ID:
                 type:
                   - string
                   - "null"
-              Opportunity ID:
+              InstallDate:
+                type:
+                  - string
+                  - "null"
+              Invoice Date:
                 type:
                   - string
                   - "null"
               Line Item ID:
+                type:
+                  - string
+                  - "null"
+              UsageEndDate:
                 type:
                   - string
                   - "null"
@@ -2959,31 +2974,23 @@ streams:
                 type:
                   - string
                   - "null"
-              Invoiced Amount:
-                type:
-                  - string
-                  - "null"
-              Invoice Date:
-                type:
-                  - string
-                  - "null"
-              Contract End Date:
-                type:
-                  - string
-                  - "null"
-              ID:
-                type:
-                  - string
-                  - "null"
               LineItemId2__c:
                 type:
                   - string
                   - "null"
-              InstallDate:
+              Opportunity ID:
                 type:
                   - string
                   - "null"
-              UsageEndDate:
+              Invoiced Amount:
+                type:
+                  - string
+                  - "null"
+              Contract Total:
+                type:
+                  - string
+                  - "null"
+                type:
                 type:
                   - string
                   - "null"
@@ -2991,16 +2998,30 @@ streams:
                 type:
                   - string
                   - "null"
+              Contract End Date:
+                type:
+                  - string
+                  - "null"
               ContractId__r.ContractNumber:
                 type:
                   - string
                   - "null"
+          object:
+            type:
+              - string
+              - "null"
           parent_id:
             type:
               - string
               - "null"
-        required:
-          - id
+          created_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -3141,9 +3162,9 @@ metadata:
     stream_0:
       streamHash: ad11f9fa446b445a056b0f48d54e74059e0bc977
     employees:
-      isStale: false
+      isStale: true
       hasRecords: true
-      streamHash: 256ccc852f98c517eccc8a33e3d8c7e65ef11fe5
+      streamHash: 21cac1dd715b70017346050779c0b0c757db8fb4
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -3249,9 +3270,9 @@ metadata:
     data-worksheet-records:
       isStale: false
       hasRecords: true
-      streamHash: 9b7077c923627b1b49d1ab230c66d942b7d523ba
+      streamHash: 4c096b2edb0f9507b3bdb23feec1439add3e8228
       hasResponse: true
-      primaryKeysAreUnique: true
+      primaryKeysAreUnique: false
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     attribute-worksheet-list:

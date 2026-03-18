@@ -12,8 +12,8 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
-  dockerImageTag: 0.4.0
-  canonicalImageTag: 0.4.0
+  dockerImageTag: 0.5.0
+  canonicalImageTag: 0.5.0
   dockerRepository: airbyte/source-captivateiq
   githubIssueLabel: source-captivateiq
   icon: icon.svg
