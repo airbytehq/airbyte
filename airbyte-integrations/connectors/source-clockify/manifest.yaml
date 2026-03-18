@@ -414,6 +414,31 @@ streams:
               - boolean
               - "null"
             description: Indicates if the project is billable or not.
+          budgetEstimate:
+            description: The estimated budget for the project.
+            anyOf:
+              - type: "null"
+              - type: integer
+              - type:
+                  - "null"
+                  - object
+                properties:
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                  estimate:
+                    type:
+                      - "null"
+                      - string
+                  resetOption:
+                    type:
+                      - "null"
+                      - string
           clientId:
             type:
               - string
@@ -897,7 +922,184 @@ streams:
           parent_stream_configs:
             - type: ParentStreamConfig
               stream:
-                $ref: "#/streams/1"
+                type: DeclarativeStream
+                name: projects
+                retriever:
+                  type: SimpleRetriever
+                  paginator:
+                    $ref: "#/definitions/linked/SimpleRetriever/paginator"
+                  requester:
+                    type: HttpRequester
+                    url: >-
+                      https://api.clockify.me/api/v1/workspaces/{{
+                      config['workspace_id'] }}/projects
+                    http_method: GET
+                    authenticator:
+                      $ref: "#/definitions/linked/HttpRequester/authenticator"
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    $schema: http://json-schema.org/schema#
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: string
+                        description: Unique identifier for the project.
+                      name:
+                        type:
+                          - string
+                          - "null"
+                        description: Name of the project.
+                      note:
+                        type:
+                          - string
+                          - "null"
+                        description: Additional notes or comments related to the project.
+                      color:
+                        type:
+                          - string
+                          - "null"
+                        description: Color code used to visually identify the project.
+                      public:
+                        type:
+                          - boolean
+                          - "null"
+                        description: Indicates if the project is public or private.
+                      archived:
+                        type:
+                          - boolean
+                          - "null"
+                        description: Indicates if the project is archived or not.
+                      billable:
+                        type:
+                          - boolean
+                          - "null"
+                        description: Indicates if the project is billable or not.
+                      clientId:
+                        type:
+                          - string
+                          - "null"
+                        description: The ID of the client associated with the project.
+                      duration:
+                        type:
+                          - string
+                          - "null"
+                        description: Total duration tracked for the project.
+                      estimate:
+                        type:
+                          - object
+                          - "null"
+                        description: Project estimation details.
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                            description: Type of estimation (e.g., hours, days).
+                          estimate:
+                            type:
+                              - string
+                              - "null"
+                            description: Estimated time for the project.
+                      template:
+                        type:
+                          - boolean
+                          - "null"
+                        description: Indicates if the project is a template or not.
+                      clientName:
+                        type:
+                          - string
+                          - "null"
+                        description: The name of the client associated with the project.
+                      hourlyRate:
+                        type:
+                          - object
+                          - "null"
+                        description: Hourly rate for the project.
+                        properties:
+                          amount:
+                            type:
+                              - number
+                              - "null"
+                            description: Hourly rate amount.
+                          currency:
+                            type:
+                              - string
+                              - "null"
+                            description: Currency of the hourly rate.
+                      memberships:
+                        type:
+                          - array
+                          - "null"
+                        description: List of project memberships.
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            userId:
+                              type:
+                                - string
+                                - "null"
+                              description: ID of the user associated with the membership.
+                            targetId:
+                              type:
+                                - string
+                                - "null"
+                              description: ID of the target associated with the membership.
+                            membershipType:
+                              type:
+                                - string
+                                - "null"
+                              description: Type of membership.
+                            membershipStatus:
+                              type:
+                                - string
+                                - "null"
+                              description: Status of the membership.
+                      workspaceId:
+                        type:
+                          - string
+                          - "null"
+                        description: ID of the workspace to which the project belongs.
+                      timeEstimate:
+                        type:
+                          - object
+                          - "null"
+                        description: Time estimation details for the project.
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                            description: Type of time estimation (e.g., hours, days).
+                          active:
+                            type:
+                              - boolean
+                              - "null"
+                            description: Indicates if the time estimate is active or not.
+                          estimate:
+                            type:
+                              - string
+                              - "null"
+                            description: Estimated time for the project.
+                          includeNonBillable:
+                            type:
+                              - boolean
+                              - "null"
+                            description: >-
+                              Indicates if non-billable time is included in the
+                              estimate.
+                    additionalProperties: true
               parent_key: id
               partition_field: project_id
     primary_key:
