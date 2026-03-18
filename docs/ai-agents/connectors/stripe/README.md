@@ -71,6 +71,7 @@ async def stripe_execute(entity: str, action: str, params: dict | None = None):
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -79,7 +80,8 @@ from airbyte_agent_stripe import StripeConnector, AirbyteAuthConfig
 
 connector = StripeConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -122,7 +124,7 @@ See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.101
-- **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
+- **Package version:** 0.5.116
+- **Connector version:** 0.1.11
+- **Generated with Connector SDK commit SHA:** 9e0175244d423e9f7dd82768f8a9de1ced84f890
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/stripe/CHANGELOG.md)

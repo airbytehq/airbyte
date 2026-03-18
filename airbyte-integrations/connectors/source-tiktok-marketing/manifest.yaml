@@ -413,7 +413,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc(), '%Y-%m-%d') }}"
+      datetime: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
       datetime_format: "%Y-%m-%d"
 
   report_hourly_incremental_sync:
@@ -900,7 +900,7 @@ definitions:
         report_type: "AUDIENCE"
         data_level: '{{ parameters["data_level"] }}'
         dimensions: '{{ parameters["dimensions"] | string }}'
-        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
+        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc"]) | string  }}'
         start_date: "{{ stream_interval['start_time'] }}"
         end_date: "{{ stream_interval['end_time'] }}"
         filtering: '{{ [{
@@ -1972,9 +1972,9 @@ definitions:
           report_type: "AUDIENCE"
           data_level: '{{ parameters["data_level"] }}'
           dimensions: '{{ parameters["dimensions"] | string }}'
-          metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
-          start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
-          end_date: "{{ today_utc() }}"
+          metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc"]) | string  }}'
+          start_date: '{{ day_delta(-364, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-364, "%Y-%m-%d") else config["start_date"] }}'
+          end_date: "{{ config.get('end_date') if config.get('end_date') else format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d') }}"
           lifetime: "true"
           filtering: '{{ [{
               "filter_value": "[\\\"STATUS_ALL\\\"]",
@@ -2218,7 +2218,7 @@ definitions:
         http_method: GET
         request_parameters:
           pixel_ids: "{{ [stream_partition['pixel_id']] | string}}"
-          date_range: "{{ {'start_date': day_delta(-29, format='%Y-%m-%d'), 'end_date': format_datetime(now_utc(), '%Y-%m-%d')} | string }}"
+          date_range: "{{ {'start_date': day_delta(-29, format='%Y-%m-%d'), 'end_date': format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d')} | string }}"
         error_handler:
           type: DefaultErrorHandler
           response_filters:
@@ -5210,6 +5210,86 @@ definitions:
               type:
                 - "null"
                 - string
+            frequency:
+              description: Average number of times each person saw the ad
+              type:
+                - "null"
+                - string
+            video_play_actions:
+              description: Actions related to video plays
+              type:
+                - "null"
+                - number
+            video_watched_2s:
+              description: Number of viewers watching at least 2 seconds of the video
+              type:
+                - "null"
+                - number
+            video_watched_6s:
+              description: Number of viewers watching at least 6 seconds of the video
+              type:
+                - "null"
+                - number
+            average_video_play:
+              description: The average number of video plays
+              type:
+                - "null"
+                - number
+            average_video_play_per_user:
+              description: The average number of video plays per user
+              type:
+                - "null"
+                - number
+            video_views_p25:
+              description: Percentage of viewers watching at least 25% of the video
+              type:
+                - "null"
+                - number
+            video_views_p50:
+              description: Percentage of viewers watching at least 50% of the video
+              type:
+                - "null"
+                - number
+            video_views_p75:
+              description: Percentage of viewers watching at least 75% of the video
+              type:
+                - "null"
+                - number
+            video_views_p100:
+              description: Percentage of viewers watching the entire video
+              type:
+                - "null"
+                - number
+            profile_visits:
+              description: Number of visits to the profile
+              type:
+                - "null"
+                - number
+            likes:
+              description: Number of likes received
+              type:
+                - "null"
+                - number
+            comments:
+              description: The number of comments received
+              type:
+                - "null"
+                - number
+            shares:
+              description: Number of shares
+              type:
+                - "null"
+                - number
+            follows:
+              description: Number of follows
+              type:
+                - "null"
+                - number
+            clicks_on_music_disc:
+              description: The number of clicks on the music disc
+              type:
+                - "null"
+                - number
         dimensions:
           description:
             Specifies the dimensions or attributes of the audience data being
@@ -5541,7 +5621,7 @@ definitions:
                 description: Event corresponding currency.
                 type:
                   - "null"
-                  - boolean
+                  - string
               name:
                 description: Event name.
                 type:

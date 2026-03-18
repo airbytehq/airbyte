@@ -113,6 +113,16 @@ When **Catalog Type** is set to `Polaris`, configure these additional fields:
 | **Client ID**          | Yes        | The OAuth Client ID for authenticating with the Polaris server                         |
 | **Client Secret**      | Yes        | The OAuth Client Secret for authenticating with the Polaris server                     |
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+
 ## Output schema
 
 ### How Airbyte generates the Iceberg schema
@@ -196,6 +206,10 @@ During a truncate refresh sync, the system deletes all files that don't belong t
 
 If compaction runs simultaneously with the sync, it would delete files from the current generation, causing data loss.
 :::
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

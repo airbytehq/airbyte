@@ -52,6 +52,18 @@ If you're using an S3 bucket to store rejected records, you also need the follow
 
 6. Click **Set up destination** and wait for the tests to complete.
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | No |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
+This is a [data activation](/platform/move-data/elt-data-activation) destination. In addition to the Airbyte sync modes above, HubSpot supports per-object write operations (insert, upsert, update, and soft delete) configured in the connection settings.
+
 ## Supported Objects
 
 The HubSpot destination connector supports the following streams:
@@ -82,7 +94,6 @@ To create a unique value property in HubSpot:
 * Click on `Create property`
 * When entering the rules, check `Require unique values for this property`
 
-
 ### App Verification
 
 In order to verify our HubSpot application, HubSpot expects some usage i.e. [more than 60 installations](https://developers.hubspot.com/docs/guides/apps/marketplace/certification-requirements#value). Hence, when installing the app, you might see the message "You're connecting to an unverified app". This is expected for our first users. Once we have enough traffic on the application, we will be able to verify the app which will remove this warning.
@@ -94,6 +105,10 @@ During app the app installation, you might see scopes related to objects we don'
 ### 403 Forbidden Error
 
 Hubspot has **scopes** for each API call. Each stream is tied to a scope and will need access to that scope to sync data. Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

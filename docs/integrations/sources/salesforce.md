@@ -19,7 +19,9 @@ You may also need the following. This article explains how to get them.
 
 ## Setup guide
 
-### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
+### Set up Salesforce
+
+#### Create a dedicated Salesforce user (optional, but recommended) {#dedicated-salesforce-user}
 
 Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.
 
@@ -29,7 +31,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
-#### Step 1: Create a new user
+##### Step 1: Create a new user
 
 1. On the top right of the screen, click the gear icon and then click **Setup**.
 2. In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field auto-populates the username field and nickname.
@@ -39,7 +41,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
       4. Decide whether to generate a new password and notify the user.
       5. Select `save`
 
-#### Step 2: Create a new permission set
+##### Step 2: Create a new permission set
 
 1. Using the left navigation bar, select **Users** > **Permission Sets**
 2. Click `New` to create a new Permission Set.
@@ -57,7 +59,7 @@ Using Permission Sets, you should grant this user read access to the data you wa
    3. If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
    4. Click `Save`
 
-#### Step 3: Assign the permission set to the new user
+##### Step 3: Assign the permission set to the new user
 
 1. From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 2. Click "Add Assignments."
@@ -73,7 +75,7 @@ Log into the email you used above and verify your new Salesforce account user. Y
 
 <!-- env:oss -->
 
-### Get Salesforce OAuth credentials (Airbyte Open Source only)
+#### Get Salesforce OAuth credentials (Airbyte Open Source only)
 
 If you are using Airbyte Open Source, obtain the following OAuth credentials to authenticate:
 
@@ -272,6 +274,7 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | fix(source-salesforce): skip time-based slicing for full_refresh syncs (AI-Triage PR) |
 | 2.7.17 | 2026-02-10 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
 | 2.7.16-rc.1 | 2025-10-27 | [66136](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning|

@@ -12,11 +12,11 @@ data:
       - api.ads.microsoft.com
       - clientcenter.api.bingads.microsoft.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.0@sha256:caac8e8f74b2b64d13ec5956ac93c87dd3d50b0c7975de4e81c938e2f215d1d6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.4@sha256:2f551a3fb5d580b34f4253aa1904d26c309364b09538f0b0fef3d8a98546f795
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.23.11
+  dockerImageTag: 2.23.15-rc.1
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   externalDocumentationUrls:
@@ -44,7 +44,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       1.0.0:
         message: Version 1.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect.

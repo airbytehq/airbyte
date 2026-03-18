@@ -7,11 +7,11 @@ data:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.5@sha256:a5ef859b9f6dde52bd914fbcddb088d4f1ccae4887ffb58b2282b80f119fdcbe
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.1@sha256:bd69f6b52bdd92ce06c30786d67546427b828ffb553363c8950b2816c552d6e0
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 4.8.14
+  dockerImageTag: 5.0.3
   dockerRepository: airbyte/source-tiktok-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   externalDocumentationUrls:
@@ -38,6 +38,17 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      5.0.0:
+        message:
+          The `currency` field in the `pixels` stream's `events` array has been corrected
+          from `boolean` to `string` type. Users syncing the `pixels` stream will need to
+          refresh the source schema and reset the stream after upgrading.
+          For more information, see our migration documentation for source TikTok Marketing.
+        upgradeDeadline: "2026-03-03"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "pixels"
       4.0.0:
         message:
           The source TikTok Marketing connector is being migrated from the Python CDK

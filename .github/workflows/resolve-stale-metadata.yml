@@ -30,30 +30,21 @@ jobs:
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
 
-      - name: Set up Python
-        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
-      - name: Install Poetry
-        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
-        with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+      - name: Install Ops CLI
+        continue-on-error: true
+        run: uv tool install airbyte-internal-ops
 
-      - name: Install metadata_service
-        working-directory: airbyte-ci/connectors/metadata_service/lib
-        run: poetry install
-
-      - name: Run stale metadata report task
+      - name: Check for unpublished connector versions
+        continue-on-error: true
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
-        run: |
-          poetry run metadata_service publish-stale-metadata-report prod-airbyte-cloud-connector-metadata-service
+        run: >
+          airbyte-ops local connector list
+          --repo-path "${{ github.workspace }}"
+          --unpublished
+          --store coral:prod
+          --assert-none

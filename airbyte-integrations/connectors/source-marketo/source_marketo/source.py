@@ -303,8 +303,11 @@ class MarketoExportCreate(MarketoStream):
             if errors[0].get("code") == "1029" and re.match("Export daily quota \d+MB exceeded", errors[0].get("message")):
                 message = "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
                 raise AirbyteTracedException(internal_message=response.text, message=message, failure_type=FailureType.config_error)
-        result = response.json().get("result")[0]
-        status, export_id = result.get("status", "").lower(), result.get("exportId")
+        result = response.json().get("result")
+        if not result:
+            self.logger.warning("No 'result' in export create response, retrying. Response: %s", response.text[:500])
+            return True
+        status, export_id = result[0].get("status", "").lower(), result[0].get("exportId")
         if status != "created" or not export_id:
             self.logger.warning(f"Failed to create export job! Status is {status}!")
             return True
@@ -349,7 +352,12 @@ class MarketoExportStatus(MarketoStream):
         return f"bulk/v1/{self.stream_name}/export/{self.export_id}/status.json"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
-        return [response.json()[self.data_field][0]["status"]]
+        result = response.json().get(self.data_field)
+        if not result:
+            raise Exception(
+                f"Unexpected response from export status endpoint: '{self.data_field}' key missing. Response: {response.text[:500]}"
+            )
+        return [result[0]["status"]]
 
 
 class Leads(MarketoExportBase):
