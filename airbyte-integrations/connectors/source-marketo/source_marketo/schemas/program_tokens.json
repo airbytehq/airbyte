@@ -22,30 +22,6 @@
     "computedUrl": {
       "description": "The computed URL for the token in the Marketo UI.",
       "type": ["string", "null"]
-    },
-    "section": {
-      "description": "The section the token belongs to.",
-      "type": ["string", "null"]
-    },
-    "groupId": {
-      "description": "The group ID of the token.",
-      "type": ["string", "null"]
-    },
-    "sortOrder": {
-      "description": "The sort order of the token within its group.",
-      "type": ["integer", "null"]
-    },
-    "overridden": {
-      "description": "Whether the token value has been overridden at this program level.",
-      "type": ["boolean", "null"]
-    },
-    "inherited": {
-      "description": "Whether the token is inherited from a parent program or folder.",
-      "type": ["boolean", "null"]
-    },
-    "lastModiFied": {
-      "description": "The date and time when the token was last modified. Note: field name uses Marketo's original casing.",
-      "type": ["string", "null"]
     }
   }
 }
