@@ -1,0 +1,22 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4eb59af1-e69b-4849-84f0-5d81cc5ce490
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-smoke-test
+  githubIssueLabel: source-smoke-test
+  license: ELv2
+  name: Smoke Test
+  registryOverrides:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+metadataSpecVersion: "1.0"
