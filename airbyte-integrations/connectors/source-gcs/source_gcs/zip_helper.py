@@ -43,9 +43,10 @@ class ZipHelper:
                 zf.extractall(tmp_dir_path)
 
     def get_gcs_remote_files(self) -> Iterable[GCSUploadableRemoteFile]:
-        self._extract_files_to_tmp_directory(self._chunk_download(), self._tmp_dir_path)
+        extract_dir = tempfile.mkdtemp(dir=self._tmp_dir_path)
+        self._extract_files_to_tmp_directory(self._chunk_download(), extract_dir)
 
-        for dirpath, _dirnames, filenames in os.walk(self._tmp_dir_path):
+        for dirpath, _, filenames in os.walk(extract_dir):
             for unzipped_file in filenames:
                 file_path = os.path.join(dirpath, unzipped_file)
                 logger.info(f"Picking up file {unzipped_file} from zip archive {self._blob.public_url}.")
