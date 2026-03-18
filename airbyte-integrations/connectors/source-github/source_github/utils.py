@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from datetime import timedelta
 from itertools import cycle
-from typing import Any, List, Mapping
+from typing import Any, Dict, List, Mapping, Optional
 
 import backoff
 import jwt
@@ -62,11 +62,15 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     DURATION = timedelta(seconds=3600)  # Duration at which the current rate limit window resets
 
-    def __init__(self, tokens: List[str], auth_method: str = "token", auth_header: str = "Authorization", api_url: str = "https://api.github.com"):
+    REFRESH_BUFFER_SECONDS = 300  # Refresh token 5 minutes before expiry
+
+    def __init__(self, tokens: List[str], auth_method: str = "token", auth_header: str = "Authorization", api_url: str = "https://api.github.com", github_app_config: Optional[Dict[str, str]] = None):
         self._logger = logging.getLogger("airbyte")
         self._auth_method = auth_method
         self._auth_header = auth_header
         self._api_url = api_url.rstrip("/")
+        self._github_app_config = github_app_config
+        self._token_expires_at: Optional[float] = time.time() + 3600 if github_app_config else None
         self._tokens = {t: Token() for t in tokens}
         # It would've been nice to instantiate a single client on this authenticator. However, we are checking
         # the limits of each token which is associated with a TokenAuthenticator. And each HttpClient can only
@@ -98,8 +102,31 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             return {self.auth_header: self.token}
         return {}
 
+    def _refresh_token_if_needed(self):
+        """Refresh the GitHub App installation token if it's close to expiry."""
+        if self._github_app_config is None:
+            return
+        if time.time() < self._token_expires_at - self.REFRESH_BUFFER_SECONDS:
+            return
+
+        self._logger.info("GitHub App installation token is expiring soon, refreshing...")
+        old_token = list(self._tokens.keys())[0]
+        new_token = generate_github_app_token(**self._github_app_config)
+
+        # Replace the token in all internal data structures
+        token_state = self._tokens.pop(old_token)
+        self._tokens[new_token] = token_state
+        self._token_to_http_client.pop(old_token)
+        self._token_to_http_client.update(self._initialize_http_clients([new_token]))
+        self._tokens_iter = cycle(self._tokens)
+        self._active_token = next(self._tokens_iter)
+        self._token_expires_at = time.time() + 3600
+
+        self._logger.info("GitHub App installation token refreshed successfully")
+
     def __call__(self, request):
         """Attach the HTTP headers required to authenticate on the HTTP request"""
+        self._refresh_token_if_needed()
         while True:
             current_token = self._tokens[self.current_active_token]
             if "graphql" in request.path_url:

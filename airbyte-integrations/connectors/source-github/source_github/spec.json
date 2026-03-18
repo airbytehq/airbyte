@@ -87,7 +87,7 @@
               "private_key": {
                 "type": "string",
                 "title": "Private Key",
-                "description": "The private key (PEM format) of your GitHub App. Note: GitHub App installation tokens expire after 1 hour. Syncs longer than 1 hour may fail with authentication errors.",
+                "description": "The private key (PEM format) of your GitHub App. Installation tokens are automatically refreshed during long-running syncs.",
                 "airbyte_secret": true,
                 "multiline": true
               }

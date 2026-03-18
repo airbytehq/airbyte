@@ -10,8 +10,9 @@ import pytest
 import responses
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from freezegun import freeze_time
 from source_github.source import SourceGithub
-from source_github.utils import generate_github_app_token
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter, generate_github_app_token
 
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -172,3 +173,95 @@ def test_get_access_token_missing_field():
 
     with pytest.raises(AirbyteTracedException, match="app_id"):
         source.get_access_token(config)
+
+
+RATE_LIMIT_RESPONSE = {
+    "resources": {
+        "core": {"remaining": 5000, "reset": int(time.time()) + 3600},
+        "graphql": {"remaining": 5000, "reset": int(time.time()) + 3600},
+    }
+}
+
+
+@responses.activate
+def test_token_refresh_when_expired():
+    """Verify token is refreshed when close to expiry."""
+    # Mock rate limit check (called during __init__)
+    responses.add(responses.GET, "https://api.github.com/rate_limit", json=RATE_LIMIT_RESPONSE, status=200)
+
+    github_app_config = {
+        "app_id": "99999",
+        "private_key": TEST_PEM_KEY,
+        "installation_id": "12345",
+        "api_url": "https://api.github.com",
+    }
+
+    auth = MultipleTokenAuthenticatorWithRateLimiter(
+        tokens=["ghs_initial_token"],
+        api_url="https://api.github.com",
+        github_app_config=github_app_config,
+    )
+
+    assert "ghs_initial_token" in auth._tokens
+
+    # Simulate token about to expire (set expiry to 2 minutes from now, within 5-min buffer)
+    auth._token_expires_at = time.time() + 120
+
+    # Mock the token refresh call
+    responses.add(
+        responses.POST,
+        "https://api.github.com/app/installations/12345/access_tokens",
+        json={"token": "ghs_refreshed_token"},
+        status=201,
+    )
+    # Mock rate limit check for new token
+    responses.add(responses.GET, "https://api.github.com/rate_limit", json=RATE_LIMIT_RESPONSE, status=200)
+
+    # Trigger refresh
+    auth._refresh_token_if_needed()
+
+    assert "ghs_refreshed_token" in auth._tokens
+    assert "ghs_initial_token" not in auth._tokens
+
+
+@responses.activate
+def test_token_not_refreshed_when_still_valid():
+    """Verify token is NOT refreshed when still valid."""
+    responses.add(responses.GET, "https://api.github.com/rate_limit", json=RATE_LIMIT_RESPONSE, status=200)
+
+    github_app_config = {
+        "app_id": "99999",
+        "private_key": TEST_PEM_KEY,
+        "installation_id": "12345",
+        "api_url": "https://api.github.com",
+    }
+
+    auth = MultipleTokenAuthenticatorWithRateLimiter(
+        tokens=["ghs_valid_token"],
+        api_url="https://api.github.com",
+        github_app_config=github_app_config,
+    )
+
+    # Token expires in 50 minutes — well within valid range
+    auth._token_expires_at = time.time() + 3000
+
+    auth._refresh_token_if_needed()
+
+    # Token should NOT have been refreshed
+    assert "ghs_valid_token" in auth._tokens
+
+
+@responses.activate
+def test_no_refresh_for_pat_auth():
+    """Verify that PAT auth (no github_app_config) never triggers refresh."""
+    responses.add(responses.GET, "https://api.github.com/rate_limit", json=RATE_LIMIT_RESPONSE, status=200)
+
+    auth = MultipleTokenAuthenticatorWithRateLimiter(
+        tokens=["ghp_pat_token"],
+        api_url="https://api.github.com",
+        github_app_config=None,
+    )
+
+    # Should be a no-op
+    auth._refresh_token_if_needed()
+    assert "ghp_pat_token" in auth._tokens

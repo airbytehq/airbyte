@@ -128,9 +128,6 @@ class SourceGithub(AbstractSource):
         if "personal_access_token" in credentials:
             return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
         if "private_key" in credentials:
-            # GitHub App auth — generate an installation token on the fly.
-            # NOTE: installation tokens expire after 1 hour. For syncs longer
-            # than that, the token will need to be refreshed (not yet implemented).
             for field in ("app_id", "installation_id"):
                 if field not in credentials:
                     raise AirbyteTracedException(
@@ -151,7 +148,19 @@ class SourceGithub(AbstractSource):
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
         api_url = config.get("api_url", "https://api.github.com")
-        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens, api_url=api_url)
+
+        # Pass GitHub App credentials so the authenticator can refresh tokens
+        github_app_config = None
+        credentials = config.get("credentials", {})
+        if "private_key" in credentials:
+            github_app_config = {
+                "app_id": credentials["app_id"],
+                "private_key": credentials["private_key"],
+                "installation_id": credentials["installation_id"],
+                "api_url": api_url,
+            }
+
+        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens, api_url=api_url, github_app_config=github_app_config)
 
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)
