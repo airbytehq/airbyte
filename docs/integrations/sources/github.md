@@ -23,7 +23,7 @@ This page contains the setup guide and reference information for the [GitHub](ht
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
-- GitHub App (App ID, Installation ID, and private key)
+- GitHub App (see [GitHub App permissions](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
 <!-- /env:oss -->
 
 ## Setup guide
