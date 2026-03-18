@@ -18,7 +18,7 @@ include = "source_smoke_test"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-airbyte = ">=0.35.0"
+airbyte = ">=0.40.0"
 
 [tool.poetry.scripts]
 source-smoke-test = "source_smoke_test.run:run"
