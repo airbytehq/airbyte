@@ -39,13 +39,14 @@ def test_generate_github_app_token_success():
         status=201,
     )
 
-    token = generate_github_app_token(
+    token, expires_at = generate_github_app_token(
         app_id="99999",
         private_key=TEST_PEM_KEY,
         installation_id="12345",
     )
 
     assert token == "ghs_test_token_123"
+    assert expires_at == "2026-01-01T00:00:00Z"
     # Verify the JWT was sent correctly
     auth_header = responses.calls[0].request.headers["Authorization"]
     assert auth_header.startswith("Bearer ")
@@ -64,7 +65,7 @@ def test_generate_github_app_token_custom_api_url():
         status=201,
     )
 
-    token = generate_github_app_token(
+    token, _ = generate_github_app_token(
         app_id="111",
         private_key=TEST_PEM_KEY,
         installation_id="555",
@@ -106,7 +107,7 @@ def test_generate_github_app_token_retries_on_5xx():
         status=201,
     )
 
-    token = generate_github_app_token(
+    token, _ = generate_github_app_token(
         app_id="99999",
         private_key=TEST_PEM_KEY,
         installation_id="12345",
@@ -130,7 +131,7 @@ def test_pem_newline_normalization():
             json={"token": "ghs_normalized"},
             status=201,
         )
-        token = generate_github_app_token(
+        token, _ = generate_github_app_token(
             app_id="99999",
             private_key=mangled_key,
             installation_id="12345",

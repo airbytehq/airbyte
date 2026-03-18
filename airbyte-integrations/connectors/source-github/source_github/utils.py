@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from datetime import timedelta
 from itertools import cycle
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import backoff
 import jwt
@@ -103,15 +103,21 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         return {}
 
     def _refresh_token_if_needed(self):
-        """Refresh the GitHub App installation token if it's close to expiry."""
+        """Refresh the GitHub App installation token if it's close to expiry.
+
+        Note: this method is called per-request from __call__(). Airbyte's source
+        framework is single-threaded for HTTP calls, so no locking is needed.
+        """
         if self._github_app_config is None:
             return
         if time.time() < self._token_expires_at - self.REFRESH_BUFFER_SECONDS:
             return
 
         self._logger.info("GitHub App installation token is expiring soon, refreshing...")
+        # GitHub App auth always uses a single token
+        assert len(self._tokens) == 1, "GitHub App auth only supports a single token"
         old_token = list(self._tokens.keys())[0]
-        new_token = generate_github_app_token(**self._github_app_config)
+        new_token, expires_at = generate_github_app_token(**self._github_app_config)
 
         # Replace the token in all internal data structures
         token_state = self._tokens.pop(old_token)
@@ -120,9 +126,20 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         self._token_to_http_client.update(self._initialize_http_clients([new_token]))
         self._tokens_iter = cycle(self._tokens)
         self._active_token = next(self._tokens_iter)
-        self._token_expires_at = time.time() + 3600
+        self._token_expires_at = self._parse_expiry(expires_at)
 
         self._logger.info("GitHub App installation token refreshed successfully")
+
+    @staticmethod
+    def _parse_expiry(expires_at: Optional[str]) -> float:
+        """Parse the expires_at ISO 8601 timestamp from GitHub, falling back to 1 hour from now."""
+        if expires_at:
+            try:
+                from datetime import datetime, timezone
+                return datetime.fromisoformat(expires_at.replace("Z", "+00:00")).timestamp()
+            except (ValueError, TypeError):
+                pass
+        return time.time() + 3600
 
     def __call__(self, request):
         """Attach the HTTP headers required to authenticate on the HTTP request"""
@@ -216,11 +233,14 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         return False
 
 
-def generate_github_app_token(app_id: str, private_key: str, installation_id: str, api_url: str = "https://api.github.com") -> str:
+def generate_github_app_token(app_id: str, private_key: str, installation_id: str, api_url: str = "https://api.github.com") -> Tuple[str, Optional[str]]:
     """Generate a GitHub App installation access token.
 
     Creates a JWT signed with the app's private key, then exchanges it for
     a short-lived installation access token (expires in 1 hour).
+
+    Returns a tuple of (token, expires_at) where expires_at is an ISO 8601
+    timestamp string from the GitHub API response, or None if not present.
     """
     logger = logging.getLogger("airbyte")
 
@@ -259,9 +279,11 @@ def generate_github_app_token(app_id: str, private_key: str, installation_id: st
             failure_type=FailureType.config_error,
         )
 
-    token = response.json()["token"]
-    logger.info("Successfully generated GitHub App installation token")
-    return token
+    data = response.json()
+    token = data["token"]
+    expires_at = data.get("expires_at")
+    logger.info(f"Successfully generated GitHub App installation token (expires_at={expires_at})")
+    return token, expires_at
 
 
 def _should_retry(e):

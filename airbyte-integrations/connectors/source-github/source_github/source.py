@@ -135,7 +135,7 @@ class SourceGithub(AbstractSource):
                         failure_type=FailureType.config_error,
                     )
             api_url = config.get("api_url", "https://api.github.com")
-            token = generate_github_app_token(
+            token, _ = generate_github_app_token(
                 app_id=credentials["app_id"],
                 private_key=credentials["private_key"],
                 installation_id=credentials["installation_id"],
