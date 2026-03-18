@@ -154,7 +154,7 @@ Snowflake's `TIMESTAMP_TZ` and `TIMESTAMP_LTZ` types are converted to UTC during
 
 ## Incremental sync
 
-The connector supports [incremental sync](/understanding-airbyte/connections/incremental-append) using a user-defined cursor field.
+The connector supports [incremental sync](/platform/using-airbyte/core-concepts/sync-modes/incremental-append) using a user-defined cursor field.
 
 During each sync, the connector queries only records where the cursor value is greater than the last-synced value. Choose a cursor field that is monotonically increasing and never updated after creation, such as a `CREATED_AT` timestamp or an auto-incrementing ID.
 
