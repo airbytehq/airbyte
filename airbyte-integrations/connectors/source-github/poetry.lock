@@ -1679,6 +1679,9 @@ files = [
     {file = "pyjwt-2.11.0.tar.gz", hash = "sha256:35f95c1f0fbe5d5ba6e43f00271c275f7a1a4db1dab27bf708073b75318ea623"},
 ]
 
+[package.dependencies]
+cryptography = {version = ">=3.4.0", optional = true, markers = "extra == \"crypto\""}
+
 [package.extras]
 crypto = ["cryptography (>=3.4.0)"]
 dev = ["coverage[toml] (==7.10.7)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=8.4.2,<9.0.0)", "sphinx", "sphinx-rtd-theme", "zope.interface"]
@@ -2780,4 +2783,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.14"
-content-hash = "7082b37f65c8042be4811a100e15c26b974b9cd4917e43a4431539ac2e3f1809"
+content-hash = "020e480cce2b91c5693bb01eef30a7c1bf2b7e42214f128e219a7901e8c851b4"

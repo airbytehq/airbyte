@@ -8,6 +8,8 @@ from datetime import timedelta
 from itertools import cycle
 from typing import Any, List, Mapping
 
+import backoff
+import jwt
 import requests
 
 from airbyte_cdk.models import FailureType, SyncMode
@@ -60,10 +62,11 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     DURATION = timedelta(seconds=3600)  # Duration at which the current rate limit window resets
 
-    def __init__(self, tokens: List[str], auth_method: str = "token", auth_header: str = "Authorization"):
+    def __init__(self, tokens: List[str], auth_method: str = "token", auth_header: str = "Authorization", api_url: str = "https://api.github.com"):
         self._logger = logging.getLogger("airbyte")
         self._auth_method = auth_method
         self._auth_header = auth_header
+        self._api_url = api_url.rstrip("/")
         self._tokens = {t: Token() for t in tokens}
         # It would've been nice to instantiate a single client on this authenticator. However, we are checking
         # the limits of each token which is associated with a TokenAuthenticator. And each HttpClient can only
@@ -139,7 +142,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
         _, response = http_client.send_request(
             http_method="GET",
-            url="https://api.github.com/rate_limit",
+            url=f"{self._api_url}/rate_limit",
             headers={"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"},
             request_kwargs={},
         )
@@ -184,3 +187,68 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         else:
             self.update_token()
         return False
+
+
+def generate_github_app_token(app_id: str, private_key: str, installation_id: str, api_url: str = "https://api.github.com") -> str:
+    """Generate a GitHub App installation access token.
+
+    Creates a JWT signed with the app's private key, then exchanges it for
+    a short-lived installation access token (expires in 1 hour).
+    """
+    logger = logging.getLogger("airbyte")
+
+    # PEM keys pasted through UI forms often have literal "\n" instead of
+    # real newlines, which causes PyJWT to fail with a confusing
+    # "Could not parse the provided public key" error.
+    private_key = private_key.replace("\\n", "\n").strip()
+
+    now = int(time.time())
+    payload = {
+        "iat": now - 60,  # issued at (60s in the past for clock skew)
+        "exp": now + (10 * 60),  # expires in 10 minutes (max allowed)
+        "iss": app_id,
+    }
+    encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
+
+    api_url = api_url.rstrip("/")
+    url = f"{api_url}/app/installations/{installation_id}/access_tokens"
+    logger.info(f"Requesting GitHub App installation token from {url}")
+
+    response = _post_with_retry(url, encoded_jwt)
+
+    if response.status_code != 201:
+        raise AirbyteTracedException(
+            message=f"Failed to generate GitHub App installation token (HTTP {response.status_code}). "
+                    "Verify your App ID, Installation ID, and private key are correct.",
+            internal_message=f"GitHub App token exchange failed: {response.text}",
+            failure_type=FailureType.config_error,
+        )
+
+    token = response.json()["token"]
+    logger.info("Successfully generated GitHub App installation token")
+    return token
+
+
+def _should_retry(e):
+    """Retry on network errors and 5xx/429 responses."""
+    if isinstance(e, requests.exceptions.RequestException) and not isinstance(e, requests.exceptions.HTTPError):
+        return True
+    if hasattr(e, "response") and e.response is not None:
+        return e.response.status_code == 429 or e.response.status_code >= 500
+    return False
+
+
+@backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=4, giveup=lambda e: not _should_retry(e))
+def _post_with_retry(url: str, bearer_token: str) -> requests.Response:
+    response = requests.post(
+        url,
+        headers={
+            "Authorization": f"Bearer {bearer_token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+        timeout=30,
+    )
+    if response.status_code == 429 or response.status_code >= 500:
+        raise requests.exceptions.HTTPError(response=response)
+    return response
