@@ -44,7 +44,7 @@ class TestTicketMetricEventsStreamFullRefresh(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
-            .with_page_size(1000)
+            .with_any_query_params()
             .build(),
             TicketMetricEventsResponseBuilder.ticket_metric_events_response()
             .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record())
@@ -82,7 +82,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
-            .with_page_size(1000)
+            .with_any_query_params()
             .build(),
             TicketMetricEventsResponseBuilder.ticket_metric_events_response()
             .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record().with_field(FieldPath("time"), cursor_value))
@@ -104,7 +104,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator)
             .with_start_time(datetime_to_string(state_cursor_value))
-            .with_page_size(1000)
+            .with_any_query_params()
             .build(),
             TicketMetricEventsResponseBuilder.ticket_metric_events_response()
             .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record().with_field(FieldPath("time"), new_cursor_value))
