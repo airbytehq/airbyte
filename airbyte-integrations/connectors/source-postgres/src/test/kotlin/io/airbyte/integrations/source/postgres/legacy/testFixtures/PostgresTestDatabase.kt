@@ -168,7 +168,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
     val publicationName: String?
         get() = withNamespace("publication")
 
-    fun withReplicationSlot(): PostgresTestDatabase? {
+    fun withReplicationSlot(): PostgresTestDatabase {
         return this.with(
                 "SELECT pg_create_logical_replication_slot('%s', 'pgoutput');",
                 this.replicationSlotName,
@@ -176,7 +176,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
             .onClose("SELECT pg_drop_replication_slot('%s');", this.replicationSlotName)
     }
 
-    fun withPublicationForAllTables(): PostgresTestDatabase? {
+    fun withPublicationForAllTables(): PostgresTestDatabase {
         return this.with("CREATE PUBLICATION %s FOR ALL TABLES;", this.publicationName)
             .onClose("DROP PUBLICATION %s CASCADE;", this.publicationName)
     }
