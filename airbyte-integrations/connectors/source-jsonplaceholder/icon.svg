@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <rect width="256" height="256" rx="32" fill="#1E88E5"/>
+  <text x="128" y="100" text-anchor="middle" font-family="monospace" font-size="36" font-weight="bold" fill="white">{...}</text>
+  <text x="128" y="155" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="white">JSON</text>
+  <text x="128" y="185" text-anchor="middle" font-family="sans-serif" font-size="16" fill="white">Placeholder</text>
+</svg>
