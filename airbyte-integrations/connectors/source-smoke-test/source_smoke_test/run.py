@@ -6,9 +6,8 @@ Delegates to the PyAirbyte CLI smoke test source implementation.
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
-
 from airbyte.cli.smoke_test_source.source import SourceSmokeTest
+from airbyte_cdk.entrypoint import launch
 
 
 def run() -> None:
