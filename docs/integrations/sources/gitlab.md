@@ -112,6 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.24 | 2026-03-18 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Ops CLI soft launch test - release candidate edge case - no functional changes |
 | 4.4.23-rc.1 | 2026-03-07 | [70858](https://github.com/airbytehq/airbyte/pull/70858) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
 | 4.4.22 | 2026-02-24 | [73774](https://github.com/airbytehq/airbyte/pull/73774) | Update dependencies |
 | 4.4.21 | 2026-02-17 | [73401](https://github.com/airbytehq/airbyte/pull/73401) | Update dependencies |
