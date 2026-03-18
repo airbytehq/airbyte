@@ -89,7 +89,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             testCase(
                 "DECIMAL(20,0)",
                 LeafAirbyteSchemaType.INTEGER,
-                AnsiSql.intValues,
+                AnsiSql.bigIntValues,
                 "DECIMAL(20,0)"
             )
         )
@@ -99,7 +99,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
                 //  Fix type handling for numeric arrays.
                 ArrayAirbyteSchemaType(LeafAirbyteSchemaType.NUMBER),
-                AnsiSql.intValues.toArrayVals("DECIMAL(20,0)[]"),
+                AnsiSql.bigIntValues.toArrayVals("DECIMAL(20,0)[]"),
                 "DECIMAL(20,0) ARRAY"
             )
         )
@@ -202,11 +202,24 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "BIT VARYING ARRAY"
             )
         )
-        scalarAndArray(
-            "BYTEA",
-            LeafAirbyteSchemaType.STRING,
-            mapOf(
-                "decode('someBase64xx', 'base64')" to "\"\\\\xb2899e05ab1eeb8c71\"",
+
+        add(
+            testCase(
+                "BYTEA",
+                LeafAirbyteSchemaType.STRING,
+                mapOf("decode('someBase64xx', 'base64')" to "\"\\\\xb2899e05ab1eeb8c71\""),
+                "BYTEA",
+            )
+        )
+        add(
+            testCase(
+                "BYTEA[]",
+                ArrayAirbyteSchemaType(LeafAirbyteSchemaType.STRING),
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
+                //  Legacy representation of array values inconsistent with scalar.
+                mapOf("decode('someBase64xx', 'base64')" to "\"someBase64xx\"")
+                    .toArrayVals("BYTEA[]"),
+                "BYTEA ARRAY",
             )
         )
 

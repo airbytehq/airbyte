@@ -6,19 +6,15 @@ import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.jdbc.ArrayFieldType
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
-import io.airbyte.cdk.jdbc.LocalDateFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
-import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.NullFieldType
-import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
-import io.airbyte.cdk.jdbc.OffsetTimeFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -31,6 +27,13 @@ import io.airbyte.integrations.source.postgres.operations.types.LsegFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PathFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PointFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PolygonFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresByteaFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresDateFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeTzFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimestampFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimestampTzFieldType
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.JDBCType
@@ -54,9 +57,10 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
         // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
         //  Remove this - preserves legacy mapping of "_oid" array inconsistent with "oid" scalar
         if (type.isArray && type.scalarTypeName == "oid") return BigDecimalFieldType
+        // _bytea arrays use base64 encoding; scalar bytea uses hex string (legacy inconsistency)
+        if (type.isArray && type.scalarTypeName == "bytea") return PostgresByteaFieldType
         return when (type.scalarJdbcType) {
             JDBCType.BIT ->
-                // BOOLEAN reports as JDBCType.BIT
                 if (type.scalarTypeName == "bool") BooleanFieldType
                 // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15946):
                 //  Fix array types mismatching scalar types.
@@ -70,7 +74,8 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             JDBCType.BIGINT -> LongFieldType
             JDBCType.REAL -> FloatFieldType
             JDBCType.FLOAT,
-            JDBCType.DOUBLE -> DoubleFieldType
+            JDBCType.DOUBLE ->
+                if (type.scalarTypeName == "money") PostgresMoneyFieldType else DoubleFieldType
             JDBCType.NUMERIC,
             JDBCType.DECIMAL -> {
                 // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
@@ -78,19 +83,20 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 //  Precision and scale for array types are not accurately reported by JDBC.
                 //  If we are able to fetch the real values, we should remove this clause.
                 if (type.isArray) BigDecimalFieldType
-                else if (type.precision != 0 && type.scale == 0) IntFieldType
+                else if (type.precision != 0 && type.scale == 0) BigIntegerFieldType
                 else BigDecimalFieldType
             }
-            JDBCType.DATE -> LocalDateFieldType
+            JDBCType.DATE -> PostgresDateFieldType
             JDBCType.TIMESTAMP ->
                 // JDBC driver reports timestamptz as TIMESTAMP instead of TIMESTAMP_WITH_TIMEZONE
                 // for complex and historical reasons
-                if (type.scalarTypeName == "timestamptz") OffsetDateTimeFieldType
-                else LocalDateTimeFieldType
+                if (type.scalarTypeName == "timestamptz") PostgresTimestampTzFieldType
+                else PostgresTimestampFieldType
             JDBCType.TIME ->
                 // JDBC driver reports timetz as TIME instead of TIME_WITH_TIMEZONE
                 // for complex and historical reasons
-                if (type.scalarTypeName == "timetz") OffsetTimeFieldType else LocalTimeFieldType
+                if (type.scalarTypeName == "timetz") PostgresTimeTzFieldType
+                else PostgresTimeFieldType
             JDBCType.CHAR,
             JDBCType.VARCHAR -> StringFieldType
             JDBCType.BINARY,
@@ -137,8 +143,7 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
 
         // Postgres reports the JDBC type of all arrays as JDBCType.ARRAY. Here, we use the
         // name of the array type to determine the JDBC type of its elements. Array type names
-        // are prefixed with an underscore. These names are canonical, not aliases. But be warned:
-        // the same is not true of scalar types, whose type names can be aliases.
+        // are prefixed with an underscore. These names are all canonical, not aliases.
         private fun scalarJDBCType(arrayTypeName: String): JDBCType =
             when (arrayTypeName) {
                 "_bit",
@@ -153,17 +158,17 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 "_int4",
                 "_oid" -> JDBCType.INTEGER
                 "_int8", -> JDBCType.BIGINT
-                "_numeric",
-                "_money" -> JDBCType.NUMERIC
+                "_numeric" -> JDBCType.NUMERIC
                 "_float4" -> JDBCType.REAL
+                "_money",
                 "_float8" -> JDBCType.DOUBLE
                 // JDBC driver reports timestamptz as TIMESTAMP instead of TIMESTAMP_WITH_TIMEZONE
                 // for complex and historical reasons. We follow suit for the array case.
-                "_timestamptz" -> JDBCType.TIMESTAMP
+                "_timestamptz",
                 "_timestamp" -> JDBCType.TIMESTAMP
                 // JDBC driver reports timetz as TIME instead of TIMESTAMP_WITH_TIMEZONE
                 // for complex and historical reasons. We follow suit for the array case.
-                "_timetz" -> JDBCType.TIME
+                "_timetz",
                 "_time" -> JDBCType.TIME
                 "_date" -> JDBCType.DATE
                 "_bytea" -> JDBCType.VARBINARY

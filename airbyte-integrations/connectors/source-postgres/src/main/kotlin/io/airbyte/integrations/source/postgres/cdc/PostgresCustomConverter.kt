@@ -1,14 +1,9 @@
 /*
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.integrations.source.postgres.cdc
 
-import io.airbyte.integrations.source.postgres.cdc.DateTimeConverter.convertToDate
-import io.airbyte.integrations.source.postgres.cdc.DateTimeConverter.convertToTime
-import io.airbyte.integrations.source.postgres.cdc.DateTimeConverter.convertToTimeWithTimezone
-import io.airbyte.integrations.source.postgres.cdc.DateTimeConverter.convertToTimestamp
-import io.airbyte.integrations.source.postgres.cdc.DateTimeConverter.convertToTimestampWithTimezone
+import io.airbyte.integrations.source.postgres.operations.types.DateTimeConverter
 import io.debezium.connector.postgresql.PostgresValueConverter
 import io.debezium.spi.converter.CustomConverter
 import io.debezium.spi.converter.RelationalColumn
@@ -35,7 +30,7 @@ import org.apache.kafka.connect.data.SchemaBuilder
 import org.postgresql.jdbc.PgArray
 import org.postgresql.util.PGInterval
 
-class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, RelationalColumn?> {
+class PostgresCustomConverter : CustomConverter<SchemaBuilder?, RelationalColumn?> {
     private val DATE_TYPES =
         arrayOf<String?>("DATE", "TIME", "TIMETZ", "INTERVAL", "TIMESTAMP", "TIMESTAMPTZ")
     private val BIT_TYPES = arrayOf<String?>("BIT", "VARBIT")
@@ -190,26 +185,18 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
         // We applied a solution like this for several reasons:
         // 1. Regarding #13608, CDC and nor-CDC data output format should be the same.
         // 2. In the non-CDC mode 'decimal' and 'numeric' values are put to JSON node as BigDecimal
-        // value.
-        // According to Jackson Object mapper configuration, all trailing zeros are omitted and
-        // numbers with decimal places are deserialized with exponent. (e.g. 1234567890.1234567
-        // would
-        // be deserialized as 1.2345678901234567E9).
+        // value. According to Jackson Object mapper configuration, all trailing zeros are omitted
+        // and numbers with decimal places are deserialized with exponent. (e.g. 1234567890.1234567
+        // would be deserialized as 1.2345678901234567E9).
         // 3. In the CDC mode 'decimal' and 'numeric' values are deserialized as a regular number
-        // (e.g.
-        // 1234567890.1234567 would be deserialized as 1234567890.1234567). Numbers without
+        // (e.g. 1234567890.1234567 would be deserialized as 1234567890.1234567). Numbers without
         // decimal places (e.g 1, 24, 354) are represented with trailing zero (e.g 1.0, 24.0,
-        // 354.0).
-        // One of solution to align deserialization for these 2 modes is setting
+        // 354.0). One solution to align deserialization for these 2 modes is setting
         // DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS as true for ObjectMapper. But this
-        // breaks
-        // deserialization for other data-types.
-        // A worked solution was to keep deserialization for non-CDC mode as it is and change it for
-        // CDC
-        // one.
-        // The code below strips trailing zeros for integer numbers and represents number with
-        // exponent
-        // if this number has decimals point.
+        // breaks deserialization for other data-types. A worked solution was to keep
+        // deserialization for non-CDC mode as it is and change it for CDC one. The code below
+        // strips trailing zeros for integer numbers and represents number with exponent if this
+        // number has a decimal point.
         val doubleValue = x.toString().toDouble()
         val valueWithTruncatedZero =
             BigDecimal.valueOf(doubleValue).stripTrailingZeros().toPlainString()
@@ -278,21 +265,20 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
         val fieldType = field.typeName().uppercase(Locale.getDefault())
         when (fieldType) {
             "_MONEY" -> {
-                // PgArray.getArray() trying to convert to Double instead of PgMoney
-                // due to incorrect type mapping in the postgres driver
+                // PgArray.getArray() trying to convert to Double instead of PgMoney due to
+                // incorrect type mapping in the postgres driver
                 // https://github.com/pgjdbc/pgjdbc/blob/d5ed52ef391670e83ae5265af2f7301c615ce4ca/pgjdbc/src/main/java/org/postgresql/jdbc/TypeInfoCache.java#L88
                 // and throws an exception, so a custom implementation of converting to String is
-                // used to get the
-                // value as is
+                // used to get the value as-is
                 val nativeMoneyValue = (x as PgArray).toString()
                 val substringM =
-                    Objects.requireNonNull<String?>(nativeMoneyValue)
+                    Objects.requireNonNull(nativeMoneyValue)
                         .substring(1, nativeMoneyValue!!.length - 1)
                 val currency = substringM.get(0)
                 val regex = "\\" + currency
                 val myListM: MutableList<String?> =
-                    ArrayList<String?>(
-                        Arrays.asList<String>(
+                    ArrayList(
+                        Arrays.asList(
                             *substringM
                                 .split(regex.toRegex())
                                 .dropLastWhile { it.isEmpty() }
@@ -301,11 +287,10 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
                     )
                 return myListM
                     .stream() // since the separator is the currency sign, all extra characters must
-                    // be removed except for numbers
-                    // and dots
-                    .map<String?> { `val`: String? -> `val`!!.replace("[^\\d.]".toRegex(), "") }
+                    // be removed except for numbers and dots
+                    .map { `val`: String? -> `val`!!.replace("[^\\d.]".toRegex(), "") }
                     .filter { money: String? -> !money!!.isEmpty() }
-                    .map<Double?> { s: String? -> s?.toDouble() }
+                    .map { s: String? -> s?.toDouble() }
                     .collect(Collectors.toList())
             }
             "_NUMERIC" ->
@@ -328,7 +313,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
             "_TIME" ->
                 return Arrays.stream<Any?>(getArray(x))
                     .map<String> { value: Any? ->
-                        if (value == null) null else convertToTime(value)
+                        if (value == null) null else DateTimeConverter.convertToTime(value)
                     }
                     .collect(
                         Collectors.toList(),
@@ -336,7 +321,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
             "_DATE" ->
                 return Arrays.stream<Any?>(getArray(x))
                     .map<String> { value: Any? ->
-                        if (value == null) null else convertToDate(value)
+                        if (value == null) null else DateTimeConverter.convertToDate(value)
                     }
                     .collect(
                         Collectors.toList(),
@@ -344,7 +329,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
             "_TIMESTAMP" ->
                 return Arrays.stream<Any?>(getArray(x))
                     .map<String> { value: Any? ->
-                        if (value == null) null else convertToTimestamp(value)
+                        if (value == null) null else DateTimeConverter.convertToTimestamp(value)
                     }
                     .collect(
                         Collectors.toList(),
@@ -352,20 +337,20 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
             "_TIMESTAMPTZ" ->
                 return Arrays.stream<Any?>(getArray(x))
                     .map<String> { value: Any? ->
-                        if (value == null) null else convertToTimestampWithTimezone(value)
+                        if (value == null) null
+                        else DateTimeConverter.convertToTimestampWithTimezone(value)
                     }
                     .collect(
                         Collectors.toList(),
                     )
             "_TIMETZ" -> {
-                val timetzArr: MutableList<String?> = ArrayList<String?>()
+                val timetzArr: MutableList<String?> = ArrayList()
                 val nativeValue = (x as PgArray).toString()
                 val substring =
-                    Objects.requireNonNull<String?>(nativeValue)
-                        .substring(1, nativeValue!!.length - 1)
+                    Objects.requireNonNull(nativeValue).substring(1, nativeValue!!.length - 1)
                 val times: MutableList<String?> =
-                    ArrayList<String?>(
-                        Arrays.asList<String>(
+                    ArrayList(
+                        Arrays.asList(
                             *substring
                                 .split(",".toRegex())
                                 .dropLastWhile { it.isEmpty() }
@@ -380,7 +365,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
                             timetzArr.add(null)
                         } else {
                             val parsed = OffsetTime.parse(s, format)
-                            timetzArr.add(convertToTimeWithTimezone(parsed))
+                            timetzArr.add(DateTimeConverter.convertToTimeWithTimezone(parsed))
                         }
                     },
                 )
@@ -388,9 +373,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
             }
             "_BYTEA" ->
                 return Arrays.stream<Any?>(getArray(x))
-                    .map<String?> { value: Any? ->
-                        Base64.getEncoder().encodeToString(value as ByteArray?)
-                    }
+                    .map { value: Any? -> Base64.getEncoder().encodeToString(value as ByteArray?) }
                     .collect(
                         Collectors.toList(),
                     )
@@ -452,7 +435,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
 
     private fun getDateConvertedValue(field: RelationalColumn, x: Any): String {
         when (field.typeName().uppercase()) {
-            "TIMETZ" -> return convertToTimeWithTimezone(x)
+            "TIMETZ" -> return DateTimeConverter.convertToTimeWithTimezone(x)
             "TIMESTAMPTZ" -> {
                 if (x == PostgresValueConverter.NEGATIVE_INFINITY_OFFSET_DATE_TIME) {
                     return NEGATIVE_INFINITY_VALUE
@@ -460,7 +443,7 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
                 if (x == PostgresValueConverter.POSITIVE_INFINITY_OFFSET_DATE_TIME) {
                     return POSITIVE_INFINITY_VALUE
                 }
-                return convertToTimestampWithTimezone(x)
+                return DateTimeConverter.convertToTimestampWithTimezone(x)
             }
             "TIMESTAMP" -> {
                 if (x == PostgresValueConverter.NEGATIVE_INFINITY_INSTANT) {
@@ -471,13 +454,17 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
                 }
                 if (x is Long) {
                     if (getTimePrecision(field) <= 3) {
-                        return convertToTimestamp(Conversions.toInstantFromMillis(x))
+                        return DateTimeConverter.convertToTimestamp(
+                            Conversions.toInstantFromMillis(x)
+                        )
                     }
                     if (getTimePrecision(field) <= 6) {
-                        return convertToTimestamp(Conversions.toInstantFromMicros(x))
+                        return DateTimeConverter.convertToTimestamp(
+                            Conversions.toInstantFromMicros(x)
+                        )
                     }
                 }
-                return convertToTimestamp(x)
+                return DateTimeConverter.convertToTimestamp(x)
             }
             "DATE" -> {
                 if (x == PostgresValueConverter.NEGATIVE_INFINITY_LOCAL_DATE) {
@@ -487,12 +474,12 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
                     return POSITIVE_INFINITY_VALUE
                 }
                 if (x is Int) {
-                    return convertToDate(LocalDate.ofEpochDay(x.toLong()))
+                    return DateTimeConverter.convertToDate(LocalDate.ofEpochDay(x.toLong()))
                 }
-                return convertToDate(x)
+                return DateTimeConverter.convertToDate(x)
             }
             "TIME" -> return resolveTime(field, x)
-            "INTERVAL" -> return convertInterval((x as org.postgresql.util.PGInterval?)!!)
+            "INTERVAL" -> return convertInterval((x as PGInterval?)!!)
             else ->
                 throw IllegalArgumentException(
                     "Unknown field type  " + field.typeName().uppercase(),
@@ -504,14 +491,14 @@ class PostgresDebeziumDatetimeConverter : CustomConverter<SchemaBuilder?, Relati
         if (x is Long) {
             if (getTimePrecision(field) <= 3) {
                 val l = Math.multiplyExact(x, TimeUnit.MILLISECONDS.toNanos(1))
-                return convertToTime(LocalTime.ofNanoOfDay(l))
+                return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l))
             }
             if (getTimePrecision(field) <= 6) {
                 val l = Math.multiplyExact(x, TimeUnit.MICROSECONDS.toNanos(1))
-                return convertToTime(LocalTime.ofNanoOfDay(l))
+                return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l))
             }
         }
-        return convertToTime(x)
+        return DateTimeConverter.convertToTime(x)
     }
 
     private fun convertInterval(pgInterval: PGInterval): String {
