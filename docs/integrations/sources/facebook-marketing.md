@@ -220,23 +220,32 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.time_increment">
-   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
+   7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day. Cannot be used together with **Time Increment Period**.
+</FieldAnchor>
+
+<FieldAnchor field="custom_insights.time_increment_period">
+   8. (Optional) For **Time Increment Period**, select a calendar-aligned aggregation period instead of a fixed number of days. This produces consistently aligned time buckets regardless of the start date, making cross-client comparison easier. Available options:
+      - `daily` — equivalent to Time Increment = 1 (1-day buckets).
+      - `weekly` — aligns to Monday-through-Sunday calendar weeks.
+      - `monthly` — aligns to calendar month boundaries (1st to last day of each month). This is natively supported by the Facebook API.
+
+   Cannot be used together with **Time Increment**. When switching between Time Increment and Time Increment Period (or vice versa), a full re-sync will be triggered.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.start_date">
-   8. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+   9. (Optional) For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.end_date">
-   9. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
+   10. (Optional) For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is left blank, Airbyte will replicate the latest data.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.insights_lookback_window">
-   10. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+   11. (Optional) For **Custom Insights Lookback Window**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for click-through attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. View-through attribution is limited to 1 day. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.include_incrementality">
-   11. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
+   12. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
 </FieldAnchor>
 
 <FieldAnchor field="page_size">
@@ -265,8 +274,8 @@ The Facebook Marketing source connector supports the following [sync modes](http
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
-- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives and AdAccount tables)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives, AdCreativesFromAds, AdAccount, CustomConversions, and CustomAudiences streams)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (except for the AdCreatives, AdCreativesFromAds, AdAccount, CustomConversions, and CustomAudiences streams)
 
 ## Supported Streams
 
@@ -275,6 +284,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 | activities         | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)                        | ✅                    | ✅                   |
 | ad_account         | [Latest](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts) | ✅                    | ❌                   |
 | ad_creatives       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)                  | ✅                    | ❌                   |
+| ad_creatives_from_ads | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-creative#fields)               | ✅                    | ❌                   |
 | ad_sets            | [Latest](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign#fields)                  | ✅                    | ✅                   |
 | ads                | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup#fields)                      | ✅                    | ✅                   |
 | ads_insights       | [Latest](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)                  | ✅                    | ✅                   |
@@ -376,6 +386,12 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
 
+### "Please reduce the amount of data" error on the Ad Creatives stream
+
+If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation. The output schema is identical to `ad_creatives`.
+
+Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
+
 ### Missing data for 7-day and 28-day view-through attribution windows
 
 Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_view`) and 28-day view-through (`28d_view`) attribution windows in the Ads Insights API. In v4.1.3, these attribution windows were removed from request parameters for `ads_insights` and Ads Insights Reports streams. In v5.0.0, the `7d_view` and `28d_view` columns were also removed from stream schemas. Data previously returned for these windows is no longer available. For more information, see Meta's [2025 Out-Of-Cycle Changes](https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025/).
@@ -426,6 +442,9 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.2 | 2026-03-17 | [75130](https://github.com/airbytehq/airbyte/pull/75130) | Extend upgrade deadline for version 5.0.0 breaking changes to 2026-04-10 |
+| 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
+| 5.2.0 | 2026-03-09 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
 | 5.1.1 | 2026-03-03 | [74255](https://github.com/airbytehq/airbyte/pull/74255) | update upgradeDeadline for the v5.0.0 |
 | 5.1.0 | 2026-03-02 | [74134](https://github.com/airbytehq/airbyte/pull/74134) | Add opt-in `include_incrementality` config option to append `incrementality` to action attribution windows |
 | 5.0.1 | 2026-02-24 | [73281](https://github.com/airbytehq/airbyte/pull/73281) | fix(source-facebook-marketing): Fix Facebook Marketing UTC hardcoding with per-account timezone detection |
@@ -462,7 +481,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 3.4.4      | 2025-03-29 | [56467](https://github.com/airbytehq/airbyte/pull/56467) | Update dependencies                                                                                                                                                                                                                                                                               |
 | 3.4.3      | 2025-02-20 | [54171](https://github.com/airbytehq/airbyte/pull/54171) | Fix retry pattern                                                                                                                                                                                                                                                                                 |
 | 3.4.2      | 2025-03-22 | [55991](https://github.com/airbytehq/airbyte/pull/55991) | Update dependencies                                                                                                                                                                                                                                                                               |
-| 3.4.1      | 2024-03-14 | [55760](https://github.com/airbytehq/airbyte/pull/55760) | Fixed KeyError during discovery due to outdated breakdown schema                                                                                                                                                                                                                                  |
+| 3.4.1      | 2025-03-21 | [55760](https://github.com/airbytehq/airbyte/pull/55760) | Fixed KeyError during discovery due to outdated breakdown schema                                                                                                                                                                                                                                  |
 | 3.4.0      | 2024-12-24 | [50418](https://github.com/airbytehq/airbyte/pull/50418) | Add `learning_stage_info` field to `ad_sets` stream                                                                                                                                                                                                                                               |
 | 3.3.35     | 2025-03-08 | [55307](https://github.com/airbytehq/airbyte/pull/55307) | Update dependencies                                                                                                                                                                                                                                                                               |
 | 3.3.34     | 2025-03-01 | [54990](https://github.com/airbytehq/airbyte/pull/54990) | Update dependencies                                                                                                                                                                                                                                                                               |

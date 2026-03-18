@@ -8,11 +8,14 @@ from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import requests
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.adcreative import AdCreative as FBAdCreative
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
@@ -74,6 +77,101 @@ class AdCreatives(FBMarketingStream):
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
+
+
+class AdCreativesFromAds(FBMarketingStream):
+    """Alternative stream to fetch ad creatives through the ads endpoint.
+
+    This stream fetches creatives by first getting ads (which includes creative IDs),
+    then fetching full creative details for each unique creative ID. This approach
+    can help avoid the "Please reduce the amount of data you're asking for" error
+    that occurs with large accounts when using the direct adcreatives endpoint.
+
+    The two-step approach:
+    1. Fetch ads with just the 'creative' field (returns creative ID reference)
+    2. For each unique creative ID, fetch full creative details via AdCreative API
+
+    doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup
+    related issue: https://github.com/airbytehq/oncall/issues/11128
+    """
+
+    entity_prefix = "ad"
+    status_field = "effective_status"
+    valid_statuses = [status.value for status in ValidAdStatuses]
+
+    def __init__(self, fetch_thumbnail_images: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._fetch_thumbnail_images = fetch_thumbnail_images
+        self._seen_creative_ids: Set[str] = set()
+        self._creative_fields: Optional[List[str]] = None
+        self._fields = ["id", "creative"]
+
+    @property
+    def name(self) -> str:
+        return "ad_creatives_from_ads"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """Use the same schema as ad_creatives stream"""
+        loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
+        return loader.get_schema("ad_creatives")
+
+    def _get_creative_fields(self) -> List[str]:
+        """Get the list of creative fields to request, excluding computed fields"""
+        if self._creative_fields:
+            return self._creative_fields
+
+        json_schema = self.get_json_schema()
+        creative_fields = list(json_schema.get("properties", {}).keys())
+        self._creative_fields = [f for f in creative_fields if f not in ("thumbnail_data_url", "account_id")]
+        return self._creative_fields
+
+    def fields(self, **kwargs) -> List[str]:
+        """Return fields to request from the ads endpoint - just id and creative reference"""
+        return self._fields
+
+    def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
+        return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
+
+    def _fetch_creative_details(self, creative_id: str) -> Optional[Mapping[str, Any]]:
+        """Fetch full creative details by ID using the AdCreative API"""
+        try:
+            creative = FBAdCreative(creative_id)
+            creative_data = creative.api_get(fields=self._get_creative_fields())
+            return creative_data.export_all_data()
+        except (FacebookRequestError, TypeError) as e:
+            logger.warning(f"Failed to fetch creative {creative_id}: {e}")
+            return None
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Read ads, extract unique creative IDs, and fetch full creative details"""
+        self._seen_creative_ids = set()
+
+        for ad_record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            creative_id = ad_record.get("creative", {}).get("id")
+            if not creative_id or creative_id in self._seen_creative_ids:
+                continue
+
+            self._seen_creative_ids.add(creative_id)
+
+            creative_data = self._fetch_creative_details(creative_id)
+            if not creative_data:
+                continue
+
+            self.fix_date_time(creative_data)
+
+            if self._fetch_thumbnail_images:
+                thumbnail_url = creative_data.get("thumbnail_url")
+                if thumbnail_url:
+                    creative_data["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
+
+            self.add_account_id(creative_data, stream_slice["account_id"])
+            yield creative_data
 
 
 class CustomConversions(FBMarketingStream):

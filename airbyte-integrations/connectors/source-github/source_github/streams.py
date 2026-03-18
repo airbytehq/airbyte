@@ -925,7 +925,30 @@ class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
     """
 
     large_stream = True
-    is_sorted = "asc"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._first_read = True
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Decide if this is a first read or not by the presence of the state object
+        """
+        self._first_read = not bool(stream_state)
+        yield from super().read_records(stream_state=stream_state, **kwargs)
+
+    @property
+    def is_sorted(self) -> str:
+        """
+        On first read (no state), use ascending order with checkpoint support.
+        On subsequent reads (has state), use descending order so newest records come first,
+        allowing early exit when we reach already-seen records.
+        This avoids re-reading all historical records on incremental syncs,
+        which was causing rate limit exhaustion and heartbeat timeouts for large organizations.
+        """
+        if self._first_read:
+            return "asc"
+        return "desc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json()["data"]["repository"]
