@@ -84,17 +84,17 @@ This connector can be used to sync the following tables from Marketo:
 - **Activities_X** where X is an activity type contains information about lead activities of the type X. For example, activities_send_email contains information about lead activities related to the activity type `send_email`. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getLeadActivitiesUsingGET) for a detailed explanation of what each column means.
 - **Activity types** Contains metadata about activity types. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getAllActivityTypesUsingGET) for a detailed explanation of columns.
 - **[Campaigns](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET)**: Contains info about your Marketo campaigns.
-- **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)**: Contains info about your Marketo leads.
-
-:::caution
-
-Available fields are limited by what is presented in the static schema.
-
-:::
+- **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)**: Contains info about your Marketo leads. The schema is dynamically generated from the Marketo `leads/describe.json` API, so custom fields are automatically discovered and included.
 
 - **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
-- **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs.
+- **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs, including user-defined tags and period costs.
 - **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo segmentations.
+
+## Troubleshooting and Limitations
+
+### Leads stream: field availability and schema behavior
+
+The Leads stream schema includes all fields from the static schema (standard Marketo fields) plus any custom fields discovered via the Marketo `leads/describe.json` API. However, not all standard fields defined in the static schema exist in every Marketo instance. These unavailable fields will still appear in the schema for consistency but will always contain `null` values in synced records, because only fields confirmed by the `leads/describe.json` endpoint are requested in bulk export API calls. If you select fields (via the configured catalog) that are not available in your Marketo instance's describe endpoint, those fields will be silently excluded from the export request to prevent Marketo API error 1003 ("Invalid fields").
 
 ## Performance considerations
 
@@ -121,7 +121,8 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 1.5.0 | 2026-03-13 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add Emails and Program Tokens streams |
+| 1.6.0 | 2026-03-13 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |
+| 1.5.0 | 2026-03-02 | [74136](https://github.com/airbytehq/airbyte/pull/74136) | Add dynamic schema discovery for custom fields on Leads stream; add tags and costs to Programs schema; add workspace to Segmentations schema |
 | 1.4.40 | 2026-02-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix KeyError and TypeError when Marketo API responses lack 'result' key in export status and create endpoints |
 | 1.4.39 | 2026-01-26 | [71849](https://github.com/airbytehq/airbyte/pull/71849) | Add error handling for type conversion in format_value |
 | 1.4.38 | 2025-10-21 | [68475](https://github.com/airbytehq/airbyte/pull/68475) | Update dependencies |

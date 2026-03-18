@@ -203,6 +203,10 @@ If the connector receives a 429 (Too Many Requests) response, it respects the `R
 
 The connector should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+#### Search index delay
+
+The `tickets` stream uses Zendesk's [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint. Zendesk's search index can take up to a few minutes to reflect newly created or updated tickets. During incremental syncs, this delay does not cause data loss because the connector's cursor ensures that records are picked up on the next sync.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
@@ -216,6 +220,7 @@ The connector should not run into Zendesk API limitations under normal usage. [C
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.1 | 2026-03-17 | [74394](https://github.com/airbytehq/airbyte/pull/74394) | Migrate to scopes object array format |
 | 5.2.0 | 2026-03-12 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | Switch `tickets` stream to Export Search Results endpoint for concurrency and performance. **Behavior change**: deleted tickets are no longer returned in the `tickets` stream — use the new `deleted_tickets` stream instead. Added `deleted_tickets` as a suggested stream for auto-enablement on Cloud. |
 | 5.1.8 | 2026-03-12 | [74771](https://github.com/airbytehq/airbyte/pull/74771) | Upgrade CDK to 7.13.0 |
 | 5.1.7 | 2026-03-12 | [74766](https://github.com/airbytehq/airbyte/pull/74766) | Promoting release candidate 5.1.7-rc.1 to a main version. |
