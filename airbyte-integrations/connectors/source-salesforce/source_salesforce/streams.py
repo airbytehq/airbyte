@@ -4,10 +4,11 @@
 
 import csv
 import ctypes
+import time
 import urllib.parse
 from abc import ABC
 from datetime import timedelta
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import pendulum
 import requests  # type: ignore[import]
@@ -34,7 +35,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
-from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.partition_routers import AsyncJobPartitionRouter
@@ -62,6 +63,34 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 _JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
+_TOKEN_REFRESH_INTERVAL_SECONDS = 1200  # Refresh Salesforce access token every 20 minutes (well before the default 2-hour session timeout)
+
+if TYPE_CHECKING:
+    from .api import Salesforce as SalesforceApi
+
+
+class SalesforceTokenProvider(TokenProvider):
+    """Token provider that proactively refreshes the Salesforce access token.
+
+    The default InterpolatedStringTokenProvider captures the token as a static
+    string at initialization time and never refreshes it. For long-running Bulk
+    API syncs that exceed the Salesforce session timeout (default 2 hours), the
+    stale token causes INVALID_SESSION_ID errors.
+
+    This provider wraps the Salesforce API object and calls login() to obtain a
+    fresh token before the session is likely to expire.
+    """
+
+    def __init__(self, sf_api: "SalesforceApi") -> None:
+        self._sf_api = sf_api
+        self._last_refresh_time: float = time.monotonic()
+
+    def get_token(self) -> str:
+        elapsed = time.monotonic() - self._last_refresh_time
+        if elapsed >= _TOKEN_REFRESH_INTERVAL_SECONDS:
+            self._sf_api.login()
+            self._last_refresh_time = time.monotonic()
+        return self._sf_api.access_token
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -530,7 +559,7 @@ class BulkSalesforceStream(SalesforceStream):
         job_query_path = f"/services/data/{self.sf_api.version}/jobs/query"
         decoder = JsonDecoder(parameters=parameters)
         authenticator = BearerAuthenticator(
-            token_provider=InterpolatedStringTokenProvider(api_token=self.sf_api.access_token, config=config, parameters=parameters),
+            token_provider=SalesforceTokenProvider(self.sf_api),
             config=config,
             parameters=parameters,
         )
