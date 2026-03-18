@@ -40,7 +40,7 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Run Bot Feedback
-        uses: aaronsteers/devin-action@v0.2.0
+        uses: aaronsteers/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
