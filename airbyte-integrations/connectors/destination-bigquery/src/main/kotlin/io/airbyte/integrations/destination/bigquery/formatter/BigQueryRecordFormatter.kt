@@ -42,6 +42,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 /**
@@ -219,25 +220,25 @@ class BigQueryRecordFormatter(
 
         fun formatTimestampWithTimezone(value: EnrichedAirbyteValue): String {
             return DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimestampWithTimezoneValue).value
+                (value.abValue as TimestampWithTimezoneValue).value.truncatedTo(ChronoUnit.MICROS)
             )
         }
 
         fun formatTimestampWithoutTimezone(value: EnrichedAirbyteValue): String {
             return DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimestampWithoutTimezoneValue).value
+                (value.abValue as TimestampWithoutTimezoneValue).value.truncatedTo(ChronoUnit.MICROS)
             )
         }
 
         fun formatTimeWithoutTimezone(value: EnrichedAirbyteValue): String {
             return TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimeWithoutTimezoneValue).value
+                (value.abValue as TimeWithoutTimezoneValue).value.truncatedTo(ChronoUnit.MICROS)
             )
         }
 
         fun formatTimeWithTimezone(value: EnrichedAirbyteValue): String {
             return TIME_WITH_TIMEZONE_FORMATTER.format(
-                (value.abValue as TimeWithTimezoneValue).value
+                (value.abValue as TimeWithTimezoneValue).value.truncatedTo(ChronoUnit.MICROS)
             )
         }
 
