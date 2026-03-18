@@ -1,5 +1,5 @@
 ---
-products: all
+products: cloud
 sidebar_label: External Secret Management
 ---
 
