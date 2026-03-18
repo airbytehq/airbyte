@@ -169,7 +169,7 @@ definitions:
       path: "rest/asset/v1/programs.json"
 
   emails_stream:
-    # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Emails/getEmailUsingGET
+    # API Docs: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/emails
     name: "emails"
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -194,7 +194,7 @@ definitions:
       path: "rest/asset/v1/emails.json"
 
   program_tokens_stream:
-    # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Tokens/getTokensByFolderIdUsingGET
+    # API Docs: https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/tokens
     name: "program_tokens"
     type: DeclarativeStream
     schema_loader:

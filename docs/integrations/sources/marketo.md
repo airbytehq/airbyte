@@ -88,8 +88,8 @@ This connector can be used to sync the following tables from Marketo:
 
 - **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
 - **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs, including user-defined tags and period costs.
-- **[Emails](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Emails/getEmailUsingGET)**: Contains info about your Marketo email assets.
-- **[Program Tokens](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Tokens/getTokensByFolderIdUsingGET)**: Contains token definitions for each program (child stream of Programs).
+- **[Emails](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/emails)**: Contains info about your Marketo email assets.
+- **[Program Tokens](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/tokens)**: Contains token definitions for each program (child stream of Programs).
 - **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo segmentations.
 
 ## Troubleshooting and Limitations
