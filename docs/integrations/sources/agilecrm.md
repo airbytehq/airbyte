@@ -30,6 +30,8 @@ The [Agile CRM](https://agilecrm.com/) Airbyte Connector allows you to sync and 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2026-03-17 | [74965](https://github.com/airbytehq/airbyte/pull/74965) | Update dependencies |
+| 0.0.36 | 2026-03-10 | [74554](https://github.com/airbytehq/airbyte/pull/74554) | Update dependencies |
 | 0.0.35 | 2026-02-17 | [73388](https://github.com/airbytehq/airbyte/pull/73388) | Update dependencies |
 | 0.0.34 | 2026-02-10 | [73009](https://github.com/airbytehq/airbyte/pull/73009) | Update dependencies |
 | 0.0.33 | 2026-02-03 | [72629](https://github.com/airbytehq/airbyte/pull/72629) | Update dependencies |

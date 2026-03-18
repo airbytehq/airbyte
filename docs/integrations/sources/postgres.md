@@ -9,7 +9,7 @@ Airbyte's certified Postgres connector offers the following features:
 - All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
+The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshoot issues with the Postgres connector.
 
 </HideInUI>
 
@@ -35,13 +35,13 @@ These steps create a dedicated read-only user for replicating data. Alternativel
 
 The following commands will create a new user:
 
-```roomsql
+```sql
 CREATE USER <user_name> PASSWORD 'your_password_here';
 ```
 
 Now, provide this user with read-only access to relevant schemas and tables. Re-run this command for each schema you expect to replicate data from:
 
-```roomsql
+```sql
 GRANT USAGE ON SCHEMA <schema_name> TO <user_name>;
 GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
@@ -77,7 +77,7 @@ Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting t
 
 ## Advanced Configuration using CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
+Airbyte uses [logical replication](https://www.postgresql.org/docs/current/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
 - See [here](https://docs.airbyte.com/understanding-airbyte/cdc) to learn more on how Airbyte implements CDC.
 - See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#cdc-requirements) to learn more about Postgres CDC requirements and limitations.
@@ -174,10 +174,10 @@ ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
 ```
-CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`
+CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;
 ```
 
-The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/current/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 </FieldAnchor>
 
 :::note
@@ -196,7 +196,7 @@ The Postgres source currently offers 3 methods of replicating updates to your de
 
 ### CDC
 
-Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We recommend configuring your Postgres source with CDC when:
+Airbyte uses [logical replication](https://www.postgresql.org/docs/current/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We recommend configuring your Postgres source with CDC when:
 
 - You need a record of deletions.
 - You have a very large database (500 GB or more).
@@ -243,7 +243,7 @@ If you are using SSH tunneling, as Airbyte Cloud requires encrypted communicatio
 For SSH Tunnel Method, select:
 
 - `No Tunnel` for a direct connection to the database
-- `SSH Key Authentication` to use an RSA Private as your secret for establishing the SSH tunnel
+- `SSH Key Authentication` to use an RSA private key as your secret for establishing the SSH tunnel
 - `Password Authentication` to use a password as your secret for establishing the SSH tunnel
 
 #### Connect via SSH Tunnel
@@ -255,7 +255,7 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 To connect to a Postgres instance via an SSH tunnel:
 
 1. While [setting up](#step-2-create-a-new-postgres-source-in-airbyte-ui) the Postgres source connector, from the SSH tunnel dropdown, select:
-   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
+   - SSH Key Authentication to use a private key as your secret for establishing the SSH tunnel
    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
 2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
 3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
@@ -278,14 +278,16 @@ The command produces the private key in PEM format and the public key remains in
 
 ## Configuring Entra authentication
 
-The Airbyte source can be configured to authenticate as a Microsoft Entra service principal. 
-This allows Airbyte to use short-lived identity tokens to authenticate to an Azure Postgres server. 
+The Airbyte source can be configured to authenticate as a Microsoft Entra service principal.
+This allows Airbyte to use short-lived identity tokens to authenticate to an Azure Postgres server.
 Consult the Microsoft [documentation on this topic](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-azure-ad-authentication) for more detail on configuring the server and other Entra resources.
 
-To configure the Airbyte Postgres source with Entra authentication, set the `Username` to the Entra ID, as discussed 
-in [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-configure-sign-in-azure-ad-authentication).
-Set the password to a client secret for your Entra service principal.
-Expand the Optional Fields and provide the Entra tenant ID and Entra client (or app) ID of the service principal.
+To configure the Airbyte Postgres source with Entra authentication:
+
+1. Set the `Username` to the Entra ID, as discussed in [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-configure-sign-in-azure-ad-authentication).
+2. Set the password to a client secret for your Entra service principal.
+3. Enable the **Entra service principal authentication** toggle.
+4. Provide the **Entra tenant ID** and **Entra client (or app) ID** of the service principal.
 
 ## Limitations & Troubleshooting
 
@@ -358,11 +360,11 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 3.7.2   | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                     |
 | 3.7.1   | 2026-01-27 | [72396](https://github.com/airbytehq/airbyte/pull/72396) | This version causes issues discovering streams for some users. Do not use.                                                                                                 |
 | 3.7.0   | 2025-08-12 | [57511](https://github.com/airbytehq/airbyte/pull/57511) | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                     |
-| 3.6.35  | 2025-06-12 | [61527](https://github.com/airbytehq/airbyte/pull/61527) | Add error handling for connection issues and adopt the latest CDK version.                                                                                                 |
-| 3.6.34  | 2025-05-11 | [60876](https://github.com/airbytehq/airbyte/pull/60876) | Cache CDC initial state once constructed.                                                                                                                                  |
-| 3.6.33  | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214) | Migrate to new Gradle flow.                                                                                                                                                |
-| 3.6.32  | 2025-05-8  | [59722](https://github.com/airbytehq/airbyte/pull/59722) | Consolidate gradle set up.                                                                                                                                                 |
-| 3.6.31  | 2025-04-18 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies.                                                                                                                                       |
+| 3.6.35  | 2025-06-18 | [61527](https://github.com/airbytehq/airbyte/pull/61527) | Add error handling for connection issues and adopt the latest CDK version.                                                                                                 |
+| 3.6.34  | 2025-05-29 | [60876](https://github.com/airbytehq/airbyte/pull/60876) | Cache CDC initial state once constructed.                                                                                                                                  |
+| 3.6.33  | 2025-05-13 | [60214](https://github.com/airbytehq/airbyte/pull/60214) | Migrate to new Gradle flow.                                                                                                                                                |
+| 3.6.32  | 2025-05-08 | [59722](https://github.com/airbytehq/airbyte/pull/59722) | Consolidate gradle set up.                                                                                                                                                 |
+| 3.6.31  | 2025-04-24 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies.                                                                                                                                       |
 | 3.6.30  | 2025-03-06 | [55234](https://github.com/airbytehq/airbyte/pull/55234) | Update base image version for certified DB source connectors                                                                                                               |
 | 3.6.29  | 2025-02-13 | [53649](https://github.com/airbytehq/airbyte/pull/53649) | Fix issue that column default value did not get converted                                                                                                                  |
 | 3.6.28  | 2024-12-23 | [50870](https://github.com/airbytehq/airbyte/pull/50870) | Use airbyte/java-connector-base:2.0.0                                                                                                                                      |

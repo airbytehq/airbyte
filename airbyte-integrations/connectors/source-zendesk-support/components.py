@@ -5,6 +5,7 @@ from typing import Any, List, Mapping
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 
 
 class ZendeskSupportExtractorEvents(RecordExtractor):
@@ -41,3 +42,18 @@ class ZendeskSupportAttributeDefinitionsExtractor(RecordExtractor):
         except requests.exceptions.JSONDecodeError:
             records = []
         return records
+
+
+class TicketsStateMigration(StateMigration):
+    """Migrates tickets stream state from generated_timestamp cursor to updated_at cursor.
+
+    The tickets stream was switched from the Incremental Export API (which uses generated_timestamp)
+    to the Export Search Results API (which filters by updated_at). Existing connections may have
+    state with generated_timestamp as the cursor field, which needs to be migrated to updated_at.
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return "generated_timestamp" in stream_state
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"updated_at": stream_state["generated_timestamp"]}
