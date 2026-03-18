@@ -635,15 +635,15 @@ files = [
 
 [[package]]
 name = "google-ads"
-version = "27.0.0"
+version = "29.1.0"
 description = "Client library for the Google Ads API"
 optional = false
-python-versions = "<3.14,>=3.9"
+python-versions = "<3.15,>=3.9"
 groups = ["main"]
 markers = "python_version <= \"3.11\""
 files = [
-    {file = "google_ads-27.0.0-py3-none-any.whl", hash = "sha256:4c8c9570b49b57fa1e90c7f90f2a9c6d399ae0ebd05f3a8dd8de4593a2f446ae"},
-    {file = "google_ads-27.0.0.tar.gz", hash = "sha256:c6c6265f2e5d91caac6426bdae2a17bd104f38cafff21b1e2def01a994bc0131"},
+    {file = "google_ads-29.1.0-py3-none-any.whl", hash = "sha256:afef285f93db10606595afc811ee4f0fda739047dab38341207eb128acd8c7c6"},
+    {file = "google_ads-29.1.0.tar.gz", hash = "sha256:7301c88d2f72e0e9fdfd6c86818781bd242a30ed11fce1230ba1f929e7131c9a"},
 ]
 
 [package.dependencies]
@@ -657,7 +657,7 @@ protobuf = ">=4.25.0,<7.0.0"
 PyYAML = ">=5.1,<7.0"
 
 [package.extras]
-tests = ["nox (>=2020.12.31,<2022.6)"]
+tests = ["nox (>=2025.02.09)"]
 
 [[package]]
 name = "google-api-core"
@@ -3038,4 +3038,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "c816c3fbe1fed9ced99454af1dd880fc80ec150c29d805236edf794bd80362a0"
+content-hash = "44870b6cf534a8ad0c4ee881cf9bace2132f4351a84ecece1d0dc592626ff0a1"
