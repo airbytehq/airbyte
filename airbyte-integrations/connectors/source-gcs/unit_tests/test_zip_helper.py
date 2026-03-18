@@ -45,11 +45,13 @@ def test_get_gcs_remote_files(mocked_blob, zip_file, caplog):
 
 def test_nested_directories_in_zip_are_traversed():
     """Files inside subdirectories within a ZIP must be yielded."""
-    zip_bytes = _make_zip_bytes({
-        "top.csv": "top_level",
-        "subdir/nested.csv": "nested_level",
-        "subdir/deep/deep_nested.csv": "deep_level",
-    })
+    zip_bytes = _make_zip_bytes(
+        {
+            "top.csv": "top_level",
+            "subdir/nested.csv": "nested_level",
+            "subdir/deep/deep_nested.csv": "deep_level",
+        }
+    )
 
     blob = _make_blob(zip_bytes)
     remote_file = _make_remote_file()
