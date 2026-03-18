@@ -35,6 +35,12 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-JSONPLACEHOLDER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: JSONPlaceholder documentation
       url: https://jsonplaceholder.typicode.com/guide/
