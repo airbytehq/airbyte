@@ -169,7 +169,7 @@ definitions:
       path: "rest/asset/v1/programs.json"
 
   emails_stream:
-    # API Docs: https://developers.marketo.com/rest-api/assets/emails/
+    # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Emails/getEmailUsingGET
     name: "emails"
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -194,12 +194,12 @@ definitions:
       path: "rest/asset/v1/emails.json"
 
   program_tokens_stream:
-    # API Docs: https://developers.marketo.com/rest-api/assets/tokens/
+    # API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Tokens/getTokensByFolderIdUsingGET
     name: "program_tokens"
     type: DeclarativeStream
     schema_loader:
       type: JsonFileSchemaLoader
-      file_path: "./source_marketo/schemas/{{ parameters['name'] }}.json"
+      file_path: "./source_marketo/schemas/program_tokens.json"
     retriever:
       type: SimpleRetriever
       record_selector:
@@ -212,6 +212,7 @@ definitions:
           condition: "{{ record is not none }}"
       requester:
         $ref: "#/definitions/requester"
+        path: "rest/asset/v1/folder/{{ stream_partition['program_id'] }}/tokens.json"
         request_parameters:
           folderType: "Program"
       paginator:
@@ -229,9 +230,6 @@ definitions:
           - type: AddedFieldDefinition
             path: ["program_id"]
             value: "{{ stream_partition['program_id'] }}"
-    $parameters:
-      name: "program_tokens"
-      path: "rest/asset/v1/folder/{{ stream_partition['program_id'] }}/tokens.json"
 
 streams:
   # Full refresh streams
