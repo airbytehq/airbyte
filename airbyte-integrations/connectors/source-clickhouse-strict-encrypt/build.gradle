@@ -18,7 +18,7 @@ application {
 dependencies {
     implementation project(':airbyte-integrations:connectors:source-clickhouse')
 
-    implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
+    implementation 'com.clickhouse:clickhouse-jdbc:0.9.7:all'
 
     testImplementation 'org.testcontainers:clickhouse:1.19.4'
 }
