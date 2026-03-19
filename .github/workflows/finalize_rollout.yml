@@ -49,3 +49,5 @@ jobs:
           airbyte-ops registry rc "${ACTION}"
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
+          --with-pr
+          --with-store-cleanup
