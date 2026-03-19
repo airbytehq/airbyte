@@ -18,7 +18,7 @@ application {
 dependencies {
     implementation project(':airbyte-integrations:connectors:source-clickhouse')
 
-    implementation('com.clickhouse:clickhouse-jdbc:0.9.7:all') {
+    implementation('com.clickhouse:clickhouse-jdbc:0.9.8:all') {
         // The :all fat jar bundles lz4 internally. Exclude the transitive
         // at.yawk.lz4:lz4-java to avoid a Gradle capability conflict with
         // org.lz4:lz4-java pulled in by Debezium/Kafka via the CDK.
