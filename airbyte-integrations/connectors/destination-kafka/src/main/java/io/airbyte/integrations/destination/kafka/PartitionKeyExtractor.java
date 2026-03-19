@@ -27,7 +27,7 @@ public class PartitionKeyExtractor {
    * @return concatenated key string, or null if no fields found
    */
   public static String extractPartitionKey(String partitionKeyFields, JsonNode recordData) {
-    if (partitionKeyFields == null || partitionKeyFields.trim().isEmpty()) {
+    if (recordData == null || !recordData.isObject() || partitionKeyFields == null || partitionKeyFields.trim().isEmpty()) {
       return null;
     }
 
@@ -36,8 +36,13 @@ public class PartitionKeyExtractor {
 
     for (String field : fields) {
       String trimmedField = field.trim();
-      Optional<String> value = extractFieldValue(recordData, trimmedField);
-      value.ifPresent(keyValues::add);
+      JsonNode valueNode = recordData;
+      for (String part : trimmedField.split("\\.")) {
+        valueNode = valueNode.path(part);
+      }
+      if (!valueNode.isMissingNode() && !valueNode.isNull()) {
+        keyValues.add(valueNode.isValueNode() ? valueNode.asText() : valueNode.toString());
+      }
     }
 
     if (keyValues.isEmpty()) {
