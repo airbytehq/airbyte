@@ -221,7 +221,11 @@ Represents the budget settings of a campaign.
 
 - [geographic_view](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
-Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
+Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest. This stream returns dimension fields only (e.g., country, location type, ad group, campaign) without performance metrics.
+
+- [geographic_view_with_metrics](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
+
+An enhanced version of `geographic_view` that includes performance metrics (clicks, impressions, cost, conversions, CTR, etc.) alongside dimension fields. Use this stream when you need geographic performance data. Note that this stream may return slightly fewer rows (~1%) than `geographic_view` because the Google Ads API omits rows with zero metric data when metrics are requested. The omitted rows represent geographic/ad group combinations with no activity.
 
 - [user_location_view](https://developers.google.com/google-ads/api/fields/v20/user_location_view)
 
