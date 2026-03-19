@@ -47,3 +47,4 @@ jobs:
         run: >
           airbyte-ops
           registry store compile --store "${REGISTRY_STORE}" --with-secrets-mask
+          --with-legacy-migration v1
