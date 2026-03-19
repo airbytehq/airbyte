@@ -18,6 +18,7 @@ jobs:
     runs-on: connector-publish-large
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
+      CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     steps:
       - name: Check action value
         run: |
@@ -74,3 +75,23 @@ jobs:
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --rollback-release-candidate"
+
+      # --- Soft launch: ops CLI RC promote/rollback (parallel validation) ---
+      # Runs alongside the legacy run-airbyte-ci steps above.
+      # continue-on-error: true ensures this does not block the workflow.
+      # Tracking: https://github.com/airbytehq/airbyte-ops-mcp/issues/504
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        with:
+          github-token: ${{ steps.get-app-token.outputs.token }}
+
+      - name: "[Ops Registry Soft Launch] ${{ env.ACTION }} release candidate (ops CLI)"
+        id: finalize-release-candidate-ops-cli
+        continue-on-error: true
+        shell: bash
+        env:
+          CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          # Swap to coral:prod when parallel validation completes and we're ready for full cutover.
+          REGISTRY_STORE: "coral:dev/soft-launch-trial"
+        run: uvx airbyte-internal-ops registry rc "${ACTION}" --name "${CONNECTOR_NAME}" --store "${REGISTRY_STORE}"
