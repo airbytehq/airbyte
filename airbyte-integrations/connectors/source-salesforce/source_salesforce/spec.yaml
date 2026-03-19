@@ -124,21 +124,12 @@ advanced_auth:
   predicate_value: Client
   oauth_config_specification:
     oauth_connector_input_specification:
-      type: object
-      additionalProperties: false
-      properties:
-        consent_url:
-          type: string
-          const: "https://{{ 'test' if is_sandbox else 'login' }}.salesforce.com/services/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}"
-        access_token_url:
-          type: string
-          const: "https://{{ 'test' if is_sandbox else 'login' }}.salesforce.com/services/oauth2/token"
-        extract_output:
-          type: array
-          const:
-            - access_token
-            - refresh_token
-            - instance_url
+      consent_url: "https://{{ 'test' if is_sandbox else 'login' }}.salesforce.com/services/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}"
+      access_token_url: "https://{{ 'test' if is_sandbox else 'login' }}.salesforce.com/services/oauth2/token"
+      extract_output:
+        - access_token
+        - refresh_token
+        - instance_url
     oauth_user_input_from_connector_config_specification:
       type: object
       additionalProperties: false
