@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "email": {
+      "description": "The email address of the recipient.",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The identifier of the user.",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "The timestamp when the push open event occurred.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "campaignId": {
+      "description": "The identifier of the campaign associated with the push open.",
+      "type": ["null", "integer"]
+    },
+    "templateId": {
+      "description": "The identifier of the template used for the push notification.",
+      "type": ["null", "integer"]
+    },
+    "messageId": {
+      "description": "The unique identifier of the message.",
+      "type": ["null", "string"]
+    },
+    "sentAt": {
+      "description": "The timestamp when the push notification was originally sent.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "appAlreadyRunning": {
+      "description": "Whether the app was already running when the push was opened.",
+      "type": ["null", "boolean"]
+    },
+    "actionIdentifier": {
+      "description": "The identifier of the action taken on the push notification.",
+      "type": ["null", "string"]
+    },
+    "itblInternal": {
+      "description": "Internal information related to Iterable.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "documentCreatedAt": {
+          "description": "The timestamp when the document was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentUpdatedAt": {
+          "description": "The timestamp when the document was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "type": ["null", "object"]
+}

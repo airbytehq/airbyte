@@ -1,0 +1,55 @@
+{
+  "properties": {
+    "email": {
+      "description": "The email address of the recipient.",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The identifier of the user.",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "The timestamp when the push bounce event occurred.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "campaignId": {
+      "description": "The identifier of the campaign associated with the push bounce.",
+      "type": ["null", "integer"]
+    },
+    "templateId": {
+      "description": "The identifier of the template used for the push notification.",
+      "type": ["null", "integer"]
+    },
+    "messageId": {
+      "description": "The unique identifier of the message.",
+      "type": ["null", "string"]
+    },
+    "channelId": {
+      "description": "The identifier of the channel through which the push was sent.",
+      "type": ["null", "integer"]
+    },
+    "messageTypeId": {
+      "description": "The identifier of the message type.",
+      "type": ["null", "integer"]
+    },
+    "itblInternal": {
+      "description": "Internal information related to Iterable.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "documentCreatedAt": {
+          "description": "The timestamp when the document was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentUpdatedAt": {
+          "description": "The timestamp when the document was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "type": ["null", "object"]
+}

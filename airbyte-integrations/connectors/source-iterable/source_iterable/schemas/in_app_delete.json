@@ -1,0 +1,90 @@
+{
+  "properties": {
+    "email": {
+      "description": "The email address of the recipient.",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The identifier of the user.",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "The timestamp when the in-app delete event occurred.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "campaignId": {
+      "description": "The identifier of the campaign associated with the in-app delete.",
+      "type": ["null", "integer"]
+    },
+    "templateId": {
+      "description": "The identifier of the template used for the in-app message.",
+      "type": ["null", "integer"]
+    },
+    "messageId": {
+      "description": "The unique identifier of the message.",
+      "type": ["null", "string"]
+    },
+    "expiresAt": {
+      "description": "The timestamp when the in-app message expires.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deviceInfo": {
+      "description": "Information about the device where the in-app message was deleted.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "deviceId": {
+          "description": "The unique identifier of the device.",
+          "type": ["null", "string"]
+        },
+        "platform": {
+          "description": "The platform of the device (e.g., iOS, Android).",
+          "type": ["null", "string"]
+        },
+        "appPackageName": {
+          "description": "The package name of the application.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "messageContext": {
+      "description": "Context information about the in-app message.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "saveToInbox": {
+          "description": "Whether the message is saved to the user's inbox.",
+          "type": ["null", "boolean"]
+        },
+        "silentInbox": {
+          "description": "Whether the message is silently added to the inbox.",
+          "type": ["null", "boolean"]
+        },
+        "location": {
+          "description": "The location context for the in-app message display.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "itblInternal": {
+      "description": "Internal information related to Iterable.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "documentCreatedAt": {
+          "description": "The timestamp when the document was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentUpdatedAt": {
+          "description": "The timestamp when the document was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "type": ["null", "object"]
+}

@@ -1,0 +1,83 @@
+{
+  "properties": {
+    "email": {
+      "description": "The email address of the recipient.",
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "description": "The identifier of the user.",
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "description": "The timestamp when the push notification was sent.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "campaignId": {
+      "description": "The identifier of the campaign associated with the push send.",
+      "type": ["null", "integer"]
+    },
+    "templateId": {
+      "description": "The identifier of the template used for the push notification.",
+      "type": ["null", "integer"]
+    },
+    "messageId": {
+      "description": "The unique identifier of the message.",
+      "type": ["null", "string"]
+    },
+    "channelId": {
+      "description": "The identifier of the channel through which the push was sent.",
+      "type": ["null", "integer"]
+    },
+    "messageTypeId": {
+      "description": "The identifier of the message type.",
+      "type": ["null", "integer"]
+    },
+    "contentId": {
+      "description": "The identifier of the content used in the push notification.",
+      "type": ["null", "integer"]
+    },
+    "platformEndpoint": {
+      "description": "The platform endpoint for the push notification delivery.",
+      "type": ["null", "string"]
+    },
+    "transactionalData": {
+      "description": "Transactional data associated with the push send.",
+      "type": ["null", "string"]
+    },
+    "catalogLookupCount": {
+      "description": "The number of catalog lookups performed.",
+      "type": ["null", "integer"]
+    },
+    "catalogCollectionCount": {
+      "description": "The number of catalog collections used.",
+      "type": ["null", "integer"]
+    },
+    "productRecommendationCount": {
+      "description": "The number of product recommendations included.",
+      "type": ["null", "integer"]
+    },
+    "notificationsEnabled": {
+      "description": "Whether push notifications are enabled for the user.",
+      "type": ["null", "boolean"]
+    },
+    "itblInternal": {
+      "description": "Internal information related to Iterable.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "documentCreatedAt": {
+          "description": "The timestamp when the document was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "documentUpdatedAt": {
+          "description": "The timestamp when the document was last updated.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "type": ["null", "object"]
+}
