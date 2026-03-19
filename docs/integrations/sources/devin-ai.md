@@ -4,7 +4,30 @@ This page contains the setup guide and reference information for the [Devin AI](
 
 ## Overview
 
-The Devin AI source connector syncs data from the Devin AI v3 API into Airbyte. Devin AI is an autonomous AI software engineer that can plan, code, test, and deploy software. This connector allows you to extract session data, conversation history, playbooks, secrets metadata, and knowledge notes from your Devin AI organization.
+Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing visibility into your organization's AI engineering agent activity, conversations, and configuration.
+
+- **Sessions** — All Devin sessions in your organization
+  - Session status, title, tags, and timestamps
+  - ACU consumption and billing-relevant metrics
+  - Associated pull requests with PR state
+  - User and service user attribution
+  - Parent/child session relationships
+- **Session Messages** — Full conversation history for each session
+  - Every message exchanged between users and Devin
+  - Message source attribution (user vs. devin)
+  - Chronological ordering via timestamps
+- **Playbooks** — Reusable playbook definitions
+  - Playbook title, body content, and macro triggers
+  - Access controls (team vs. personal)
+  - Authorship and modification tracking
+- **Secrets** — Secret metadata (values are never exposed)
+  - Secret keys, types, and sensitivity flags
+  - Access type and organizational scope
+  - Creation and update audit trail
+- **Knowledge Notes** — Organization knowledge base entries
+  - Note content, folder organization, and trigger rules
+  - Enabled/disabled state for automated knowledge injection
+  - Pinned repo associations and macro triggers
 
 ## Prerequisites
 
