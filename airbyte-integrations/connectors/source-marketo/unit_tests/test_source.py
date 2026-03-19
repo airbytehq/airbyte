@@ -245,10 +245,10 @@ def test_source_streams(config, activity, requests_mock):
     requests_mock.get("/rest/v1/activities/types.json", json={"result": [activity]})
     streams = source.streams(config)
 
-    # 5 declarative streams (activity_types, segmentations, campaigns, lists, programs),
+    # 7 declarative streams (activity_types, segmentations, campaigns, lists, programs, emails, program_tokens),
     # 1 python stream (leads)
     # 1 dynamically created (activities_send_email)
-    assert len(streams) == 7
+    assert len(streams) == 9
     assert all(isinstance(stream, (MarketoStream, DeclarativeStream)) for stream in streams)
 
 

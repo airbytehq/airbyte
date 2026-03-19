@@ -88,6 +88,8 @@ This connector can be used to sync the following tables from Marketo:
 
 - **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
 - **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs, including user-defined tags and period costs.
+- **[Emails](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/emails)**: Contains info about your Marketo email assets.
+- **[Program Tokens](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/tokens)**: Contains token definitions for each program (child stream of Programs).
 - **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo segmentations.
 
 ## Troubleshooting and Limitations
@@ -121,6 +123,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.6.0 | 2026-03-13 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |
 | 1.5.0 | 2026-03-02 | [74136](https://github.com/airbytehq/airbyte/pull/74136) | Add dynamic schema discovery for custom fields on Leads stream; add tags and costs to Programs schema; add workspace to Segmentations schema |
 | 1.4.40 | 2026-02-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Fix KeyError and TypeError when Marketo API responses lack 'result' key in export status and create endpoints |
 | 1.4.39 | 2026-01-26 | [71849](https://github.com/airbytehq/airbyte/pull/71849) | Add error handling for type conversion in format_value |
