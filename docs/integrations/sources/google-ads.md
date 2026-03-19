@@ -221,11 +221,11 @@ Represents the budget settings of a campaign.
 
 - [geographic_view](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
-Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest. This stream returns dimension fields only (e.g., country, location type, ad group, campaign) without performance metrics.
+Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
 
 - [geographic_view_with_metrics](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
-An enhanced version of `geographic_view` that includes performance metrics (clicks, impressions, cost, conversions, CTR, etc.) alongside dimension fields. Use this stream when you need geographic performance data. Note that this stream may return slightly fewer rows (~1%) than `geographic_view` because the Google Ads API omits rows with zero metric data when metrics are requested. The omitted rows represent geographic/ad group combinations with no activity.
+An enhanced version of `geographic_view` that includes performance metrics (clicks, impressions, cost, conversions, CTR, etc.) alongside dimension fields. Use this stream when you need geographic performance data.
 
 - [user_location_view](https://developers.google.com/google-ads/api/fields/v20/user_location_view)
 
@@ -259,6 +259,10 @@ Due to Google Ads API constraints, the `click_view` stream retrieves data one da
 Google Ads doesn't support `PERFORMANCE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level.
 If you have this type of campaign Google will remove them from the results for the `ads` reports.
 More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
+:::
+
+:::note
+Streams that include metric fields (e.g., clicks, impressions, cost, conversions) may return fewer rows than dimension-only streams for the same resource. This is because the [Google Ads API omits rows where all metrics are zero](https://developers.google.com/google-ads/api/docs/reporting/zero-impressions) when metrics are included in the query. The omitted rows represent entity/segment combinations with no recorded activity.
 :::
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
