@@ -1,0 +1,37 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts: []
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4eb59af1-e69b-4849-84f0-5d81cc5ce490
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-smoke-test
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smoke-test
+  githubIssueLabel: source-smoke-test
+  icon: icon.svg
+  license: ELv2
+  name: Smoke Test
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  releaseStage: alpha
+  releases:
+    breakingChanges: {}
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-smoke-test
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+metadataSpecVersion: "1.0"
