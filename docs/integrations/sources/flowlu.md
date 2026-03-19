@@ -55,6 +55,7 @@ Flowlu connector enables seamless data integration between Flowlu, a project man
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-03-03 | [73776](https://github.com/airbytehq/airbyte/pull/73776) | Update dependencies |
 | 0.0.45 | 2026-02-17 | [73376](https://github.com/airbytehq/airbyte/pull/73376) | Update dependencies |
 | 0.0.44 | 2026-02-10 | [73135](https://github.com/airbytehq/airbyte/pull/73135) | Update dependencies |
 | 0.0.43 | 2026-01-20 | [71663](https://github.com/airbytehq/airbyte/pull/71663) | Update dependencies |

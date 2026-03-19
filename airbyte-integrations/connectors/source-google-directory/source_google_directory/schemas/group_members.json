@@ -22,6 +22,14 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "group_email": {
+      "type": ["null", "string"],
+      "description": "The email address of the group this member belongs to"
+    },
+    "group_id": {
+      "type": ["null", "string"],
+      "description": "The unique identifier of the group this member belongs to"
     }
   }
 }

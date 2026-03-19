@@ -26,18 +26,19 @@ Each stream will be output into its own file. Each file will contain 3 columns:
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
 - `_airbyte_data`: a json blob representing with the event data.
 
-#### Features
-
-| Feature                        | Supported |     |
-| :----------------------------- | :-------- | :-- |
-| Full Refresh Sync              | Yes       |     |
-| Incremental - Append Sync      | Yes       |     |
-| Incremental - Append + Deduped | No        |     |
-| Namespaces                     | No        |     |
-
 #### Performance considerations
 
 This integration will be constrained by the speed at which your filesystem accepts writes.
+
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
 
 ## Getting Started
 
@@ -70,6 +71,10 @@ docker cp airbyte-server:/tmp/airbyte_local/{destination_path}/{filename}.csv .
 ```
 
 Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](/integrations/locating-files-local-destination) for an alternative approach.
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

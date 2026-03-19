@@ -6,7 +6,7 @@ from datetime import date, datetime, timedelta
 
 import pytest
 from freezegun import freeze_time
-from source_facebook_marketing.spec import ValidBreakdowns
+from source_facebook_marketing.spec import InsightConfig, TimeIncrementPeriod, ValidBreakdowns
 from source_facebook_marketing.streams import AdsInsights
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.utils import DateInterval
@@ -93,6 +93,34 @@ class TestBaseInsightsStream:
             "test1",
             "test2",
         ]
+
+    @pytest.mark.parametrize(
+        "include_incrementality,expected_windows",
+        [
+            pytest.param(
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="disabled_uses_default_windows",
+            ),
+            pytest.param(
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality"],
+                id="enabled_appends_incrementality",
+            ),
+        ],
+    )
+    def test_include_incrementality(self, api, some_config, include_incrementality, expected_windows):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_incrementality=include_incrementality,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
 
     def test_init_statuses(self, api, some_config):
         stream = AdsInsights(
@@ -1020,3 +1048,594 @@ class TestBaseInsightsStream:
         assert (
             not missing_breakdowns
         ), f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+
+
+class TestCalendarAlignedPeriods:
+    """Tests for the calendar-aligned time period feature (time_increment_period)."""
+
+    # --- Static helper tests ---
+
+    def test_next_monday_on_monday(self):
+        """_next_monday returns the same date when it is already Monday."""
+        assert AdsInsights._next_monday(date(2026, 3, 2)) == date(2026, 3, 2)  # Monday
+
+    def test_next_monday_on_wednesday(self):
+        """_next_monday snaps backward to the previous Monday."""
+        assert AdsInsights._next_monday(date(2026, 3, 4)) == date(2026, 3, 2)  # Wednesday -> Monday
+
+    def test_next_monday_on_sunday(self):
+        """_next_monday snaps backward to the previous Monday (6 days back)."""
+        assert AdsInsights._next_monday(date(2026, 3, 8)) == date(2026, 3, 2)  # Sunday -> Monday
+
+    def test_next_month_start_mid_month(self):
+        """_next_month_start returns 1st of next month."""
+        assert AdsInsights._next_month_start(date(2026, 3, 15)) == date(2026, 4, 1)
+
+    def test_next_month_start_december(self):
+        """_next_month_start handles Dec -> Jan year rollover."""
+        assert AdsInsights._next_month_start(date(2026, 12, 15)) == date(2027, 1, 1)
+
+    def test_next_month_start_first_of_month(self):
+        """_next_month_start on 1st returns 1st of next month."""
+        assert AdsInsights._next_month_start(date(2026, 1, 1)) == date(2026, 2, 1)
+
+    def test_month_end_regular(self):
+        """_month_end returns last day of a 31-day month."""
+        assert AdsInsights._month_end(date(2026, 3, 1)) == date(2026, 3, 31)
+
+    def test_month_end_february_non_leap(self):
+        """_month_end returns Feb 28 for non-leap year."""
+        assert AdsInsights._month_end(date(2026, 2, 1)) == date(2026, 2, 28)
+
+    def test_month_end_february_leap(self):
+        """_month_end returns Feb 29 for leap year."""
+        assert AdsInsights._month_end(date(2028, 2, 1)) == date(2028, 2, 29)
+
+    def test_month_end_april(self):
+        """_month_end returns Apr 30 for a 30-day month."""
+        assert AdsInsights._month_end(date(2026, 4, 15)) == date(2026, 4, 30)
+
+    # --- _compute_interval_end tests ---
+
+    def test_compute_interval_end_daily(self, api, some_config):
+        """Daily period: interval end is the same day (1-day window)."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.daily,
+        )
+        assert stream._compute_interval_end(date(2026, 3, 5)) == date(2026, 3, 5)
+
+    def test_compute_interval_end_weekly(self, api, some_config):
+        """Weekly period: interval end is 6 days after start (Mon-Sun)."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        # Monday Mar 2 -> Sunday Mar 8
+        assert stream._compute_interval_end(date(2026, 3, 2)) == date(2026, 3, 8)
+
+    def test_compute_interval_end_monthly(self, api, some_config):
+        """Monthly period: interval end is last day of the month."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        assert stream._compute_interval_end(date(2026, 3, 1)) == date(2026, 3, 31)
+        assert stream._compute_interval_end(date(2026, 2, 1)) == date(2026, 2, 28)
+
+    def test_compute_interval_end_integer_increment(self, api, some_config):
+        """Integer time_increment: interval end is start + N - 1 days."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=7,
+        )
+        assert stream._compute_interval_end(date(2026, 3, 1)) == date(2026, 3, 7)
+
+    # --- _get_api_time_increment tests ---
+
+    def test_get_api_time_increment_monthly(self, api, some_config):
+        """Monthly period passes 'monthly' string to Facebook API."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        assert stream._get_api_time_increment() == "monthly"
+
+    def test_get_api_time_increment_weekly(self, api, some_config):
+        """Weekly period passes integer 7 to Facebook API."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        assert stream._get_api_time_increment() == 7
+
+    def test_get_api_time_increment_daily(self, api, some_config):
+        """Daily period passes integer 1 to Facebook API."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.daily,
+        )
+        assert stream._get_api_time_increment() == 1
+
+    def test_get_api_time_increment_none(self, api, some_config):
+        """No period: returns integer time_increment."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=5,
+        )
+        assert stream._get_api_time_increment() == 5
+
+    # --- request_params includes correct time_increment ---
+
+    def test_request_params_monthly_period(self, api, some_config):
+        """request_params passes 'monthly' string when period is monthly."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        params = stream.request_params()
+        assert params["time_increment"] == "monthly"
+
+    def test_request_params_weekly_period(self, api, some_config):
+        """request_params passes integer 7 when period is weekly."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        params = stream.request_params()
+        assert params["time_increment"] == 7
+
+    # --- __init__ time_increment assignment ---
+
+    def test_init_daily_sets_time_increment_1(self, api, some_config):
+        """Daily period sets time_increment to 1."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.daily,
+        )
+        assert stream.time_increment == 1
+        assert stream.time_increment_period == TimeIncrementPeriod.daily
+
+    def test_init_weekly_sets_time_increment_7(self, api, some_config):
+        """Weekly period sets nominal time_increment to 7."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        assert stream.time_increment == 7
+        assert stream.time_increment_period == TimeIncrementPeriod.weekly
+
+    def test_init_monthly_sets_time_increment_30(self, api, some_config):
+        """Monthly period sets nominal time_increment to 30."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        assert stream.time_increment == 30
+        assert stream.time_increment_period == TimeIncrementPeriod.monthly
+
+    def test_init_no_period_keeps_integer(self, api, some_config):
+        """No period: uses integer time_increment as-is."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=14,
+        )
+        assert stream.time_increment == 14
+        assert stream.time_increment_period is None
+
+    # --- _date_intervals tests ---
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_daily(self, api, some_config):
+        """Daily period yields every day."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 3, 1),
+            end_date=datetime(2026, 3, 5),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.daily,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        expected = [date(2026, 3, 1), date(2026, 3, 2), date(2026, 3, 3), date(2026, 3, 4), date(2026, 3, 5)]
+        assert intervals == expected
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_weekly(self, api, some_config):
+        """Weekly period yields Monday-aligned weeks."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 3, 4),  # Wednesday
+            end_date=datetime(2026, 3, 22),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        # Snaps back to Monday Mar 2, then weekly: Mar 2, Mar 9, Mar 16
+        expected = [date(2026, 3, 2), date(2026, 3, 9), date(2026, 3, 16)]
+        assert intervals == expected
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_monthly(self, api, some_config):
+        """Monthly period yields 1st-of-month dates."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 15),  # mid-January
+            end_date=datetime(2026, 3, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        # Snaps to Jan 1, then monthly: Jan 1, Feb 1, Mar 1
+        expected = [date(2026, 1, 1), date(2026, 2, 1), date(2026, 3, 1)]
+        assert intervals == expected
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_monthly_december_rollover(self, api, some_config):
+        """Monthly intervals handle December -> January year boundary."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2025, 11, 1),
+            end_date=datetime(2026, 2, 28),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        expected = [date(2025, 11, 1), date(2025, 12, 1), date(2026, 1, 1), date(2026, 2, 1)]
+        assert intervals == expected
+
+    # --- State getter/setter with time_increment_period ---
+
+    def test_state_includes_period(self, api, some_config):
+        """State getter includes time_increment_period when set."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        state = stream.state
+        assert state["time_increment"] == 7
+        assert state["time_increment_period"] == "weekly"
+
+    def test_state_no_period_omitted(self, api, some_config):
+        """State getter omits time_increment_period when not set."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+        )
+        state = stream.state
+        assert "time_increment_period" not in state
+
+    def test_state_setter_ignores_mismatched_period(self, api, some_config):
+        """State setter discards state when time_increment_period has changed."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        # Set state with monthly period (different from current weekly)
+        stream.state = {
+            "unknown_account": {
+                "date_start": "2026-06-01",
+                "slices": ["2026-06-01"],
+            },
+            "time_increment": 30,
+            "time_increment_period": "monthly",
+        }
+        # State should be ignored; cursor_values remains None
+        assert stream._cursor_values is None
+
+    def test_state_setter_accepts_matching_period(self, api, some_config):
+        """State setter accepts state when time_increment_period matches."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        stream.state = {
+            "unknown_account": {
+                "date_start": "2026-06-01",
+                "slices": ["2026-06-01"],
+            },
+            "time_increment": 7,
+            "time_increment_period": "weekly",
+        }
+        assert stream._cursor_values is not None
+        assert stream._cursor_values["unknown_account"] == date(2026, 6, 1)
+
+    def test_state_setter_ignores_mismatched_time_increment(self, api, some_config):
+        """State setter discards state when time_increment has changed."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=7,
+        )
+        # Saved state has time_increment=1 (different from current 7)
+        stream.state = {
+            "unknown_account": {
+                "date_start": "2026-06-01",
+                "slices": [],
+            },
+            "time_increment": 1,
+        }
+        assert stream._cursor_values is None
+
+    # --- InsightConfig validator tests ---
+
+    def test_insight_config_period_only(self):
+        """InsightConfig accepts time_increment_period without time_increment."""
+        config = InsightConfig(name="test", time_increment_period="weekly")
+        assert config.time_increment_period == TimeIncrementPeriod.weekly
+
+    def test_insight_config_time_increment_only(self):
+        """InsightConfig accepts time_increment without time_increment_period."""
+        config = InsightConfig(name="test", time_increment=7)
+        assert config.time_increment == 7
+        assert config.time_increment_period is None
+
+    def test_insight_config_mutual_exclusion_raises(self):
+        """InsightConfig raises when both time_increment (non-default) and time_increment_period are set."""
+        with pytest.raises(ValueError, match="mutually exclusive"):
+            InsightConfig(name="test", time_increment=7, time_increment_period="weekly")
+
+    def test_insight_config_period_with_default_increment_allowed(self):
+        """InsightConfig allows time_increment_period when time_increment is at default (1)."""
+        config = InsightConfig(name="test", time_increment=1, time_increment_period="monthly")
+        assert config.time_increment_period == TimeIncrementPeriod.monthly
+
+    def test_insight_config_neither_set(self):
+        """InsightConfig works with neither time_increment_period nor explicit time_increment."""
+        config = InsightConfig(name="test")
+        assert config.time_increment == 1
+        assert config.time_increment_period is None
+
+    def test_init_period_overrides_default_time_increment(self, api, some_config):
+        """When time_increment=1 (default) and time_increment_period=weekly, period wins."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=1,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        assert stream.time_increment == 7
+        assert stream.time_increment_period == TimeIncrementPeriod.weekly
+
+    def test_init_monthly_period_overrides_default_time_increment(self, api, some_config):
+        """When time_increment=1 (default) and time_increment_period=monthly, period wins."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=1,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        assert stream.time_increment == 30
+        assert stream.time_increment_period == TimeIncrementPeriod.monthly
+
+    def test_state_setter_invalidates_when_period_added(self, api, some_config):
+        """Old state without time_increment_period is invalidated when config now has a period."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        stream.state = {
+            "unknown_account": {
+                "date_start": "2026-06-01",
+                "slices": ["2026-06-01"],
+            },
+            "time_increment": 7,
+        }
+        assert stream._cursor_values is None
+
+    def test_state_setter_invalidates_when_period_removed(self, api, some_config):
+        """Old state with time_increment_period is invalidated when config no longer has a period."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=30,
+        )
+        # Old state has time_increment_period="monthly"
+        stream.state = {
+            "unknown_account": {
+                "date_start": "2026-06-01",
+                "slices": ["2026-06-01"],
+            },
+            "time_increment": 30,
+            "time_increment_period": "monthly",
+        }
+
+        assert stream._cursor_values is None
+
+    def test_state_setter_accepts_matching_none_period(self, api, some_config):
+        """State setter accepts state when both old and new have no time_increment_period."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=7,
+        )
+        stream.state = {
+            "unknown_account": {
+                "date_start": "2026-06-01",
+                "slices": ["2026-06-01"],
+            },
+            "time_increment": 7,
+        }
+        # Both have no period -> state accepted
+        assert stream._cursor_values is not None
+        assert stream._cursor_values["unknown_account"] == date(2026, 6, 1)
+
+    def test_state_includes_monthly_period(self, api, some_config):
+        """State getter includes time_increment_period='monthly' and time_increment=30."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        state = stream.state
+        assert state["time_increment"] == 30
+        assert state["time_increment_period"] == "monthly"
+
+    def test_request_params_daily_period(self, api, some_config):
+        """request_params passes integer 1 when period is daily."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.daily,
+        )
+        params = stream.request_params()
+        assert params["time_increment"] == 1
+
+    def test_request_params_no_period_uses_integer(self, api, some_config):
+        """request_params passes integer time_increment when no period is set."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 12, 31),
+            insights_lookback_window=28,
+            time_increment=14,
+        )
+        params = stream.request_params()
+        assert params["time_increment"] == 14
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_weekly_start_on_monday(self, api, some_config):
+        """Weekly period with start_date already on Monday does not snap backward."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 3, 2),  # Monday
+            end_date=datetime(2026, 3, 22),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        expected = [date(2026, 3, 2), date(2026, 3, 9), date(2026, 3, 16)]
+        assert intervals == expected
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_monthly_start_on_first(self, api, some_config):
+        """Monthly period with start_date on 1st works without snapping."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 1, 1),
+            end_date=datetime(2026, 3, 31),
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.monthly,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        expected = [date(2026, 1, 1), date(2026, 2, 1), date(2026, 3, 1)]
+        assert intervals == expected
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_weekly_narrow_range(self, api, some_config):
+        """Weekly period with date range smaller than 7 days yields only the snapped Monday."""
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2026, 3, 5),  # Thursday
+            end_date=datetime(2026, 3, 6),  # Friday
+            insights_lookback_window=28,
+            time_increment_period=TimeIncrementPeriod.weekly,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        # Snaps back to Monday Mar 2, which is <= end_date Mar 6, so yields it
+        # Next would be Mar 9 > end_date Mar 6, so stops
+        expected = [date(2026, 3, 2)]
+        assert intervals == expected

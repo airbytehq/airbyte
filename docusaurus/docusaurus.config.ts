@@ -365,47 +365,53 @@ const config: Config = {
         height: 40,
       },
       items: [
+        // "Data Replication" dropdown groups the five sub-sections
+        // `to` makes the label itself clickable (navigates to Platform)
         {
-          type: "docSidebar",
+          type: "dropdown",
           position: "left",
-          docsPluginId: "platform",
-          sidebarId: "platform",
-          label: "Platform",
+          label: "Data Replication",
+          to: "/platform/",
+          items: [
+            {
+              type: "docSidebar",
+              docsPluginId: "platform",
+              sidebarId: "platform",
+              label: "Platform",
+            },
+            {
+              type: "docSidebar",
+              docsPluginId: "connectors",
+              sidebarId: "connectors",
+              label: "Connectors",
+            },
+            {
+              type: "docSidebar",
+              docsPluginId: "release_notes",
+              sidebarId: "releaseNotes",
+              label: "Release notes",
+            },
+            {
+              type: "docSidebar",
+              docsPluginId: "developers",
+              sidebarId: "developers",
+              label: "Developers",
+            },
+            {
+              type: "docSidebar",
+              docsPluginId: "community",
+              sidebarId: "community",
+              label: "Community",
+            },
+          ],
         },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "connectors",
-          sidebarId: "connectors",
-          label: "Connectors",
-        },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "release_notes",
-          sidebarId: "releaseNotes",
-          label: "Release notes",
-        },
+        // "Agent Engine" is a direct link (no dropdown needed)
         {
           type: "doc",
           position: "left",
           docsPluginId: "ai-agents",
           docId: "README",
-          label: "AI agents",
-        },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "developers",
-          sidebarId: "developers",
-          label: "Developers",
-        },
-        {
-          type: "docSidebar",
-          position: "left",
-          docsPluginId: "community",
-          sidebarId: "community",
-          label: "Community",
+          label: "Agent Engine",
         },
         {
           href: "https://status.airbyte.com",
