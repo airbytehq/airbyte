@@ -31,7 +31,7 @@ data:
   supportLevel: community
   tags:
     - language:python
-    - cdk:low-code
+    - cdk:python
   connectorTestSuitesOptions:
     - suite: unitTests
 metadataSpecVersion: "1.0"
