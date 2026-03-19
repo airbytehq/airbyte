@@ -58,37 +58,34 @@ public class PartitionKeyExtractor {
    * 
    * @param recordData the JSON record data
    * @param fieldName the field name (supports dot notation for nested fields)
-   * @return Optional containing the field value as string, or empty if not found
+   * @return field value as string, or null if not found
    */
-  private static Optional<String> extractFieldValue(JsonNode recordData, String fieldName) {
+  private static String extractFieldValue(JsonNode recordData, String fieldName) {
     if (recordData == null || !recordData.isObject()) {
-      return Optional.empty();
+      return null;
     }
 
-    String[] fieldParts = fieldName.split(NESTED_FIELD_DELIMITER);
+    String[] fieldParts = fieldName.split("\\.");
     JsonNode currentNode = recordData;
 
     // Navigate through nested fields
     for (String part : fieldParts) {
       if (!currentNode.has(part)) {
-        return Optional.empty();
+        return null;
       }
       currentNode = currentNode.get(part);
       if (currentNode == null || currentNode.isNull()) {
-        return Optional.empty();
+        return null;
       }
     }
 
-    // Convert the final value to string
-    if (currentNode.isTextual()) {
-      return Optional.of(currentNode.asText());
-    } else if (currentNode.isNumber()) {
-      return Optional.of(currentNode.asText());
-    } else if (currentNode.isBoolean()) {
-      return Optional.of(String.valueOf(currentNode.asBoolean()));
+    // Convert to string for primitive types, serialize complex objects
+    if (currentNode.isValueNode()) {
+      return currentNode.asText();
+    } else if (currentNode.isObject() || currentNode.isArray()) {
+      return currentNode.toString();
     } else {
-      // For complex objects, convert to JSON string
-      return Optional.of(currentNode.toString());
+      return null;
     }
   }
 
