@@ -221,7 +221,7 @@ Represents the budget settings of a campaign.
 
 - [geographic_view](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
-Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
+Geographic View provides dimension fields aggregated at the country level, such as country, location type, ad group, and campaign. It reports data at either the actual physical location of the user or an area of interest. This stream does not include performance metrics — use `geographic_view_with_metrics` if you need metrics like clicks, impressions, and conversions.
 
 - [geographic_view_with_metrics](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
