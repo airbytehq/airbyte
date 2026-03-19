@@ -118,12 +118,12 @@ Because these streams must read all records on every sync, syncing Companies and
 
 ## Changelog
 
-<details>
+<details>75216
   <summary>Expand to review</summary>
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.16-rc.6 | 2026-03-19 | | Bump CDK base image to 7.13.0 (includes block_simultaneous_read support and cursor field fix) |
+| 0.13.16-rc.6 | 2026-03-19 | [75216](https://github.com/airbytehq/airbyte/pull/75216) | Bump CDK base image to 7.13.0 (includes block_simultaneous_read support and cursor field fix) |
 | 0.13.16-rc.5 | 2026-03-11 | [71141](https://github.com/airbytehq/airbyte/pull/71141) | Block simultaneous reading from companies endpoint |
 | 0.13.16-rc.4 | 2026-03-03 | [74143](https://github.com/airbytehq/airbyte/pull/74143) | fix(source-intercom): fix UnboundLocalError in rate limiter when response is not available |
 | 0.13.16-rc.3 | 2026-03-03 | [72955](https://github.com/airbytehq/airbyte/pull/72955) | fix(source-intercom): add step size and end_datetime to contacts, conversations, and activity_logs streams |
