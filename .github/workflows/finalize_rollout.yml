@@ -1,4 +1,12 @@
 name: Finalize connector rollout
+# This workflow is called by the backend Temporal workflow "finalizeRollout"
+# as a part of its response to calls to `/connector_rollout/manual_finalize`,
+# or in response to automatic fallback/finalization.
+#
+# The workflow performs these tasks:
+# 1. Generate an `auto-merge/bypass`-labeled PR to version-bump forward
+#    the named connector, including changelog entry.
+# 2. Delete the `.../release_candidate` subdirectory in the GCS Registry Store.
 
 on:
   repository_dispatch:
