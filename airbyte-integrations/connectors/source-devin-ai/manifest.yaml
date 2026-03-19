@@ -234,10 +234,6 @@ definitions:
             type:
               - string
               - "null"
-          status:
-            type:
-              - string
-              - "null"
           access_type:
             type:
               - string
@@ -360,6 +356,10 @@ definitions:
             type:
               - string
               - "null"
+          folder_path:
+            type:
+              - string
+              - "null"
           name:
             type:
               - string
@@ -393,6 +393,10 @@ definitions:
               - string
               - "null"
           macro:
+            type:
+              - string
+              - "null"
+          pinned_repo:
             type:
               - string
               - "null"
