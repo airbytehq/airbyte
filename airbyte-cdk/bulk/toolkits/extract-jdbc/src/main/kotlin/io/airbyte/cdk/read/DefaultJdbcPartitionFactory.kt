@@ -222,7 +222,8 @@ class DefaultJdbcPartitionFactory(
             is DefaultJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
             is DefaultJdbcCursorIncrementalPartition ->
-                unsplitPartition.split(splitPartitionBoundaries)
+//                unsplitPartition.split(splitPartitionBoundaries)
+                listOf(unsplitPartition)
             is DefaultJdbcUnsplittableSnapshotPartition -> listOf(unsplitPartition)
             is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)
         }
