@@ -461,7 +461,6 @@ jobs:
             --store "${REGISTRY_STORE}" \
             --with-validate
 
-
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connector_registry_entries]
