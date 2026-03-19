@@ -15,9 +15,10 @@ on:
 jobs:
   finalize_rollout:
     name: Finalize connector rollout for ${{ github.event.inputs.connector_name }}
-    runs-on: connector-publish-large
+    runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
+      CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     steps:
       - name: Check action value
         run: |
@@ -26,51 +27,20 @@ jobs:
             exit 1
           fi
         shell: bash
-      - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
-      # Authenticate as the GitHub App to ensure CI can run.  This is necessary because
-      # commits created with the built-in GitHub token will not trigger workflows.
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
-      - name: Promote ${{ github.event.inputs.connector_name }} release candidate
-        id: promote-release-candidate
-        if: ${{ env.ACTION == 'promote' }}
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --promote-release-candidate"
-      - name: Rollback ${{ github.event.inputs.connector_name }} release candidate
-        id: rollback-release-candidate
-        if: ${{ env.ACTION == 'rollback' }}
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --rollback-release-candidate"
+      - name: Install Ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      - name: ${{ env.ACTION }} ${{ env.CONNECTOR_NAME }} release candidate
+        id: finalize-release-candidate
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: >
+          airbyte-ops registry rc "${ACTION}"
+          --name "${CONNECTOR_NAME}"
+          --store "${REGISTRY_STORE}"
