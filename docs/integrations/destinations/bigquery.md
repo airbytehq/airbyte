@@ -210,6 +210,8 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
     configured.
   - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
     smaller value (for example, 5 MiB).
+  - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
+    possible contributing factor.
 
 ### Load job timeouts
 
