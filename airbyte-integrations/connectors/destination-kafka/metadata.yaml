@@ -10,7 +10,7 @@ data:
   icon: kafka.svg
   license: ELv2
   name: Kafka
-  description: "Apache Kafka destination connector with configurable partition routing. Supports sending records to Kafka topics with optional partition key configuration for deterministic routing of related data to the same partition."
+  description: "Apache Kafka destination connector with configurable partition routing for deterministic record distribution."
   registryOverrides:
     cloud:
       enabled: false # hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
