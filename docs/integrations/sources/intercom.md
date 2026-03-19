@@ -118,7 +118,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 ## Changelog
 
-<details>75216
+<details>
   <summary>Expand to review</summary>
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
