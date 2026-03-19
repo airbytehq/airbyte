@@ -1,12 +1,28 @@
-name: Finalize connector rollout
-# This workflow is called by the backend Temporal workflow "finalizeRollout"
-# as a part of its response to calls to `/connector_rollout/manual_finalize`,
-# or in response to automatic fallback/finalization.
+# Finalize Connector Rollout
 #
-# The workflow performs these tasks:
-# 1. Generate an `auto-merge/bypass`-labeled PR to version-bump forward
-#    the named connector, including changelog entry.
-# 2. Delete the `.../release_candidate` subdirectory in the GCS Registry Store.
+# This workflow is triggered by the Airbyte platform's Temporal workflow
+# (ConnectorRolloutWorkflowImpl) via the PromoteOrRollbackActivityImpl activity,
+# which dispatches it through the GitHub API:
+#   POST https://api.github.com/repos/airbytehq/airbyte/actions/workflows/finalize_rollout.yml/dispatches
+#
+# By the time this workflow runs, the platform has already:
+#   1. Completed the progressive rollout decision (automated or manual_finalize API).
+#   2. Set the rollout state to FINALIZING.
+#
+# After this workflow completes, the Temporal workflow continues to:
+#   3. Poll verifyDefaultVersionActivity (up to 3 hours) waiting for the new
+#      GA version to become the default version in the platform.
+#   4. Call finalizeRolloutActivity to unpin all actors from the RC version.
+#
+# The --with-pr flag creates an auto-merge cleanup PR that strips the -rc.N
+# suffix, disables progressive rollout, and removes registry override pins.
+# This PR merge -> publish pipeline -> new GA version is what the
+# verifyDefaultVersionActivity is waiting for.
+#
+# See: airbyte-platform-internal/.../ConnectorRolloutWorkflowImpl.kt
+# See: airbyte-platform-internal/.../PromoteOrRollbackActivityImpl.kt
+
+name: Finalize connector rollout
 
 on:
   repository_dispatch:
@@ -41,21 +57,43 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Authenticate as the GitHub App (OCTAVIA_BOT) so that:
+      #   1. The cleanup PR can be created with a token that triggers downstream CI.
+      #      (PRs created with the default GITHUB_TOKEN do not trigger workflows.)
+      #   2. The PR can be pushed to a branch in the airbytehq/airbyte repo.
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       - name: Install uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
+      # The ops CLI rc promote/rollback command:
+      #   --with-store-cleanup: deletes the release_candidate/ blob (and versioned
+      #     blob for rollback) from GCS.
+      #   --with-pr: creates a cleanup PR that strips the -rc.N suffix (promote),
+      #     disables progressive rollout, and removes registry override pins.
+      #     This PR's merge triggers the normal publish pipeline, which publishes
+      #     the GA version that the platform's verifyDefaultVersionActivity is
+      #     waiting for.
       - name: "Promote or Rollback RC: ${{ env.ACTION }} ${{ env.CONNECTOR_NAME }}"
         id: finalize-release-candidate
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
           REGISTRY_STORE: "coral:prod"
         run: >
           airbyte-ops registry rc "${ACTION}"
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
-          --with-pr
           --with-store-cleanup
+          --with-pr
