@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the [Intercom](
   - **Read admins**—required for Admins.
   - **Read admin activity logs**—required for Activity Logs.
   - **Read tags**—required for Tags.
-  - **Read Tickets**—required for Tickets.
+  - **Read Tickets**—required for Tickets. This permission is optional: if it is not granted, the Tickets stream is silently skipped during syncs.
 - A **Start date** in UTC format (`YYYY-MM-DDTHH:mm:ssZ`). Only data created on or after this date is replicated.
 
 ## Setup guide
@@ -94,7 +94,7 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default rate limit is 1,000 requests per minute for public apps and 10,000 requests per minute for private apps. The connector retries `429 Too Many Requests` responses automatically.
+The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default rate limit is 1,000 requests per minute for public apps and 10,000 requests per minute for private apps. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
 
 The connector should not run into rate limit issues under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit errors that are not automatically retried.
 
@@ -110,7 +110,7 @@ This means that even if you only need one day of new data, the connector must re
 
 The Intercom API allows only one company scroll to be open per app at a time. If a second scroll request is made while one is already active, the API returns a `400` error with the message "scroll already exists for this workspace." The connector retries this error automatically with a one-minute backoff, since scrolls expire after one minute of inactivity.
 
-Running multiple Intercom syncs in parallel for the same workspace that include the Companies or Company Segments streams may still result in errors due to this limitation.
+To prevent conflicts, the connector blocks simultaneous reads from the Companies endpoint. If you run multiple connections that sync the Companies or Company Segments streams from the same Intercom workspace, the connector queues the reads so only one scroll is active at a time.
 
 ### Recommendation for reducing sync times
 
