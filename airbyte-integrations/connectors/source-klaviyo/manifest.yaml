@@ -1,4 +1,4 @@
-version: 6.33.4
+version: 6.34.0
 
 type: DeclarativeSource
 
@@ -212,7 +212,8 @@ definitions:
             include: metric,attributions
             filter: >-
               greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
+              stream_interval.start_time }}),less-than(datetime,{{
+              stream_interval.end_time }}){% if stream_partition.event_metric_id %},equals(metric_id,"{{ stream_partition.event_metric_id }}"){% endif %}
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -251,6 +252,10 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.get('event_metric_ids', '').split(',') | map('trim') | reject('eq', '') | list or [''] }}"
+          cursor_field: event_metric_id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: datetime
@@ -295,7 +300,8 @@ definitions:
             fields[metric]: name
             filter: >-
               greater-or-equal(datetime,{{
-              stream_interval.start_time }}),less-than(datetime,{{ stream_interval.end_time }})
+              stream_interval.start_time }}),less-than(datetime,{{
+              stream_interval.end_time }}){% if stream_partition.event_metric_id %},equals(metric_id,"{{ stream_partition.event_metric_id }}"){% endif %}
             sort: "datetime"
           request_headers:
             Accept: application/json
@@ -336,6 +342,10 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.get('event_metric_ids', '').split(',') | map('trim') | reject('eq', '') | list or [''] }}"
+          cursor_field: event_metric_id
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: "datetime"
@@ -1366,6 +1376,22 @@ spec:
           account under Analytics > Metrics, or use the metrics stream to list all
           available metrics and their IDs.
         order: 5
+        examples:
+          - "RESQ6t"
+          - "RESQ6t,ABC123,XYZ789"
+      event_metric_ids:
+        type: string
+        title: Event Stream Metric IDs
+        description: >-
+          OPTIONAL: Comma-separated list of Klaviyo metric IDs to filter the
+          events and events_detailed streams. If left empty, events for ALL
+          metrics will be synced. Specify only the metrics you need to
+          significantly reduce sync volume and duration. Note: Klaviyo does not
+          support filtering by custom metrics — only built-in metrics can be
+          filtered. Find metric IDs in your Klaviyo account under Analytics >
+          Metrics, or use the metrics stream to list all available metrics and
+          their IDs.
+        order: 6
         examples:
           - "RESQ6t"
           - "RESQ6t,ABC123,XYZ789"
