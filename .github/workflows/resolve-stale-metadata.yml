@@ -33,13 +33,16 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
+      - name: Install Ops CLI
+        continue-on-error: true
+        run: uv tool install airbyte-internal-ops
+
       - name: Check for unpublished connector versions
         continue-on-error: true
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
         run: >
-          uvx --from airbyte-internal-ops
           airbyte-ops local connector list
           --repo-path "${{ github.workspace }}"
           --unpublished

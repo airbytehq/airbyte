@@ -320,7 +320,8 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.1 | 2026-03-12 | [74736](https://github.com/airbytehq/airbyte/pull/74736) | Remove unsupported MaxResultsPerPage parameter from OrderItems stream |
+| 5.6.2 | 2026-03-12 | [74736](https://github.com/airbytehq/airbyte/pull/74736) | Remove unsupported MaxResultsPerPage parameter from OrderItems stream |
+| 5.6.1 | 2026-03-17 | [74538](https://github.com/airbytehq/airbyte/pull/74538) | Update dependencies |
 | 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
 | 5.5.1 | 2026-03-03 | [72961](https://github.com/airbytehq/airbyte/pull/72961) | Add time-windowed partitioning to Orders stream for proper state checkpointing of OrderItems substream |
 | 5.5.0 | 2026-02-26 | [72258](https://github.com/airbytehq/airbyte/pull/72258) | Add GET_SALES_AND_TRAFFIC_REPORT_BY_DATE stream |
