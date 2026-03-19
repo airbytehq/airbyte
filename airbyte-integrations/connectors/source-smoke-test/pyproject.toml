@@ -19,7 +19,7 @@ include = "source_smoke_test"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 airbyte = ">=0.41.0"
-airbyte-cdk = "*"
+airbyte-cdk = ">=6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0.0"
