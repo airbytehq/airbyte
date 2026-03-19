@@ -163,7 +163,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
-| 0.2.0   | 2024-03-19 | [PR](https://github.com/airbytehq/airbyte/pull/XXXX) | Add configurable partition routing support for deterministic record distribution  |
+| 0.2.0   | 2024-03-19 | [PR](https://github.com/airbytehq/airbyte/pull/75225) | Add configurable partition routing support for deterministic record distribution  |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |
