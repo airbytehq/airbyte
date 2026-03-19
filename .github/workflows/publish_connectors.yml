@@ -461,10 +461,6 @@ jobs:
             --store "${REGISTRY_STORE}" \
             --with-validate
 
-      - name: "[DRY-RUN] Skip Publish Registry Artifacts"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping registry artifact publish for ${{ matrix.connector }}"
 
   generate_connector_registry:
     name: Generate connector registry
