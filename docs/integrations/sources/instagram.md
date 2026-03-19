@@ -80,7 +80,7 @@ The Instagram source connector supports the following streams. For more informat
 
 - [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
   - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) (incremental)
-  - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) — demographic breakdowns by city, country, and age/gender
+  - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—demographic breakdowns by city, country, and age/gender
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
   - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
