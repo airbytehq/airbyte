@@ -27,6 +27,12 @@ data:
     oss:
       enabled: false
   releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - sessions
+      - playbooks
+      - secrets
+      - knowledge_notes
   supportLevel: community
   tags:
     - language:manifest-only
