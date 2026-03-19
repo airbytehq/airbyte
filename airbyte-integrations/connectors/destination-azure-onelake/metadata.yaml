@@ -22,7 +22,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: 0916f160-fc17-4cdc-a4aa-c6bcee3c63b2
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/destination-azure-onelake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/azure-onelake
   githubIssueLabel: destination-azure-onelake

@@ -64,11 +64,41 @@ class MicrosoftOneLakeSpecification :
 
     override val azureBlobStorageAccountKey: String? = null
 
-    override val azureTenantId: String? = null
+    // IMPORTANT:
+    // Do NOT override these as plain nullable properties without schema annotations.
+    // Airbyte relies on `airbyte_secret` to know when to preserve existing values on edit.
+    // If we drop the secret annotation, the UI will send masked placeholders (e.g. "********")
+    // and the platform will persist that literal value, breaking auth until the user re-enters creds.
 
-    override val azureClientId: String? = null
+    @get:JsonSchemaTitle("Azure Tenant ID")
+    @get:JsonPropertyDescription(
+        "The Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication."
+    )
+    @get:JsonProperty("azure_tenant_id")
+    @get:JsonSchemaInject(
+        json = """{"examples":["12345678-1234-1234-1234-123456789012"],"airbyte_secret": false}"""
+    )
+    override val azureTenantId: String? = ""
 
-    override val azureClientSecret: String? = null
+    @get:JsonSchemaTitle("Azure Client ID")
+    @get:JsonPropertyDescription(
+        "The Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication."
+    )
+    @get:JsonProperty("azure_client_id")
+    @get:JsonSchemaInject(
+        json = """{"examples":["87654321-4321-4321-4321-210987654321"],"airbyte_secret": false}"""
+    )
+    override val azureClientId: String? = ""
+
+    @get:JsonSchemaTitle("Azure Client Secret")
+    @get:JsonPropertyDescription(
+        "The Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication."
+    )
+    @get:JsonProperty("azure_client_secret")
+    @get:JsonSchemaInject(
+        json = """{"examples":["your-client-secret"],"airbyte_secret": true,"always_show": true}"""
+    )
+    override val azureClientSecret: String? = ""
 
     @get:JsonSchemaTitle("Use Managed Identity")
     @get:JsonPropertyDescription(
@@ -112,10 +142,12 @@ class MicrosoftOneLakeSpecification :
     @JsonSchemaInject(json = """{"examples":["{date}_{timestamp}_{part_number}{format_extension}"],"default":""}""")
     val fileNamePattern: String? = ""
 
-    // OneLake-only: subpath under Files/ (default: "data"). Hidden; config factory defaults to "data" if missing.
+    // OneLake-only: subpath under Files/. Hidden; config factory applies "data" only when
+    // destination_path_format is left empty, otherwise it leaves this blank so the user's
+    // custom path is respected.
     @get:JsonProperty("one_lake_files_sub_path")
-    @get:JsonSchemaInject(json = """{"airbyte_hidden": true, "default": "data"}""")
-    val oneLakeFilesSubPath: String? = "data"
+    @get:JsonSchemaInject(json = """{"airbyte_hidden": true, "default": ""}""")
+    val oneLakeFilesSubPath: String? = ""
 
     override val format: ObjectStorageFormatSpecification = JsonFormatSpecification()
 }

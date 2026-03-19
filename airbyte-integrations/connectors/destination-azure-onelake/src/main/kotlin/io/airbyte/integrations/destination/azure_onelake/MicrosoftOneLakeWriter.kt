@@ -10,7 +10,7 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.object_storage.ObjectStorageStreamLoaderFactory
 import io.micronaut.context.annotation.Primary
-import jakarta.inject.Singleton
+import javax.inject.Singleton
 
 /**
  * Microsoft OneLake destination writer.

@@ -132,7 +132,7 @@ class MicrosoftOneLakeConfigurationFactory(
 
         // OneLake Blob API: container = workspace, blob path = item.itemtype/Files/subPath/...
         val clientConfig = pojo.toAzureBlobStorageClientConfiguration().apply {
-            endpointDomainName = "https://onelake.blob.fabric.microsoft.com"
+            endpointUrl = "https://onelake.blob.fabric.microsoft.com"
             spillSize = pojo.azureBlobStorageSpillSize
         }.copy(
             containerName = pojo.azureBlobStorageAccountName
@@ -151,6 +151,13 @@ class MicrosoftOneLakeConfigurationFactory(
             }
         }
 
+        val resolvedOneLakeFilesSubPath =
+            pojo.oneLakeFilesSubPath
+                ?.takeIf { it.isNotBlank() }
+                // Use "data" only when the user did NOT customise the destination path format.
+                // If a custom path format is provided, respect it and do NOT inject an extra "data" segment.
+                ?: if (pojo.pathFormat.isNullOrBlank()) "data" else ""
+
         return MicrosoftOneLakeConfiguration(
             azureBlobStorageClientConfiguration = clientConfig,
             objectStorageFormatConfiguration = pojo.toObjectStorageFormatConfiguration(),
@@ -158,7 +165,7 @@ class MicrosoftOneLakeConfigurationFactory(
                 ObjectStorageCompressionConfiguration(NoopProcessor),
             pathFormat = pojo.pathFormat,
             fileNamePattern = pojo.fileNamePattern,
-            oneLakeFilesSubPath = pojo.oneLakeFilesSubPath?.takeIf { it.isNotBlank() } ?: "data",
+            oneLakeFilesSubPath = resolvedOneLakeFilesSubPath,
             oneLakeItemPath = oneLakeItemPath,
             maxMemoryRatioReservedForParts =
                 if (destinationCatalog.streams.any { it.isFileBased })
