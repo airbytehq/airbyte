@@ -6507,9 +6507,16 @@
             "description": "The status of the external user (active or inactive)"
           },
           "cache_enabled": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Cache Enabled",
-            "description": "Whether Context Store caching is enabled for this external user"
+            "description": "Whether Context Store caching is enabled (null means inherit from organization)"
           },
           "tombstone": {
             "type": "boolean",
@@ -6566,9 +6573,16 @@
             "description": "The status of the external user (active or inactive)"
           },
           "cache_enabled": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Cache Enabled",
-            "description": "Whether Context Store caching is enabled for this external user"
+            "description": "Whether Context Store caching is enabled (null means inherit from organization)"
           },
           "tombstone": {
             "type": "boolean",
@@ -6690,7 +6704,7 @@
               }
             ],
             "title": "Cache Enabled",
-            "description": "Enable or disable Context Store for this external user"
+            "description": "Enable or disable Context Store (null means inherit from organization)"
           }
         },
         "type": "object",
@@ -6720,9 +6734,16 @@
             "description": "The status of the external user (active or inactive)"
           },
           "cache_enabled": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Cache Enabled",
-            "description": "Whether Context Store caching is enabled for this external user"
+            "description": "Whether Context Store caching is enabled (null means inherit from organization)"
           },
           "tombstone": {
             "type": "boolean",

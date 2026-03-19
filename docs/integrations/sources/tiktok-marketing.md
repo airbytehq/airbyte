@@ -132,8 +132,7 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 
 :::info
 
-TikTok Reporting API has some [Data Latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337), usually of about 11 hours.
-It is recommended to use higher values of attribution window (used in Incremental Syncs), at least 3 days, to ensure that the connector updates metrics in already presented records.
+The TikTok Reporting API has [data latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337) of approximately 11 hours. To ensure that the connector captures updated metrics in existing records, use an attribution window of at least 3 days for incremental syncs.
 
 :::
 
@@ -156,7 +155,10 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.1 | 2026-02-24 | [73633](https://github.com/airbytehq/airbyte/pull/73633) | fix(source-tiktok-marketing): Fix UTC timezone mismatch causing data loss for ahead-of-UTC accounts (AI-Triage PR) |
+| 5.0.3 | 2026-03-12 | [74762](https://github.com/airbytehq/airbyte/pull/74762) | Promoting release candidate 5.0.3-rc.1 to a main version. |
+| 5.0.3-rc.1 | 2026-03-05 | [74085](https://github.com/airbytehq/airbyte/pull/74085) | Add missing video engagement metrics to audience report streams |
+| 5.0.2 | 2026-03-03 | [73111](https://github.com/airbytehq/airbyte/pull/73111) | Update dependencies |
+| 5.0.1 | 2026-02-24 | [73633](https://github.com/airbytehq/airbyte/pull/73633) | Fix UTC timezone mismatch causing data loss for ahead-of-UTC accounts |
 | 5.0.0 | 2026-02-17 | [73357](https://github.com/airbytehq/airbyte/pull/73357) | Fix `currency` field type from `boolean` to `string` in pixels events schema |
 | 4.8.14 | 2026-02-16 | [73314](https://github.com/airbytehq/airbyte/pull/73314) | Fix pixel_instant_page_events stream failing on unsupported objective/optimization combinations (error 40002) by ignoring invalid parameter combos |
 | 4.8.13 | 2026-01-20 | [64958](https://github.com/airbytehq/airbyte/pull/64958) | Update dependencies |
