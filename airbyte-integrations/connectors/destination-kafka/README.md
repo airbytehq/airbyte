@@ -29,7 +29,7 @@ Add the `partition_key_field` parameter to your connector configuration:
 #### Behavior
 
 - **Field Present**: Uses the field value(s) as the Kafka message key
-- **Field Missing**: Falls back to random UUID (existing behavior)
+- **Field Missing**: Falls back to random UUID
 - **Null Values**: Treated as missing field, falls back to UUID
 - **Multiple Fields**: Concatenated with "|" delimiter
 
