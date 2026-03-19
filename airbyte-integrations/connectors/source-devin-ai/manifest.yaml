@@ -168,6 +168,12 @@ definitions:
               $ref: "#/definitions/sessions_stream"
             parent_key: session_id
             partition_field: session_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - session_id
+            value: "{{ stream_slice.session_id }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
