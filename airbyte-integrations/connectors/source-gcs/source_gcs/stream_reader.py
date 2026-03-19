@@ -41,7 +41,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         super().__init__()
         self._gcs_client = None
         self._config = None
-        self.tmp_dir = tempfile.TemporaryDirectory()
+        self._zip_temp_dirs: list[tempfile.TemporaryDirectory] = []
 
     @property
     def config(self) -> Config:
@@ -110,7 +110,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                         )
 
                         if remote_file.mime_type == "zip" and not isinstance(self.config.delivery_method, DeliverRawFiles):
-                            yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
+                            tmp_dir = tempfile.TemporaryDirectory()
+                            self._zip_temp_dirs.append(tmp_dir)
+                            yield from ZipHelper(blob, remote_file, tmp_dir.name).get_gcs_remote_files()
                         else:
                             yield remote_file
         except Exception as exc:
