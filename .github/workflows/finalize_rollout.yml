@@ -34,7 +34,7 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      - name: ${{ env.ACTION }} ${{ env.CONNECTOR_NAME }} release candidate
+      - name: "Promote or Rollback RC: ${{ env.ACTION }} ${{ env.CONNECTOR_NAME }}"
         id: finalize-release-candidate
         shell: bash
         env:
