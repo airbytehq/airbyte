@@ -16,13 +16,6 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
  * interface.
  */
 interface AzureBlobStorageClientSpecification {
-
-    /** Whether to use Managed Identity (DefaultAzureCredential) instead of explicit credentials. */
-    val useManagedIdentity: Boolean get() = false
-
-    /** Client ID for user-assigned Managed Identity. Leave null for system-assigned. */
-    val managedIdentityClientId: String? get() = null
-
     @get:JsonSchemaTitle("Azure Blob Storage Account Name")
     @get:JsonPropertyDescription(
         "The name of the Azure Blob Storage Account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/blobs/storage-blobs-introduction#storage-accounts\">here</a>."
@@ -91,6 +84,22 @@ interface AzureBlobStorageClientSpecification {
     )
     val azureClientSecret: String?
 
+    @get:JsonSchemaTitle("Use Managed Identity")
+    @get:JsonPropertyDescription(
+        "Use the Azure Managed Identity of the host instead of explicit credentials. " +
+            "Leave Tenant ID, Client ID, and Client Secret empty when enabled."
+    )
+    @get:JsonProperty("use_managed_identity")
+    @get:JsonSchemaInject(json = """{"default": false}""")
+    val useManagedIdentity: Boolean get() = false
+
+    @get:JsonSchemaTitle("Managed Identity Client ID (optional)")
+    @get:JsonPropertyDescription(
+        "For user-assigned Managed Identity, set this to the identity's client ID. Leave empty for system-assigned."
+    )
+    @get:JsonProperty("managed_identity_client_id")
+    val managedIdentityClientId: String? get() = null
+
     fun toAzureBlobStorageClientConfiguration(): AzureBlobStorageClientConfiguration {
         return AzureBlobStorageClientConfiguration(
             azureBlobStorageAccountName,
@@ -114,24 +123,27 @@ data class AzureBlobStorageClientConfiguration(
     val tenantId: String?,
     val clientId: String?,
     val clientSecret: String?,
-
-    // The following is only used by the azure blob storage destination
-    var endpointDomainName: String? = null,
-    var spillSize: Int? = null,
-
-    // Managed Identity support
     val useManagedIdentity: Boolean = false,
     val managedIdentityClientId: String? = null,
+
+    // The following is only used by specific destinations
+    var endpointDomainName: String? = null,
+    var endpointUrl: String? = null,
+    var spillSize: Int? = null,
 ) {
     init {
-        val hasAccountKey = !accountKey.isNullOrBlank()
-        val hasSas = !sharedAccessSignature.isNullOrBlank()
-        val hasEntraId =
-            !tenantId.isNullOrBlank() && !clientId.isNullOrBlank() && !clientSecret.isNullOrBlank()
+        if (!useManagedIdentity) {
+            val hasAccountKey = !accountKey.isNullOrBlank()
+            val hasSas = !sharedAccessSignature.isNullOrBlank()
+            val hasEntraId =
+                !tenantId.isNullOrBlank() &&
+                    !clientId.isNullOrBlank() &&
+                    !clientSecret.isNullOrBlank()
 
-        val authMethods = listOf(hasAccountKey, hasSas, hasEntraId).count { it }
-        check(useManagedIdentity || authMethods == 1) {
-            "AzureBlobStorageClientConfiguration must have exactly one of: account key, SAS token, Entra ID authentication (tenant ID, client ID, and client secret), or use Managed Identity"
+            val authMethods = listOf(hasAccountKey, hasSas, hasEntraId).count { it }
+            check(authMethods == 1) {
+                "AzureBlobStorageClientConfiguration must have exactly one of: account key, SAS token, or Entra ID authentication (tenant ID, client ID, and client secret)"
+            }
         }
     }
 }

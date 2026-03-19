@@ -25,33 +25,26 @@ class AzureBlobStorageClientFactory(
     fun make(): AzureBlobClient {
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
 
-        // If endpointDomainName is a full URL (e.g. OneLake), use it directly;
-        // otherwise build the standard account-scoped blob endpoint.
-        val endpointDomainName = config.endpointDomainName
-        val endpoint = when {
-            !endpointDomainName.isNullOrBlank() && endpointDomainName.startsWith("https://") ->
-                endpointDomainName
-            !endpointDomainName.isNullOrBlank() ->
-                "https://${config.accountName}.$endpointDomainName"
-            else ->
-                "https://${config.accountName}.blob.core.windows.net"
-        }
+        val endpoint =
+            config.endpointUrl
+                ?: "https://${config.accountName}.blob.core.windows.net"
 
         val clientBuilder = BlobServiceClientBuilder().endpoint(endpoint)
         when {
-            // Managed Identity (DefaultAzureCredential / user-assigned)
+            // Managed Identity (system-assigned or user-assigned)
             config.useManagedIdentity -> {
-                val credential = if (!config.managedIdentityClientId.isNullOrBlank()) {
-                    ManagedIdentityCredentialBuilder()
-                        .clientId(config.managedIdentityClientId)
-                        .build()
-                } else {
-                    DefaultAzureCredentialBuilder().build()
-                }
+                val credential =
+                    if (!config.managedIdentityClientId.isNullOrBlank()) {
+                        ManagedIdentityCredentialBuilder()
+                            .clientId(config.managedIdentityClientId)
+                            .build()
+                    } else {
+                        DefaultAzureCredentialBuilder().build()
+                    }
                 clientBuilder.credential(credential)
             }
 
-            // EntraId config is available
+            // EntraId (Service Principal) config is available
             !config.tenantId.isNullOrBlank() &&
                 !config.clientId.isNullOrBlank() &&
                 !config.clientSecret.isNullOrBlank() -> {
