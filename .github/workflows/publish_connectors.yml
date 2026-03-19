@@ -422,7 +422,6 @@ jobs:
 
       - name: Generate Registry Artifacts
         id: generate-registry-artifacts
-        if: needs.publish_options.outputs.dry-run != 'true'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -436,11 +435,6 @@ jobs:
             --docker-image "${DOCKER_IMAGE}" \
             --output-dir ./registry-artifacts \
             --with-validate
-
-      - name: "[DRY-RUN] Skip Generate Registry Artifacts"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping registry artifact generation for ${{ matrix.connector }}"
 
       - name: Upload Registry CI Artifacts
         if: steps.generate-registry-artifacts.outcome == 'success'
