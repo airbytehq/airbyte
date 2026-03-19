@@ -24,11 +24,13 @@ public class KafkaDestinationConfig {
 
   private final String topicPattern;
   private final boolean sync;
+  private final String partitionKeyField;
   private final KafkaProducer<String, JsonNode> producer;
 
-  private KafkaDestinationConfig(final String topicPattern, final boolean sync, final JsonNode config) {
+  private KafkaDestinationConfig(final String topicPattern, final boolean sync, final String partitionKeyField, final JsonNode config) {
     this.topicPattern = topicPattern;
     this.sync = sync;
+    this.partitionKeyField = partitionKeyField;
     this.producer = buildKafkaProducer(config);
   }
 
@@ -36,6 +38,7 @@ public class KafkaDestinationConfig {
     return new KafkaDestinationConfig(
         config.get("topic_pattern").asText(),
         config.has("sync_producer") && config.get("sync_producer").asBoolean(),
+        config.has("partition_key_field") ? config.get("partition_key_field").asText() : null,
         config);
   }
 
@@ -101,6 +104,10 @@ public class KafkaDestinationConfig {
 
   public boolean isSync() {
     return sync;
+  }
+
+  public String getPartitionKeyField() {
+    return partitionKeyField;
   }
 
   public KafkaProducer<String, JsonNode> getProducer() {

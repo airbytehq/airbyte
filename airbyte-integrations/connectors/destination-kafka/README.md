@@ -3,6 +3,68 @@
 This is the repository for the Kafka destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/kafka).
 
+## Features
+
+### Partition Routing
+
+The Kafka destination connector supports configurable partition routing using record fields as message keys. This allows related records to be sent to the same Kafka partition, ensuring ordering guarantees for related data.
+
+#### Configuration
+
+Add the `partition_key_field` parameter to your connector configuration:
+
+```json
+{
+  "partition_key_field": "user_id"
+}
+```
+
+#### Supported Field Types
+
+- **Single Field**: `"user_id"`
+- **Multiple Fields**: `"user_id,order_id"` (concatenated with "|" delimiter)
+- **Nested Fields**: `"user.id"` (dot notation for nested JSON objects)
+- **Mixed**: `"user_id,user.email,order.date"`
+
+#### Behavior
+
+- **Field Present**: Uses the field value(s) as the Kafka message key
+- **Field Missing**: Falls back to random UUID (existing behavior)
+- **Null Values**: Treated as missing field, falls back to UUID
+- **Multiple Fields**: Concatenated with "|" delimiter
+
+#### Examples
+
+**Single Field Partitioning:**
+```json
+{
+  "partition_key_field": "user_id",
+  "topic_pattern": "orders.{stream}"
+}
+```
+Records with the same `user_id` will go to the same partition.
+
+**Composite Key Partitioning:**
+```json
+{
+  "partition_key_field": "user_id,order_id",
+  "topic_pattern": "orders.{stream}"
+}
+```
+Records with the same combination of `user_id` and `order_id` will go to the same partition.
+
+**Nested Field Partitioning:**
+```json
+{
+  "partition_key_field": "user.id",
+  "topic_pattern": "users.{stream}"
+}
+```
+Uses nested `user.id` field from JSON structure as partition key.
+
+**Backward Compatibility:**
+If `partition_key_field` is not specified, the connector uses random UUID keys (existing behavior).
+
 ## Local development
 
 #### Building via Gradle

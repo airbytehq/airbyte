@@ -16,11 +16,15 @@ Each stream will be output into a Kafka topic.
 
 Currently, this connector only writes data with JSON format. More formats \(e.g. Apache Avro\) will be supported in the future.
 
-Each record will contain in its key the uuid assigned by Airbyte, and in the value these 3 fields:
+Each record will contain in its key either:
+- A uuid assigned by Airbyte (default behavior)
+- A partition key extracted from record data (when `partition_key_field` is configured)
 
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
+And in its value these 4 fields:
+
+- `_airbyte_ab_id`: the key used for the record (UUID or partition key)
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
-- `_airbyte_data`: a json blob representing with the event data.
+- `_airbyte_data`: a json blob representing the event data.
 - `_airbyte_stream`: the name of each record's stream.
 
 ## Supported sync modes
@@ -63,7 +67,55 @@ To define the output topics dynamically, you can leverage the `{namespace}` and 
 
 If you define output topic dynamically, you might want to enable `auto.create.topics.enable` to avoid your connection failing if there was an update to the source connector's schema. Otherwise, you'll need to manually create topics in Kafka as they are added/updated in the source, which is the recommended option for production environments.
 
-**NOTICE**: a naming convention transformation will be applied to the target topic name using the `StandardNameTransformer` so that some special characters will be replaced.
+**NOTICE**: a naming convention transformation will be applied to the target topic name using `StandardNameTransformer` so that some special characters will be replaced.
+
+#### Partition Routing
+
+The Kafka destination connector supports configurable partition routing using record fields as message keys. This allows related records to be sent to the same Kafka partition, ensuring ordering guarantees for related data.
+
+**Configuration:**
+Add the `partition_key_field` parameter to your connector configuration to enable partition routing.
+
+**Supported Field Types:**
+- **Single Field**: `"user_id"` - Routes records by a single field value
+- **Multiple Fields**: `"user_id,order_id"` - Concatenates multiple fields with "|" delimiter
+- **Nested Fields**: `"user.id"` - Uses dot notation for nested JSON objects
+- **Mixed**: `"user_id,user.email,order.date"` - Combines different field types
+
+**Behavior:**
+- **Field Present**: Uses the field value(s) as the Kafka message key
+- **Field Missing**: Falls back to random UUID (existing behavior)
+- **Null Values**: Treated as missing field, falls back to UUID
+- **Multiple Fields**: Concatenated with "|" delimiter
+
+**Examples:**
+
+```json
+{
+  "partition_key_field": "user_id",
+  "topic_pattern": "orders.{stream}"
+}
+```
+All records with the same `user_id` will go to the same partition.
+
+```json
+{
+  "partition_key_field": "user_id,order_id",
+  "topic_pattern": "orders.{stream}"
+}
+```
+Records with the same combination of `user_id` and `order_id` will go to the same partition.
+
+```json
+{
+  "partition_key_field": "user.id",
+  "topic_pattern": "users.{stream}"
+}
+```
+Uses nested `user.id` field from JSON structure as partition key.
+
+**Backward Compatibility:**
+If `partition_key_field` is not specified, the connector uses random UUID keys (existing behavior).
 
 ### Setup the Kafka destination in Airbyte
 
@@ -71,6 +123,7 @@ You should now have all the requirements needed to configure Kafka as a destinat
 
 - **Bootstrap servers**
 - **Topic pattern**
+- **Partition key field**
 - **Test topic**
 - **Sync producer**
 - **Security protocol**
@@ -110,6 +163,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
+| 0.2.0   | 2024-03-19 | [PR](https://github.com/airbytehq/airbyte/pull/XXXX) | Add configurable partition routing support for deterministic record distribution  |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |
