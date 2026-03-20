@@ -3,6 +3,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
@@ -10,6 +11,7 @@ import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.sql.SQLTimeoutException
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
@@ -68,6 +70,11 @@ abstract class JdbcPartitionsCreator<
         acquiredResources.getAndSet(null)?.close()
     }
 
+    companion object {
+        /** Timeout in seconds for the cursor upper bound (SELECT MAX) query. */
+        const val CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS: Int = 300
+    }
+
     fun ensureCursorUpperBound() {
         val cursorUpperBoundQuery: SelectQuery =
             (partition as JdbcCursorPartition<*>).cursorUpperBoundQuery
@@ -75,9 +82,34 @@ abstract class JdbcPartitionsCreator<
             return
         }
         log.info { "Querying maximum cursor column value." }
+        val cursorUpperBoundParameters = SelectQuerier.Parameters(
+            queryTimeoutSeconds = CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS,
+        )
         val record: ObjectNode? =
-            selectQuerier.executeQuery(cursorUpperBoundQuery).use {
-                if (it.hasNext()) it.next().data.toJson() else null
+            try {
+                selectQuerier.executeQuery(
+                    cursorUpperBoundQuery,
+                    cursorUpperBoundParameters,
+                ).use {
+                    if (it.hasNext()) it.next().data.toJson() else null
+                }
+            } catch (e: SQLTimeoutException) {
+                throw ConfigErrorException(
+                    "Cursor upper bound query timed out for stream " +
+                        "\"${stream.label}\". The database does not support " +
+                        "MAX() aggregation on the configured cursor field.",
+                    e,
+                )
+            } catch (e: Exception) {
+                if (e.cause is SQLTimeoutException) {
+                    throw ConfigErrorException(
+                        "Cursor upper bound query timed out for stream " +
+                            "\"${stream.label}\". The database does not support " +
+                            "MAX() aggregation on the configured cursor field.",
+                        e,
+                    )
+                }
+                throw e
             }
         if (record == null) {
             log.warn { "Cursor upper bound query for '${stream.label}' returned no rows." }

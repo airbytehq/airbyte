@@ -25,11 +25,13 @@ interface SelectQuerier {
 
     data class Parameters(
         /** When set, the [ObjectNode] in the [Result] is reused; take care with this! */
-        val reuseResultObject: Boolean,
+        val reuseResultObject: Boolean = false,
         /** JDBC [PreparedStatement] fetchSize value. */
-        val statementFetchSize: Int?,
+        val statementFetchSize: Int? = null,
         /** JDBC [ResultSet] fetchSize value. */
-        val resultSetFetchSize: Int?,
+        val resultSetFetchSize: Int? = null,
+        /** JDBC [PreparedStatement] query timeout in seconds. */
+        val queryTimeoutSeconds: Int? = null,
     ) {
         constructor(
             reuseResultObject: Boolean = false,
@@ -91,6 +93,10 @@ class JdbcSelectQuerier(
         fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
             stmt = conn!!.prepareStatement(q.sql)
+            parameters.queryTimeoutSeconds?.let { timeout: Int ->
+                log.info { "Setting Statement queryTimeout to $timeout seconds." }
+                stmt!!.queryTimeout = timeout
+            }
             parameters.statementFetchSize?.let { fetchSize: Int ->
                 log.info { "Setting Statement fetchSize to $fetchSize." }
                 stmt!!.fetchSize = fetchSize
