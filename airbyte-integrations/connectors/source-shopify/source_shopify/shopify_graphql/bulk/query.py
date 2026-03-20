@@ -2661,11 +2661,15 @@ class ProductVariant(ShopifyBulkQuery):
                     position
                     inventoryPolicy
                     compareAtPrice
+                    inventoryManagement
                     createdAt
                     updatedAt
                     taxable
                     barcode
+                    weight
+                    weightUnit
                     inventoryQuantity
+                    requiresShipping
                     availableForSale
                     displayName
                     taxCode
@@ -2688,6 +2692,7 @@ class ProductVariant(ShopifyBulkQuery):
                             }
                         }
                     }
+                    grams: weight
                     image {
                         image_id: id
                         image_src: src
@@ -2696,22 +2701,12 @@ class ProductVariant(ShopifyBulkQuery):
                     old_inventory_quantity: inventoryQuantity
                     product {
                         product_id: id
-                        product_options: options {
-                            id
-                            name
-                            position
-                        }
+                    }
+                    fulfillmentService {
+                        fulfillment_service: handle
                     }
                     inventoryItem {
                         inventory_item_id: id
-                        tracked
-                        requires_shipping: requiresShipping
-                        measurement {
-                            weight {
-                                value
-                                unit
-                            }
-                        }
                     }
                     presentmentPrices {
                     edges {
