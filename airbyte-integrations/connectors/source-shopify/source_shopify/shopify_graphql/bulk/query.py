@@ -62,6 +62,7 @@ class ShopifyBulkTemplates:
                     query: """
                     $query
                     """
+                    groupObjects: true
                 ) {
                     bulkOperation {
                         id
@@ -2661,18 +2662,13 @@ class ProductVariant(ShopifyBulkQuery):
                     position
                     inventoryPolicy
                     compareAtPrice
-                    inventoryManagement
                     createdAt
                     updatedAt
                     taxable
                     barcode
-                    weight
-                    weightUnit
                     inventoryQuantity
-                    requiresShipping
                     availableForSale
                     displayName
-                    taxCode
                     options: selectedOptions {
                         name
                         value
@@ -2692,7 +2688,6 @@ class ProductVariant(ShopifyBulkQuery):
                             }
                         }
                     }
-                    grams: weight
                     image {
                         image_id: id
                         image_src: src
@@ -2701,12 +2696,22 @@ class ProductVariant(ShopifyBulkQuery):
                     old_inventory_quantity: inventoryQuantity
                     product {
                         product_id: id
-                    }
-                    fulfillmentService {
-                        fulfillment_service: handle
+                        product_options: options {
+                            id
+                            name
+                            position
+                        }
                     }
                     inventoryItem {
                         inventory_item_id: id
+                        tracked
+                        requires_shipping: requiresShipping
+                        measurement {
+                            weight {
+                                value
+                                unit
+                            }
+                        }
                     }
                     presentmentPrices {
                     edges {
@@ -2797,7 +2802,6 @@ class ProductVariant(ShopifyBulkQuery):
             "inventoryQuantity",
             "availableForSale",
             "displayName",
-            "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
             Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),

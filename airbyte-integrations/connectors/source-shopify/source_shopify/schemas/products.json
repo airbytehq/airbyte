@@ -210,10 +210,6 @@
             "description": "The barcode of the variant.",
             "type": ["null", "string"]
           },
-          "tax_code": {
-            "description": "The tax code for the variant.",
-            "type": ["null", "string"]
-          },
           "created_at": {
             "description": "The date and time when the variant was created.",
             "type": ["null", "string"],

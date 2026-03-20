@@ -42,6 +42,7 @@ def test_bulk_query_prepare() -> None:
                     query: """
                     {some_query}
                     """
+                    groupObjects: true
                 ) {
                     bulkOperation {
                         id
