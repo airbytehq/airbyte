@@ -1038,6 +1038,10 @@ definitions:
               - predicate: "{{ 'code' in response and 'details' in response }}"
                 action: IGNORE
                 error_message: "{{ response.code }}; {{ response.details }}"
+              - http_codes: [400]
+                action: FAIL
+                failure_type: system_error
+                error_message: "Amazon Attribution API returned HTTP 400 for the attribution_report_products stream."
           path: /attribution/report
           http_method: POST
           request_headers:
@@ -1117,12 +1121,13 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
-              - http_codes: [400]
-                action: IGNORE
-                error_message: "{{ response }}"
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
+              - http_codes: [400]
+                action: FAIL
+                failure_type: system_error
+                error_message: "Amazon Attribution API returned HTTP 400 for the attribution_report_performance_adgroup stream."
           path: /attribution/report
           http_method: POST
           request_headers:
@@ -1199,12 +1204,13 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
-              - http_codes: [400]
-                action: IGNORE
-                error_message: "{{ response }}"
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
+              - http_codes: [400]
+                action: FAIL
+                failure_type: system_error
+                error_message: "Amazon Attribution API returned HTTP 400 for the attribution_report_performance_campaign stream."
           path: /attribution/report
           http_method: POST
           request_headers:
@@ -1281,12 +1287,13 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             response_filters:
-              - http_codes: [400]
-                action: IGNORE
-                error_message: "{{ response }}"
               - predicate: "{{ 'message' in response }}"
                 action: FAIL
                 error_message: "{{ response.message }}"
+              - http_codes: [400]
+                action: FAIL
+                failure_type: system_error
+                error_message: "Amazon Attribution API returned HTTP 400 for the attribution_report_performance_creative stream."
           path: /attribution/report
           http_method: POST
           request_headers:
