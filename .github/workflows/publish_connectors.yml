@@ -467,9 +467,13 @@ jobs:
       # registry JSON as `releases.releaseCandidates`.
       #
       # Condition: the on-disk metadata.yaml version must contain
-      # "-rc." (path 1: RC version committed to master).  The
-      # `--with-semver-suffix rc` path (path 2) uses a different
-      # suffix format and is handled separately (used for -preview).
+      # "-rc." (path 1: RC version committed to master with an
+      # explicit RC tag like 2.0.0-rc.1).
+      #
+      # Note: the `--with-semver-suffix rc` path (path 2) produces
+      # tags like "1.2.3-rc1" (no dot) and is NOT matched here.
+      # Path 2 is primarily used for preview-style releases and
+      # will be handled separately in a follow-up.
       - name: Create RC metadata marker
         if: >-
           needs.publish_options.outputs.dry-run != 'true'
