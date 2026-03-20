@@ -227,12 +227,18 @@ class PostgresSourceDebeziumOperations(
         for (field in stream.schema) {
             val mappedValue: JsonNode?
             if (field.type is ArrayFieldType<*>) {
-                mappedValue = Jsons.arrayNode()
-                (data[field.id] as ArrayNode).forEach {
-                    mappedValue.add(
-                        mapValue(it, (field.type as ArrayFieldType<*>).elementFieldType)
-                    )
-                }
+                val rawArray = data[field.id]
+                mappedValue =
+                    if (rawArray == null || rawArray is NullNode) null
+                    else {
+                        Jsons.arrayNode().also { arr ->
+                            (rawArray as ArrayNode).forEach {
+                                arr.add(
+                                    mapValue(it, (field.type as ArrayFieldType<*>).elementFieldType)
+                                )
+                            }
+                        }
+                    }
             } else {
                 mappedValue = mapValue(data[field.id], field.type)
             }
