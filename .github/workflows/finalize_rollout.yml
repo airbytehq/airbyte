@@ -18,6 +18,7 @@ on:
       action:
         description: "Action to perform"
         required: true
+        type: choice
         options: ["promote", "rollback"]
 
 permissions:
@@ -101,6 +102,7 @@ jobs:
           token: ${{ steps.get-app-token.outputs.token }}
           commit-message: "chore: finalize ${{ env.ACTION }} for ${{ env.CONNECTOR_NAME }}"
           branch: "finalize-rollout/${{ env.ACTION }}/${{ env.CONNECTOR_NAME }}"
+          base: ${{ github.event.repository.default_branch }}
           delete-branch: true
           title: "chore: finalize ${{ env.ACTION }} for ${{ env.CONNECTOR_NAME }}"
           body: |
@@ -117,13 +119,13 @@ jobs:
       # branch), then run bump-version with the PR number for the
       # changelog entry.
       - name: "Checkout PR branch (promote only)"
-        if: env.ACTION == 'promote'
+        if: env.ACTION == 'promote' && steps.create-pr.outputs.pull-request-number
         run: |
           git fetch --depth=1 origin "${{ steps.create-pr.outputs.pull-request-branch }}"
           git checkout "${{ steps.create-pr.outputs.pull-request-branch }}"
 
       - name: "Version bump with changelog (promote only)"
-        if: env.ACTION == 'promote'
+        if: env.ACTION == 'promote' && steps.create-pr.outputs.pull-request-number
         shell: bash
         run: >
           airbyte-ops local connector bump-version
@@ -134,7 +136,7 @@ jobs:
           --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
 
       - name: "Push version bump to PR branch (promote only)"
-        if: env.ACTION == 'promote'
+        if: env.ACTION == 'promote' && steps.create-pr.outputs.pull-request-number
         run: |
           git add .
           git diff --cached --quiet && echo "No additional changes to commit" || {
