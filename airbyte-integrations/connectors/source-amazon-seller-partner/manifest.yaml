@@ -189,7 +189,7 @@ spec:
               - GET_SALES_AND_TRAFFIC_REPORT
               - GET_SELLER_FEEDBACK_DATA
               - GET_STRANDED_INVENTORY_UI_DATA
-              - GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+              - GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2
               - GET_VENDOR_FORECASTING_REPORT
               - GET_VENDOR_INVENTORY_REPORT
               - GET_VENDOR_REAL_TIME_INVENTORY_REPORT
@@ -2532,9 +2532,9 @@ definitions:
         schema:
           $ref: "#/schemas/get_merchant_listings_inactive_data"
 
-    get_v2_settlement_report_data_flat_file:
+    get_v2_settlement_report_data_flat_file_v2:
       type: DeclarativeStream
-      name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+      name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2
       primary_key: []
       incremental_sync:
         type: DatetimeBasedCursor
@@ -2546,7 +2546,7 @@ definitions:
         # The default max step value for streams in Amazon Seller Partner is 365 days. It can optionally be configured lower based on customer configs
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
-        # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE report only allows for a max start of 90 days from now
+        # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2 report only allows for a max start of 90 days from now
         # otherwise it will throw a 400 error
         start_datetime:
           type: MinMaxDatetime
@@ -2558,7 +2558,7 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream: "#/definitions/flat_file_settlement_v2_helper"
+              stream: "#/definitions/flat_file_settlement_v2_report_helper"
               parent_key: "reportId"
               partition_field: "reportId"
               incremental_dependency: true
@@ -2575,9 +2575,6 @@ definitions:
           class_name: source_declarative_manifest.components.GzipCsvDecoder
         record_selector:
           type: RecordSelector
-          schema_normalization:
-            type: CustomSchemaNormalization
-            class_name: "source_declarative_manifest.components.FlatFileSettlementV2ReportsTypeTransformer"
           extractor:
             type: DpathExtractor
             field_path: []
@@ -2590,7 +2587,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/get_v2_settlement_report_data_flat_file"
+          $ref: "#/schemas/get_v2_settlement_report_data_flat_file_v2"
 
     get_vendor_forecasting_fresh_report:
       type: DeclarativeStream
@@ -3104,9 +3101,9 @@ definitions:
       type: DpathExtractor
       field_path: []
 
-  flat_file_settlement_v2_helper:
+  flat_file_settlement_v2_report_helper:
     type: DeclarativeStream
-    name: flat_file_settlement_v2_helper
+    name: flat_file_settlement_v2_report_helper
     primary_key: []
     incremental_sync:
       type: DatetimeBasedCursor
@@ -3142,7 +3139,7 @@ definitions:
         request_headers:
           content-type: "application/json"
         request_parameters:
-          reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
+          reportTypes: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2
       record_selector:
         type: RecordSelector
         extractor:
@@ -3276,7 +3273,7 @@ streams:
   - $ref: "#/definitions/streams/get_merchant_listings_all_data"
   - $ref: "#/definitions/streams/get_merchant_listings_data"
   - $ref: "#/definitions/streams/get_merchant_listings_inactive_data"
-  - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file"
+  - $ref: "#/definitions/streams/get_v2_settlement_report_data_flat_file_v2"
 
   # Analytics Streams
   - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
@@ -8121,9 +8118,12 @@ schemas:
         - 'null'
         - string
         format: date
-  get_v2_settlement_report_data_flat_file:
-    title: Flat File Settlement Reports
-    description: ''
+  get_v2_settlement_report_data_flat_file_v2:
+    title: Flat File V2 Settlement Report
+    description: >-
+      A settlement report that replaces the deprecated Flat File Settlement Report
+      (GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE). Price columns are condensed into
+      three general-purpose columns: amount, amount-description, and amount-type.
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     properties:
@@ -8191,23 +8191,20 @@ schemas:
         type:
         - 'null'
         - string
-      shipment-fee-type:
-        description: The type of fee related to shipment.
+      amount-type:
+        description: The type of charge or fee incurred, indicating whether different
+          fees are related to a common type.
         type:
         - 'null'
         - string
-      shipment-fee-amount:
-        description: The amount of fee related to shipment.
+      amount-description:
+        description: A description of the specific charge or fee within the amount type.
         type:
         - 'null'
         - string
-      order-fee-type:
-        description: The type of fee associated with an order.
-        type:
-        - 'null'
-        - string
-      order-fee-amount:
-        description: The amount of fee associated with an order.
+      amount:
+        description: The monetary value associated with this charge, fee, or credit.
+          Displayed in local currency formats (e.g., 95,00 for EU instead of 95.00).
         type:
         - 'null'
         - string
@@ -8218,6 +8215,12 @@ schemas:
         - string
       posted-date:
         description: The date and time when the transaction was posted.
+        type:
+        - 'null'
+        - string
+        format: date-time
+      posted-date-time:
+        description: The date and time when the transaction was posted, with full timestamp.
         type:
         - 'null'
         - string
@@ -8247,41 +8250,6 @@ schemas:
         type:
         - 'null'
         - string
-      price-type:
-        description: The type of price for a product.
-        type:
-        - 'null'
-        - string
-      price-amount:
-        description: The amount of price for a product.
-        type:
-        - 'null'
-        - string
-      item-related-fee-type:
-        description: The type of fee related to a specific item in the order.
-        type:
-        - 'null'
-        - string
-      item-related-fee-amount:
-        description: The amount of fee related to a specific item in the order.
-        type:
-        - 'null'
-        - string
-      misc-fee-amount:
-        description: The amount of miscellaneous fee included in the settlement.
-        type:
-        - 'null'
-        - string
-      other-fee-amount:
-        description: The amount of other fees included in the settlement.
-        type:
-        - 'null'
-        - string
-      other-fee-reason-description:
-        description: The description of the reason for other fees.
-        type:
-        - 'null'
-        - string
       promotion-id:
         description: The unique identifier for a promotion.
         type:
@@ -8289,26 +8257,6 @@ schemas:
         - string
       promotion-type:
         description: The type of promotion applied.
-        type:
-        - 'null'
-        - string
-      promotion-amount:
-        description: The amount of promotion discount applied.
-        type:
-        - 'null'
-        - string
-      direct-payment-type:
-        description: The type of direct payment made to the seller.
-        type:
-        - 'null'
-        - string
-      direct-payment-amount:
-        description: The amount of direct payment made to the seller.
-        type:
-        - 'null'
-        - string
-      other-amount:
-        description: The amount of other miscellaneous transactions.
         type:
         - 'null'
         - string

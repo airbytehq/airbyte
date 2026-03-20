@@ -5,7 +5,6 @@
 
 import pytest
 from components import (
-    FlatFileSettlementV2ReportsTypeTransformer,
     LedgerDetailedViewReportsTypeTransformer,
     MerchantListingsFypReportTypeTransformer,
     MerchantReportsTypeTransformer,
@@ -104,22 +103,5 @@ def test_transform_merchant_fyp_reports(input_data, expected_data):
 def test_transform_ledger_reports(input_data, expected_data):
     transformer = LedgerDetailedViewReportsTypeTransformer()
     schema = get_stream_by_name("GET_LEDGER_DETAIL_VIEW_DATA", config().build()).get_json_schema()
-    transformer.transform(input_data, schema)
-    assert input_data == expected_data
-
-
-@pytest.mark.parametrize(
-    ("input_data", "expected_data"),
-    (
-        (
-            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
-            {"posted-date": "2023-11-09T18:44:35+00:00", "dataEndTime": "2022-07-31"},
-        ),
-        ({"posted-date": "", "dataEndTime": "2022-07-31"}, {"posted-date": None, "dataEndTime": "2022-07-31"}),
-    ),
-)
-def test_transform_settlement_reports(report_init_kwargs, input_data, expected_data):
-    transformer = FlatFileSettlementV2ReportsTypeTransformer()
-    schema = get_stream_by_name("GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE", config().build()).get_json_schema()
     transformer.transform(input_data, schema)
     assert input_data == expected_data

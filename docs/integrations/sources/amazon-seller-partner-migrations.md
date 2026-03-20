@@ -1,5 +1,38 @@
 # Amazon Seller Partner Migration Guide
 
+## Upgrading to 6.0.0
+
+The deprecated `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` (Flat File Settlement Report) stream has been removed per [Amazon SP-API deprecation](https://developer-docs.amazon.com/sp-api/docs/sp-api-deprecations) effective October 31, 2026.
+
+A new replacement stream `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` (Flat File V2 Settlement Report) has been added. The V2 report has a different schema — instead of many individual price and fee columns, it uses three general-purpose columns:
+
+- `amount` — the monetary value
+- `amount-description` — describes what the amount represents
+- `amount-type` — categorizes the amount
+
+### Action Required
+
+If you have the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream enabled in your connection:
+
+1. **Refresh the source schema** to pick up the stream changes
+2. **Enable the new `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream** if you need settlement report data
+3. **Update any downstream transformations** — the V2 schema is different from V1 (condensed amount columns instead of individual fee columns)
+4. **A data reset is required** for settlement report data, as the new stream has a different schema
+
+### Steps to Update
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+   > **Note:** The deprecated `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE` stream will no longer appear. The new `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream will be available for selection.
+3. Enable the `GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2` stream if needed.
+4. Select **Save changes** at the bottom of the page.
+5. Select **Save connection**.
+
+For more information on managing your Airbyte connections, see the [Airbyte documentation](/platform/operator-guides/clear).
+
 ## Upgrading to 5.0.0
 
 Two deprecated FBA Subscribe and Save report types have been removed from the connector per Amazon SP-API deprecation:
