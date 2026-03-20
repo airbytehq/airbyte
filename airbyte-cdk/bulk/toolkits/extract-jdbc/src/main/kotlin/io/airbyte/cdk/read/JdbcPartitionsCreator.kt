@@ -82,17 +82,18 @@ abstract class JdbcPartitionsCreator<
             return
         }
         log.info { "Querying maximum cursor column value." }
-        val cursorUpperBoundParameters = SelectQuerier.Parameters(
-            queryTimeoutSeconds = CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS,
-        )
+        val cursorUpperBoundParameters =
+            SelectQuerier.Parameters(
+                queryTimeoutSeconds = CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS,
+            )
         val record: ObjectNode? =
             try {
-                selectQuerier.executeQuery(
-                    cursorUpperBoundQuery,
-                    cursorUpperBoundParameters,
-                ).use {
-                    if (it.hasNext()) it.next().data.toJson() else null
-                }
+                selectQuerier
+                    .executeQuery(
+                        cursorUpperBoundQuery,
+                        cursorUpperBoundParameters,
+                    )
+                    .use { if (it.hasNext()) it.next().data.toJson() else null }
             } catch (e: SQLTimeoutException) {
                 throw ConfigErrorException(
                     "Cursor upper bound query timed out for stream " +
