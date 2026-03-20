@@ -461,6 +461,31 @@ jobs:
             --store "${REGISTRY_STORE}" \
             --with-validate
 
+      # Create the release_candidate/ metadata marker in GCS so the
+      # platform knows an RC is active for this connector.  The marker
+      # is read by the compile step and injected into the compiled
+      # registry JSON as `releases.releaseCandidates`.
+      #
+      # Condition: the on-disk metadata.yaml version must contain
+      # "-rc." (path 1: RC version committed to master).  The
+      # `--with-semver-suffix rc` path (path 2) uses a different
+      # suffix format and is handled separately (used for -preview).
+      - name: Create RC metadata marker
+        if: >-
+          needs.publish_options.outputs.dry-run != 'true'
+          && steps.publish-registry-artifacts.outcome == 'success'
+          && contains(steps.connector-metadata.outputs.docker-image-tag, '-rc.')
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: |
+          echo "Creating RC metadata marker for ${{ matrix.connector }}"
+          airbyte-ops \
+            registry rc create \
+            --name "${{ matrix.connector }}" \
+            --store "${REGISTRY_STORE}"
+
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connector_registry_entries]

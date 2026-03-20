@@ -47,15 +47,17 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      - name: "Promote or Rollback RC: ${{ env.ACTION }} ${{ env.CONNECTOR_NAME }}"
-        id: finalize-release-candidate
+      # Delete the release_candidate/ metadata marker from GCS.
+      # This is the same operation for both promote and rollback:
+      # it removes the RC pointer so the platform knows the rollout
+      # is finalized.  The versioned blob (e.g. 1.2.3-rc.1/) is
+      # intentionally preserved as an audit trail.
+      - name: "GCS cleanup: delete RC metadata marker"
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
         run: >
-          airbyte-ops registry rc "${ACTION}"
+          airbyte-ops registry rc cleanup
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
-          --with-pr
-          --with-store-cleanup
