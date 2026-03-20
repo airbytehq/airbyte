@@ -69,9 +69,7 @@ class PersonIdentifyBatchEntryAssemblerTest {
         val entry =
             idAssembler.assemble(
                 aRecord(
-                    Jsons.objectNode()
-                        .put("person_id", "user-123")
-                        .put("an_attribute", "value")
+                    Jsons.objectNode().put("person_id", "user-123").put("an_attribute", "value")
                 )
             )
 
@@ -100,9 +98,7 @@ class PersonIdentifyBatchEntryAssemblerTest {
         val entry =
             cioAssembler.assemble(
                 aRecord(
-                    Jsons.objectNode()
-                        .put("person_cio_id", "cio-abc-123")
-                        .put("an_attribute", 456)
+                    Jsons.objectNode().put("person_cio_id", "cio-abc-123").put("an_attribute", 456)
                 )
             )
 
