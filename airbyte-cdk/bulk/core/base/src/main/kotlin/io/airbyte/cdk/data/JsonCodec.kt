@@ -2,6 +2,7 @@
 package io.airbyte.cdk.data
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
 import java.net.URI
@@ -187,7 +188,9 @@ data object FloatCodec : JsonCodec<Float> {
         }
         val decoded: Float = encoded.floatValue()
         if (encode(decoded).doubleValue().compareTo(encoded.doubleValue()) != 0) {
-            throw IllegalArgumentException("invalid IEEE-754 32-bit floating point value $encoded")
+            throw IllegalArgumentException(
+                "invalid IEEE-754 32-bit floating point value $encoded (type ${encoded.javaClass.canonicalName})"
+            )
         }
         return decoded
     }
@@ -383,7 +386,7 @@ data class ArrayDecoder<T>(
         return encoded
             .elements()
             .asSequence()
-            .map { if (it == null) null else elementDecoder.decode(it) }
+            .map { if (it == null || it is NullNode) null else elementDecoder.decode(it) }
             .toList()
     }
 }

@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.test.fixtures.legacy.ContextQueryFunction
 import io.airbyte.cdk.test.fixtures.legacy.Database
 import io.airbyte.cdk.test.fixtures.legacy.Jsons.jsonNode
 import io.airbyte.cdk.test.fixtures.legacy.TestDataHolder
@@ -18,7 +21,9 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
     private var stateAfterFirstSync: JsonNode? = null
 
     @Throws(Exception::class)
-    protected override fun runRead(configuredCatalog: ConfiguredAirbyteCatalog?): List<AirbyteMessage> {
+    protected override fun runRead(
+        configuredCatalog: ConfiguredAirbyteCatalog?
+    ): List<AirbyteMessage> {
         if (stateAfterFirstSync == null) {
             throw RuntimeException("stateAfterFirstSync is null")
         }
@@ -40,53 +45,58 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
         catalog.getStreams().add(dummyTableWithData)
 
         val allMessages: List<AirbyteMessage> = super.runRead(catalog)
-        val stateAfterFirstBatch: List<AirbyteStateMessage?> =
-            extractStateMessages(allMessages)
+        val stateAfterFirstBatch: List<AirbyteStateMessage?> = extractStateMessages(allMessages)
         if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
             throw RuntimeException("stateAfterFirstBatch should not be null or empty")
         }
         stateAfterFirstSync =
             jsonNode<MutableList<AirbyteStateMessage?>?>(
-                mutableListOf<AirbyteStateMessage?>(stateAfterFirstBatch.get(stateAfterFirstBatch.size - 1)),
+                mutableListOf<AirbyteStateMessage?>(
+                    stateAfterFirstBatch.get(stateAfterFirstBatch.size - 1)
+                ),
             )
         if (stateAfterFirstSync == null) {
             throw RuntimeException("stateAfterFirstSync should not be null")
         }
         for (test in testDataHolders) {
-            database.query<Any?>(
-                { ctx: DSLContext? ->
-                    test.insertSqlQueries
-                        .forEach(Consumer { sql: String? -> ctx!!.fetch(sql) })
-                    null
-                },
-            )
+            database.query<Any?>({ ctx: DSLContext? ->
+                test.insertSqlQueries.forEach(Consumer { sql: String? -> ctx!!.fetch(sql) })
+                null
+            },)
         }
     }
 
     protected override fun setupDatabase(): Database {
-        testdb = PostgresTestDatabase.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17, PostgresTestDatabase.ContainerModifier.CONF)
-            .with("CREATE EXTENSION hstore;")
-            .with("CREATE SCHEMA $SCHEMA_NAME;")
-            .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")
-            .with(
-                ("CREATE TYPE inventory_item AS (\n"
-                    + "    name            text,\n"
-                    + "    supplier_id     integer,\n"
-                    + "    price           numeric\n"
-                    + ");"),
-            )
-            .with("SET TIMEZONE TO 'MST'")
-            .withReplicationSlot()
-            .withPublicationForAllTables()
+        testdb =
+            PostgresTestDatabase.`in`(
+                    PostgresTestDatabase.BaseImage.POSTGRES_17,
+                    PostgresTestDatabase.ContainerModifier.CONF
+                )
+                .with("CREATE EXTENSION hstore;")
+                .with("CREATE SCHEMA $SCHEMA_NAME;")
+                .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")
+                .with(
+                    ("CREATE TYPE inventory_item AS (\n" +
+                        "    name            text,\n" +
+                        "    supplier_id     integer,\n" +
+                        "    price           numeric\n" +
+                        ");"),
+                )
+                .with("SET TIMEZONE TO 'MST'")
+                .withReplicationSlot()
+                .withPublicationForAllTables()
         return testdb.database
     }
 
-    @get:Throws(Exception::class) override val config: JsonNode
-        get() = testdb.integrationTestConfigBuilder()
-            .withSchemas(SCHEMA_NAME)
-            .withoutSsl()
-            .withCdcReplication()
-            .build()
+    @get:Throws(Exception::class)
+    override val config: JsonNode
+        get() =
+            testdb
+                .integrationTestConfigBuilder()
+                .withSchemas(SCHEMA_NAME)
+                .withoutSsl()
+                .withCdcReplication()
+                .build()
 
     protected override fun addMoneyTest() {
         addDataTypeTestData(
@@ -95,13 +105,18 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
                 .airbyteType(JsonSchemaType.NUMBER)
                 .addInsertValues(
                     "null",
-                    "'999.99'", "'1,001.01'", "'-1,000'",
-                    "'$999.99'", "'$1001.01'",
-                    "'-$1,000'", // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
-                    // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+                    "'999.99'",
+                    "'1,001.01'",
+                    "'-1,000'",
+                    "'$999.99'",
+                    "'$1001.01'",
+                    "'-$1,000'", // max values for Money type: "-92233720368547758.08",
+                    // "92233720368547758.07"
+                    // Debezium has wrong parsing for values more than 999999999999999 and less than
+                    // -999999999999999
                     // https://github.com/airbytehq/airbyte/issues/7338
                     /* "'-92233720368547758.08'", "'92233720368547758.07'" */
-                )
+                    )
                 .addExpectedValues(
                     null,
                     "999.99",
@@ -131,7 +146,8 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
                         "'13:00:04Z'",
                         "'13:00:05.012345Z+8'",
                         "'13:00:06.00000Z-8'",
-                    ) // A time value without time zone will use the time zone set on the database, which is Z-7,
+                    ) // A time value without time zone will use the time zone set on the database,
+                    // which is Z-7,
                     // so 13:00:01 is returned as 13:00:01-07.
                     .addExpectedValues(
                         null,
@@ -154,7 +170,9 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
                 .fullSourceDataType("NUMERIC(28,2)")
                 .airbyteType(JsonSchemaType.NUMBER)
                 .addInsertValues(
-                    "'123'", "null", "'14525.22'",
+                    "'123'",
+                    "null",
+                    "'14525.22'",
                 ) // Postgres source does not support these special values yet
                 // https://github.com/airbytehq/airbyte/issues/8902
                 // "'infinity'", "'-infinity'", "'nan'"
@@ -170,7 +188,9 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
                     .fullSourceDataType("NUMERIC(20,7)")
                     .airbyteType(JsonSchemaType.NUMBER)
                     .addInsertValues(
-                        "'123'", "null", "'1234567890.1234567'",
+                        "'123'",
+                        "null",
+                        "'1234567890.1234567'",
                     ) // Postgres source does not support these special values yet
                     // https://github.com/airbytehq/airbyte/issues/8902
                     // "'infinity'", "'-infinity'", "'nan'"

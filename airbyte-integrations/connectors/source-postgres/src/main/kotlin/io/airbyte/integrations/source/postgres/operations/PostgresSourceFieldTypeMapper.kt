@@ -18,17 +18,12 @@ import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
-import io.airbyte.integrations.source.postgres.operations.types.BoxFieldType
-import io.airbyte.integrations.source.postgres.operations.types.CircleFieldType
+import io.airbyte.integrations.source.postgres.operations.types.AnyFieldType
 import io.airbyte.integrations.source.postgres.operations.types.HstoreFieldType
 import io.airbyte.integrations.source.postgres.operations.types.LegacyBooleanBitsFieldType
-import io.airbyte.integrations.source.postgres.operations.types.LineFieldType
-import io.airbyte.integrations.source.postgres.operations.types.LsegFieldType
-import io.airbyte.integrations.source.postgres.operations.types.PathFieldType
-import io.airbyte.integrations.source.postgres.operations.types.PointFieldType
-import io.airbyte.integrations.source.postgres.operations.types.PolygonFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresByteaFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDateFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyArrayElementFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresMoneyFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFieldType
 import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeTzFieldType
@@ -75,7 +70,14 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             JDBCType.REAL -> FloatFieldType
             JDBCType.FLOAT,
             JDBCType.DOUBLE ->
-                if (type.scalarTypeName == "money") PostgresMoneyFieldType else DoubleFieldType
+                // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
+                //  Fix type handling for numeric arrays. Arrays and scalars of money are handled
+                //  differently by the PostgresCustomConverter.
+                when {
+                    type.scalarTypeName != "money" -> DoubleFieldType
+                    type.isArray -> PostgresMoneyArrayElementFieldType
+                    else -> PostgresMoneyFieldType
+                }
             JDBCType.NUMERIC,
             JDBCType.DECIMAL -> {
                 // TODO (https://github.com/airbytehq/airbyte-internal-issues/issues/15879):
@@ -105,21 +107,20 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
             JDBCType.NULL -> NullFieldType
             JDBCType.OTHER ->
                 when (type.scalarTypeName) {
-                    "hstore" -> HstoreFieldType
-                    "circle" -> CircleFieldType
-                    "box" -> BoxFieldType
-                    "line" -> LineFieldType
-                    "lseg" -> LsegFieldType
-                    "path" -> PathFieldType
-                    "point" -> PointFieldType
-                    "polygon" -> PolygonFieldType
-                    // Legacy mapping. Could be JsonStringFieldType instead?
-                    "json" -> StringFieldType
-                    // Legacy mapping. Could be JsonStringFieldType instead?
+                    // Legacy mappings. Could be JsonStringFieldType instead?
+                    "json",
                     "jsonb" -> StringFieldType
+                    "hstore" -> HstoreFieldType
+                    "point",
+                    "box",
+                    "line",
+                    "circle",
+                    "lseg",
+                    "path",
+                    "polygon" -> AnyFieldType
                     else -> StringFieldType
                 }
-            else -> PokemonFieldType
+            else -> StringFieldType
         }
     }
 

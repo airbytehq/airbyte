@@ -6,15 +6,22 @@ package io.airbyte.integrations.source.postgres.cdc
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.ArrayDecoder
 import io.airbyte.cdk.data.JsonCodec
+import io.airbyte.cdk.data.JsonDecoder
 import io.airbyte.cdk.data.JsonEncoder
-import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.CommonMetaField
+import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.jdbc.ArrayFieldType
+import io.airbyte.cdk.jdbc.BigDecimalFieldType
+import io.airbyte.cdk.jdbc.BigIntegerFieldType
+import io.airbyte.cdk.jdbc.DoubleFieldType
+import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
@@ -44,6 +51,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import kotlin.collections.component1
 import kotlin.collections.component2
+import kotlin.text.get
 import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
@@ -217,32 +225,56 @@ class PostgresSourceDebeziumOperations(
         val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
         val resultRow: NativeRecordPayload = mutableMapOf()
         for (field in stream.schema) {
-            data[field.id] ?: continue
-            // PostgresCustomConverter serializes NUMERIC/DECIMAL values as strings to preserve
-            // precision. Convert string representations of numbers to BigDecimal numeric nodes
-            // before passing to the codec, which expects numeric JSON nodes.
-            when (field.type.airbyteSchemaType) {
-                LeafAirbyteSchemaType.INTEGER,
-                LeafAirbyteSchemaType.NUMBER -> {
-                    val textNode: TextNode? = data[field.id] as? TextNode
-                    if (textNode != null) {
-                        val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
-                        data.put(field.id, bigDecimal)
-                    }
+            val mappedValue: JsonNode?
+            if (field.type is ArrayFieldType<*>) {
+                mappedValue = Jsons.arrayNode()
+                (data[field.id] as ArrayNode).forEach {
+                    mappedValue.add(
+                        mapValue(it, (field.type as ArrayFieldType<*>).elementFieldType)
+                    )
                 }
-                else -> {}
+            } else {
+                mappedValue = mapValue(data[field.id], field.type)
             }
-            when (data[field.id]) {
-                is NullNode -> {
-                    resultRow[field.id] = FieldValueEncoder(null, NullCodec)
-                }
-                else -> {
-                    val codec: JsonCodec<*> = field.type.jsonEncoder as JsonCodec<*>
-                    resultRow[field.id] =
-                        FieldValueEncoder(
-                            codec.decode(data[field.id]),
-                            field.type.jsonEncoder as JsonCodec<Any?>,
-                        )
+
+            if (mappedValue != null) {
+                when (mappedValue) {
+                    is NullNode -> {
+                        resultRow[field.id] = FieldValueEncoder(null, NullCodec)
+                    }
+                    else -> {
+                        if (field.type is ArrayFieldType<*>) {
+                            // ArrayEncoder needs a List<T>; decode the JSON array using the
+                            // element type's decoder before passing to the encoder.
+                            val elementDecoder =
+                                (field.type as ArrayFieldType<*>).elementFieldType.jsonEncoder
+                            val decoded =
+                                ArrayDecoder(elementDecoder as JsonDecoder<Any?>)
+                                    .decode(mappedValue)
+                            resultRow[field.id] =
+                                FieldValueEncoder(
+                                    decoded,
+                                    field.type.jsonEncoder as JsonEncoder<Any?>
+                                )
+                        } else {
+                            val encoder = field.type.jsonEncoder
+                            if (encoder is JsonCodec<*>) {
+                                resultRow[field.id] =
+                                    FieldValueEncoder(
+                                        encoder.decode(mappedValue),
+                                        encoder as JsonEncoder<Any?>,
+                                    )
+                            } else {
+                                // Encoder-only types have no decode step; pass the text value
+                                // directly.
+                                resultRow[field.id] =
+                                    FieldValueEncoder(
+                                        mappedValue.asText(),
+                                        encoder as JsonEncoder<Any?>,
+                                    )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -271,6 +303,27 @@ class PostgresSourceDebeziumOperations(
 
         // Return a DeserializedRecord instance.
         return DeserializedRecord(resultRow, emptyMap())
+    }
+
+    // Json types and values from Debezium differ from those arriving via JDBC, which is what our
+    // type system was designed to read. Here we map Debezium-flavored json values to JDBC-flavored
+    // ones. This repeated conversion incurs a performance penalty. The efficient way would be to
+    // inject our preferred serialization logic into Debezium directly.
+    private fun mapValue(input: JsonNode?, fieldType: FieldType): JsonNode? {
+        if (input == null || input is NullNode) return input
+        return when (fieldType) {
+            FloatFieldType -> Jsons.numberNode(input.floatValue())
+            DoubleFieldType -> Jsons.numberNode(input.asDouble())
+            BigDecimalFieldType -> {
+                if (input.isNumber) input
+                else Jsons.numberNode(BigDecimal(input.textValue()).stripTrailingZeros())
+            }
+            BigIntegerFieldType -> {
+                if (input.isNumber && input.canConvertToExactIntegral()) input
+                else Jsons.numberNode(BigDecimal(input.textValue()))
+            }
+            else -> input
+        }
     }
 
     override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
