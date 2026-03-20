@@ -3967,6 +3967,21 @@
             "title": "Environment",
             "description": "User-provided configuration for the source. Used for DIRECT/MULTI mode sources (can be empty dict)."
           },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Optional entity/mode pairs used to constrain OAuth scope and stream selection."
+          },
           "server_side_oauth_secret_id": {
             "anyOf": [
               {
@@ -4167,6 +4182,21 @@
             ],
             "title": "Environment",
             "description": "User-provided configuration for the source. Used for DIRECT/MULTI mode sources (can be empty dict)."
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Optional entity/mode pairs used to constrain OAuth scope and stream selection."
           },
           "server_side_oauth_secret_id": {
             "anyOf": [
@@ -5182,6 +5212,36 @@
         ],
         "title": "OAuthCredentialsResponse",
         "description": "Response body for OAuth credentials.\n\nNote: configuration is NOT returned for security reasons."
+      },
+      "RequestedEntity": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "modes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntityMode"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modes"
+          }
+        },
+        "type": "object",
+        "required": ["entity"],
+        "title": "RequestedEntity"
+      },
+      "RequestedEntityMode": {
+        "type": "string",
+        "enum": ["read", "write"],
+        "title": "RequestedEntityMode"
       },
       "RowFilterCondition": {
         "properties": {
