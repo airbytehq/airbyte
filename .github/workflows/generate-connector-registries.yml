@@ -13,7 +13,7 @@ on:
         type: boolean
         default: false
       connector-name:
-        description: "Comma-separated list of connector names to limit the latest/ resync scope (e.g. 'source-faker,source-github'). Leave empty to compile all connectors."
+        description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
         required: false
         type: string
   workflow_call:
@@ -52,22 +52,13 @@ jobs:
       - name: Compile Registries
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          INPUT_FORCE: ${{ inputs.force }}
-          INPUT_CONNECTOR_NAME: ${{ inputs.connector-name }}
+          FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
+          CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
         shell: bash
-        run: |
-          COMPILE_ARGS="airbyte-ops registry store compile"
-          COMPILE_ARGS="${COMPILE_ARGS} --store ${REGISTRY_STORE}"
-          COMPILE_ARGS="${COMPILE_ARGS} --with-secrets-mask"
-          COMPILE_ARGS="${COMPILE_ARGS} --with-legacy-migration v1"
-          if [[ "${INPUT_FORCE}" == "true" ]]; then
-            COMPILE_ARGS="${COMPILE_ARGS} --force"
-          fi
-          if [[ -n "${INPUT_CONNECTOR_NAME}" ]]; then
-            IFS=',' read -ra CONNECTORS <<< "${INPUT_CONNECTOR_NAME}"
-            for c in "${CONNECTORS[@]}"; do
-              COMPILE_ARGS="${COMPILE_ARGS} --connector-name $(echo "$c" | xargs)"
-            done
-          fi
-          echo "Running: ${COMPILE_ARGS}"
-          ${COMPILE_ARGS}
+        run: >
+          airbyte-ops registry store compile
+          --store "${REGISTRY_STORE}"
+          --with-secrets-mask
+          --with-legacy-migration v1
+          ${FORCE_FLAG}
+          ${CONNECTOR_NAME_FLAG}
