@@ -54,7 +54,8 @@ class ReplicationSlotManager(
                     }
                     val serverVersion: Float
                     try {
-                        serverVersion = serverVersionStr.toFloat()
+                        // RDS versions may be named like 11.22-rds.20250508. Remove suffix.
+                        serverVersion = serverVersionStr.substringBefore("-").toFloat()
                     } catch (e: NumberFormatException) {
                         log.warn(e) { "Unable to parse server version: '$serverVersionStr'" }
                         return@apply
