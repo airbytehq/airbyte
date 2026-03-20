@@ -12,15 +12,15 @@ This source has three streams: `users`, `products`, and `purchases`. All streams
 
 ### Users
 
-Each user record contains identity and demographic fields: `name`, `title`, `email`, `telephone`, `age`, `gender`, `language`, `academic_degree`, `nationality`, `occupation`, `height`, `blood_type`, `weight`, and an embedded `address` object with `street_number`, `street_name`, `city`, `state`, `province`, `postal_code`, and `country_code`. The number of user records is controlled by the `count` configuration option.
+Each user record contains identity and demographic fields: `id`, `created_at`, `updated_at`, `name`, `title`, `age`, `email`, `telephone`, `gender`, `language`, `academic_degree`, `nationality`, `occupation`, `height`, `blood_type`, `weight`, and an embedded `address` object with `street_number`, `street_name`, `city`, `state`, `province`, `postal_code`, and `country_code`. The number of user records is controlled by the `count` configuration option.
 
 ### Products
 
-Product records represent vehicles with fields: `make`, `model`, `year`, and `price`. The products stream draws from a fixed catalog of 100 products. The `count` option limits how many of those 100 products are emitted; setting `count` higher than 100 still produces at most 100 products.
+Product records represent vehicles with fields: `id`, `make`, `model`, `year`, `price`, `created_at`, and `updated_at`. The products stream draws from a fixed catalog of 100 products. The `count` option limits how many of those 100 products are emitted; setting `count` higher than 100 still produces at most 100 products.
 
 ### Purchases
 
-Purchase records link users to products through `user_id` and `product_id` fields. Each record also includes timestamps: `created_at`, `added_to_cart_at`, `purchased_at`, and `returned_at`. Not every cart addition results in a purchase (approximately 70% do), and not every purchase results in a return (approximately 15% do). The `purchased_at` and `returned_at` fields are nullable. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`.
+Purchase records link users to products through `user_id` and `product_id` fields. Each record also includes timestamps: `created_at`, `updated_at`, `added_to_cart_at`, `purchased_at`, and `returned_at`. Not every cart addition results in a purchase (approximately 70% do), and not every purchase results in a return (approximately 15% do). The `purchased_at`, `returned_at`, and `added_to_cart_at` fields are nullable. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`.
 
 ## Features
 
