@@ -236,7 +236,9 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.8 | 2026-03-20 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Pin urllib3<2.6.0 to fix gzip-encoded file handling broken by urllib3 2.6.x GzipDecoder changes |
+| 0.10.10 | 2026-03-20 | [75264](https://github.com/airbytehq/airbyte/pull/75264) | Pin urllib3<2.6.0 to fix gzip-encoded file handling broken by urllib3 2.6.x GzipDecoder changes |
+| 0.10.9 | 2026-03-19 | [74779](https://github.com/airbytehq/airbyte/pull/74779) | Fix ZIP file detection for files with compound extensions (e.g. `.csv.zip`) |
+| 0.10.8 | 2026-03-18 | [74781](https://github.com/airbytehq/airbyte/pull/74781) | Fix records quadratic duplication |
 | 0.10.7 | 2026-03-03 | [70287](https://github.com/airbytehq/airbyte/pull/70287) | Update dependencies |
 | 0.10.6 | 2026-02-13 | [73332](https://github.com/airbytehq/airbyte/pull/73332) | Fix zip file extraction failing with `DeliverRawFiles has no attribute delivery_type` error |
 | 0.10.5 | 2025-11-25 | [69913](https://github.com/airbytehq/airbyte/pull/69913) | Update dependencies |

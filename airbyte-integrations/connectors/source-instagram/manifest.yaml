@@ -570,6 +570,23 @@ definitions:
                 error_message: >-
                   Check provided permissions for: {{
                   response['error']['message'] }}
+              # When the cursor has advanced to a timezone-offset date
+              # (e.g. end_time for UTC+ accounts) and step P1D slicing
+              # produces a window whose 'since' is in the future, the
+              # Instagram API returns HTTP 400 with code 100 and message
+              # "since param is not valid".  Ignoring this slice is safe:
+              # the data will be picked up on the next sync once the date
+              # is no longer in the future.
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and
+                  response['error'].get('code') == 100 and
+                  'since param is not valid' in
+                  response['error'].get('message', '') }}
+                error_message: >-
+                  Skipping time window with future 'since' date: {{
+                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
