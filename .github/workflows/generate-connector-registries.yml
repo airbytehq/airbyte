@@ -52,17 +52,19 @@ jobs:
       - name: Compile Registries
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          INPUT_FORCE: ${{ inputs.force }}
+          INPUT_CONNECTOR_NAME: ${{ inputs.connector-name }}
         shell: bash
         run: |
           COMPILE_ARGS="airbyte-ops registry store compile"
           COMPILE_ARGS="${COMPILE_ARGS} --store ${REGISTRY_STORE}"
           COMPILE_ARGS="${COMPILE_ARGS} --with-secrets-mask"
           COMPILE_ARGS="${COMPILE_ARGS} --with-legacy-migration v1"
-          if [[ "${{ inputs.force }}" == "true" ]]; then
+          if [[ "${INPUT_FORCE}" == "true" ]]; then
             COMPILE_ARGS="${COMPILE_ARGS} --force"
           fi
-          if [[ -n "${{ inputs.connector-name }}" ]]; then
-            IFS=',' read -ra CONNECTORS <<< "${{ inputs.connector-name }}"
+          if [[ -n "${INPUT_CONNECTOR_NAME}" ]]; then
+            IFS=',' read -ra CONNECTORS <<< "${INPUT_CONNECTOR_NAME}"
             for c in "${CONNECTORS[@]}"; do
               COMPILE_ARGS="${COMPILE_ARGS} --connector-name $(echo "$c" | xargs)"
             done
