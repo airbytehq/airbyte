@@ -20,7 +20,7 @@ Product records represent vehicles with fields: `id`, `make`, `model`, `year`, `
 
 ### Purchases
 
-Purchase records link users to products through `user_id` and `product_id` fields. Each record also includes timestamps: `created_at`, `updated_at`, `added_to_cart_at`, `purchased_at`, and `returned_at`. Not every cart addition results in a purchase (approximately 70% do), and not every purchase results in a return (approximately 15% do). The `purchased_at`, `returned_at`, and `added_to_cart_at` fields are nullable. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`.
+Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `updated_at`, `added_to_cart_at`, `purchased_at`, and `returned_at`. Items added to a cart have a 70% chance of being purchased, and purchased items have a 15% chance of being returned. The `purchased_at` and `returned_at` fields are nullable. The connector generates roughly one purchase per user, so the total number of purchases scales with `count`.
 
 ## Features
 
