@@ -13,15 +13,16 @@ class PersonIdentifyBatchEntryAssembler(
 ) : BatchEntryAssembler {
 
     companion object {
-        val IDENTIFIER_PROPERTIES: Set<String> =
-            setOf("person_email", "person_id", "person_cio_id")
+        val IDENTIFIER_PROPERTIES: Set<String> = setOf("person_email", "person_id", "person_cio_id")
     }
 
     override fun assemble(record: DestinationRecordRaw): ObjectNode {
         val recordAsJson = record.asJsonRecord()
         val identifierValue =
             recordAsJson.get(identifierType.recordField)?.asText()
-                ?: throw IllegalArgumentException("${identifierType.recordField} field cannot be empty")
+                ?: throw IllegalArgumentException(
+                    "${identifierType.recordField} field cannot be empty"
+                )
         val batchEntry = Jsons.objectNode().put("type", "person").put("action", "identify")
 
         batchEntry.putObject("identifiers").put(identifierType.apiField, identifierValue)

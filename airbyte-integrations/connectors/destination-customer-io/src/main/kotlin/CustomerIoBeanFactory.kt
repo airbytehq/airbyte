@@ -101,9 +101,7 @@ class CustomerIoBeanFactory {
         factory: DeclarativeDestinationFactory,
     ): LoadPipeline {
         val identifierType =
-            IdentifierType.fromConfigValue(
-                factory.config?.get("identifierType")?.asText()
-            )
+            IdentifierType.fromConfigValue(factory.config?.get("identifierType")?.asText())
         return dlqPipelineFactory.createPipeline(
             CustomerIoLoader(httpClient, catalog, identifierType)
         )

@@ -14,15 +14,16 @@ class PersonEventBatchEntryAssembler(
 
     companion object {
         val EVENT_PROPERTIES: Set<String> = setOf("event_name", "event_id", "timestamp")
-        val IDENTIFIER_PROPERTIES: Set<String> =
-            setOf("person_email", "person_id", "person_cio_id")
+        val IDENTIFIER_PROPERTIES: Set<String> = setOf("person_email", "person_id", "person_cio_id")
     }
 
     override fun assemble(record: DestinationRecordRaw): ObjectNode {
         val recordAsJson = record.asJsonRecord()
         val identifierValue =
             recordAsJson.get(identifierType.recordField)?.asText()
-                ?: throw IllegalArgumentException("${identifierType.recordField} field cannot be empty")
+                ?: throw IllegalArgumentException(
+                    "${identifierType.recordField} field cannot be empty"
+                )
         val eventName =
             recordAsJson.get("event_name")?.asText()
                 ?: throw IllegalArgumentException("event_name field cannot be empty")
