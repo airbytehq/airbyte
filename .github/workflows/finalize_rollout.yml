@@ -90,21 +90,10 @@ jobs:
           --name "${CONNECTOR_NAME}"
           --repo-path "${{ github.workspace }}"
 
-      # --- Step 3 (promote only): Version bump ---
-      # Run BEFORE create-pull-request so the working tree has the
-      # cleaned-up GA version from step 2.
-      - name: "Version bump (promote only)"
-        if: env.ACTION == 'promote'
-        shell: bash
-        run: >
-          airbyte-ops local connector bump-version
-          --name "${CONNECTOR_NAME}"
-          --repo-path "${{ github.workspace }}"
-          --bump-type promote
-          --changelog-message "Promoted release candidate to GA"
-
-      # --- Step 4: Create PR ---
-      # Commits all local changes (cleanup + bump) and opens a draft PR.
+      # --- Step 3: Create PR with cleanup changes ---
+      # Commits cleanup changes and opens a draft PR.  This gives us
+      # a PR number for the changelog entry (promote only).
+      # Note: create-pull-request restores the base branch afterward.
       - name: Create cleanup PR
         id: create-pr
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
@@ -122,6 +111,36 @@ jobs:
             area/connectors
             auto-merge/bypass
           draft: true
+
+      # --- Step 4 (promote only): Version bump with changelog ---
+      # Checkout the PR branch (create-pull-request restored the base
+      # branch), then run bump-version with the PR number for the
+      # changelog entry.
+      - name: "Checkout PR branch (promote only)"
+        if: env.ACTION == 'promote'
+        run: |
+          git fetch --depth=1 origin "${{ steps.create-pr.outputs.pull-request-branch }}"
+          git checkout "${{ steps.create-pr.outputs.pull-request-branch }}"
+
+      - name: "Version bump with changelog (promote only)"
+        if: env.ACTION == 'promote'
+        shell: bash
+        run: >
+          airbyte-ops local connector bump-version
+          --name "${CONNECTOR_NAME}"
+          --repo-path "${{ github.workspace }}"
+          --bump-type promote
+          --changelog-message "Promoted release candidate to GA"
+          --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
+
+      - name: "Push version bump to PR branch (promote only)"
+        if: env.ACTION == 'promote'
+        run: |
+          git add .
+          git diff --cached --quiet && echo "No additional changes to commit" || {
+            git commit -m "chore: bump version and changelog for ${CONNECTOR_NAME}"
+            git push origin "${{ steps.create-pr.outputs.pull-request-branch }}"
+          }
 
       # --- Step 5: Mark ready and force-merge ---
       # The merge triggers the publish pipeline that
