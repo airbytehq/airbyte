@@ -30,7 +30,7 @@ credentials:
   access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
 ```
 
-Some connectors also accept a `config` section for additional parameters like subdomains or workspace IDs. The `adp connectors configure` command generates the correct structure for each connector.
+Some connectors also accept a `config` section for additional parameters like subdomains or workspace IDs. The `agent-engine connectors configure` command generates the correct structure for each connector.
 
 You can [configure multiple connectors](#use-multiple-connectors-with-one-mcp-server) in the same MCP server.
 
@@ -40,7 +40,7 @@ In open source mode, the MCP server installs a connector package and calls the t
 
 ### PyPI packages
 
-The most common configuration. Run `uv run adp connectors list-oss` to see available packages and their versions, then specify a package name from the Airbyte connector registry.
+The most common configuration. Run `uv run agent-engine connectors list-oss` to see available packages and their versions, then specify a package name from the Airbyte connector registry.
 
 ```yaml title="connector-gong-package.yaml"
 connector:
@@ -104,7 +104,7 @@ credentials:
   access_key_secret: ${env.GONG_ACCESS_KEY_SECRET}
 ```
 
-The `adp` command line tool automatically loads `.env` files from the current working directory. Create a `.env` file alongside your connector configuration:
+The `agent-engine` command line tool automatically loads `.env` files from the current working directory. Create a `.env` file alongside your connector configuration:
 
 ```text title=".env"
 GONG_ACCESS_KEY=your-access-key
@@ -127,26 +127,26 @@ Before you can use a connector in hosted mode, you need to [authenticate with th
 
 ### Step 1: Log in to Agent Engine
 
-Run `adp login` with your organization ID. This opens a link to your Airbyte authentication page where you can find your Client ID and Secret.
+Run `agent-engine login` with your organization ID. This opens a link to your Airbyte authentication page where you can find your Client ID and Secret.
 
 ```bash
-uv run adp login <organization-id>
+uv run agent-engine login <organization-id>
 ```
 
-The command prompts for your client ID and secret, saves them to `~/.airbyte_agent_mcp/orgs/<organization-id>/.env`, and sets the organization as the default. All subsequent `adp` commands automatically load these credentials.
+The command prompts for your client ID and secret, saves them to `~/.airbyte_agent_mcp/orgs/<organization-id>/.env`, and sets the organization as the default. All subsequent `agent-engine` commands automatically load these credentials.
 
 ### Step 2: Find your connector ID
 
 List the connectors configured in your organization:
 
 ```bash
-uv run adp connectors list-cloud
+uv run agent-engine connectors list-cloud
 ```
 
 Use `--customer` to filter by customer name:
 
 ```bash
-uv run adp connectors list-cloud --customer acme
+uv run agent-engine connectors list-cloud --customer acme
 ```
 
 ### Step 3: Generate a configuration
@@ -154,7 +154,7 @@ uv run adp connectors list-cloud --customer acme
 Pass the connector ID from the previous step:
 
 ```bash
-uv run adp connectors configure --connector-id <your-connector-id>
+uv run agent-engine connectors configure --connector-id <your-connector-id>
 ```
 
 This generates a configuration file like this:
@@ -172,9 +172,9 @@ credentials:
 If you work with multiple Agent Engine organizations, you can log into each one and switch between them.
 
 ```bash
-uv run adp orgs list                  # List logged-in organizations
-uv run adp orgs default <org-id>      # Set the default organization
-uv run adp --org <org-id> <command>   # Override for a single command
+uv run agent-engine orgs list                  # List logged-in organizations
+uv run agent-engine orgs default <org-id>      # Set the default organization
+uv run agent-engine --org <org-id> <command>   # Override for a single command
 ```
 
 ## Use multiple connectors with one MCP server {#use-multiple-connectors-with-one-mcp-server}
@@ -203,7 +203,7 @@ Then, register the aggregate config with your agent the same way you would a sin
 This command runs `claude mcp add` under the hood and registers the server at the user scope.
 
 ```bash
-uv run adp mcp add-to claude-code connectors.yaml
+uv run agent-engine mcp add-to claude-code connectors.yaml
 ```
 
 To register at the project scope instead, add `--scope project` to that command.
@@ -214,7 +214,7 @@ To register at the project scope instead, add `--scope project` to that command.
 This command modifies your Claude Desktop configuration file directly.
 
 ```bash
-uv run adp mcp add-to claude-desktop connectors.yaml
+uv run agent-engine mcp add-to claude-desktop connectors.yaml
 ```
 
 </TabItem>
@@ -223,7 +223,7 @@ uv run adp mcp add-to claude-desktop connectors.yaml
 This modifies the Cursor MCP configuration file.
 
 ```bash
-uv run adp mcp add-to cursor connectors.yaml
+uv run agent-engine mcp add-to cursor connectors.yaml
 ```
 
 To register at the project scope instead of user scope, add a `--scope project` flag.
@@ -234,7 +234,7 @@ To register at the project scope instead of user scope, add a `--scope project` 
 This command runs `codex mcp add` to register the server.
 
 ```bash
-uv run adp mcp add-to codex connectors.yaml
+uv run agent-engine mcp add-to codex connectors.yaml
 ```
 
 </TabItem>
@@ -243,7 +243,7 @@ uv run adp mcp add-to codex connectors.yaml
 You can optionally specify a custom name for the server with `--name`:
 
 ```bash
-uv run adp mcp add-to claude-code connector-github-package.yaml --name my-server-name
+uv run agent-engine mcp add-to claude-code connector-github-package.yaml --name my-server-name
 ```
 
-For a full list of all `adp` commands and their options, see the [CLI reference](cli-reference).
+For a full list of all `agent-engine` commands and their options, see the [CLI reference](cli-reference).

@@ -96,14 +96,14 @@ Files are saved to `~/.airbyte_agent_mcp/downloads/` (or `~/.airbyte_agent_mcp/o
 
 ### stdio (default)
 
-The default transport mode. The MCP server communicates over standard input/output, which is how most AI coding tools expect to interact with MCP servers. This is what `adp mcp add-to` configures.
+The default transport mode. The MCP server communicates over standard input/output, which is how most AI coding tools expect to interact with MCP servers. This is what `agent-engine mcp add-to` configures.
 
 ### HTTP
 
 For integrations that need an HTTP endpoint:
 
 ```bash
-uv run adp mcp serve connector-gong-package.yaml --transport http --port 8080
+uv run agent-engine mcp serve connector-gong-package.yaml --transport http --port 8080
 ```
 
 | Flag | Default | Description |
@@ -114,28 +114,28 @@ uv run adp mcp serve connector-gong-package.yaml --transport http --port 8080
 
 ## Terminal chat
 
-The `adp chat` command is a lightweight terminal agent for querying your connector data with natural language. It uses Claude to interpret your questions, call the MCP server tools, and return formatted answers without needing an IDE integration. This is useful for testing your connector setup or running ad-hoc data queries.
+The `agent-engine chat` command is a lightweight terminal agent for querying your connector data with natural language. It uses Claude to interpret your questions, call the MCP server tools, and return formatted answers without needing an IDE integration. This is useful for testing your connector setup or running ad-hoc data queries.
 
-`adp chat` requires an `ANTHROPIC_API_KEY` environment variable and only supports Anthropic models. The default model is `claude-opus-4-6`. Use `--model` to select a different Anthropic model.
+`agent-engine chat` requires an `ANTHROPIC_API_KEY` environment variable and only supports Anthropic models. The default model is `claude-opus-4-6`. Use `--model` to select a different Anthropic model.
 
 ### One-shot mode
 
 Pass a prompt as an argument to get a single response. Tool call progress is written to stderr, so you can pipe the final answer to a file:
 
 ```bash
-uv run adp chat connector-gong-package.yaml "show me 5 recent calls"
+uv run agent-engine chat connector-gong-package.yaml "show me 5 recent calls"
 ```
 
 Use `--quiet` to hide tool call details and show only the final answer.
 
 ```bash
-uv run adp chat connector-gong-package.yaml "show me 5 recent calls" --quiet
+uv run agent-engine chat connector-gong-package.yaml "show me 5 recent calls" --quiet
 ```
 
 You can also use an aggregate configuration.
 
 ```bash
-uv run adp chat connectors.yaml "show me 5 users from each system"
+uv run agent-engine chat connectors.yaml "show me 5 users from each system"
 ```
 
 ### Interactive REPL
@@ -143,7 +143,7 @@ uv run adp chat connectors.yaml "show me 5 users from each system"
 Omit the prompt to start an interactive session. The REPL maintains conversation history across turns, so you can ask follow-up questions.
 
 ```bash
-uv run adp chat connector-gong-package.yaml
+uv run agent-engine chat connector-gong-package.yaml
 ```
 
 Type `exit`, `quit`, or press Ctrl-C to end the session.

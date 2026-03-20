@@ -43,6 +43,7 @@ REPORT_MAPPING = {
     "ad_listing_group_criterion": "ad_group_criterion",
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
+    "geographic_view_with_metrics": "geographic_view",
     "service_accounts": "customer",
 }
 
