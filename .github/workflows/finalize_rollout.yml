@@ -1,50 +1,12 @@
 name: Finalize connector rollout
-# =============================================================================
-# ORCHESTRATION CONTEXT
-# =============================================================================
-# This workflow is dispatched by the platform's Temporal connector-rollout
-# worker (`PromoteOrRollbackActivityImpl`). By the time this workflow runs:
+# This workflow is called by the backend Temporal workflow "finalizeRollout"
+# as a part of its response to calls to `/connector_rollout/manual_finalize`,
+# or in response to automatic fallback/finalization.
 #
-#   1. A human or automated decision has already called
-#      `/connector_rollout/manual_finalize` (or the automated
-#      `Decision.RELEASE`/`Decision.ROLLBACK` path fired).
-#   2. The Temporal workflow's `finalizeRollout()` method triggered this
-#      GHA dispatch.
-#   3. After this workflow completes, the Temporal
-#      `verifyDefaultVersionActivity` polls for up to 3 hours waiting for
-#      the promoted GA version to become the platform's default.  Only then
-#      does `finalizeRolloutActivity` unpin actors.
-#
-# Source: airbyte-platform-internal/.../connector-rollout-worker/
-#   - PromoteOrRollbackActivityImpl.kt  (triggers this GHA dispatch)
-#   - ConnectorRolloutWorkflowImpl.kt   (orchestrates the full sequence)
-# =============================================================================
-#
-# WHAT THIS WORKFLOW DOES
-# =============================================================================
-# For PROMOTE:
-#   1. GCS cleanup   – deletes the release_candidate/ metadata blob
-#   2. Git cleanup   – runs `cleanup-progressive-rollout` (strips -rc.N
-#                      suffix, removes registry override pins, disables
-#                      progressive rollout)
-#   3. Creates a PR  – via peter-evans/create-pull-request (draft)
-#   4. Version bump  – runs `bump-version --bump-type promote` with a
-#                      changelog entry (uses the PR number from step 3)
-#   5. Pushes the changelog commit to the PR branch
-#   6. Force-merges  – the merge triggers the normal publish pipeline,
-#                      which publishes the GA version that
-#                      verifyDefaultVersionActivity is waiting for
-#
-# For ROLLBACK:
-#   1. GCS cleanup   – deletes the release_candidate/ metadata blob
-#   2. Git cleanup   – runs `cleanup-progressive-rollout`
-#   3. Creates a PR  – via peter-evans/create-pull-request (draft)
-#   4. Force-merges  – no version bump needed; we revert to previous GA
-# =============================================================================
-
-permissions:
-  contents: write
-  pull-requests: write
+# The workflow performs these tasks:
+# 1. Generate an `auto-merge/bypass`-labeled PR to version-bump forward
+#    the named connector, including changelog entry.
+# 2. Delete the `.../release_candidate` subdirectory in the GCS Registry Store.
 
 on:
   repository_dispatch:
@@ -58,59 +20,25 @@ on:
         description: "Action to perform"
         required: true
         options: ["promote", "rollback"]
-
 jobs:
   finalize_rollout:
-    name: "Finalize rollout (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}): ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}"
+    name: Finalize connector rollout for ${{ github.event.inputs.connector_name }}
     runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
       CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     steps:
-      # -----------------------------------------------------------------
-      # Validate inputs
-      # -----------------------------------------------------------------
-      - name: Validate action
+      - name: Check action value
         run: |
           if [[ "${ACTION}" != "promote" && "${ACTION}" != "rollback" ]]; then
-            echo "::error::Invalid action: '${ACTION}'. Must be 'promote' or 'rollback'."
+            echo "Invalid action: ${ACTION}"
             exit 1
           fi
         shell: bash
 
-      # -----------------------------------------------------------------
-      # Setup: authenticate, checkout, install tools
-      # -----------------------------------------------------------------
-
-      # Authenticate as the GitHub App (OCTAVIA_BOT) so that:
-      #   1. PRs created with this token trigger downstream CI workflows.
-      #      (PRs created with the default GITHUB_TOKEN do not trigger
-      #       workflows.)
-      #   2. We can push branches and force-merge PRs.
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-
-      - name: Get GitHub App user ID
-        id: get-user-id
-        run: echo "user-id=$(gh api "/users/${{ steps.get-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-
-      - name: Configure git identity
-        run: |
-          git config --global user.name '${{ steps.get-app-token.outputs.app-slug }}[bot]'
-          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
-
       - name: Checkout Airbyte repo
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.get-app-token.outputs.token }}
           fetch-depth: 1
 
       - name: Install uv
@@ -119,121 +47,17 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      # -----------------------------------------------------------------
-      # Step 1: GCS cleanup (both promote and rollback)
-      # -----------------------------------------------------------------
-      # Deletes the release_candidate/ metadata blob from GCS.
-      # The versioned blob (e.g. 1.2.3-rc.1/) is intentionally preserved
-      # as an audit trail of what was deployed during the rollout.
-      # This is the same operation for both promote and rollback.
-      - name: "GCS cleanup: delete RC artifacts"
+      # Delete the release_candidate/ metadata marker from GCS.
+      # This is the same operation for both promote and rollback:
+      # it removes the RC pointer so the platform knows the rollout
+      # is finalized.  The versioned blob (e.g. 1.2.3-rc.1/) is
+      # intentionally preserved as an audit trail.
+      - name: "GCS cleanup: delete RC metadata marker"
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
         run: >
-          airbyte-ops registry rc-cleanup
+          airbyte-ops registry rc cleanup
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
-
-      # -----------------------------------------------------------------
-      # Step 2: Git cleanup via cleanup-progressive-rollout
-      # -----------------------------------------------------------------
-      # Strips the -rc.N suffix from dockerImageTag, removes registry
-      # override pins (cloud/oss), and sets enableProgressiveRollout to
-      # false.  This creates the first local file change we can commit.
-      - name: "Git cleanup: cleanup-progressive-rollout"
-        shell: bash
-        run: >
-          airbyte-ops local connector cleanup-progressive-rollout
-          --name "${CONNECTOR_NAME}"
-          --repo-path "${{ github.workspace }}"
-
-      # -----------------------------------------------------------------
-      # Step 3: Create PR with cleanup changes
-      # -----------------------------------------------------------------
-      # Uses peter-evans/create-pull-request to commit the cleanup
-      # changes and open a draft PR.  This gives us a PR number we can
-      # reference in the changelog entry (promote only).
-      - name: Create cleanup PR
-        id: create-pr
-        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
-        with:
-          token: ${{ steps.get-app-token.outputs.token }}
-          commit-message: "chore: finalize ${{ env.ACTION }} for ${{ env.CONNECTOR_NAME }}"
-          branch: "finalize-rollout/${{ env.ACTION }}/${{ env.CONNECTOR_NAME }}"
-          delete-branch: true
-          title: "chore: finalize ${{ env.ACTION }} for ${{ env.CONNECTOR_NAME }}"
-          body: |
-            Automated cleanup after connector rollout **${{ env.ACTION }}** for `${{ env.CONNECTOR_NAME }}`.
-
-            **Changes:**
-            - Stripped `-rc.N` suffix from `dockerImageTag`
-            - Removed `registryOverrides` version pins (cloud/oss)
-            - Set `enableProgressiveRollout: false`
-            ${{ env.ACTION == 'promote' && '- Bumped version forward with changelog entry' || '' }}
-
-            Generated by [`finalize_rollout` workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
-          labels: |
-            area/connectors
-            auto-merge/bypass
-          draft: true
-
-      # -----------------------------------------------------------------
-      # Step 4 (promote only): Version bump with changelog
-      # -----------------------------------------------------------------
-      # Now that we have a PR number, run bump-version with
-      # --bump-type promote to update pyproject.toml and add a changelog
-      # entry referencing the PR.
-      #
-      # Note: cleanup-progressive-rollout already stripped the RC suffix
-      # from metadata.yaml, so bump-version promote will see the current
-      # version as the GA version.  It updates pyproject.toml to match
-      # and adds the changelog entry.
-      - name: "Version bump with changelog (promote only)"
-        if: env.ACTION == 'promote'
-        shell: bash
-        run: >
-          airbyte-ops local connector bump-version
-          --name "${CONNECTOR_NAME}"
-          --repo-path "${{ github.workspace }}"
-          --bump-type promote
-          --changelog-message "Promoted release candidate to GA"
-          --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
-
-      # Push the version bump + changelog commit to the PR branch.
-      - name: "Push version bump to PR branch (promote only)"
-        if: env.ACTION == 'promote'
-        shell: bash
-        run: |
-          branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"
-          git fetch --depth=1 origin "$branch_name"
-          git checkout "$branch_name"
-          git add .
-          git diff --cached --quiet && echo "No additional changes to commit" || {
-            git commit -m "chore: bump version and changelog for ${CONNECTOR_NAME}"
-            git push origin "$branch_name"
-          }
-
-      # -----------------------------------------------------------------
-      # Step 5: Mark PR ready and force-merge
-      # -----------------------------------------------------------------
-      # The PR merge triggers the normal connector publish pipeline,
-      # which publishes the GA version.  For promote, this is what the
-      # platform's verifyDefaultVersionActivity is waiting for (polls up
-      # to 3 hours).
-      - name: Mark PR ready for review
-        if: steps.create-pr.outputs.pull-request-number
-        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-
-      - name: Force-merge cleanup PR
-        if: steps.create-pr.outputs.pull-request-number
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        run: |
-          gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" \
-            --repo "${{ github.repository }}" \
-            --squash \
-            --admin

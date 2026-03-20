@@ -25,10 +25,8 @@ data:
   name: Sample Data
   registryOverrides:
     cloud:
-      dockerImageTag: 6.2.24
       enabled: true
     oss:
-      dockerImageTag: 6.2.24
       enabled: true
   releaseStage: beta
   releases:
