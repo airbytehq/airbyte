@@ -42,6 +42,10 @@ name: Finalize connector rollout
 #   4. Force-merges  – no version bump needed; we revert to previous GA
 # =============================================================================
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   repository_dispatch:
     types: [finalize-connector-rollout]
