@@ -233,6 +233,10 @@
       "description": "Display name of the variant, based on product's title + variant's title.",
       "type": ["null", "string"]
     },
+    "tax_code": {
+      "description": "The tax code for the product variant.",
+      "type": ["null", "string"]
+    },
     "tracked": {
       "description": "Whether inventory levels are tracked for the item.",
       "type": ["null", "boolean"]

@@ -62,7 +62,6 @@ class ShopifyBulkTemplates:
                     query: """
                     $query
                     """
-                    groupObjects: true
                 ) {
                     bulkOperation {
                         id
@@ -2669,6 +2668,7 @@ class ProductVariant(ShopifyBulkQuery):
                     inventoryQuantity
                     availableForSale
                     displayName
+                    taxCode
                     options: selectedOptions {
                         name
                         value
@@ -2802,6 +2802,7 @@ class ProductVariant(ShopifyBulkQuery):
             "inventoryQuantity",
             "availableForSale",
             "displayName",
+            "taxCode",
             Field(name="selectedOptions", alias="options", fields=option_fields),
             Field(name="image", fields=image_fields),
             Field(name="inventoryQuantity", alias="old_inventory_quantity"),
