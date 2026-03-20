@@ -690,15 +690,17 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
-     * Escapes special characters for Debezium message key columns. Escapes: comma (,), period (.),
-     * semicolon (;), and colon (:) This replicates the logic from the old MSSQL connector's
-     * escapeSpecialChars method.
+     * Escapes special characters for Debezium message key columns. Escapes: space (convered to \s),
+     * dollar sign ($), comma (,), period (.), semicolon (;), and colon (:). This replicates the
+     * logic from the old MSSQL connector's escapeSpecialChars method.
      */
     private fun escapeSpecialChars(input: String?): String {
         if (input == null) return ""
         return input
             .map { char ->
                 when (char) {
+                    ' ' -> "\\s"
+                    '$',
                     ',',
                     '.',
                     ';',
