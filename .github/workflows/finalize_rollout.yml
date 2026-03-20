@@ -1,12 +1,11 @@
 name: Finalize connector rollout
-# This workflow is called by the backend Temporal workflow "finalizeRollout"
-# as a part of its response to calls to `/connector_rollout/manual_finalize`,
-# or in response to automatic fallback/finalization.
+# Dispatched by the platform's Temporal connector-rollout worker
+# (PromoteOrRollbackActivityImpl) after a promote/rollback decision.
+# After this workflow completes, verifyDefaultVersionActivity polls
+# for up to 3 hours for the GA version to become default, then
+# finalizeRolloutActivity unpins actors.
 #
-# The workflow performs these tasks:
-# 1. Generate an `auto-merge/bypass`-labeled PR to version-bump forward
-#    the named connector, including changelog entry.
-# 2. Delete the `.../release_candidate` subdirectory in the GCS Registry Store.
+# See: airbyte-platform-internal/.../connector-rollout-worker/
 
 on:
   repository_dispatch:
@@ -20,25 +19,46 @@ on:
         description: "Action to perform"
         required: true
         options: ["promote", "rollback"]
+
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   finalize_rollout:
-    name: Finalize connector rollout for ${{ github.event.inputs.connector_name }}
+    name: Finalize connector rollout
     runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
       CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     steps:
-      - name: Check action value
+      - name: Validate action
         run: |
           if [[ "${ACTION}" != "promote" && "${ACTION}" != "rollback" ]]; then
-            echo "Invalid action: ${ACTION}"
+            echo "::error::Invalid action: '${ACTION}'. Must be 'promote' or 'rollback'."
             exit 1
           fi
         shell: bash
 
+      # Authenticate as OCTAVIA_BOT so PRs trigger downstream CI.
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Configure git identity
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+
       - name: Checkout Airbyte repo
         uses: actions/checkout@v4
         with:
+          token: ${{ steps.get-app-token.outputs.token }}
           fetch-depth: 1
 
       - name: Install uv
@@ -47,11 +67,9 @@ jobs:
       - name: Install Ops CLI
         run: uv tool install airbyte-internal-ops
 
-      # Delete the release_candidate/ metadata marker from GCS.
-      # This is the same operation for both promote and rollback:
-      # it removes the RC pointer so the platform knows the rollout
-      # is finalized.  The versioned blob (e.g. 1.2.3-rc.1/) is
-      # intentionally preserved as an audit trail.
+      # --- Step 1: GCS cleanup (promote and rollback) ---
+      # Deletes the release_candidate/ metadata marker from GCS.
+      # The versioned blob (e.g. 1.2.3-rc.1/) is preserved as audit trail.
       - name: "GCS cleanup: delete RC metadata marker"
         shell: bash
         env:
@@ -61,3 +79,65 @@ jobs:
           airbyte-ops registry rc cleanup
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
+
+      # --- Step 2: Git cleanup ---
+      # Strips -rc.N suffix, removes registry override pins, disables
+      # progressive rollout.
+      - name: "Git cleanup: cleanup-progressive-rollout"
+        shell: bash
+        run: >
+          airbyte-ops local connector cleanup-progressive-rollout
+          --name "${CONNECTOR_NAME}"
+          --repo-path "${{ github.workspace }}"
+
+      # --- Step 3 (promote only): Version bump ---
+      # Run BEFORE create-pull-request so the working tree has the
+      # cleaned-up GA version from step 2.
+      - name: "Version bump (promote only)"
+        if: env.ACTION == 'promote'
+        shell: bash
+        run: >
+          airbyte-ops local connector bump-version
+          --name "${CONNECTOR_NAME}"
+          --repo-path "${{ github.workspace }}"
+          --bump-type promote
+          --changelog-message "Promoted release candidate to GA"
+
+      # --- Step 4: Create PR ---
+      # Commits all local changes (cleanup + bump) and opens a draft PR.
+      - name: Create cleanup PR
+        id: create-pr
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "chore: finalize ${{ env.ACTION }} for ${{ env.CONNECTOR_NAME }}"
+          branch: "finalize-rollout/${{ env.ACTION }}/${{ env.CONNECTOR_NAME }}"
+          delete-branch: true
+          title: "chore: finalize ${{ env.ACTION }} for ${{ env.CONNECTOR_NAME }}"
+          body: |
+            Automated cleanup after connector rollout **${{ env.ACTION }}** for `${{ env.CONNECTOR_NAME }}`.
+
+            Generated by [`finalize_rollout` workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: |
+            area/connectors
+            auto-merge/bypass
+          draft: true
+
+      # --- Step 5: Mark ready and force-merge ---
+      # The merge triggers the publish pipeline that
+      # verifyDefaultVersionActivity is waiting for.
+      - name: Mark PR ready for review
+        if: steps.create-pr.outputs.pull-request-number
+        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+
+      - name: Force-merge cleanup PR
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" \
+            --repo "${{ github.repository }}" \
+            --squash \
+            --admin
