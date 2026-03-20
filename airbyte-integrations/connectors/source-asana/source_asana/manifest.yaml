@@ -49,17 +49,6 @@ definitions:
             - 412
             - 451
 
-  token_paginator_base:
-    type: DefaultPaginator
-    page_token_option:
-      type: "RequestPath"
-      field_name: "sync"
-      inject_into: "request_parameter"
-    pagination_strategy:
-      type: CursorPagination
-      cursor_value: '{{ response.get("sync", {}) }}'
-      stop_condition: '{{ not response.get("sync", {}) }}'
-
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -146,11 +135,11 @@ definitions:
       schema:
         $ref: "#/definitions/sections_schema"
     $parameters:
-      path: "/sections/{{ stream_slice['section_gid'] }}"
+      path: "/projects/{{ stream_slice['project_id'] }}/sections"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        $ref: "#/definitions/sections_compact_partition_router"
+        $ref: "#/definitions/projects_partition_router"
 
   tasks_stream:
     $ref: "#/definitions/base_stream"
@@ -210,11 +199,11 @@ definitions:
       schema:
         $ref: "#/definitions/stories_schema"
     $parameters:
-      path: "/stories/{{ stream_slice['story_gid'] }}"
+      path: "/tasks/{{ stream_slice['task_gid'] }}/stories"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        $ref: "#/definitions/stories_compact_partition_router"
+        $ref: "#/definitions/tasks_partition_router"
 
   workspaces_stream:
     $ref: "#/definitions/base_stream"
@@ -350,11 +339,22 @@ definitions:
       schema:
         $ref: "#/definitions/attachments_schema"
     $parameters:
-      path: "/attachments/{{ stream_slice['attachments_gid'] }}"
+      path: "/attachments"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          parent: "{{ stream_slice.parent_gid }}"
       partition_router:
-        $ref: "#/definitions/attachments_compact_partition_router"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/projects_stream"
+              parent_key: "gid"
+              partition_field: "parent_gid"
+            - stream: "#/definitions/tasks_stream"
+              parent_key: "gid"
+              partition_field: "parent_gid"
 
   portfolios_compact_stream:
     $ref: "#/definitions/base_stream"
@@ -399,11 +399,25 @@ definitions:
       schema:
         $ref: "#/definitions/portfolios_schema"
     $parameters:
-      path: "/portfolios/{{ stream_slice['portfolios_gid'] }}"
+      path: "/portfolios"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          owner: "{{ stream_slice['users_gid'] }}"
+          workspace: "{{ stream_slice['workspace_gid'] }}"
       partition_router:
-        $ref: "#/definitions/portfolios_compact_partition_router"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/workspaces_stream"
+              parent_key: "gid"
+              partition_field: "workspace_gid"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/users_stream"
+              parent_key: "gid"
+              partition_field: "users_gid"
 
   portfolios_memberships_stream:
     $ref: "#/definitions/base_stream"
@@ -452,36 +466,6 @@ definitions:
         - type: ListPartitionRouter
           values: "{{ config['organization_export_ids' ] }}"
           cursor_field: gid
-
-  events_stream:
-    $ref: "#/definitions/base_stream"
-    name: "events"
-    primary_key: "created_at"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/definitions/events_schema"
-    $parameters:
-      path: "/events"
-    retriever:
-      $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/token_paginator_base"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          resource: "{{ stream_slice.parent_gid }}"
-      partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - stream: "#/definitions/tasks_stream"
-              parent_key: "gid"
-              partition_field: "parent_gid"
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - stream: "#/definitions/projects_stream"
-              parent_key: "gid"
-              partition_field: "parent_gid"
 
   portfolio_items_stream:
     $ref: "#/definitions/base_stream"
@@ -2425,128 +2409,6 @@ definitions:
               - "null"
               - string
 
-  events_schema:
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    type: object
-    properties:
-      user:
-        type:
-          - "null"
-          - object
-        properties:
-          gid:
-            type:
-              - "null"
-              - string
-          resource_type:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-      resource:
-        type:
-          - "null"
-          - object
-        properties:
-          gid:
-            type:
-              - "null"
-              - string
-          resource_type:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-      type:
-        type:
-          - "null"
-          - string
-      action:
-        type:
-          - "null"
-          - string
-      parent:
-        type:
-          - "null"
-          - object
-        properties:
-          gid:
-            type:
-              - "null"
-              - string
-          resource_type:
-            type:
-              - "null"
-              - string
-          name:
-            type:
-              - "null"
-              - string
-      created_at:
-        type:
-          - "null"
-          - string
-        format: date-time
-      change:
-        type:
-          - "null"
-          - object
-        properties:
-          field:
-            type:
-              - "null"
-              - string
-          action:
-            type:
-              - "null"
-              - string
-          new_value:
-            type:
-              - "null"
-              - object
-            properties:
-              gid:
-                type:
-                  - "null"
-                  - string
-              resource_type:
-                type:
-                  - "null"
-                  - string
-          added_value:
-            type:
-              - "null"
-              - object
-            properties:
-              gid:
-                type:
-                  - "null"
-                  - string
-              resource_type:
-                type:
-                  - "null"
-                  - string
-          removed_value:
-            type:
-              - "null"
-              - object
-            properties:
-              gid:
-                type:
-                  - "null"
-                  - string
-              resource_type:
-                type:
-                  - "null"
-                  - string
-
 streams:
   - "#/definitions/projects_stream"
   - "#/definitions/sections_compact_stream"
@@ -2566,7 +2428,6 @@ streams:
   - "#/definitions/portfolios_memberships_stream"
   - "#/definitions/custom_fields_stream"
   - "#/definitions/organization_exports_stream"
-  - "#/definitions/events_stream"
   - "#/definitions/portfolio_items_stream"
 
 check:
@@ -2708,7 +2569,6 @@ metadata:
     portfolios: false
     custom_fields: false
     organization_exports: false
-    events: false
     portfolio_items: false
 
 # Asana rate limiting has two tiers:

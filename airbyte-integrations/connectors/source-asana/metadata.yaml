@@ -9,6 +9,17 @@ data:
       enabled: true
   releases:
     breakingChanges:
+      2.0.0:
+        message: "The `events` stream has been removed. This stream used an N+1 substream design that caused sync failures, heartbeat starvation, and excessive API calls for large workspaces. Users syncing the `events` stream must remove it from their configured catalog. Additionally, the `sections`, `stories`, `attachments`, and `portfolios` streams now fetch data via list endpoints instead of individual record fetches, which may return slightly different field sets. Users syncing these streams should refresh their schemas after upgrading."
+        upgradeDeadline: "2026-04-03"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - events
+              - sections
+              - stories
+              - attachments
+              - portfolios
       1.0.0:
         message: "This release introduces an updated data type of the `name` field in the `events` stream. Users will need to reset this stream after upgrading. Please see migration guide for more details."
         upgradeDeadline: "2024-06-30"
@@ -28,7 +39,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.5.1
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg
