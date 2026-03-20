@@ -7,6 +7,15 @@ on:
         description: "The git ref to check out from the repository"
         required: false
         type: string
+      force:
+        description: "Force resync of all latest/ directories even if version markers are current. Useful when metadata changes without a version bump."
+        required: false
+        type: boolean
+        default: false
+      connector-name:
+        description: "Comma-separated list of connector names to limit the latest/ resync scope (e.g. 'source-faker,source-github'). Leave empty to compile all connectors."
+        required: false
+        type: string
   workflow_call:
 
 permissions:
@@ -44,8 +53,19 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         shell: bash
-        run: >
-          airbyte-ops registry store compile
-          --store "${REGISTRY_STORE}"
-          --with-secrets-mask
-          --with-legacy-migration v1
+        run: |
+          COMPILE_ARGS="airbyte-ops registry store compile"
+          COMPILE_ARGS="${COMPILE_ARGS} --store ${REGISTRY_STORE}"
+          COMPILE_ARGS="${COMPILE_ARGS} --with-secrets-mask"
+          COMPILE_ARGS="${COMPILE_ARGS} --with-legacy-migration v1"
+          if [[ "${{ inputs.force }}" == "true" ]]; then
+            COMPILE_ARGS="${COMPILE_ARGS} --force"
+          fi
+          if [[ -n "${{ inputs.connector-name }}" ]]; then
+            IFS=',' read -ra CONNECTORS <<< "${{ inputs.connector-name }}"
+            for c in "${CONNECTORS[@]}"; do
+              COMPILE_ARGS="${COMPILE_ARGS} --connector-name $(echo "$c" | xargs)"
+            done
+          fi
+          echo "Running: ${COMPILE_ARGS}"
+          ${COMPILE_ARGS}
