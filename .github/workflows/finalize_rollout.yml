@@ -36,7 +36,7 @@ name: Finalize connector rollout
 #                      verifyDefaultVersionActivity is waiting for
 #
 # For ROLLBACK:
-#   1. GCS cleanup   – deletes both release_candidate/ and versioned blobs
+#   1. GCS cleanup   – deletes the release_candidate/ metadata blob
 #   2. Git cleanup   – runs `cleanup-progressive-rollout`
 #   3. Creates a PR  – via peter-evans/create-pull-request (draft)
 #   4. Force-merges  – no version bump needed; we revert to previous GA
@@ -122,18 +122,17 @@ jobs:
       # -----------------------------------------------------------------
       # Step 1: GCS cleanup (both promote and rollback)
       # -----------------------------------------------------------------
-      # For promote: deletes the release_candidate/ blob from GCS.
-      # For rollback: deletes both release_candidate/ and the versioned
-      #   blob.
-      # The rc-cleanup command performs GCS work only; PR creation is
-      # handled by this workflow using composable steps below.
+      # Deletes the release_candidate/ metadata blob from GCS.
+      # The versioned blob (e.g. 1.2.3-rc.1/) is intentionally preserved
+      # as an audit trail of what was deployed during the rollout.
+      # This is the same operation for both promote and rollback.
       - name: "GCS cleanup: delete RC artifacts"
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
         run: >
-          airbyte-ops registry rc-cleanup "${ACTION}"
+          airbyte-ops registry rc-cleanup
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
 
