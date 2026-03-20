@@ -63,6 +63,14 @@ This source syncs the following streams:
 | [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
 | [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
 
+### Features
+
+| Feature                   | Supported? | Notes |
+| :------------------------ | :--------- | :---- |
+| Full Refresh Sync         | Yes        |       |
+| Incremental - Append Sync | Yes        | Supported for calls, extensive calls, answered scorecards, and call transcripts |
+| Namespaces                | No         |       |
+
 ### Performance considerations
 
 The Gong connector should not run into Gong API limitations under normal usage. Gong limits API access to 3 calls per second and 10,000 calls per day. If you exceed these limits, the API returns HTTP status code 429 with a `Retry-After` header indicating when to retry.
@@ -76,6 +84,7 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.6.1 | 2026-03-20 | [74091](https://github.com/airbytehq/airbyte/pull/74091) | Fix incremental sync for extensiveCalls, answeredScorecards, and callTranscripts not filtering server-side |
 | 0.6.0 | 2026-03-18 | [75132](https://github.com/airbytehq/airbyte/pull/75132) | Add incremental sync support for callTranscripts stream |
 | 0.5.5 | 2026-02-24 | [73782](https://github.com/airbytehq/airbyte/pull/73782) | Update dependencies |
 | 0.5.4 | 2026-02-17 | [71754](https://github.com/airbytehq/airbyte/pull/71754) | Add callTranscripts stream to sync call transcripts |
