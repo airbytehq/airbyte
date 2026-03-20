@@ -22,6 +22,7 @@ import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
+import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
@@ -328,6 +329,8 @@ class PostgresSourceDebeziumOperations(
                 if (input.isNumber && input.canConvertToExactIntegral()) input
                 else Jsons.numberNode(BigDecimal(input.textValue()))
             }
+            // Debezium may emit non-textual nodes for columns that map to StringFieldType
+            StringFieldType -> if (input.isTextual) input else Jsons.textNode(input.asText())
             else -> input
         }
     }
