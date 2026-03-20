@@ -7,6 +7,15 @@ on:
         description: "The git ref to check out from the repository"
         required: false
         type: string
+      force:
+        description: "Force resync of all latest/ directories even if version markers are current. Useful when metadata changes without a version bump."
+        required: false
+        type: boolean
+        default: false
+      connector-name:
+        description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
+        required: false
+        type: string
   workflow_call:
 
 permissions:
@@ -43,9 +52,13 @@ jobs:
       - name: Compile Registries
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
+          CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
         shell: bash
         run: >
           airbyte-ops registry store compile
           --store "${REGISTRY_STORE}"
           --with-secrets-mask
           --with-legacy-migration v1
+          ${FORCE_FLAG}
+          ${CONNECTOR_NAME_FLAG}
