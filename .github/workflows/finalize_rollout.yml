@@ -94,7 +94,6 @@ jobs:
       # --- Step 3: Create PR with cleanup changes ---
       # Commits cleanup changes and opens a draft PR.  This gives us
       # a PR number for the changelog entry (promote only).
-      # Note: create-pull-request restores the base branch afterward.
       - name: Create cleanup PR
         id: create-pr
         uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
@@ -115,15 +114,9 @@ jobs:
           draft: true
 
       # --- Step 4 (promote only): Version bump with changelog ---
-      # Checkout the PR branch (create-pull-request restored the base
-      # branch), then run bump-version with the PR number for the
-      # changelog entry.
-      - name: "Checkout PR branch (promote only)"
-        if: env.ACTION == 'promote' && steps.create-pr.outputs.pull-request-number
-        run: |
-          git fetch --depth=1 origin "${{ steps.create-pr.outputs.pull-request-branch }}"
-          git checkout "${{ steps.create-pr.outputs.pull-request-branch }}"
-
+      # bump-version adds a changelog entry referencing the PR number.
+      # Then a second create-pull-request call (same branch name) pushes
+      # the bump commit onto the existing PR.
       - name: "Version bump with changelog (promote only)"
         if: env.ACTION == 'promote' && steps.create-pr.outputs.pull-request-number
         shell: bash
@@ -135,14 +128,14 @@ jobs:
           --changelog-message "Promoted release candidate to GA"
           --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
 
-      - name: "Push version bump to PR branch (promote only)"
+      - name: "Push version bump to PR (promote only)"
         if: env.ACTION == 'promote' && steps.create-pr.outputs.pull-request-number
-        run: |
-          git add .
-          git diff --cached --quiet && echo "No additional changes to commit" || {
-            git commit -m "chore: bump version and changelog for ${CONNECTOR_NAME}"
-            git push origin "${{ steps.create-pr.outputs.pull-request-branch }}"
-          }
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "chore: bump version and changelog for ${{ env.CONNECTOR_NAME }}"
+          branch: "finalize-rollout/${{ env.ACTION }}/${{ env.CONNECTOR_NAME }}"
+          base: ${{ github.event.repository.default_branch }}
 
       # --- Step 5: Mark ready and force-merge ---
       # The merge triggers the publish pipeline that
