@@ -508,6 +508,7 @@ class BingAdsReportZipCsvDecoder(Decoder):
                             reader = csv.DictReader(text_stream)
                             none_values = set(self.set_values_to_none) if self.set_values_to_none else set()
                             for row in reader:
+                                row.pop(None, None)  # Remove extra columns not in header
                                 if none_values:
                                     for key, value in row.items():
                                         if value in none_values:
