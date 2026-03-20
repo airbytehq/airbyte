@@ -169,7 +169,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.3.16 | 2026-03-20 | [](https://github.com/airbytehq/airbyte/pull/) | Improve error messages for attribution report streams on HTTP 400 responses |
+| 7.3.16 | 2026-03-20 | [75263](https://github.com/airbytehq/airbyte/pull/75263) | Improve error messages for attribution report streams on HTTP 400 responses |
 | 7.3.15 | 2026-03-17 | [74975](https://github.com/airbytehq/airbyte/pull/74975) | Update dependencies |
 | 7.3.14 | 2026-02-24 | [73761](https://github.com/airbytehq/airbyte/pull/73761) | Update dependencies |
 | 7.3.13 | 2026-02-10 | [73018](https://github.com/airbytehq/airbyte/pull/73018) | Update dependencies |
