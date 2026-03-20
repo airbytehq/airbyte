@@ -473,7 +473,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 10
       fail-fast: false
-    name: "Build and Verify Artifacts (${{ matrix.connector || 'No-Op' }})"
+    name: "Verify ${{ matrix.connector || 'No-Op' }} Artifacts"
     runs-on: ubuntu-24.04
     continue-on-error: true
     steps:
