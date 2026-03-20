@@ -125,7 +125,8 @@ advanced_auth:
   oauth_config_specification:
     oauth_connector_input_specification:
       consent_url: "https://{{ 'test' if is_sandbox == 'true' else 'login' }}.salesforce.com/services/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}"
-      scope: "full"
+      scopes:
+        - scope: "full"
       access_token_url: "https://{{ 'test' if is_sandbox == 'true' else 'login' }}.salesforce.com/services/oauth2/token"
       access_token_headers:
         Content-Type: "application/x-www-form-urlencoded"
