@@ -47,7 +47,7 @@ Purchase records link users to products through `user_id` and `product_id` field
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
-| 7.0.3 | 2026-03-20 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Re-release to verify yank/un-yank behavior in ops CLI registry pipeline |
+| 7.0.3 | 2026-03-20 | [75256](https://github.com/airbytehq/airbyte/pull/75256) | Re-release to verify yank/un-yank behavior in ops CLI registry pipeline |
 | 7.0.2 | 2026-03-19 | [75232](https://github.com/airbytehq/airbyte/pull/75232) | Patch version bump (ops CLI registry post-launch test) |
 | 7.0.1 | 2026-03-13 | [74818](https://github.com/airbytehq/airbyte/pull/74818) | Patch version bump (publish test) |
 | 7.0.0 | 2026-03-05 | [74318](https://github.com/airbytehq/airbyte/pull/74318) | Test breaking change to validate breaking change infrastructure |
