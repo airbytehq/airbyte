@@ -8,37 +8,36 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.util.Jsons
 
-class PersonEventBatchEntryAssembler : BatchEntryAssembler {
+class PersonEventBatchEntryAssembler(
+    private val identifierType: IdentifierType = IdentifierType.EMAIL
+) : BatchEntryAssembler {
 
     companion object {
-        val EXPECTED_PROPERTIES: Set<String> =
-            setOf<String>(
-                "person_email",
-                "event_name",
-                "event_id",
-                "timestamp",
-            )
+        val EVENT_PROPERTIES: Set<String> = setOf("event_name", "event_id", "timestamp")
+        val IDENTIFIER_PROPERTIES: Set<String> =
+            setOf("person_email", "person_id", "person_cio_id")
     }
 
     override fun assemble(record: DestinationRecordRaw): ObjectNode {
         val recordAsJson = record.asJsonRecord()
-        val personEmail =
-            recordAsJson.get("person_email")?.asText()
-                ?: throw IllegalArgumentException("person_email field cannot be empty")
+        val identifierValue =
+            recordAsJson.get(identifierType.recordField)?.asText()
+                ?: throw IllegalArgumentException("${identifierType.recordField} field cannot be empty")
         val eventName =
             recordAsJson.get("event_name")?.asText()
                 ?: throw IllegalArgumentException("event_name field cannot be empty")
         val batchEntry =
             Jsons.objectNode().put("type", "person").put("action", "event").put("name", eventName)
 
-        batchEntry.putObject("identifiers").put("email", personEmail)
+        batchEntry.putObject("identifiers").put(identifierType.apiField, identifierValue)
 
         recordAsJson.get("event_id")?.let { batchEntry.put("id", it.asText()) }
         recordAsJson.get("timestamp")?.let { batchEntry.put("timestamp", it.asText()) }
 
+        val excludedProperties = EVENT_PROPERTIES + IDENTIFIER_PROPERTIES
         val attributes = batchEntry.putObject("attributes")
         (recordAsJson as ObjectNode).properties().forEach { (key, value) ->
-            if (key !in EXPECTED_PROPERTIES) {
+            if (key !in excludedProperties) {
                 attributes.replace(key, value)
             }
         }

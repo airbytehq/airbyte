@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.IdentifierType
 import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.PersonIdentifyBatchEntryAssembler
 import io.mockk.every
 import io.mockk.mockk
@@ -59,6 +60,78 @@ class PersonIdentifyBatchEntryAssemblerTest {
     internal fun `test given person_email not provided when assemble then throw`() {
         assertFailsWith<IllegalArgumentException> {
             assembler.assemble(aRecord(Jsons.objectNode().put("event_name", "an_event_name")))
+        }
+    }
+
+    @Test
+    internal fun `test given id identifier type when assemble then use id identifier`() {
+        val idAssembler = PersonIdentifyBatchEntryAssembler(IdentifierType.ID)
+        val entry =
+            idAssembler.assemble(
+                aRecord(
+                    Jsons.objectNode()
+                        .put("person_id", "user-123")
+                        .put("an_attribute", "value")
+                )
+            )
+
+        assertEquals(
+            Jsons.readTree(
+                """
+                {
+                  "type": "person",
+                  "identifiers": {
+                    "id": "user-123"
+                  },
+                  "action": "identify",
+                  "attributes": {
+                    "an_attribute": "value"
+                  }
+                }
+            """.trimIndent()
+            ),
+            entry
+        )
+    }
+
+    @Test
+    internal fun `test given cio_id identifier type when assemble then use cio_id identifier`() {
+        val cioAssembler = PersonIdentifyBatchEntryAssembler(IdentifierType.CIO_ID)
+        val entry =
+            cioAssembler.assemble(
+                aRecord(
+                    Jsons.objectNode()
+                        .put("person_cio_id", "cio-abc-123")
+                        .put("an_attribute", 456)
+                )
+            )
+
+        assertEquals(
+            Jsons.readTree(
+                """
+                {
+                  "type": "person",
+                  "identifiers": {
+                    "cio_id": "cio-abc-123"
+                  },
+                  "action": "identify",
+                  "attributes": {
+                    "an_attribute": 456
+                  }
+                }
+            """.trimIndent()
+            ),
+            entry
+        )
+    }
+
+    @Test
+    internal fun `test given id identifier type but missing field when assemble then throw`() {
+        val idAssembler = PersonIdentifyBatchEntryAssembler(IdentifierType.ID)
+        assertFailsWith<IllegalArgumentException> {
+            idAssembler.assemble(
+                aRecord(Jsons.objectNode().put("person_email", "person@email.com"))
+            )
         }
     }
 
