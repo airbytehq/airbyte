@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_v2
@@ -71,6 +71,11 @@ abstract class S3V2WriteTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     ) {
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
+
     @Disabled("Irrelevant for file destinations")
     @Test
     override fun testAppendSchemaEvolution() {

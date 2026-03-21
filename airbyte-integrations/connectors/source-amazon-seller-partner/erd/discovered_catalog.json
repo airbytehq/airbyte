@@ -1940,17 +1940,39 @@
                       "description": "Address details for tax registration.",
                       "type": ["null", "object"],
                       "properties": {
-                        "name": { "type": ["null", "string"] },
-                        "addressLine1": { "type": ["null", "string"] },
-                        "addressLine2": { "type": ["null", "string"] },
-                        "addressLine3": { "type": ["null", "string"] },
-                        "city": { "type": ["null", "string"] },
-                        "county": { "type": ["null", "string"] },
-                        "district": { "type": ["null", "string"] },
-                        "stateOrRegion": { "type": ["null", "string"] },
-                        "postalCode": { "type": ["null", "string"] },
-                        "countryCode": { "type": ["null", "string"] },
-                        "phone": { "type": ["null", "string"] }
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "addressLine1": {
+                          "type": ["null", "string"]
+                        },
+                        "addressLine2": {
+                          "type": ["null", "string"]
+                        },
+                        "addressLine3": {
+                          "type": ["null", "string"]
+                        },
+                        "city": {
+                          "type": ["null", "string"]
+                        },
+                        "county": {
+                          "type": ["null", "string"]
+                        },
+                        "district": {
+                          "type": ["null", "string"]
+                        },
+                        "stateOrRegion": {
+                          "type": ["null", "string"]
+                        },
+                        "postalCode": {
+                          "type": ["null", "string"]
+                        },
+                        "countryCode": {
+                          "type": ["null", "string"]
+                        },
+                        "phone": {
+                          "type": ["null", "string"]
+                        }
                       }
                     },
                     "taxRegistrationMessages": {
@@ -2038,17 +2060,39 @@
                       "description": "Address details for tax registration.",
                       "type": ["null", "object"],
                       "properties": {
-                        "name": { "type": ["null", "string"] },
-                        "addressLine1": { "type": ["null", "string"] },
-                        "addressLine2": { "type": ["null", "string"] },
-                        "addressLine3": { "type": ["null", "string"] },
-                        "city": { "type": ["null", "string"] },
-                        "county": { "type": ["null", "string"] },
-                        "district": { "type": ["null", "string"] },
-                        "stateOrRegion": { "type": ["null", "string"] },
-                        "postalCode": { "type": ["null", "string"] },
-                        "countryCode": { "type": ["null", "string"] },
-                        "phone": { "type": ["null", "string"] }
+                        "name": {
+                          "type": ["null", "string"]
+                        },
+                        "addressLine1": {
+                          "type": ["null", "string"]
+                        },
+                        "addressLine2": {
+                          "type": ["null", "string"]
+                        },
+                        "addressLine3": {
+                          "type": ["null", "string"]
+                        },
+                        "city": {
+                          "type": ["null", "string"]
+                        },
+                        "county": {
+                          "type": ["null", "string"]
+                        },
+                        "district": {
+                          "type": ["null", "string"]
+                        },
+                        "stateOrRegion": {
+                          "type": ["null", "string"]
+                        },
+                        "postalCode": {
+                          "type": ["null", "string"]
+                        },
+                        "countryCode": {
+                          "type": ["null", "string"]
+                        },
+                        "phone": {
+                          "type": ["null", "string"]
+                        }
                       }
                     },
                     "taxRegistrationMessages": {
@@ -2837,7 +2881,9 @@
                   "Component": {
                     "description": "Price components for the item",
                     "type": ["array"],
-                    "items": { "type": ["null", "object"] },
+                    "items": {
+                      "type": ["null", "object"]
+                    },
                     "properties": {
                       "Type": {
                         "description": "Type of price component",
@@ -3015,7 +3061,9 @@
               "attribute": {
                 "description": "List of attributes",
                 "type": ["array"],
-                "items": { "type": ["null", "object"] },
+                "items": {
+                  "type": ["null", "object"]
+                },
                 "properties": {
                   "name": {
                     "description": "The name of the attribute",
@@ -3064,7 +3112,9 @@
               "id": {
                 "description": "The unique identifiers of child nodes",
                 "type": ["array"],
-                "items": { "type": ["null", "string"] }
+                "items": {
+                  "type": ["null", "string"]
+                }
               }
             }
           },
@@ -5733,7 +5783,9 @@
           "OrderItem": {
             "description": "Details about the individual items in the order.",
             "type": ["array"],
-            "items": { "type": ["null", "object"] },
+            "items": {
+              "type": ["null", "object"]
+            },
             "properties": {
               "ItemStatus": {
                 "description": "The status of the order item.",
@@ -5750,7 +5802,9 @@
                   "Component": {
                     "description": "Breakdown of item components if applicable.",
                     "type": ["array"],
-                    "items": { "type": ["null", "object"] },
+                    "items": {
+                      "type": ["null", "object"]
+                    },
                     "properties": {
                       "Type": {
                         "description": "The type of item price component.",
@@ -5891,99 +5945,6 @@
           },
           "dataEndTime": {
             "description": "End time of the report data",
-            "type": ["null", "string"],
-            "format": "date"
-          }
-        }
-      },
-      "supported_sync_modes": ["full_refresh", "incremental"],
-      "source_defined_cursor": true,
-      "default_cursor_field": ["dataEndTime"]
-    },
-    {
-      "name": "GET_FBA_SNS_FORECAST_DATA",
-      "json_schema": {
-        "title": "Subscribe and Save Forecast Report",
-        "description": "",
-        "type": "object",
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "properties": {
-          "offer-state": {
-            "description": "Current state of the offer for the product.",
-            "type": ["null", "string"]
-          },
-          "snapshot-date": {
-            "description": "Date and time when the snapshot of the data was taken.",
-            "type": ["null", "string"],
-            "format": "date-time"
-          },
-          "sku": {
-            "description": "Stock Keeping Unit (SKU) for the product.",
-            "type": ["null", "string"]
-          },
-          "fnsku": {
-            "description": "Fulfillment Network SKU (FNSKU) for the product.",
-            "type": ["null", "string"]
-          },
-          "asin": {
-            "description": "Unique identifier for the ASIN (Amazon Standard Identification Number).",
-            "type": ["null", "string"]
-          },
-          "estimated-avg-sns-discount-next-8-weeks": {
-            "description": "Estimated average discount on Subscribe & Save units for the next 8 weeks.",
-            "type": ["null", "string"]
-          },
-          "product-name": {
-            "description": "Name of the product associated with the ASIN.",
-            "type": ["null", "string"]
-          },
-          "country": {
-            "description": "Country for which the forecast data is applicable.",
-            "type": ["null", "string"]
-          },
-          "active-subscriptions": {
-            "description": "Number of active subscriptions for the ASIN in the specified country.",
-            "type": ["null", "string"]
-          },
-          "week-1-start-date": {
-            "description": "Start date and time for week 1 of the forecast period.",
-            "type": ["null", "string"],
-            "format": "date-time"
-          },
-          "scheduled-sns-units-week-1": {
-            "description": "Number of scheduled Subscribe & Save units for week 1.",
-            "type": ["null", "string"]
-          },
-          "scheduled-sns-units-week-2": {
-            "description": "Number of scheduled Subscribe & Save units for week 2.",
-            "type": ["null", "string"]
-          },
-          "scheduled-sns-units-week-3": {
-            "description": "Number of scheduled Subscribe & Save units for week 3.",
-            "type": ["null", "string"]
-          },
-          "scheduled-sns-units-week-4": {
-            "description": "Number of scheduled Subscribe & Save units for week 4.",
-            "type": ["null", "string"]
-          },
-          "scheduled-sns-units-week-5": {
-            "description": "Number of scheduled Subscribe & Save units for week 5.",
-            "type": ["null", "string"]
-          },
-          "scheduled-sns-units-week-6": {
-            "description": "Number of scheduled Subscribe & Save units for week 6.",
-            "type": ["null", "string"]
-          },
-          "scheduled-sns-units-week-7": {
-            "description": "Number of scheduled Subscribe & Save units for week 7.",
-            "type": ["null", "string"]
-          },
-          "scheduled-sns-units-week-8": {
-            "description": "Number of scheduled Subscribe & Save units for week 8.",
-            "type": ["null", "string"]
-          },
-          "dataEndTime": {
-            "description": "End time for the forecast data, indicated in date format.",
             "type": ["null", "string"],
             "format": "date"
           }
@@ -7723,14 +7684,33 @@
             "type": ["null", "string"],
             "format": "date"
           },
-          "asin": { "type": ["null", "string"] },
-          "startDate": { "type": ["null", "string"], "format": "date" },
-          "endDate": { "type": ["null", "string"], "format": "date" },
-          "meanForecastUnits": { "type": ["null", "number"] },
-          "p70ForecastUnits": { "type": ["null", "number"] },
-          "p80ForecastUnits": { "type": ["null", "number"] },
-          "p90ForecastUnits": { "type": ["null", "number"] },
-          "dataEndTime": { "type": ["null", "string"], "format": "date" }
+          "asin": {
+            "type": ["null", "string"]
+          },
+          "startDate": {
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "endDate": {
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "meanForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "p70ForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "p80ForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "p90ForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "dataEndTime": {
+            "type": ["null", "string"],
+            "format": "date"
+          }
         }
       },
       "supported_sync_modes": ["full_refresh"]
@@ -7747,14 +7727,33 @@
             "type": ["null", "string"],
             "format": "date"
           },
-          "asin": { "type": ["null", "string"] },
-          "startDate": { "type": ["null", "string"], "format": "date" },
-          "endDate": { "type": ["null", "string"], "format": "date" },
-          "meanForecastUnits": { "type": ["null", "number"] },
-          "p70ForecastUnits": { "type": ["null", "number"] },
-          "p80ForecastUnits": { "type": ["null", "number"] },
-          "p90ForecastUnits": { "type": ["null", "number"] },
-          "dataEndTime": { "type": ["null", "string"], "format": "date" }
+          "asin": {
+            "type": ["null", "string"]
+          },
+          "startDate": {
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "endDate": {
+            "type": ["null", "string"],
+            "format": "date"
+          },
+          "meanForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "p70ForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "p80ForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "p90ForecastUnits": {
+            "type": ["null", "number"]
+          },
+          "dataEndTime": {
+            "type": ["null", "string"],
+            "format": "date"
+          }
         }
       },
       "supported_sync_modes": ["full_refresh"]

@@ -2,6 +2,8 @@
 
 from unittest import TestCase
 
+import freezegun
+
 from airbyte_cdk.models import AirbyteStreamStateSerializer, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -14,7 +16,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 
-from .config import ACCOUNT_ID, ConfigBuilder
+from .config import ACCOUNT_ID, START_DATE_EPOCH, ConfigBuilder
 from .request_builder import get_account_request, get_ad_sets_request, get_ads_request, get_campaigns_request
 from .response_builder import get_account_response
 from .utils import config, read_output
@@ -35,6 +37,7 @@ def _stream_response(stream: str) -> HttpResponseBuilder:
     )
 
 
+@freezegun.freeze_time("2023-01-10T00:00:00Z")
 class TestIncludeDeleted(TestCase):
     account_id = ACCOUNT_ID
     filter_statuses_flag = "filter_statuses"
@@ -58,7 +61,7 @@ class TestIncludeDeleted(TestCase):
         # filter used to retrieve records by status and base filter by date
         filters = [
             {"field": "ad.effective_status", "operator": "IN", "value": self.statuses},
-            {"field": "ad.updated_time", "operator": "GREATER_THAN", "value": 1672531200},
+            {"field": "ad.updated_time", "operator": "GREATER_THAN", "value": START_DATE_EPOCH},
         ]
         fields = [
             "bid_type",
@@ -103,7 +106,7 @@ class TestIncludeDeleted(TestCase):
         # filter used to retrieve records by status and base filter by date
         filters = [
             {"field": "campaign.effective_status", "operator": "IN", "value": self.statuses},
-            {"field": "campaign.updated_time", "operator": "GREATER_THAN", "value": 1672531200},
+            {"field": "campaign.updated_time", "operator": "GREATER_THAN", "value": START_DATE_EPOCH},
         ]
         fields = [
             "account_id",
@@ -153,7 +156,7 @@ class TestIncludeDeleted(TestCase):
         # filter used to retrieve records by status and base filter by date
         filters = [
             {"field": "adset.effective_status", "operator": "IN", "value": self.statuses},
-            {"field": "adset.updated_time", "operator": "GREATER_THAN", "value": 1672531200},
+            {"field": "adset.updated_time", "operator": "GREATER_THAN", "value": START_DATE_EPOCH},
         ]
         fields = [
             "name",

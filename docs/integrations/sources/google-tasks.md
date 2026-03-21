@@ -43,6 +43,13 @@ Steps:
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.50 | 2026-03-10 | [74679](https://github.com/airbytehq/airbyte/pull/74679) | Update dependencies |
+| 0.0.49 | 2026-03-03 | [74168](https://github.com/airbytehq/airbyte/pull/74168) | Update dependencies |
+| 0.0.48 | 2026-02-10 | [73121](https://github.com/airbytehq/airbyte/pull/73121) | Update dependencies |
+| 0.0.47 | 2026-02-03 | [72659](https://github.com/airbytehq/airbyte/pull/72659) | Update dependencies |
+| 0.0.46 | 2026-01-20 | [71901](https://github.com/airbytehq/airbyte/pull/71901) | Update dependencies |
+| 0.0.45 | 2026-01-14 | [71719](https://github.com/airbytehq/airbyte/pull/71719) | Update dependencies |
+| 0.0.44 | 2025-12-18 | [70507](https://github.com/airbytehq/airbyte/pull/70507) | Update dependencies |
 | 0.0.43 | 2025-11-25 | [70046](https://github.com/airbytehq/airbyte/pull/70046) | Update dependencies |
 | 0.0.42 | 2025-11-18 | [69383](https://github.com/airbytehq/airbyte/pull/69383) | Update dependencies |
 | 0.0.41 | 2025-10-29 | [68791](https://github.com/airbytehq/airbyte/pull/68791) | Update dependencies |

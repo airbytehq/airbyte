@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "id": "stat-123-abc",
+      "ab_phase": "all",
+      "ab_variation": "",
+      "aggregation": "total",
+      "stats": {
+        "bounce_drops": 0,
+        "bounces": 5,
+        "clicks": 150,
+        "delivered": 980,
+        "invalid_emails": 2,
+        "opens": 450,
+        "requests": 1000,
+        "spam_report_drops": 1,
+        "spam_reports": 3,
+        "unique_clicks": 120,
+        "unique_opens": 400,
+        "unsubscribes": 10
+      }
+    }
+  ],
+  "_metadata": {}
+}

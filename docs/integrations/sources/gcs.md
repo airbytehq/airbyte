@@ -236,12 +236,16 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.9 | 2026-03-19 | [74779](https://github.com/airbytehq/airbyte/pull/74779) | Fix ZIP file detection for files with compound extensions (e.g. `.csv.zip`) |
+| 0.10.8 | 2026-03-18 | [74781](https://github.com/airbytehq/airbyte/pull/74781) | Fix records quadratic duplication |
+| 0.10.7 | 2026-03-03 | [70287](https://github.com/airbytehq/airbyte/pull/70287) | Update dependencies |
+| 0.10.6 | 2026-02-13 | [73332](https://github.com/airbytehq/airbyte/pull/73332) | Fix zip file extraction failing with `DeliverRawFiles has no attribute delivery_type` error |
 | 0.10.5 | 2025-11-25 | [69913](https://github.com/airbytehq/airbyte/pull/69913) | Update dependencies |
 | 0.10.4 | 2025-11-18 | [69426](https://github.com/airbytehq/airbyte/pull/69426) | Update dependencies |
 | 0.10.3 | 2025-11-11 | [69270](https://github.com/airbytehq/airbyte/pull/69270) | Update dependencies |
 | 0.10.2 | 2025-11-04 | [69159](https://github.com/airbytehq/airbyte/pull/69159) | Update dependencies |
 | 0.10.1 | 2025-10-29 | [69054](https://github.com/airbytehq/airbyte/pull/69054) | Update dependencies |
-| 0.10.0 | 2025-10-23 | [68619](https://github.com/airbytehq/airbyte/pull/68619) | Update dependencies |
+| 0.10.0 | 2025-10-27 | [68619](https://github.com/airbytehq/airbyte/pull/68619) | Update dependencies |
 | 0.9.2 | 2025-10-21 | [68330](https://github.com/airbytehq/airbyte/pull/68330) | Update dependencies |
 | 0.9.1 | 2025-10-14 | [68032](https://github.com/airbytehq/airbyte/pull/68032) | Update dependencies |
 | 0.9.0 | 2025-10-07 | [67340](https://github.com/airbytehq/airbyte/pull/67340) | Promoting release candidate 0.9.0-rc.1 to a main version. |

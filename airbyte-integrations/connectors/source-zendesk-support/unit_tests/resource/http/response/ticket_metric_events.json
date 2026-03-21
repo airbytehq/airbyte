@@ -1,0 +1,21 @@
+{
+  "ticket_metric_events": [
+    {
+      "id": 35436,
+      "ticket_id": 35436,
+      "metric": "agent_work_time",
+      "instance_id": 1,
+      "type": "measure",
+      "time": "2009-07-20T22:55:29Z"
+    }
+  ],
+  "meta": {
+    "has_more": false,
+    "after_cursor": "after-cursor",
+    "before_cursor": "before-cursor"
+  },
+  "links": {
+    "next": null,
+    "prev": null
+  }
+}

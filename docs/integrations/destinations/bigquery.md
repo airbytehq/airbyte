@@ -109,9 +109,13 @@ concurrent rate limit, making it easier to start many queries at once.
 The BigQuery destination connector supports the following
 [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh Sync
-- Incremental - Append Sync
-- Incremental - Append + Deduped
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Output schema
 
@@ -178,7 +182,9 @@ namespace with `n` for converted namespaces.
 | OBJECT                              | JSON          |
 | ARRAY                               | JSON          |
 
-## Troubleshooting permission issues
+## Troubleshooting
+
+### Permission errors
 
 The service account does not have the proper permissions.
 
@@ -193,6 +199,36 @@ The HMAC key is wrong.
 - Make sure the HMAC key is created for the BigQuery service account, and the service account has
   permission to access the GCS bucket and path.
 
+### HTTP 400 "Request had invalid euc header" during upload
+
+If your sync fails with `BigQueryException: 400 Bad Request` and the message
+`Request had invalid euc header`:
+
+- This error originates from the Google BigQuery resumable-upload API. It is usually transient.
+- **Retry the sync.** In most cases the error resolves on the next attempt.
+- If the error recurs on every sync, the underlying causes can be complex. Google does not
+  publicly document this specific error. The following steps may help narrow the issue:
+  - If you self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP
+    headers on requests to `bigquery.googleapis.com`.
+  - Verify the service account key has not been rotated or revoked since the connection was
+    configured.
+  - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
+    smaller value (for example, 5 MiB).
+  - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
+    possible contributing factor.
+
+### Load job timeouts
+
+If your sync fails with `Fail to complete a load job in big query`:
+
+- BigQuery load jobs have a 30-minute wait timeout. Very large batches or high BigQuery queue
+  contention can exceed this limit.
+- Running concurrent syncs that load into the same BigQuery table is not supported and can
+  also trigger this timeout. See [Stream uniqueness](https://docs.airbyte.com/platform/using-airbyte/configuring-schema#stream-uniqueness)
+  for details.
+- Try reducing the volume per sync by using incremental sync mode or reducing the number of
+  streams per connection.
+
 ## Tutorials
 
 Now that you have set up the BigQuery destination connector, check out the following BigQuery
@@ -203,6 +239,10 @@ tutorials:
 - [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 - [Partition and cluster BigQuery tables with Airbyte and dbt](https://airbyte.com/tutorials/bigquery-partition-cluster)
 
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a BigQuery dataset.
+
 ## Changelog
 
 <details>
@@ -210,18 +250,20 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.17      | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0                                                                                                                                                     |
+| 3.0.17-rc.1 | 2026-01-26 | [72296](https://github.com/airbytehq/airbyte/pull/72296) | Upgrade CDK to 0.2.0 |
 | 3.0.16 | 2025-11-25 | [67401](https://github.com/airbytehq/airbyte/pull/67401) | Add backticks to column names in SQL generation to prevent syntax errors. |
-| 3.0.15 | 2025-11-12 | [69307](https://github.com/airbytehq/airbyte/pull/69307) | Handle out-of-range timestamps/times. |
+| 3.0.15 | 2025-11-13 | [69307](https://github.com/airbytehq/airbyte/pull/69307) | Handle out-of-range timestamps/times. |
 | 3.0.14 | 2025-11-11 | [69231](https://github.com/airbytehq/airbyte/pull/69231) | Upgrade to Bulk CDK 0.1.74. |
-| 3.0.13 | 2025-11-01 | [69126](https://github.com/airbytehq/airbyte/pull/69126) | Upgrade to Bulk CDK 0.1.61. |
-| 3.0.12      | 2025-10-29 | [69083](https://github.com/airbytehq/airbyte/pull/69083) | Fail loudly if Bigquery detects bad records. |
-| 3.0.11      | 2025-10-27 | [68671](https://github.com/airbytehq/airbyte/pull/68671) | Log record count per load job. |
+| 3.0.13 | 2025-11-05 | [69126](https://github.com/airbytehq/airbyte/pull/69126) | Upgrade to Bulk CDK 0.1.61. |
+| 3.0.12      | 2025-10-31 | [69083](https://github.com/airbytehq/airbyte/pull/69083) | Fail loudly if Bigquery detects bad records. |
+| 3.0.11      | 2025-10-28 | [68671](https://github.com/airbytehq/airbyte/pull/68671) | Log record count per load job. |
 | 3.0.10      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
-| 3.0.9       | 2025-10-16 | [68152](https://github.com/airbytehq/airbyte/pull/68152) | Update to new TableOperationsClient interface.                                                                                                                                    |
-| 3.0.8       | 2025-10-05 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization.                                                                                                |
-| 3.0.7       | 2025-09-02 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version.                                                                                                                         |
+| 3.0.9       | 2025-10-17 | [68152](https://github.com/airbytehq/airbyte/pull/68152) | Update to new TableOperationsClient interface.                                                                                                                                    |
+| 3.0.8       | 2025-10-06 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization.                                                                                                |
+| 3.0.7       | 2025-09-03 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version.                                                                                                                         |
 | 3.0.7-rc.1  | 2025-08-27 | [65114](https://github.com/airbytehq/airbyte/pull/65114)   | Implement SOCKET+PROTO mode support.                                                                                                                                              |
-| 3.0.6       | 2025-07-21 | [63700](https://github.com/airbytehq/airbyte/pull/63700)   | Improve error reporting for Billing errors.                                                                                                                                       |
+| 3.0.6       | 2025-07-24 | [63700](https://github.com/airbytehq/airbyte/pull/63700)   | Improve error reporting for Billing errors.                                                                                                                                       |
 | 3.0.5       | 2025-07-15 | [63312](https://github.com/airbytehq/airbyte/pull/63312)   | Pull in upstream fix to support null chars in GCS staging mode.                                                                                                                   |
 | 3.0.4       | 2025-07-15 | [63327](https://github.com/airbytehq/airbyte/pull/63327)   | Improve error reporting for Billing errors.                                                                                                                                       |
 | 3.0.3       | 2025-07-02 | [62495](https://github.com/airbytehq/airbyte/pull/62495)   | Improve error reporting for misconfigured connections; improve support for complex types.                                                                                         |

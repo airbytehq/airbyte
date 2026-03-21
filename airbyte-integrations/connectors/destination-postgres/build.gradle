@@ -1,26 +1,59 @@
 plugins {
-    id 'airbyte-java-connector'
-    id "io.airbyte.gradle.docker"
-    id 'airbyte-connector-docker-convention'
+    id('application')
+    id('airbyte-bulk-connector')
+    id("io.airbyte.gradle.docker")
+    id('airbyte-connector-docker-convention')
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.48.9'
-    features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = "load"
+    toolkits = ["load-csv"]
 }
 
-compileKotlin {
-    compilerOptions {
-        allWarningsAsErrors = false
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-Xlint:-this-escape")
+}
+
+// Skip KSP for testFixtures since they only contain Java files
+// KSP has issues processing Java files with Micronaut annotations
+afterEvaluate {
+    tasks.matching { it.name == 'kspTestFixturesKotlin' }.configureEach {
+        enabled = false
     }
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestinationV2Kt'
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError',
+            '-XX:MaxRAMPercentage=75.0'
+    ]
 }
 
+def hikariCpVersion = "7.0.2"
+def junitVersion = "5.13.4"
+def junitPlatformVersion = "1.13.4"
+def postgresqlVersion = "42.7.2"
+def testContainersVersion = "1.20.5"
+
 dependencies {
-    testFixturesApi 'org.testcontainers:postgresql:1.20.1'
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.zaxxer:HikariCP:$hikariCpVersion")
+    // TODO: Consolidate what is used from the below deps into the modern CDK
+    // WARNING: Below deps are _not_ versioned and are compiled from source.
+    // Provides JdbcUtils.parseJdbcParameters() for parsing JDBC URL params
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
+    // Provides PostgresSslConnectionUtils for SSL connection setup
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres"))
+
+    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
+    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
+    integrationTestImplementation("org.postgresql:postgresql:$postgresqlVersion")
+    integrationTestImplementation("org.testcontainers:postgresql:$testContainersVersion")
 }

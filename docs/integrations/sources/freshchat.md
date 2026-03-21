@@ -36,6 +36,14 @@ See more in the [API doc](https://developers.freshchat.com/api/#authentication)
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.41 | 2026-03-17 | [74947](https://github.com/airbytehq/airbyte/pull/74947) | Update dependencies |
+| 0.0.40 | 2026-03-03 | [74186](https://github.com/airbytehq/airbyte/pull/74186) | Update dependencies |
+| 0.0.39 | 2026-02-17 | [73371](https://github.com/airbytehq/airbyte/pull/73371) | Update dependencies |
+| 0.0.38 | 2026-02-10 | [73138](https://github.com/airbytehq/airbyte/pull/73138) | Update dependencies |
+| 0.0.37 | 2026-02-03 | [72552](https://github.com/airbytehq/airbyte/pull/72552) | Update dependencies |
+| 0.0.36 | 2026-01-20 | [71982](https://github.com/airbytehq/airbyte/pull/71982) | Update dependencies |
+| 0.0.35 | 2026-01-14 | [71612](https://github.com/airbytehq/airbyte/pull/71612) | Update dependencies |
+| 0.0.34 | 2025-12-18 | [70574](https://github.com/airbytehq/airbyte/pull/70574) | Update dependencies |
 | 0.0.33 | 2025-11-25 | [69975](https://github.com/airbytehq/airbyte/pull/69975) | Update dependencies |
 | 0.0.32 | 2025-11-18 | [69471](https://github.com/airbytehq/airbyte/pull/69471) | Update dependencies |
 | 0.0.31 | 2025-10-29 | [68784](https://github.com/airbytehq/airbyte/pull/68784) | Update dependencies |
