@@ -116,7 +116,7 @@ See the official [Snapchat-Marketing API reference](https://developers.snap.com/
 
 ## Version information
 
-- **Package version:** 0.1.0
+- **Package version:** 0.1.2
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** f3f231d976b673bb9810661f8524777f7ff6d615
+- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/snapchat-marketing/CHANGELOG.md)
