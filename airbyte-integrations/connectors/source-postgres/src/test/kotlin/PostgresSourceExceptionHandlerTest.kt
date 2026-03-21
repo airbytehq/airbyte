@@ -216,8 +216,7 @@ class PostgresSourceExceptionHandlerTest {
 
     @Test
     fun testUnsupportedUnicodeEscapeSequenceException() {
-        val exception =
-            PSQLException("ERROR: unsupported Unicode escape sequence", null)
+        val exception = PSQLException("ERROR: unsupported Unicode escape sequence", null)
         val externalMessage = exceptionHandler!!.getExternalMessage(exception)
         Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.CONFIG))
         Assertions.assertEquals(
