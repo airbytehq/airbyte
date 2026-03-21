@@ -6,7 +6,7 @@ products: all
 
 Airbyte is committed to keeping your data safe by following industry-standard practices for securing physical deployments, setting access policies, and leveraging the security features of leading Cloud providers.
 
-If you have any security concerns with Airbyte or believe you have uncovered a vulnerability, contact us at [security@airbyte.io](mailto:security@airbyte.io)
+If you have any security concerns with Airbyte or believe you have uncovered a vulnerability, contact us at [security@airbyte.io](mailto:security@airbyte.io). For more information about Airbyte's security practices and compliance certifications, visit the [Airbyte Trust Center](https://trust.airbyte.com/).
 
 ## Securing your data
 
@@ -26,7 +26,7 @@ Airbyte retains configuration details and data points such as table and column n
 
 As Airbyte is not aware of the data being transferred, users are required to follow the [Terms of Services](https://airbyte.com/terms) and are ultimately responsible for ensuring their data transfer is compliant with their jurisdiction.
 
-For more information, see [Airbyte’s Privacy Policy](https://airbyte.com/privacy-policy)
+For more information, see [Airbyte’s Privacy Policy](https://airbyte.com/privacy-policy).
 
 ## Securing Airbyte Open Source
 
@@ -95,7 +95,7 @@ Airbyte Cloud leverages the security features of leading Cloud providers and set
 
 ### Physical infrastructure
 
-Airbyte Cloud is currently deployed on GCP with all servers located in the United States. We use isolated pods to ensure your data is kept separate from other customers’ data.
+Airbyte Cloud uses control planes on GCP in the United States. Airbyte uses isolated pods to keep your data separate from other customers’ data. Data planes [are available](../cloud/managing-airbyte-cloud/manage-data-residency) in the United States (GCP) and European Union (AWS). If you [deploy your own data plane](../enterprise-flex/), that data plane runs in your own infrastructure.
 
 Only certain Airbyte staff can access Airbyte infrastructure and technical logs for deployments, upgrades, configuration changes, and troubleshooting.
 

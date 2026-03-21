@@ -146,6 +146,21 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.22 | 2026-03-19 | [75206](https://github.com/airbytehq/airbyte/pull/75206) | Handle Instagram API 'since param is not valid' error gracefully for user_insights stream |
+| 4.2.21 | 2026-03-12 | [74800](https://github.com/airbytehq/airbyte/pull/74800) | Add lookback window and filter future-dated records in user_insights to prevent cursor from advancing past current UTC |
+| 4.2.20 | 2026-03-10 | [74502](https://github.com/airbytehq/airbyte/pull/74502) | Update dependencies |
+| 4.2.19 | 2026-03-03 | [73045](https://github.com/airbytehq/airbyte/pull/73045) | Update dependencies |
+| 4.2.18 | 2026-02-24 | [74006](https://github.com/airbytehq/airbyte/pull/74006) | Fix user_insights end_datetime to cover current day for UTC+ accounts |
+| 4.2.17 | 2026-02-24 | [72266](https://github.com/airbytehq/airbyte/pull/72266) | Add views metric and timestamp to media_insights stream |
+| 4.2.16 | 2026-01-20 | [71966](https://github.com/airbytehq/airbyte/pull/71966) | Update dependencies |
+| 4.2.15 | 2026-01-14 | [71406](https://github.com/airbytehq/airbyte/pull/71406) | Update dependencies |
+| 4.2.14 | 2025-12-18 | [70530](https://github.com/airbytehq/airbyte/pull/70530) | Update dependencies |
+| 4.2.13 | 2025-11-25 | [70157](https://github.com/airbytehq/airbyte/pull/70157) | Update dependencies |
+| 4.2.12 | 2025-11-18 | [69536](https://github.com/airbytehq/airbyte/pull/69536) | Update dependencies |
+| 4.2.11 | 2025-10-29 | [68761](https://github.com/airbytehq/airbyte/pull/68761) | Update dependencies |
+| 4.2.10 | 2025-10-21 | [68506](https://github.com/airbytehq/airbyte/pull/68506) | Update dependencies |
+| 4.2.9 | 2025-10-14 | [67975](https://github.com/airbytehq/airbyte/pull/67975) | Update dependencies |
+| 4.2.8 | 2025-10-07 | [67366](https://github.com/airbytehq/airbyte/pull/67366) | Update dependencies |
 | 4.2.7 | 2025-09-30 | [66800](https://github.com/airbytehq/airbyte/pull/66800) | Update dependencies |
 | 4.2.6 | 2025-09-09 | [66045](https://github.com/airbytehq/airbyte/pull/66045) | Update dependencies |
 | 4.2.5 | 2025-08-25 | [65119](https://github.com/airbytehq/airbyte/pull/65119) | Migrate to API v23 |

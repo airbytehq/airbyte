@@ -37,6 +37,18 @@ Bunny provides a single platform for subscription management, billing, quoting, 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2026-03-17 | [74909](https://github.com/airbytehq/airbyte/pull/74909) | Update dependencies |
+| 0.0.38 | 2026-03-10 | [74634](https://github.com/airbytehq/airbyte/pull/74634) | Update dependencies |
+| 0.0.37 | 2026-03-03 | [74201](https://github.com/airbytehq/airbyte/pull/74201) | Update dependencies |
+| 0.0.36 | 2026-02-17 | [73439](https://github.com/airbytehq/airbyte/pull/73439) | Update dependencies |
+| 0.0.35 | 2026-02-10 | [71494](https://github.com/airbytehq/airbyte/pull/71494) | Update dependencies |
+| 0.0.34 | 2025-12-18 | [70629](https://github.com/airbytehq/airbyte/pull/70629) | Update dependencies |
+| 0.0.33 | 2025-11-25 | [69973](https://github.com/airbytehq/airbyte/pull/69973) | Update dependencies |
+| 0.0.32 | 2025-11-18 | [69441](https://github.com/airbytehq/airbyte/pull/69441) | Update dependencies |
+| 0.0.31 | 2025-10-29 | [68737](https://github.com/airbytehq/airbyte/pull/68737) | Update dependencies |
+| 0.0.30 | 2025-10-21 | [68223](https://github.com/airbytehq/airbyte/pull/68223) | Update dependencies |
+| 0.0.29 | 2025-10-14 | [67860](https://github.com/airbytehq/airbyte/pull/67860) | Update dependencies |
+| 0.0.28 | 2025-10-07 | [67204](https://github.com/airbytehq/airbyte/pull/67204) | Update dependencies |
 | 0.0.27 | 2025-09-30 | [66314](https://github.com/airbytehq/airbyte/pull/66314) | Update dependencies |
 | 0.0.26 | 2025-08-23 | [65340](https://github.com/airbytehq/airbyte/pull/65340) | Update dependencies |
 | 0.0.25 | 2025-07-12 | [63050](https://github.com/airbytehq/airbyte/pull/63050) | Update dependencies |

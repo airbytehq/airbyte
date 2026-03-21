@@ -55,7 +55,7 @@ definitions:
       - impactedScopes
     properties:
       scopeType:
-        type: const
+        type: string
         const: stream
       impactedScopes:
         description: List of streams that are impacted by the breaking change.

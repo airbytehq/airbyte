@@ -1,7 +1,5 @@
 const fs = require("fs");
-
-const connectorsDocsRoot = "../docs/integrations";
-const enterpriseConnectorDocs = `${connectorsDocsRoot}/enterprise-connectors`;
+const { ENTERPRISE_CONNECTORS_DOCS } = require("../scripts/constants");
 
 export function getFilenamesInDir(dir, excludes) {
   return fs
@@ -24,7 +22,7 @@ function enterpriseConnectorsPlugin(context, options) {
     name: "enterprise-connectors-plugin",
     async loadContent() {
       try {
-        const enterpriseSources = getFilenamesInDir(enterpriseConnectorDocs, [
+        const enterpriseSources = getFilenamesInDir(ENTERPRISE_CONNECTORS_DOCS, [
           "readme",
         ]);
         return enterpriseSources;

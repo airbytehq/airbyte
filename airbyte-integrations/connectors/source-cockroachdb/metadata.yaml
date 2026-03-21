@@ -29,4 +29,17 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: CockroachDB Releases
+      url: https://www.cockroachlabs.com/docs/releases/
+      type: api_release_history
+    - title: CockroachDB authentication
+      url: https://www.cockroachlabs.com/docs/stable/authentication
+      type: authentication_guide
+    - title: CockroachDB SQL reference
+      url: https://www.cockroachlabs.com/docs/stable/sql-statements
+      type: sql_reference
+    - title: CockroachDB Status
+      url: https://status.cockroachlabs.com/
+      type: status_page
 metadataSpecVersion: "1.0"

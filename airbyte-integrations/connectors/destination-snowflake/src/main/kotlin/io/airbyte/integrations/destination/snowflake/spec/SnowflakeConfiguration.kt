@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.write.db.DbConstants
+import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import jakarta.inject.Singleton
 
 data class SnowflakeConfiguration(
@@ -18,8 +18,8 @@ data class SnowflakeConfiguration(
     val username: String,
     val authType: AuthTypeConfiguration,
     val cdcDeletionMode: CdcDeletionMode,
-    val legacyRawTablesOnly: Boolean?,
-    val internalTableSchema: String?,
+    val legacyRawTablesOnly: Boolean,
+    val internalTableSchema: String,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
 ) : DestinationConfiguration()
@@ -75,14 +75,10 @@ class SnowflakeConfigurationFactory :
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
             internalTableSchema =
-                if (pojo.legacyRawTablesOnly == true) {
-                    if (pojo.internalTableSchema.isNullOrBlank()) {
-                        DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
-                    } else {
-                        pojo.internalTableSchema
-                    }
+                if (pojo.internalTableSchema.isNullOrBlank()) {
+                    DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
                 } else {
-                    null
+                    pojo.internalTableSchema!!
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1

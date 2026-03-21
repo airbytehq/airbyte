@@ -37,6 +37,20 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | ---- | ---------------- |
+| 0.0.51 | 2026-03-17 | [74929](https://github.com/airbytehq/airbyte/pull/74929) | Update dependencies |
+| 0.0.50 | 2026-03-03 | [74169](https://github.com/airbytehq/airbyte/pull/74169) | Update dependencies |
+| 0.0.49 | 2026-02-17 | [73385](https://github.com/airbytehq/airbyte/pull/73385) | Update dependencies |
+| 0.0.48 | 2026-02-10 | [73069](https://github.com/airbytehq/airbyte/pull/73069) | Update dependencies |
+| 0.0.47 | 2026-02-03 | [72662](https://github.com/airbytehq/airbyte/pull/72662) | Update dependencies |
+| 0.0.46 | 2026-01-20 | [71923](https://github.com/airbytehq/airbyte/pull/71923) | Update dependencies |
+| 0.0.45 | 2026-01-14 | [71697](https://github.com/airbytehq/airbyte/pull/71697) | Update dependencies |
+| 0.0.44 | 2025-12-18 | [70500](https://github.com/airbytehq/airbyte/pull/70500) | Update dependencies |
+| 0.0.43 | 2025-11-25 | [70082](https://github.com/airbytehq/airbyte/pull/70082) | Update dependencies |
+| 0.0.42 | 2025-11-18 | [69371](https://github.com/airbytehq/airbyte/pull/69371) | Update dependencies |
+| 0.0.41 | 2025-10-29 | [68806](https://github.com/airbytehq/airbyte/pull/68806) | Update dependencies |
+| 0.0.40 | 2025-10-21 | [68258](https://github.com/airbytehq/airbyte/pull/68258) | Update dependencies |
+| 0.0.39 | 2025-10-14 | [67881](https://github.com/airbytehq/airbyte/pull/67881) | Update dependencies |
+| 0.0.38 | 2025-10-07 | [67406](https://github.com/airbytehq/airbyte/pull/67406) | Update dependencies |
 | 0.0.37 | 2025-09-30 | [66396](https://github.com/airbytehq/airbyte/pull/66396) | Update dependencies |
 | 0.0.36 | 2025-09-09 | [66074](https://github.com/airbytehq/airbyte/pull/66074) | Update dependencies |
 | 0.0.35 | 2025-08-23 | [65346](https://github.com/airbytehq/airbyte/pull/65346) | Update dependencies |

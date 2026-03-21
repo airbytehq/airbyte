@@ -25,6 +25,18 @@ Airbyte connector for [Easypromos](https://www.easypromosapp.com/) enables seaml
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.47 | 2026-02-24 | [73908](https://github.com/airbytehq/airbyte/pull/73908) | Update dependencies |
+| 0.0.46 | 2026-02-17 | [73453](https://github.com/airbytehq/airbyte/pull/73453) | Update dependencies |
+| 0.0.45 | 2026-02-10 | [72999](https://github.com/airbytehq/airbyte/pull/72999) | Update dependencies |
+| 0.0.44 | 2026-01-20 | [71875](https://github.com/airbytehq/airbyte/pull/71875) | Update dependencies |
+| 0.0.43 | 2026-01-14 | [71558](https://github.com/airbytehq/airbyte/pull/71558) | Update dependencies |
+| 0.0.42 | 2025-12-18 | [70557](https://github.com/airbytehq/airbyte/pull/70557) | Update dependencies |
+| 0.0.41 | 2025-11-25 | [70159](https://github.com/airbytehq/airbyte/pull/70159) | Update dependencies |
+| 0.0.40 | 2025-11-18 | [69365](https://github.com/airbytehq/airbyte/pull/69365) | Update dependencies |
+| 0.0.39 | 2025-10-29 | [68711](https://github.com/airbytehq/airbyte/pull/68711) | Update dependencies |
+| 0.0.38 | 2025-10-21 | [68574](https://github.com/airbytehq/airbyte/pull/68574) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67781](https://github.com/airbytehq/airbyte/pull/67781) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67283](https://github.com/airbytehq/airbyte/pull/67283) | Update dependencies |
 | 0.0.35 | 2025-09-30 | [65888](https://github.com/airbytehq/airbyte/pull/65888) | Update dependencies |
 | 0.0.34 | 2025-08-23 | [65246](https://github.com/airbytehq/airbyte/pull/65246) | Update dependencies |
 | 0.0.33 | 2025-08-09 | [64750](https://github.com/airbytehq/airbyte/pull/64750) | Update dependencies |

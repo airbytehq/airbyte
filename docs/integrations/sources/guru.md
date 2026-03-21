@@ -50,6 +50,20 @@ To set up the Guru source connector, you'll need the [Guru Auth keys](https://de
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.52 | 2026-03-17 | [74653](https://github.com/airbytehq/airbyte/pull/74653) | Update dependencies |
+| 0.0.51 | 2026-03-03 | [74177](https://github.com/airbytehq/airbyte/pull/74177) | Update dependencies |
+| 0.0.50 | 2026-02-17 | [73381](https://github.com/airbytehq/airbyte/pull/73381) | Update dependencies |
+| 0.0.49 | 2026-02-10 | [73076](https://github.com/airbytehq/airbyte/pull/73076) | Update dependencies |
+| 0.0.48 | 2026-02-03 | [72641](https://github.com/airbytehq/airbyte/pull/72641) | Update dependencies |
+| 0.0.47 | 2026-01-20 | [71916](https://github.com/airbytehq/airbyte/pull/71916) | Update dependencies |
+| 0.0.46 | 2026-01-14 | [71715](https://github.com/airbytehq/airbyte/pull/71715) | Update dependencies |
+| 0.0.45 | 2025-12-18 | [70504](https://github.com/airbytehq/airbyte/pull/70504) | Update dependencies |
+| 0.0.44 | 2025-11-25 | [70022](https://github.com/airbytehq/airbyte/pull/70022) | Update dependencies |
+| 0.0.43 | 2025-11-18 | [69423](https://github.com/airbytehq/airbyte/pull/69423) | Update dependencies |
+| 0.0.42 | 2025-10-29 | [68768](https://github.com/airbytehq/airbyte/pull/68768) | Update dependencies |
+| 0.0.41 | 2025-10-21 | [68212](https://github.com/airbytehq/airbyte/pull/68212) | Update dependencies |
+| 0.0.40 | 2025-10-14 | [67902](https://github.com/airbytehq/airbyte/pull/67902) | Update dependencies |
+| 0.0.39 | 2025-10-07 | [67398](https://github.com/airbytehq/airbyte/pull/67398) | Update dependencies |
 | 0.0.38 | 2025-09-30 | [66398](https://github.com/airbytehq/airbyte/pull/66398) | Update dependencies |
 | 0.0.37 | 2025-09-09 | [66081](https://github.com/airbytehq/airbyte/pull/66081) | Update dependencies |
 | 0.0.36 | 2025-08-23 | [65328](https://github.com/airbytehq/airbyte/pull/65328) | Update dependencies |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.cdk.load.data.iceberg.parquet
 
@@ -7,7 +7,6 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateValue
-import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
@@ -18,7 +17,6 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import java.time.ZoneOffset
-import org.apache.iceberg.Schema
 import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.types.Type
 import org.apache.iceberg.types.Types.TimestampType
@@ -65,7 +63,12 @@ class AirbyteValueToIcebergRecord {
             is DateValue -> return airbyteValue.value
             is IntegerValue -> return airbyteValue.value.toLong()
             is NullValue -> return null
-            is NumberValue -> return airbyteValue.value.toDouble()
+            is NumberValue ->
+                return when (type.typeId()) {
+                    // PK NumberType fields are mapped to StringType in Iceberg.
+                    Type.TypeID.STRING -> airbyteValue.value.toPlainString()
+                    else -> airbyteValue.value.toDouble()
+                }
             is StringValue -> return airbyteValue.value
             is TimeWithTimezoneValue ->
                 return when (type.typeId()) {
@@ -122,19 +125,4 @@ class AirbyteValueToIcebergRecord {
                 }
         }
     }
-}
-
-fun Map<String, EnrichedAirbyteValue>.toIcebergRecord(icebergSchema: Schema): GenericRecord {
-    val record = GenericRecord.create(icebergSchema)
-    val airbyteValueToIcebergRecord = AirbyteValueToIcebergRecord()
-    icebergSchema.asStruct().fields().forEach { field ->
-        val value = this[field.name()]
-        if (value != null) {
-            record.setField(
-                field.name(),
-                airbyteValueToIcebergRecord.convert(value.abValue, field.type())
-            )
-        }
-    }
-    return record
 }

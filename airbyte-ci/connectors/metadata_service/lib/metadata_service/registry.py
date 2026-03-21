@@ -314,6 +314,11 @@ def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket:
     try:
         logger.info(f"Uploading {registry_name} registry to {registry_file_path}")
         blob = bucket.blob(registry_file_path)
+        # In cloud, airbyte-cron polls the registry frequently, to enable faster connector updates.
+        # We should set a lower cache duration on the blob so that the cron receives an up-to-date view of the registry.
+        # However, OSS polls the registry much less frequently, so the default cache setting (1hr max-age) is fine.
+        if registry_name == "cloud":
+            blob.cache_control = "public, max-age=120"
         blob.upload_from_string(registry_json.encode("utf-8"), content_type="application/json")
         logger.info(f"Successfully uploaded {registry_name} registry to {registry_file_path}")
         return

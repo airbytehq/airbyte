@@ -7,7 +7,7 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   definitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
-  dockerImageTag: 3.0.7
+  dockerImageTag: 3.0.11
   dockerRepository: airbyte/source-recharge
   githubIssueLabel: source-recharge
   icon: recharge.svg
@@ -66,4 +66,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Recharge API reference
+      url: https://developer.rechargepayments.com/
+      type: api_reference
+    - title: Recharge authentication
+      url: https://developer.rechargepayments.com/#authentication
+      type: authentication_guide
+    - title: Recharge rate limits
+      url: https://developer.rechargepayments.com/#rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

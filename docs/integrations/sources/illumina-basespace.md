@@ -28,6 +28,19 @@ Connector for the Basespace v1 API. This can be used to extract data on projects
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.50 | 2026-03-17 | [75083](https://github.com/airbytehq/airbyte/pull/75083) | Update dependencies |
+| 0.0.49 | 2026-02-24 | [73895](https://github.com/airbytehq/airbyte/pull/73895) | Update dependencies |
+| 0.0.48 | 2026-02-17 | [73489](https://github.com/airbytehq/airbyte/pull/73489) | Update dependencies |
+| 0.0.47 | 2026-02-10 | [73043](https://github.com/airbytehq/airbyte/pull/73043) | Update dependencies |
+| 0.0.46 | 2026-01-20 | [71983](https://github.com/airbytehq/airbyte/pull/71983) | Update dependencies |
+| 0.0.45 | 2026-01-14 | [71402](https://github.com/airbytehq/airbyte/pull/71402) | Update dependencies |
+| 0.0.44 | 2025-12-18 | [70498](https://github.com/airbytehq/airbyte/pull/70498) | Update dependencies |
+| 0.0.43 | 2025-11-25 | [70154](https://github.com/airbytehq/airbyte/pull/70154) | Update dependencies |
+| 0.0.42 | 2025-11-18 | [69543](https://github.com/airbytehq/airbyte/pull/69543) | Update dependencies |
+| 0.0.41 | 2025-10-29 | [68803](https://github.com/airbytehq/airbyte/pull/68803) | Update dependencies |
+| 0.0.40 | 2025-10-21 | [68509](https://github.com/airbytehq/airbyte/pull/68509) | Update dependencies |
+| 0.0.39 | 2025-10-14 | [67894](https://github.com/airbytehq/airbyte/pull/67894) | Update dependencies |
+| 0.0.38 | 2025-10-07 | [67403](https://github.com/airbytehq/airbyte/pull/67403) | Update dependencies |
 | 0.0.37 | 2025-09-30 | [66401](https://github.com/airbytehq/airbyte/pull/66401) | Update dependencies |
 | 0.0.36 | 2025-09-09 | [66106](https://github.com/airbytehq/airbyte/pull/66106) | Update dependencies |
 | 0.0.35 | 2025-08-23 | [65356](https://github.com/airbytehq/airbyte/pull/65356) | Update dependencies |

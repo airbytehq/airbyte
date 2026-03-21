@@ -173,8 +173,25 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
         return value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # On the first invocation within a sync, capture the cursor value
+        # from the loaded state.  Records at or before this cursor have
+        # already been synced and should be skipped to prevent duplicates.
+        # The Iterable export API uses an inclusive startDateTime boundary,
+        # so without this client-side filter the same records are returned
+        # across consecutive syncs.
+        #
+        # We must capture only once because self._state advances as
+        # records are processed, and this method is called per-slice by
+        # IterableExportStreamAdjustableRange.
+        if not hasattr(self, "_sync_start_cursor"):
+            initial_state = getattr(self, "_state", None) or {}
+            state_value = initial_state.get(self.cursor_field)
+            self._sync_start_cursor = self._field_to_datetime(state_value) if state_value else None
+
         for record in super().read_records(**kwargs):
             self.state = self._get_updated_state(self.state, record)
+            if self._sync_start_cursor is not None and record[self.cursor_field] <= self._sync_start_cursor:
+                continue
             yield record
 
     def _get_updated_state(

@@ -183,7 +183,17 @@ These two streams are effectively limited to **one request per minute**. Conside
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.2 | 2025-09-30 | [66902](https://github.com/airbytehq/airbyte/pull/66902) | Update dependencies |
+| 3.1.12 | 2026-03-10 | [74598](https://github.com/airbytehq/airbyte/pull/74598) | Update dependencies |
+| 3.1.11 | 2026-02-24 | [73948](https://github.com/airbytehq/airbyte/pull/73948) | Update dependencies |
+| 3.1.10 | 2026-02-17 | [73564](https://github.com/airbytehq/airbyte/pull/73564) | Update dependencies |
+| 3.1.9 | 2026-02-10 | [73208](https://github.com/airbytehq/airbyte/pull/73208) | Update dependencies |
+| 3.1.8 | 2026-02-03 | [69495](https://github.com/airbytehq/airbyte/pull/69495) | Update dependencies |
+| 3.1.7 | 2025-10-29 | [68772](https://github.com/airbytehq/airbyte/pull/68772) | Update dependencies |
+| 3.1.6 | 2025-10-21 | [68282](https://github.com/airbytehq/airbyte/pull/68282) | Update dependencies |
+| 3.1.5 | 2025-10-14 | [67767](https://github.com/airbytehq/airbyte/pull/67767) | Update dependencies |
+| 3.1.4 | 2025-10-07 | [67449](https://github.com/airbytehq/airbyte/pull/67449) | Update dependencies |
+| 3.1.3 | 2025-10-06 | [67084](https://github.com/airbytehq/airbyte/pull/67084) | Update dependencies |
+| 3.1.2 | 2025-09-30 | [66566](https://github.com/airbytehq/airbyte/pull/66566) | Update to CDK v7 |
 | 3.1.1 | 2025-09-24 | [66640](https://github.com/airbytehq/airbyte/pull/66640) | Update dependencies |
 | 3.1.0 | 2025-09-18 | [66501](https://github.com/airbytehq/airbyte/pull/66501) | Promoting release candidate 3.1.0-rc.1 to a main version. |
 | 3.1.0-rc.1 | 2025-09-10 | [64160](https://github.com/airbytehq/airbyte/pull/64160) | Migrate to manifest-only.                                                                                                                                              |
@@ -212,7 +222,7 @@ These two streams are effectively limited to **one request per minute**. Conside
 | 1.1.9      | 2024-06-25 | [40347](https://github.com/airbytehq/airbyte/pull/40347) | Update dependencies                                                                                                                                                    |
 | 1.1.8      | 2024-06-22 | [40166](https://github.com/airbytehq/airbyte/pull/40166) | Update dependencies                                                                                                                                                    |
 | 1.1.7      | 2025-06-14 | [39343](https://github.com/airbytehq/airbyte/pull/39343) | Update state handling for `threads` Python stream                                                                                                                      |
-| 1.1.6      | 2024-06-12 | [39132](https://github.com/airbytehq/airbyte/pull/39416) | Respect `include_private_channels` option in `threads` stream                                                                                                          |
+| 1.1.6      | 2024-06-12 | [39416](https://github.com/airbytehq/airbyte/pull/39416) | Respect `include_private_channels` option in `threads` stream                                                                                                          |
 | 1.1.5      | 2024-06-10 | [39132](https://github.com/airbytehq/airbyte/pull/39132) | Convert string state to float for `threads` stream                                                                                                                     |
 | 1.1.4      | 2024-06-06 | [39271](https://github.com/airbytehq/airbyte/pull/39271) | [autopull] Upgrade base image to v1.2.2                                                                                                                                |
 | 1.1.3      | 2024-06-05 | [39121](https://github.com/airbytehq/airbyte/pull/39121) | Change cursor format for `channel_messages` stream to `%s_as_float`                                                                                                    |

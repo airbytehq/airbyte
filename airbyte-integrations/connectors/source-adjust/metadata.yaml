@@ -30,4 +30,11 @@ data:
     - suite: unitTests
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+  externalDocumentationUrls:
+    - title: API documentation
+      url: https://help.adjust.com/en/article/reports-endpoint
+      type: api_reference
+    - title: Authentication
+      url: https://help.adjust.com/en/article/authentication
+      type: authentication_guide
 metadataSpecVersion: "1.0"

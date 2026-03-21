@@ -7,6 +7,13 @@ check:
   stream_names:
     - tags
 
+stream_groups:
+  companies_group:
+    streams:
+      - $ref: "#/definitions/streams/companies"
+    action:
+      type: BlockSimultaneousSyncsAction
+
 definitions:
   streams:
     activity_logs:
@@ -54,17 +61,27 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
         cursor_datetime_formats:
           - "%s"
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: "{{ config['start_date'] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_time_option:
           type: RequestOption
           field_name: created_at_after
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: created_at_before
           inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
@@ -240,19 +257,22 @@ definitions:
       primary_key:
         - id
       retriever:
-        type: CustomRetriever
-        class_name: "source_declarative_manifest.components.IntercomScrollRetriever"
+        type: SimpleRetriever
         requester:
           $parameters:
             name: "companies"
           $ref: "#/definitions/base_requester"
           path: "companies/scroll"
+          http_method: GET
+          use_cache: false
           request_headers:
             Accept: "application/json"
             Intercom-Version: "2.11"
           error_handler:
-            type: CustomErrorHandler
-            class_name: "source_declarative_manifest.components.IntercomErrorHandler"
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
@@ -267,15 +287,21 @@ definitions:
                   - 404
                 action: IGNORE
                 failure_type: transient_error
-                error_message: "Ignoring 404 response, no company records found. "
+                error_message: "Ignoring 404 response, no company records found."
               - type: HttpResponseFilter
                 http_codes:
                   - 400
-                action: FAIL
+                action: RETRY
                 failure_type: transient_error
                 error_message: >-
-                  Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
-                  Intercom API does not allow for you to run the Companies or Company Parts streams in parallel.
+                  Scroll already exists for this workspace. Retrying after backoff.
+                  Intercom API does not allow more than one scroll open per app at a time.
+              - type: HttpResponseFilter
+                http_codes:
+                  - 500
+                action: RESET_PAGINATION
+                failure_type: transient_error
+                error_message: "HTTP 500 encountered. Resetting pagination to retry from the beginning."
         paginator:
           $parameters:
             url_base: "https://api.intercom.io/"
@@ -285,9 +311,9 @@ definitions:
             inject_into: "request_parameter"
             field_name: "scroll_param"
           pagination_strategy:
-            type: CustomPaginationStrategy
-            class_name: "source_declarative_manifest.components.IntercomScrollPagination"
+            type: CursorPagination
             cursor_value: "{{ response.get('scroll_param') }}"
+            stop_condition: "{{ response.get('data', []) | length == 0 }}"
         record_selector:
           type: RecordSelector
           $parameters:
@@ -409,8 +435,13 @@ definitions:
             Intercom-Version: "2.11"
           request_body_json:
             query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at', 'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} }, { 'field': 'updated_at', 'operator': '=', 'value': {{ stream_interval.get('start_time', {}) or format_datetime(config['start_date'], '%s') }} } ] }
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"field" : "updated_at", "operator" : ">", "value" : {{
+              stream_interval['start_time'] }} }, {"field" : "updated_at",
+              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
+              stream_interval['end_time'] }} } ]}
+            sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -447,14 +478,20 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-          datetime_format: "%s"
-        datetime_format: "%s"
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
         cursor_datetime_formats:
           - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
@@ -475,14 +512,14 @@ definitions:
             Accept: application/json
             Intercom-Version: "2.11"
           request_body_json:
-            sort: "{'field': 'updated_at', 'order': 'ascending'}"
+            sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
             query: >-
-              { 'operator': 'OR', 'value': [ { 'field': 'updated_at',
-              'operator': '>', 'value': {{ stream_interval.get('start_time', {}) or
-              format_datetime(config['start_date'], '%s') }} }, { 'field':
-              'updated_at', 'operator': '=', 'value': {{
-              stream_interval.get('start_time', {}) or format_datetime(config['start_date'],
-              '%s') }} }, ], }
+              {"operator" : "AND", "value" : [ {"operator" : "OR", "value" : [
+              {"field" : "updated_at", "operator" : ">", "value" : {{
+              stream_interval['start_time'] }} }, {"field" : "updated_at",
+              "operator" : "=", "value" : {{ stream_interval['start_time'] }}
+              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
+              stream_interval['end_time'] }} } ]}
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -519,14 +556,20 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ format_datetime(config['start_date'], '%s') }}"
-          datetime_format: "%s"
-        datetime_format: "%s"
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
         cursor_datetime_formats:
           - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P30D
+        cursor_granularity: PT1S
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader

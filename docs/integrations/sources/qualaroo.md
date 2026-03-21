@@ -46,6 +46,20 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| 0.4.42 | 2026-03-17 | [74954](https://github.com/airbytehq/airbyte/pull/74954) | Update dependencies |
+| 0.4.41 | 2026-03-10 | [74645](https://github.com/airbytehq/airbyte/pull/74645) | Update dependencies |
+| 0.4.40 | 2026-02-24 | [73842](https://github.com/airbytehq/airbyte/pull/73842) | Update dependencies |
+| 0.4.39 | 2026-02-10 | [72676](https://github.com/airbytehq/airbyte/pull/72676) | Update dependencies |
+| 0.4.38 | 2026-01-20 | [72058](https://github.com/airbytehq/airbyte/pull/72058) | Update dependencies |
+| 0.4.37 | 2026-01-14 | [71481](https://github.com/airbytehq/airbyte/pull/71481) | Update dependencies |
+| 0.4.36 | 2025-12-18 | [70589](https://github.com/airbytehq/airbyte/pull/70589) | Update dependencies |
+| 0.4.35 | 2025-11-25 | [70055](https://github.com/airbytehq/airbyte/pull/70055) | Update dependencies |
+| 0.4.34 | 2025-11-18 | [69636](https://github.com/airbytehq/airbyte/pull/69636) | Update dependencies |
+| 0.4.33 | 2025-10-29 | [68910](https://github.com/airbytehq/airbyte/pull/68910) | Update dependencies |
+| 0.4.32 | 2025-10-21 | [68336](https://github.com/airbytehq/airbyte/pull/68336) | Update dependencies |
+| 0.4.31 | 2025-10-14 | [67868](https://github.com/airbytehq/airbyte/pull/67868) | Update dependencies |
+| 0.4.30 | 2025-10-07 | [67539](https://github.com/airbytehq/airbyte/pull/67539) | Update dependencies |
+| 0.4.29 | 2025-09-30 | [66442](https://github.com/airbytehq/airbyte/pull/66442) | Update dependencies |
 | 0.4.28 | 2025-09-09 | [65678](https://github.com/airbytehq/airbyte/pull/65678) | Update dependencies |
 | 0.4.27 | 2025-08-24 | [65500](https://github.com/airbytehq/airbyte/pull/65500) | Update dependencies |
 | 0.4.26 | 2025-08-16 | [65031](https://github.com/airbytehq/airbyte/pull/65031) | Update dependencies |

@@ -1,10 +1,12 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -39,7 +41,14 @@ abstract class JdbcPartitionsCreator<
         override suspend fun run() {}
 
         override fun checkpoint(): PartitionReadCheckpoint =
-            PartitionReadCheckpoint(partition.completeState, 0)
+            PartitionReadCheckpoint(
+                partition.completeState,
+                0,
+                when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                    SOCKET -> generatePartitionId(4)
+                    STDIO -> null
+                }
+            )
 
         override fun releaseResources() {}
     }
@@ -71,6 +80,7 @@ abstract class JdbcPartitionsCreator<
                 if (it.hasNext()) it.next().data.toJson() else null
             }
         if (record == null) {
+            log.warn { "Cursor upper bound query for '${stream.label}' returned no rows." }
             streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
@@ -82,6 +92,7 @@ abstract class JdbcPartitionsCreator<
         }
         if (cursorUpperBound.isNull) {
             log.warn { "Maximum cursor column value in '${stream.label}' is NULL." }
+            streamState.cursorUpperBound = Jsons.nullNode()
             return
         }
         log.info { "Maximum cursor column value in '${stream.label}' is '$cursorUpperBound'." }

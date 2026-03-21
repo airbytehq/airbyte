@@ -14,7 +14,7 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
 - Added the auto-detect schema changes option to the Connection Replication UI, which allows you to choose whether Airbyte ignores or disables the connection when it detects a non-breaking schema change in the source. [#19734](https://github.com/airbytehq/airbyte/pull/19734)
 - Added stream table configuration windows for Destination namespace and Stream name, which allow you to choose how the data is stored and edit the names and prefixes of tables in the destination. [#19713](https://github.com/airbytehq/airbyte/pull/19713)
 - Added the AWS Secret Manager to Airbyte Open Source as an option for storing secrets. [#19690](https://github.com/airbytehq/airbyte/pull/19690)
-- Added the [Airbyte Cloud API](http://reference.airbyte.com/) in alpha, which allows you to programmatically control Airbyte Cloud through an API.
+- Added the [Airbyte Cloud API](https://reference.airbyte.com/) in alpha, which allows you to programmatically control Airbyte Cloud through an API.
 
 ### Improvements
 

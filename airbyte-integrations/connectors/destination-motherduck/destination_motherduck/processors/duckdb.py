@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Sequence
 from urllib.parse import parse_qsl, urlparse
 
+import orjson
 import pyarrow as pa
 from duckdb_engine import DuckDBEngineWarning
 from overrides import overrides
@@ -30,6 +31,42 @@ BUFFER_TABLE_NAME = "_airbyte_temp_buffer_data"
 MOTHERDUCK_SCHEME = "md"
 
 logger = logging.getLogger(__name__)
+
+
+def _serialize_object_columns(
+    buffer_data: Dict[str, List[Any]],
+    json_schema: dict,
+) -> Dict[str, List[Any]]:
+    """
+    Convert object-fields columns into JSON strings. This prevents PyArrow from
+    inferring struct types, which can cause issues with empty structs when the
+    data contains empty dicts {}. PyArrow will then infer a string type for
+    these columns that will convert to JSON again once it is imported into
+    DuckDB because in the destination schema, object-fields columns have JSON
+    as their type.
+    """
+    properties = json_schema.get("properties", {})
+    result = {}
+
+    for col_name, values in buffer_data.items():
+        result[col_name] = values  # Take the original values by default
+
+        if col_name not in properties:  # Probably an "Airbyte column"
+            continue
+
+        schema_type = properties[col_name].get("type")
+        if isinstance(schema_type, list):  # For nullable types this is a list. We want the first type that is not null
+            schema_type = next((t for t in schema_type if t != "null"), None)
+
+        if schema_type != "object":  # This only applies to properties of type "object"
+            continue
+
+        # Convert dicts to JSON strings. Note that `values` is a list of column values. Since Airbyte works with JSON
+        # schemas, we do not have the issue of e.g. having to convert datetimes objects - these will just be passed as
+        # formatted date-time strings.
+        result[col_name] = [orjson.dumps(v).decode() if isinstance(v, dict) else v for v in values]
+
+    return result
 
 
 # @dataclass
@@ -354,7 +391,10 @@ class DuckDBSqlProcessor(SqlProcessorBase):
     ) -> None:
         temp_table_name = self._create_table_for_loading(stream_name, batch_id=None)
         try:
-            pa_table = pa.Table.from_pydict(buffer[stream_name])
+            serialized_buffer = _serialize_object_columns(
+                buffer[stream_name], self.catalog_provider.get_configured_stream_info(stream_name).stream.json_schema
+            )
+            pa_table = pa.Table.from_pydict(serialized_buffer)
         except Exception:
             logger.exception(
                 "Writing with PyArrow table failed, falling back to writing with executemany. Expect some performance degradation."

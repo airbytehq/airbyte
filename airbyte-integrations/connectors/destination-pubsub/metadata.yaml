@@ -33,4 +33,20 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: Pub/Sub documentation
+      url: https://cloud.google.com/pubsub/docs
+      type: api_reference
+    - title: Service account authentication
+      url: https://cloud.google.com/iam/docs/service-accounts
+      type: authentication_guide
+    - title: Access control
+      url: https://cloud.google.com/pubsub/docs/access-control
+      type: permissions_scopes
+    - title: Quotas and limits
+      url: https://cloud.google.com/pubsub/quotas
+      type: rate_limits
+    - title: Google Cloud Status
+      url: https://status.cloud.google.com/
+      type: status_page
 metadataSpecVersion: "1.0"

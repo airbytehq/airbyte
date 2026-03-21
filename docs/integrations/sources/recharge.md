@@ -154,6 +154,10 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.11 | 2025-10-21 | [68391](https://github.com/airbytehq/airbyte/pull/68391) | Update dependencies |
+| 3.0.10 | 2025-10-14 | [67927](https://github.com/airbytehq/airbyte/pull/67927) | Update dependencies |
+| 3.0.9 | 2025-10-08 | [67543](https://github.com/airbytehq/airbyte/pull/67543) | Update dependencies |
+| 3.0.8 | 2025-09-30 | [66444](https://github.com/airbytehq/airbyte/pull/66444) | Update dependencies |
 | 3.0.7 | 2025-09-09 | [65674](https://github.com/airbytehq/airbyte/pull/65674) | Update dependencies |
 | 3.0.6 | 2025-08-24 | [65465](https://github.com/airbytehq/airbyte/pull/65465) | Update dependencies |
 | 3.0.5 | 2025-08-16 | [65034](https://github.com/airbytehq/airbyte/pull/65034) | Update dependencies |
@@ -182,7 +186,7 @@ For more details, see [Recharge API Rate Limits](https://developer.rechargepayme
 | 2.6.3 | 2025-01-25 | [52468](https://github.com/airbytehq/airbyte/pull/52468) | Update dependencies |
 | 2.6.2 | 2025-01-18 | [51914](https://github.com/airbytehq/airbyte/pull/51914) | Update dependencies |
 | 2.6.1 | 2025-01-11 | [51333](https://github.com/airbytehq/airbyte/pull/51333) | Update dependencies |
-| 2.6.0 | 2025-01-02 | [48382](https://github.com/airbytehq/airbyte/pull/49926) | Add new stream `bundle_selections` |
+| 2.6.0 | 2025-01-02 | [49926](https://github.com/airbytehq/airbyte/pull/49926) | Add new stream `bundle_selections` |
 | 2.5.4 | 2025-01-04 | [50927](https://github.com/airbytehq/airbyte/pull/50927) | Update dependencies |
 | 2.5.3 | 2024-12-28 | [50724](https://github.com/airbytehq/airbyte/pull/50724) | Update dependencies |
 | 2.5.2 | 2024-12-21 | [50265](https://github.com/airbytehq/airbyte/pull/50265) | Update dependencies |

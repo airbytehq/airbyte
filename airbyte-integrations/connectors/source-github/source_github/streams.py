@@ -2,16 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import re
+import struct
 from abc import ABC, abstractmethod
+from datetime import timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
-import pendulum
 import requests
+from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
@@ -19,8 +22,9 @@ from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
 from . import constants
 from .backoff_strategies import ContributorActivityBackoffStrategy, GithubStreamABCBackoffStrategy
@@ -37,6 +41,7 @@ from .graphql import (
     get_query_issue_reactions,
     get_query_projectsV2,
     get_query_pull_requests,
+    get_query_releases,
     get_query_reviews,
 )
 from .utils import GitHubAPILimitException, getter
@@ -128,11 +133,14 @@ class GithubStreamABC(HttpStream, ABC):
         # Reading records while handling the errors
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        except DefaultBackoffException as e:
+        # HTTP Client wraps DefaultBackoffException into MessageRepresentationAirbyteTracedErrors
+        except MessageRepresentationAirbyteTracedErrors as e:
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if e.response.status_code == requests.codes.NOT_FOUND:
+            if not hasattr(e, "_exception") and not hasattr(e._exception, "response"):
+                raise e
+            if e._exception.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
                 if isinstance(self, Organizations):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
@@ -140,8 +148,8 @@ class GithubStreamABC(HttpStream, ABC):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
-            elif e.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e.response.json().get("message"))
+            elif e._exception.response.status_code == requests.codes.FORBIDDEN:
+                error_msg = str(e._exception.response.json().get("message"))
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
                 if isinstance(self, Repositories):
                     raise e
@@ -157,27 +165,27 @@ class GithubStreamABC(HttpStream, ABC):
                     error_msg = (
                         f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
                     )
-            elif e.response.status_code == requests.codes.UNAUTHORIZED:
+            elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
-                    error_msg = str(e.response.json().get("message"))
+                    error_msg = str(e._exception.response.json().get("message"))
                     self.logger.error(f"{self.access_token_type} renewal is required: {error_msg}")
                 raise e
-            elif e.response.status_code == requests.codes.GONE and isinstance(self, Projects):
+            elif e._exception.response.status_code == requests.codes.GONE and isinstance(self, Projects):
                 # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
                 # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
                 error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.CONFLICT:
+            elif e._exception.response.status_code == requests.codes.CONFLICT:
                 error_msg = (
                     f"Syncing `{self.name}` stream isn't available for repository "
                     f"`{stream_slice['repository']}`, it seems like this repository is empty."
                 )
-            elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
+            elif e._exception.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.BAD_GATEWAY:
+            elif e._exception.response.status_code == requests.codes.BAD_GATEWAY:
                 error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
             else:
                 # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
-                self.logger.error(f"Undefined error while reading records: {e.response.text}")
+                self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
                 raise e
 
             self.logger.warning(error_msg)
@@ -216,6 +224,14 @@ class GithubStream(GithubStreamABC):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
+
+        if "reactions" in record and record["reactions"]:
+            reactions = record["reactions"]
+            if "+1" in reactions:
+                reactions["plus_one"] = reactions.pop("+1")
+            if "-1" in reactions:
+                reactions["minus_one"] = reactions.pop("-1")
+
         return record
 
     def parse_response(
@@ -487,24 +503,6 @@ class Users(Organizations):
 
 
 # Below are semi incremental streams
-
-
-class Releases(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
-    """
-
-    cursor_field = "created_at"
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record = super().transform(record=record, stream_slice=stream_slice)
-
-        assets = record.get("assets", [])
-        for asset in assets:
-            uploader = asset.pop("uploader", None)
-            asset["uploader_id"] = uploader.get("id") if uploader else None
-
-        return record
 
 
 class Events(SemiIncrementalMixin, GithubStream):
@@ -795,13 +793,162 @@ class GitHubGraphQLStream(GithubStream, ABC):
         return {}
 
 
+class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
+    """
+    API docs: https://docs.github.com/en/graphql/reference/objects#release
+    Uses GraphQL API to avoid the REST API's 10,000 result pagination limit.
+    """
+
+    cursor_field = "created_at"
+    is_sorted = "asc"
+
+    GRAPHQL_REACTION_TO_REST = {
+        "THUMBS_UP": "plus_one",
+        "THUMBS_DOWN": "minus_one",
+        "LAUGH": "laugh",
+        "HOORAY": "hooray",
+        "CONFUSED": "confused",
+        "HEART": "heart",
+        "ROCKET": "rocket",
+        "EYES": "eyes",
+    }
+
+    @staticmethod
+    def _extract_database_id_from_node_id(node_id: str) -> Optional[int]:
+        """Extract the numeric database ID from a GitHub GraphQL Node ID.
+
+        GitHub Node IDs with type prefixes (e.g. 'RA_...') are URL-safe base64
+        encodings of a msgpack array: [type_flag, repo_database_id, entity_database_id].
+        The last 4 bytes encode the entity's numeric database ID as a big-endian uint32.
+        """
+        if not node_id or "_" not in node_id:
+            return None
+        try:
+            encoded = node_id.split("_", 1)[1]
+            decoded = base64.urlsafe_b64decode(encoded + "==")
+            if len(decoded) >= 4:
+                return struct.unpack(">I", decoded[-4:])[0]
+        except Exception:
+            return None
+        return None
+
+    def _get_assets_from_release(self, record: Mapping) -> list:
+        assets_data = record.get("assets", {})
+        if assets_data.get("pageInfo", {}).get("hasNextPage"):
+            self.logger.warning(
+                "Release %s in %s has >100 assets; only the first 100 were synced. "
+                "Sub-pagination for release assets is not yet implemented.",
+                record.get("id"),
+                record.get("repository"),
+            )
+        assets = assets_data.get("nodes", [])
+        for asset in assets:
+            uploader = asset.pop("uploader", None)
+            asset["uploader_id"] = uploader.get("id") if uploader else None
+            asset["id"] = self._extract_database_id_from_node_id(asset.get("node_id"))
+        return assets
+
+    def _get_reactions_from_release(self, record: Mapping) -> Optional[Mapping]:
+        reaction_groups = record.pop("reaction_groups", None)
+        if reaction_groups is None:
+            return None
+        reactions = {rest_key: 0 for rest_key in self.GRAPHQL_REACTION_TO_REST.values()}
+        total = 0
+        for group in reaction_groups:
+            content = group.get("content")
+            count = group.get("reactors", {}).get("totalCount", 0)
+            rest_key = self.GRAPHQL_REACTION_TO_REST.get(content)
+            if rest_key:
+                reactions[rest_key] = count
+                total += count
+        reactions["total_count"] = total
+        return reactions
+
+    def _build_rest_urls(self, repository: str, release_id: int, tag_name: str) -> Mapping[str, str]:
+        """Synthesize REST-compatible URL fields from GraphQL data.
+
+        The GraphQL API does not return reference URLs the way the REST API does,
+        but we can construct them from the repository, release ID, and tag name
+        to retain backwards compatibility with the previous REST-based schema.
+        """
+        api_url = self.api_url.rstrip("/")
+        upload_url = api_url.replace("api.github.com", "uploads.github.com")
+        return {
+            "url": f"{api_url}/repos/{repository}/releases/{release_id}",
+            "assets_url": f"{api_url}/repos/{repository}/releases/{release_id}/assets",
+            "upload_url": f"{upload_url}/repos/{repository}/releases/{release_id}/assets{{?name,label}}",
+            "tarball_url": f"{api_url}/repos/{repository}/tarball/{tag_name}" if tag_name else None,
+            "zipball_url": f"{api_url}/repos/{repository}/zipball/{tag_name}" if tag_name else None,
+        }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        repository = response.json().get("data", {}).get("repository")
+        if repository:
+            nodes = repository.get("releases", {}).get("nodes", [])
+            for record in nodes:
+                record["repository"] = self._get_repository_name(repository)
+                if record.get("author"):
+                    record["author"]["type"] = record["author"].pop("__typename", "User")
+                record["assets"] = self._get_assets_from_release(record)
+                record["reactions"] = self._get_reactions_from_release(record)
+                mentions_connection = record.pop("mentions_connection", None)
+                if mentions_connection is not None:
+                    record["mentions_count"] = mentions_connection.get("totalCount", 0)
+                tag_commit = record.pop("tagCommit", None)
+                record["target_commitish"] = tag_commit.get("target_commitish") if tag_commit else None
+                record.update(self._build_rest_urls(record["repository"], record.get("id"), record.get("tag_name")))
+                yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json().get("data", {}).get("repository")
+        if repository:
+            page_info = repository.get("releases", {}).get("pageInfo", {})
+            if page_info.get("hasNextPage"):
+                return {"after": page_info["endCursor"]}
+        return None
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        after = next_page_token["after"] if next_page_token else None
+        query = get_query_releases(owner=organization, name=name, first=self.page_size, after=after)
+        return {"query": query}
+
+
 class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
     """
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
     large_stream = True
-    is_sorted = "asc"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._first_read = True
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Decide if this is a first read or not by the presence of the state object
+        """
+        self._first_read = not bool(stream_state)
+        yield from super().read_records(stream_state=stream_state, **kwargs)
+
+    @property
+    def is_sorted(self) -> str:
+        """
+        On first read (no state), use ascending order with checkpoint support.
+        On subsequent reads (has state), use descending order so newest records come first,
+        allowing early exit when we reach already-seen records.
+        This avoids re-reading all historical records on incremental syncs,
+        which was causing rate limit exhaustion and heartbeat timeouts for large organizations.
+        """
+        if self._first_read:
+            return "asc"
+        return "desc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         repository = response.json()["data"]["repository"]
@@ -1437,7 +1584,8 @@ class Workflows(SemiIncrementalMixin, GithubStream):
             yield self.transform(record=record, stream_slice=stream_slice)
 
     def convert_cursor_value(self, value):
-        return pendulum.parse(value).in_tz(tz="UTC").format("YYYY-MM-DDTHH:mm:ss[Z]")
+        parsed_value = date_parse(value).astimezone(timezone.utc)
+        return ab_datetime_format(parsed_value, "%Y-%m-%dT%H:%M:%SZ")
 
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
@@ -1478,7 +1626,7 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         # the state is updated only in the end of the sync as records are sorted in reverse order
         new_state = self.state
         if start_point:
-            break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
+            break_point = (ab_datetime_parse(start_point) - timedelta(days=self.re_run_period)).isoformat()
         for record in super(SemiIncrementalMixin, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
@@ -1663,22 +1811,24 @@ class ContributorActivity(GithubStream):
         repository = stream_slice.get("repository", "")
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        except UserDefinedBackoffException as e:
-            if e.response.status_code == requests.codes.ACCEPTED:
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(
-                        level=Level.INFO,
-                        message=f"Syncing `{self.__class__.__name__}` " f"stream isn't available for repository `{repository}`.",
-                    ),
-                )
+        # HTTP Client wraps BackoffException into MessageRepresentationAirbyteTracedErrors
+        except MessageRepresentationAirbyteTracedErrors as e:
+            if hasattr(e, "_exception") and hasattr(e._exception, "response"):
+                if e._exception.response.status_code == requests.codes.ACCEPTED:
+                    yield AirbyteMessage(
+                        type=MessageType.LOG,
+                        log=AirbyteLogMessage(
+                            level=Level.INFO,
+                            message=f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.",
+                        ),
+                    )
 
-                # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
-                # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
-                # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
-                partition_obj = stream_slice.get("partition")
-                if self.cursor and partition_obj:
-                    self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+                    # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
+                    # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
+                    # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
+                    partition_obj = stream_slice.get("partition")
+                    if self.cursor and partition_obj:
+                        self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
             else:
                 raise e
 

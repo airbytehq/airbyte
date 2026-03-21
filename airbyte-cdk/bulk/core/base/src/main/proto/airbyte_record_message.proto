@@ -4,6 +4,7 @@
 syntax = "proto3";
 
 import "airbyte_record_message_meta.proto";
+import "google/protobuf/struct.proto";
 
 package io.airbyte.protocol.protobuf;
 
@@ -20,16 +21,33 @@ message AirbyteValueProtobuf {
   oneof value {
     bool boolean = 1;
     string string = 2;
-    int64 integer = 3;
+    sint64 integer = 3;
     string big_integer = 4; // Prefer over integer iff it exists
     double number = 5;
     string big_decimal = 6; // Prefer over number iff it exists
-    string date = 7;
-    string time_with_timezone = 8;
-    string time_without_timezone = 9;
-    string timestamp_with_timezone = 10;
-    string timestamp_without_timezone = 11;
+
+    sint64 date = 7;
+    OffsetTime time_with_timezone = 8;
+    uint64 time_without_timezone = 9;
+    OffsetDateTime timestamp_with_timezone = 10;
+    LocalDateTime timestamp_without_timezone = 11;
     bytes json = 12; // JSON-encoded arrays, objects, unions, or otherwise unknown.
+    google.protobuf.NullValue null = 13;
   }
-  bool is_null = 13;
-};
+}
+
+message LocalDateTime {
+  sint64 date_days_since_epoch = 1;
+  uint64 nanos_of_day = 2;
+}
+
+message OffsetTime {
+  uint64 nanos_of_day = 1;
+  sint32 offset_seconds = 2;
+}
+
+message OffsetDateTime {
+  sint64 epoch_second = 1;
+  uint32 nano = 2;
+  sint32 offset_seconds = 3;
+}

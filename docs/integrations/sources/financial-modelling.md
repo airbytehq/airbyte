@@ -42,6 +42,19 @@ Docs : https://site.financialmodelingprep.com/developer/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-03-17 | [74642](https://github.com/airbytehq/airbyte/pull/74642) | Update dependencies |
+| 0.0.45 | 2026-02-24 | [73743](https://github.com/airbytehq/airbyte/pull/73743) | Update dependencies |
+| 0.0.44 | 2026-02-17 | [73405](https://github.com/airbytehq/airbyte/pull/73405) | Update dependencies |
+| 0.0.43 | 2026-02-10 | [73140](https://github.com/airbytehq/airbyte/pull/73140) | Update dependencies |
+| 0.0.42 | 2026-01-20 | [71955](https://github.com/airbytehq/airbyte/pull/71955) | Update dependencies |
+| 0.0.41 | 2026-01-14 | [71613](https://github.com/airbytehq/airbyte/pull/71613) | Update dependencies |
+| 0.0.40 | 2025-12-18 | [70571](https://github.com/airbytehq/airbyte/pull/70571) | Update dependencies |
+| 0.0.39 | 2025-11-25 | [70013](https://github.com/airbytehq/airbyte/pull/70013) | Update dependencies |
+| 0.0.38 | 2025-11-18 | [69470](https://github.com/airbytehq/airbyte/pull/69470) | Update dependencies |
+| 0.0.37 | 2025-10-29 | [68797](https://github.com/airbytehq/airbyte/pull/68797) | Update dependencies |
+| 0.0.36 | 2025-10-21 | [68473](https://github.com/airbytehq/airbyte/pull/68473) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [68075](https://github.com/airbytehq/airbyte/pull/68075) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67296](https://github.com/airbytehq/airbyte/pull/67296) | Update dependencies |
 | 0.0.33 | 2025-09-30 | [66782](https://github.com/airbytehq/airbyte/pull/66782) | Update dependencies |
 | 0.0.32 | 2025-09-24 | [65811](https://github.com/airbytehq/airbyte/pull/65811) | Update dependencies |
 | 0.0.31 | 2025-08-23 | [65252](https://github.com/airbytehq/airbyte/pull/65252) | Update dependencies |

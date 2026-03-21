@@ -3,18 +3,21 @@
 #
 
 import json
+from datetime import timedelta
 from unittest.mock import patch
 
-import pendulum
 import pytest
 import responses
 from freezegun import freeze_time
+from requests import JSONDecodeError
 from source_github import SourceGithub
 from source_github.streams import Organizations
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter, read_full_refresh
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 @responses.activate
@@ -24,8 +27,7 @@ def test_multiple_tokens(rate_limit_mock_response):
     assert ["token_1", "token_2", "token_3"] == list(authenticator._tokens)
 
 
-@responses.activate
-def test_authenticator_counter(rate_limit_mock_response):
+def test_authenticator_counter(rate_limit_mock_response, requests_mock):
     """
     This test ensures that the rate limiter:
      1. correctly handles the available limits from GitHub API and saves it.
@@ -36,14 +38,13 @@ def test_authenticator_counter(rate_limit_mock_response):
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(5000, 5000), (5000, 5000), (5000, 5000)]
     organization_args = {"organizations": ["org1", "org2"], "authenticator": authenticator}
     stream = Organizations(**organization_args)
-    responses.add("GET", "https://api.github.com/orgs/org1", json={"id": 1})
-    responses.add("GET", "https://api.github.com/orgs/org2", json={"id": 2})
+    requests_mock.get("https://api.github.com/orgs/org1", json={"id": 1})
+    requests_mock.get("https://api.github.com/orgs/org2", json={"id": 2})
     list(read_full_refresh(stream))
     assert authenticator._tokens["token1"].count_rest == 4998
 
 
-@responses.activate
-def test_multiple_token_authenticator_with_rate_limiter():
+def test_multiple_token_authenticator_with_rate_limiter(requests_mock):
     """
     This test ensures that:
      1. The rate limiter iterates over all tokens one-by-one after the previous is fully drained.
@@ -54,7 +55,7 @@ def test_multiple_token_authenticator_with_rate_limiter():
     counter_rate_limits = 0
     counter_orgs = 0
 
-    def request_callback_rate_limits(request):
+    def request_callback_rate_limits(request, context):
         nonlocal counter_rate_limits
         while counter_rate_limits < 3:
             counter_rate_limits += 1
@@ -64,26 +65,27 @@ def test_multiple_token_authenticator_with_rate_limiter():
                     "graphql": {"limit": 500, "used": 0, "remaining": 500, "reset": 4070908800},
                 }
             }
-            return (200, {}, json.dumps(resp_body))
+            context.status_code = 200
+            context.headers = {}
+            return json.dumps(resp_body)
 
-    responses.add_callback(responses.GET, "https://api.github.com/rate_limit", callback=request_callback_rate_limits)
+    requests_mock.get("https://api.github.com/rate_limit", text=request_callback_rate_limits)
     authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2", "token3"])
     organization_args = {"organizations": ["org1"], "authenticator": authenticator}
     stream = Organizations(**organization_args)
 
-    def request_callback_orgs(request):
+    def request_callback_orgs(request, context):
         nonlocal counter_orgs
         while counter_orgs < 1_501:
             counter_orgs += 1
             resp_body = {"id": 1}
-            headers = {"Link": '<https://api.github.com/orgs/org1?page=2>; rel="next"'}
-            return (200, headers, json.dumps(resp_body))
+            context.headers = {"Link": '<https://api.github.com/orgs/org1?page=2>; rel="next"', "Content-Type": "application/json"}
+            context.status_code = 200
+            return json.dumps(resp_body)
 
-    responses.add_callback(
-        responses.GET,
+    requests_mock.get(
         "https://api.github.com/orgs/org1",
-        callback=request_callback_orgs,
-        content_type="application/json",
+        text=request_callback_orgs,
     )
     with pytest.raises(AirbyteTracedException) as e:
         list(read_full_refresh(stream))
@@ -96,9 +98,8 @@ def test_multiple_token_authenticator_with_rate_limiter():
 
 
 @freeze_time("2021-01-01 12:00:00")
-@responses.activate
 @patch("time.sleep")
-def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, caplog):
+def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, caplog, requests_mock):
     """
     This test ensures that:
      1. The rate limiter will only wait (sleep) for token availability if the nearest available token appears within 600 seconds (see max_time).
@@ -108,9 +109,9 @@ def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, ca
     counter_rate_limits = 0
     counter_orgs = 0
     ACCEPTED_WAITING_TIME_IN_SECONDS = 595
-    reset_time = (pendulum.now() + pendulum.duration(seconds=ACCEPTED_WAITING_TIME_IN_SECONDS)).int_timestamp
+    reset_time = int((ab_datetime_now() + timedelta(seconds=ACCEPTED_WAITING_TIME_IN_SECONDS)).timestamp())
 
-    def request_callback_rate_limits(request):
+    def request_callback_rate_limits(request, context):
         nonlocal counter_rate_limits
         while counter_rate_limits < 6:
             counter_rate_limits += 1
@@ -120,29 +121,50 @@ def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, ca
                     "graphql": {"limit": 500, "used": 0, "remaining": 500, "reset": reset_time},
                 }
             }
-            return (200, {}, json.dumps(resp_body))
+            context.status_code = 200
+            context.headers = {}
+            return json.dumps(resp_body)
 
-    responses.add_callback(responses.GET, "https://api.github.com/rate_limit", callback=request_callback_rate_limits)
+    requests_mock.get("https://api.github.com/rate_limit", text=request_callback_rate_limits)
     authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2", "token3"])
     organization_args = {"organizations": ["org1"], "authenticator": authenticator}
     stream = Organizations(**organization_args)
 
-    def request_callback_orgs(request):
+    def request_callback_orgs(request, context):
         nonlocal counter_orgs
         while counter_orgs < 1_501:
             counter_orgs += 1
             resp_body = {"id": 1}
-            headers = {"Link": '<https://api.github.com/orgs/org1?page=2>; rel="next"'}
-            return (200, headers, json.dumps(resp_body))
-        return (200, {}, json.dumps({"id": 2}))
+            context.status_code = 200
+            context.headers = {"Link": '<https://api.github.com/orgs/org1?page=2>; rel="next"', "Content-Type": "application/json"}
+            return json.dumps(resp_body)
+        context.status_code = 200
+        context.headers = {"Content-Type": "application/json"}
+        return json.dumps({"id": 2})
 
-    responses.add_callback(
-        responses.GET,
+    requests_mock.get(
         "https://api.github.com/orgs/org1",
-        callback=request_callback_orgs,
-        content_type="application/json",
+        text=request_callback_orgs,
     )
 
     list(read_full_refresh(stream))
     sleep_mock.assert_called_once_with(ACCEPTED_WAITING_TIME_IN_SECONDS)
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(500, 500), (500, 500), (498, 500)]
+
+
+def test_invalid_credentials_error_message(requests_mock):
+    """
+    Test that validates that invalid or expired credentials are gracefully caught and surfaced back in a way
+    that the connector can display actionable messages back to users
+    """
+
+    requests_mock.get(
+        "https://api.github.com/rate_limit",
+        status_code=401,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest", "status": "401"},
+    )
+
+    with pytest.raises(AirbyteTracedException) as e:
+        MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2", "token3"])
+
+    assert "HTTP Status Code: 401" in e.value.message

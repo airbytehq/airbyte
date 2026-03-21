@@ -9,19 +9,24 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 6.2.34
+  dockerImageTag: 7.0.3
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  externalDocumentationUrls:
+    - title: Python Faker Library Documentation
+      url: https://faker.readthedocs.io/en/master/
+      type: api_reference
+    - title: Faker Changelog
+      url: https://github.com/joke2k/faker/blob/master/CHANGELOG.md
+      type: api_release_history
   githubIssueLabel: source-faker
   icon: icon.svg
   license: ELv2
   name: Sample Data
   registryOverrides:
     cloud:
-      dockerImageTag: 6.2.24
       enabled: true
     oss:
-      dockerImageTag: 6.2.24
       enabled: true
   releaseStage: beta
   releases:
@@ -37,6 +42,16 @@ data:
       6.0.0:
         message: Declare 'id' columns as primary keys.
         upgradeDeadline: "2024-04-01"
+      7.0.0:
+        message: This is a test breaking change to validate breaking change infrastructure.
+        upgradeDeadline: "2026-03-19"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - users
+              - products
+              - purchases
   remoteRegistries:
     pypi:
       enabled: true

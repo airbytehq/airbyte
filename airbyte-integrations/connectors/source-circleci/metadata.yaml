@@ -33,3 +33,16 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: CircleCI API v2 reference
+      url: https://circleci.com/docs/api/v2/
+      type: api_reference
+    - title: CircleCI authentication
+      url: https://circleci.com/docs/api-developers-guide/#authentication
+      type: authentication_guide
+    - title: CircleCI API rate limits
+      url: https://circleci.com/docs/api-developers-guide/#rate-limits
+      type: rate_limits
+    - title: CircleCI Status
+      url: https://status.circleci.com/
+      type: status_page
