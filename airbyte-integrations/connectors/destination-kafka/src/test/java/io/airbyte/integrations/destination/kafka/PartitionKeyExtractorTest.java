@@ -157,9 +157,7 @@ class PartitionKeyExtractorTest {
   void testDeterminePartitionKeyWithConfiguredField() throws Exception {
     String json = "{\"user_id\": \"12345\", \"name\": \"John Doe\"}";
     JsonNode recordData = objectMapper.readTree(json);
-    
     String result = PartitionKeyExtractor.determinePartitionKey("user_id", recordData);
-    
     assertEquals("12345", result);
   }
 
@@ -167,9 +165,7 @@ class PartitionKeyExtractorTest {
   void testDeterminePartitionKeyWithMissingField() throws Exception {
     String json = "{\"user_id\": \"12345\", \"name\": \"John Doe\"}";
     JsonNode recordData = objectMapper.readTree(json);
-    
     String result = PartitionKeyExtractor.determinePartitionKey("missing_field", recordData);
-    
     assertNotNull(result);
     assertTrue(result.matches("^[a-f0-9-]{36}$")); // UUID format
   }
@@ -178,9 +174,7 @@ class PartitionKeyExtractorTest {
   void testDeterminePartitionKeyWithNullConfig() throws Exception {
     String json = "{\"user_id\": \"12345\", \"name\": \"John Doe\"}";
     JsonNode recordData = objectMapper.readTree(json);
-    
     String result = PartitionKeyExtractor.determinePartitionKey(null, recordData);
-    
     assertNotNull(result);
     assertTrue(result.matches("^[a-f0-9-]{36}$")); // UUID format
   }
@@ -189,7 +183,6 @@ class PartitionKeyExtractorTest {
   void testGenerateFallbackKey() {
     String result1 = PartitionKeyExtractor.generateFallbackKey();
     String result2 = PartitionKeyExtractor.generateFallbackKey();
-    
     assertNotNull(result1);
     assertNotNull(result2);
     assertNotEquals(result1, result2);
@@ -200,14 +193,12 @@ class PartitionKeyExtractorTest {
   @Test
   void testNullRecordData() throws Exception {
     String result = PartitionKeyExtractor.extractPartitionKey("user_id", null);
-    
     assertNull(result);
   }
 
   @Test
   void testNonObjectRecordData() throws Exception {
     String result = PartitionKeyExtractor.extractPartitionKey("user_id", objectMapper.readTree("\"string\""));
-    
     assertNull(result);
   }
 }
