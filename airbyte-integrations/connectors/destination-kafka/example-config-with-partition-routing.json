@@ -44,7 +44,12 @@
         "title": "Partition Key Field",
         "description": "Field(s) from the record to use as Kafka message key for partition routing. Can be a single field name (e.g., 'user_id') or multiple fields separated by commas (e.g., 'user_id,order_id'). Supports nested fields using dot notation (e.g., 'user.id'). If not specified, uses random UUID for round-robin partitioning.",
         "type": "string",
-        "examples": ["user_id", "user.id", "user_id,order_id", "customer.email,order.date"]
+        "examples": [
+          "user_id",
+          "user.id",
+          "user_id,order_id",
+          "customer.email,order.date"
+        ]
       },
       "protocol": {
         "title": "Protocol",
@@ -107,7 +112,11 @@
         "description": "Controls how the client uses DNS lookups.",
         "type": "string",
         "default": "use_all_dns_ips",
-        "enum": ["default", "use_all_dns_ips", "resolve_canonical_bootstrap_servers_only"]
+        "enum": [
+          "default",
+          "use_all_dns_ips",
+          "resolve_canonical_bootstrap_servers_only"
+        ]
       },
       "buffer_memory": {
         "title": "Buffer Memory",
