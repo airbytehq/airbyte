@@ -63,25 +63,11 @@ With this set up, Airbyte now supports:
 This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage. See
 [this blogpost](https://airbyte.com/blog/introducing-workloads-how-airbyte-1-0-orchestrates-data-movement-jobs) for more detailed information.
 
-### Workload Launch Pipeline
+### Troubleshooting Workload Launch Delays
 
-When a workload is picked up by the Launcher, it passes through the following pipeline stages in order:
+You may see a gap of several minutes in the platform logs between the workload being submitted and the sync starting. Specifically, between the `APPLY Stage: LAUNCH` log line and the `Attempting to update workload ... to LAUNCHED` log line. This time is spent waiting for Kubernetes to schedule the pod and for its init containers to complete.
 
-| Stage | Description |
-|-------|-------------|
-| **BUILD** | Deserializes the workload input and constructs the container configuration (images, resource requests, environment variables). |
-| **CLAIM** | Calls the Workload API Server to claim ownership of the workload. If another Launcher instance already claimed it, the pipeline exits early. |
-| **LOAD_SHED** | Checks whether the Launcher has capacity to start a new workload. If the system is at its concurrency limit, the workload is released back to the queue. |
-| **CHECK_STATUS** | Looks for an existing Kubernetes pod for this workload. If a pod already exists, the pipeline skips to the end to avoid launching a duplicate. |
-| **MUTEX** | Enforces mutual exclusion — ensures no other pod is already running for the same connection. If an old pod exists, it is deleted before proceeding. |
-| **ARCHITECTURE** | Resolves architecture-specific configuration (e.g. node selectors, tolerations). |
-| **LAUNCH** | Submits the pod specification to Kubernetes. The pod is now being scheduled by the cluster. |
-
-After the LAUNCH stage completes, the pipeline's success handler transitions the workload status to **LAUNCHED** via the Workload API.
-
-#### LAUNCH to LAUNCHED delay
-
-The time between the `APPLY Stage: LAUNCH` log line and the `Attempting to update workload ... to LAUNCHED` log line covers pod creation, init container completion, and (optionally) main container readiness. The Launcher actively waits for the pod's init container to finish (up to 15 minutes) before marking the workload as LAUNCHED. Common causes of delay include:
+Common causes of delay include:
 
 - **Large resource requests** require the cluster autoscaler to provision new nodes (e.g. 4 CPU / 4 GiB per container × 4 containers = 16 CPU / 16 GiB total). Reducing resource requests or provisioning larger nodes can help.
 - **Container images** need to be pulled for the first time on a new node.
