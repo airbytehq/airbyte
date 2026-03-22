@@ -65,6 +65,12 @@ class RedshiftDestinationHandler(
                 val message: String = e.message!!
                 val isConcurrentSchemaDeletionError =
                     message.startsWith("ERROR: schema") && message.endsWith("does not exist")
+                if (message.contains("permission denied")) {
+                    throw ConfigErrorException(
+                        "Redshift user lacks permission to create or access the requested schema.",
+                        e
+                    )
+                }
                 if (!isConcurrentSchemaDeletionError) {
                     // The error is not
                     // `ERROR: schema "sql_generator_test_akqywgsxqs" does not exist`
@@ -130,12 +136,19 @@ class RedshiftDestinationHandler(
                 }
             } catch (e: SQLException) {
                 log.error(e) { "Sql $queryId-$transactionId failed" }
+                val errorMessage = e.message ?: ""
+                if (errorMessage.contains("permission denied")) {
+                    throw ConfigErrorException(
+                        "Redshift user lacks required permissions to execute SQL against the target schema.",
+                        e
+                    )
+                }
                 // This is a big hammer for something that should be much more targetted, only when
                 // executing the
                 // DROP TABLE command.
                 if (
-                    e.message!!.contains("ERROR: cannot drop table") &&
-                        e.message!!.contains("because other objects depend on it")
+                    errorMessage.contains("ERROR: cannot drop table") &&
+                        errorMessage.contains("because other objects depend on it")
                 ) {
                     throw ConfigErrorException(
                         "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
