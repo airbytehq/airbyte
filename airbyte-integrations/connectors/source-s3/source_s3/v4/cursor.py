@@ -25,6 +25,7 @@ class Cursor(DefaultFileBasedCursor):
 
     # Set by SourceS3.streams() before cursor construction when flatten_records_key is active.
     _flatten_records_key: Optional[str] = None
+    _start_date: Optional[str] = None
 
     def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
         super().__init__(stream_config)
@@ -91,8 +92,15 @@ class Cursor(DefaultFileBasedCursor):
         V3-migration mode: never sync files earlier than the migration start date; sync all during migration.
         Default: delegate to parent logic.
         """
-        if self._cloudtrail_mode and self._cloudtrail_cursor_dt is not None:
-            return file.last_modified > self._cloudtrail_cursor_dt
+        if self._cloudtrail_mode:
+            if self._cloudtrail_cursor_dt is not None:
+                return file.last_modified > self._cloudtrail_cursor_dt
+            # First sync: no cursor yet, use start_date as the filter
+            if Cursor._start_date:
+                import pendulum
+                start_dt = pendulum.parse(Cursor._start_date).naive()
+                return file.last_modified > start_dt
+            return True  # No cursor and no start_date — sync everything
 
         if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
             return False

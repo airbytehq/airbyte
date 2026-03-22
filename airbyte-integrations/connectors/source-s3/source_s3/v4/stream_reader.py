@@ -231,7 +231,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         # Determine start date
         if self._cloudtrail_cursor_date:
-            start_dt = self._cloudtrail_cursor_date - timedelta(days=1)  # overlap buffer
+            start_dt = self._cloudtrail_cursor_date  # cursor handles filtering, no overlap needed
             start = start_dt.date() if isinstance(start_dt, datetime) else start_dt
         elif self.config.start_date:
             start = pendulum.parse(self.config.start_date).date()

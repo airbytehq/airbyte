@@ -67,8 +67,9 @@ class SourceS3(FileBasedSource):
         return self.main_config
 
     def streams(self, config):
-        # Set flatten_records_key on Cursor class before super creates cursors
+        # Set flatten_records_key and start_date on Cursor class before super creates cursors
         Cursor._flatten_records_key = config.get('flatten_records_key')
+        Cursor._start_date = config.get('start_date')
 
         result = super().streams(config)
 

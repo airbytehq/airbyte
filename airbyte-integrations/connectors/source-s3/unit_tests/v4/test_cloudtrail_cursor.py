@@ -99,3 +99,35 @@ class TestCloudTrailCursorMode:
         cursor.set_initial_state({})
         file = _make_file("any.json", datetime(2026, 3, 21, 5, 0, 0))
         assert cursor._should_sync_file(file, logging.getLogger()) is True
+
+
+class TestCloudTrailFirstSyncWithStartDate:
+    """First sync: no cloudtrail_cursor in state, uses start_date to filter."""
+
+    def test_syncs_file_newer_than_start_date(self):
+        Cursor._start_date = "2026-03-20T10:00:00.000000Z"
+        cursor = _make_cursor()
+        cursor.set_initial_state({})  # No cloudtrail_cursor
+        file = _make_file("new.json", datetime(2026, 3, 21, 5, 0, 0))
+        assert cursor._should_sync_file(file, logging.getLogger()) is True
+
+    def test_skips_file_older_than_start_date(self):
+        Cursor._start_date = "2026-03-20T10:00:00.000000Z"
+        cursor = _make_cursor()
+        cursor.set_initial_state({})  # No cloudtrail_cursor
+        file = _make_file("old.json", datetime(2026, 3, 19, 5, 0, 0))
+        assert cursor._should_sync_file(file, logging.getLogger()) is False
+
+    def test_skips_file_equal_to_start_date(self):
+        Cursor._start_date = "2026-03-20T10:00:00.000000Z"
+        cursor = _make_cursor()
+        cursor.set_initial_state({})
+        file = _make_file("same.json", datetime(2026, 3, 20, 10, 0, 0))
+        assert cursor._should_sync_file(file, logging.getLogger()) is False
+
+    def test_no_start_date_syncs_everything(self):
+        Cursor._start_date = None
+        cursor = _make_cursor()
+        cursor.set_initial_state({})
+        file = _make_file("any.json", datetime(2020, 1, 1, 0, 0, 0))
+        assert cursor._should_sync_file(file, logging.getLogger()) is True
