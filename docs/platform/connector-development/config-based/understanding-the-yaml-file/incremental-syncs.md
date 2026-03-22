@@ -89,7 +89,7 @@ incremental_sync:
 
 ### Nested Streams
 
-Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#SubstreamPartitionRouter)
+Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](partition-router.md#substreampartitionrouter)
 
 The default state format is **per partition with fallback to global**, but there are options to enhance efficiency depending on your use case: **incremental_dependency** and **global_substream_cursor**. Here's when and how to use each option, with examples:
 

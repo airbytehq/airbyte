@@ -44,7 +44,8 @@ It is unclear what populates this API and the sandbox environment does not provi
 | `api_key` | `string` | API Key.  |
 | `start_date` | `string` | Start date.  |
 
-## Streams
+## Streams {#streams}
+
 | Stream Name | Incremental | Special Considerations |
 |-------------|-------------|------------------------|
 | countries |  ✅  |

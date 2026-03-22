@@ -79,7 +79,7 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
 5. Click **Set up source** and wait for the connection test to complete.
 
-### Custom app scopes
+### Custom app scopes {#scopes-required-for-custom-app}
 
 Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
 

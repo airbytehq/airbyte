@@ -77,7 +77,7 @@ partition_router:
     inject_into: "request_parameter"
 ```
 
-## SubstreamPartitionRouter
+## SubstreamPartitionRouter {#substreampartitionrouter}
 
 Substreams are streams that depend on the records of another stream
 
@@ -151,7 +151,7 @@ retriever:
 
 ## Nested streams
 
-Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#SubstreamPartitionRouter)
+Nested streams, subresources, or streams that depend on other streams can be implemented using a [`SubstreamPartitionRouter`](#substreampartitionrouter)
 
 ## More readings
 

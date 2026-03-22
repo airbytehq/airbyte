@@ -58,7 +58,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 6. Click **Save**.
 <!-- /env:oss -->
 
-### Set up the Zendesk Support connector in Airbyte
+### Set up the Zendesk Support connector in Airbyte {#set-up-the-zendesk-support-source-connector}
 
 <!-- env:cloud -->
 
