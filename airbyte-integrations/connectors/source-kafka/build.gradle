@@ -30,5 +30,5 @@ dependencies {
     implementation 'io.confluent:kafka-avro-serializer:7.2.1'
 
 
-    testImplementation 'org.testcontainers:kafka:1.19.4'
+    testImplementation 'org.testcontainers:kafka:1.21.4'
 }

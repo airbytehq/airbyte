@@ -25,5 +25,5 @@ dependencies {
         exclude group: 'at.yawk.lz4', module: 'lz4-java'
     }
 
-    testImplementation 'org.testcontainers:clickhouse:1.19.4'
+    testImplementation 'org.testcontainers:clickhouse:1.21.4'
 }

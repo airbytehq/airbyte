@@ -36,7 +36,7 @@ dependencies {
     }
     implementation 'com.azure:azure-identity:1.15.3'
 
-    testFixturesApi 'org.testcontainers:postgresql:1.19.0'
+    testFixturesApi 'org.testcontainers:postgresql:1.21.4'
 
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }
