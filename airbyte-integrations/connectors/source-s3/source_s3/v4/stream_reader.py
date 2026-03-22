@@ -38,6 +38,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         super().__init__()
         self._s3_client = None
         self._cloudtrail_cursor_date: Optional[datetime] = None
+        self._check_mode: bool = False
 
     @property
     def config(self) -> Config:
@@ -224,10 +225,34 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         except Exception as exc:
             self._raise_error_listing_files(globs, exc)
 
+    def _check_cloudtrail_connectivity(self, s3: BaseClient, bucket: str, base_prefix: str, globs: List[str], logger: logging.Logger) -> Optional[RemoteFile]:
+        """Quick connectivity check: list one file from today's prefix. Returns a RemoteFile or None."""
+        today = date_type.today()
+        regions = self._discover_cloudtrail_regions(s3, bucket, base_prefix)
+        if not regions:
+            return None
+        # Try today's prefix for the first region, then yesterday if empty
+        for days_back in range(3):
+            d = today - timedelta(days=days_back)
+            prefix = f"{base_prefix}{regions[0]}/{d.strftime('%Y/%m/%d')}/"
+            response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix, MaxKeys=1)
+            contents = response.get("Contents", [])
+            if contents and not self._is_folder(contents[0]):
+                return self._handle_regular_file(contents[0])
+        return None
+
     def _get_matching_files_cloudtrail(self, globs: List[str], base_prefix: str, logger: logging.Logger) -> Iterable[RemoteFile]:
         """CloudTrail-optimized listing: date-aware prefixes, parallel threads."""
         s3 = self.s3_client
         bucket = self.config.bucket
+
+        # Fast path for check mode: just verify we can list one file
+        if self._check_mode:
+            logger.info("CloudTrail check mode: quick connectivity verification")
+            file = self._check_cloudtrail_connectivity(s3, bucket, base_prefix, globs, logger)
+            if file:
+                yield file
+            return
 
         # Determine start date
         if self._cloudtrail_cursor_date:

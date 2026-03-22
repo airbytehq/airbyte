@@ -66,6 +66,14 @@ class SourceS3(FileBasedSource):
         self.main_config = self.spec_class(**config)
         return self.main_config
 
+    def check_connection(self, logger, config):
+        """Set check_mode flag so CloudTrail listing does a quick single-file check."""
+        self.stream_reader._check_mode = True
+        try:
+            return super().check_connection(logger, config)
+        finally:
+            self.stream_reader._check_mode = False
+
     def streams(self, config):
         # Set flatten_records_key and start_date on Cursor class before super creates cursors
         Cursor._flatten_records_key = config.get('flatten_records_key')
