@@ -73,4 +73,4 @@ class JsonFlattenParser(FileTypeParser):
                 return
 
             for record in records:
-                yield {"data": record}
+                yield record  # Raw dict — DefaultFileBasedStream wraps in {"data": ...} via schemaless mode

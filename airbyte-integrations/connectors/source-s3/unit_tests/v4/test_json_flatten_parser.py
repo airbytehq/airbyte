@@ -35,18 +35,18 @@ def _collect_records(parser, content: str, file_uri: str = "test.json") -> List[
 
 
 class TestJsonFlattenParserParseRecords:
-    def test_yields_individual_records_wrapped_in_data(self):
-        """Each element under the flatten key is wrapped as {"data": event}."""
+    def test_yields_individual_records_as_raw_dicts(self):
+        """Each element under the flatten key is yielded as a raw dict (CDK wraps in {"data":...})."""
         content = orjson.dumps({"Records": [{"a": 1}, {"b": 2}, {"c": 3}]}).decode()
         parser = JsonFlattenParser("Records")
         records = _collect_records(parser, content)
-        assert records == [{"data": {"a": 1}}, {"data": {"b": 2}}, {"data": {"c": 3}}]
+        assert records == [{"a": 1}, {"b": 2}, {"c": 3}]
 
     def test_single_record(self):
         content = orjson.dumps({"Records": [{"only": "one"}]}).decode()
         parser = JsonFlattenParser("Records")
         records = _collect_records(parser, content)
-        assert records == [{"data": {"only": "one"}}]
+        assert records == [{"only": "one"}]
 
     def test_empty_array_yields_nothing(self):
         content = orjson.dumps({"Records": []}).decode()
@@ -79,13 +79,13 @@ class TestJsonFlattenParserParseRecords:
         content = orjson.dumps({"Records": [event]}).decode()
         parser = JsonFlattenParser("Records")
         records = _collect_records(parser, content)
-        assert records == [{"data": event}]
+        assert records == [event]
 
     def test_custom_flatten_key(self):
         content = orjson.dumps({"events": [{"x": 1}]}).decode()
         parser = JsonFlattenParser("events")
         records = _collect_records(parser, content)
-        assert records == [{"data": {"x": 1}}]
+        assert records == [{"x": 1}]
 
 
 class TestJsonFlattenParserConfig:
