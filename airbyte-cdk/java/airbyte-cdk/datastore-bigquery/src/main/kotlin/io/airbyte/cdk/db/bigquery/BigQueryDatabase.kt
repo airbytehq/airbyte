@@ -46,13 +46,12 @@ constructor(
                     )
             }
             val scopedCredentials =
-                (credentials ?: GoogleCredentials.getApplicationDefault())
-                    .createScoped(
-                        listOf(
-                            "https://www.googleapis.com/auth/bigquery",
-                            "https://www.googleapis.com/auth/drive.readonly",
-                        )
+                (credentials ?: GoogleCredentials.getApplicationDefault()).createScoped(
+                    listOf(
+                        "https://www.googleapis.com/auth/bigquery",
+                        "https://www.googleapis.com/auth/drive.readonly",
                     )
+                )
             bigQuery =
                 bigQueryBuilder
                     .setProjectId(projectId)
