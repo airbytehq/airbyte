@@ -46,16 +46,8 @@ class JsonFlattenParser(FileTypeParser):
         return FileReadMode.READ
 
     async def infer_schema(self, config, file, stream_reader, logger) -> SchemaType:
-        """Infer schema from individual records under the flatten key, not the top-level wrapper."""
-        inferred_schema = {}
-        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
-            content = fp.read()
-            data = orjson.loads(content)
-            records = data.get(self.flatten_key, [])
-            for record in records[:100]:  # Sample first 100 records
-                record_schema = {k: {"type": PYTHON_TYPE_MAPPING[type(v)]} for k, v in record.items() if v is not None}
-                inferred_schema = merge_schemas(inferred_schema, record_schema)
-        return inferred_schema
+        """No-op — this parser is used with schemaless streams (raw VARIANT ingestion)."""
+        return schemaless_schema
 
     def parse_records(self, config, file, stream_reader, logger, schema):
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
@@ -84,7 +76,7 @@ Key properties:
 - Error handling: raises `RecordParseError` on malformed JSON for consistent CDK error reporting
 - Distinguishes missing key (warning) from empty array (info) for operational observability
 - Decompression is handled upstream by smart_open — this parser only sees the decompressed stream
-- Schema inference reads one file and samples up to 100 individual records under the flatten key
+- Schema inference is a no-op returning `schemaless_schema` — the stream is always schemaless (raw VARIANT ingestion), so inference is never called in practice
 - Implements all `FileTypeParser` abstract methods: `check_config`, `file_read_mode`, `infer_schema`, `parse_records`
 
 **Memory note:** `fp.read()` + `orjson.loads()` holds ~2x the decompressed file size in memory. This is fine for typical CloudTrail files (a few MB). If files ever reach hundreds of MB, a streaming parser (e.g., `ijson`) could be considered, but that's out of scope.
