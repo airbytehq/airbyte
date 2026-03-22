@@ -6,6 +6,7 @@ from __future__ import annotations
 import sys
 import traceback
 from datetime import datetime
+from datetime import datetime as dt_datetime
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
@@ -64,6 +65,31 @@ class SourceS3(FileBasedSource):
     def _get_parsed_config(self, config: Mapping[str, Any]) -> AbstractFileBasedSpec:
         self.main_config = self.spec_class(**config)
         return self.main_config
+
+    def streams(self, config):
+        # Set flatten_records_key on Cursor class before super creates cursors
+        Cursor._flatten_records_key = config.get('flatten_records_key')
+
+        result = super().streams(config)
+
+        # Bridge cursor state to reader for CloudTrail date-aware listing
+        if Cursor._flatten_records_key and self.state:
+            self._bridge_cloudtrail_cursor_to_reader()
+
+        return result
+
+    def _bridge_cloudtrail_cursor_to_reader(self) -> None:
+        """Extract cloudtrail_cursor from state and set on stream reader."""
+        for state_msg in self.state:
+            try:
+                stream_state = state_msg.stream.stream_state if state_msg.stream else None
+                if stream_state and "cloudtrail_cursor" in stream_state:
+                    cursor_str = stream_state["cloudtrail_cursor"]
+                    cursor_dt = dt_datetime.strptime(cursor_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    self.stream_reader.set_cloudtrail_cursor_date(cursor_dt)
+                    return
+            except (AttributeError, KeyError, ValueError):
+                continue
 
     def _make_default_stream(
         self,
