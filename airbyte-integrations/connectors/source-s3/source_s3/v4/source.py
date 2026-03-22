@@ -43,7 +43,9 @@ from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
-from source_s3.v4.flattenable_stream import FlattenableFileBasedStream
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
+from source_s3.v4.parsers.json_flatten_parser import JsonFlattenParser
 
 
 _V3_DEPRECATION_FIELD_MAPPING = {
@@ -69,21 +71,24 @@ class SourceS3(FileBasedSource):
         cursor: Optional[AbstractFileBasedCursor],
         parsed_config: AbstractFileBasedSpec,
     ) -> AbstractFileBasedStream:
-        """Override to use our custom FlattenableFileBasedStream class that supports the flatten_records_key parameter"""
-        # Pass the flatten_records_key from the main config to the stream
-        return FlattenableFileBasedStream(
+        flatten_records_key = getattr(parsed_config, 'flatten_records_key', None)
+        if flatten_records_key:
+            parsers = {**self.parsers, JsonlFormat: JsonFlattenParser(flatten_records_key)}
+        else:
+            parsers = self.parsers
+
+        return DefaultFileBasedStream(
             config=stream_config,
             catalog_schema=self.stream_schemas.get(stream_config.name),
             stream_reader=self.stream_reader,
             availability_strategy=self.availability_strategy,
             discovery_policy=self.discovery_policy,
-            parsers=self.parsers,
+            parsers=parsers,
             validation_policy=self._validate_and_get_validation_policy(stream_config),
             errors_collector=self.errors_collector,
             cursor=cursor,
             use_file_transfer=use_file_transfer(parsed_config),
             preserve_directory_structure=preserve_directory_structure(parsed_config),
-            flatten_records_key=getattr(parsed_config, 'flatten_records_key', None)
         )
 
     @classmethod
