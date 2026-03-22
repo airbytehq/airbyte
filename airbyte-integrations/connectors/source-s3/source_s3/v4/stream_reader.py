@@ -3,8 +3,11 @@
 #
 
 import logging
+import re
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from datetime import date as date_type, timedelta
 from io import IOBase
 from typing import Dict, Iterable, List, Optional, Set, Tuple, cast
 
@@ -34,6 +37,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
         self._s3_client = None
+        self._cloudtrail_cursor_date: Optional[datetime] = None
 
     @property
     def config(self) -> Config:
@@ -136,10 +140,69 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         return autorefresh_session.client("s3", **client_kv_args)
 
+    def set_cloudtrail_cursor_date(self, cursor_date: Optional[datetime]) -> None:
+        self._cloudtrail_cursor_date = cursor_date
+
+    def _extract_cloudtrail_base_prefix(self, globs: List[str]) -> Optional[str]:
+        """Extract the CloudTrail base prefix (up to and including 'CloudTrail/') from globs."""
+        for glob in globs:
+            match = re.match(r"(.*CloudTrail/)", glob)
+            if match:
+                return match.group(1)
+        return None
+
+    def _discover_cloudtrail_regions(self, s3: BaseClient, bucket: str, base_prefix: str) -> List[str]:
+        """Discover CloudTrail regions via delimiter-based listing (one API call)."""
+        response = s3.list_objects_v2(Bucket=bucket, Prefix=base_prefix, Delimiter="/")
+        regions = []
+        for prefix_obj in response.get("CommonPrefixes", []):
+            region = prefix_obj["Prefix"][len(base_prefix):].strip("/")
+            if region:
+                regions.append(region)
+        return regions
+
+    def _generate_cloudtrail_prefixes(self, base_prefix: str, regions: List[str], start_date: date_type, end_date: date_type) -> List[str]:
+        """Generate per-day S3 prefixes for each region."""
+        prefixes = []
+        current = start_date
+        while current <= end_date:
+            date_path = current.strftime("%Y/%m/%d")
+            for region in regions:
+                prefixes.append(f"{base_prefix}{region}/{date_path}/")
+            current += timedelta(days=1)
+        return prefixes
+
+    def _list_cloudtrail_prefix(self, s3: BaseClient, bucket: str, prefix: str, globs: List[str], logger: logging.Logger) -> List[RemoteFile]:
+        """List all files under a single prefix. Called from thread pool."""
+        files = []
+        kwargs = {"Bucket": bucket, "Prefix": prefix}
+        while True:
+            response = s3.list_objects_v2(**kwargs)
+            for obj in response.get("Contents", []):
+                if self._is_folder(obj):
+                    continue
+                remote_file = self._handle_regular_file(obj)
+                if self.file_matches_globs(remote_file, globs):
+                    files.append(remote_file)
+            if next_token := response.get("NextContinuationToken"):
+                kwargs["ContinuationToken"] = next_token
+            else:
+                break
+        return files
+
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Get all files matching the specified glob patterns.
+        Uses CloudTrail-optimized date-aware prefix listing when applicable.
         """
+        # Check if CloudTrail optimization applies
+        if getattr(self, "_config", None) is not None and self.config.flatten_records_key:
+            base_prefix = self._extract_cloudtrail_base_prefix(globs)
+            if base_prefix:
+                yield from self._get_matching_files_cloudtrail(globs, base_prefix, logger)
+                return
+
+        # Default path: existing behavior (unchanged)
         s3 = self.s3_client
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
@@ -160,6 +223,65 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             self._raise_error_listing_files(globs, exc)
         except Exception as exc:
             self._raise_error_listing_files(globs, exc)
+
+    def _get_matching_files_cloudtrail(self, globs: List[str], base_prefix: str, logger: logging.Logger) -> Iterable[RemoteFile]:
+        """CloudTrail-optimized listing: date-aware prefixes, parallel threads."""
+        s3 = self.s3_client
+        bucket = self.config.bucket
+
+        # Determine start date
+        if self._cloudtrail_cursor_date:
+            start_dt = self._cloudtrail_cursor_date - timedelta(days=1)  # overlap buffer
+            start = start_dt.date() if isinstance(start_dt, datetime) else start_dt
+        elif self.config.start_date:
+            start = pendulum.parse(self.config.start_date).date()
+        else:
+            logger.warning("CloudTrail mode: no cursor or start_date, falling back to broad listing")
+            seen: Set[str] = set()
+            for remote_file in self._page(s3, globs, self.config.bucket, base_prefix, seen, logger):
+                yield remote_file
+            return
+
+        end = date_type.today()
+
+        # Discover or use configured regions
+        if hasattr(self.config, "cloudtrail_regions") and self.config.cloudtrail_regions:
+            regions = self.config.cloudtrail_regions
+        else:
+            regions = self._discover_cloudtrail_regions(s3, bucket, base_prefix)
+
+        if not regions:
+            logger.warning(f"No CloudTrail regions found under {base_prefix}")
+            return
+
+        logger.info(f"CloudTrail listing: {len(regions)} regions, {start} to {end}")
+
+        # Generate per-day prefixes
+        prefixes = self._generate_cloudtrail_prefixes(base_prefix, regions, start, end)
+        logger.info(f"Generated {len(prefixes)} day-prefixes for parallel listing")
+
+        # List in parallel
+        total_files = 0
+        seen_uris: Set[str] = set()
+        with ThreadPoolExecutor(max_workers=10) as pool:
+            futures = {
+                pool.submit(self._list_cloudtrail_prefix, s3, bucket, p, globs, logger): p
+                for p in prefixes
+            }
+            for future in as_completed(futures):
+                prefix_name = futures[future]
+                try:
+                    files = future.result()
+                    for f in files:
+                        if f.uri not in seen_uris:
+                            seen_uris.add(f.uri)
+                            total_files += 1
+                            yield f
+                except Exception as exc:
+                    logger.error(f"Error listing prefix {prefix_name}: {exc}")
+                    raise
+
+        logger.info(f"CloudTrail listing complete: {total_files} files from {len(prefixes)} prefixes")
 
     def _raise_error_listing_files(self, globs: List[str], exc: Optional[Exception] = None):
         """Helper method to raise the ErrorListingFiles exception."""
