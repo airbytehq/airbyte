@@ -10,7 +10,6 @@ data:
   icon: kafka.svg
   license: ELv2
   name: Kafka
-  description: "Apache Kafka destination connector with configurable partition routing for deterministic record distribution."
   registryOverrides:
     cloud:
       enabled: false # hide Kafka Destination https://github.com/airbytehq/airbyte-cloud/issues/2610
@@ -39,4 +38,5 @@ data:
     - title: Quotas
       url: https://kafka.apache.org/documentation/#design_quotas
       type: rate_limits
+description: "Apache Kafka destination connector with configurable partition routing for deterministic record distribution."
 metadataSpecVersion: "1.0"
