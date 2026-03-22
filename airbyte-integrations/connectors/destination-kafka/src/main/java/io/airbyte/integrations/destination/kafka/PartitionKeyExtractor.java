@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for extracting partition keys from Airbyte record data. Supports single fields,
@@ -15,6 +17,7 @@ import java.util.UUID;
  */
 public class PartitionKeyExtractor {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(PartitionKeyExtractor.class);
   private static final String FIELD_DELIMITER = "|";
   private static final String NESTED_FIELD_DELIMITER = "\\.";
 
@@ -107,7 +110,13 @@ public class PartitionKeyExtractor {
    */
   public static String determinePartitionKey(String partitionKeyFields, JsonNode recordData) {
     String partitionKey = extractPartitionKey(partitionKeyFields, recordData);
-    return partitionKey != null ? partitionKey : generateFallbackKey();
+    if (partitionKey != null) {
+      LOGGER.debug("Extracted partition key: {}", partitionKey);
+      return partitionKey;
+    } else {
+      LOGGER.debug("No partition key found, generating fallback key");
+      return generateFallbackKey();
+    }
   }
 
 }

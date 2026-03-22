@@ -35,10 +35,14 @@ public class KafkaDestinationConfig {
   }
 
   public static KafkaDestinationConfig getKafkaDestinationConfig(final JsonNode config) {
+    String partitionKeyField = config.has("partition_key_field") ? config.get("partition_key_field").asText() : null;
+    if (partitionKeyField != null && !partitionKeyField.trim().isEmpty()) {
+      LOGGER.info("Partition key configuration loaded: {}", partitionKeyField);
+    }
     return new KafkaDestinationConfig(
         config.get("topic_pattern").asText(),
         config.has("sync_producer") && config.get("sync_producer").asBoolean(),
-        config.has("partition_key_field") ? config.get("partition_key_field").asText() : null,
+        partitionKeyField,
         config);
   }
 
