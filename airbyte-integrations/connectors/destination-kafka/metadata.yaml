@@ -38,5 +38,4 @@ data:
     - title: Quotas
       url: https://kafka.apache.org/documentation/#design_quotas
       type: rate_limits
-description: "Apache Kafka destination connector with configurable partition routing for deterministic record distribution."
 metadataSpecVersion: "1.0"
