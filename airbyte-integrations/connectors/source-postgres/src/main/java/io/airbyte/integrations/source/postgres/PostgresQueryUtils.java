@@ -163,8 +163,24 @@ public class PostgresQueryUtils {
           throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
         }
 
-        LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
         final String cursorField = cursorInfoOptional.get().getCursorField();
+
+        // Skip cursor-based status query for streams without a valid cursor field
+        // (e.g., full_refresh streams with empty cursorField). These streams will be
+        // synced via CTID without cursor-based state tracking.
+        if (cursorField == null || cursorField.isEmpty()) {
+          LOGGER.info("Skipping cursor-based status for {}.{} - no cursor field defined", namespace, name);
+          final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
+          cursorBasedStatus.setStateType(StateType.CURSOR_BASED);
+          cursorBasedStatus.setVersion(2L);
+          cursorBasedStatus.setStreamName(name);
+          cursorBasedStatus.setStreamNamespace(namespace);
+          cursorBasedStatus.setCursorField(ImmutableList.of());
+          cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
+          return;
+        }
+
+        LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
             fullTableName,
