@@ -37,7 +37,7 @@ All notable changes to the Kafka Destination Connector will be documented in thi
 ### Migration Notes
 - No breaking changes - existing configurations continue to work unchanged
 - To enable partition routing, add `partition_key_field` to your connector configuration
-- Example: `"partition_key_field": "user_id"` will route all records with the same `user_id` to the same partition
+- Example: `"partition_key_field": "value.user_id"` will route all records with the same `user_id` to the same partition
 
 ## [0.1.11] - Previous Release
 

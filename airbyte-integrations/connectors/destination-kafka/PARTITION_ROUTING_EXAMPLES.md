@@ -8,7 +8,7 @@
 {
   "bootstrap_servers": "localhost:9092",
   "topic_pattern": "orders.{stream}",
-  "partition_key_field": "user_id",
+  "partition_key_field": "value.user_id",
   "protocol": {
     "security_protocol": "PLAINTEXT"
   },
@@ -52,7 +52,7 @@
 {
   "bootstrap_servers": "localhost:9092",
   "topic_pattern": "orders.{stream}",
-  "partition_key_field": "user_id,order_id",
+  "partition_key_field": "value.user_id,value.order_id",
   "protocol": {
     "security_protocol": "PLAINTEXT"
   },
@@ -96,7 +96,7 @@
 {
   "bootstrap_servers": "localhost:9092",
   "topic_pattern": "users.{stream}",
-  "partition_key_field": "user.id",
+  "partition_key_field": "value.user.id",
   "protocol": {
     "security_protocol": "PLAINTEXT"
   },
@@ -143,7 +143,7 @@
 {
   "bootstrap_servers": "localhost:9092",
   "topic_pattern": "events.{stream}",
-  "partition_key_field": "user.id,action,timestamp",
+  "partition_key_field": "value.user.id,value.action,value.timestamp",
   "protocol": {
     "security_protocol": "PLAINTEXT"
   },
@@ -231,7 +231,7 @@
 ]
 ```
 
-**Configuration:** `partition_key_field: "user_id"`
+**Configuration:** `partition_key_field: "value.user_id"`
 
 **Expected:** All three records go to the same partition.
 
@@ -248,7 +248,7 @@
 ]
 ```
 
-**Configuration:** `partition_key_field: "user_id"`
+**Configuration:** `partition_key_field: "value.user_id"`
 
 **Expected:** Records likely go to different partitions.
 
@@ -264,7 +264,7 @@
 ]
 ```
 
-**Configuration:** `partition_key_field: "user_id"`
+**Configuration:** `partition_key_field: "value.user_id"`
 
 **Expected:** Both records get random UUID keys (fallback behavior).
 

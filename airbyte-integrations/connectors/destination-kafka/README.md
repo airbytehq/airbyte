@@ -15,16 +15,16 @@ Add the `partition_key_field` parameter to your connector configuration:
 
 ```json
 {
-  "partition_key_field": "user_id"
+  "partition_key_field": "value.user_id"
 }
 ```
 
 #### Supported Field Types
 
-- **Single Field**: `"user_id"`
-- **Multiple Fields**: `"user_id,order_id"` (concatenated with "|" delimiter)
-- **Nested Fields**: `"user.id"` (dot notation for nested JSON objects)
-- **Mixed**: `"user_id,user.email,order.date"`
+- **Single Field**: `"value.user_id"`
+- **Multiple Fields**: `"value.user_id,value.order_id"` (concatenated with "|" delimiter)
+- **Nested Fields**: `"value.user.id"` (dot notation for nested JSON objects)
+- **Mixed**: `"value.user_id,value.user.email,value.order.date"`
 
 #### Behavior
 
@@ -38,7 +38,7 @@ Add the `partition_key_field` parameter to your connector configuration:
 **Single Field Partitioning:**
 ```json
 {
-  "partition_key_field": "user_id",
+  "partition_key_field": "value.user_id",
   "topic_pattern": "orders.{stream}"
 }
 ```
@@ -47,7 +47,7 @@ Records with the same `user_id` will go to the same partition.
 **Composite Key Partitioning:**
 ```json
 {
-  "partition_key_field": "user_id,order_id",
+  "partition_key_field": "value.user_id,value.order_id",
   "topic_pattern": "orders.{stream}"
 }
 ```
@@ -56,7 +56,7 @@ Records with the same combination of `user_id` and `order_id` will go to the sam
 **Nested Field Partitioning:**
 ```json
 {
-  "partition_key_field": "user.id",
+  "partition_key_field": "value.user.id",
   "topic_pattern": "users.{stream}"
 }
 ```

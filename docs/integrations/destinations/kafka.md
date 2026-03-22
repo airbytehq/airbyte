@@ -92,7 +92,7 @@ Add the `partition_key_field` parameter to your connector configuration to enabl
 
 ```json
 {
-  "partition_key_field": "user_id",
+  "partition_key_field": "value.user_id",
   "topic_pattern": "orders.{stream}"
 }
 ```
@@ -100,7 +100,7 @@ All records with the same `user_id` will go to the same partition.
 
 ```json
 {
-  "partition_key_field": "user_id,order_id",
+  "partition_key_field": "value.user_id,value.order_id",
   "topic_pattern": "orders.{stream}"
 }
 ```
@@ -108,7 +108,7 @@ Records with the same combination of `user_id` and `order_id` will go to the sam
 
 ```json
 {
-  "partition_key_field": "user.id",
+  "partition_key_field": "value.user.id",
   "topic_pattern": "users.{stream}"
 }
 ```
