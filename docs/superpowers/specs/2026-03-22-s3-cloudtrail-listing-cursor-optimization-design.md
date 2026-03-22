@@ -112,12 +112,11 @@ Replace the filename-history cursor with a high-water timestamp for CloudTrail c
 - No need to track filenames — just the high-water mark
 - The 1-day overlap buffer handles late-arriving files
 
-**State migration (supports v3 → v4 → v5 path):**
-- If `cloudtrail_cursor` is present in state: use new logic (v5)
-- If absent but `history` has entries (v4 state): extract `max(history.values())` as the initial `cloudtrail_cursor`. Clear history.
-- If v3 legacy state: existing v3→v4 conversion runs first, then v4→v5 migration applies
-- If no state at all (fresh connection): use `start_date` from config
-- From that point forward, use the new v5 format
+**State migration (simple — no history parsing):**
+- If `cloudtrail_cursor` is present in state: use it (normal incremental)
+- If absent (first sync after upgrade, or fresh connection): use `start_date` from config as the starting point. The old history dict is ignored entirely.
+- On the first sync after upgrade, files between `start_date` and the actual last-synced position may be re-synced. This is a one-time cost — the listing is fast with the new approach, and duplicates are harmless (append-only destination, dedup handled downstream in dbt).
+- From that point forward, `cloudtrail_cursor` advances normally
 
 ### 3. Files Changed
 
