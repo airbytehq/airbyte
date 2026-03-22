@@ -11807,12 +11807,27 @@ schemas:
         description: The timestamp when the differential price data was last updated.
 
 
+# Rate limits: https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits
 # Chargebee offers three tiers of rate limits:
 # - Starter: 150 req/min (2.5 req/sec)
 # - Performance: 1000 req/min (16 req/sec)
 # - Enterprise: 3500 req/min (58 req/sec)
 #
-# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
+# All endpoints share the same global rate limit. Rate limit errors return HTTP 429
+# with a Retry-After header. We default to the Starter tier (150 req/min) for safety.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 150
+          interval: PT1M
+      matchers: []
+  ratelimit_reset_header: Retry-After
+  status_codes_for_ratelimit_hit:
+    - 429
+
+# We default to a concurrency level of 3 because we assume customers are on the Starter tier, but
 # customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
 concurrency_level:
   type: ConcurrencyLevel
