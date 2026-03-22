@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -12,11 +13,15 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +43,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   private List<String> schemas;
+  private final FeatureFlags featureFlags;
 
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
@@ -55,11 +61,39 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public OracleSource() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  OracleSource(final FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new OracleSourceOperations());
+    this.featureFlags = featureFlags;
+  }
+
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
   }
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new OracleSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
+
+  /**
+   * When running in cloud deployment mode, require encryption by adding "encryption" to required
+   * fields and removing the unencrypted option. This replaces the need for a separate strict-encrypt
+   * connector.
+   */
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    final ConnectorSpecification spec = Jsons.clone(super.spec());
+    if (cloudDeploymentMode()) {
+      ((ArrayNode) spec.getConnectionSpecification().get("required")).add("encryption");
+      ((ArrayNode) spec.getConnectionSpecification().get("properties").get("encryption").get("oneOf")).remove(0);
+    }
+    return spec;
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(getFeatureFlags().deploymentMode());
   }
 
   @Override
