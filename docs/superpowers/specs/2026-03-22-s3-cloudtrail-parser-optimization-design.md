@@ -66,13 +66,13 @@ class JsonFlattenParser(FileTypeParser):
                 logger.info(f"Empty '{self.flatten_key}' array in {file.uri}")
                 return
             for record in records:
-                yield record  # Raw event dict; DefaultFileBasedStream wraps in {"data": ...} if schemaless
+                yield {"data": record}  # Wraps here to match existing Snowflake schema, independent of schemaless config
 ```
 
 Key properties:
 - `fp.read()` — reads entire file at once, no line-by-line accumulation
 - One `orjson.loads()` — zero failed parse retries
-- **Yields raw event dicts** — `DefaultFileBasedStream` handles the `{"data": record}` wrapping when `schemaless=True`, avoiding double-wrapping
+- **Yields `{"data": record}` directly** — matches the existing `FlattenableFileBasedStream` output, independent of the `schemaless` config flag
 - Error handling: raises `RecordParseError` on malformed JSON for consistent CDK error reporting
 - Distinguishes missing key (warning) from empty array (info) for operational observability
 - Decompression is handled upstream by smart_open — this parser only sees the decompressed stream
@@ -130,9 +130,8 @@ BEFORE:
 AFTER:
   File -> smart_open (decompress)
        -> JsonFlattenParser (fp.read(), 1 orjson.loads)
-       -> yields raw event dict per record
+       -> yields {"data": event} per record
        -> DefaultFileBasedStream.read_records_from_slice()
-       -> wraps as {"data": event} (schemaless mode)
        -> AirbyteMessage per event
        -> Snowflake row
 ```
