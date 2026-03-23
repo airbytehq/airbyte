@@ -1,36 +1,69 @@
-# Partnerstack
+# PartnerStack
 
-## Sync overview
+<HideInUI>
 
-This source can sync data for the [Partnerstack API](https://docs.partnerstack.com/reference).
+This page contains the setup guide and reference information for the [PartnerStack](https://partnerstack.com/) source connector.
 
-### Output schema
+</HideInUI>
 
-This Source is capable of syncing the following core Streams:
+## Prerequisites
 
-- [Customers](https://docs.partnerstack.com/reference/get_v2-customers-2)
-- [Deals](https://docs.partnerstack.com/reference/get_v2-deals)
-- [Groups](https://docs.partnerstack.com/reference/get_v2-groups)
-- [Leads](https://docs.partnerstack.com/reference/get_v2-leads)
-- [Partnerships](https://docs.partnerstack.com/reference/get_v2-partnerships-2)
-- [Rewards](https://docs.partnerstack.com/reference/get_v2-rewards-2)
-- [Transactions](https://docs.partnerstack.com/reference/get_v2-transactions-2)
+- A PartnerStack account with access to the Vendor dashboard
+- PartnerStack API keys (public key and private key)
 
-### Features
+## Setup guide
 
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-| Namespaces                | No                   |       |
+### Step 1: Obtain your PartnerStack API keys
 
-### Performance considerations
+1. Log in to your [PartnerStack Vendor dashboard](https://app.partnerstack.com/).
+2. Navigate to **Settings > Integrations > PartnerStack API Keys**.
+3. Copy your **Public key** and **Private key**. The connector uses [Basic authentication](https://docs.partnerstack.com/reference/auth), where the public key is the username and the private key is the password.
 
-The Partnerstack connector should not run into Partnerstack API limitations under normal usage.
+:::note
+PartnerStack provides separate test and production API keys. Test keys create test customers and do not generate rewards. Use production keys for syncing real data.
+:::
 
-## Requirements
+### Step 2: Set up the PartnerStack connector in Airbyte
 
-- **Partnerstack API keys**. See the [Partnerstack docs](https://docs.partnerstack.com/reference/auth) for information on how to obtain the API keys.
+1. Enter a name for the PartnerStack connector.
+2. Enter your **Public key**.
+3. Enter your **Private key**.
+4. Optionally, enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Only data created or updated after this date is replicated. If you don't set a start date, all available data is replicated.
+5. Click **Set up source** and wait for the tests to complete.
+
+<HideInUI>
+
+## Supported sync modes
+
+The PartnerStack source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- Full Refresh
+- Incremental - Append
+
+## Supported streams
+
+The PartnerStack source connector supports the following streams. All streams read from the [PartnerStack Vendor API v2](https://docs.partnerstack.com/reference).
+
+| Stream | Sync mode | Cursor field |
+| :--- | :--- | :--- |
+| [Customers](https://docs.partnerstack.com/reference/get_v2-customers-2) | Incremental | `updated_at` |
+| [Deals](https://docs.partnerstack.com/reference/get_v2-deals) | Incremental | `updated_at` |
+| [Groups](https://docs.partnerstack.com/reference/get_v2-groups) | Incremental | `updated_at` |
+| [Leads](https://docs.partnerstack.com/reference/get_v2-leads) | Incremental | `updated_at` |
+| [Partnerships](https://docs.partnerstack.com/reference/get_v2-partnerships-2) | Incremental | `updated_at` |
+| [Rewards](https://docs.partnerstack.com/reference/get_v2-rewards-2) | Full Refresh | - |
+| [Transactions](https://docs.partnerstack.com/reference/get_v2-transactions-2) | Full Refresh | - |
+
+## Performance considerations
+
+The PartnerStack API enforces a rate limit of 4,000 requests per minute per IP address. The connector should not run into this limit under normal usage. If you receive HTTP 429 responses, reduce the sync frequency.
+
+## Limitations
+
+- The connector uses the PartnerStack **Vendor API**, which authenticates with Basic Auth (public key and private key). It does not use the Partner API, which requires Bearer token authentication.
+- The Rewards and Transactions streams do not support incremental sync by `updated_at`. They filter by `min_created` using the configured start date, so they perform a full refresh of all records created after the start date on each sync.
+
+</HideInUI>
 
 ## Changelog
 
@@ -39,6 +72,7 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.3.12 | 2026-03-10 | [74086](https://github.com/airbytehq/airbyte/pull/74086) | Add missing fields (test, metadata) to Transactions stream schema |
 | 0.3.11 | 2025-05-24 | [60453](https://github.com/airbytehq/airbyte/pull/60453) | Update dependencies |
 | 0.3.10 | 2025-05-10 | [60087](https://github.com/airbytehq/airbyte/pull/60087) | Update dependencies |
 | 0.3.9 | 2025-05-03 | [59453](https://github.com/airbytehq/airbyte/pull/59453) | Update dependencies |
@@ -85,6 +119,6 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 | 0.1.3 | 2024-06-13 | [37595](https://github.com/airbytehq/airbyte/pull/37595) | Change `last_records` to `last_record` |
 | 0.1.2 | 2024-06-04 | [38964](https://github.com/airbytehq/airbyte/pull/38964) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.1 | 2024-05-21 | [38484](https://github.com/airbytehq/airbyte/pull/38484) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2022-10-27 | [XXX](https://github.com/airbytehq/airbyte/pull/XXX)     | Add Partnerstack Source Connector           |
+| 0.1.0 | 2022-10-27 | | Add PartnerStack source connector |
 
 </details>

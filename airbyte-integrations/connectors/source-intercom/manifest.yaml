@@ -7,6 +7,13 @@ check:
   stream_names:
     - tags
 
+stream_groups:
+  companies_group:
+    streams:
+      - $ref: "#/definitions/streams/companies"
+    action:
+      type: BlockSimultaneousSyncsAction
+
 definitions:
   streams:
     activity_logs:
@@ -263,6 +270,9 @@ definitions:
             Intercom-Version: "2.11"
           error_handler:
             type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ConstantBackoffStrategy
+                backoff_time_in_seconds: 60
             response_filters:
               - type: HttpResponseFilter
                 http_codes:
@@ -281,11 +291,11 @@ definitions:
               - type: HttpResponseFilter
                 http_codes:
                   - 400
-                action: FAIL
+                action: RETRY
                 failure_type: transient_error
                 error_message: >-
-                  Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
-                  Intercom API does not allow for you to run the Companies or Company Parts streams in parallel.
+                  Scroll already exists for this workspace. Retrying after backoff.
+                  Intercom API does not allow more than one scroll open per app at a time.
               - type: HttpResponseFilter
                 http_codes:
                   - 500
