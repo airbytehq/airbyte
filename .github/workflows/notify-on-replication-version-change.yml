@@ -1,0 +1,138 @@
+name: Notify Sonar on Source Connector Version Change
+
+on:
+  workflow_run:
+    workflows: ["Publish Connectors"]
+    types: [completed]
+    branches: [master]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  notify-version-change:
+    name: Detect version changes and notify Sonar
+    if: github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
+
+      - name: Get successfully published source connectors
+        id: published-connectors
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+
+          # Query the publish workflow run's jobs to find which source connectors
+          # had their registry entries published successfully.
+          # Job names follow the pattern: "Publish connector registry entries (source-xyz)"
+          PUBLISHED=$(gh api "repos/$REPO/actions/runs/$WORKFLOW_RUN_ID/jobs" \
+            --paginate \
+            --jq '[.jobs[]
+              | select(.name | startswith("Publish connector registry entries (source-"))
+              | select(.conclusion == "success")
+              | .name
+              | capture("\\((?<connector>source-[^)]+)\\)")
+              | .connector
+            ]')
+
+          echo "Successfully published source connectors: $PUBLISHED"
+          echo "published=$PUBLISHED" >> "$GITHUB_OUTPUT"
+
+      - name: Detect dockerImageTag changes for published connectors
+        id: detect-changes
+        env:
+          PUBLISHED: ${{ steps.published-connectors.outputs.published }}
+        run: |
+          set -euo pipefail
+          CHANGES="[]"
+
+          if [[ "$PUBLISHED" == "[]" ]]; then
+            echo "No source connectors were successfully published."
+            echo "changes=$CHANGES" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- 'airbyte-integrations/connectors/source-*/metadata.yaml') || true
+
+          if [[ -z "$CHANGED_FILES" ]]; then
+            echo "No source connector metadata.yaml files changed."
+            echo "changes=$CHANGES" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          while IFS= read -r file; do
+            if [[ ! -f "$file" ]]; then
+              echo "Skipping $file (deleted in HEAD)"
+              continue
+            fi
+
+            CONNECTOR_NAME=$(echo "$file" | cut -d'/' -f3)
+
+            # Only include connectors that were successfully published
+            if ! echo "$PUBLISHED" | jq -e --arg name "$CONNECTOR_NAME" 'index($name) != null' > /dev/null 2>&1; then
+              echo "Skipping $CONNECTOR_NAME (not in successfully published list)"
+              continue
+            fi
+
+            CURRENT_VERSION=$(grep -E '^\s*dockerImageTag:' "$file" | head -n1 | awk '{print $2}' | tr -d '"')
+
+            PREVIOUS_VERSION=$(git show HEAD~1:"$file" 2>/dev/null | grep -E '^\s*dockerImageTag:' | head -n1 | awk '{print $2}' | tr -d '"') || true
+
+            if [[ -z "$CURRENT_VERSION" ]]; then
+              echo "Skipping $file (no dockerImageTag found)"
+              continue
+            fi
+
+            if [[ "$CURRENT_VERSION" == "$PREVIOUS_VERSION" ]]; then
+              echo "Skipping $file (dockerImageTag unchanged: $CURRENT_VERSION)"
+              continue
+            fi
+
+            # Only notify for stable releases (strict X.Y.Z semver)
+            if ! [[ "$CURRENT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Skipping $CONNECTOR_NAME (non-stable version: $CURRENT_VERSION)"
+              continue
+            fi
+
+            echo "Version changed for $CONNECTOR_NAME: ${PREVIOUS_VERSION:-<new>} -> $CURRENT_VERSION"
+            CHANGES=$(echo "$CHANGES" | jq -c --arg name "$CONNECTOR_NAME" --arg version "$CURRENT_VERSION" '. + [{"connector": $name, "version": $version}]')
+          done <<< "$CHANGED_FILES"
+
+          echo "changes=$CHANGES" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate as GitHub App
+        if: fromJSON(steps.detect-changes.outputs.changes)[0] != null
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "sonar"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Dispatch to Sonar
+        if: fromJSON(steps.detect-changes.outputs.changes)[0] != null
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          CHANGES: ${{ steps.detect-changes.outputs.changes }}
+        run: |
+          set -euo pipefail
+
+          echo "Dispatching to airbytehq/sonar with changes: $CHANGES"
+
+          jq -n --argjson changes "$CHANGES" \
+            '{"event_type": "replication-version-changed", "client_payload": {"changes": $changes}}' \
+          | gh api repos/airbytehq/sonar/dispatches --method POST --input -

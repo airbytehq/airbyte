@@ -151,9 +151,9 @@ The Pinterest source connector supports the following
   \(Full refresh\)
 - [Customer Lists](https://developers.pinterest.com/docs/api/v5/#tag/customer_lists) \(Full
   refresh\)
-- [Advertizer Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertiser Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Advertizer Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertiser Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
 - [Pin Promotion Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
@@ -181,14 +181,15 @@ properties:
    TOTAL, where metrics are aggregated over the specified date range.
 4. **Columns**: Identifies the data columns to be included in the report.
 5. **Click Window Days (Optional)**: The number of days used for conversion attribution from a pin
-   click action. This applies to Pinterest Tag conversion metrics. Defaults to 30 days if not
-   specified.
+   click action. This applies to Pinterest Tag conversion metrics. Valid values are 0, 1, 7, 14,
+   30, and 60. Defaults to 30 days if not specified. Set to 0 to disable click attribution.
 6. **Engagement Window Days (Optional)**: The number of days used for conversion attribution from an
    engagement action. Engagements include saves, closeups, link clicks, and carousel card swipes.
-   This applies to Pinterest Tag conversion metrics. Defaults to 30 days if not specified.
+   This applies to Pinterest Tag conversion metrics. Valid values are 0, 1, 7, 14, 30, and 60.
+   Defaults to 30 days if not specified. Set to 0 to disable engagement attribution.
 7. **View Window Days (Optional)**: The number of days used as the conversion attribution window for
-   a view action. This applies to Pinterest Tag conversion metrics. Defaults to 1 day if not
-   specified.
+   a view action. This applies to Pinterest Tag conversion metrics. Valid values are 0, 1, 7, 14,
+   30, and 60. Defaults to 30 days if not specified. Set to 0 to disable view attribution.
 8. **Conversion Report Time (Optional)**: Indicates the date by which the conversion metrics
    returned will be reported. There are two dates associated with a conversion event: the date of ad
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
@@ -215,6 +216,9 @@ details, see the [Pinterest rate limits documentation](https://developers.pinter
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.26 | 2026-03-17 | [74453](https://github.com/airbytehq/airbyte/pull/74453) | Update dependencies |
+| 2.1.25 | 2026-03-09 | [74339](https://github.com/airbytehq/airbyte/pull/74339) | Add TOTAL_IMPRESSION column to custom reports |
+| 2.1.24 | 2026-03-09 | [74120](https://github.com/airbytehq/airbyte/pull/74120) | Fix custom reports `engagement_window_days` and `view_window_days` default values from array `[30]` to integer `30`; fix `or 30` fallback to correctly handle `0` as a valid value |
 | 2.1.23 | 2026-02-24 | [73845](https://github.com/airbytehq/airbyte/pull/73845) | Update dependencies |
 | 2.1.22 | 2026-02-17 | [73595](https://github.com/airbytehq/airbyte/pull/73595) | Update dependencies |
 | 2.1.21 | 2026-02-12 | [71030](https://github.com/airbytehq/airbyte/pull/71030) | Use user_account_analytics for connection check to support all permission sets |

@@ -8,8 +8,8 @@ This connector uses the [Monday.com GraphQL API](https://developer.monday.com/ap
 
 To set up the Monday source connector, you need either:
 
-- A **Personal API Token**, which you can generate from your Monday.com account under **Profile picture** (bottom left corner) > **Admin** > **API**.
-- An **OAuth 2.0 application**, which you can find or create under **Profile picture** (bottom left corner) > **Developers** > **My Apps**.
+- A **Personal API Token**, which you can generate from your Monday.com account under **Profile picture** (top right corner) > **Developers** > **API token**.
+- An **OAuth 2.0 application**, which you can find or create under **Profile picture** (top right corner) > **Developers** > **My Apps**.
 
 For more details, see Monday.com's [authentication documentation](https://developer.monday.com/api-reference/docs/authentication).
 
@@ -25,8 +25,11 @@ For more details, see Monday.com's [authentication documentation](https://develo
 ### Connect using OAuth 2.0
 
 1. Select **OAuth2.0** in **Authorization Method**.
-2. Click **Authenticate your Monday account**.
-3. Complete the authentication flow using your Monday.com credentials.
+2. If your Monday.com account uses a custom subdomain, enter it in the **Subdomain/Slug** field. This is the first part of the URL that appears before `.monday.com`. Leave this field empty if you use the default `monday.com` domain.
+3. Click **Authenticate your Monday account**.
+4. Complete the authentication flow using your Monday.com credentials.
+
+The connector requests the following OAuth scopes: `me:read`, `boards:read`, `workspaces:read`, `users:read`, `account:read`, `updates:read`, `assets:read`, `tags:read`, and `teams:read`.
 
 ### Connect using API Token
 
@@ -63,7 +66,10 @@ The following streams are available:
 
 - The Boards stream includes column definitions for each board. In your destination, these appear as nested data, typically named `boards.columns`.
 
-- The Items stream includes column values for each item. In your destination, these appear as nested data, typically named `items.column_values`.
+- The Items stream includes column values for each item. In your destination, these appear as nested data, typically named `items.column_values`. Each column value includes `id`, `text`, `type`, and `value` fields. Some column types provide additional fields through typed values:
+
+  - **Connect Boards** (`board_relation`) and **Dependency** (`dependency`) columns include a `linked_item_ids` array containing the IDs of linked items. Use these IDs to join back to the Items stream for details about linked items. Note that the `value` field returns `null` for these column types.
+  - **Mirror**, **Connect Boards**, and **Dependency** columns include a `display_value` field with a human-readable text representation.
 
 - Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
 
@@ -80,6 +86,8 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.5 | 2026-03-17 | [74325](https://github.com/airbytehq/airbyte/pull/74325) | Migrate to scopes object array format |
+| 2.5.4 | 2026-03-10 | [74620](https://github.com/airbytehq/airbyte/pull/74620) | Update dependencies |
 | 2.5.3 | 2026-03-05 | [73658](https://github.com/airbytehq/airbyte/pull/73658) | Add `linked_item_ids` to `BoardRelationValue` and `DependencyValue` column types to restore linked item data lost after API version 2025-04+ |
 | 2.5.2 | 2026-02-24 | [73582](https://github.com/airbytehq/airbyte/pull/73582) | Update dependencies |
 | 2.5.1 | 2026-02-13 | [72192](https://github.com/airbytehq/airbyte/pull/72192) | Add `user_id` field to `activity_logs` stream |
