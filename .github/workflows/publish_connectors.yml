@@ -231,7 +231,7 @@ jobs:
               # This correctly strips any existing pre-release suffix (e.g., -rc.1) before
               # appending -preview.<sha>.
               DOCKER_IMAGE_TAG=$(
-                DO_NOT_TRACK=1 airbyte-ops local connector get-version \
+                airbyte-ops local connector get-version \
                   --name "${{ matrix.connector }}" \
                   --repo-path "${REPO_ROOT}" \
                   --next --prerelease
