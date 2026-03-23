@@ -11,6 +11,8 @@ from typing import TYPE_CHECKING, Any, Mapping, Optional, Union
 
 import backoff
 import requests
+from requests import codes, exceptions  # type: ignore[import]
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import (
     ErrorHandler,
@@ -18,7 +20,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
     ResponseAction,
 )
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from requests import codes, exceptions  # type: ignore[import]
+
 
 if TYPE_CHECKING:
     from source_salesforce.streams import SalesforceTokenProvider
@@ -85,9 +87,7 @@ class SalesforceErrorHandler(ErrorHandler):
     def max_time(self) -> Optional[int]:
         return 120
 
-    def interpret_response(
-        self, response: Optional[Union[requests.Response, Exception]]
-    ) -> ErrorResolution:
+    def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response, TRANSIENT_EXCEPTIONS):
             return ErrorResolution(
                 ResponseAction.RETRY,
@@ -96,15 +96,10 @@ class SalesforceErrorHandler(ErrorHandler):
             )
         elif isinstance(response, requests.Response):
             if response.ok:
-                if (
-                    self._is_bulk_job_status_check(response)
-                    and response.json().get("state") == "Failed"
-                ):
+                if self._is_bulk_job_status_check(response) and response.json().get("state") == "Failed":
                     # Important: this means that there are no retry for Salesforce jobs that once they fail. If we want to enable retry,
                     # we will need to be more granular by reading the `errorMessage`
-                    raise BulkNotSupportedException(
-                        f"Query job with id: `{response.json().get('id')}` failed"
-                    )
+                    raise BulkNotSupportedException(f"Query job with id: `{response.json().get('id')}` failed")
                 return ErrorResolution(ResponseAction.IGNORE, None, None)
 
             if response.status_code == 401:
@@ -118,10 +113,7 @@ class SalesforceErrorHandler(ErrorHandler):
                         "Salesforce session expired or invalid. Token has been refreshed.",
                     )
 
-            if (
-                not (400 <= response.status_code < 500)
-                or response.status_code in _RETRYABLE_400_STATUS_CODES
-            ):
+            if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
                 return ErrorResolution(
                     ResponseAction.RETRY,
                     FailureType.transient_error,
@@ -144,13 +136,10 @@ class SalesforceErrorHandler(ErrorHandler):
                 codes.FORBIDDEN,
                 codes.BAD_REQUEST,
             ]:
-                return self._handle_bulk_job_creation_endpoint_specific_errors(
-                    response, error_code, error_message
-                )
+                return self._handle_bulk_job_creation_endpoint_specific_errors(response, error_code, error_message)
 
             if response.status_code == codes.too_many_requests or (
-                response.status_code == codes.forbidden
-                and error_code == "REQUEST_LIMIT_EXCEEDED"
+                response.status_code == codes.forbidden and error_code == "REQUEST_LIMIT_EXCEEDED"
             ):
                 # It is unclear as to why we don't retry on those. The rate limit window is 24 hours but it is rolling so we could end up being able to sync more records before 24 hours. Note that there is also a limit of concurrent long running requests which can fall in this bucket.
                 return ErrorResolution(
@@ -160,8 +149,7 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
 
             if (
-                "We can't complete the action because enabled transaction security policies took too long to complete."
-                in error_message
+                "We can't complete the action because enabled transaction security policies took too long to complete." in error_message
                 and error_code == "TXN_SECURITY_METERING_ERROR"
             ):
                 return ErrorResolution(
@@ -181,18 +169,12 @@ class SalesforceErrorHandler(ErrorHandler):
         """Regular string ensures format used only for job status: /services/data/vXX.X/jobs/query/<queryJobId>,
         see https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/query_get_one_job.htm
         """
-        return response.request.method == "GET" and bool(
-            re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(
-                response.url
-            )
-        )
+        return response.request.method == "GET" and bool(re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(response.url))
 
     @staticmethod
     def _is_bulk_job_creation(response: requests.Response) -> bool:
         # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
-        return response.request.method == "POST" and bool(
-            re.compile(r"services/data/v\d{2}\.\d/jobs/query/?$").search(response.url)
-        )
+        return response.request.method == "POST" and bool(re.compile(r"services/data/v\d{2}\.\d/jobs/query/?$").search(response.url))
 
     def _handle_bulk_job_creation_endpoint_specific_errors(
         self, response: requests.Response, error_code: Optional[str], error_message: str
@@ -210,8 +192,7 @@ class SalesforceErrorHandler(ErrorHandler):
         #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
         #    And the main problem is these subqueries doesn't support CSV response format.
         if error_message == "Selecting compound data not supported in Bulk Query" or (
-            error_code == "INVALIDENTITY"
-            and "is not supported by the Bulk API" in error_message
+            error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
         ):
             logger.error(
                 f"Cannot receive data for stream '{self._stream_name}' using BULK API, "
@@ -225,13 +206,9 @@ class SalesforceErrorHandler(ErrorHandler):
                     f"sobject options: {self._sobject_options}, error message: '{error_message}'"
                 )
                 raise BulkNotSupportedException()
-            elif error_code == "API_ERROR" and error_message.startswith(
-                "Implementation restriction"
-            ):
+            elif error_code == "API_ERROR" and error_message.startswith("Implementation restriction"):
                 message = f"Unable to sync '{self._stream_name}'. To prevent future syncs from failing, ensure the authenticated user has \"View all Data\" permissions."
-                return ErrorResolution(
-                    ResponseAction.FAIL, FailureType.config_error, message
-                )
+                return ErrorResolution(ResponseAction.FAIL, FailureType.config_error, message)
             elif error_code == "LIMIT_EXCEEDED":
                 message = "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."
                 logger.error(message)
@@ -250,9 +227,7 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
                 raise BulkNotSupportedException()
 
-        return ErrorResolution(
-            ResponseAction.FAIL, FailureType.system_error, error_message
-        )
+        return ErrorResolution(ResponseAction.FAIL, FailureType.system_error, error_message)
 
     @staticmethod
     def _extract_error_code_and_message(
@@ -262,9 +237,7 @@ class SalesforceErrorHandler(ErrorHandler):
             error_data = response.json()[0]
             return error_data.get("errorCode"), error_data.get("message", "")
         except exceptions.JSONDecodeError:
-            logger.warning(
-                f"The response for `{response.request.url}` is not a JSON but was `{response.content}`"
-            )
+            logger.warning(f"The response for `{response.request.url}` is not a JSON but was `{response.content}`")
         except (IndexError, KeyError):
             logger.warning(
                 f"The response for `{response.request.url}` was expected to be a list with at least one element but was `{response.content}`"
@@ -288,21 +261,15 @@ def default_backoff_handler(max_tries: int, retry_on=None):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         logger.info(str(exc))
-        logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
-        )
+        logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
 
     def should_give_up(exc):
         give_up = (
-            SalesforceErrorHandler()
-            .interpret_response(exc if exc.response is None else exc.response)
-            .response_action
+            SalesforceErrorHandler().interpret_response(exc if exc.response is None else exc.response).response_action
             != ResponseAction.RETRY
         )
         if give_up:
-            logger.info(
-                f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}"
-            )
+            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}, body: {exc.response.text}")
         return give_up
 
     return backoff.on_exception(
