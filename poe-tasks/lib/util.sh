@@ -55,13 +55,7 @@ get_only_connector() {
 }
 
 # Generate the preview image tag (e.g. `1.2.3-preview.abcde12`).
-# When CONNECTOR_VERSION_TAG is set (by the publish workflow's "Resolve connector version tag"
-# step), returns it directly — no re-calculation.
 generate_dev_tag() {
-  if [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
-    echo "$CONNECTOR_VERSION_TAG"
-    return
-  fi
   local base="$1"
   # Use 7-char short hash to match the new prerelease format.
   local hash
@@ -70,13 +64,7 @@ generate_dev_tag() {
 }
 
 # Generate the release candidate image tag (e.g. `1.2.3-rc1`).
-# When CONNECTOR_VERSION_TAG is set (by the publish workflow's "Resolve connector version tag"
-# step), returns it directly — no re-calculation.
 generate_rc_tag() {
-  if [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
-    echo "$CONNECTOR_VERSION_TAG"
-    return
-  fi
   local base="$1"
   echo "${base}-rc1"
 }
