@@ -313,6 +313,22 @@ spec:
                 - query
 
 definitions:
+  sites_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 404
+        error_message: "Site URL is not a verified Search Console property in this account."
+        failure_type: config_error
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        error_message: "Insufficient permissions for the configured site URL."
+        failure_type: config_error
+
   search_analytics_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -904,6 +920,8 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/sites_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -929,6 +947,8 @@ definitions:
         path: "/sites/{{ sanitize_url(stream_partition.get('site_url')) }}/sitemaps"
         http_method: GET
         authenticator: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/sites_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
