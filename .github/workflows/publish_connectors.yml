@@ -330,6 +330,7 @@ jobs:
         with:
           connector-name: ${{ matrix.connector }}
           tag-override: ${{ steps.resolve-docker-tag.outputs.docker-image-tag }}
+          with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
           dry-run: ${{ needs.publish_options.outputs.dry-run }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
