@@ -220,7 +220,13 @@ jobs:
         id: resolve-version
         if: needs.publish_options.outputs.with-semver-suffix == 'preview'
         run: |
-          echo "connector-version-tag=$(airbyte-ops local connector get-version --name "${{ matrix.connector }}" --repo-path "$GITHUB_WORKSPACE" --next --prerelease)" | tee -a $GITHUB_OUTPUT
+          RESOLVED_TAG=$(
+            airbyte-ops local connector get-version \
+              --name "${{ matrix.connector }}" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --next --prerelease
+          )
+          echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
 
       # We're intentionally not using the `google-github-actions/auth` action.
       # The upload-connector-metadata step runs a script which handles auth manually.
