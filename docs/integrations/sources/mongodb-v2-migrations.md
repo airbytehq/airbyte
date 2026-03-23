@@ -2,7 +2,7 @@
 
 ## Incident – March 20th, 2026
 
-On March 20th, 2026 between 4:00 AM – 7:00 AM PT, a version change to the MongoDB source connector caused the source configuration page to be overwritten.
+On March 20th, 2026 between 4:00 AM – 7:00 AM PT, a version change to the MongoDB source connector caused the source configuration page to be overwritten. This incident only impacted Airbyte Cloud users.
 
 While the majority of our users were not impacted and synced as usual, if you had any jobs that ran during the incident window you may have seen the following error:
 
@@ -14,7 +14,7 @@ The issue has been identified and resolved.
 
 If you updated your source configuration during the incident window, you may find that your source config is now empty. In this case, simply re-enter your connection details and resume syncing as usual.
 
-If you are using **CDC (Incremental) syncs** and your oplog position was lost during this window, you will need to refresh your connection. If you need assistance with this, please reach out to [Support](https://support.airbyte.com).
+If you are using **CDC (Incremental) syncs** and your oplog position was lost during this window, you will need to [refresh your connection](https://docs.airbyte.com/platform/operator-guides/refreshes). If you need assistance with this, please reach out to [Support](https://support.airbyte.com).
 
 If you have any questions, don't hesitate to contact our Support team.
 
