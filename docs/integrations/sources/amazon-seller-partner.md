@@ -76,10 +76,14 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 10. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
-11. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-12. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-13. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-14. Click `Set up source`.
+11. For **Sales and Traffic Report ASIN Granularity**, select the level of ASIN detail for the Sales and Traffic Report streams (`GET_SALES_AND_TRAFFIC_REPORT` and `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`). Options are:
+    - **PARENT** (default): Data aggregated at the parent ASIN level.
+    - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
+    - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
+12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+14. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+15. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -97,10 +101,14 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
    - Hourly: 1H, 2H, 4H, 6H, 8H, 12H (recommended for high-volume sellers experiencing pagination token expiration)
    - Daily: 1D, 7D, 14D, 30D, 60D, 90D, 180D (default)
 8. **Financial Events Max Results Per Page**: Set the maximum number of results per page for the ListFinancialEvents stream (1-100, default: 100). Lower this value if you encounter `InvalidInput` errors during sync, which occur when the response exceeds 10 MB.
-9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-10. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-11. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-12. Click `Set up source`.
+9. For **Sales and Traffic Report ASIN Granularity**, select the level of ASIN detail for the Sales and Traffic Report streams (`GET_SALES_AND_TRAFFIC_REPORT` and `GET_SALES_AND_TRAFFIC_REPORT_BY_MONTH`). Options are:
+    - **PARENT** (default): Data aggregated at the parent ASIN level.
+    - **CHILD**: Data at the child ASIN level, with `childAsin` values populated.
+    - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
+10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
+11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
+12. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
+13. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -320,6 +328,8 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.0 | 2026-03-23 | [74740](https://github.com/airbytehq/airbyte/pull/74740) | Add configurable `asinGranularity` for GET_SALES_AND_TRAFFIC_REPORT streams, enabling CHILD and SKU level data with populated childAsin and sku values |
+| 5.6.1 | 2026-03-17 | [74538](https://github.com/airbytehq/airbyte/pull/74538) | Update dependencies |
 | 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
 | 5.5.1 | 2026-03-03 | [72961](https://github.com/airbytehq/airbyte/pull/72961) | Add time-windowed partitioning to Orders stream for proper state checkpointing of OrderItems substream |
 | 5.5.0 | 2026-02-26 | [72258](https://github.com/airbytehq/airbyte/pull/72258) | Add GET_SALES_AND_TRAFFIC_REPORT_BY_DATE stream |

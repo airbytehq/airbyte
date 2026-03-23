@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["object", "null"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the email.",
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "description": "The name of the email.",
+      "type": ["string", "null"]
+    },
+    "description": {
+      "description": "A description of the email.",
+      "type": ["string", "null"]
+    },
+    "createdAt": {
+      "description": "The date and time when the email was created.",
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "description": "The date and time when the email was last updated.",
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "The URL associated with the email.",
+      "type": ["string", "null"]
+    },
+    "subject": {
+      "description": "The subject line of the email.",
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "description": "The type of subject (e.g., Text).",
+          "type": ["string", "null"]
+        },
+        "value": {
+          "description": "The value of the subject.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "fromName": {
+      "description": "The sender name displayed in the email.",
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "description": "The type of from name (e.g., Text).",
+          "type": ["string", "null"]
+        },
+        "value": {
+          "description": "The value of the from name.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "fromEmail": {
+      "description": "The sender email address.",
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "description": "The type of from email (e.g., Text).",
+          "type": ["string", "null"]
+        },
+        "value": {
+          "description": "The value of the from email.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "replyEmail": {
+      "description": "The reply-to email address.",
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "description": "The type of reply email (e.g., Text).",
+          "type": ["string", "null"]
+        },
+        "value": {
+          "description": "The value of the reply email.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "folder": {
+      "description": "Details about the folder containing the email.",
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "description": "The type of the folder.",
+          "type": ["string", "null"]
+        },
+        "value": {
+          "description": "The unique identifier of the folder.",
+          "type": ["integer", "null"]
+        },
+        "folderName": {
+          "description": "The name of the folder.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "operational": {
+      "description": "Whether the email is operational (bypasses unsubscribe).",
+      "type": ["boolean", "null"]
+    },
+    "textOnly": {
+      "description": "Whether the email is text-only.",
+      "type": ["boolean", "null"]
+    },
+    "publishToMSI": {
+      "description": "Whether the email is published to Marketo Sales Insight.",
+      "type": ["boolean", "null"]
+    },
+    "webView": {
+      "description": "Whether the email has web view enabled.",
+      "type": ["boolean", "null"]
+    },
+    "status": {
+      "description": "The current status of the email (e.g., approved, draft).",
+      "type": ["string", "null"]
+    },
+    "template": {
+      "description": "The ID of the template used for the email.",
+      "type": ["integer", "null"]
+    },
+    "workspace": {
+      "description": "The workspace the email belongs to.",
+      "type": ["string", "null"]
+    },
+    "isOpenTrackingDisabled": {
+      "description": "Whether open tracking is disabled for this email.",
+      "type": ["boolean", "null"]
+    },
+    "version": {
+      "description": "The version number of the email.",
+      "type": ["integer", "null"]
+    },
+    "autoCopyToText": {
+      "description": "Whether the HTML content is automatically copied to the text version.",
+      "type": ["boolean", "null"]
+    },
+    "ccFields": {
+      "description": "List of CC fields for the email.",
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "attributeId": {
+            "description": "The attribute ID of the CC field.",
+            "type": ["string", "null"]
+          },
+          "objectName": {
+            "description": "The object name of the CC field.",
+            "type": ["string", "null"]
+          },
+          "displayName": {
+            "description": "The display name of the CC field.",
+            "type": ["string", "null"]
+          },
+          "apiName": {
+            "description": "The API name of the CC field.",
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "preHeader": {
+      "description": "The preheader text of the email.",
+      "type": ["string", "null"]
+    }
+  }
+}
