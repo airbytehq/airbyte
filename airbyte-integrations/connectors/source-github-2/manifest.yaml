@@ -30,13 +30,15 @@ definitions:
                 http_codes:
                   - 429
                   - 502
+                  - 503
+                  - 504
             backoff_strategies:
               - type: WaitTimeFromHeader
                 regex: ([0-9]+)
                 header: X-RateLimit-Reset
                 min_wait: 1
               - type: ConstantBackoffStrategy
-                backoff_time_in_seconds: 60
+                backoff_time_in_seconds: 5
       request_parameters:
         state: all
     SimpleRetriever:
@@ -1788,9 +1790,9 @@ streams:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
-      is_client_side_incremental: true
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
   - type: DeclarativeStream
     name: issue_labels
     retriever:
@@ -2296,9 +2298,9 @@ streams:
             type:
               - string
               - "null"
-          committer_datetime:
-            type: string
           airbyte_unique_id:
+            type: string
+          committer_datetime:
             type: string
         additionalProperties: true
     transformations:
@@ -2327,13 +2329,13 @@ streams:
         datetime: "{{ config['start_date'] }}"
         min_datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      start_time_option:
-        type: RequestOption
-        field_name: since
-        inject_into: request_parameter
       end_time_option:
         type: RequestOption
         field_name: until
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: since
         inject_into: request_parameter
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
@@ -7084,7 +7086,7 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     teams:
-      isStale: false
+      isStale: true
       hasRecords: true
       streamHash: 8059ccfefb72b9b4bc7b024cf2783915b377e357
       hasResponse: true
