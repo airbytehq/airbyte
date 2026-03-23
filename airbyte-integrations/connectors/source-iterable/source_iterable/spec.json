@@ -22,10 +22,10 @@
         "order": 1,
         "format": "date-time"
       },
-      "end_time_buffer_minutes": {
+      "lookback_window": {
         "type": "integer",
-        "title": "End Time Buffer (Minutes)",
-        "description": "Number of minutes to subtract from the current time when determining the end of each sync window for export-based streams. This accounts for eventual consistency delays in Iterable's Export API, preventing silent data loss for events not yet indexed. Increase this value if you observe missing events near the end of sync windows.",
+        "title": "Lookback Window (Minutes)",
+        "description": "Number of minutes to re-read from the current time when determining the end of each sync window for export-based streams. This accounts for eventual consistency delays in Iterable's Export API, preventing silent data loss for events not yet indexed. Increase this value if you observe missing events near the end of sync windows.",
         "default": 5,
         "minimum": 0,
         "examples": [5, 10, 15],

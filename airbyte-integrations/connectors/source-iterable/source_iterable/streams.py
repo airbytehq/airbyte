@@ -153,11 +153,11 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
     def state(self, value: MutableMapping[str, Any]):
         self._state = value
 
-    def __init__(self, start_date=None, end_date=None, end_time_buffer_minutes: int = 5, **kwargs):
+    def __init__(self, start_date=None, end_date=None, lookback_window: int = 5, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
         self._end_date = end_date and pendulum.parse(end_date)
-        self._end_time_buffer_minutes = end_time_buffer_minutes
+        self._lookback_window = lookback_window
         self.stream_params = {"dataTypeName": self.data_field}
 
     def path(self, **kwargs) -> str:
@@ -267,7 +267,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
         """Compute the effective end date for the sync window.
 
         When no explicit end_date is configured (production usage), the end
-        of the sync window is ``now() - end_time_buffer_minutes``.  The
+        of the sync window is ``now() - lookback_window``.  The
         buffer accounts for Iterable Export API eventual consistency —
         recently created events may not yet be indexed by the export
         pipeline.  Without this buffer the cursor would advance past those
@@ -275,7 +275,7 @@ class IterableExportStream(IterableStream, CheckpointMixin, ABC):
         """
         if self._end_date:
             return self._end_date
-        return pendulum.now("UTC") - pendulum.Duration(minutes=self._end_time_buffer_minutes)
+        return pendulum.now("UTC") - pendulum.Duration(minutes=self._lookback_window)
 
     def stream_slices(
         self,
