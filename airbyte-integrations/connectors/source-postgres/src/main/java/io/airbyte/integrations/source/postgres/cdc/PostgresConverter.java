@@ -97,10 +97,10 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         }
       }
       case "_MONEY", "_FLOAT4", "_FLOAT8" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
-      case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA", "_TEXT", "_VARCHAR", "_CHAR", "_BPCHAR", "_OID", "_UUID" -> SchemaBuilder
+      case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA", "_TEXT", "_VARCHAR", "_CHAR", "_BPCHAR", "_UUID" -> SchemaBuilder
           .array(OPTIONAL_STRING_SCHEMA).optional();
       case "_BIT", "_BOOL" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA).optional();
-      case "_INT2", "_INT4", "_INT8" -> SchemaBuilder.array(OPTIONAL_INT64_SCHEMA).optional();
+      case "_INT2", "_INT4", "_INT8", "_OID" -> SchemaBuilder.array(OPTIONAL_INT64_SCHEMA).optional();
       default -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
     };
     registration.register(arraySchema, x -> convertArray(x, field));
@@ -245,12 +245,12 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       case "_VARCHAR":
       case "_CHAR":
       case "_BPCHAR":
-      case "_OID":
       case "_UUID":
         return Arrays.stream(getArray(x)).map(value -> value == null ? null : value.toString()).collect(Collectors.toList());
       case "_INT2":
       case "_INT4":
       case "_INT8":
+      case "_OID":
         return Arrays.stream(getArray(x)).map(value -> value == null ? null : ((Number) value).longValue()).collect(Collectors.toList());
       case "_FLOAT4":
       case "_FLOAT8":
