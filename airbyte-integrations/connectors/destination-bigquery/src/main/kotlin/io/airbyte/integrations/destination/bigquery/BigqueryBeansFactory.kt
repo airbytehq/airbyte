@@ -182,7 +182,7 @@ class BigqueryBeansFactory {
                 )
             }
         return BigQueryOptions.newBuilder()
-            .setProjectId(config.projectId)
+            .setProjectId(config.jobProjectId)
             .setCredentials(credentials)
             .setHeaderProvider(BigQueryUtils.headerProvider)
             .setRetrySettings(
