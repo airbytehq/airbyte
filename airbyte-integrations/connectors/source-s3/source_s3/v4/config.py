@@ -100,6 +100,14 @@ class Config(AbstractFileBasedSpec):
         order=8,
     )
 
+    cloudtrail_regions: Optional[List[str]] = Field(
+        title="CloudTrail Regions",
+        default=None,
+        description="Optional list of AWS regions to sync CloudTrail logs from. If not set, regions are auto-discovered from the S3 bucket.",
+        examples=[["us-east-1", "eu-west-1"]],
+        order=9,
+    )
+
     @root_validator
     def validate_optional_args(cls, values):
         aws_access_key_id = values.get("aws_access_key_id")

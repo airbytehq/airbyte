@@ -6,6 +6,7 @@ from __future__ import annotations
 import sys
 import traceback
 from datetime import datetime
+from datetime import datetime as dt_datetime
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
@@ -43,7 +44,9 @@ from source_s3.v4.config import Config
 from source_s3.v4.cursor import Cursor
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 from source_s3.v4.stream_reader import SourceS3StreamReader
-from source_s3.v4.flattenable_stream import FlattenableFileBasedStream
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
+from source_s3.v4.parsers.json_flatten_parser import JsonFlattenParser
 
 
 _V3_DEPRECATION_FIELD_MAPPING = {
@@ -63,27 +66,64 @@ class SourceS3(FileBasedSource):
         self.main_config = self.spec_class(**config)
         return self.main_config
 
+    def check_connection(self, logger, config):
+        """Set check_mode flag so CloudTrail listing does a quick single-file check."""
+        self.stream_reader._check_mode = True
+        try:
+            return super().check_connection(logger, config)
+        finally:
+            self.stream_reader._check_mode = False
+
+    def streams(self, config):
+        # Set flatten_records_key and start_date on Cursor class before super creates cursors
+        Cursor._flatten_records_key = config.get('flatten_records_key')
+        Cursor._start_date = config.get('start_date')
+
+        result = super().streams(config)
+
+        # Bridge cursor state to reader for CloudTrail date-aware listing
+        if Cursor._flatten_records_key and self.state:
+            self._bridge_cloudtrail_cursor_to_reader()
+
+        return result
+
+    def _bridge_cloudtrail_cursor_to_reader(self) -> None:
+        """Extract cloudtrail_cursor from state and set on stream reader."""
+        for state_msg in self.state:
+            try:
+                stream_state = state_msg.stream.stream_state if state_msg.stream else None
+                if stream_state and "cloudtrail_cursor" in stream_state:
+                    cursor_str = stream_state["cloudtrail_cursor"]
+                    cursor_dt = dt_datetime.strptime(cursor_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    self.stream_reader.set_cloudtrail_cursor_date(cursor_dt)
+                    return
+            except (AttributeError, KeyError, ValueError):
+                continue
+
     def _make_default_stream(
         self,
         stream_config: FileBasedStreamConfig,
         cursor: Optional[AbstractFileBasedCursor],
         parsed_config: AbstractFileBasedSpec,
     ) -> AbstractFileBasedStream:
-        """Override to use our custom FlattenableFileBasedStream class that supports the flatten_records_key parameter"""
-        # Pass the flatten_records_key from the main config to the stream
-        return FlattenableFileBasedStream(
+        flatten_records_key = getattr(parsed_config, 'flatten_records_key', None)
+        if flatten_records_key:
+            parsers = {**self.parsers, JsonlFormat: JsonFlattenParser(flatten_records_key)}
+        else:
+            parsers = self.parsers
+
+        return DefaultFileBasedStream(
             config=stream_config,
             catalog_schema=self.stream_schemas.get(stream_config.name),
             stream_reader=self.stream_reader,
             availability_strategy=self.availability_strategy,
             discovery_policy=self.discovery_policy,
-            parsers=self.parsers,
+            parsers=parsers,
             validation_policy=self._validate_and_get_validation_policy(stream_config),
             errors_collector=self.errors_collector,
             cursor=cursor,
             use_file_transfer=use_file_transfer(parsed_config),
             preserve_directory_structure=preserve_directory_structure(parsed_config),
-            flatten_records_key=getattr(parsed_config, 'flatten_records_key', None)
         )
 
     @classmethod

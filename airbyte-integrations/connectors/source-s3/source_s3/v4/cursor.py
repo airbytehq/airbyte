@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -14,6 +14,8 @@ from airbyte_cdk.sources.file_based.types import StreamState
 
 logger = logging.Logger("source-S3")
 
+_CLOUDTRAIL_CURSOR_FIELD = "cloudtrail_cursor"
+
 
 class Cursor(DefaultFileBasedCursor):
     _DATE_FORMAT = "%Y-%m-%d"
@@ -21,12 +23,27 @@ class Cursor(DefaultFileBasedCursor):
     _V4_MIGRATION_BUFFER = timedelta(hours=1)
     _V3_MIN_SYNC_DATE_FIELD = "v3_min_sync_date"
 
+    # Set by SourceS3.streams() before cursor construction when flatten_records_key is active.
+    _flatten_records_key: Optional[str] = None
+    _start_date: Optional[str] = None
+
     def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
         super().__init__(stream_config)
         self._running_migration = False
         self._v3_migration_start_datetime = None
+        self._cloudtrail_mode: bool = bool(self.__class__._flatten_records_key)
+        self._cloudtrail_cursor_dt: Optional[datetime] = None
 
     def set_initial_state(self, value: StreamState) -> None:
+        # Parse CloudTrail high-water timestamp if present in state.
+        cloudtrail_cursor_str = value.get(_CLOUDTRAIL_CURSOR_FIELD)
+        if cloudtrail_cursor_str:
+            self._cloudtrail_cursor_dt = datetime.strptime(
+                cloudtrail_cursor_str, DefaultFileBasedCursor.DATE_TIME_FORMAT
+            )
+        else:
+            self._cloudtrail_cursor_dt = None
+
         if self._is_legacy_state(value):
             self._running_migration = True
             value = self._convert_legacy_state(value)
@@ -39,7 +56,23 @@ class Cursor(DefaultFileBasedCursor):
         )
         super().set_initial_state(value)
 
+    def add_file(self, file: RemoteFile) -> None:
+        if self._cloudtrail_mode:
+            # In CloudTrail mode, maintain a single high-water timestamp; never populate history.
+            if self._cloudtrail_cursor_dt is None or file.last_modified > self._cloudtrail_cursor_dt:
+                self._cloudtrail_cursor_dt = file.last_modified
+        else:
+            super().add_file(file)
+
     def get_state(self) -> StreamState:
+        if self._cloudtrail_mode and self._cloudtrail_cursor_dt is not None:
+            cursor_str = self._cloudtrail_cursor_dt.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
+            return {
+                "history": {},
+                self.CURSOR_FIELD: cursor_str,
+                _CLOUDTRAIL_CURSOR_FIELD: cursor_str,
+            }
+
         state = {"history": self._file_to_datetime_history, self.CURSOR_FIELD: self._get_cursor()}
         if self._v3_migration_start_datetime:
             return {
@@ -55,10 +88,20 @@ class Cursor(DefaultFileBasedCursor):
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         """
-        Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
-        Else if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
-        Else sync according to the default logic
+        CloudTrail mode: compare against the single high-water timestamp.
+        V3-migration mode: never sync files earlier than the migration start date; sync all during migration.
+        Default: delegate to parent logic.
         """
+        if self._cloudtrail_mode:
+            if self._cloudtrail_cursor_dt is not None:
+                return file.last_modified > self._cloudtrail_cursor_dt
+            # First sync: no cursor yet, use start_date as the filter
+            if Cursor._start_date:
+                import pendulum
+                start_dt = pendulum.parse(Cursor._start_date).naive()
+                return file.last_modified > start_dt
+            return True  # No cursor and no start_date — sync everything
+
         if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
             return False
         elif self._running_migration:
