@@ -201,10 +201,12 @@ jobs:
           # We pass a token with dedicated GH rate limit
           github-token: ${{ steps.get-app-token.outputs.token }}
 
-      - name: Install Poe
+      - name: Install Poe and Ops CLI
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
+          # Install the ops CLI for version resolution:
+          uv tool install airbyte-internal-ops
 
       - name: Get connector metadata
         id: connector-metadata
@@ -213,6 +215,39 @@ jobs:
           set -euo pipefail
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve ephemeral version tag (preview)
+        id: resolve-ephemeral-version
+        if: needs.publish_options.outputs.with-semver-suffix == 'preview'
+        run: |
+          RESOLVED_TAG=$(
+            airbyte-ops local connector get-version \
+              --name "${{ matrix.connector }}" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --next --prerelease
+          )
+          echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve ephemeral version tag (rc)
+        id: resolve-ephemeral-version-rc
+        if: needs.publish_options.outputs.with-semver-suffix == 'rc'
+        run: |
+          RESOLVED_TAG=$(
+            airbyte-ops local connector get-version \
+              --name "${{ matrix.connector }}" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --next --bump-type rc
+          )
+          echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve connector version tag
+        id: resolve-version
+        run: |
+          echo "connector-version-tag=${{
+            steps.resolve-ephemeral-version.outputs.connector-version-tag
+            || steps.resolve-ephemeral-version-rc.outputs.connector-version-tag
+            || steps.connector-metadata.outputs.connector-version
+          }}" | tee -a $GITHUB_OUTPUT
 
       # We're intentionally not using the `google-github-actions/auth` action.
       # The upload-connector-metadata step runs a script which handles auth manually.
@@ -239,6 +274,7 @@ jobs:
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
       - name: "[DRY-RUN] Skip Publish to Python Registry"
         if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
@@ -251,6 +287,7 @@ jobs:
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         run: |
           ./poe-tasks/upload-python-dependencies.sh \
             --name ${{ matrix.connector }} \
@@ -266,6 +303,8 @@ jobs:
         id: build-and-publish-JVM-connectors-images
         if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
+        env:
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         run: |
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }} --publish
 
@@ -273,6 +312,8 @@ jobs:
         id: build-JVM-connectors-images-dry-run
         if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true'
         shell: bash
+        env:
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         run: |
           echo "DRY-RUN: Building JVM connector without publishing..."
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -284,6 +325,7 @@ jobs:
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
@@ -298,6 +340,7 @@ jobs:
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
+          tag-override: ${{ steps.resolve-version.outputs.connector-version-tag }}
           with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
           dry-run: ${{ needs.publish_options.outputs.dry-run }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -312,6 +355,7 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
       - name: "[DRY-RUN] Skip Upload connector metadata"
         if: needs.publish_options.outputs.dry-run == 'true'

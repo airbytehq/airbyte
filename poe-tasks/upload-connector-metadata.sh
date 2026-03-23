@@ -45,26 +45,31 @@ if test -z "$docker_repository" || test "$docker_repository" = "null"; then
 fi
 
 # Figure out the tag that we're working on (i.e. handle the prerelease case)
-base_tag=$(yq -r '.data.dockerImageTag' "$meta")
-if test -z "$base_tag" || test "$base_tag" = "null"; then
-  echo "Error: dockerImageTag missing in ${meta}" >&2
-  exit 1
-fi
-case "$semver_suffix" in
-  none)
-    docker_tag="$base_tag"
-    ;;
-  preview)
-    docker_tag=$(generate_dev_tag "$base_tag")
-    ;;
-  rc)
-    docker_tag=$(generate_rc_tag "$base_tag")
-    ;;
-  *)
-    echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+if [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
+  # When set by the publish workflow, use the pre-resolved tag directly.
+  docker_tag="$CONNECTOR_VERSION_TAG"
+else
+  base_tag=$(yq -r '.data.dockerImageTag' "$meta")
+  if test -z "$base_tag" || test "$base_tag" = "null"; then
+    echo "Error: dockerImageTag missing in ${meta}" >&2
     exit 1
-    ;;
-esac
+  fi
+  case "$semver_suffix" in
+    none)
+      docker_tag="$base_tag"
+      ;;
+    preview)
+      docker_tag=$(generate_dev_tag "$base_tag")
+      ;;
+    rc)
+      docker_tag=$(generate_rc_tag "$base_tag")
+      ;;
+    *)
+      echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+      exit 1
+      ;;
+  esac
+fi
 
 full_docker_image="$docker_repository:$docker_tag"
 
