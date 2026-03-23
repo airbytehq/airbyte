@@ -56,6 +56,7 @@ from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Sales
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
+
 logger = logging.getLogger("airbyte")
 
 _DEFAULT_TOKEN_REFRESH_INTERVAL_SECONDS = 30 * 60  # 30 minutes
