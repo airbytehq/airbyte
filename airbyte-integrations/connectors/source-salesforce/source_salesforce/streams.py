@@ -4,6 +4,7 @@
 
 import csv
 import ctypes
+import logging
 import time
 import urllib.parse
 from abc import ABC
@@ -56,6 +57,8 @@ from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
 
+logger = logging.getLogger("airbyte")
+
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
@@ -63,7 +66,7 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 _JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
-_TOKEN_REFRESH_INTERVAL_SECONDS = 1200  # Refresh Salesforce access token every 20 minutes (well before the default 2-hour session timeout)
+_TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
 
 if TYPE_CHECKING:
     from .api import Salesforce as SalesforceApi
@@ -88,6 +91,7 @@ class SalesforceTokenProvider(TokenProvider):
     def get_token(self) -> str:
         elapsed = time.monotonic() - self._last_refresh_time
         if elapsed >= _TOKEN_REFRESH_INTERVAL_SECONDS:
+            logger.info("Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed)
             self._sf_api.login()
             self._last_refresh_time = time.monotonic()
         return self._sf_api.access_token
