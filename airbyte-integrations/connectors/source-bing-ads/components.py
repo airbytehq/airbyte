@@ -491,8 +491,8 @@ class BingAdsReportZipCsvDecoder(Decoder):
 
     def decode(self, response: Any) -> Generator[MutableMapping[str, Any], None, None]:
         spool = tempfile.SpooledTemporaryFile(max_size=5 * 1024 * 1024)
+        raw = response.raw
         try:
-            raw = response.raw
             while True:
                 chunk = raw.read(64 * 1024)
                 if not chunk:
@@ -519,6 +519,7 @@ class BingAdsReportZipCsvDecoder(Decoder):
                 raise
         finally:
             spool.close()
+            raw.close()
 
 
 @dataclass
