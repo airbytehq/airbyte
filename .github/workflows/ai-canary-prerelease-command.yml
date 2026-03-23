@@ -67,6 +67,7 @@ jobs:
           playbook-macro: "!canary_prerelease"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
+          reuse-slash-command-session: "true"
           start-message: "🐤 **AI Canary Prerelease session starting...** Rolling out to 5-10 connections, watching results, and reporting findings. [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/canary_prerelease.md)"
           tags: |
             ai-oncall

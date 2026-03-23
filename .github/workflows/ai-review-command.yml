@@ -97,6 +97,7 @@ jobs:
           playbook-macro: "!pr_ai_review"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
+          reuse-slash-command-session: "true"
           start-message: |
             **AI PR Review** starting...
 

@@ -67,6 +67,7 @@ jobs:
           playbook-macro: "!release_watch"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
+          reuse-slash-command-session: "true"
           start-message: "👁️ **AI Release Watch session starting...** Monitoring rollout and tracking sync success rates. [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/release_watch.md)"
           tags: |
             ai-oncall
