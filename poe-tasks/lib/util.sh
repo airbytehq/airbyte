@@ -55,12 +55,18 @@ get_only_connector() {
 }
 
 # Generate the preview image tag (e.g. `1.2.3-preview.abcde12`).
+# Strips any existing pre-release suffix (e.g. `-rc.1`) before appending `-preview.<hash>`.
+# Note: In the publish workflow, the ops CLI is used as the single source of truth for
+# preview tag computation (via a dedicated "Resolve docker image tag" step). This function
+# serves as a consistent fallback for standalone script usage.
 generate_dev_tag() {
   local base="$1"
+  # Strip any pre-release suffix (everything from the first hyphen onward).
+  local clean_version="${base%%-*}"
   # Use 7-char short hash to match the new prerelease format.
   local hash
   hash=$(git rev-parse --short=7 HEAD)
-  echo "${base}-preview.${hash}"
+  echo "${clean_version}-preview.${hash}"
 }
 
 # Generate the release candidate image tag (e.g. `1.2.3-rc1`).

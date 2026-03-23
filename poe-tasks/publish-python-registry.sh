@@ -160,8 +160,10 @@ elif [[ "$SEMVER_SUFFIX" == "preview" ]]; then
     # Add current timestamp for preview builds.
     # we can't use the git revision because not all python registries allow local version identifiers. 
     # Public version identifiers must conform to PEP 440 and only allow digits.
+    # Strip any existing pre-release suffix (e.g. -rc.1) before appending the dev tag.
+    CLEAN_VERSION="${BASE_VERSION%%-*}"
     TIMESTAMP=$(date +"%Y%m%d%H%M")
-    VERSION="${BASE_VERSION}.dev.${TIMESTAMP}"
+    VERSION="${CLEAN_VERSION}.dev.${TIMESTAMP}"
 elif [[ "$SEMVER_SUFFIX" == "rc" ]]; then
     # Add rc1 suffix for release candidates
     VERSION="${BASE_VERSION}rc1"

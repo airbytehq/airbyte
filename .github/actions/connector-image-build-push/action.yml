@@ -140,7 +140,9 @@ runs:
           echo "🏷 Using provided tag override: $CONNECTOR_VERSION_TAG"
         elif [[ "${{ inputs.with-semver-suffix }}" == "preview" ]]; then
           hash=$(git rev-parse --short=7 HEAD)
-          CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-preview.${hash}"
+          # Strip any existing pre-release suffix (e.g., -rc.1) before appending -preview.<hash>.
+          CLEAN_VERSION="${CONNECTOR_VERSION%%-*}"
+          CONNECTOR_VERSION_TAG="${CLEAN_VERSION}-preview.${hash}"
           echo "🏷 Using preview tag: $CONNECTOR_VERSION_TAG"
         elif [[ "${{ inputs.with-semver-suffix }}" == "rc" ]]; then
           CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-rc1"

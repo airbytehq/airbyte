@@ -201,10 +201,11 @@ jobs:
           # We pass a token with dedicated GH rate limit
           github-token: ${{ steps.get-app-token.outputs.token }}
 
-      - name: Install Poe
+      - name: Install Poe and Ops CLI
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
+          uv tool install airbyte-internal-ops
 
       - name: Get connector metadata
         id: connector-metadata
@@ -213,6 +214,36 @@ jobs:
           set -euo pipefail
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve docker image tag
+        id: resolve-docker-tag
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          set -euo pipefail
+          CONNECTOR_VERSION=$(poe -qq get-version)
+          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+
+          # Use the ops CLI as the single source of truth for version tag resolution.
+          # This correctly strips any existing pre-release suffix (e.g., -rc.1) before
+          # appending the target suffix.
+          case "$SEMVER_SUFFIX" in
+            preview)
+              # DO_NOT_TRACK suppresses PyAirbyte's telemetry banner from contaminating stdout.
+              DOCKER_IMAGE_TAG=$(DO_NOT_TRACK=1 airbyte-ops registry connector-version next \
+                --name "${{ matrix.connector }}" \
+                --sha "$(git rev-parse HEAD)" \
+                --base-version "${CONNECTOR_VERSION}")
+              ;;
+            rc)
+              DOCKER_IMAGE_TAG="${CONNECTOR_VERSION}-rc1"
+              ;;
+            none|*)
+              DOCKER_IMAGE_TAG="${CONNECTOR_VERSION}"
+              ;;
+          esac
+
+          echo "docker-image-tag=${DOCKER_IMAGE_TAG}" | tee -a $GITHUB_OUTPUT
+          echo "Resolved docker image tag: ${DOCKER_IMAGE_TAG}"
 
       # We're intentionally not using the `google-github-actions/auth` action.
       # The upload-connector-metadata step runs a script which handles auth manually.
@@ -298,7 +329,7 @@ jobs:
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
-          with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
+          tag-override: ${{ steps.resolve-docker-tag.outputs.docker-image-tag }}
           dry-run: ${{ needs.publish_options.outputs.dry-run }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
