@@ -20,7 +20,6 @@ import io.airbyte.protocol.models.CommonField;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +37,6 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
    * https://clickhouse.tech/docs/en/operations/system-tables/columns/ to fetch the primary keys.
    */
 
-  public static final String SSL_MODE = "ssl=true";
   public static final String HTTPS_PROTOCOL = "https";
   public static final String HTTP_PROTOCOL = "http";
 
@@ -93,18 +91,9 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
 
     final boolean isAdditionalParamsExists =
         config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty();
-    final List<String> params = new ArrayList<>();
-    // assume ssl if not explicitly mentioned.
-    if (isSsl) {
-      params.add(SSL_MODE);
-    }
     if (isAdditionalParamsExists) {
-      params.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
-    }
-
-    if (isSsl || isAdditionalParamsExists) {
       jdbcUrl.append("?");
-      jdbcUrl.append(String.join("&", params));
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
