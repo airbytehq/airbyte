@@ -19,6 +19,9 @@ object PgDateCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
     override fun decode(encoded: JsonNode): String = encoded.asText()
     override fun valueForProtobufEncoding(v: String): Any? {
+        if (v == "Infinity" || v == "-Infinity" || v == "infinity" || v == "-infinity") {
+            throw IllegalStateException("Date '$v' is not supported")
+        }
         val isBce = v.endsWith(" BC")
         val str = if (isBce) v.removeSuffix(" BC") else v
         val parsed = LocalDate.parse(str, DateTimeConverter.DATE_FORMATTER)
