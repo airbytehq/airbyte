@@ -318,7 +318,7 @@ class GzipXmlDecoder(Decoder):
         try:
             parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
         except Exception as e:
-            logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
+            logger.warning(f"Unable to parse the report for the stream, error: {str(e)}")
             return []
 
         reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
