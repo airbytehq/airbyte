@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +34,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Map<AirbyteStreamNameNamespacePair, String> topicMap;
   private final KafkaProducer<String, JsonNode> producer;
   private final boolean sync;
+  private final String partitionKeyField;
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final NamingConventionTransformer nameTransformer;
@@ -45,6 +47,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.topicMap = new HashMap<>();
     this.producer = kafkaDestinationConfig.getProducer();
     this.sync = kafkaDestinationConfig.isSync();
+    this.partitionKeyField = kafkaDestinationConfig.getPartitionKeyField();
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
     this.nameTransformer = nameTransformer;
@@ -65,9 +68,10 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
       // if brokers have the property "auto.create.topics.enable" enabled then topics will be auto-created
       // otherwise these topics need to have been pre-created.
       final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
-      final String key = UUID.randomUUID().toString();
+      final String abId = UUID.randomUUID().toString();
+      final String key = extractPartitionKey(recordMessage.getData(), abId);
       final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
-          KafkaDestination.COLUMN_NAME_AB_ID, key,
+          KafkaDestination.COLUMN_NAME_AB_ID, abId,
           KafkaDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
           KafkaDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
           KafkaDestination.COLUMN_NAME_DATA, recordMessage.getData()));
@@ -85,6 +89,40 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
             pair -> nameTransformer.getIdentifier(topicPattern
                 .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
                 .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")))));
+  }
+
+  String extractPartitionKey(final JsonNode data, final String defaultKey) {
+    if (partitionKeyField == null || partitionKeyField.isEmpty()) {
+      return defaultKey;
+    }
+
+    final String[] fields = partitionKeyField.split(",");
+    final StringBuilder keyBuilder = new StringBuilder();
+    for (int i = 0; i < fields.length; i++) {
+      final String field = fields[i].trim();
+      final JsonNode fieldValue = getNestedField(data, field);
+      if (fieldValue != null && !fieldValue.isNull()) {
+        keyBuilder.append(fieldValue.isTextual() ? fieldValue.asText() : fieldValue.toString());
+      }
+      if (i < fields.length - 1) {
+        keyBuilder.append("_");
+      }
+    }
+
+    final String compositeKey = keyBuilder.toString();
+    return compositeKey.isEmpty() ? defaultKey : compositeKey;
+  }
+
+  private static JsonNode getNestedField(final JsonNode data, final String fieldPath) {
+    final String[] parts = fieldPath.split("\\.");
+    JsonNode current = data;
+    for (final String part : parts) {
+      if (current == null || !current.has(part)) {
+        return null;
+      }
+      current = current.get(part);
+    }
+    return current;
   }
 
   private void sendRecord(final ProducerRecord<String, JsonNode> record) {
