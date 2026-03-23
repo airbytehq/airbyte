@@ -408,7 +408,8 @@ jobs:
               # Use the ops CLI as the single source of truth for preview version format.
               # This correctly strips any existing pre-release suffix (e.g., -rc.1) before
               # appending the -preview.<sha> tag.
-              PREVIEW_TAG=$(airbyte-ops registry connector-version next \
+              # DO_NOT_TRACK suppresses PyAirbyte's telemetry banner from contaminating stdout.
+              PREVIEW_TAG=$(DO_NOT_TRACK=1 airbyte-ops registry connector-version next \
                 --name "${{ matrix.connector }}" \
                 --sha "$(git rev-parse HEAD)" \
                 --base-version "${CONNECTOR_VERSION}")
