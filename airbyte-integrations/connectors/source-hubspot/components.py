@@ -696,7 +696,7 @@ def build_associations_retriever(
                     parameters=parameters,
                 ),
                 HttpResponseFilter(
-                    action="RETRY",
+                    action="REFRESH_TOKEN_THEN_RETRY",
                     http_codes={401},
                     error_message="Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot.",
                     config=config,
