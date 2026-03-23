@@ -9,6 +9,7 @@ import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTime;
 import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestamp;
 import static io.airbyte.cdk.db.jdbc.DateTimeConverter.convertToTimestampWithTimezone;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
+import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT32_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_INT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
@@ -96,7 +97,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
           yield SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
         }
       }
-      case "_MONEY", "_FLOAT4", "_FLOAT8" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
+      case "_MONEY", "_FLOAT8" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
+      case "_FLOAT4" -> SchemaBuilder.array(OPTIONAL_FLOAT32_SCHEMA).optional();
       case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA", "_TEXT", "_VARCHAR", "_CHAR", "_BPCHAR", "_UUID" -> SchemaBuilder
           .array(OPTIONAL_STRING_SCHEMA).optional();
       case "_BIT", "_BOOL" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA).optional();
@@ -253,6 +255,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       case "_OID":
         return Arrays.stream(getArray(x)).map(value -> value == null ? null : ((Number) value).longValue()).collect(Collectors.toList());
       case "_FLOAT4":
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : ((Number) value).floatValue()).collect(Collectors.toList());
       case "_FLOAT8":
         return Arrays.stream(getArray(x)).map(value -> value == null ? null : ((Number) value).doubleValue()).collect(Collectors.toList());
       default:
