@@ -54,7 +54,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       {"VARCHAR", "VARBINARY", "BLOB", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT", "INVENTORY_ITEM", "TSVECTOR", "TSQUERY", "PG_LSN"};
   private final String[] NUMERIC_TYPES = {"NUMERIC", "DECIMAL"};
   private final String[] ARRAY_TYPES = {"_NAME", "_NUMERIC", "_BYTEA", "_MONEY", "_BIT", "_DATE", "_TIME", "_TIMETZ", "_TIMESTAMP", "_TIMESTAMPTZ",
-      "_TEXT", "_VARCHAR", "_CHAR", "_BPCHAR", "_INT2", "_INT4", "_INT8", "_FLOAT4", "_FLOAT8", "_BOOL", "_OID", "_UUID"};
+    "_TEXT", "_VARCHAR", "_CHAR", "_BPCHAR", "_INT2", "_INT4", "_INT8", "_FLOAT4", "_FLOAT8", "_BOOL", "_OID", "_UUID"};
   private final String BYTEA_TYPE = "BYTEA";
 
   // Debezium is manually setting the variable scale decimal length (precision)
@@ -97,8 +97,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         }
       }
       case "_MONEY", "_FLOAT4", "_FLOAT8" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
-      case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA",
-          "_TEXT", "_VARCHAR", "_CHAR", "_BPCHAR", "_OID", "_UUID" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
+      case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA", "_TEXT", "_VARCHAR", "_CHAR", "_BPCHAR", "_OID", "_UUID" -> SchemaBuilder
+          .array(OPTIONAL_STRING_SCHEMA).optional();
       case "_BIT", "_BOOL" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA).optional();
       case "_INT2", "_INT4", "_INT8" -> SchemaBuilder.array(OPTIONAL_INT64_SCHEMA).optional();
       default -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
@@ -235,7 +235,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         });
         return timetzArr;
       case "_BYTEA":
-        return Arrays.stream(getArray(x)).map(value -> value == null ? null : Base64.getEncoder().encodeToString((byte[]) value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : Base64.getEncoder().encodeToString((byte[]) value))
+            .collect(Collectors.toList());
       case "_BIT":
       case "_BOOL":
         return Arrays.stream(getArray(x)).map(value -> value == null ? null : (Boolean) value).collect(Collectors.toList());
