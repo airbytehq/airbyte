@@ -30,7 +30,8 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, all data will be replicated.
 7. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream.
 8. (Optional) For **Conversion Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to limit the Campaign Values Reports and Flow Series Reports streams to specific conversion metrics. If not provided, the connector fetches reports for all metrics, which can be slow due to rate limits. See [Analytics streams](#analytics-streams) for details.
-9. Click **Set up source**.
+9. (Optional) For **Event Stream Metric ID(s)**, enter a comma-separated list of Klaviyo metric IDs to filter the Events and Events Detailed streams to specific metrics. If not provided, all events are synced. This can significantly reduce sync volume for accounts with high event traffic. See [Event stream filtering](#event-stream-filtering) below.
+10. Click **Set up source**.
 
 ### For Airbyte Open Source:
 
@@ -86,6 +87,18 @@ To find your conversion metric IDs:
 3. Select the metric you want to track conversions for (for example, "Placed Order").
 4. Copy the metric ID from the URL, or use the **Metrics** stream to list all available metrics and their IDs.
 
+### Event stream filtering
+
+The **Events** and **Events Detailed** streams support optional server-side filtering by metric ID using the **Event Stream Metric ID(s)** configuration field. This uses Klaviyo's `metric_id` filter parameter to reduce the volume of data returned from the API.
+
+When multiple metric IDs are specified (comma-separated), the connector makes separate API requests for each metric ID, since Klaviyo's API only supports filtering by one metric at a time.
+
+:::note
+Klaviyo's `metric_id` filter does not support custom metrics — only Klaviyo's built-in metrics (e.g., Placed Order, Opened Email) can be filtered. If you specify a custom metric ID, it will be silently ignored by the Klaviyo API and all events will be returned.
+:::
+
+To find metric IDs, navigate to **Analytics** > **Metrics** in your Klaviyo account, or use the **Metrics** stream to list all available metrics and their IDs.
+
 ## Performance considerations
 
 The connector is restricted by Klaviyo [requests limitation](https://apidocs.klaviyo.com/reference/api-overview#rate-limits).
@@ -121,6 +134,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.18.0 | 2026-03-23 | [12421](https://github.com/airbytehq/airbyte/issues/12421) | Add optional metric ID filtering for Events and Events Detailed streams |
 | 2.17.3 | 2026-03-17 | [74995](https://github.com/airbytehq/airbyte/pull/74995) | Update dependencies |
 | 2.17.2 | 2026-03-10 | [74435](https://github.com/airbytehq/airbyte/pull/74435) | Update dependencies |
 | 2.17.1 | 2026-03-03 | [73958](https://github.com/airbytehq/airbyte/pull/73958) | Update dependencies |
