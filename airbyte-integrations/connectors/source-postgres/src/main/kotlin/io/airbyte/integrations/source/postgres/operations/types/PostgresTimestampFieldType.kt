@@ -21,7 +21,16 @@ object PostgresTimestampFieldType :
 // TODO: Improve performance by not stringifying and parsing
 object PgTimestampCodec : ProtobufAwareCustomConnectorJsonCodec<String> {
     override fun encode(decoded: String): JsonNode = TextNode(decoded)
-    override fun decode(encoded: JsonNode): String = encoded.asText()
+    override fun decode(encoded: JsonNode): String {
+        val decoded = encoded.asText()
+        if (
+            decoded.equals("infinity", ignoreCase = true) ||
+                decoded.equals("-infinity", ignoreCase = true)
+        ) {
+            throw IllegalArgumentException("value $decoded is unsupported")
+        }
+        return decoded
+    }
     override fun valueForProtobufEncoding(v: String): Any? {
         val isBce = v.endsWith(" BC")
         val str = if (isBce) v.removeSuffix(" BC") else v
