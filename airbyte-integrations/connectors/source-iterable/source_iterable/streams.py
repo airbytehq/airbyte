@@ -479,23 +479,23 @@ class EmailUnsubscribe(IterableExportStreamAdjustableRange):
     data_field = "emailUnsubscribe"
 
 
-class PushSend(IterableExportEventsStreamAdjustableRange):
+class PushSend(IterableExportStreamAdjustableRange):
     data_field = "pushSend"
 
 
-class PushSendSkip(IterableExportEventsStreamAdjustableRange):
+class PushSendSkip(IterableExportStreamAdjustableRange):
     data_field = "pushSendSkip"
 
 
-class PushOpen(IterableExportEventsStreamAdjustableRange):
+class PushOpen(IterableExportStreamAdjustableRange):
     data_field = "pushOpen"
 
 
-class PushUninstall(IterableExportEventsStreamAdjustableRange):
+class PushUninstall(IterableExportStreamAdjustableRange):
     data_field = "pushUninstall"
 
 
-class PushBounce(IterableExportEventsStreamAdjustableRange):
+class PushBounce(IterableExportStreamAdjustableRange):
     data_field = "pushBounce"
 
 
@@ -511,31 +511,31 @@ class WebPushSendSkip(IterableExportEventsStreamAdjustableRange):
     data_field = "webPushSendSkip"
 
 
-class InAppSend(IterableExportEventsStreamAdjustableRange):
+class InAppSend(IterableExportStreamAdjustableRange):
     data_field = "inAppSend"
 
 
-class InAppOpen(IterableExportEventsStreamAdjustableRange):
+class InAppOpen(IterableExportStreamAdjustableRange):
     data_field = "inAppOpen"
 
 
-class InAppClick(IterableExportEventsStreamAdjustableRange):
+class InAppClick(IterableExportStreamAdjustableRange):
     data_field = "inAppClick"
 
 
-class InAppClose(IterableExportEventsStreamAdjustableRange):
+class InAppClose(IterableExportStreamAdjustableRange):
     data_field = "inAppClose"
 
 
-class InAppDelete(IterableExportEventsStreamAdjustableRange):
+class InAppDelete(IterableExportStreamAdjustableRange):
     data_field = "inAppDelete"
 
 
-class InAppDelivery(IterableExportEventsStreamAdjustableRange):
+class InAppDelivery(IterableExportStreamAdjustableRange):
     data_field = "inAppDelivery"
 
 
-class InAppSendSkip(IterableExportEventsStreamAdjustableRange):
+class InAppSendSkip(IterableExportStreamAdjustableRange):
     data_field = "inAppSendSkip"
 
 
