@@ -8,11 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlagsWrapper;
 import io.airbyte.commons.json.Jsons;
