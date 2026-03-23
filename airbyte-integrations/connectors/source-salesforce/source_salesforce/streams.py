@@ -4,6 +4,8 @@
 
 import csv
 import ctypes
+import logging
+import time
 import urllib.parse
 from abc import ABC
 from datetime import timedelta
@@ -34,7 +36,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
-from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.partition_routers import AsyncJobPartitionRouter
@@ -53,6 +55,36 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
+
+logger = logging.getLogger("airbyte")
+
+_DEFAULT_TOKEN_REFRESH_INTERVAL_SECONDS = 30 * 60  # 30 minutes
+
+
+class SalesforceOAuthTokenProvider(TokenProvider):
+    """Token provider that refreshes the Salesforce OAuth access token before it expires.
+
+    The Salesforce Bulk API uses declarative components that hold a reference to a token provider.
+    Previously, an InterpolatedStringTokenProvider was used which captured the access token as a
+    static string at initialization. This meant the token was never refreshed, causing
+    INVALID_SESSION_ID errors for long-running syncs that outlast the token TTL (typically 2 hours).
+
+    This provider proactively refreshes the token by calling Salesforce.login() at a configurable
+    interval, ensuring the token stays valid for the lifetime of the sync.
+    """
+
+    def __init__(self, sf_api: Salesforce, refresh_interval_seconds: int = _DEFAULT_TOKEN_REFRESH_INTERVAL_SECONDS) -> None:
+        self._sf_api = sf_api
+        self._refresh_interval_seconds = refresh_interval_seconds
+        self._last_refresh_time = time.monotonic()
+
+    def get_token(self) -> str:
+        elapsed = time.monotonic() - self._last_refresh_time
+        if elapsed >= self._refresh_interval_seconds:
+            logger.info("Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed)
+            self._sf_api.login()
+            self._last_refresh_time = time.monotonic()
+        return self._sf_api.access_token
 
 
 # https://stackoverflow.com/a/54517228
@@ -530,7 +562,7 @@ class BulkSalesforceStream(SalesforceStream):
         job_query_path = f"/services/data/{self.sf_api.version}/jobs/query"
         decoder = JsonDecoder(parameters=parameters)
         authenticator = BearerAuthenticator(
-            token_provider=InterpolatedStringTokenProvider(api_token=self.sf_api.access_token, config=config, parameters=parameters),
+            token_provider=SalesforceOAuthTokenProvider(sf_api=self.sf_api),
             config=config,
             parameters=parameters,
         )
