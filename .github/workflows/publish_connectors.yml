@@ -216,8 +216,8 @@ jobs:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
 
-      - name: Resolve connector version tag (preview)
-        id: resolve-version
+      - name: Resolve ephemeral version tag (preview)
+        id: resolve-ephemeral-version
         if: needs.publish_options.outputs.with-semver-suffix == 'preview'
         run: |
           RESOLVED_TAG=$(
@@ -227,6 +227,27 @@ jobs:
               --next --prerelease
           )
           echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve ephemeral version tag (rc)
+        id: resolve-ephemeral-version-rc
+        if: needs.publish_options.outputs.with-semver-suffix == 'rc'
+        run: |
+          RESOLVED_TAG=$(
+            airbyte-ops local connector get-version \
+              --name "${{ matrix.connector }}" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --next --bump-type rc
+          )
+          echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve connector version tag
+        id: resolve-version
+        run: |
+          echo "connector-version-tag=${{
+            steps.resolve-ephemeral-version.outputs.connector-version-tag
+            || steps.resolve-ephemeral-version-rc.outputs.connector-version-tag
+            || steps.connector-metadata.outputs.connector-version
+          }}" | tee -a $GITHUB_OUTPUT
 
       # We're intentionally not using the `google-github-actions/auth` action.
       # The upload-connector-metadata step runs a script which handles auth manually.
