@@ -227,7 +227,7 @@ class PostgresSourceDebeziumOperations(
         val resultRow: NativeRecordPayload = mutableMapOf()
         val changes = mutableMapOf<EmittedField, FieldValueChange>()
         for (field in stream.schema) {
-            var mappedValue: JsonNode? = null
+            var mappedValue: JsonNode?
             if (field.type is ArrayFieldType<*>) {
                 val rawArray = data[field.id]
                 mappedValue =
