@@ -9,13 +9,22 @@ import time
 import urllib.parse
 from abc import ABC
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import pendulum
 import requests  # type: ignore[import]
-from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import exceptions
-
 from airbyte_cdk import (
     BearerAuthenticator,
     CursorPaginationStrategy,
@@ -33,29 +42,42 @@ from airbyte_cdk import (
     StreamSlice,
 )
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import (
+    AsyncJobOrchestrator,
+)
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.partition_routers import AsyncJobPartitionRouter
-from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.http_job_repository import (
+    AsyncHttpJobRepository,
+)
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
-from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
+    IsoMillisConcurrentStreamStateConverter,
+)
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from pendulum import DateTime  # type: ignore[attr-defined]
+from requests import exceptions
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
-from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
-
+from .rate_limiting import (
+    BulkNotSupportedException,
+    SalesforceErrorHandler,
+    default_backoff_handler,
+)
 
 logger = logging.getLogger("airbyte")
 
@@ -91,10 +113,22 @@ class SalesforceTokenProvider(TokenProvider):
     def get_token(self) -> str:
         elapsed = time.monotonic() - self._last_refresh_time
         if elapsed >= _TOKEN_REFRESH_INTERVAL_SECONDS:
-            logger.info("Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed)
+            logger.info(
+                "Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed
+            )
             self._sf_api.login()
             self._last_refresh_time = time.monotonic()
         return self._sf_api.access_token
+
+    def force_refresh(self) -> None:
+        """Force an immediate token refresh.
+
+        Called by SalesforceErrorHandler when an INVALID_SESSION_ID response is
+        detected, so that subsequent requests use a valid access token.
+        """
+        logger.info("Forcing Salesforce OAuth token refresh due to INVALID_SESSION_ID")
+        self._sf_api.login()
+        self._last_refresh_time = time.monotonic()
 
 
 class SalesforceStream(HttpStream, ABC):
@@ -128,7 +162,9 @@ class SalesforceStream(HttpStream, ABC):
             self.stream_name,
             self.logger,
             session=self._http_client._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
-            error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
+            error_handler=SalesforceErrorHandler(
+                stream_name=self.stream_name, sobject_options=self.sobject_options
+            ),
         )
 
     def read_records(
@@ -141,7 +177,9 @@ class SalesforceStream(HttpStream, ABC):
         """
         In order to avoid RFR which does uses `_read_single_page` instead of `_read_pages`
         """
-        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        yield from super().read_records(
+            sync_mode, cursor_field, stream_slice, stream_state
+        )
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -169,10 +207,14 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def too_many_properties(self):
         selected_properties = self.get_json_schema().get("properties", {})
-        properties_length = len(urllib.parse.quote(",".join(p for p in selected_properties)))
+        properties_length = len(
+            urllib.parse.quote(",".join(p for p in selected_properties))
+        )
         return properties_length > self.max_properties_length
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+        self, response: requests.Response, **kwargs
+    ) -> Iterable[Mapping]:
         yield from response.json()["records"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -185,12 +227,16 @@ class SalesforceStream(HttpStream, ABC):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
         return super().get_error_display_message(exception)
 
-    def get_start_date_from_state(self, stream_state: Mapping[str, Any] = None) -> pendulum.DateTime:
+    def get_start_date_from_state(
+        self, stream_state: Mapping[str, Any] = None
+    ) -> pendulum.DateTime:
         if self.state_converter.is_state_message_compatible(stream_state):
             # stream_state is in the concurrent format
             if stream_state.get("slices", []):
                 return stream_state["slices"][0]["end"]
-        elif stream_state and not self.state_converter.is_state_message_compatible(stream_state):
+        elif stream_state and not self.state_converter.is_state_message_compatible(
+            stream_state
+        ):
             # stream_state has not been converted to the concurrent format; this is not expected
             return pendulum.parse(stream_state.get(self.cursor_field), tz="UTC")
         return pendulum.parse(self.start_date, tz="UTC")
@@ -229,7 +275,9 @@ class RestSalesforceStream(SalesforceStream):
             return next_token
         return f"/services/data/{self.sf_api.version}/queryAll"
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
         response_data = response.json()
         next_token = response_data.get("nextRecordsUrl")
         return {"next_token": next_token} if next_token else None
@@ -254,7 +302,10 @@ class RestSalesforceStream(SalesforceStream):
         if self.name in PARENT_SALESFORCE_OBJECTS:
             # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', ...)"
             parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
-            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
+            parent_ids = [
+                f"'{parent_record[parent_field]}'"
+                for parent_record in stream_slice["parents"]
+            ]
             query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -266,7 +317,11 @@ class RestSalesforceStream(SalesforceStream):
         selected_properties = self.get_json_schema().get("properties", {})
 
         def empty_props_with_pk_if_present():
-            return {self.primary_key: selected_properties[self.primary_key]} if self.primary_key else {}
+            return (
+                {self.primary_key: selected_properties[self.primary_key]}
+                if self.primary_key
+                else {}
+            )
 
         summary_length = 0
         local_properties = empty_props_with_pk_if_present()
@@ -302,7 +357,13 @@ class RestSalesforceStream(SalesforceStream):
     def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+            [
+                requests.PreparedRequest,
+                requests.Response,
+                Mapping[str, Any],
+                Mapping[str, Any],
+            ],
+            Iterable[StreamData],
         ],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
@@ -310,7 +371,8 @@ class RestSalesforceStream(SalesforceStream):
         stream_state = stream_state or {}
         records_by_primary_key = {}
         property_chunks: Mapping[int, PropertyChunk] = {
-            index: PropertyChunk(properties=properties) for index, properties in enumerate(self.chunk_properties())
+            index: PropertyChunk(properties=properties)
+            for index, properties in enumerate(self.chunk_properties())
         }
         while True:
             chunk_id = self._next_chunk_id(property_chunks)
@@ -320,14 +382,19 @@ class RestSalesforceStream(SalesforceStream):
 
             property_chunk = property_chunks[chunk_id]
             request, response = self._fetch_next_page_for_chunk(
-                stream_slice, stream_state, property_chunk.next_page, property_chunk.properties
+                stream_slice,
+                stream_state,
+                property_chunk.next_page,
+                property_chunk.properties,
             )
 
             # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
             if property_chunk.first_time:
                 property_chunk.first_time = False
             property_chunk.next_page = self.next_page_token(response)
-            chunk_page_records = records_generator_fn(request, response, stream_state, stream_slice)
+            chunk_page_records = records_generator_fn(
+                request, response, stream_state, stream_slice
+            )
             if not self.too_many_properties:
                 # this is the case when a stream has no primary key
                 # (it is allowed when properties length does not exceed the maximum value)
@@ -363,12 +430,16 @@ class RestSalesforceStream(SalesforceStream):
         # This may result in data inconsistency. We skip such records for now and log a warning message.
         incomplete_record_ids = ",".join([str(key) for key in records_by_primary_key])
         if incomplete_record_ids:
-            self.logger.warning(f"Inconsistent record(s) with primary keys {incomplete_record_ids} found. Skipping them.")
+            self.logger.warning(
+                f"Inconsistent record(s) with primary keys {incomplete_record_ids} found. Skipping them."
+            )
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-    @default_backoff_handler(max_tries=5)  # FIXME remove once HttpStream relies on the HttpClient
+    @default_backoff_handler(
+        max_tries=5
+    )  # FIXME remove once HttpStream relies on the HttpClient
     def _fetch_next_page_for_chunk(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -376,19 +447,38 @@ class RestSalesforceStream(SalesforceStream):
         next_page_token: Mapping[str, Any] = None,
         property_chunk: Mapping[str, Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
-        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request_headers = self.request_headers(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
         return self._http_client.send_request(
             http_method=self.http_method,
             url=self._join_url(
                 self.url_base,
-                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                self.path(
+                    stream_state=stream_state,
+                    stream_slice=stream_slice,
+                    next_page_token=next_page_token,
+                ),
             ),
             headers=dict(request_headers),
             params=self.request_params(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                property_chunk=property_chunk,
             ),
-            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            json=self.request_body_json(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
+            data=self.request_body_data(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            ),
             request_kwargs={},
         )
 
@@ -398,14 +488,19 @@ class BatchedSubStream(HttpSubStream):
     SLICE_BATCH_SIZE = 200
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """Instead of yielding one parent record at a time, make stream slice contain a batch of parent records.
 
         It allows to get <SLICE_BATCH_SIZE> records by one requests (instead of only one).
         """
         batched_slice = []
-        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+        for stream_slice in super().stream_slices(
+            sync_mode, cursor_field, stream_state
+        ):
             if len(batched_slice) == self.SLICE_BATCH_SIZE:
                 yield {"parents": batched_slice}
                 batched_slice = []
@@ -460,7 +555,11 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         if not self._cursor:
-            yield from [StreamSlice(partition={}, cursor_slice={"start_date": "", "end_date": ""})]
+            yield from [
+                StreamSlice(
+                    partition={}, cursor_slice={"start_date": "", "end_date": ""}
+                )
+            ]
             return
 
         for stream_slice in self._cursor.stream_slices():
@@ -526,10 +625,18 @@ class BulkParentStreamStreamSlicer(StreamSlicer):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         for batched_parents in self._batched_substream.stream_slices(
-            sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._stream_state
+            sync_mode=self._sync_mode,
+            cursor_field=self._cursor_field,
+            stream_state=self._stream_state,
         ):
             yield StreamSlice(
-                partition={"parents": [parent[self._parend_id_field] for parent in batched_parents["parents"]]}, cursor_slice={}
+                partition={
+                    "parents": [
+                        parent[self._parend_id_field]
+                        for parent in batched_parents["parents"]
+                    ]
+                },
+                cursor_slice={},
             )
 
 
@@ -540,7 +647,9 @@ class BulkSalesforceStream(SalesforceStream):
         self._rest_stream = None
         super().__init__(**kwargs)
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response
+    ) -> Optional[Mapping[str, Any]]:
         """
         This method needs to be there as `HttpStream.next_page_token` is abstract but it will never get called
         """
@@ -552,7 +661,9 @@ class BulkSalesforceStream(SalesforceStream):
         """
         pass
 
-    def _instantiate_declarative_stream(self, stream_slicer: StreamSlicer, has_bulk_parent: bool) -> None:
+    def _instantiate_declarative_stream(
+        self, stream_slicer: StreamSlicer, has_bulk_parent: bool
+    ) -> None:
         """
         For streams with a replication key and where filtering is supported, we need to have the cursor in order to instantiate the
         DeclarativeStream hence why this isn't called in the __init__
@@ -562,24 +673,35 @@ class BulkSalesforceStream(SalesforceStream):
         url_base = self.sf_api.instance_url
         job_query_path = f"/services/data/{self.sf_api.version}/jobs/query"
         decoder = JsonDecoder(parameters=parameters)
+        token_provider = SalesforceTokenProvider(self.sf_api)
         authenticator = BearerAuthenticator(
-            token_provider=SalesforceTokenProvider(self.sf_api),
+            token_provider=token_provider,
             config=config,
             parameters=parameters,
         )
-        error_handler = SalesforceErrorHandler()
+        error_handler = SalesforceErrorHandler(token_provider=token_provider)
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field and self._stream_slicer_cursor:
             where_in_query = '{{ " WHERE " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
             lower_boundary_interpolation = (
-                '{{ "' f"{self.cursor_field}" ' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+                '{{ "'
+                f"{self.cursor_field}"
+                ' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
             )
             and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
             upper_boundary_interpolation = (
-                '{{ "' f"{self.cursor_field}" ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+                '{{ "'
+                f"{self.cursor_field}"
+                ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
             )
-            query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
+            query = (
+                query
+                + where_in_query
+                + lower_boundary_interpolation
+                + and_keyword_interpolation
+                + upper_boundary_interpolation
+            )
         elif isinstance(stream_slicer, BulkParentStreamStreamSlicer):
             where_in_query = " WHERE ContentDocumentId IN ('"
             parents_interpolation = '{{ "\', \'".join(stream_slice["parents"]) }}'
@@ -735,8 +857,18 @@ class BulkSalesforceStream(SalesforceStream):
             use_cache=False,
             stream_response=False,
         )
-        status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
-        download_target_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
+        status_extractor = DpathExtractor(
+            decoder=JsonDecoder(parameters={}),
+            field_path=["state"],
+            config={},
+            parameters={},
+        )
+        download_target_extractor = DpathExtractor(
+            decoder=JsonDecoder(parameters={}),
+            field_path=["id"],
+            config={},
+            parameters={},
+        )
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
@@ -795,7 +927,10 @@ class BulkSalesforceStream(SalesforceStream):
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
-    transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
+    transformer = TypeTransformer(
+        TransformConfig.CustomSchemaNormalization
+        | TransformConfig.DefaultSchemaNormalization
+    )
 
     def get_query_select_fields(self) -> str:
         return ", ".join(
@@ -807,7 +942,10 @@ class BulkSalesforceStream(SalesforceStream):
         )
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -821,7 +959,10 @@ class BulkSalesforceStream(SalesforceStream):
         if self.name in PARENT_SALESFORCE_OBJECTS:
             # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', '06905000000Mxp7XXX', ...)"
             parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
-            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
+            parent_ids = [
+                f"'{parent_record[parent_field]}'"
+                for parent_record in stream_slice["parents"]
+            ]
             query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
         return {"q": query}
@@ -839,31 +980,59 @@ class BulkSalesforceStream(SalesforceStream):
                 # ignore as we have switched to rest
                 pass
             else:
-                yield from self._bulk_job_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+                yield from self._bulk_job_stream.read_records(
+                    sync_mode, cursor_field, stream_slice, stream_state
+                )
         else:
-            yield from self._rest_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+            yield from self._rest_stream.read_records(
+                sync_mode, cursor_field, stream_slice, stream_state
+            )
 
     def _is_async_job_slice(self, stream_slice):
-        return isinstance(stream_slice, StreamSlice) and "jobs" in stream_slice.extra_fields
+        return (
+            isinstance(stream_slice, StreamSlice)
+            and "jobs" in stream_slice.extra_fields
+        )
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor), has_bulk_parent=False)
+        self._instantiate_declarative_stream(
+            BulkDatetimeStreamSlicer(self._stream_slicer_cursor), has_bulk_parent=False
+        )
         try:
-            yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+            yield from self._bulk_job_stream.stream_slices(
+                sync_mode=sync_mode,
+                cursor_field=cursor_field,
+                stream_state=stream_state,
+            )
         except BulkNotSupportedException:
             self.logger.warning(
                 "attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status"
             )
             self._switch_from_bulk_to_rest = True
             self._rest_stream = self.get_standard_instance()
-            stream_is_available, error = SalesforceAvailabilityStrategy().check_availability(self._rest_stream, self.logger, None)
+            (
+                stream_is_available,
+                error,
+            ) = SalesforceAvailabilityStrategy().check_availability(
+                self._rest_stream, self.logger, None
+            )
             if not stream_is_available:
-                self.logger.warning(f"Skipped syncing stream '{self._rest_stream.name}' because it was unavailable. Error: {error}")
+                self.logger.warning(
+                    f"Skipped syncing stream '{self._rest_stream.name}' because it was unavailable. Error: {error}"
+                )
                 yield from []
             else:
-                yield from self._rest_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+                yield from self._rest_stream.stream_slices(
+                    sync_mode=sync_mode,
+                    cursor_field=cursor_field,
+                    stream_state=stream_state,
+                )
 
     def get_standard_instance(self) -> SalesforceStream:
         """Returns a instance of standard logic(non-BULK) with same settings"""
@@ -878,8 +1047,13 @@ class BulkSalesforceStream(SalesforceStream):
             message_repository=self._message_repository,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
-        if isinstance(self, BulkIncrementalSalesforceStream) and self._stream_slicer_cursor:
-            stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
+        if (
+            isinstance(self, BulkIncrementalSalesforceStream)
+            and self._stream_slicer_cursor
+        ):
+            stream_kwargs.update(
+                {"replication_key": self.replication_key, "start_date": self.start_date}
+            )
             new_cls = IncrementalRestSalesforceStream
 
         standard_instance = new_cls(**stream_kwargs)
@@ -890,15 +1064,24 @@ class BulkSalesforceStream(SalesforceStream):
 
 class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self._instantiate_declarative_stream(
             BulkParentStreamStreamSlicer(
-                super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+                super(BulkSalesforceSubStream, self),
+                sync_mode,
+                cursor_field,
+                stream_state,
+                PARENT_SALESFORCE_OBJECTS[self.name]["field"],
             ),
             has_bulk_parent=True,
         )
-        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        yield from self._bulk_job_stream.stream_slices(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
+        )
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform
@@ -928,7 +1111,11 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
         self._stream_slicer_cursor = cursor
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self,
+        *,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if not self._stream_slicer_cursor:
             yield from [StreamSlice(partition={}, cursor_slice={})]
@@ -973,7 +1160,9 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
             (stream_slice or {}).get("start_date", ""),
             (next_page_token or {}).get("start_date", ""),
         )
-        end_date = (stream_slice or {}).get("end_date", pendulum.now(tz="UTC").isoformat(timespec="milliseconds"))
+        end_date = (stream_slice or {}).get(
+            "end_date", pendulum.now(tz="UTC").isoformat(timespec="milliseconds")
+        )
 
         where_conditions = []
 
@@ -999,33 +1188,50 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC
     def state(self, value):
         self._state = value
 
-    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(
+        self,
+        current_stream_state: MutableMapping[str, Any],
+        latest_record: Mapping[str, Any],
+    ) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not
         """
-        latest_record_value: pendulum.DateTime = pendulum.parse(latest_record[self.cursor_field])
+        latest_record_value: pendulum.DateTime = pendulum.parse(
+            latest_record[self.cursor_field]
+        )
         slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get("end_date"))
         max_possible_value = min(latest_record_value, slice_max_value)
         if current_stream_state.get(self.cursor_field):
             if latest_record_value > slice_max_value:
                 return {self.cursor_field: max_possible_value.isoformat()}
-            max_possible_value = max(latest_record_value, pendulum.parse(current_stream_state[self.cursor_field]))
+            max_possible_value = max(
+                latest_record_value,
+                pendulum.parse(current_stream_state[self.cursor_field]),
+            )
         return {self.cursor_field: max_possible_value.isoformat()}
 
 
-class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
+class BulkIncrementalSalesforceStream(
+    BulkSalesforceStream, IncrementalRestSalesforceStream
+):
     state_checkpoint_interval = None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         start_date = stream_slice["start_date"]
         end_date = stream_slice["end_date"]
 
         select_fields = self.get_query_select_fields()
         table_name = self.name
-        where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
+        where_conditions = [
+            f"{self.cursor_field} >= {start_date}",
+            f"{self.cursor_field} < {end_date}",
+        ]
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
@@ -1042,11 +1248,15 @@ class Describe(Stream):
     name = "Describe"
     primary_key = "name"
 
-    def __init__(self, sf_api: Salesforce, catalog: ConfiguredAirbyteCatalog = None, **kwargs):
+    def __init__(
+        self, sf_api: Salesforce, catalog: ConfiguredAirbyteCatalog = None, **kwargs
+    ):
         super().__init__(**kwargs)
         self.sf_api = sf_api
         if catalog:
-            self.sobjects_to_describe = [s.stream.name for s in catalog.streams if s.stream.name != self.name]
+            self.sobjects_to_describe = [
+                s.stream.name for s in catalog.streams if s.stream.name != self.name
+            ]
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
