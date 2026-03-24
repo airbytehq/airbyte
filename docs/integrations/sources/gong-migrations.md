@@ -15,7 +15,7 @@ This update fixes schema bugs in the `extensiveCalls` stream to match the actual
 
 These schema corrections change the data types in the destination table for the `extensiveCalls` stream. Users syncing this stream must refresh the source schema and reset the stream after upgrading.
 
-## Migration Steps
+### Migration Steps
 
 ### Refresh affected schemas and reset data
 
