@@ -36,7 +36,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb = PostgresTestDatabase.`in`(this.serverImage)
         config = getConfig(testdb.userName, testdb.password, "public")
-        testdb.query({ ctx ->
+        testdb.query<Any?>({ ctx ->
             ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
             ctx.fetch(
                 "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
