@@ -1052,6 +1052,11 @@ spec:
 #   /2/users (active_users, group_by=country): 30 days * 4 (group-by) * 1 = 120 cost/request
 #   /2/users (active_users, no group-by): 30 days * 1 * 1 = 30 cost/request
 #   /2/events/list (events_list): full refresh, no date range, cost = 1
+#
+# Note: /2/events/list is not given a specific policy because its cost is trivially low (1 per request)
+# and it only makes a single request per sync. It falls through to the global fallback.
+# The 5-concurrent-request limit is enforced globally via concurrency_level (not per-endpoint),
+# as the CDK's api_budget only supports count-based rate policies, not concurrency policies.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 5
@@ -1075,15 +1080,7 @@ api_budget:
         - type: HttpRequestRegexMatcher
           method: GET
           url_path_pattern: "/2/users"
-    # /2/events/list: cost = 1 per request, effectively unconstrained within global budget
-    - type: FixedWindowCallRatePolicy
-      period: PT1H
-      call_limit: 1000
-      matchers:
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "/2/events/list"
-    # Global fallback for all other endpoints (annotations, cohorts, export)
+    # Global fallback for all other endpoints (events_list, annotations, cohorts, export)
     - type: FixedWindowCallRatePolicy
       period: PT1M
       call_limit: 60
