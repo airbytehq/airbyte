@@ -1041,10 +1041,17 @@ spec:
         default: true
 
 # Amplitude API rate limits:
-# - Dashboard REST API: 5 concurrent requests, 108,000 cost/hour
+# - Dashboard REST API: 5 concurrent requests, 108,000 cost/hour, 1,000 cost/5min
+#   Cost formula: (# of days) * (# of conditions) * (query type cost)
+#   See: https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits
 # - Export API: No explicit rate limits documented, but large exports may timeout
-# See: https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits
-# Using conservative limits to avoid rate limiting issues
+# - Chart Annotations & Behavioral Cohorts APIs: No separate rate limits documented
+#
+# Per-stream cost estimates (based on connector's slice sizes and query parameters):
+#   /2/sessions/average (average_session_length): 15 days * 1 condition * 4 (User Sessions) = 60 cost/request
+#   /2/users (active_users, group_by=country): 30 days * 4 (group-by) * 1 = 120 cost/request
+#   /2/users (active_users, no group-by): 30 days * 1 * 1 = 30 cost/request
+#   /2/events/list (events_list): full refresh, no date range, cost = 1
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 5
@@ -1052,9 +1059,32 @@ concurrency_level:
 api_budget:
   type: HTTPAPIBudget
   policies:
+    # /2/sessions/average: 108,000 cost/hr ÷ 60 cost/request = 1,800 requests/hr
+    - type: FixedWindowCallRatePolicy
+      period: PT1H
+      call_limit: 1800
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "/2/sessions/average"
+    # /2/users: 108,000 cost/hr ÷ 120 cost/request = 900 requests/hr (conservative, assumes group_by=country)
+    - type: FixedWindowCallRatePolicy
+      period: PT1H
+      call_limit: 900
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "/2/users"
+    # /2/events/list: cost = 1 per request, effectively unconstrained within global budget
+    - type: FixedWindowCallRatePolicy
+      period: PT1H
+      call_limit: 1000
+      matchers:
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "/2/events/list"
+    # Global fallback for all other endpoints (annotations, cohorts, export)
     - type: FixedWindowCallRatePolicy
       period: PT1M
-      # Conservative limit based on Amplitude's concurrent request limit
-      # Amplitude allows 5 concurrent requests for Dashboard REST API
       call_limit: 60
       matchers: []
