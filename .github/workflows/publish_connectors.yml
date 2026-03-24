@@ -575,6 +575,7 @@ jobs:
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
+        continue-on-error: true
         uses: ./.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
@@ -623,7 +624,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 ${{ steps.context.outputs.release-type }} publish workflow failed:\n <${{ steps.context.outputs.run-url }}|View workflow run>\n ${{ steps.context.outputs.trigger-text }} by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>)."
+              "text": "🚨 ${{ steps.context.outputs.release-type }} publish workflow failed:\n <${{ steps.context.outputs.run-url }}|View workflow run>\n ${{ steps.context.outputs.trigger-text }} by ${{ github.actor }}${{ steps.match-github-to-slack-user.outputs.slack_user_ids && format(' (<@{0}>)', steps.match-github-to-slack-user.outputs.slack_user_ids) || '' }}."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
