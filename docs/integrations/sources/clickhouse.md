@@ -4,7 +4,7 @@ The ClickHouse source supports Full Refresh and Incremental syncs. You can choos
 
 This connector is built on top of the source-jdbc code base and uses the [ClickHouse JDBC driver](https://github.com/ClickHouse/clickhouse-jdbc). For more information, see the [ClickHouse JDBC documentation](https://clickhouse.com/docs/integrations/language-clients/java/jdbc).
 
-### Output schema
+## Output schema
 
 The ClickHouse source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
