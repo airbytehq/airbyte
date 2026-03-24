@@ -33,6 +33,7 @@ Generate an Access Token by navigating to "Company Settings", then "Developer To
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.37 | 2026-03-24 | [75355](https://github.com/airbytehq/airbyte/pull/75355) | Update dependencies |
 | 0.0.36 | 2026-02-24 | [73765](https://github.com/airbytehq/airbyte/pull/73765) | Update dependencies |
 | 0.0.35 | 2026-02-10 | [73015](https://github.com/airbytehq/airbyte/pull/73015) | Update dependencies |
 | 0.0.34 | 2026-01-27 | [72370](https://github.com/airbytehq/airbyte/pull/72370) | Update dependencies |
