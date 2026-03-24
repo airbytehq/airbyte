@@ -256,12 +256,14 @@ def test_api_budget_no_throttle_when_some_tokens_have_headroom(sleep_mock, reque
             remaining = 20
         else:
             remaining = 4000
-        return json.dumps({
-            "resources": {
-                "core": {"limit": 5000, "used": 5000 - remaining, "remaining": remaining, "reset": reset_time},
-                "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": reset_time},
+        return json.dumps(
+            {
+                "resources": {
+                    "core": {"limit": 5000, "used": 5000 - remaining, "remaining": remaining, "reset": reset_time},
+                    "graphql": {"limit": 5000, "used": 0, "remaining": 5000, "reset": reset_time},
+                }
             }
-        })
+        )
 
     requests_mock.get("https://api.github.com/rate_limit", text=rate_limit_callback)
     authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token_low", "token_high"])

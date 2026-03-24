@@ -218,8 +218,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         if delay >= 0.1:
             if not self._budget_logged:
                 self._logger.info(
-                    "API budget: throttling requests (%.1fs delay). %d calls remaining across %d token(s), "
-                    "%.0fs until reset.",
+                    "API budget: throttling requests (%.1fs delay). %d calls remaining across %d token(s), " "%.0fs until reset.",
                     delay,
                     total_remaining,
                     len(self._tokens),
