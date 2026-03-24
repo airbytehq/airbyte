@@ -60,8 +60,8 @@ public class MongoUtil {
    * Maximum number of collections to discover in parallel. Each parallel discovery runs a $sample
    * aggregation pipeline that can trigger expensive COLLSCAN operations on the MongoDB server.
    * Unbounded parallelism (via the default ForkJoinPool) can overwhelm production clusters,
-   * especially with large collections. This limit caps the number of concurrent discovery
-   * operations to protect the source database.
+   * especially with large collections. This limit caps the number of concurrent discovery operations
+   * to protect the source database.
    */
   @VisibleForTesting
   static final int MAX_DISCOVER_PARALLELISM = 5;
@@ -146,14 +146,12 @@ public class MongoUtil {
     // and overwhelm production clusters.
     final ForkJoinPool discoveryPool = new ForkJoinPool(MAX_DISCOVER_PARALLELISM);
     try {
-      return discoveryPool.submit(() ->
-          authorizedCollections.parallelStream()
-              .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout))
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .map(stream -> stream.withIsResumable(true))
-              .collect(Collectors.toList())
-      ).get();
+      return discoveryPool.submit(() -> authorizedCollections.parallelStream()
+          .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .map(stream -> stream.withIsResumable(true))
+          .collect(Collectors.toList())).get();
     } catch (final InterruptedException e) {
       LOGGER.error("Schema discovery was interrupted for database '{}'.", databaseName, e);
       Thread.currentThread().interrupt();
