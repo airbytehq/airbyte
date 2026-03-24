@@ -347,11 +347,6 @@ jobs:
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
-      - name: "[DRY-RUN] Skip Upload additional connector metadata"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping additional connector metadata upload for ${{ matrix.connector }}"
-
   # The connector registries are generated from the spec cache,
   # and in some cases, there are cross-connector dependencies.
   # Specifically, connectors with a strict-encrypt variant need the strict-encrypt's spec cache
