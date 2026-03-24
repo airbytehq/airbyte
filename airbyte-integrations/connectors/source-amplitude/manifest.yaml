@@ -1054,7 +1054,8 @@ spec:
 #   /2/events/list (events_list): full refresh, no date range, cost = 1
 #
 # Note: /2/events/list is not given a specific policy because its cost is trivially low (1 per request)
-# and it only makes a single request per sync. It falls through to the global fallback.
+# and it only makes a single request per sync (full refresh, no date slicing).
+# Other endpoints (annotations, cohorts, export) have no documented rate limits from Amplitude.
 # The 5-concurrent-request limit is enforced globally via concurrency_level (not per-endpoint),
 # as the CDK's api_budget only supports count-based rate policies, not concurrency policies.
 concurrency_level:
@@ -1080,8 +1081,3 @@ api_budget:
         - type: HttpRequestRegexMatcher
           method: GET
           url_path_pattern: "/2/users"
-    # Global fallback for all other endpoints (events_list, annotations, cohorts, export)
-    - type: FixedWindowCallRatePolicy
-      period: PT1M
-      call_limit: 60
-      matchers: []
