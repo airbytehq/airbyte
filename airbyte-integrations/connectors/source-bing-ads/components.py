@@ -640,7 +640,9 @@ class BingAdsReportUrlRefresher(Requester):
                 status_code = e.response.status_code if e.response is not None else 0
                 if status_code in (429, 500, 502, 503, 504) and attempt < max_retries - 1:
                     backoff = 2**attempt
-                    logger.warning(f"BingAdsReportUrlRefresher: Transient HTTP {status_code} on attempt {attempt + 1}, " f"retrying in {backoff}s")
+                    logger.warning(
+                        f"BingAdsReportUrlRefresher: Transient HTTP {status_code} on attempt {attempt + 1}, " f"retrying in {backoff}s"
+                    )
                     time.sleep(backoff)
                     continue
                 logger.error(f"BingAdsReportUrlRefresher: Re-poll failed after {attempt + 1} attempts: {e}")
