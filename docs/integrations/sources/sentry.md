@@ -65,6 +65,7 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.18 | 2026-03-24 | [75330](https://github.com/airbytehq/airbyte/pull/75330) | Update dependencies |
 | 0.9.17 | 2026-03-10 | [74601](https://github.com/airbytehq/airbyte/pull/74601) | Update dependencies |
 | 0.9.16 | 2026-03-03 | [73562](https://github.com/airbytehq/airbyte/pull/73562) | Update dependencies |
 | 0.9.15 | 2026-02-03 | [72578](https://github.com/airbytehq/airbyte/pull/72578) | Update dependencies |
