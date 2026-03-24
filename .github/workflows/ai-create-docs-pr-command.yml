@@ -136,13 +136,15 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run AI Create Docs PR
-        uses: aaronsteers/devin-action@main
+        uses: aaronsteers/devin-action@v0.5.0
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
           playbook-macro: "!connectordocs"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           start-message: ${{ steps.context.outputs.start-message }}
           extra-context: ${{ steps.context.outputs.extra-context }}
           tags: |
