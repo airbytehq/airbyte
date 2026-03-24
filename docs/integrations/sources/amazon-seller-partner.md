@@ -328,6 +328,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.1 | 2026-03-24 | [75309](https://github.com/airbytehq/airbyte/pull/75309) | Fix AttributeError in GzipXmlDecoder when XML parsing fails |
 | 5.7.0 | 2026-03-23 | [74740](https://github.com/airbytehq/airbyte/pull/74740) | Add configurable `asinGranularity` for GET_SALES_AND_TRAFFIC_REPORT streams, enabling CHILD and SKU level data with populated childAsin and sku values |
 | 5.6.1 | 2026-03-17 | [74538](https://github.com/airbytehq/airbyte/pull/74538) | Update dependencies |
 | 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
@@ -357,37 +358,37 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 | 4.7.0-rc.1 | 2025-06-30 | [62119](https://github.com/airbytehq/airbyte/pull/62119) | Migrate to manifest-only |
 | 4.6.4 | 2025-06-15 | [54870](https://github.com/airbytehq/airbyte/pull/54870) | Update dependencies |
 | 4.6.3 | 2025-06-03 | [61351](https://github.com/airbytehq/airbyte/pull/61351) | Update dependencies |
-| 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537)     |Fix Extend Minimum Date Range|
-| 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238)     |Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`)|
+| 4.6.2 | 2025-04-09 | [57537](https://github.com/airbytehq/airbyte/pull/57537) | Fix Extend Minimum Date Range |
+| 4.6.1 | 2025-04-08 | [55238](https://github.com/airbytehq/airbyte/pull/55238) | Fix daterange in `DatetimeBasedCursor` and Added configurable step size for financial events streams (`list_financial_event_groups`, `list_financial_events`) |
 | 4.6.0 | 2025-02-24 | [53225](https://github.com/airbytehq/airbyte/pull/53225) | Add API Budget |
 | 4.5.3 | 2025-02-22 | [53928](https://github.com/airbytehq/airbyte/pull/53928) | Update dependencies |
 | 4.5.2 | 2025-02-17 | [53693](https://github.com/airbytehq/airbyte/pull/53693) | Add app_id to server configuration (OAuth) |
 | 4.5.1 | 2025-02-08 | [49297](https://github.com/airbytehq/airbyte/pull/49297) | Update dependencies |
 | 4.5.0 | 2025-02-04 | [53155](https://github.com/airbytehq/airbyte/pull/53155) | Promoting release candidate 4.5.0-rc.5 to a main version. |
-| 4.5.0-rc.5 | 2025-01-31 | [52700](https://github.com/airbytehq/airbyte/pull/52700)  | Use incremental_dependency for the OrderItems substream                                                                                                                             |
-| 4.5.0-rc.4 | 2025-01-31 | [52683](https://github.com/airbytehq/airbyte/pull/52683)  | Fix Rate Limiting issue; disable concurrency                                                                                                                                        |
-| 4.5.0-rc.3 | 2025-01-28 | [52619](https://github.com/airbytehq/airbyte/pull/52619)  | Fix `Orders` pagination                                                                                                                                                             |
-| 4.5.0-rc.2 | 2025-01-28 | [52592](https://github.com/airbytehq/airbyte/pull/52592)  | Only request data for the `Orders` stream for up to 2 minutes before present if replication_start_date is not specified                                                             |
-| 4.5.0-rc.1 | 2025-01-27 | [49293](https://github.com/airbytehq/airbyte/pull/49293)  | Convert to REST and reports streams to concurrent low-code CDK in v6. Remove buggy analytics streams                                                                                |
-| 4.4.7      | 2024-11-14 | [47691](https://github.com/airbytehq/airbyte/pull/47691)  | Fix `period_in_days` definition                                                                                                                                                     |
-| 4.4.6      | 2024-11-25 | [48644](https://github.com/airbytehq/airbyte/pull/48644)  | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64              |
-| 4.4.5      | 2024-11-04 | [47049](https://github.com/airbytehq/airbyte/pull/47049)  | Update dependencies                                                                                                                                                                 |
-| 4.4.4      | 2024-10-12 | [46817](https://github.com/airbytehq/airbyte/pull/46817)  | Update dependencies                                                                                                                                                                 |
-| 4.4.3      | 2024-10-05 | [46473](https://github.com/airbytehq/airbyte/pull/46473)  | Update dependencies                                                                                                                                                                 |
-| 4.4.2      | 2024-09-28 | [44748](https://github.com/airbytehq/airbyte/pull/44748)  | Update dependencies                                                                                                                                                                 |
-| 4.4.1      | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739)  | Update dependencies                                                                                                                                                                 |
-| 4.4.0      | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052)  | Add waiting between requests logic to avoid failed report requests                                                                                                                  |
-| 4.3.11     | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873)  | Update dependencies                                                                                                                                                                 |
-| 4.3.10     | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345)  | Update dependencies                                                                                                                                                                 |
-| 4.3.9      | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158)  | Update dependencies                                                                                                                                                                 |
-| 4.3.8      | 2024-07-08 | [40751](https://github.com/airbytehq/airbyte/pull/40751)  | Improve error messaging and turning on alerting                                                                                                                                     |
-| 4.3.7      | 2024-07-06 | [40990](https://github.com/airbytehq/airbyte/pull/40990)  | Update dependencies                                                                                                                                                                 |
-| 4.3.6      | 2024-07-01 | [40590](https://github.com/airbytehq/airbyte/pull/40590)  | Add log message when data only accessible to seller accounts, add report id in log message for fatal report status, add check for start date.                                       |
-| 4.3.5      | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215)  | Replaced deprecated AirbyteLogger with logging.Logger                                                                                                                               |
-| 4.3.4      | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384)  | Update dependencies                                                                                                                                                                 |
-| 4.3.3      | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008)  | Update dependencies                                                                                                                                                                 |
-| 4.3.2      | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441)  | Update state handling for incremental streams                                                                                                                                       |
-| 4.3.1      | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969)  | [autopull] Upgrade base image to v1.2.1                                                                                                                                             |
+| 4.5.0-rc.5 | 2025-01-31 | [52700](https://github.com/airbytehq/airbyte/pull/52700) | Use incremental_dependency for the OrderItems substream |
+| 4.5.0-rc.4 | 2025-01-31 | [52683](https://github.com/airbytehq/airbyte/pull/52683) | Fix Rate Limiting issue; disable concurrency |
+| 4.5.0-rc.3 | 2025-01-28 | [52619](https://github.com/airbytehq/airbyte/pull/52619) | Fix `Orders` pagination |
+| 4.5.0-rc.2 | 2025-01-28 | [52592](https://github.com/airbytehq/airbyte/pull/52592) | Only request data for the `Orders` stream for up to 2 minutes before present if replication_start_date is not specified |
+| 4.5.0-rc.1 | 2025-01-27 | [49293](https://github.com/airbytehq/airbyte/pull/49293) | Convert to REST and reports streams to concurrent low-code CDK in v6. Remove buggy analytics streams |
+| 4.4.7 | 2024-11-14 | [47691](https://github.com/airbytehq/airbyte/pull/47691) | Fix `period_in_days` definition |
+| 4.4.6 | 2024-11-25 | [48644](https://github.com/airbytehq/airbyte/pull/48644) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.4.5 | 2024-11-04 | [47049](https://github.com/airbytehq/airbyte/pull/47049) | Update dependencies |
+| 4.4.4 | 2024-10-12 | [46817](https://github.com/airbytehq/airbyte/pull/46817) | Update dependencies |
+| 4.4.3 | 2024-10-05 | [46473](https://github.com/airbytehq/airbyte/pull/46473) | Update dependencies |
+| 4.4.2 | 2024-09-28 | [44748](https://github.com/airbytehq/airbyte/pull/44748) | Update dependencies |
+| 4.4.1 | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739) | Update dependencies |
+| 4.4.0 | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052) | Add waiting between requests logic to avoid failed report requests |
+| 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
+| 4.3.10 | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345) | Update dependencies |
+| 4.3.9 | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158) | Update dependencies |
+| 4.3.8 | 2024-07-08 | [40751](https://github.com/airbytehq/airbyte/pull/40751) | Improve error messaging and turning on alerting |
+| 4.3.7 | 2024-07-06 | [40990](https://github.com/airbytehq/airbyte/pull/40990) | Update dependencies |
+| 4.3.6 | 2024-07-01 | [40590](https://github.com/airbytehq/airbyte/pull/40590) | Add log message when data only accessible to seller accounts, add report id in log message for fatal report status, add check for start date. |
+| 4.3.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 4.3.4 | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384) | Update dependencies |
+| 4.3.3 | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008) | Update dependencies |
+| 4.3.2 | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441) | Update state handling for incremental streams |
+| 4.3.1 | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969) | [autopull] Upgrade base image to v1.2.1 |
 | 4.3.0      | 2024-05-24 | [#38657](https://github.com/airbytehq/airbyte/pull/38657) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
 | 4.2.4      | 2024-05-15 | [#38210](https://github.com/airbytehq/airbyte/pull/38210) | Fix `GET_VENDOR_TRAFFIC_REPORT` stream with report option `reportPeriod=DAY`                                                                                                        |
 | 4.2.3      | 2024-05-09 | [#38078](https://github.com/airbytehq/airbyte/pull/38078) | Hide OSS-only streams in report options config for cloud users                                                                                                                      |
