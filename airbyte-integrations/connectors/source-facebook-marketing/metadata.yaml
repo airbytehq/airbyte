@@ -33,7 +33,7 @@ data:
   name: Facebook Marketing
   remoteRegistries:
     pypi:
-      enabled: false
+      enabled: true
       packageName: airbyte-source-facebook-marketing
   registryOverrides:
     cloud:
