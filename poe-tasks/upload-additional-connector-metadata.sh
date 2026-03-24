@@ -3,10 +3,9 @@ set -euo pipefail
 
 # Uploads additional connector metadata (spec cache + SBOM) to GCS.
 #
-# This script was extracted from `upload-connector-metadata.sh` after the legacy
-# `metadata_service upload` step was removed. The metadata_service upload (metadata.yaml,
-# icon.svg, doc.md, etc.) is now handled by the ops CLI registry pipeline
-# (publish_connector_registry_entries job).
+# The legacy `metadata_service upload` (metadata.yaml, icon.svg, doc.md, etc.) has been
+# removed from this script — it is now handled by the ops CLI registry pipeline
+# (publish_connector_registry_entries job in publish_connectors.yml).
 #
 # Usage: ./poe-tasks/upload-additional-connector-metadata.sh --name destination-bigquery --with-semver-suffix <none|preview|rc>
 # You must have two environment variables set (METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
