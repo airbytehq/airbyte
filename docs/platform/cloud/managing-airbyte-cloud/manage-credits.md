@@ -113,4 +113,6 @@ To unenroll, [email the Billing team](mailto:billing@airbyte.io) with your reque
 
 ## Purchasing credits
 
-If you pass $2,000 in credit usage during a billing period, Airbyte automatically charges your saved payment method and issues an invoice. If you want to pre-purchase credits, [contact Sales](https://airbyte.com/company/talk-to-sales).
+Airbyte Cloud uses in-arrears billing, so you're invoiced monthly. If you pass $2,000 in credit usage during a billing period, Airbyte automatically charges your saved payment method and issues an invoice. 
+
+If you want to pre-purchase credits, [contact Sales](https://airbyte.com/company/talk-to-sales).
