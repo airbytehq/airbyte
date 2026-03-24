@@ -80,6 +80,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                   |
 |:--------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.3.0-rc.3 | 2026-03-20 | [75260](https://github.com/airbytehq/airbyte/pull/75260) | Remove legacy `sslmode=none` JDBC parameter incompatible with 0.9.7+ driver |
 | 0.3.0-rc.2 | 2026-03-19 | [75226](https://github.com/airbytehq/airbyte/pull/75226) | Upgrade ClickHouse JDBC driver from 0.9.5 to 0.9.8 |
 | 0.3.0-rc.1 | 2026-02-03 | [72395](https://github.com/airbytehq/airbyte/pull/72395) | Upgrade ClickHouse JDBC driver to 0.9.5 with custom type mapping |
 | 0.2.6 | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714) | Revert JDBC driver upgrade |
