@@ -142,7 +142,9 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ## Performance considerations
 
-The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+
+The connector automatically retries transient TikTok API errors, including service maintenance periods (error 60001). If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
 
 ## Upgrading
 
@@ -155,7 +157,7 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.4 | 2026-03-23 | [74376](https://github.com/airbytehq/airbyte/pull/74376) | Handle TikTok API error 60001 (service maintenance) as retryable instead of fatal; ignore error 40002 (resource not accessible or does not exist) |
+| 5.0.4 | 2026-03-24 | [74376](https://github.com/airbytehq/airbyte/pull/74376) | Handle TikTok API error 60001 (service maintenance) as retryable instead of fatal; ignore error 40002 (resource not accessible or does not exist) |
 | 5.0.3 | 2026-03-12 | [74762](https://github.com/airbytehq/airbyte/pull/74762) | Promoting release candidate 5.0.3-rc.1 to a main version. |
 | 5.0.3-rc.1 | 2026-03-05 | [74085](https://github.com/airbytehq/airbyte/pull/74085) | Add missing video engagement metrics to audience report streams |
 | 5.0.2 | 2026-03-03 | [73111](https://github.com/airbytehq/airbyte/pull/73111) | Update dependencies |
