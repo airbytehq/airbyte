@@ -12,7 +12,6 @@ import java.nio.file.Path
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.List
 import java.util.concurrent.TimeUnit
 
 private val LOGGER = KotlinLogging.logger {}
@@ -105,7 +104,7 @@ internal constructor(
         logInitialStateAsJSON(sourceConfig)
 
         val acceptedMessageTypes =
-            List.of(
+            listOf(
                 AirbyteMessage.Type.RECORD,
                 AirbyteMessage.Type.STATE,
                 AirbyteMessage.Type.TRACE,
