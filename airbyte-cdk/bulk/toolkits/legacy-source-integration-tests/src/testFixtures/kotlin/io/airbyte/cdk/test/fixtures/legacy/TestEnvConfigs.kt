@@ -75,7 +75,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
             // an empty string. Change this logic if this assumption no longer holds.
             val jobSharedEnvMap =
                 JOB_SHARED_ENVS.entries.associate {
-                    it.key to Exceptions.swallowWithDefault({ it.value.apply(this) ?: "" }, "")
+                    it.key to Exceptions.swallowWithDefault({ it.value.apply(this) }, "")
                 }
             return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap)
         }
