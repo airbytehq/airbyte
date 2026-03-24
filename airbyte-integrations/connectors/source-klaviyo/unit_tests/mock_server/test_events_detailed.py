@@ -224,7 +224,8 @@ class TestEventsDetailedStream(TestCase):
 
         assert len(output.state_messages) > 0
         latest_state = output.most_recent_state.stream_state.__dict__
-        assert "datetime" in latest_state
+        # With ListPartitionRouter, state is nested under "state" key
+        assert "datetime" in latest_state.get("state", latest_state)
 
     @HttpMocker()
     def test_incremental_sync_with_prior_state(self, http_mocker: HttpMocker):
