@@ -23,12 +23,13 @@ data:
   name: ClickHouse
   registryOverrides:
     cloud:
+      dockerRepository: airbyte/source-clickhouse-strict-encrypt
       enabled: true
     oss:
       enabled: true
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
   releaseStage: alpha
   supportLevel: community
   tags:
