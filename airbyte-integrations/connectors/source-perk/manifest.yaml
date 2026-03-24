@@ -325,12 +325,11 @@ definitions:
     url_base: https://api.travelperk.com/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      api_token: ApiKey {{ config['api_key'] }}
       inject_into:
         type: RequestOption
         field_name: Authorization
         inject_into: header
-        header_prefix: ApiKey
 
 streams:
   - $ref: "#/definitions/streams/users"
