@@ -95,7 +95,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         isSecret: Boolean
     ): T {
         val value = getEnv.apply(key)
-        if (value != null && !value.isEmpty()) {
+        if (value.isNotEmpty()) {
             return parser.apply(value)
         } else {
             val displayValue = if (isSecret) "*****" else defaultValue.toString()
@@ -110,8 +110,6 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
 
     fun getEnsureEnv(name: String): String {
         val value = getEnv(name)
-        checkNotNull(value != null) { "$name environment variable cannot be null" }
-
         return value
     }
 
