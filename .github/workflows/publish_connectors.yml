@@ -268,7 +268,7 @@ jobs:
 
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -276,8 +276,13 @@ jobs:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
+      - name: "[SKIP] Pre-release: Skip Publish to Python Registry"
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.with-semver-suffix != 'none'
+        run: |
+          echo "Skipping PyPI publish for pre-release build (semver-suffix=${{ needs.publish_options.outputs.with-semver-suffix }})"
+
       - name: "[DRY-RUN] Skip Publish to Python Registry"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
         run: |
           echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
 
