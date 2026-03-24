@@ -21,22 +21,22 @@ These schema corrections change the data types in the destination table for the 
 
 1. Select **Connections** in the main nav bar.
    1. Select the connection affected by the update.
-2. Select the **Schema** tab.
+1. Select the **Schema** tab.
    1. Select **Refresh source schema**.
-   2. Select **OK**.
+   1. Select **OK**.
 
 :::note
 Any detected schema changes will be listed for your review.
 :::
 
-3. Select **Save changes** at the top right of the page.
+1. Select **Save changes** at the top right of the page.
    1. Ensure the **Reset affected streams** option is checked.
 
 :::note
 Depending on destination type you may not be prompted to reset your data.
 :::
 
-4. Select **Save connection**.
+1. Select **Save connection**.
 
 :::note
 This will reset the data in your destination and initiate a fresh sync.
