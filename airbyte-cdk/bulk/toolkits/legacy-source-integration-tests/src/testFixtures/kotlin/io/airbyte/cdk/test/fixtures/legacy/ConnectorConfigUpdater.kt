@@ -2,6 +2,8 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
+@file:Suppress("DEPRECATION")
+
 package io.airbyte.cdk.test.fixtures.legacy
 
 import com.google.common.hash.Hashing
