@@ -46,7 +46,7 @@ class DockerProcessFactory(
         jobType: String?,
         jobId: String,
         attempt: Int,
-        jobRoot: Path,
+        jobPath: Path,
         imageName: String,
         usesIsolatedPool: Boolean,
         usesStdin: Boolean,
@@ -56,7 +56,7 @@ class DockerProcessFactory(
         allowedHosts: AllowedHosts?,
         labels: Map<String?, String?>?,
         jobMetadata: Map<String, String>,
-        internalToExternalPorts: Map<Int?, Int?>?,
+        portMapping: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
         vararg args: String
     ): Process {
@@ -65,12 +65,12 @@ class DockerProcessFactory(
                 throw TestHarnessException("Could not find image: $imageName")
             }
 
-            if (!jobRoot.toFile().exists()) {
-                Files.createDirectory(jobRoot)
+            if (!jobPath.toFile().exists()) {
+                Files.createDirectory(jobPath)
             }
 
             for ((key, value) in files) {
-                IOs.writeFile(jobRoot, key, value)
+                IOs.writeFile(jobPath, key, value)
             }
 
             val cmd: MutableList<String> =
@@ -81,7 +81,7 @@ class DockerProcessFactory(
                     "--init",
                     "-i",
                     "-w",
-                    rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
+                    rebasePath(jobPath).toString(), // rebases the job root on the job data mount
                     "--log-driver",
                     "none"
                 )

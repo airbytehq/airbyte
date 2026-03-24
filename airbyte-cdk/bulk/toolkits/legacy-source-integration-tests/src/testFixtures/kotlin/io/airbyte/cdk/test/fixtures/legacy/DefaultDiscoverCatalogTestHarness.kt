@@ -26,12 +26,9 @@ constructor(
     @Volatile private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
-    override fun run(
-        discoverSchemaInput: StandardDiscoverCatalogInput,
-        jobRoot: Path
-    ): ConnectorJobOutput {
+    override fun run(inputType: StandardDiscoverCatalogInput, jobRoot: Path): ConnectorJobOutput {
         try {
-            val inputConfig = discoverSchemaInput.connectionConfiguration!!
+            val inputConfig = inputType.connectionConfiguration!!
             process =
                 integrationLauncher.discover(
                     jobRoot,
@@ -63,7 +60,7 @@ constructor(
                     )
             ) {
                 connectorConfigUpdater.updateSource(
-                    UUID.fromString(discoverSchemaInput.sourceId),
+                    UUID.fromString(inputType.sourceId),
                     optionalConfigMsg.get().config
                 )
                 jobOutput.connectorConfigurationUpdated = true
@@ -86,10 +83,7 @@ constructor(
                     AirbyteApiClient.retryWithJitter(
                         {
                             airbyteApiClient.sourceApi.writeDiscoverCatalogResult(
-                                buildSourceDiscoverSchemaWriteRequestBody(
-                                    discoverSchemaInput,
-                                    catalog
-                                )
+                                buildSourceDiscoverSchemaWriteRequestBody(inputType, catalog)
                             )
                         },
                         WRITE_DISCOVER_CATALOG_LOGS_TAG

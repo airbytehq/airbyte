@@ -18,7 +18,7 @@ constructor(
     private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
-    override fun run(config: JobGetSpecConfig, jobRoot: Path): ConnectorJobOutput {
+    override fun run(inputType: JobGetSpecConfig, jobRoot: Path): ConnectorJobOutput {
         try {
             val process = integrationLauncher.spec(jobRoot)
             this.process = process
@@ -60,7 +60,7 @@ constructor(
             return jobOutput
         } catch (e: Exception) {
             throw TestHarnessException(
-                String.format("Error while getting spec from image %s", config.dockerImage),
+                String.format("Error while getting spec from image %s", inputType.dockerImage),
                 e
             )
         }

@@ -20,11 +20,11 @@ constructor(
     private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
-    override fun run(input: StandardCheckConnectionInput, jobRoot: Path): ConnectorJobOutput {
+    override fun run(inputType: StandardCheckConnectionInput, jobRoot: Path): ConnectorJobOutput {
         LineGobbler.startSection("CHECK")
 
         try {
-            val inputConfig = input.connectionConfiguration!!
+            val inputConfig = inputType.connectionConfiguration!!
             val process =
                 integrationLauncher.check(
                     jobRoot,
@@ -45,7 +45,7 @@ constructor(
                     .map { obj: AirbyteMessage -> obj.connectionStatus }
                     .firstOrNull()
 
-            if (input.actorId != null && input.actorType != null) {
+            if (inputType.actorId != null && inputType.actorType != null) {
                 val optionalConfigMsg =
                     TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
                 if (
@@ -55,15 +55,15 @@ constructor(
                             optionalConfigMsg.get()
                         )
                 ) {
-                    when (input.actorType!!) {
+                    when (inputType.actorType!!) {
                         ActorType.SOURCE ->
                             connectorConfigUpdater.updateSource(
-                                input.actorId,
+                                inputType.actorId,
                                 optionalConfigMsg.get().config
                             )
                         ActorType.DESTINATION ->
                             connectorConfigUpdater.updateDestination(
-                                input.actorId,
+                                inputType.actorId,
                                 optionalConfigMsg.get().config
                             )
                     }
