@@ -123,7 +123,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.16 | 2026-03-24 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Promote 0.13.16-rc.6 to GA — includes CDK 7.13.0 upgrade, block_simultaneous_read for companies, rate limiter fix, step size/end_datetime for incremental streams, and heartbeat timeout bump |
+| 0.13.16 | 2026-03-24 | [75419](https://github.com/airbytehq/airbyte/pull/75419) | Promote 0.13.16-rc.6 to GA — includes CDK 7.13.0 upgrade, block_simultaneous_read for companies, rate limiter fix, step size/end_datetime for incremental streams, and heartbeat timeout bump |
 | 0.13.16-rc.6 | 2026-03-19 | [75216](https://github.com/airbytehq/airbyte/pull/75216) | Bump CDK base image to 7.13.0 (includes block_simultaneous_read support and cursor field fix) |
 | 0.13.16-rc.5 | 2026-03-11 | [71141](https://github.com/airbytehq/airbyte/pull/71141) | Block simultaneous reading from companies endpoint |
 | 0.13.16-rc.4 | 2026-03-03 | [74143](https://github.com/airbytehq/airbyte/pull/74143) | fix(source-intercom): fix UnboundLocalError in rate limiter when response is not available |
