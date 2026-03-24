@@ -58,6 +58,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.30 | 2026-03-24 | [75406](https://github.com/airbytehq/airbyte/pull/75406) | Update api_budget with per-endpoint rate limits for Dashboard REST API streams |
 | 0.7.29 | 2026-03-02 | [70841](https://github.com/airbytehq/airbyte/pull/70841) | feat(source-amplitude): Add HTTPAPIBudget and concurrency_level (AI-Triage PR) |
 | 0.7.28 | 2026-01-20 | [71912](https://github.com/airbytehq/airbyte/pull/71912) | Update dependencies |
 | 0.7.27 | 2026-01-14 | [71434](https://github.com/airbytehq/airbyte/pull/71434) | Update dependencies |
