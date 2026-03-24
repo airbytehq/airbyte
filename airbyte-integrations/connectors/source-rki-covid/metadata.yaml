@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
-  dockerImageTag: 0.1.41
+  dockerImageTag: 0.1.42
   dockerRepository: airbyte/source-rki-covid
   githubIssueLabel: source-rki-covid
   icon: rki.svg
@@ -40,7 +40,7 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   externalDocumentationUrls:
     - title: RKI COVID-19 data
       url: https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/nCoV.html
