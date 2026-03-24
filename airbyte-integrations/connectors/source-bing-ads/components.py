@@ -4,6 +4,7 @@ import gzip
 import io
 import json
 import logging
+import time
 from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime, timezone
@@ -587,6 +588,11 @@ class BingAdsReportUrlRefresher(Requester):
         The polling_response in the stream_slice extra_fields contains:
         - ReportRequestStatus.ReportRequestId: the job ID to re-poll
         - request: the original PreparedRequest with auth headers
+
+        Note: The CDK's _get_polling_response_interpolation_context() enriches the
+        polling response JSON dict with 'request' (PreparedRequest) and 'headers'
+        from the actual HTTP response. This is how we access CustomerId and
+        CustomerAccountId from the original polling request headers.
         """
         if not stream_slice or "polling_response" not in (stream_slice.extra_fields or {}):
             logger.warning("BingAdsReportUrlRefresher: No polling_response in stream_slice, cannot refresh URL")
@@ -598,6 +604,8 @@ class BingAdsReportUrlRefresher(Requester):
             logger.warning("BingAdsReportUrlRefresher: No ReportRequestId found in polling_response")
             return None
 
+        # The CDK attaches the PreparedRequest from the polling HTTP call as polling_response["request"].
+        # This PreparedRequest carries the CustomerId/CustomerAccountId headers set by the polling_requester.
         original_request = polling_response.get("request")
         if original_request and hasattr(original_request, "headers"):
             customer_id = original_request.headers.get("CustomerId", "")
@@ -619,11 +627,41 @@ class BingAdsReportUrlRefresher(Requester):
         body = json.dumps({"ReportRequestId": str(report_request_id)})
         url = BING_ADS_REPORTING_BASE_URL + BING_ADS_REPORT_POLL_PATH
 
-        logger.info(f"BingAdsReportUrlRefresher: Re-polling for fresh download URL (ReportRequestId={report_request_id})")
-        response = requests.post(url, headers=headers, data=body)
-        response.raise_for_status()
+        max_retries = 3
+        for attempt in range(max_retries):
+            logger.info(
+                f"BingAdsReportUrlRefresher: Re-polling for fresh download URL "
+                f"(ReportRequestId={report_request_id}, attempt={attempt + 1}/{max_retries})"
+            )
+            try:
+                response = requests.post(url, headers=headers, data=body)
+                response.raise_for_status()
+                return response
+            except requests.exceptions.HTTPError as e:
+                status_code = e.response.status_code if e.response is not None else 0
+                if status_code in (429, 500, 502, 503, 504) and attempt < max_retries - 1:
+                    backoff = 2**attempt
+                    logger.warning(
+                        f"BingAdsReportUrlRefresher: Transient HTTP {status_code} on attempt {attempt + 1}, "
+                        f"retrying in {backoff}s"
+                    )
+                    time.sleep(backoff)
+                    continue
+                logger.error(f"BingAdsReportUrlRefresher: Re-poll failed after {attempt + 1} attempts: {e}")
+                raise
+            except requests.exceptions.ConnectionError as e:
+                if attempt < max_retries - 1:
+                    backoff = 2**attempt
+                    logger.warning(
+                        f"BingAdsReportUrlRefresher: Connection error on attempt {attempt + 1}, "
+                        f"retrying in {backoff}s"
+                    )
+                    time.sleep(backoff)
+                    continue
+                logger.error(f"BingAdsReportUrlRefresher: Re-poll failed after {attempt + 1} attempts: {e}")
+                raise
 
-        return response
+        return None
 
 
 @dataclass
