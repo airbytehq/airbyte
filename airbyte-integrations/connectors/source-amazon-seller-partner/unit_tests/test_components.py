@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 
+
 # Ensure the connector's components module is importable
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -28,10 +29,7 @@ def _gzip_bytes(text: str) -> bytes:
 
 
 VALID_XML_SINGLE = (
-    '<?xml version="1.0"?>'
-    "<AmazonEnvelope>"
-    "<Message><OrderReport><OrderId>123</OrderId></OrderReport></Message>"
-    "</AmazonEnvelope>"
+    '<?xml version="1.0"?><AmazonEnvelope><Message><OrderReport><OrderId>123</OrderId></OrderReport></Message></AmazonEnvelope>'
 )
 
 VALID_XML_MULTI = (
