@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
+
 logger = logging.getLogger("airbyte")
 
 
