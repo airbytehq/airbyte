@@ -47,6 +47,7 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.0.4 | 2026-03-24 | [68719](https://github.com/airbytehq/airbyte/pull/68719) | Update dependencies |
 | 7.0.3 | 2026-03-20 | [75256](https://github.com/airbytehq/airbyte/pull/75256) | Re-release to verify yank/un-yank behavior in ops CLI registry pipeline |
 | 7.0.2 | 2026-03-19 | [75232](https://github.com/airbytehq/airbyte/pull/75232) | Patch version bump (ops CLI registry post-launch test) |
 | 7.0.1 | 2026-03-13 | [74818](https://github.com/airbytehq/airbyte/pull/74818) | Patch version bump (publish test) |
