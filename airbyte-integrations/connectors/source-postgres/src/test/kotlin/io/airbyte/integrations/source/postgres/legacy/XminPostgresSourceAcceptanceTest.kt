@@ -17,7 +17,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
-import java.util.List
 
 class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() {
     private lateinit var testdb: PostgresTestDatabase
@@ -75,7 +74,7 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
                                     )
                                     .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -95,7 +94,7 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
                                     )
                                     .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -115,7 +114,7 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
                                     )
                                     .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

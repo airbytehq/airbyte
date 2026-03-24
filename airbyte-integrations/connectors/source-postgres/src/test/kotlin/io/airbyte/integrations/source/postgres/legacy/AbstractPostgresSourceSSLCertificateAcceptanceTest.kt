@@ -16,7 +16,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
-import java.util.List
 
 abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
     AbstractPostgresSourceAcceptanceTest() {
@@ -80,7 +79,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -103,7 +102,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -126,7 +125,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

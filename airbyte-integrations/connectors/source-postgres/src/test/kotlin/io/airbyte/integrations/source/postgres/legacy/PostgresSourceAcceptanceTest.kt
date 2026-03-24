@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
 import java.sql.SQLException
-import java.util.List
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -231,7 +230,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -254,7 +253,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -277,7 +276,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

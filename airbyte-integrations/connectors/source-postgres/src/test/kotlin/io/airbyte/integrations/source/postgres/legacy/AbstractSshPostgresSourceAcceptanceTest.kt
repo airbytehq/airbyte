@@ -28,7 +28,6 @@ import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
 import java.io.IOException
 import java.io.UncheckedIOException
-import java.util.List
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 
@@ -127,7 +126,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -150,7 +149,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

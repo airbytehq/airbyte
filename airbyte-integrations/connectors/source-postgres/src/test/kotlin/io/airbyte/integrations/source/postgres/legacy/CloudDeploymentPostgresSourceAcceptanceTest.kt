@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
 import java.util.*
-import java.util.List
 
 class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
     private lateinit var testdb: PostgresTestDatabase
@@ -108,7 +107,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -131,7 +130,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

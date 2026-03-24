@@ -13,7 +13,6 @@ import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresSpecC
 import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresSpecConstants.RESYNC_DATA_OPTION
 import java.io.IOException
 import java.io.UncheckedIOException
-import java.util.List
 import java.util.stream.Stream
 import org.jooq.SQLDialect
 import org.testcontainers.containers.PostgreSQLContainer
@@ -186,7 +185,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
             testdb,
         ) {
         fun withSchemas(vararg schemas: String?): PostgresConfigBuilder {
-            return with(JdbcUtils.SCHEMAS_KEY, List.of<String?>(*schemas))
+            return with(JdbcUtils.SCHEMAS_KEY, listOf<String?>(*schemas))
         }
 
         fun withStandardReplication(): PostgresConfigBuilder {
