@@ -9,6 +9,7 @@ The Zendesk-Support connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Tickets | [List](#tickets-list), [Get](#tickets-get), [Search](#tickets-search) |
+| Deleted Tickets | [List](#deleted-tickets-list), [Search](#deleted-tickets-search) |
 | Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
 | Organizations | [List](#organizations-list), [Get](#organizations-get), [Search](#organizations-search) |
 | Groups | [List](#groups-list), [Get](#groups-get), [Search](#groups-search) |
@@ -110,6 +111,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `allow_attachments` | `boolean` |  |
 | `from_messaging_channel` | `boolean` |  |
 | `generated_timestamp` | `integer` |  |
+| `result_type` | `string \| null` |  |
 | `created_at` | `string` |  |
 | `updated_at` | `string` |  |
 | `via` | `object` |  |
@@ -203,6 +205,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `allow_attachments` | `boolean` |  |
 | `from_messaging_channel` | `boolean` |  |
 | `generated_timestamp` | `integer` |  |
+| `result_type` | `string \| null` |  |
 | `created_at` | `string` |  |
 | `updated_at` | `string` |  |
 | `via` | `object` |  |
@@ -291,6 +294,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `type` | `string` | Type of ticket (e.g., problem, incident, question, task) |
 | `updated_at` | `string` | Timestamp indicating when the ticket was last updated with a ticket event |
 | `url` | `string` | API URL to access the full ticket resource |
+| `result_type` | `string` | The type of the search result (e.g. ticket) when returned from search endpoints |
 | `via` | `object` | Object describing the channel and method through which the ticket was created |
 
 <details>
@@ -342,7 +346,136 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].type` | `string` | Type of ticket (e.g., problem, incident, question, task) |
 | `data[].updated_at` | `string` | Timestamp indicating when the ticket was last updated with a ticket event |
 | `data[].url` | `string` | API URL to access the full ticket resource |
+| `data[].result_type` | `string` | The type of the search result (e.g. ticket) when returned from search endpoints |
 | `data[].via` | `object` | Object describing the channel and method through which the ticket was created |
+
+</details>
+
+## Deleted Tickets
+
+### Deleted Tickets List
+
+Returns a list of deleted tickets in your account. Only tickets deleted in the past 30 days are returned.
+
+#### Python SDK
+
+```python
+await zendesk_support.deleted_tickets.list()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "deleted_tickets",
+    "action": "list"
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `page` | `integer` | No | Page number for pagination |
+| `sort_by` | `"id" \| "subject" \| "deleted_at"` | No | Sort tickets by field |
+| `sort_order` | `"asc" \| "desc"` | No | Sort order |
+| `per_page` | `integer` | No | Number of results per page |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` |  |
+| `subject` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `deleted_at` | `string \| null` |  |
+| `previous_state` | `string \| null` |  |
+| `actor` | `object \| null` |  |
+
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next_page` | `string \| null` |  |
+| `previous_page` | `string \| null` |  |
+| `count` | `integer` |  |
+
+</details>
+
+### Deleted Tickets Search
+
+Search and filter deleted tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await zendesk_support.deleted_tickets.search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "deleted_tickets",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | The unique identifier of the deleted ticket |
+| `subject` | `string` | The subject or title of the deleted ticket |
+| `description` | `string` | Additional details or comments about the deleted ticket |
+| `deleted_at` | `string` | The timestamp when the ticket was deleted |
+| `previous_state` | `string` | The state of the ticket before it was deleted |
+| `actor` | `object` | The user who performed the deletion action |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | The unique identifier of the deleted ticket |
+| `data[].subject` | `string` | The subject or title of the deleted ticket |
+| `data[].description` | `string` | Additional details or comments about the deleted ticket |
+| `data[].deleted_at` | `string` | The timestamp when the ticket was deleted |
+| `data[].previous_state` | `string` | The state of the ticket before it was deleted |
+| `data[].actor` | `object` | The user who performed the deletion action |
 
 </details>
 

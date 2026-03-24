@@ -21,7 +21,7 @@ class ItemsRequestBuilder(MondayBaseRequestBuilder):
             board_ids_str = ""
 
         params["query"] = (
-            "{boards(limit:1%s){items_page(limit:20){cursor,items{id,name,assets{created_at,file_extension,file_size,id,name,original_geometry,public_url,uploaded_by{id},url,url_thumbnail},board{id,name},column_values{id,text,type,value,... on MirrorValue{display_value},... on BoardRelationValue{display_value},... on DependencyValue{display_value}},created_at,creator_id,group{id},parent_item{id},state,subscribers{id},updated_at,updates{id}}}}}"
+            "{boards(limit:1%s){items_page(limit:20){cursor,items{id,name,assets{created_at,file_extension,file_size,id,name,original_geometry,public_url,uploaded_by{id},url,url_thumbnail},board{id,name},column_values{id,text,type,value,... on MirrorValue{display_value},... on BoardRelationValue{display_value,linked_item_ids},... on DependencyValue{display_value,linked_item_ids}},created_at,creator_id,group{id},parent_item{id},state,subscribers{id},updated_at,updates{id}}}}}"
             % board_ids_str
         )
         return params
