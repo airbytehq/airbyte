@@ -462,6 +462,25 @@ definitions:
       expires_in_name: expires_in
       access_token_name: access_token
 
+# Rate limits: https://developer.paypal.com/api/rest/reference/rate-limiting/
+# PayPal REST API does not publish specific rate limits but returns HTTP 429 when exceeded.
+# Using a conservative estimate based on community experience (~50 req/min observed).
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 30
+          interval: PT1M
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 12
+
 streams:
   - $ref: "#/definitions/streams/transactions"
   - $ref: "#/definitions/streams/balances"
@@ -560,6 +579,18 @@ spec:
         minimum: 1
         maximum: 31
         order: 7
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: >-
+          The number of worker threads to use for the sync. Higher values can
+          speed up syncs but may hit rate limits. PayPal API rate limits vary
+          by endpoint. More info at
+          https://developer.paypal.com/api/rest/reference/rate-limiting/
+        default: 3
+        minimum: 2
+        maximum: 12
+        order: 8
     additionalProperties: true
 
 metadata:
