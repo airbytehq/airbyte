@@ -45,6 +45,30 @@ function get_pypi_package_name() {
     yq eval '.data.remoteRegistries.pypi.packageName' "$1"
 }
 
+function to_pep440() {
+    # Convert a semver-style version string to PEP 440 format for PyPI compatibility.
+    #
+    # Docker tags use semver pre-release syntax (e.g. "1.2.3-preview.abc1234" or "1.2.3-rc1"),
+    # but PyPI requires PEP 440 (https://peps.python.org/pep-0440/), which does not allow hyphens.
+    #
+    # Conversions applied:
+    #   X.Y.Z-preview.SHA  ->  X.Y.Z.devYYYYMMDDHHMM  (timestamp-based; SHA dropped, PyPI forbids local identifiers)
+    #   X.Y.Z-rc1          ->  X.Y.Zrc1
+    #   X.Y.Z              ->  X.Y.Z       (no change)
+    #
+    local version="$1"
+    if [[ "$version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-preview\..+$ ]]; then
+        # Use a timestamp to keep each preview build unique on PyPI.
+        local ts
+        ts=$(date +"%Y%m%d%H%M")
+        echo "${BASH_REMATCH[1]}.dev${ts}"
+    elif [[ "$version" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-(rc[0-9]+)$ ]]; then
+        echo "${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
+    else
+        echo "$version"
+    fi
+}
+
 # Default values
 REGISTRY_UPLOAD_URL="https://upload.pypi.org/legacy/"
 REGISTRY_CHECK_URL="https://pypi.org/pypi"
@@ -157,14 +181,15 @@ BASE_VERSION=$(poe -qq get-version)
 if [[ -n "$VERSION_OVERRIDE" ]]; then
     VERSION="$VERSION_OVERRIDE"
 elif [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
-    # When set by the publish workflow, use the pre-resolved tag directly.
-    VERSION="$CONNECTOR_VERSION_TAG"
+    # When set by the publish workflow, convert Docker-style semver tag to PEP 440 for PyPI.
+    # e.g. "5.2.3-preview.d3e969f" -> "5.2.3.dev202603241200"
+    VERSION="$(to_pep440 "$CONNECTOR_VERSION_TAG")"
 elif [[ "$SEMVER_SUFFIX" == "preview" ]]; then
     # Add current timestamp for preview builds.
     # we can't use the git revision because not all python registries allow local version identifiers. 
     # Public version identifiers must conform to PEP 440 and only allow digits.
     TIMESTAMP=$(date +"%Y%m%d%H%M")
-    VERSION="${BASE_VERSION}.dev.${TIMESTAMP}"
+    VERSION="${BASE_VERSION}.dev${TIMESTAMP}"
 elif [[ "$SEMVER_SUFFIX" == "rc" ]]; then
     # Add rc1 suffix for release candidates
     VERSION="${BASE_VERSION}rc1"
