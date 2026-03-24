@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the Notion sour
 
 - Access to a [Notion](https://notion.so/login) workspace
 
-## Setup guide​
+## Setup guide
 
 To authenticate the Notion source connector, you need to use **one** of the following two methods:
 
@@ -23,7 +23,7 @@ To authenticate the Notion source connector, you need to use **one** of the foll
 
 We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the [official Notion documentation](https://developers.notion.com/docs).
 
-### Step 1: Create an integration in Notion​ and set capabilities
+### Step 1: Create an integration in Notion and set capabilities
 
 1. Log in to your Notion workspace and navigate to the [My integrations](https://www.notion.so/my-integrations) page. Select **New integration**.
 
@@ -45,7 +45,7 @@ You must be the owner of the Notion workspace to create a new integration associ
 If you are authenticating via Access Token, you will need to manually share each page you want to sync with Airbyte.
 
 1. Navigate to the page(s) you want to share with Airbyte. Click the **•••** menu at the top right of the page, select **Add connections**, and choose the integration you created in Step 1.
-2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
+2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
 
 <!-- env:oss -->
 
@@ -102,15 +102,17 @@ The Notion source connector supports the following [sync modes](https://docs.air
 
 The Notion source connector supports the following streams:
 
-- [Blocks](https://developers.notion.com/reference/retrieve-a-block)
-- [Comments](https://developers.notion.com/reference/retrieve-a-comment)
-- [Data Sources](https://developers.notion.com/reference/data-source) (replaces the former `Databases` stream as of v4.0.0; in Notion's API version `2025-09-03`, a "data source" represents what was previously called a "database" — the table containing pages and properties — while "database" now refers to a container that can hold multiple data sources)
-- [Pages](https://developers.notion.com/reference/retrieve-a-page)
-- [Users](https://developers.notion.com/reference/get-users)
+- [Blocks](https://developers.notion.com/reference/retrieve-a-block): Retrieves content blocks for all synced pages, including recursively nested child blocks up to 30 levels deep. Block types `child_page`, `child_database`, and `ai_block` are excluded.
+- [Comments](https://developers.notion.com/reference/list-comments): Retrieves comments on all synced pages.
+- [Data Sources](https://developers.notion.com/reference/data-source): Retrieves data source objects, which represent the structured tables that contain pages and properties. This stream replaces the former `Databases` stream as of v4.0.0. For details on migrating, see the [Notion migration guide](notion-migrations.md).
+- [Pages](https://developers.notion.com/reference/retrieve-a-page): Retrieves page objects from all shared pages.
+- [Users](https://developers.notion.com/reference/get-users): Retrieves user objects from the workspace.
 
 ## Performance considerations
 
 The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+
+The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which may slow down syncs for workspaces with complex page structures.
 
 ## Changelog
 
