@@ -85,7 +85,7 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Run AI Triage
-        uses: aaronsteers/devin-action@v0.5.0
+        uses: aaronsteers/devin-action@main
         with:
           issue-number: ${{ github.event.issue.number }}
           playbook-macro: "!oss_issue_triage"
@@ -162,7 +162,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Run AI Triage
-        uses: aaronsteers/devin-action@v0.5.0
+        uses: aaronsteers/devin-action@main
         with:
           playbook-macro: "!oss_issue_triage"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
