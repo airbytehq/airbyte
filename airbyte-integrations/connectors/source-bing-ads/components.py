@@ -2,26 +2,35 @@
 import csv
 import gzip
 import io
+import json
 import logging
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass, field
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import requests
+
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.types import Config
 
 
 logger = logging.getLogger(__name__)
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
+BING_ADS_REPORTING_BASE_URL = "https://reporting.api.bingads.microsoft.com/"
+BING_ADS_REPORT_POLL_PATH = "Reporting/v13/GenerateReport/Poll"
 
 
 @dataclass
@@ -465,6 +474,120 @@ class _PrefixedStream(io.RawIOBase):
                 return chunk + (more or b"")
             return chunk
         return self._stream.read(size) or b""
+
+
+@dataclass
+class BingAdsReportUrlRefresher(Requester):
+    """
+    Custom requester used as download_target_requester for report streams.
+
+    The Bing Ads async retriever caches the ReportDownloadUrl from the polling
+    response when a job completes. This URL is an Azure SAS URL with a short
+    TTL (~5 minutes). When many report jobs complete concurrently, the download
+    queue can cause delays that exceed the TTL, resulting in expired URLs.
+
+    This component re-polls GenerateReport/Poll at download time to obtain a
+    fresh ReportDownloadUrl, preventing SAS URL expiration failures.
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    authenticator: Optional[DeclarativeAuthenticator] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._parameters = parameters
+        self._authenticator = self.authenticator or NoAuth(parameters=parameters)
+
+    def get_authenticator(self) -> DeclarativeAuthenticator:
+        return self._authenticator
+
+    def get_url(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return BING_ADS_REPORTING_BASE_URL + BING_ADS_REPORT_POLL_PATH
+
+    def get_url_base(self) -> str:
+        return BING_ADS_REPORTING_BASE_URL
+
+    def get_path(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return BING_ADS_REPORT_POLL_PATH
+
+    def get_method(self) -> HttpMethod:
+        return HttpMethod.POST
+
+    def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> MutableMapping[str, Any]:
+        return {}
+
+    def get_request_headers(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> Optional[Union[Mapping[str, Any], str]]:
+        return None
+
+    def get_request_body_json(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None) -> Optional[Mapping[str, Any]]:
+        return None
+
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        return False
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        pass
+
+    def send_request(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Mapping[str, Any]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Optional[str]]] = None,
+    ) -> Optional[requests.Response]:
+        """
+        Re-polls GenerateReport/Poll to obtain a fresh ReportDownloadUrl.
+
+        The polling_response in the stream_slice extra_fields contains:
+        - ReportRequestStatus.ReportRequestId: the job ID to re-poll
+        - request: the original PreparedRequest with auth headers
+        """
+        if not stream_slice or "polling_response" not in (stream_slice.extra_fields or {}):
+            logger.warning("BingAdsReportUrlRefresher: No polling_response in stream_slice, cannot refresh URL")
+            return None
+
+        polling_response = stream_slice.extra_fields["polling_response"]
+        report_request_id = polling_response.get("ReportRequestStatus", {}).get("ReportRequestId")
+        if not report_request_id:
+            logger.warning("BingAdsReportUrlRefresher: No ReportRequestId found in polling_response")
+            return None
+
+        original_request = polling_response.get("request")
+        if original_request and hasattr(original_request, "headers"):
+            customer_id = original_request.headers.get("CustomerId", "")
+            customer_account_id = original_request.headers.get("CustomerAccountId", "")
+        else:
+            customer_id = ""
+            customer_account_id = ""
+
+        headers: Dict[str, str] = {
+            "Content-Type": "application/json",
+            "DeveloperToken": self.config.get("developer_token", ""),
+            "CustomerId": customer_id,
+            "CustomerAccountId": customer_account_id,
+        }
+
+        auth_token = self._authenticator.get_auth_header()
+        headers.update(auth_token)
+
+        body = json.dumps({"ReportRequestId": str(report_request_id)})
+        url = BING_ADS_REPORTING_BASE_URL + BING_ADS_REPORT_POLL_PATH
+
+        logger.info(f"BingAdsReportUrlRefresher: Re-polling for fresh download URL (ReportRequestId={report_request_id})")
+        response = requests.post(url, headers=headers, data=body)
+        response.raise_for_status()
+
+        return response
 
 
 @dataclass

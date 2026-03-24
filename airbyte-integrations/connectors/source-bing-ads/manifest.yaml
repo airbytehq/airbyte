@@ -2530,6 +2530,10 @@ definitions:
         CustomerAccountId: "'{{ stream_partition['account_id'] }}'"
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
+    download_target_requester:
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsReportUrlRefresher
+      authenticator: "#/definitions/authenticator"
     download_requester:
       type: HttpRequester
       url_base: "{{download_target}}"
