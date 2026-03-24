@@ -48,7 +48,7 @@ object EntrypointEnvChecker {
             )
 
         val stdout =
-            BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
+            BufferedReader(InputStreamReader(process.inputStream, StandardCharsets.UTF_8))
 
         var outputLine: String? = null
 
