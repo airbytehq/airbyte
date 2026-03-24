@@ -133,11 +133,25 @@ spec:
         default: 90
         minimum: 1
         order: 10
+      sales_and_traffic_report_asin_granularity:
+        title: Sales and Traffic Report ASIN Granularity
+        type: string
+        description: The level of ASIN granularity for the Sales and Traffic report
+          streams. PARENT returns data aggregated at the parent ASIN level. CHILD
+          returns data at the child ASIN level with populated childAsin values. SKU
+          returns data at the individual SKU level with populated childAsin and sku
+          values.
+        default: PARENT
+        enum:
+          - PARENT
+          - CHILD
+          - SKU
+        order: 11
       report_options_list:
         title: Report Options
         description: Additional information passed to reports. This varies by report
           type.
-        order: 11
+        order: 12
         type: array
         items:
           type: object
@@ -227,7 +241,7 @@ spec:
           statuses in reports. See <a href="https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting"
           target="_blank">Troubleshooting</a> section for more details
         default: false
-        order: 12
+        order: 13
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
@@ -2805,6 +2819,8 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              asinGranularity: "{{ config.get('sales_and_traffic_report_asin_granularity', 'PARENT') }}"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -2858,6 +2874,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             reportOptions:
               dateGranularity: "MONTH"
+              asinGranularity: "{{ config.get('sales_and_traffic_report_asin_granularity', 'PARENT') }}"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -8621,6 +8638,10 @@ schemas:
         - 'null'
         - string
       childAsin:
+        type:
+        - 'null'
+        - string
+      sku:
         type:
         - 'null'
         - string
