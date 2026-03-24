@@ -35,6 +35,10 @@ on:
         required: false
         default: false
         type: boolean
+      pr:
+        description: "Pull request number that triggered this workflow (used for Slack notifications and run URL linking)."
+        required: false
+        type: string
     outputs:
       docker-image-tag:
         description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
@@ -268,7 +272,7 @@ jobs:
 
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -277,7 +281,7 @@ jobs:
           CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
       - name: "[DRY-RUN] Skip Publish to Python Registry"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
         run: |
           echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
 
@@ -549,7 +553,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs:
       - publish_connector_registry_entries
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+      - publish_connectors
+      - publish_options
+    if: ${{ always() && (needs.publish_connector_registry_entries.result == 'failure' || needs.publish_connectors.result == 'failure') }}
     steps:
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
@@ -569,10 +575,46 @@ jobs:
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
+        continue-on-error: true
         uses: ./.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
           GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
+      - name: Build notification context
+        id: context
+        run: |
+          PR_NUMBER="${{ inputs.pr }}"
+          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          # Append ?pr=N for "Back to pull request" link in GitHub Actions UI
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
+          fi
+
+          # Determine release type label
+          if [[ "$SEMVER_SUFFIX" == "none" || -z "$SEMVER_SUFFIX" ]]; then
+            RELEASE_TYPE="GA"
+          else
+            RELEASE_TYPE="Pre-release (${SEMVER_SUFFIX})"
+          fi
+
+          # Build trigger description
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            TRIGGER_TEXT="triggered from PR <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
+          elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            TRIGGER_TEXT="merged to master"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TRIGGER_TEXT="triggered via workflow_dispatch"
+          elif [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+            TRIGGER_TEXT="triggered via workflow_call"
+          else
+            TRIGGER_TEXT="triggered via ${{ github.event_name }}"
+          fi
+
+          echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
+          echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "trigger-text=$TRIGGER_TEXT" >> $GITHUB_OUTPUT
       - name: Send publish failures to connector-publish-failures channel
         id: slack
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
@@ -582,7 +624,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
+              "text": "🚨 ${{ steps.context.outputs.release-type }} publish workflow failed:\n <${{ steps.context.outputs.run-url }}|View workflow run>\n ${{ steps.context.outputs.trigger-text }} by ${{ github.actor }}${{ steps.match-github-to-slack-user.outputs.slack_user_ids && format(' (<@{0}>)', steps.match-github-to-slack-user.outputs.slack_user_ids) || '' }}."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
