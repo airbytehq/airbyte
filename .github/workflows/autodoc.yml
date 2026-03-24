@@ -102,7 +102,7 @@ jobs:
         if: steps.check-connector.outputs.connector_changed == 'true'
         env:
           PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to master and may contain connector changes that need documentation updates."
-        uses: aaronsteers/devin-action@main
+        uses: aaronsteers/devin-action@v0.5.0
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

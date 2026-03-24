@@ -90,7 +90,7 @@ jobs:
             > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Run PR AI Review
-        uses: aaronsteers/devin-action@main
+        uses: aaronsteers/devin-action@v0.5.0
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}

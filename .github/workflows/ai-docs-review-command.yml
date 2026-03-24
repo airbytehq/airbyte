@@ -176,7 +176,7 @@ jobs:
 
       - name: Start AI documentation recommendation session
         if: steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
-        uses: aaronsteers/devin-action@main
+        uses: aaronsteers/devin-action@v0.5.0
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
