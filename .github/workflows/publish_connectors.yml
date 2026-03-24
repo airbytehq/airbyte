@@ -553,8 +553,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs:
       - publish_connector_registry_entries
+      - publish_connectors
       - publish_options
-    if: ${{ always() && contains(needs.publish_connector_registry_entries.result, 'failure') }}
+    if: ${{ always() && (needs.publish_connector_registry_entries.result == 'failure' || needs.publish_connectors.result == 'failure') }}
     steps:
       - name: Authenticate as GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
@@ -601,9 +602,13 @@ jobs:
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
             TRIGGER_TEXT="triggered from PR <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
           elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
-            TRIGGER_TEXT="merged to main"
-          else
+            TRIGGER_TEXT="merged to master"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             TRIGGER_TEXT="triggered via workflow_dispatch"
+          elif [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+            TRIGGER_TEXT="triggered via workflow_call"
+          else
+            TRIGGER_TEXT="triggered via ${{ github.event_name }}"
           fi
 
           echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
