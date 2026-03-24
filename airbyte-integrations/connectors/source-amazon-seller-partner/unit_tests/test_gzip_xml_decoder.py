@@ -6,7 +6,6 @@ import gzip
 from unittest.mock import MagicMock
 
 import pytest
-
 from components import GzipXmlDecoder
 
 
@@ -39,15 +38,24 @@ INVALID_XML = "this is not xml <><><"
     "content,is_gzipped,expected_count,expected_first_order_id",
     [
         pytest.param(
-            VALID_XML_MULTI.encode("iso-8859-1"), True, 2, "123",
+            VALID_XML_MULTI.encode("iso-8859-1"),
+            True,
+            2,
+            "123",
             id="gzipped_multi_message",
         ),
         pytest.param(
-            VALID_XML_SINGLE.encode("iso-8859-1"), True, 1, "789",
+            VALID_XML_SINGLE.encode("iso-8859-1"),
+            True,
+            1,
+            "789",
             id="gzipped_single_message",
         ),
         pytest.param(
-            VALID_XML_MULTI.encode("iso-8859-1"), False, 2, "123",
+            VALID_XML_MULTI.encode("iso-8859-1"),
+            False,
+            2,
+            "123",
             id="uncompressed_multi_message",
         ),
     ],
