@@ -957,3 +957,237 @@ def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
     response = _make_response(b"\x1f\x8b not valid gzip at all")
     rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
     assert rows == [{}]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# BingAdsFreshReportDownloadRequester tests
+# ──────────────────────────────────────────────────────────────────────────────
+
+from unittest.mock import MagicMock, patch
+
+from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.utils import AirbyteTracedException
+
+POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+FRESH_DOWNLOAD_URL = "https://blobstorage.example.com/report?sv=fresh-sas-token"
+STALE_DOWNLOAD_URL = "https://blobstorage.example.com/report?sv=stale-sas-expired"
+REPORT_REQUEST_ID = "test-report-request-id-12345"
+
+
+def _make_stream_slice(
+    report_request_id=REPORT_REQUEST_ID,
+    download_target=STALE_DOWNLOAD_URL,
+    parent_customer_id="999",
+    account_id="111",
+):
+    """Build a StreamSlice mimicking what the CDK passes to download_requester."""
+    return StreamSlice(
+        partition={"account_id": account_id},
+        cursor_slice={},
+        extra_fields={
+            "creation_response": {"ReportRequestId": report_request_id},
+            "download_target": download_target,
+            "ParentCustomerId": parent_customer_id,
+        },
+    )
+
+
+def _build_requester(components_module, config=None):
+    """Instantiate BingAdsFreshReportDownloadRequester with a mock authenticator."""
+    if config is None:
+        config = {"developer_token": "fake_dev_token"}
+
+    mock_authenticator = MagicMock()
+    mock_authenticator.get_auth_header.return_value = {"Authorization": "Bearer fake_token"}
+
+    requester = components_module.BingAdsFreshReportDownloadRequester(
+        name="test_download",
+        url_base="{{download_target}}",
+        config=config,
+        parameters={},
+    )
+    # Inject mock authenticator
+    requester._authenticator = mock_authenticator
+    return requester
+
+
+def test_repoll_uses_report_request_id(components_module, requests_mock):
+    """Test 1: Verify ReportRequestId is used to call GenerateReport/Poll."""
+    poll_mock = requests_mock.post(
+        POLL_URL,
+        json={
+            "ReportRequestStatus": {
+                "Status": "Success",
+                "ReportDownloadUrl": FRESH_DOWNLOAD_URL,
+            }
+        },
+    )
+
+    requester = _build_requester(components_module)
+    stream_slice = _make_stream_slice()
+
+    url = requester._repoll_for_fresh_url(stream_slice, REPORT_REQUEST_ID)
+
+    assert poll_mock.called
+    assert poll_mock.last_request.json() == {"ReportRequestId": REPORT_REQUEST_ID}
+    assert url == FRESH_DOWNLOAD_URL
+
+
+def test_fresh_url_returned_not_stale(components_module, requests_mock):
+    """Test 2: Verify freshly returned URL is used, not stale cached download_target."""
+    requests_mock.post(
+        POLL_URL,
+        json={
+            "ReportRequestStatus": {
+                "Status": "Success",
+                "ReportDownloadUrl": FRESH_DOWNLOAD_URL,
+            }
+        },
+    )
+
+    requester = _build_requester(components_module)
+    stream_slice = _make_stream_slice(download_target=STALE_DOWNLOAD_URL)
+
+    url = requester._repoll_for_fresh_url(stream_slice, REPORT_REQUEST_ID)
+
+    assert url == FRESH_DOWNLOAD_URL
+    assert url != STALE_DOWNLOAD_URL
+
+
+def test_successful_end_to_end_refresh(components_module, requests_mock):
+    """Test 3: Repoll returns Success, fresh URL is obtained, and send_request delegates with refreshed slice."""
+    requests_mock.post(
+        POLL_URL,
+        json={
+            "ReportRequestStatus": {
+                "Status": "Success",
+                "ReportDownloadUrl": FRESH_DOWNLOAD_URL,
+            }
+        },
+    )
+
+    requester = _build_requester(components_module)
+    stream_slice = _make_stream_slice(download_target=STALE_DOWNLOAD_URL)
+
+    with patch.object(
+        type(requester).__bases__[0], "send_request", return_value=MagicMock()
+    ) as mock_super_send:
+        requester.send_request(stream_slice=stream_slice)
+
+        mock_super_send.assert_called_once()
+        call_kwargs = mock_super_send.call_args
+        refreshed_slice = call_kwargs.kwargs.get("stream_slice") or call_kwargs[1].get("stream_slice")
+        assert refreshed_slice.extra_fields["download_target"] == FRESH_DOWNLOAD_URL
+
+
+def test_missing_download_url_raises(components_module, requests_mock):
+    """Test 4: Repoll returns Success but no ReportDownloadUrl; requester fails clearly."""
+    requests_mock.post(
+        POLL_URL,
+        json={
+            "ReportRequestStatus": {
+                "Status": "Success",
+                "ReportDownloadUrl": None,
+            }
+        },
+    )
+
+    requester = _build_requester(components_module)
+    stream_slice = _make_stream_slice()
+
+    with pytest.raises(AirbyteTracedException, match="no download URL"):
+        requester._repoll_for_fresh_url(stream_slice, REPORT_REQUEST_ID)
+
+
+def test_unexpected_repoll_status_raises(components_module, requests_mock):
+    """Test 5: Repoll returns non-success status; requester fails clearly."""
+    requests_mock.post(
+        POLL_URL,
+        json={
+            "ReportRequestStatus": {
+                "Status": "Pending",
+                "ReportDownloadUrl": None,
+            }
+        },
+    )
+
+    requester = _build_requester(components_module)
+    stream_slice = _make_stream_slice()
+
+    with pytest.raises(AirbyteTracedException, match="status 'Pending'"):
+        requester._repoll_for_fresh_url(stream_slice, REPORT_REQUEST_ID)
+
+
+def test_stale_url_regression_fresh_url_used(components_module, requests_mock):
+    """Test 6: Original completion had stale URL A, repoll returns fresh URL B, downloads B successfully."""
+    stale_url = "https://blob.example.com/report?sv=EXPIRED_SAS_A"
+    fresh_url = "https://blob.example.com/report?sv=FRESH_SAS_B"
+
+    requests_mock.post(
+        POLL_URL,
+        json={
+            "ReportRequestStatus": {
+                "Status": "Success",
+                "ReportDownloadUrl": fresh_url,
+            }
+        },
+    )
+
+    requester = _build_requester(components_module)
+    stream_slice = _make_stream_slice(download_target=stale_url)
+
+    with patch.object(
+        type(requester).__bases__[0], "send_request", return_value=MagicMock()
+    ) as mock_super_send:
+        requester.send_request(stream_slice=stream_slice)
+
+        call_kwargs = mock_super_send.call_args
+        refreshed_slice = call_kwargs.kwargs.get("stream_slice") or call_kwargs[1].get("stream_slice")
+        assert refreshed_slice.extra_fields["download_target"] == fresh_url
+        assert refreshed_slice.extra_fields["download_target"] != stale_url
+
+
+def test_missing_stream_slice_raises(components_module):
+    """send_request raises when stream_slice is None."""
+    requester = _build_requester(components_module)
+
+    with pytest.raises(AirbyteTracedException, match="requires a stream_slice"):
+        requester.send_request(stream_slice=None)
+
+
+def test_missing_report_request_id_raises(components_module):
+    """send_request raises when creation_response has no ReportRequestId."""
+    requester = _build_requester(components_module)
+    stream_slice = StreamSlice(
+        partition={"account_id": "111"},
+        cursor_slice={},
+        extra_fields={"creation_response": {}, "download_target": STALE_DOWNLOAD_URL},
+    )
+
+    with pytest.raises(AirbyteTracedException, match="ReportRequestId not found"):
+        requester.send_request(stream_slice=stream_slice)
+
+
+def test_repoll_sends_correct_headers(components_module, requests_mock):
+    """Verify repoll sends DeveloperToken, CustomerId, CustomerAccountId, and auth headers."""
+    poll_mock = requests_mock.post(
+        POLL_URL,
+        json={
+            "ReportRequestStatus": {
+                "Status": "Success",
+                "ReportDownloadUrl": FRESH_DOWNLOAD_URL,
+            }
+        },
+    )
+
+    requester = _build_requester(components_module)
+    stream_slice = _make_stream_slice(parent_customer_id="42", account_id="77")
+
+    requester._repoll_for_fresh_url(stream_slice, REPORT_REQUEST_ID)
+
+    request_headers = poll_mock.last_request.headers
+    assert request_headers["DeveloperToken"] == "fake_dev_token"
+    assert request_headers["CustomerId"] == "42"
+    assert request_headers["CustomerAccountId"] == "77"
+    assert request_headers["Authorization"] == "Bearer fake_token"
+    assert request_headers["Content-Type"] == "application/json"

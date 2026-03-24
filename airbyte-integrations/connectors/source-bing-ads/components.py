@@ -4,24 +4,139 @@ import gzip
 import io
 import logging
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import requests
+
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 logger = logging.getLogger(__name__)
 
+BING_ADS_REPORTING_POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+
 
 PARENT_SLICE_KEY: str = "parent_slice"
+
+
+@dataclass
+class BingAdsFreshReportDownloadRequester(HttpRequester):
+    """
+    Custom requester that refreshes the report download URL at download time
+    to avoid expired SAS (Shared Access Signature) URLs.
+
+    The Bing Ads API returns time-limited Azure Blob SAS URLs for report downloads.
+    These URLs can expire between when the async job completes and when the CDK
+    attempts to download the report. This requester re-polls the GenerateReport/Poll
+    endpoint immediately before download to obtain a fresh URL.
+    """
+
+    def send_request(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        if stream_slice is None:
+            raise AirbyteTracedException(
+                internal_message="BingAdsFreshReportDownloadRequester requires a stream_slice with creation_response context.",
+                failure_type=FailureType.system_error,
+            )
+
+        creation_response = stream_slice.extra_fields.get("creation_response", {})
+        report_request_id = creation_response.get("ReportRequestId")
+        if not report_request_id:
+            raise AirbyteTracedException(
+                internal_message="ReportRequestId not found in creation_response extra_fields.",
+                failure_type=FailureType.system_error,
+            )
+
+        fresh_download_url = self._repoll_for_fresh_url(stream_slice, str(report_request_id))
+
+        refreshed_slice = StreamSlice(
+            partition=stream_slice.partition,
+            cursor_slice=stream_slice.cursor_slice,
+            extra_fields={
+                **stream_slice.extra_fields,
+                "download_target": fresh_download_url,
+            },
+        )
+
+        return super().send_request(
+            stream_state=stream_state,
+            stream_slice=refreshed_slice,
+            next_page_token=next_page_token,
+            path=path,
+            request_headers=request_headers,
+            request_params=request_params,
+            request_body_data=request_body_data,
+            request_body_json=request_body_json,
+            log_formatter=log_formatter,
+        )
+
+    def _repoll_for_fresh_url(self, stream_slice: StreamSlice, report_request_id: str) -> str:
+        """Re-polls the Bing Ads GenerateReport/Poll endpoint to obtain a fresh download URL."""
+        auth_headers = self._authenticator.get_auth_header()
+
+        headers: Dict[str, str] = {
+            "Content-Type": "application/json",
+            "DeveloperToken": str(self.config.get("developer_token", "")),
+            **auth_headers,
+        }
+
+        parent_customer_id = stream_slice.extra_fields.get("ParentCustomerId")
+        if parent_customer_id:
+            headers["CustomerId"] = str(parent_customer_id)
+
+        account_id = stream_slice.partition.get("account_id")
+        if account_id:
+            headers["CustomerAccountId"] = str(account_id)
+
+        body = {"ReportRequestId": report_request_id}
+
+        response = requests.post(BING_ADS_REPORTING_POLL_URL, headers=headers, json=body)
+        response.raise_for_status()
+
+        response_json = response.json()
+        report_status = response_json.get("ReportRequestStatus", {})
+        status = report_status.get("Status")
+        download_url = report_status.get("ReportDownloadUrl")
+
+        if status != "Success":
+            raise AirbyteTracedException(
+                message=f"Report re-poll returned status '{status}' instead of 'Success'.",
+                internal_message=f"Report re-poll returned unexpected status '{status}' for ReportRequestId '{report_request_id}'. Full response: {response_json}",
+                failure_type=FailureType.system_error,
+            )
+
+        if not download_url:
+            raise AirbyteTracedException(
+                message="Report re-poll returned no download URL despite Success status.",
+                internal_message=f"Report re-poll returned no ReportDownloadUrl for ReportRequestId '{report_request_id}' despite Success status. Full response: {response_json}",
+                failure_type=FailureType.system_error,
+            )
+
+        logger.info("Refreshed download URL for ReportRequestId %s", report_request_id)
+        return str(download_url)
 
 
 @dataclass

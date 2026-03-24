@@ -2531,7 +2531,9 @@ definitions:
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsFreshReportDownloadRequester
+      name: "report download"
       url_base: "{{download_target}}"
       http_method: GET
     download_decoder:
