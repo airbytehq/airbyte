@@ -221,7 +221,7 @@ Represents the budget settings of a campaign.
 
 - [geographic_view](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
-Geographic View provides dimension fields aggregated at the country level, such as country, location type, ad group, and campaign. It reports data at either the actual physical location of the user or an area of interest. This stream does not include performance metrics — use `geographic_view_with_metrics` if you need metrics like clicks, impressions, and conversions.
+Geographic View provides dimension fields aggregated at the country level, such as country, location type, and ad group. It reports data at either the actual physical location of the user or an area of interest. This stream does not include performance metrics — use `geographic_view_with_metrics` if you need metrics like clicks, impressions, and conversions.
 
 - [geographic_view_with_metrics](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
@@ -347,7 +347,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.0 | 2026-03-12 | [73321](https://github.com/airbytehq/airbyte/pull/73321) | Add new `geographic_view_with_metrics` stream with metrics and dimension fields (geographic_view remains unchanged) |
+| 4.2.0 | 2026-03-19 | [73321](https://github.com/airbytehq/airbyte/pull/73321) | Add new `geographic_view_with_metrics` stream with metrics and dimension fields (geographic_view remains unchanged) |
 | 4.1.6 | 2026-02-18 | [73636](https://github.com/airbytehq/airbyte/pull/73636) | Promoting release candidate 4.1.6-rc.1 to a main version. |
 | 4.1.6-rc.1 | 2026-02-16 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
 | 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
