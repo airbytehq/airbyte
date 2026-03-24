@@ -499,41 +499,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
-      - name: Post publish success to PR
-        if: >-
-          always()
-          && inputs.pr != ''
-          && steps.publish-registry-artifacts.outcome == 'success'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        with:
-          issue-number: ${{ inputs.pr }}
-          body: |
-            > **Publish: SUCCESS** :white_check_mark:
-            >
-            > **Connector:** `${{ matrix.connector }}`
-            > **Docker image:**
-            > `airbyte/${{ matrix.connector }}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}`
-            >
-            > **Docker Hub:** https://hub.docker.com/layers/airbyte/${{ matrix.connector }}/${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
-            >
-            > **Registry JSON:**
-            > - [OSS Registry](https://connectors.airbyte.com/files/metadata/airbyte/${{ matrix.connector }}/${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}/oss.json)
-            > - [Cloud Registry](https://connectors.airbyte.com/files/metadata/airbyte/${{ matrix.connector }}/${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}/cloud.json)
-
-      - name: Post publish failure to PR
-        if: >-
-          always()
-          && inputs.pr != ''
-          && steps.publish-registry-artifacts.outcome != 'success'
-          && (steps.publish-registry-artifacts.outcome == 'failure' || steps.generate-registry-artifacts.outcome == 'failure')
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        with:
-          issue-number: ${{ inputs.pr }}
-          body: |
-            > :x: **Publish FAILED** for `${{ matrix.connector }}`.
-            >
-            > [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
