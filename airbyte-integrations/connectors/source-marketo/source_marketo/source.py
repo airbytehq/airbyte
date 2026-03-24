@@ -278,6 +278,14 @@ class MarketoExportBase(IncrementalMarketoStream):
             if headers is None:
                 headers = row
             else:
+                if len(row) != len(headers):
+                    raise AirbyteTracedException(
+                        message="CSV row column count does not match header column count.",
+                        internal_message=f"CSV parse error at row {reader.line_num}: expected {len(headers)} columns, got {len(row)}. "
+                        f"Headers: {headers[:5]}{'...' if len(headers) > 5 else ''}. "
+                        f"Row: {row[:5]}{'...' if len(row) > 5 else ''}.",
+                        failure_type=FailureType.system_error,
+                    )
                 yield dict(zip(headers, row))
 
 

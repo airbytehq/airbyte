@@ -352,6 +352,23 @@ def test_parse_response_with_unicode_line_separator(send_email_stream):
     assert records[1]["Campaign Run ID"] == "2"
 
 
+def test_csv_rows_column_count_mismatch(config):
+    stream = Leads(config)
+    # Row has fewer columns than the header
+    test_lines = ["Name,Email,Phone", "John Doe,john@example.com"]
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.csv_rows(test_lines))
+    assert exc_info.value.message == "CSV row column count does not match header column count."
+    assert "expected 3 columns, got 2" in exc_info.value.internal_message
+
+    # Row has more columns than the header
+    test_lines_extra = ["Name,Email", "John Doe,john@example.com,extra"]
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.csv_rows(test_lines_extra))
+    assert exc_info.value.message == "CSV row column count does not match header column count."
+    assert "expected 2 columns, got 3" in exc_info.value.internal_message
+
+
 def test_availability_strategy(config):
     stream = Leads(config)
     assert stream.availability_strategy is None
