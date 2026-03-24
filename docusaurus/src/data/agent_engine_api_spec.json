@@ -4050,6 +4050,20 @@
                 "type": "null"
               }
             ]
+          },
+          "entity_check_results": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EntityCheckResult"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Check Results"
           }
         },
         "type": "object",
@@ -4785,6 +4799,42 @@
         "required": ["target_field", "public_key"],
         "title": "EncryptionMapperConfig",
         "description": "Configuration for encryption mapper - uses snake_case.\n\nEncrypts a specified field using RSA (OAEP-SHA256). The encrypted value\nreplaces the original field value or is emitted with the configured suffix.\n\nNOTE: Symmetric AES is NOT supported in this API.\n\nWhy we don't support AES:\n- Secrets hydration for AES mappers is not currently supported in the platform\n- AES requires symmetric key management which doesn't align well with\n  Sonar's secrets management architecture\n- RSA with public keys is more appropriate for this use case as it\n  allows encryption without exposing private keys in the configuration\n\nIf you need AES encryption, this must be resolved at the platform level\nwith proper secrets storage and hydration support before we can add it here."
+      },
+      "EntityCheckResult": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CheckStatus"
+          },
+          "status_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          }
+        },
+        "type": "object",
+        "required": ["entity", "status"],
+        "title": "EntityCheckResult"
       },
       "ExampleQuestionsByType": {
         "properties": {
