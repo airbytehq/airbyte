@@ -1,5 +1,24 @@
 version: 4.3.2
 type: DeclarativeSource
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 8
+
+# Rate limits: https://www.typeform.com/developers/get-started/#rate-limits
+# Typeform allows 2 requests per second per account for Create and Responses APIs.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2
+          interval: PT1S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
 check:
   type: CheckStream
   stream_names:
@@ -1887,6 +1906,14 @@ spec:
           type: string
         uniqueItems: true
         order: 3
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description: Number of concurrent threads for syncing. Higher values can speed up syncs but may increase API rate limit usage. Adjust based on your API tier.
+        default: 2
+        minimum: 2
+        maximum: 8
+        order: 4
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
