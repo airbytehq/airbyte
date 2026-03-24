@@ -257,6 +257,9 @@ jobs:
 
       - name: Resolve docker image tag
         id: resolve-docker-image-tag
+        env:
+          # Disable Segment.io Telemetry in PyAirbyte
+          DO_NOT_TRACK: "1"
         run: |
           set -euo pipefail
           CONNECTOR_VERSION="${{ steps.connector-metadata.outputs.connector-version }}"
@@ -268,8 +271,7 @@ jobs:
               # Use the ops CLI as the single source of truth for preview version format.
               # This correctly strips any existing pre-release suffix (e.g., -rc.1) before
               # appending the -preview.<sha> tag.
-              # DO_NOT_TRACK suppresses PyAirbyte's telemetry banner from contaminating stdout.
-              DOCKER_TAG=$(DO_NOT_TRACK=1 airbyte-ops registry connector-version next \
+              DOCKER_TAG=$(airbyte-ops registry connector-version next \
                 --name "${{ matrix.connector }}" \
                 --sha "$(git rev-parse HEAD)" \
                 --base-version "${CONNECTOR_VERSION}")
