@@ -268,9 +268,6 @@ jobs:
           # Generate docker image tag based on semver suffix mode
           case "$SEMVER_SUFFIX" in
             preview)
-              # Use the ops CLI as the single source of truth for preview version format.
-              # This correctly strips any existing pre-release suffix (e.g., -rc.1) before
-              # appending the -preview.<sha> tag.
               DOCKER_TAG=$(airbyte-ops registry connector-version next \
                 --name "${{ matrix.connector }}" \
                 --sha "$(git rev-parse HEAD)" \
