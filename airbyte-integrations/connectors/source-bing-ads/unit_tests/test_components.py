@@ -968,6 +968,7 @@ from unittest.mock import MagicMock, patch
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
 
+
 POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
 FRESH_DOWNLOAD_URL = "https://blobstorage.example.com/report?sv=fresh-sas-token"
 STALE_DOWNLOAD_URL = "https://blobstorage.example.com/report?sv=stale-sas-expired"
@@ -1069,9 +1070,7 @@ def test_successful_end_to_end_refresh(components_module, requests_mock):
     requester = _build_requester(components_module)
     stream_slice = _make_stream_slice(download_target=STALE_DOWNLOAD_URL)
 
-    with patch.object(
-        type(requester).__bases__[0], "send_request", return_value=MagicMock()
-    ) as mock_super_send:
+    with patch.object(type(requester).__bases__[0], "send_request", return_value=MagicMock()) as mock_super_send:
         requester.send_request(stream_slice=stream_slice)
 
         mock_super_send.assert_called_once()
@@ -1136,9 +1135,7 @@ def test_stale_url_regression_fresh_url_used(components_module, requests_mock):
     requester = _build_requester(components_module)
     stream_slice = _make_stream_slice(download_target=stale_url)
 
-    with patch.object(
-        type(requester).__bases__[0], "send_request", return_value=MagicMock()
-    ) as mock_super_send:
+    with patch.object(type(requester).__bases__[0], "send_request", return_value=MagicMock()) as mock_super_send:
         requester.send_request(stream_slice=stream_slice)
 
         call_kwargs = mock_super_send.call_args
