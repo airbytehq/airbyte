@@ -178,9 +178,7 @@ def test_concrete_stream_effective_end_date(stream_cls, lookback_window, expecte
 @freezegun.freeze_time("2026-03-24 12:00:00", tz_offset=0)
 def test_templates_ranged_slices_end_with_lookback():
     """Templates' ranged slices end at now - lookback."""
-    stream = Templates(
-        authenticator=None, start_date="2026-01-01T00:00:00", lookback_window=5
-    )
+    stream = Templates(authenticator=None, start_date="2026-01-01T00:00:00", lookback_window=5)
 
     slices = list(stream.stream_slices(sync_mode=SyncMode.incremental))
 
@@ -217,16 +215,16 @@ def test_export_streams_receive_lookback_from_config(config_lookback, expected_l
 
     assert len(export_streams) > 0
     for stream in export_streams:
-        assert stream._lookback_window == expected_lookback, (
-            f"{stream.name} has lookback_window={stream._lookback_window}, expected {expected_lookback}"
-        )
+        assert (
+            stream._lookback_window == expected_lookback
+        ), f"{stream.name} has lookback_window={stream._lookback_window}, expected {expected_lookback}"
 
 
 @responses.activate
 def test_campaigns_metrics_does_not_have_lookback():
     """CampaignsMetrics extends IterableStream (not IterableExportStream), so no _lookback_window."""
-    from source_iterable.streams import CampaignsMetrics
     from source_iterable.source import SourceIterable
+    from source_iterable.streams import CampaignsMetrics
 
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
     responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body="user@example.com")
@@ -268,9 +266,7 @@ def test_lookback_can_push_end_before_start():
 @freezegun.freeze_time("2026-03-24 12:00:00", tz_offset=0)
 def test_state_based_start_with_lookback_end():
     """State-based start_date combined with lookback-adjusted end_date."""
-    stream = _ConcreteExportStream(
-        authenticator=None, start_date="2020-01-01", lookback_window=5
-    )
+    stream = _ConcreteExportStream(authenticator=None, start_date="2020-01-01", lookback_window=5)
 
     slices = stream.stream_slices(
         sync_mode=SyncMode.incremental,
