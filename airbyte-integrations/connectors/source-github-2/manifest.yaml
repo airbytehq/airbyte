@@ -22,23 +22,36 @@ definitions:
               - type: HttpResponseFilter
                 action: IGNORE
                 http_codes:
-                  - 404
                   - 403
+                  - 404
                   - 409
               - type: HttpResponseFilter
                 action: RETRY
+                error_message_contains: rate limit
                 http_codes:
+                  - 403
                   - 429
+            backoff_strategies:
+              - type: WaitUntilTimeFromHeader
+                regex: ([0-9]+)
+                header: x-ratelimit-reset
+                min_wait: 1
+              - type: WaitTimeFromHeader
+                regex: ([0-9]+)
+                header: retry-after
+                min_wait: 1
+          - type: DefaultErrorHandler
+            max_retries: 5
+            response_filters:
+              - type: HttpResponseFilter
+                action: RETRY
+                http_codes:
                   - 502
                   - 503
                   - 504
             backoff_strategies:
-              - type: WaitTimeFromHeader
-                regex: ([0-9]+)
-                header: X-RateLimit-Reset
-                min_wait: 1
               - type: ConstantBackoffStrategy
-                backoff_time_in_seconds: 5
+                backoff_time_in_seconds: 60
       request_parameters:
         state: all
     SimpleRetriever:
