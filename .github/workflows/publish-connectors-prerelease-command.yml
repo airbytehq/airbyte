@@ -148,7 +148,7 @@ jobs:
       connectors: ${{ format('--name={0}', needs.init.outputs.connector-name) }}
       with-semver-suffix: preview
       gitref: refs/pull/${{ inputs.pr }}/head
-      pr: ${{ inputs.pr }}
+      pr: ${{ format('{0}', inputs.pr) }}
     secrets: inherit
 
   post-completion:
