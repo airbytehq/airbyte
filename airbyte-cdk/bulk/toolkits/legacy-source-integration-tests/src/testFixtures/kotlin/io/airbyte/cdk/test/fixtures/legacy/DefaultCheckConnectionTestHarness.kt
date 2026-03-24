@@ -36,7 +36,7 @@ constructor(
             val jobOutput =
                 ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.CHECK_CONNECTION)
 
-            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error { msg } })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
             val connectionStatus =
@@ -82,7 +82,7 @@ constructor(
 
             val exitCode = process.exitValue()
             if (exitCode != 0) {
-                LOGGER.warn("Check connection job subprocess finished with exit code {}", exitCode)
+                LOGGER.warn { "Check connection job subprocess finished with exit code $exitCode" }
             }
 
             if (connectionStatus != null) {
@@ -95,7 +95,7 @@ constructor(
                             )
                         )
                         .withMessage(connectionStatus.message)
-                LOGGER.info("Check connection job received output: {}", output)
+                LOGGER.info { "Check connection job received output: $output" }
                 jobOutput.checkConnection = output
             } else if (failureReason.isEmpty) {
                 TestHarnessUtils.throwWorkerException(
@@ -106,7 +106,7 @@ constructor(
             LineGobbler.endSection("CHECK")
             return jobOutput
         } catch (e: Exception) {
-            LOGGER.error("Unexpected error while checking connection: ", e)
+            LOGGER.error(e) { "Unexpected error while checking connection: " }
             LineGobbler.endSection("CHECK")
             throw TestHarnessException("Unexpected error while getting checking connection.", e)
         }

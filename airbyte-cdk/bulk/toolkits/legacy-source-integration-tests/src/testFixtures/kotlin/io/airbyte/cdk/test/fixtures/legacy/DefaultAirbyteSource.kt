@@ -97,7 +97,7 @@ internal constructor(
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             sourceProcess!!.errorStream,
-            { msg: String -> LOGGER.error(msg) },
+            { msg: String -> LOGGER.error { msg } },
             "airbyte-source",
             CONTAINER_LOG_MDC_BUILDER
         )
@@ -141,11 +141,11 @@ internal constructor(
     @Throws(Exception::class)
     override fun close() {
         if (sourceProcess == null) {
-            LOGGER.debug("Source process already exited")
+            LOGGER.debug { "Source process already exited" }
             return
         }
 
-        LOGGER.debug("Closing source process")
+        LOGGER.debug { "Closing source process" }
         TestHarnessUtils.gentleClose(
             sourceProcess,
             GRACEFUL_SHUTDOWN_DURATION.toMillis(),
@@ -156,20 +156,20 @@ internal constructor(
             val message =
                 if (sourceProcess!!.isAlive) "Source has not terminated "
                 else "Source process exit with code " + exitValue
-            LOGGER.warn("$message. This warning is normal if the job was cancelled.")
+            LOGGER.warn { "$message. This warning is normal if the job was cancelled." }
         }
     }
 
     @Throws(Exception::class)
     override fun cancel() {
-        LOGGER.info("Attempting to cancel source process...")
+        LOGGER.info { "Attempting to cancel source process..." }
 
         if (sourceProcess == null) {
-            LOGGER.info("Source process no longer exists, cancellation is a no-op.")
+            LOGGER.info { "Source process no longer exists, cancellation is a no-op." }
         } else {
-            LOGGER.info("Source process exists, cancelling...")
+            LOGGER.info { "Source process exists, cancelling..." }
             TestHarnessUtils.cancelProcess(sourceProcess)
-            LOGGER.info("Cancelled source process!")
+            LOGGER.info { "Cancelled source process!" }
         }
     }
 
@@ -179,11 +179,11 @@ internal constructor(
         }
 
         if (sourceConfig.state == null) {
-            LOGGER.info("source starting state | empty")
+            LOGGER.info { "source starting state | empty" }
             return
         }
 
-        LOGGER.info("source starting state | " + Jsons.serialize(sourceConfig.state!!.state))
+        LOGGER.info { "source starting state | ${Jsons.serialize(sourceConfig.state!!.state)}" }
     }
 
     companion object {

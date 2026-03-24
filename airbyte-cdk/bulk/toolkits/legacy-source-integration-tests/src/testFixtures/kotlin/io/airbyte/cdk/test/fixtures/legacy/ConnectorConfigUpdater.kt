@@ -55,12 +55,9 @@ class ConnectorConfigUpdater(
                 "update source"
             )!!
 
-        LOGGER.info(
-            "Persisted updated configuration for source {}. New config hash: {}.",
-            sourceId,
-            Hashing.sha256()
-                .hashString(updatedSource.connectionConfiguration.asText(), StandardCharsets.UTF_8)
-        )
+        LOGGER.info {
+            "Persisted updated configuration for source $sourceId. New config hash: ${Hashing.sha256().hashString(updatedSource.connectionConfiguration.asText(), StandardCharsets.UTF_8)}."
+        }
     }
 
     /**
@@ -91,15 +88,9 @@ class ConnectorConfigUpdater(
                 "update destination"
             )!!
 
-        LOGGER.info(
-            "Persisted updated configuration for destination {}. New config hash: {}.",
-            destinationId,
-            Hashing.sha256()
-                .hashString(
-                    updatedDestination.connectionConfiguration.asText(),
-                    StandardCharsets.UTF_8
-                )
-        )
+        LOGGER.info {
+            "Persisted updated configuration for destination $destinationId. New config hash: ${Hashing.sha256().hashString(updatedDestination.connectionConfiguration.asText(), StandardCharsets.UTF_8)}."
+        }
     }
 
     companion object {}

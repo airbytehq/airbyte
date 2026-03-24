@@ -24,7 +24,7 @@ constructor(
             this.process = process
 
             val jobOutput = ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.SPEC)
-            LineGobbler.gobble(process!!.errorStream, { msg: String -> LOGGER.error(msg) })
+            LineGobbler.gobble(process!!.errorStream, { msg: String -> LOGGER.error { msg } })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
@@ -45,7 +45,7 @@ constructor(
 
             val exitCode = process!!.exitValue()
             if (exitCode != 0) {
-                LOGGER.warn("Spec job subprocess finished with exit code {}", exitCode)
+                LOGGER.warn { "Spec job subprocess finished with exit code $exitCode" }
             }
 
             if (spec != null) {

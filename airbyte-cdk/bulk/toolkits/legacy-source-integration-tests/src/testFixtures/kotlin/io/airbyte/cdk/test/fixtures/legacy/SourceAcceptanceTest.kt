@@ -134,7 +134,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testFullRefreshRead() {
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 
@@ -163,7 +163,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testIdenticalFullRefreshes() {
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 
@@ -291,7 +291,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
         }
 
         if (!sourceSupportsFullRefresh()) {
-            LOGGER.info("Test skipped. Source does not support full refresh.")
+            LOGGER.info { "Test skipped. Source does not support full refresh." }
             return
         }
 

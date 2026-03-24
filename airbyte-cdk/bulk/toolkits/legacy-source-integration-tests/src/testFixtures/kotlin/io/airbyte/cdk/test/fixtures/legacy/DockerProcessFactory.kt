@@ -93,12 +93,9 @@ class DockerProcessFactory(
                     attempt,
                     DOCKER_NAME_LEN_LIMIT
                 )
-            LOGGER.info(
-                "Creating docker container = {} with resources {} and allowedHosts {}",
-                containerName,
-                resourceRequirements,
-                allowedHosts
-            )
+            LOGGER.info {
+                "Creating docker container = $containerName with resources $resourceRequirements and allowedHosts $allowedHosts"
+            }
             cmd.add("--name")
             cmd.add(containerName)
             cmd.addAll(localDebuggingOptions(containerName))
@@ -159,7 +156,7 @@ class DockerProcessFactory(
             cmd.add(imageName)
             cmd.addAll(args)
 
-            LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd))
+            LOGGER.info { "Preparing command: ${Joiner.on(" ").join(cmd)}" }
 
             return ProcessBuilder(cmd).start()
         } catch (e: IOException) {
@@ -177,8 +174,8 @@ class DockerProcessFactory(
     fun checkImageExists(imageName: String?): Boolean {
         try {
             val process = ProcessBuilder(imageExistsScriptPath.toString(), imageName).start()
-            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
-            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error { msg } })
+            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info { msg } })
 
             TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES)
 

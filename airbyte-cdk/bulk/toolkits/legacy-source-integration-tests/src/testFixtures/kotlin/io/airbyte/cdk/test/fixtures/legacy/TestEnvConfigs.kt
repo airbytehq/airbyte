@@ -45,7 +45,7 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
                 try {
                     return@getEnvOrDefault DeploymentMode.valueOf(s)
                 } catch (e: IllegalArgumentException) {
-                    LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS)
+                    LOGGER.info { "$s not recognized, defaulting to ${DeploymentMode.OSS}" }
                     return@getEnvOrDefault DeploymentMode.OSS
                 }
             }
@@ -98,11 +98,8 @@ class TestEnvConfigs private constructor(envMap: Map<String, String>) {
         if (value != null && !value.isEmpty()) {
             return parser.apply(value)
         } else {
-            LOGGER.info(
-                "Using default value for environment variable {}: '{}'",
-                key,
-                if (isSecret) "*****" else defaultValue
-            )
+            val displayValue = if (isSecret) "*****" else defaultValue.toString()
+            LOGGER.info { "Using default value for environment variable $key: '$displayValue'" }
             return defaultValue
         }
     }
