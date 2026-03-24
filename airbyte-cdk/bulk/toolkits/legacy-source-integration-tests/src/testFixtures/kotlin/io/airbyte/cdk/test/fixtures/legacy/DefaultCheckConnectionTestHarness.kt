@@ -76,9 +76,7 @@ constructor(
                     ConnectorJobOutput.OutputType.CHECK_CONNECTION,
                     messagesByType
                 )
-            failureReason.ifPresent { failureReason: FailureReason ->
-                jobOutput.failureReason = failureReason
-            }
+            failureReason.ifPresent { jobOutput.failureReason = it }
 
             val exitCode = process.exitValue()
             if (exitCode != 0) {

@@ -173,8 +173,8 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
 
     // Human-readable byte size from
     // https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
-    private fun humanReadableByteCountSI(bytes: Long): String {
-        var bytes = bytes
+    private fun humanReadableByteCountSI(initialBytes: Long): String {
+        var bytes = initialBytes
         if (-1000 < bytes && bytes < 1000) {
             return "$bytes B"
         }
