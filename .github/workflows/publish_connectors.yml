@@ -584,26 +584,3 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-
-  notify-failure-pager-duty:
-    name: "Notify PagerDuty on Publish Failures"
-    runs-on: ubuntu-24.04
-    needs:
-      - publish_connectors
-    if: ${{ always() && needs.publish_connectors.result == 'failure' && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Checkout Airbyte
-        # v4
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
-        with:
-          ref: ${{ inputs.gitref || '' }}
-          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
-      - name: Notify PagerDuty
-        id: pager-duty
-        uses: ./.github/actions/send-pager-duty-event
-        with:
-          # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
-          integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
-          summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
-          severity: "critical"
-          source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
