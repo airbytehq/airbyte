@@ -91,7 +91,7 @@ abstract class SourceAcceptanceTest : AbstractSourceConnectorTest() {
     fun testCheckConnection() {
         Assertions.assertEquals(
             StandardCheckConnectionOutput.Status.SUCCEEDED,
-            runCheck()!!.status,
+            runCheck().status,
             "Expected check connection operation to succeed"
         )
     }

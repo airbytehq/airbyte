@@ -52,7 +52,7 @@ protected constructor(val container: C) : AutoCloseable {
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
     init {
-        LOGGER!!.info { formatLogLine("creating database $databaseName") }
+        LOGGER.info { formatLogLine("creating database $databaseName") }
     }
 
     protected fun formatLogLine(logLine: String?): String {
@@ -163,7 +163,7 @@ protected constructor(val container: C) : AutoCloseable {
         try {
             database.query<Any?> { ctx: DSLContext ->
                 sql.forEach { statement: String ->
-                    LOGGER!!.info { "executing SQL statement $statement" }
+                    LOGGER.info { "executing SQL statement $statement" }
                     ctx.execute(statement)
                 }
                 null
@@ -179,7 +179,7 @@ protected constructor(val container: C) : AutoCloseable {
             return
         }
         try {
-            LOGGER!!.info {
+            LOGGER.info {
                 formatLogLine(
                     String.format("executing command %s", Strings.join(cmd.asIterable(), " "))
                 )
@@ -240,7 +240,7 @@ protected constructor(val container: C) : AutoCloseable {
     override fun close() {
         execSQL(cleanupSQL.stream())
         execInContainer(inContainerUndoBootstrapCmd())
-        LOGGER!!.info { "closing database databaseId=$databaseId" }
+        LOGGER.info { "closing database databaseId=$databaseId" }
     }
 
     open class ConfigBuilder<T : TestDatabase<*, *, *>, B : ConfigBuilder<T, B>>(

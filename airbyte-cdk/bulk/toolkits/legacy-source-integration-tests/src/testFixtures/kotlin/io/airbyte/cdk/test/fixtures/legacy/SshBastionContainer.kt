@@ -51,7 +51,7 @@ class SshBastionContainer : AutoCloseable {
             else getOuterContainerAddress(container!!)
         return Jsons.jsonNode(
             ImmutableMap.builder<Any?, Any?>()
-                .put("tunnel_host", Objects.requireNonNull(containerAddress!!.left))
+                .put("tunnel_host", Objects.requireNonNull(containerAddress.left))
                 .put("tunnel_method", tunnelMethod)
                 .put("tunnel_port", containerAddress.right)
                 .put("tunnel_user", SSH_USER)

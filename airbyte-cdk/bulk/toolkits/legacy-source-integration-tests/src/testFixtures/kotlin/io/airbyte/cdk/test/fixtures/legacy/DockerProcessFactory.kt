@@ -238,7 +238,7 @@ class DockerProcessFactory(
                     .map<Boolean>(
                         Function<String, Boolean> { imageName: String ->
                             ProcessFactory.Companion.extractShortImageName(containerName)
-                                .startsWith(imageName!!)
+                                .startsWith(imageName)
                         }
                     )
                     .orElse(false) &&

@@ -24,13 +24,13 @@ constructor(
             this.process = process
 
             val jobOutput = ConnectorJobOutput().withOutputType(ConnectorJobOutput.OutputType.SPEC)
-            LineGobbler.gobble(process!!.errorStream, { msg: String -> LOGGER.error { msg } })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error { msg } })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
             val spec =
                 messagesByType
-                    .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())!!
+                    .getOrDefault(AirbyteMessage.Type.SPEC, ArrayList())
                     .map { obj: AirbyteMessage -> obj.spec }
                     .firstOrNull()
 
@@ -39,11 +39,11 @@ constructor(
                     ConnectorJobOutput.OutputType.SPEC,
                     messagesByType
                 )
-            failureReason!!.ifPresent { failureReason: FailureReason ->
+            failureReason.ifPresent { failureReason: FailureReason ->
                 jobOutput.failureReason = failureReason
             }
 
-            val exitCode = process!!.exitValue()
+            val exitCode = process.exitValue()
             if (exitCode != 0) {
                 LOGGER.warn { "Spec job subprocess finished with exit code $exitCode" }
             }
