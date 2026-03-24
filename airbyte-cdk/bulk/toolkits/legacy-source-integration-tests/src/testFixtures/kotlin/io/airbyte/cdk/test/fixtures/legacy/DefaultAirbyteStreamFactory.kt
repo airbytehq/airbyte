@@ -125,7 +125,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
             // we log as info all the lines that are not valid json
             // some sources actually log their process on stdout, we
             // want to make sure this info is available in the logs.
-            containerLogMdcBuilder.build().use { mdcScope -> logger.info { line } }
+            containerLogMdcBuilder.build().use { _ -> logger.info { line } }
         }
         return jsonLine.stream()
     }
@@ -149,7 +149,7 @@ class DefaultAirbyteStreamFactory : AirbyteStreamFactory {
     protected fun filterLog(message: AirbyteMessage): Boolean {
         val isLog = message.type == AirbyteMessage.Type.LOG
         if (isLog) {
-            containerLogMdcBuilder.build().use { mdcScope -> internalLog(message.log) }
+            containerLogMdcBuilder.build().use { _ -> internalLog(message.log) }
         }
         return !isLog
     }

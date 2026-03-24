@@ -114,7 +114,7 @@ internal constructor(
         messageIterator =
             streamFactory
                 .create(IOs.newBufferedReader(sourceProcess!!.inputStream))
-                .peek { message: AirbyteMessage -> heartbeatMonitor.beat() }
+                .peek { _: AirbyteMessage -> heartbeatMonitor.beat() }
                 .filter { message: AirbyteMessage -> acceptedMessageTypes.contains(message.type) }
                 .iterator()
     }
