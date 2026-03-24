@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.ImmutableMap
-import com.google.common.collect.Lists
 import io.airbyte.cdk.test.fixtures.legacy.AdaptiveSourceRunner
 import io.airbyte.cdk.test.fixtures.legacy.FeatureFlags
 import io.airbyte.cdk.test.fixtures.legacy.FeatureFlagsWrapper
@@ -73,13 +71,13 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                 .integrationTestConfigBuilder()
                 .withStandardReplication()
                 .withSsl(
-                    ImmutableMap.builder<Any?, Any?>()
-                        .put("mode", "verify-ca")
-                        .put("ca_certificate", certs.caCertificate)
-                        .put("client_certificate", certs.clientCertificate)
-                        .put("client_key", certs.clientKey)
-                        .put("client_key_password", PASSWORD)
-                        .build(),
+                    mutableMapOf(
+                        "mode" to "verify-ca",
+                        "ca_certificate" to certs.caCertificate,
+                        "client_certificate" to certs.clientCertificate,
+                        "client_key" to certs.clientKey,
+                        "client_key_password" to PASSWORD,
+                    ),
                 )
                 .build()
         }
@@ -88,10 +86,10 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
         get() =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    Lists.newArrayList<ConfiguredAirbyteStream?>(
+                    mutableListOf<ConfiguredAirbyteStream?>(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -101,7 +99,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
@@ -114,7 +112,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -124,7 +122,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
