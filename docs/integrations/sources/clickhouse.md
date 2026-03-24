@@ -80,7 +80,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.4.0   | 2026-03-24 | [PR_NUMBER_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_PLACEHOLDER) | Upgrade ClickHouse JDBC driver to 0.9.8; remove invalid sslmode=none parameter |
+| 0.4.0   | 2026-03-24 | [75432](https://github.com/airbytehq/airbyte/pull/75432) | Upgrade ClickHouse JDBC driver to 0.9.8; remove invalid sslmode=none parameter |
 | 0.3.0   | 2026-01-27 | [75298](https://github.com/airbytehq/airbyte/pull/75298)   | Fold source-clickhouse-strict-encrypt into source-clickhouse                                              |
 | 0.2.6   | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714)   | Revert JDBC driver upgrade                                                                                |
 | 0.2.5   | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482)   | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0                                                |
