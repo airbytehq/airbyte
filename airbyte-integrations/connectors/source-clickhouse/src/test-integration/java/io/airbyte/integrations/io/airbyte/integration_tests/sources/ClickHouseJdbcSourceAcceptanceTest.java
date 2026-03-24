@@ -5,6 +5,7 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.JDBC_URL_KEY;
+import static io.airbyte.integrations.source.clickhouse.ClickHouseSource.SSL_MODE;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -107,9 +108,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
     assertNotNull(jdbcUrlNode);
     String actualJdbcUrl = jdbcUrlNode.asText();
-    // SSL is handled via the https:// protocol prefix, no extra params needed
-    assertTrue(actualJdbcUrl.startsWith("jdbc:clickhouse:https://"));
-    assertTrue(actualJdbcUrl.endsWith(config.get("database").asText()));
+    assertTrue(actualJdbcUrl.endsWith("?" + SSL_MODE));
   }
 
   @Test
@@ -131,9 +130,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
     assertNotNull(jdbcUrlNode);
     String actualJdbcUrl = jdbcUrlNode.asText();
-    // SSL is handled via https:// protocol, extra params appended directly
-    assertTrue(actualJdbcUrl.startsWith("jdbc:clickhouse:https://"));
-    assertTrue(actualJdbcUrl.endsWith("?" + extraParam));
+    assertTrue(actualJdbcUrl.endsWith(getFullExpectedValue(extraParam, SSL_MODE)));
   }
 
   @Test
@@ -145,6 +142,11 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     assertNotNull(jdbcUrlNode);
     String actualJdbcUrl = jdbcUrlNode.asText();
     assertTrue(actualJdbcUrl.endsWith("?" + extraParam));
+  }
+
+  private String getFullExpectedValue(String extraParam, String sslMode) {
+    StringBuilder expected = new StringBuilder();
+    return expected.append("?").append(sslMode).append("&").append(extraParam).toString();
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(String extraParam, boolean isSsl) {
