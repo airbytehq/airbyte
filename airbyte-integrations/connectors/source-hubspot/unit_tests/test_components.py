@@ -23,9 +23,7 @@ def test_hubspot_schema_extractor_v3_format(components_module):
     decoder = Mock()
     decoder.decode.return_value = [{"results": v3_properties}]
 
-    extractor = components_module.HubspotSchemaExtractor(
-        decoder=decoder, config={}, parameters={}
-    )
+    extractor = components_module.HubspotSchemaExtractor(decoder=decoder, config={}, parameters={})
     records = list(extractor.extract_records(response=requests.Response()))
 
     assert len(records) == 1
@@ -42,9 +40,7 @@ def test_hubspot_schema_extractor_v2_format(components_module):
     decoder = Mock()
     decoder.decode.return_value = v2_properties
 
-    extractor = components_module.HubspotSchemaExtractor(
-        decoder=decoder, config={}, parameters={}
-    )
+    extractor = components_module.HubspotSchemaExtractor(decoder=decoder, config={}, parameters={})
     records = list(extractor.extract_records(response=requests.Response()))
 
     assert len(records) == 1
@@ -56,9 +52,7 @@ def test_hubspot_schema_extractor_v3_empty_results(components_module):
     decoder = Mock()
     decoder.decode.return_value = [{"results": []}]
 
-    extractor = components_module.HubspotSchemaExtractor(
-        decoder=decoder, config={}, parameters={}
-    )
+    extractor = components_module.HubspotSchemaExtractor(decoder=decoder, config={}, parameters={})
     records = list(extractor.extract_records(response=requests.Response()))
 
     assert len(records) == 1
@@ -157,9 +151,7 @@ def test_new_to_legacy_field_transformation(input, expected, components_module):
         "hs_date_exited_": "hs_v2_date_exited_",
         "hs_time_in_": "hs_v2_latest_time_in_",
     }
-    transformer = components_module.NewtoLegacyFieldTransformation(
-        deals_new_to_legacy_mapping
-    )
+    transformer = components_module.NewtoLegacyFieldTransformation(deals_new_to_legacy_mapping)
     transformer.transform(input)
     assert input == expected
 
@@ -179,9 +171,7 @@ def test_new_to_legacy_field_transformation(input, expected, components_module):
         "Valid state: date string, no need to migrate",
     ],
 )
-def test_migrate_empty_string_state(
-    config, state, expected_should_migrate, expected_state, components_module
-):
+def test_migrate_empty_string_state(config, state, expected_should_migrate, expected_state, components_module):
     state_migration = components_module.MigrateEmptyStringState("updatedAt", config)
 
     actual_should_migrate = state_migration.should_migrate(stream_state=state)
@@ -245,10 +235,7 @@ def test_hubspot_rename_properties_transformation(components_module):
 
     transformation.transform(record=dynamic_properties_record)
 
-    assert (
-        dynamic_properties_record["properties_amount"]
-        == expected_properties["properties_amount"]
-    )
+    assert dynamic_properties_record["properties_amount"] == expected_properties["properties_amount"]
     assert (
         dynamic_properties_record["properties_hs_v2_date_entered_closedwon"]
         == expected_properties["properties_hs_v2_date_entered_closedwon"]
@@ -495,9 +482,7 @@ def test_flatten_associations_transformation(components_module):
         },
     }
 
-    transformation.transform(
-        record=current_record, config={}, stream_state=None, stream_slice=None
-    )
+    transformation.transform(record=current_record, config={}, stream_state=None, stream_slice=None)
 
     assert current_record == expected_record
 
@@ -528,9 +513,7 @@ def test_associations_extractor(config, components_module):
             "from": {"id": "123"},
             "to": [
                 {
-                    "associationTypes": [
-                        {"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}
-                    ],
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
                     "toObjectId": 909,
                 }
             ],
@@ -539,9 +522,7 @@ def test_associations_extractor(config, components_module):
             "from": {"id": "456"},
             "to": [
                 {
-                    "associationTypes": [
-                        {"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}
-                    ],
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
                     "toObjectId": 606,
                 }
             ],
@@ -550,9 +531,7 @@ def test_associations_extractor(config, components_module):
             "from": {"id": "123"},
             "to": [
                 {
-                    "associationTypes": [
-                        {"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}
-                    ],
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
                     "toObjectId": 424,
                 }
             ],
@@ -561,9 +540,7 @@ def test_associations_extractor(config, components_module):
             "from": {"id": "456"},
             "to": [
                 {
-                    "associationTypes": [
-                        {"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}
-                    ],
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
                     "toObjectId": 510,
                 }
             ],
@@ -575,9 +552,7 @@ def test_associations_extractor(config, components_module):
             "from": {"id": "123"},
             "to": [
                 {
-                    "associationTypes": [
-                        {"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}
-                    ],
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
                     "toObjectId": 408,
                 }
             ],
@@ -586,9 +561,7 @@ def test_associations_extractor(config, components_module):
             "from": {"id": "456"},
             "to": [
                 {
-                    "associationTypes": [
-                        {"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}
-                    ],
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
                     "toObjectId": 888,
                 }
             ],
@@ -624,18 +597,16 @@ def test_associations_extractor(config, components_module):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
-def test_associations_extractor_with_permissions_error(
-    requests_mock, config, components_module
-):
+def test_associations_extractor_with_permissions_error(requests_mock, config, components_module):
     response = requests.Response()
-    response._content = b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
+    response._content = (
+        b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
+    )
     response.status_code = 200
 
     companies_associations_responses = [
         {
-            "json": {
-                "error": "The OAuth token used to make this call expired 0 second(s) ago."
-            },
+            "json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."},
             "status_code": 401,
         },
         {
@@ -728,14 +699,10 @@ def test_extractor_supports_entity_interpolation(config, components_module):
     "associations_list_value",
     [
         pytest.param(["contacts", "deals", "tickets"], id="test_static_associations"),
-        pytest.param(
-            "{{ parameters['associations'] }}", id="test_interpolated_associations"
-        ),
+        pytest.param("{{ parameters['associations'] }}", id="test_interpolated_associations"),
     ],
 )
-def test_extractor_supports_associations_list_interpolation(
-    config, associations_list_value, components_module
-):
+def test_extractor_supports_associations_list_interpolation(config, associations_list_value, components_module):
     extractor = components_module.HubspotAssociationsExtractor(
         field_path=["results"],
         entity="emails",
@@ -795,16 +762,12 @@ def test_extractor_supports_associations_list_interpolation(
         ),
     ],
 )
-def test_entity_schema_normalization(
-    components_module, original_value, field_schema, expected_value
-):
+def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):
     entity_schema_normalization = components_module.EntitySchemaNormalization()
 
     transform_function = entity_schema_normalization.get_transform_function()
 
-    normalized_value = transform_function(
-        original_value=original_value, field_schema=field_schema
-    )
+    normalized_value = transform_function(original_value=original_value, field_schema=field_schema)
 
     assert normalized_value == expected_value
 
@@ -870,9 +833,7 @@ def test_crm_search_pagination_strategy(
     last_page_token_value,
     expected_next_page_token,
 ):
-    pagination_strategy = components_module.HubspotCRMSearchPaginationStrategy(
-        page_size=200
-    )
+    pagination_strategy = components_module.HubspotCRMSearchPaginationStrategy(page_size=200)
 
     response = Mock()
     response.json.return_value = json_response

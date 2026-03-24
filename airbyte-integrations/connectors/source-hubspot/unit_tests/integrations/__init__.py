@@ -7,9 +7,11 @@ from typing import Any, Dict, List, Optional
 
 import freezegun
 import pytz
+
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpResponse, HttpRequest, HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -17,8 +19,8 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_record_builder,
     find_template,
 )
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 
+from ..conftest import get_source
 from .config_builder import ConfigBuilder
 from .request_builders.api import (
     CrmSearchPropertiesRequestBuilder,
@@ -32,13 +34,13 @@ from .request_builders.streams import (
     CRMSearchRequestBuilder,
     WebAnalyticsRequestBuilder,
 )
-from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
+from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.streams import (
     GenericResponseBuilder,
     HubspotStreamResponseBuilder,
 )
-from ..conftest import get_source
+
 
 OBJECTS_WITH_DYNAMIC_SCHEMA = [
     "calls",
@@ -111,9 +113,7 @@ class HubspotTestCase:
         )
 
     @classmethod
-    def private_token_config(
-        cls, token: str, start_date: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def private_token_config(cls, token: str, start_date: Optional[str] = None) -> Dict[str, Any]:
         start_date = start_date or cls.dt_str(cls.start_date())
         return (
             ConfigBuilder()
@@ -137,38 +137,25 @@ class HubspotTestCase:
             .with_refresh_token(creds["refresh_token"])
             .build()
         )
-        response = (
-            GenericResponseBuilder()
-            .with_value("access_token", token)
-            .with_value("expires_in", 7200)
-            .build()
-        )
+        response = GenericResponseBuilder().with_value("access_token", token).with_value("expires_in", 7200).build()
         http_mocker.post(req, response)
 
     @classmethod
     def mock_custom_objects(cls, http_mocker: HttpMocker):
         http_mocker.get(
             CustomObjectsRequestBuilder().build(),
-            HttpResponseBuilder(
-                {}, records_path=FieldPath("results"), pagination_strategy=None
-            ).build(),
+            HttpResponseBuilder({}, records_path=FieldPath("results"), pagination_strategy=None).build(),
         )
 
     @classmethod
-    def mock_properties(
-        cls, http_mocker: HttpMocker, object_type: str, properties: Dict[str, str]
-    ):
+    def mock_properties(cls, http_mocker: HttpMocker, object_type: str, properties: Dict[str, str]):
         templates = find_template("properties", __file__)
 
         # Mock v3 URL (used by both DynamicSchemaLoader for discover and PropertiesFromEndpoint for CRM search reads)
         v3_records = copy.deepcopy(templates)
         for name, type in properties.items():
-            record = RecordBuilder(
-                copy.deepcopy(templates[0]), id_path=None, cursor_path=None
-            )
-            record.with_field(FieldPath("name"), name).with_field(
-                FieldPath("type"), type
-            )
+            record = RecordBuilder(copy.deepcopy(templates[0]), id_path=None, cursor_path=None)
+            record.with_field(FieldPath("name"), name).with_field(FieldPath("type"), type)
             v3_records.append(record.build())
         v3_response = HttpResponse(json.dumps({"results": v3_records}), 200)
         http_mocker.get(
@@ -177,17 +164,13 @@ class HubspotTestCase:
         )
 
     @classmethod
-    def mock_response(
-        cls, http_mocker: HttpMocker, request, responses, method: str = "get"
-    ):
+    def mock_response(cls, http_mocker: HttpMocker, request, responses, method: str = "get"):
         if not isinstance(responses, (list, tuple)):
             responses = [responses]
         getattr(http_mocker, method)(request, responses)
 
     @classmethod
-    def mock_dynamic_schema_requests(
-        cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None
-    ):
+    def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
         entities = entities if entities is not None else OBJECTS_WITH_DYNAMIC_SCHEMA
 
         # figure out which entities are already mocked
@@ -217,9 +200,7 @@ class HubspotTestCase:
 
             # Mock v3 URL (used by DynamicSchemaLoader for discover and PropertiesFromEndpoint for CRM search reads)
             if entity not in existing_v3:
-                v3_response = HttpResponse(
-                    json.dumps({"results": copy.deepcopy(templates)}), 200
-                )
+                v3_response = HttpResponse(json.dumps({"results": copy.deepcopy(templates)}), 200)
                 http_mocker.get(
                     CrmSearchPropertiesRequestBuilder().for_entity(entity).build(),
                     v3_response,
@@ -314,9 +295,7 @@ class HubspotCRMSearchStream(HubspotTestCase):
         if with_oauth:
             self._set_up_oauth(http_mocker)
         self.mock_custom_objects(http_mocker)
-        self.mock_properties(
-            http_mocker, self.OBJECT_TYPE, self.MOCK_PROPERTIES_FOR_SCHEMA_LOADER
-        )
+        self.mock_properties(http_mocker, self.OBJECT_TYPE, self.MOCK_PROPERTIES_FOR_SCHEMA_LOADER)
         if with_dynamic_schemas:
             self.mock_dynamic_schema_requests(http_mocker, entities)
 
@@ -326,9 +305,7 @@ class HubspotCRMSearchStream(HubspotTestCase):
         parent_entity: str,  # e.g. "calls" / "meetings"
         association_name: str,  # e.g. "contacts"
         record_ids: List[str],  # primary ids from the page, as strings
-        to_ids_per_record: Dict[
-            str, List[int]
-        ],  # map primary id -> list of associated ids
+        to_ids_per_record: Dict[str, List[int]],  # map primary id -> list of associated ids
     ):
         """
         Mocks:
@@ -338,41 +315,27 @@ class HubspotCRMSearchStream(HubspotTestCase):
           { "status": "COMPLETE", "results": [ { "from": {"id": ...}, "to": [ { "toObjectId": ..., "associationTypes": [...] }, ... ] }, ... ] }
         We intentionally skip `errors` / `numErrors`.
         """
-        req = (
-            AssociationsBatchReadRequestBuilder()
-            .for_parent(parent_entity)
-            .for_association(association_name)
-            .with_ids(record_ids)
-            .build()
-        )
+        req = AssociationsBatchReadRequestBuilder().for_parent(parent_entity).for_association(association_name).with_ids(record_ids).build()
 
         results = []
         for rid in record_ids:
             to_list = [
                 {
                     "toObjectId": int(x),
-                    "associationTypes": [
-                        {"category": "HUBSPOT_DEFINED", "typeId": 200, "label": None}
-                    ],
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "typeId": 200, "label": None}],
                 }
                 for x in to_ids_per_record.get(rid, [])
             ]
             results.append({"from": {"id": str(rid)}, "to": to_list})
 
         body = json.dumps({"status": "COMPLETE", "results": results})
-        self.mock_response(
-            http_mocker, req, HttpResponse(status_code=200, body=body), method="post"
-        )
+        self.mock_response(http_mocker, req, HttpResponse(status_code=200, body=body), method="post")
 
-    def _mock_all_associations_for_ids(
-        self, http_mocker: HttpMocker, parent_entity: str, record_ids: List[str]
-    ):
+    def _mock_all_associations_for_ids(self, http_mocker: HttpMocker, parent_entity: str, record_ids: List[str]):
         """
         Convenience wrapper: for each association, create two deterministic associated IDs per record.
         """
-        to_map = {
-            rid: [int(rid) + 1, int(rid) + 2] for rid in record_ids if rid.isdigit()
-        }
+        to_map = {rid: [int(rid) + 1, int(rid) + 2] for rid in record_ids if rid.isdigit()}
         for assoc in self.ASSOCIATIONS:
             self._mock_associations_with_stream_builder(
                 http_mocker,

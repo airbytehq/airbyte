@@ -26,6 +26,7 @@ from .conftest import (
 )
 from .utils import run_read
 
+
 NUMBER_OF_PROPERTIES = 2000
 
 logger = logging.getLogger("test_client")
@@ -80,16 +81,12 @@ def test_check_connection_exception(config):
     assert connection_status.message
 
 
-def test_check_connection_bad_request_exception(
-    requests_mock, config_invalid_client_id
-):
+def test_check_connection_bad_request_exception(requests_mock, config_invalid_client_id):
     responses = [
         {"json": {"message": "invalid client_id"}, "status_code": 400},
     ]
     requests_mock.register_uri("POST", "/oauth/v1/token", responses)
-    connection_status = get_source(config_invalid_client_id).check(
-        logger, config=config_invalid_client_id
-    )
+    connection_status = get_source(config_invalid_client_id).check(logger, config=config_invalid_client_id)
     assert connection_status.status == ConnectionStatus.FAILED
     assert connection_status.message
 
@@ -119,23 +116,14 @@ def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
     connection_status = get_source(config).check(logger, config=config)
     assert connection_status.status == ConnectionStatus.FAILED
-    assert (
-        "`authenticator_selection_path` is not found in the config"
-        in connection_status.message
-    )
+    assert "`authenticator_selection_path` is not found in the config" in connection_status.message
 
 
-def test_streams_ok_with_one_custom_stream(
-    requests_mock, config, mock_dynamic_schema_requests
-):
+def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_schema_requests):
     # 200 OK → one custom "cars" stream added to the built-ins
     adapter = requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
-        json={
-            "results": [
-                {"name": "cars", "fullyQualifiedName": "cars", "properties": {}}
-            ]
-        },
+        json={"results": [{"name": "cars", "fullyQualifiedName": "cars", "properties": {}}]},
         status_code=200,
     )
     streams = discover(get_source(config), config).catalog.catalog.streams
@@ -165,9 +153,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-    requests_mock.register_uri(
-        "GET", "/properties/v2/contact/properties", prop_response
-    )
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     mock_v3_properties(
         requests_mock,
         "contact",
@@ -199,9 +185,7 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
     ]
-    requests_mock.register_uri(
-        "GET", "/properties/v2/contact/properties", prop_response
-    )
+    requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     mock_v3_properties(
         requests_mock,
         "contact",
@@ -220,31 +204,21 @@ def test_stream_forbidden(requests_mock, config, mock_dynamic_schema_requests):
         "status": "error",
         "message": "This access_token does not have proper permissions!",
     }
-    requests_mock.get(
-        "https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403
-    )
-    requests_mock.get(
-        "https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403
-    )
+    requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
     output = read_from_stream(config, "workflows", SyncMode.full_refresh)
     assert not output.records
-    expected_error = (
-        "The authenticated user does not have permissions to access the resource"
-    )
+    expected_error = "The authenticated user does not have permissions to access the resource"
     assert expected_error in output.errors[0].trace.error.message
 
 
-def test_parent_stream_forbidden(
-    requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
-):
+def test_parent_stream_forbidden(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
     }
-    requests_mock.get(
-        "https://api.hubapi.com/marketing/v3/forms", json=json, status_code=403
-    )
+    requests_mock.get("https://api.hubapi.com/marketing/v3/forms", json=json, status_code=403)
     properties_response = [
         {
             "json": [
@@ -259,18 +233,12 @@ def test_parent_stream_forbidden(
             "status_code": 200,
         }
     ]
-    requests_mock.get(
-        "https://api.hubapi.com/properties/v2/form/properties", properties_response
-    )
-    requests_mock.get(
-        "https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403
-    )
+    requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
     output = read_from_stream(config, "form_submissions", SyncMode.full_refresh)
     assert not output.records
-    expected_error = (
-        "The authenticated user does not have permissions to access the resource"
-    )
+    expected_error = "The authenticated user does not have permissions to access the resource"
     assert expected_error in output.errors[0].trace.error.message
 
 
@@ -304,21 +272,15 @@ class TestSplittingPropertiesFunctionality:
         response = api._session.get(api.BASE_URL + url, params=params)
         return api._parse_and_handle_errors(response)
 
-    def test_stream_with_splitting_properties_with_pagination(
-        self, requests_mock, config, fake_properties_list
-    ):
+    def test_stream_with_splitting_properties_with_pagination(self, requests_mock, config, fake_properties_list):
         """
         Check working stream `products` with large list of properties using new functionality with splitting properties
         """
         mock_dynamic_schema_requests_with_skip(requests_mock, ["product"])
-        requests_mock.get(
-            "https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200
-        )
+        requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
         # Mock v2 URL (still used by base_crm_object_stream PropertiesFromEndpoint for read)
-        self.set_mock_properties(
-            requests_mock, "/properties/v2/product/properties", fake_properties_list
-        )
+        self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
         # Mock v3 URL (used by DynamicSchemaLoader for discover)
         v3_properties = [
             {
@@ -368,14 +330,8 @@ class TestSplittingPropertiesFunctionality:
                 "properties": ",".join(property_slice),
                 "limit": 100,
             }
-            stream_retriever = (
-                test_stream._stream_partition_generator._partition_factory._retriever
-            )
-            test_stream_url = (
-                stream_retriever.requester.url_base
-                + "/"
-                + stream_retriever.requester.get_path()
-            )
+            stream_retriever = test_stream._stream_partition_generator._partition_factory._retriever
+            test_stream_url = stream_retriever.requester.url_base + "/" + stream_retriever.requester.get_path()
 
             url = f"{test_stream_url}?{urlencode(params)}"
             requests_mock.register_uri(
@@ -392,9 +348,7 @@ class TestSplittingPropertiesFunctionality:
             .build()
         )
 
-        stream_records = read_from_stream(
-            config, "products", SyncMode.incremental, state
-        ).records
+        stream_records = read_from_stream(config, "products", SyncMode.incremental, state).records
 
         assert len(stream_records) == 5
         for record_ab_message in stream_records:
@@ -404,9 +358,7 @@ class TestSplittingPropertiesFunctionality:
             assert len(properties) == NUMBER_OF_PROPERTIES
 
 
-@freezegun.freeze_time(
-    "2022-03-10T14:42:00Z"
-)  # less than one month after state date in test
+@freezegun.freeze_time("2022-03-10T14:42:00Z")  # less than one month after state date in test
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
 ):
@@ -419,10 +371,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     responses = [
         {
             "json": {
-                "results": [
-                    {"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"}
-                    for y in range(200)
-                ],
+                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(200)],
                 "paging": {
                     "next": {
                         "after": f"{x * 200}",
@@ -437,10 +386,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     responses.append(
         {
             "json": {
-                "results": [
-                    {"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"}
-                    for y in range(200)
-                ],
+                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
                 "paging": {},
             },
             "status_code": 200,
@@ -450,10 +396,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     responses.append(
         {
             "json": {
-                "results": [
-                    {"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"}
-                    for y in range(200)
-                ],
+                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
                 "paging": {
                     "next": {
                         "after": "200",
@@ -467,10 +410,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     responses.append(
         {
             "json": {
-                "results": [
-                    {"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"}
-                    for y in range(200)
-                ],
+                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
                 "paging": {},
             },
             "status_code": 200,
@@ -504,9 +444,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
 
     test_stream_url = "https://api.hubapi.com/crm/v3/objects/company/search"
     requests_mock.register_uri("POST", test_stream_url, responses)
-    requests_mock.register_uri(
-        "GET", "/properties/v2/company/properties", properties_response
-    )
+    requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
     mock_v3_properties(
         requests_mock,
         "company",
@@ -526,9 +464,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         [
             {
                 "status_code": 200,
-                "json": {
-                    "results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]
-                },
+                "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]},
             }
         ],
     )
@@ -538,9 +474,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         [
             {
                 "status_code": 200,
-                "json": {
-                    "results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]
-                },
+                "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]},
             }
         ],
     )
@@ -550,10 +484,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     # The stream should not attempt to get more than 600 records.
     # Instead, it should use the new state to start a new search query.
     assert len(output.records) == 1000
-    assert (
-        output.state_messages[1].state.stream.stream_state.updatedAt
-        == "2022-03-01T00:00:00.000000Z"
-    )
+    assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
 
 
 def test_engagements_stream_pagination_works(requests_mock, config):
@@ -571,10 +502,7 @@ def test_engagements_stream_pagination_works(requests_mock, config):
         [
             {
                 "json": {
-                    "results": [
-                        {"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}}
-                        for y in range(250)
-                    ],
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250)],
                     "hasMore": True,
                     "offset": 250,
                 },
@@ -582,10 +510,7 @@ def test_engagements_stream_pagination_works(requests_mock, config):
             },
             {
                 "json": {
-                    "results": [
-                        {"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}}
-                        for y in range(250, 500)
-                    ],
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234593251}} for y in range(250, 500)],
                     "hasMore": True,
                     "offset": 500,
                 },
@@ -593,10 +518,7 @@ def test_engagements_stream_pagination_works(requests_mock, config):
             },
             {
                 "json": {
-                    "results": [
-                        {"engagement": {"id": f"{y}", "lastUpdated": 1641234595251}}
-                        for y in range(500, 600)
-                    ],
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595251}} for y in range(500, 600)],
                     "hasMore": False,
                 },
                 "status_code": 200,
@@ -610,10 +532,7 @@ def test_engagements_stream_pagination_works(requests_mock, config):
         [
             {
                 "json": {
-                    "results": [
-                        {"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}}
-                        for y in range(100)
-                    ],
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
                     "hasMore": True,
                     "offset": 100,
                 },
@@ -621,10 +540,7 @@ def test_engagements_stream_pagination_works(requests_mock, config):
             },
             {
                 "json": {
-                    "results": [
-                        {"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}}
-                        for y in range(100, 200)
-                    ],
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100, 200)],
                     "hasMore": True,
                     "offset": 200,
                 },
@@ -632,10 +548,7 @@ def test_engagements_stream_pagination_works(requests_mock, config):
             },
             {
                 "json": {
-                    "results": [
-                        {"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}}
-                        for y in range(200, 250)
-                    ],
+                    "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(200, 250)],
                     "hasMore": False,
                 },
                 "status_code": 200,
@@ -656,9 +569,7 @@ def test_engagements_stream_pagination_works(requests_mock, config):
     assert len(records) == 100
 
 
-def test_engagements_stream_since_old_date(
-    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
-):
+def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'All Engagements' API for old dates (more than 30 days)
     """
@@ -669,10 +580,7 @@ def test_engagements_stream_since_old_date(
     responses = [
         {
             "json": {
-                "results": [
-                    {"engagement": {"id": f"{y}", "lastUpdated": recent_date}}
-                    for y in range(100)
-                ],
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
                 "total": 100,
@@ -682,9 +590,7 @@ def test_engagements_stream_since_old_date(
     ]
 
     # Mocking Request
-    requests_mock.register_uri(
-        "GET", "/engagements/v1/engagements/paged?count=250", responses
-    )
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
     state = (
         StateBuilder()
         .with_stream_state(
@@ -696,15 +602,10 @@ def test_engagements_stream_since_old_date(
     output = read_from_stream(config, "engagements", SyncMode.incremental, state)
 
     assert len(output.records) == 100
-    assert (
-        int(output.state_messages[0].state.stream.stream_state.lastUpdated)
-        == recent_date
-    )
+    assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date(
-    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
-):
+def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
     """
@@ -715,10 +616,7 @@ def test_engagements_stream_since_recent_date(
     responses = [
         {
             "json": {
-                "results": [
-                    {"engagement": {"id": f"{y}", "lastUpdated": recent_date}}
-                    for y in range(100)
-                ],
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
                 "total": 100,
@@ -726,28 +624,17 @@ def test_engagements_stream_since_recent_date(
             "status_code": 200,
         }
     ]
-    state = (
-        StateBuilder()
-        .with_stream_state("engagements", {"lastUpdated": recent_date})
-        .build()
-    )
+    state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
     # Mocking Request
-    engagement_url = (
-        f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}"
-    )
+    engagement_url = f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}"
     requests_mock.register_uri("GET", engagement_url, responses)
     output = read_from_stream(config, "engagements", SyncMode.incremental, state)
     # The stream should not attempt to get more than 10K records.
     assert len(output.records) == 100
-    assert (
-        int(output.state_messages[0].state.stream.stream_state.lastUpdated)
-        == recent_date
-    )
+    assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(
-    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
-):
+def test_engagements_stream_since_recent_date_more_than_10k(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,
@@ -760,10 +647,7 @@ def test_engagements_stream_since_recent_date_more_than_10k(
     responses = [
         {
             "json": {
-                "results": [
-                    {"engagement": {"id": f"{y}", "lastUpdated": recent_date}}
-                    for y in range(100)
-                ],
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
                 "total": 10001,
@@ -771,26 +655,15 @@ def test_engagements_stream_since_recent_date_more_than_10k(
             "status_code": 200,
         }
     ]
-    state = (
-        StateBuilder()
-        .with_stream_state("engagements", {"lastUpdated": recent_date})
-        .build()
-    )
+    state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
     # Mocking Request
-    engagement_url = (
-        f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}"
-    )
+    engagement_url = f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}"
     requests_mock.register_uri("GET", engagement_url, responses)
-    requests_mock.register_uri(
-        "GET", "/engagements/v1/engagements/paged?count=250", responses
-    )
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
 
     output = read_from_stream(config, "engagements", SyncMode.incremental, state)
     assert len(output.records) == 100
-    assert (
-        int(output.state_messages[0].state.stream.stream_state.lastUpdated)
-        == recent_date
-    )
+    assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
 def test_pagination_marketing_emails_stream(requests_mock, config):
@@ -883,26 +756,12 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
     sample_record = records[5]
 
     # Assert that statistics fields are present in the record (from includeStats=true)
-    assert (
-        sample_record["delivered"] == 100
-    ), "Statistics 'delivered' field should be included with includeStats=true"
-    assert (
-        sample_record["opens"] == 50
-    ), "Statistics 'opens' field should be included with includeStats=true"
-    assert (
-        sample_record["clicks"] == 25
-    ), "Statistics 'clicks' field should be included with includeStats=true"
-    assert (
-        sample_record["bounces"] == 5
-    ), "Statistics 'bounces' field should be included with includeStats=true"
-    assert (
-        sample_record["optouts"] == 2
-    ), "Statistics 'optouts' field should be included with includeStats=true"
+    assert sample_record["delivered"] == 100, "Statistics 'delivered' field should be included with includeStats=true"
+    assert sample_record["opens"] == 50, "Statistics 'opens' field should be included with includeStats=true"
+    assert sample_record["clicks"] == 25, "Statistics 'clicks' field should be included with includeStats=true"
+    assert sample_record["bounces"] == 5, "Statistics 'bounces' field should be included with includeStats=true"
+    assert sample_record["optouts"] == 2, "Statistics 'optouts' field should be included with includeStats=true"
 
     # Verify that the email record also has the base email fields
-    assert (
-        "id" in sample_record
-    ), "Email 'id' field should be present from /marketing/v3/emails endpoint"
-    assert (
-        "updated" in sample_record
-    ), "Email 'updated' field should be present from /marketing/v3/emails endpoint"
+    assert "id" in sample_record, "Email 'id' field should be present from /marketing/v3/emails endpoint"
+    assert "updated" in sample_record, "Email 'updated' field should be present from /marketing/v3/emails endpoint"

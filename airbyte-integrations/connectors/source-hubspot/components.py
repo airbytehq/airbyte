@@ -61,6 +61,7 @@ from airbyte_cdk.utils.datetime_helpers import (
     ab_datetime_parse,
 )
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -91,24 +92,16 @@ class NewtoLegacyFieldTransformation(RecordTransformation):
         """
         is_record = record_or_schema.get("properties") is not None
 
-        for field, value in list(
-            record_or_schema.get("properties", record_or_schema).items()
-        ):
+        for field, value in list(record_or_schema.get("properties", record_or_schema).items()):
             for legacy_field, new_field in self.field_mapping.items():
                 if new_field in field:
                     transformed_field = field.replace(new_field, legacy_field)
 
-                    if (
-                        legacy_field == "hs_lifecyclestage_"
-                        and not transformed_field.endswith("_date")
-                    ):
+                    if legacy_field == "hs_lifecyclestage_" and not transformed_field.endswith("_date"):
                         transformed_field += "_date"
 
                     if is_record:
-                        if (
-                            record_or_schema["properties"].get(transformed_field)
-                            is None
-                        ):
+                        if record_or_schema["properties"].get(transformed_field) is None:
                             record_or_schema["properties"][transformed_field] = value
                     else:
                         if record_or_schema.get(transformed_field) is None:
@@ -120,9 +113,7 @@ class MigrateEmptyStringState(StateMigration):
     config: Config
     cursor_format: Optional[str] = None
 
-    def __init__(
-        self, cursor_field, config: Config, cursor_format: Optional[str] = None
-    ):
+    def __init__(self, cursor_field, config: Config, cursor_format: Optional[str] = None):
         self.cursor_field = cursor_field
         self.cursor_format = cursor_format
         self.config = config
@@ -161,19 +152,12 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._field_path = [
-            InterpolatedString.create(path, parameters=parameters)
-            for path in self.field_path
-        ]
+        self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
-                self._field_path[path_index] = InterpolatedString.create(
-                    self.field_path[path_index], parameters=parameters
-                )
+                self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
-    def extract_records(
-        self, response: requests.Response
-    ) -> Iterable[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         for body in self.decoder.decode(response):
             results = []
             if len(self._field_path) == 0:
@@ -187,20 +171,13 @@ class HubspotPropertyHistoryExtractor(RecordExtractor):
             if isinstance(extracted, list):
                 results = extracted
             elif extracted:
-                raise ValueError(
-                    f"field_path should always point towards a list field in the response body for property_history streams"
-                )
+                raise ValueError(f"field_path should always point towards a list field in the response body for property_history streams")
 
             for result in results:
                 properties_with_history = result.get("propertiesWithHistory")
                 primary_key = result.get("id")
                 additional_keys = (
-                    {
-                        additional_key: result.get(additional_key)
-                        for additional_key in self.additional_keys
-                    }
-                    if self.additional_keys
-                    else {}
+                    {additional_key: result.get(additional_key) for additional_key in self.additional_keys} if self.additional_keys else {}
                 )
 
                 if properties_with_history:
@@ -238,13 +215,9 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
         additional_data_response = self.requester.send_request(
-            stream_slice=StreamSlice(
-                partition={"parent_id": record["id"]}, cursor_slice={}
-            )
+            stream_slice=StreamSlice(partition={"parent_id": record["id"]}, cursor_slice={})
         )
-        additional_data = self.record_selector.select_records(
-            response=additional_data_response, stream_state={}, records_schema={}
-        )
+        additional_data = self.record_selector.select_records(response=additional_data_response, stream_state={}, records_schema={})
 
         for data in additional_data:
             record.update(data)
@@ -275,13 +248,9 @@ class MarketingEmailStatisticsTransformation(RecordTransformation):
         try:
             # Fetch statistics for this email using the v3 statistics endpoint
             statistics_response = self.requester.send_request(
-                stream_slice=StreamSlice(
-                    partition={"email_id": record["id"]}, cursor_slice={}
-                )
+                stream_slice=StreamSlice(partition={"email_id": record["id"]}, cursor_slice={})
             )
-            statistics_data = self.record_selector.select_records(
-                response=statistics_response, stream_state={}, records_schema={}
-            )
+            statistics_data = self.record_selector.select_records(response=statistics_response, stream_state={}, records_schema={})
 
             # Merge statistics into the email record
             for stats in statistics_data:
@@ -291,9 +260,7 @@ class MarketingEmailStatisticsTransformation(RecordTransformation):
             # Log the error but don't fail the entire sync
             # This ensures that if statistics are unavailable for some emails,
             # we still get the email data
-            logger.warning(
-                f"Failed to fetch statistics for email {record.get('id', 'unknown')}: {str(e)}"
-            )
+            logger.warning(f"Failed to fetch statistics for email {record.get('id', 'unknown')}: {str(e)}")
             pass
 
 
@@ -310,15 +277,9 @@ class HubspotSchemaExtractor(RecordExtractor):
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
-    def extract_records(
-        self, response: requests.Response
-    ) -> Iterable[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         all_bodies = list(self.decoder.decode(response))
-        if (
-            len(all_bodies) == 1
-            and isinstance(all_bodies[0], dict)
-            and "results" in all_bodies[0]
-        ):
+        if len(all_bodies) == 1 and isinstance(all_bodies[0], dict) and "results" in all_bodies[0]:
             # v3 API format: single object with "results" key containing the properties list
             yield {"properties": all_bodies[0]["results"]}
         else:
@@ -462,9 +423,7 @@ class EntitySchemaNormalization(TypeTransformer):
         self.registerCustomTransform(self.get_transform_function())
 
     def get_transform_function(self):
-        def transform_function(
-            original_value: str, field_schema: Dict[str, Any]
-        ) -> Any:
+        def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
 
@@ -493,9 +452,7 @@ class EntitySchemaNormalization(TypeTransformer):
                         transformed_value = target_type(original_value.replace(",", ""))
                         return transformed_value
                     except ValueError:
-                        logger.exception(
-                            f"Could not cast field value {original_value} to {target_type}"
-                        )
+                        logger.exception(f"Could not cast field value {original_value} to {target_type}")
                         return original_value
                 if "boolean" in target_type and original_value.lower() in [
                     "true",
@@ -507,18 +464,14 @@ class EntitySchemaNormalization(TypeTransformer):
                     if field_schema.get("__ab_apply_cast_datetime") is False:
                         return original_value
                     if "date" == target_format:
-                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(
-                            original_value
-                        )
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
                         if dt:
                             transformed_value = DatetimeParser().format(dt, "%Y-%m-%d")
                             return transformed_value
                         else:
                             return original_value
                     if "date-time" == target_format:
-                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(
-                            original_value
-                        )
+                        dt = EntitySchemaNormalization.convert_datetime_string_to_ab_datetime(original_value)
                         if dt:
                             transformed_value = ab_datetime_format(dt)
                             return transformed_value
@@ -527,13 +480,9 @@ class EntitySchemaNormalization(TypeTransformer):
             if "properties" in field_schema and isinstance(original_value, dict):
                 normalized_nested_properties = dict()
                 for nested_key, nested_val in original_value.items():
-                    nested_property_schema = field_schema.get("properties").get(
-                        nested_key
-                    )
+                    nested_property_schema = field_schema.get("properties").get(nested_key)
                     if nested_property_schema:
-                        normalized_nested_properties[nested_key] = transform_function(
-                            nested_val, nested_property_schema
-                        )
+                        normalized_nested_properties[nested_key] = transform_function(nested_val, nested_property_schema)
                     else:
                         normalized_nested_properties[nested_key] = nested_val
                 return normalized_nested_properties
@@ -572,9 +521,7 @@ class EntitySchemaNormalization(TypeTransformer):
         try:
             return ab_datetime_parse(int(datetime_str) // 1000)
         except (ValueError, TypeError, OverflowError) as ex:
-            logger.warning(
-                f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}"
-            )
+            logger.warning(f"Couldn't parse date/datetime string field. Timestamp field value: {datetime_str}. Ex: {ex}")
 
         return None
 
@@ -610,9 +557,7 @@ class HubspotFlattenAssociationsTransformation(RecordTransformation):
         if "associations" in record:
             associations = record.pop("associations")
             for name, association in associations.items():
-                record[name.replace(" ", "_")] = [
-                    row["id"] for row in association.get("results", [])
-                ]
+                record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
 
 
 @dataclass
@@ -638,15 +583,10 @@ class HubspotAssociationsExtractor(RecordExtractor):
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._field_path = [
-            InterpolatedString.create(path, parameters=parameters)
-            for path in self.field_path
-        ]
+        self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
         for path_index in range(len(self.field_path)):
             if isinstance(self.field_path[path_index], str):
-                self._field_path[path_index] = InterpolatedString.create(
-                    self.field_path[path_index], parameters=parameters
-                )
+                self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
         self._entity = InterpolatedString.create(self.entity, parameters=parameters)
 
@@ -654,9 +594,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
         if isinstance(self.associations_list, list):
             self._associations_list = self.associations_list
         else:
-            self._associations_list = InterpolatedString.create(
-                self.associations_list, parameters=parameters
-            )
+            self._associations_list = InterpolatedString.create(self.associations_list, parameters=parameters)
 
         self._associations_retriever = build_associations_retriever(
             associations_list=self._associations_list,
@@ -664,9 +602,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
             config=self.config,
         )
 
-    def extract_records(
-        self, response: requests.Response
-    ) -> Iterable[Mapping[str, Any]]:
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
         for body in self.decoder.decode(response):
             if len(self._field_path) == 0:
                 extracted = body
@@ -679,9 +615,7 @@ class HubspotAssociationsExtractor(RecordExtractor):
             if isinstance(extracted, list):
                 records = extracted
             elif extracted:
-                raise ValueError(
-                    f"field_path should always point towards a list field in the response body"
-                )
+                raise ValueError(f"field_path should always point towards a list field in the response body")
 
             # If no records were extracted, no need to call the associations retriever
             if not records:
@@ -699,23 +633,15 @@ class HubspotAssociationsExtractor(RecordExtractor):
                     partition=_slice.partition,
                     extra_fields={"record_ids": record_ids},
                 )
-                logger.debug(
-                    f"Reading {_slice} associations of {self._entity.eval(config=self.config)}"
-                )
-                associations = self._associations_retriever.read_records(
-                    {}, stream_slice=stream_slice
-                )
+                logger.debug(f"Reading {_slice} associations of {self._entity.eval(config=self.config)}")
+                associations = self._associations_retriever.read_records({}, stream_slice=stream_slice)
                 for group in associations:
                     slice_value = stream_slice["association_name"]
                     current_record = records_by_pk[group["from"]["id"]]
                     associations_list = current_record.get(slice_value, [])
-                    associations_list.extend(
-                        association["toObjectId"] for association in group["to"]
-                    )
+                    associations_list.extend(association["toObjectId"] for association in group["to"])
                     # Associations are defined in the schema as string ids but come in the API response as integer ids
-                    current_record[slice_value] = [
-                        str(association) for association in associations_list
-                    ]
+                    current_record[slice_value] = [str(association) for association in associations_list]
             yield from records_by_pk.values()
 
 
@@ -763,12 +689,8 @@ def build_associations_retriever(
         config=config,
         parameters=parameters,
         client_id=config.get("credentials", {}).get("client_id", "client_id"),
-        client_secret=config.get("credentials", {}).get(
-            "client_secret", "client_secret"
-        ),
-        refresh_token=config.get("credentials", {}).get(
-            "refresh_token", "refresh_token"
-        ),
+        client_secret=config.get("credentials", {}).get("client_secret", "client_secret"),
+        refresh_token=config.get("credentials", {}).get("refresh_token", "refresh_token"),
         token_refresh_endpoint="https://api.hubapi.com/oauth/v1/token",
     )
 
@@ -784,22 +706,17 @@ def build_associations_retriever(
     requester = HttpRequester(
         name="associations",
         url_base="https://api.hubapi.com",
-        path=f"/crm/v4/associations/{evaluated_entity}/"
-        + "{{ stream_partition['association_name'] }}/batch/read",
+        path=f"/crm/v4/associations/{evaluated_entity}/" + "{{ stream_partition['association_name'] }}/batch/read",
         http_method="POST",
         authenticator=authenticator,
         request_options_provider=InterpolatedRequestOptionsProvider(
-            request_body_json={
-                "inputs": "{{ stream_slice.extra_fields['record_ids'] }}"
-            },
+            request_body_json={"inputs": "{{ stream_slice.extra_fields['record_ids'] }}"},
             config=config,
             parameters=parameters,
         ),
         error_handler=DefaultErrorHandler(
             backoff_strategies=[
-                WaitTimeFromHeaderBackoffStrategy(
-                    header="Retry-After", config=config, parameters=parameters
-                ),
+                WaitTimeFromHeaderBackoffStrategy(header="Retry-After", config=config, parameters=parameters),
                 ExponentialBackoffStrategy(config=config, parameters=parameters),
             ],
             response_filters=[
@@ -862,9 +779,7 @@ def build_associations_retriever(
     )
 
     selector = RecordSelector(
-        extractor=DpathExtractor(
-            field_path=["results"], config=config, parameters=parameters
-        ),
+        extractor=DpathExtractor(field_path=["results"], config=config, parameters=parameters),
         schema_normalization=TypeTransformer(TransformConfig.NoTransform),
         record_filter=None,
         transformations=[],
@@ -911,19 +826,11 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
         # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
         # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
         # start a new search query with the latest id that has been collected.
-        if (
-            last_page_token_value
-            and last_page_token_value.get("after", 0) + last_page_size
-            >= self.RECORDS_LIMIT
-        ):
+        if last_page_token_value and last_page_token_value.get("after", 0) + last_page_size >= self.RECORDS_LIMIT:
             return {"after": 0, "id": int(last_record[self.primary_key]) + 1}
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
-        if (
-            (last_page_size < self.page_size)
-            or last_page_size == 0
-            or not response.json().get("paging")
-        ):
+        if (last_page_size < self.page_size) or last_page_size == 0 or not response.json().get("paging"):
             return None
 
         last_id_of_previous_chunk = last_page_token_value.get("id")
@@ -952,16 +859,12 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        raw_schema_properties: List[Mapping[str, Any]] = parameters.get(
-            "schema_properties", {}
-        )
+        raw_schema_properties: List[Mapping[str, Any]] = parameters.get("schema_properties", {})
         properties = self._get_properties(raw_schema=raw_schema_properties)
         self._schema = self._generate_schema(properties)
 
     def _get_properties(self, raw_schema: List[Mapping[str, Any]]) -> Mapping[str, Any]:
-        return {
-            field["name"]: self._field_to_property_schema(field) for field in raw_schema
-        }
+        return {field["name"]: self._field_to_property_schema(field) for field in raw_schema}
 
     def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
         field_type = field["type"]
@@ -983,16 +886,11 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
         elif field_type == "boolean" or field_type == "bool":
             return {"type": ["null", "boolean"]}
         else:
-            logger.warn(
-                f"Field {field['name']} has unrecognized type: {field['type']} casting to string."
-            )
+            logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
             return {"type": ["null", "string"]}
 
     def _generate_schema(self, properties: Mapping[str, Any]) -> Mapping[str, Any]:
-        unnested_properties = {
-            f"properties_{property_name}": property_value
-            for (property_name, property_value) in properties.items()
-        }
+        unnested_properties = {f"properties_{property_name}": property_value for (property_name, property_value) in properties.items()}
         schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
