@@ -16,7 +16,8 @@ To set up the Iterable source connector, you need:
 4. Enter the name for the Iterable connector.
 5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
 6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. Click **Set up source**.
+7. (Optional) For **Lookback Window (Minutes)**, enter the number of minutes to subtract from the current time when determining the end of each sync window for export-based streams. The default is `5`. This accounts for [eventual consistency](https://support.iterable.com/hc/en-us/articles/41044692130196-Getting-Started-with-Iterable-s-API) delays in Iterable's Export API. Increase this value if you observe missing events near the end of sync windows. Set to `0` to disable the lookback window.
+8. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -27,7 +28,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Campaigns](https://api.iterable.com/api/docs#campaigns_campaigns)
 - [Campaign Metrics](https://api.iterable.com/api/docs#campaigns_metrics)
@@ -76,6 +77,14 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 ## Performance and data retrieval
 
+### Lookback window
+
+Iterable's Export API has eventual consistency behavior — recently created events may not appear in export results for several minutes after creation. To prevent silent data loss, the connector subtracts a configurable lookback window (default: 5 minutes) from the current time when determining the end of each sync window. Events within the lookback window are deferred to the next sync rather than being permanently skipped.
+
+This affects all export-based incremental streams (Email, Push, SMS, In-App, Web Push, Inbox, Templates, Purchase, CustomEvent, and HostedUnsubscribeClick). It does not affect full-refresh streams (Campaigns, Channels, Lists, Metadata, Message Types) or the Campaign Metrics and Users streams.
+
+If you use append-dedup sync mode, any overlap caused by the lookback window is handled automatically through deduplication.
+
 ### Incremental sync behavior
 
 Streams that support incremental sync use the following approaches:
@@ -98,7 +107,7 @@ The connector implements retry logic with exponential backoff for rate limiting 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
-| 0.6.54 | 2026-03-03 | [74256](https://github.com/airbytehq/airbyte/pull/74256) | Filter duplicate records in export streams during incremental syncs |
+| 0.6.54 | 2026-03-04 | [74256](https://github.com/airbytehq/airbyte/pull/74256) | Filter duplicate records in export streams during incremental syncs |
 | 0.6.53 | 2025-10-21 | [68545](https://github.com/airbytehq/airbyte/pull/68545) | Update dependencies |
 | 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
