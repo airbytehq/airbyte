@@ -2193,6 +2193,90 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tags"
+    tagged_objects:
+      type: DeclarativeStream
+      name: tagged_objects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v5/objects/tagged-objects
+          http_method: GET
+          request_parameters:
+            limit: >-
+              {{ 1000 if (not next_page_token.next_page_token or
+              'createdAtAfter' in next_page_token.next_page_token) }}
+            fields: id,tagId,objectType,objectId,objectName,createdAt,createdById
+            orderBy: >-
+              {{ 'createdAt ASC' if (not next_page_token.next_page_token or
+              'createdAtAfter' in next_page_token.next_page_token) }}
+            createdAtAfter: >-
+              {{ stream_interval.start_time if stream_interval.start_time and
+              not next_page_token.next_page_token else
+              (next_page_token.next_page_token|regex_search('createdAtAfter=([^&]+)')
+              if 'createdAtAfter' in next_page_token.next_page_token) }}
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config.pardot_business_unit_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 12
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 7200
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Daily API rate limit met
+                    error_message_contains: Daily API rate limit met
+              - type: DefaultErrorHandler
+                max_retries: 10
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 3
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - values
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
+              else ('v5/objects/tagged-objects?createdAtAfter=' ~
+              last_record.createdAt if last_record.createdAt is not none) }}
+            stop_condition: >-
+              {{ not response['values'] or response['values']|length <
+              1000 }}
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S-12:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tagged_objects"
     tracker_domains:
       type: DeclarativeStream
       name: tracker_domains
@@ -2687,6 +2771,7 @@ streams:
   - $ref: "#/definitions/streams/list_emails"
   - $ref: "#/definitions/streams/opportunities"
   - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/tagged_objects"
   - $ref: "#/definitions/streams/tracker_domains"
   - $ref: "#/definitions/streams/visitor_page_views"
   - $ref: "#/definitions/streams/account"
@@ -2795,6 +2880,7 @@ metadata:
     list_emails: false
     opportunities: false
     tags: false
+    tagged_objects: false
     tracker_domains: false
     visitor_page_views: false
     account: false
@@ -5278,6 +5364,41 @@ schemas:
     required:
       - id
       - updatedAt
+  tagged_objects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      createdById:
+        type:
+          - integer
+          - "null"
+      id:
+        type: integer
+      objectId:
+        type:
+          - integer
+          - "null"
+      objectName:
+        type:
+          - string
+          - "null"
+      objectType:
+        type:
+          - string
+          - "null"
+      tagId:
+        type:
+          - integer
+          - "null"
+    required:
+      - id
+      - createdAt
   tracker_domains:
     type: object
     $schema: http://json-schema.org/schema#
