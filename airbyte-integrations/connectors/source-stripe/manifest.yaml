@@ -228,6 +228,55 @@ definitions:
           - object
         replace_record: true
 
+  hydrated_events_based_stream:
+    $ref: "#/definitions/base_stream"
+    primary_key:
+      - id
+    incremental_sync:
+      $ref: "#/definitions/events_read_slice_cursor"
+    retriever:
+      $ref: "#/definitions/events_objects_retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - data
+              - object
+              - is_deleted
+            value: "{{ True }}"
+        condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
+      - type: AddFields
+        fields:
+          - path:
+              - data
+              - object
+              - updated
+            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value_type: integer
+        condition: "{{ record.get('data', {}).get('object', False) }}"
+      - type: DpathFlattenFields
+        field_path:
+          - data
+          - object
+        replace_record: true
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.RefreshRecordFromDetailEndpoint
+        requester:
+          $ref: "#/definitions/base_requester"
+          $parameters:
+            name: "{{ parameters.name }}_detail_requester"
+          path: "{{ stream_slice['detail_path'] }}"
+          request_parameters: "{{ stream_slice.get('detail_request_parameters', {}) }}"
+        record_selector:
+          type: RecordSelector
+          $parameters:
+            name: "{{ parameters.name }}_detail_record_selector"
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        detail_path: "{{ parameters.detail_path }}"
+        detail_request_parameters: "{{ parameters.detail_request_parameters or {} }}"
+
   events_objects_retriever:
     type: SimpleRetriever
     requester:
@@ -333,7 +382,9 @@ definitions:
           schema:
             $ref: "#/schemas/customers"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "customers/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -364,7 +415,9 @@ definitions:
           schema:
             $ref: "#/schemas/subscriptions"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "subscriptions/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -395,7 +448,11 @@ definitions:
           schema:
             $ref: "#/schemas/invoices"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "invoices/{{ stream_slice['id'] }}"
+          detail_request_parameters:
+            expand[]: '{{["discounts", "total_tax_amounts.tax_rate"]}}'
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -422,7 +479,9 @@ definitions:
           schema:
             $ref: "#/schemas/transfers"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "transfers/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -449,7 +508,9 @@ definitions:
           schema:
             $ref: "#/schemas/refunds"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "refunds/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -476,7 +537,9 @@ definitions:
           schema:
             $ref: "#/schemas/authorizations"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "issuing/authorizations/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -503,7 +566,9 @@ definitions:
           schema:
             $ref: "#/schemas/cardholders"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "issuing/cardholders/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -534,7 +599,11 @@ definitions:
           schema:
             $ref: "#/schemas/charges"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "charges/{{ stream_slice['id'] }}"
+          detail_request_parameters:
+            expand[]: '{{["refunds"]}}'
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -561,7 +630,9 @@ definitions:
           schema:
             $ref: "#/schemas/coupons"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "coupons/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -588,7 +659,9 @@ definitions:
           schema:
             $ref: "#/schemas/disputes"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "disputes/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -615,7 +688,9 @@ definitions:
           schema:
             $ref: "#/schemas/application_fees"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "application_fees/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -642,7 +717,9 @@ definitions:
           schema:
             $ref: "#/schemas/invoice_items"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "invoiceitems/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -669,7 +746,9 @@ definitions:
           schema:
             $ref: "#/schemas/payouts"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "payouts/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -700,7 +779,11 @@ definitions:
           schema:
             $ref: "#/schemas/plans"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "plans/{{ stream_slice['id'] }}"
+          detail_request_parameters:
+            expand[]: '{{["tiers"]}}'
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -727,7 +810,9 @@ definitions:
           schema:
             $ref: "#/schemas/prices"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "prices/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -754,7 +839,9 @@ definitions:
           schema:
             $ref: "#/schemas/products"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "products/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -781,7 +868,9 @@ definitions:
           schema:
             $ref: "#/schemas/reviews"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "reviews/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -808,7 +897,9 @@ definitions:
           schema:
             $ref: "#/schemas/subscription_schedule"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "subscription_schedules/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -835,7 +926,9 @@ definitions:
           schema:
             $ref: "#/schemas/payment_intents"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "payment_intents/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -862,7 +955,9 @@ definitions:
           schema:
             $ref: "#/schemas/promotion_codes"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "promotion_codes/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -889,7 +984,9 @@ definitions:
           schema:
             $ref: "#/schemas/setup_intents"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "setup_intents/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -916,7 +1013,9 @@ definitions:
           schema:
             $ref: "#/schemas/cards"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "issuing/cards/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -943,7 +1042,9 @@ definitions:
           schema:
             $ref: "#/schemas/transactions"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "issuing/transactions/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -970,7 +1071,9 @@ definitions:
           schema:
             $ref: "#/schemas/top_ups"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "topups/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -1024,7 +1127,9 @@ definitions:
           schema:
             $ref: "#/schemas/checkout_sessions"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "checkout/sessions/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -1055,7 +1160,9 @@ definitions:
           schema:
             $ref: "#/schemas/external_account_cards"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "accounts/{{ stream_slice.get('account', config['account_id']) }}/external_accounts/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -1088,7 +1195,9 @@ definitions:
           schema:
             $ref: "#/schemas/external_account_bank_accounts"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "accounts/{{ stream_slice.get('account', config['account_id']) }}/external_accounts/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -1117,7 +1226,9 @@ definitions:
           schema:
             $ref: "#/schemas/credit_notes"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "credit_notes/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -1144,7 +1255,9 @@ definitions:
           schema:
             $ref: "#/schemas/early_fraud_warnings"
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "radar/early_fraud_warnings/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
@@ -1344,8 +1457,10 @@ definitions:
           $ref: "#/definitions/entity_single_slice_cursor"
           global_substream_cursor: true
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
         name: payment_methods
+        $parameters:
+          detail_path: "payment_methods/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           requester:
@@ -1383,7 +1498,9 @@ definitions:
           $ref: "#/definitions/entity_single_slice_cursor"
           global_substream_cursor: true
       incremental_stream:
-        $ref: "#/definitions/events_based_stream"
+        $ref: "#/definitions/hydrated_events_based_stream"
+        $parameters:
+          detail_path: "accounts/{{ stream_slice['account'] }}/persons/{{ stream_slice['id'] }}"
         retriever:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
