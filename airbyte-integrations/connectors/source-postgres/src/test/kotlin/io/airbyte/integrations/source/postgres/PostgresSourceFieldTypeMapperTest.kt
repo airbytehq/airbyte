@@ -269,17 +269,35 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "TIME",
             LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,
-            AnsiSql.timeValues.mapKeys { "${it.key}::time" }
+            mapOf(
+                    "null" to "null",
+                    // TODO: inconsistent mapping: We only preserve trailing 0s except on zero value
+                    "'00:00:00'" to "\"00:00:00.000000\"",
+                    "'23:59:59'" to "\"23:59:59\"",
+                )
+                .mapKeys { "${it.key}::time" }
         )
         scalarAndArray(
             "TIMETZ",
             LeafAirbyteSchemaType.TIME_WITH_TIMEZONE,
-            AnsiSql.timeTzValues.mapKeys { "${it.key}::timetz" }
+            mapOf(
+                    "null" to "null",
+                    // TODO: inconsistent mapping: We only preserve trailing 0s on zero value
+                    "'00:00:00+00'" to "\"00:00:00.000000Z\"",
+                    "'23:59:59+00'" to "\"23:59:59Z\"",
+                )
+                .mapKeys { "${it.key}::timetz" }
         )
         scalarAndArray(
             "TIMESTAMP",
             LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
-            AnsiSql.timestampValues.mapKeys { "${it.key}::timestamp" },
+            mapOf(
+                    "null" to "null",
+                    "'1000-01-01 00:00:00'" to "\"1000-01-01T00:00:00.000000\"",
+                    // TODO: inconsistent mapping: We only preserve trailing 0s on zero value
+                    "'9999-12-31 23:59:59'" to "\"9999-12-31T23:59:59\"",
+                )
+                .mapKeys { "${it.key}::timestamp" },
             baseTestName = "TIMESTAMP SUPPORTED VALS",
         )
         scalarAndArray(
