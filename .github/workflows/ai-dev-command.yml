@@ -66,13 +66,19 @@ jobs:
 
       - name: Resolve inputs
         id: resolve
+        env:
+          INPUT_PR_NUMBER: ${{ inputs.pr }}
+          INPUT_PLAYBOOK_NAME: ${{ inputs.playbook }}
+          INPUT_ISSUE_NUMBER: ${{ inputs.issue }}
+          INPUT_COMMENT_ID: ${{ inputs.comment-id }}
         run: |
           set -euo pipefail
 
-          pr_number="${{ inputs.pr }}"
-          playbook_name="${{ inputs.playbook }}"
-          issue_number="${{ inputs.issue }}"
-          comment_id="${{ inputs.comment-id }}"
+          # Resolve from env vars (safely passed via env: to avoid script injection)
+          pr_number="$INPUT_PR_NUMBER"
+          playbook_name="$INPUT_PLAYBOOK_NAME"
+          issue_number="$INPUT_ISSUE_NUMBER"
+          comment_id="$INPUT_COMMENT_ID"
 
           if [[ -z "$pr_number" ]]; then
             echo "::error::Missing required argument: pr (ai-skills PR number)"
