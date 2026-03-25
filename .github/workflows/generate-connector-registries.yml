@@ -108,7 +108,7 @@ jobs:
             {
               "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
-              "text": "☑️ *Registry Compile SUCCESS*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
+              "text": "☑️ *Registry Compile SUCCESS*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}\nRegistry: <https://connectors.airbyte.com/files/registries/v0/oss_registry.json|OSS Registry> · <https://connectors.airbyte.com/files/registries/v0/cloud_registry.json|Cloud Registry> · <https://console.cloud.google.com/storage/browser/prod-airbyte-cloud-connector-metadata-service/registries/v0|GCS Bucket>"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
