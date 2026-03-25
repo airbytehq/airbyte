@@ -88,7 +88,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   }
 
   public ClickHouseSource(final FeatureFlags featureFlags) {
-    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, new ClickHouseSourceOperations());
     this.featureFlags = featureFlags;
   }
 
