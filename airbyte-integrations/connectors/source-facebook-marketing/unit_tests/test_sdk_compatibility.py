@@ -10,7 +10,6 @@ bumping the facebook-business SDK from v23 to v25.
 """
 
 import pytest
-
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -48,20 +47,16 @@ def test_sdk_targets_api_v25():
 )
 def test_removed_fields_not_in_sdk(field_name):
     """Verify that fields removed in v25 are no longer present in AdsInsights.Field."""
-    assert not hasattr(AdsInsights.Field, field_name), (
-        f"Field '{field_name}' was expected to be removed in SDK v25 but is still present."
-    )
+    assert not hasattr(AdsInsights.Field, field_name), f"Field '{field_name}' was expected to be removed in SDK v25 but is still present."
 
 
 def test_valid_fields_enum_excludes_removed_fields():
     """Verify that the connector's ValidFields enum correctly excludes _REMOVED_FIELDS."""
-    from source_facebook_marketing.spec import ValidFields, _REMOVED_FIELDS
+    from source_facebook_marketing.spec import _REMOVED_FIELDS, ValidFields
 
     valid_field_names = {member.name for member in ValidFields}
     for removed in _REMOVED_FIELDS:
-        assert removed not in valid_field_names, (
-            f"Removed field '{removed}' should not appear in ValidFields enum."
-        )
+        assert removed not in valid_field_names, f"Removed field '{removed}' should not appear in ValidFields enum."
 
 
 def test_valid_fields_enum_contains_expected_fields():
@@ -71,9 +66,7 @@ def test_valid_fields_enum_contains_expected_fields():
     expected_fields = ["impressions", "clicks", "spend", "reach", "account_id", "campaign_id"]
     valid_field_names = {member.name for member in ValidFields}
     for field in expected_fields:
-        assert field in valid_field_names, (
-            f"Expected field '{field}' is missing from ValidFields enum."
-        )
+        assert field in valid_field_names, f"Expected field '{field}' is missing from ValidFields enum."
 
 
 def test_valid_breakdowns_enum_loads():
@@ -108,16 +101,12 @@ def test_status_enums_load():
 
 def test_cursor_monkey_patch_applies():
     """Verify that the CursorPatch monkey-patch still works with SDK v25."""
-    from facebook_business import api
-
-    from source_facebook_marketing.streams.patches import CursorPatch
-
     # Import the connector module which applies the monkey-patch
     import source_facebook_marketing  # noqa: F401
+    from facebook_business import api
+    from source_facebook_marketing.streams.patches import CursorPatch
 
-    assert api.Cursor is CursorPatch, (
-        "Monkey-patch failed: api.Cursor should be CursorPatch after importing source_facebook_marketing."
-    )
+    assert api.Cursor is CursorPatch, "Monkey-patch failed: api.Cursor should be CursorPatch after importing source_facebook_marketing."
 
 
 def test_key_sdk_imports():
