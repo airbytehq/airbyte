@@ -53,6 +53,25 @@ For more information about MongoDB's document size limits, see the [MongoDB docu
 - Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of the documents to collect all distinct top-level fields. This value is universally applied to all collections discovered in the target database. The approach is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency. By default, 10,000 documents are sampled. This value can be increased up to 100,000 documents to increase the likelihood that all fields will be discovered. However, the trade-off is time, as a higher value will take the process longer to sample the collection.
 - When Running with Schema Enforced set to `false` there is no attempt to discover any schema. See more in [Schema Enforcement](#Schema-Enforcement).
 
+#### Schema discovery performance
+
+Schema discovery runs an aggregation pipeline on every collection in the configured database **in parallel**. Each pipeline samples documents using MongoDB's `$sample` stage, then uses `$objectToArray`, `$unwind`, and `$group` to extract field names and types. The pipeline enables `allowDiskUse`, which permits MongoDB to write temporary data to disk on your database server.
+
+This design can place significant load on your MongoDB cluster for two reasons:
+
+1. **`$sample` can trigger full collection scans.** MongoDB uses an efficient pseudo-random cursor for `$sample` only when all of these conditions are met: `$sample` is the first pipeline stage, the sample size is less than 5% of the collection's total documents, and the collection contains more than 100 documents. When any condition is not met, MongoDB falls back to reading and randomly sorting the entire collection. With the default sample size of 10,000, any collection with fewer than 200,000 documents triggers this fallback.
+2. **All collections are sampled concurrently.** The connector discovers all collections in parallel with no concurrency limit. On a database with many collections, this means dozens of heavy aggregation pipelines can hit the cluster simultaneously.
+
+If your cluster experiences degraded performance or instability during schema discovery, try the following mitigations:
+
+| Mitigation | How to configure | Effect |
+| --- | --- | --- |
+| Lower the sample size | Set **Discovery Sample Size** to 1,000 in advanced connector settings | Fewer documents scanned per collection. Also increases the chance that `$sample` uses the efficient pseudo-random cursor. |
+| Disable schema enforcement | Set **Schema Enforced** to `false` in connector settings | Samples only 1 document per collection instead of 10,000. |
+| Direct reads to a secondary | Add `readPreference=secondary` and optionally a [tag set](https://www.mongodb.com/docs/manual/core/read-preference-mechanics/) to your connection string | Isolates discovery I/O from the primary node. |
+| Schedule discovery off-peak | Run initial connection setup or schema refreshes during low-traffic periods | Avoids compounding discovery load with production traffic. |
+| Set a discovery timeout | Set **Document discovery timeout** in advanced connector settings | Limits how long each collection's discovery pipeline can run before it is cancelled. Default is 600 seconds. |
+
 ### Vendor-Specific Connector Limitations
 
 :::warning
