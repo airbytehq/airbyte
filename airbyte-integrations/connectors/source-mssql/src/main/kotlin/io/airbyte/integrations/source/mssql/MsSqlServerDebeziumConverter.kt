@@ -41,17 +41,59 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         private const val MSSQL_XML_TYPE = "XML"
         private const val MSSQL_HIERARCHYID_TYPE = "HIERARCHYID"
         private const val MSSQL_SQL_VARIANT_TYPE = "SQL_VARIANT"
+
+        /**
+         * Debezium property key prefix for passing alias type mappings.
+         * The mapping is serialized as a comma-separated list of alias=baseType pairs.
+         */
+        const val ALIAS_TYPE_MAPPING_PROPERTY = "alias.type.mapping"
     }
 
+    /**
+     * Mapping of user-defined alias type names (uppercased) to their base system type names
+     * (uppercased). Populated from Debezium properties during [configure].
+     */
+    private var aliasTypeMapping: Map<String, String> = emptyMap()
+
     override fun configure(properties: Properties) {
-        // No configuration needed
+        val mappingStr = properties.getProperty(ALIAS_TYPE_MAPPING_PROPERTY)
+        if (!mappingStr.isNullOrBlank()) {
+            aliasTypeMapping = mappingStr.split(",")
+                .mapNotNull { entry ->
+                    val parts = entry.split("=", limit = 2)
+                    if (parts.size == 2) parts[0].trim().uppercase() to parts[1].trim().uppercase()
+                    else null
+                }
+                .toMap()
+            if (aliasTypeMapping.isNotEmpty()) {
+                logger.info(
+                    "Loaded {} alias type mapping(s) for CDC conversion: {}",
+                    aliasTypeMapping.size,
+                    aliasTypeMapping
+                )
+            }
+        }
+    }
+
+    /**
+     * Resolves a type name to its base system type name if it is a user-defined alias.
+     */
+    private fun resolveTypeName(typeName: String): String {
+        return aliasTypeMapping[typeName] ?: typeName
     }
 
     override fun converterFor(
         field: RelationalColumn,
         registration: CustomConverter.ConverterRegistration<SchemaBuilder>
     ) {
-        val typeName = field.typeName().uppercase()
+        val rawTypeName = field.typeName().uppercase()
+        val typeName = resolveTypeName(rawTypeName)
+        if (typeName != rawTypeName) {
+            logger.info(
+                "Resolved alias type '{}' to base type '{}' for column '{}'",
+                rawTypeName, typeName, field.name()
+            )
+        }
 
         when (typeName) {
             MSSQL_DATE_TYPE -> {
