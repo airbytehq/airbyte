@@ -49,6 +49,6 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                       | Subject                                            |
 | :------ | :--------- | :------------------------------------------------- | :------------------------------------------------- |
-| 0.1.0   | 2025-09-09 | [TBA](https://github.com/airbytehq/airbyte/pull/#) | Initial release of Discourse connector for Airbyte |
+| 0.1.0   | 2025-09-09 | [#31](https://github.com/canonical/airbyte/pull/#31) | Initial release of Discourse connector for Airbyte |
 
 </details>
