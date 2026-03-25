@@ -16,7 +16,16 @@ on:
         description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
         required: false
         type: string
+      pr:
+        description: "Associated pull request number, for linking in notifications."
+        required: false
+        type: string
   workflow_call:
+    inputs:
+      pr:
+        description: "Associated pull request number, for linking in notifications."
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -50,6 +59,7 @@ jobs:
         run: uv tool install airbyte-internal-ops
 
       - name: Compile Registries
+        id: compile-registries
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
@@ -62,3 +72,45 @@ jobs:
           --with-legacy-migration v1
           ${FORCE_FLAG}
           ${CONNECTOR_NAME_FLAG}
+
+      - name: Build notification context
+        id: notification-context
+        if: always()
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          PR_NUMBER="${{ inputs.pr }}"
+
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
+            echo "pr-text=\nPR: <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>" >> $GITHUB_OUTPUT
+          else
+            echo "pr-text=" >> $GITHUB_OUTPUT
+          fi
+
+          echo "run-url=${RUN_URL}" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack on Registry Compile Success
+        if: steps.compile-registries.outcome == 'success'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "✅ *Registry Compile SUCCESS*\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
+      - name: Notify Slack on Registry Compile Failure
+        if: always() && steps.compile-registries.outcome == 'failure'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "❌ *Registry Compile FAILED*\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
