@@ -20,9 +20,8 @@ import org.junit.jupiter.api.Test
 
 /**
  * Verifies that the Postgres-specific field type set() methods use typed JDBC setters
- * (setTimestamp, setDate) instead of setString. Using setString causes PostgreSQL to
- * reject cursor comparisons with:
- *   "operator does not exist: timestamp without time zone >= character varying"
+ * (setTimestamp, setDate) instead of setString. Using setString causes PostgreSQL to reject cursor
+ * comparisons with: "operator does not exist: timestamp without time zone >= character varying"
  */
 class PostgresDateTimeAccessorSetTest {
 
