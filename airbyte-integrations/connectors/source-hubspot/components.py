@@ -67,7 +67,7 @@ class HubspotErrorHandler(DefaultErrorHandler):
             return ErrorResolution(
                 response_action=ResponseAction.FAIL,
                 failure_type=FailureType.config_error,
-                error_message="Private App access token is invalid or expired.",
+                error_message="Please, update you Private App access token. Current token is invalid or expired.",
             )
 
         return super().interpret_response(response_or_exception)

@@ -663,7 +663,7 @@ def test_crm_search_pagination_strategy(
             401,
             ResponseAction.FAIL,
             FailureType.config_error,
-            "Private App access token is invalid or expired.",
+            "Please, update you Private App access token. Current token is invalid or expired.",
             id="pat_401_fails_immediately",
         ),
         pytest.param(
