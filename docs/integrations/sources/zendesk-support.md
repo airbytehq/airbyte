@@ -141,7 +141,8 @@ The Zendesk Support source connector supports the following streams:
 - [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Incremental\)
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) \(Incremental\)
+- [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/deleted_tickets/#list-deleted-tickets) \(Full Refresh\)
 - [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
@@ -165,10 +166,14 @@ The Zendesk Support connector fetches deleted records in the following streams:
 | Stream                   | Deletion indicator field |
 | :----------------------- | :----------------------- |
 | **Brands**               | `is_deleted`             |
+| **Deleted Tickets**      | All records are deleted  |
 | **Groups**               | `deleted`                |
 | **Organizations**        | `deleted_at`             |
 | **Ticket Metric Events** | `deleted`                |
-| **Tickets**              | `status`==`deleted`      |
+
+:::note
+As of version 5.2.0, the `tickets` stream no longer includes deleted tickets. Use the `deleted_tickets` stream instead. See the [migration guide](zendesk-support-migrations.md#upgrading-to-520) for details.
+:::
 
 ## Limitations & Troubleshooting
 
@@ -192,11 +197,15 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 
 The connector's **Number of concurrent workers** setting (default: 3) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The connector includes a built-in API budget that automatically throttles requests to stay within this limit.
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The `tickets` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
 The connector should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+
+#### Search index delay
+
+The `tickets` stream uses Zendesk's [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint. Zendesk's search index can take up to a few minutes to reflect newly created or updated tickets. During incremental syncs, this delay does not cause data loss because the connector's cursor ensures that records are picked up on the next sync.
 
 ### Troubleshooting
 
@@ -211,7 +220,9 @@ The connector should not run into Zendesk API limitations under normal usage. [C
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-03-10 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | Switch `tickets` stream to Export Search Results endpoint for concurrency and performance. **Breaking**: deleted tickets are no longer returned in the `tickets` stream — use the new `deleted_tickets` stream instead. Added `deleted_tickets` as a suggested stream for auto-enablement on Cloud. |
+| 5.2.2 | 2026-03-23 | [74993](https://github.com/airbytehq/airbyte/pull/74993) | Switch ticket_metric_events to time-based pagination to prevent heartbeat timeout on large datasets |
+| 5.2.1 | 2026-03-17 | [74394](https://github.com/airbytehq/airbyte/pull/74394) | Migrate to scopes object array format |
+| 5.2.0 | 2026-03-12 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | Switch `tickets` stream to Export Search Results endpoint for concurrency and performance. **Behavior change**: deleted tickets are no longer returned in the `tickets` stream — use the new `deleted_tickets` stream instead. Added `deleted_tickets` as a suggested stream for auto-enablement on Cloud. |
 | 5.1.8 | 2026-03-12 | [74771](https://github.com/airbytehq/airbyte/pull/74771) | Upgrade CDK to 7.13.0 |
 | 5.1.7 | 2026-03-12 | [74766](https://github.com/airbytehq/airbyte/pull/74766) | Promoting release candidate 5.1.7-rc.1 to a main version. |
 | 5.1.7-rc.1 | 2026-03-10 | [74398](https://github.com/airbytehq/airbyte/pull/74398) | Pin CDK to 7.8.1.post54 for regression testing of StateDelegatingStream and DeclarativeStream |
