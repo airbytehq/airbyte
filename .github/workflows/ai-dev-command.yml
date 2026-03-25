@@ -1,11 +1,11 @@
 name: AI Dev Playbook Command
 
 # Runs a dev version of an ai-skills playbook against an issue in this repo.
-# Triggered via slash command: /ai-dev pr=<PR_NUMBER> playbook=<PLAYBOOK_NAME>
+# Triggered via slash command: /ai-dev skills-pr=<PR_NUMBER> playbook=<PLAYBOOK_NAME>
 #
 # Examples:
-#   /ai-dev pr=42 playbook=issue_triage
-#   /ai-dev pr=42 playbook=issue_fix
+#   /ai-dev skills-pr=42 playbook=issue_triage
+#   /ai-dev skills-pr=42 playbook=issue_fix
 #
 # The dev playbook must already exist in the Devin API (created by the
 # dev-playbooks.yml workflow in airbytehq/ai-skills when a PR is opened).
@@ -17,8 +17,8 @@ on:
         description: "Issue number to test against"
         type: number
         required: false
-      pr:
-        description: "ai-skills PR number with the dev playbook"
+      skills-pr:
+        description: "ai-skills PR number with the dev playbook (named skills-pr to avoid collision with the pr static-arg)"
         type: number
         required: true
       playbook:
@@ -36,7 +36,7 @@ on:
         description: "Git ref (passed by slash command dispatcher)"
         required: false
 
-run-name: "AI Dev Playbook: !${{ github.event.inputs.playbook }}__dev-${{ github.event.inputs.pr }}"
+run-name: "AI Dev Playbook: !${{ github.event.inputs.playbook }}__dev-${{ github.event.inputs.skills-pr }}"
 
 permissions:
   contents: read
@@ -67,7 +67,7 @@ jobs:
       - name: Resolve inputs
         id: resolve
         env:
-          INPUT_PR_NUMBER: ${{ inputs.pr }}
+          INPUT_PR_NUMBER: ${{ inputs.skills-pr }}
           INPUT_PLAYBOOK_NAME: ${{ inputs.playbook }}
           INPUT_ISSUE_NUMBER: ${{ inputs.issue }}
           INPUT_COMMENT_ID: ${{ inputs.comment-id }}
