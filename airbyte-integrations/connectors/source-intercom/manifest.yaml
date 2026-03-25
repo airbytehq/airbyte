@@ -439,8 +439,10 @@ definitions:
               {"field" : "updated_at", "operator" : ">", "value" : {{
               stream_interval['start_time'] }} }, {"field" : "updated_at",
               "operator" : "=", "value" : {{ stream_interval['start_time'] }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              stream_interval['end_time'] }} } ]}
+              }]},  {"operator" : "OR", "value" : [ {"field" : "updated_at",
+              "operator" : "<", "value" : {{ stream_interval['end_time'] }}
+              }, {"field" : "updated_at", "operator" : "=", "value" : {{
+              stream_interval['end_time'] }} }]} ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
@@ -492,7 +494,6 @@ definitions:
         step: P30D
         cursor_granularity: PT1S
         lookback_window: P{{ config.get('lookback_window', 0) }}D
-        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -518,8 +519,10 @@ definitions:
               {"field" : "updated_at", "operator" : ">", "value" : {{
               stream_interval['start_time'] }} }, {"field" : "updated_at",
               "operator" : "=", "value" : {{ stream_interval['start_time'] }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              stream_interval['end_time'] }} } ]}
+              }]},  {"operator" : "OR", "value" : [ {"field" : "updated_at",
+              "operator" : "<", "value" : {{ stream_interval['end_time'] }}
+              }, {"field" : "updated_at", "operator" : "=", "value" : {{
+              stream_interval['end_time'] }} }]} ]}
           error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
@@ -570,7 +573,6 @@ definitions:
         step: P30D
         cursor_granularity: PT1S
         lookback_window: P{{ config.get('lookback_window', 0) }}D
-        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -735,8 +737,10 @@ definitions:
               {"field" : "updated_at", "operator" : ">", "value" : {{
               stream_interval['start_time'] }} }, {"field" : "updated_at",
               "operator" : "=", "value" : {{ stream_interval['start_time'] }}
-              }]},  {"field" : "updated_at", "operator" : "<", "value" :  {{
-              stream_interval['end_time'] }} } ]}
+              }]},  {"operator" : "OR", "value" : [ {"field" : "updated_at",
+              "operator" : "<", "value" : {{ stream_interval['end_time'] }}
+              }, {"field" : "updated_at", "operator" : "=", "value" : {{
+              stream_interval['end_time'] }} }]} ]}
             sort: "{\"field\": \"updated_at\", \"order\": \"ascending\"}"
           error_handler:
             type: CustomErrorHandler
