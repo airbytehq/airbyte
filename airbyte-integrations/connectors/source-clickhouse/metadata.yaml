@@ -14,7 +14,7 @@ data:
     - suite: acceptanceTests
   connectorType: source
   definitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
-  dockerImageTag: 0.4.0-rc.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-clickhouse
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
   githubIssueLabel: source-clickhouse
@@ -27,10 +27,8 @@ data:
     oss:
       enabled: true
   releases:
-    rolloutConfiguration:
-      enableProgressiveRollout: true
     breakingChanges:
-      0.4.0:
+      1.0.0:
         message: >-
           This release upgrades the ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.8.
           The 0.9.7+ driver decodes Date/Date32 columns as LocalDate without timezone adjustment.
