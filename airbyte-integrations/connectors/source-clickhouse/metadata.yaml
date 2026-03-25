@@ -37,9 +37,6 @@ data:
           Users syncing Date/Date32 columns may see changed values if their data relied on the
           previous timezone-adjusted behavior. A full refresh of affected streams is recommended.
         upgradeDeadline: "2026-04-07"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes: []
   releaseStage: alpha
   supportLevel: community
   tags:
