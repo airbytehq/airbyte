@@ -55,10 +55,6 @@ For more information about MongoDB's document size limits, see the [MongoDB docu
 
 ### Schema discovery performance impact
 
-:::warning
-Schema discovery runs heavy aggregation queries against your MongoDB cluster **in parallel across all collections**. On production clusters with many collections or large documents, this can cause significant resource pressure, including degraded query performance, replication lag, or in extreme cases, cluster instability.
-:::
-
 Because MongoDB collections are [schemaless](https://www.mongodb.com/docs/manual/data-modeling/), documents in the same collection can have different fields and data types. The connector attempts to infer a schema by sampling documents, but no sample size can guarantee a complete or stable schema. New fields can be added to documents at any time, and a schema derived from today's sample may not represent tomorrow's data. Keep this inherent limitation in mind when choosing between schema-enforced and schemaless modes.
 
 When schema enforcement is enabled, the Discover phase executes a [`$sample`](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) aggregation pipeline against every collection in each configured database. These pipelines run **concurrently** using parallel threads, one per collection. Each pipeline samples up to 10,000 documents by default, then processes them through `$project`, `$unwind`, and `$group` stages to extract field names and types.

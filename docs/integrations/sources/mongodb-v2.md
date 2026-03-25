@@ -203,6 +203,10 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 
 ### Schema discovery performance impact
 
+:::warning
+Schema discovery runs heavy aggregation queries against your MongoDB cluster **in parallel across all collections**. On production clusters with many collections or large documents, this can cause significant resource pressure, including degraded query performance, replication lag, or in extreme cases, cluster instability.
+:::
+
 Because MongoDB collections are schemaless, no sample size can guarantee a complete or stable schema — new fields can appear in documents at any time. When schema enforcement is enabled, the connector's Discover phase runs `$sample` aggregation pipelines against every collection in the configured databases **in parallel**. On clusters with many collections or large documents, these concurrent queries can cause significant resource pressure on your MongoDB deployment, including degraded performance or cluster instability.
 
 For recommended approaches and other alternatives to protect your production cluster, see [Schema discovery performance impact](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
