@@ -1,12 +1,6 @@
-version: 6.44.0
+version: 7.0.4
 
 type: DeclarativeSource
-
-description: >-
-  Syncs data from your OneFlow contract management platform. Extracts users,
-  contacts, contracts, templates, template types, workspaces, contract events,
-  contract data fields, and contract parties. Contacts and contract
-  sub-resources are automatically fetched across all workspaces.
 
 check:
   type: CheckStream
@@ -21,19 +15,19 @@ definitions:
         api_token: "{{ config['api_token'] }}"
         inject_into:
           type: RequestOption
-          inject_into: header
           field_name: X-Oneflow-API-Token
+          inject_into: header
     SimpleRetriever:
       paginator:
         type: DefaultPaginator
         page_size_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: limit
+          inject_into: request_parameter
         page_token_option:
           type: RequestOption
-          inject_into: request_parameter
           field_name: offset
+          inject_into: request_parameter
         pagination_strategy:
           type: OffsetIncrement
           page_size: 100
@@ -41,230 +35,62 @@ definitions:
 streams:
   - type: DeclarativeStream
     name: users
-    primary_key:
-      - id
     retriever:
       type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
+        url: https://api.oneflow.com/v1/users
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: https://api.oneflow.com/v1/users
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 100
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
+        $schema: http://json-schema.org/schema#
         properties:
-          id:
-            type: integer
-          email:
-            type: string
-          name:
-            type: string
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
           active:
             type:
               - boolean
               - "null"
-
-  - type: DeclarativeStream
-    name: workspaces
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: https://api.oneflow.com/v1/workspaces
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 100
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type: integer
-          name:
-            type:
-              - string
-              - "null"
-          description:
-            type:
-              - string
-              - "null"
-
-  - type: DeclarativeStream
-    name: contacts
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        request_parameters:
-          workspace_id: "{{ stream_partition['workspace_id'] }}"
-        url: https://api.oneflow.com/v1/contacts
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 100
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: id
-            partition_field: workspace_id
-            stream:
-              $ref: "#/streams/1"
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - workspace_id
-            value: "{{ stream_partition['workspace_id'] }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type: integer
-          workspace_id:
-            type: integer
-          name:
-            type:
-              - string
-              - "null"
           email:
             type:
               - string
               - "null"
-
-  - type: DeclarativeStream
-    name: contracts
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: https://api.oneflow.com/v1/contracts
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 100
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
           id:
-            type: integer
+            type: number
+          is_admin:
+            type:
+              - boolean
+              - "null"
           name:
+            type:
+              - string
+              - "null"
+          phone_number:
             type:
               - string
               - "null"
@@ -272,308 +98,53 @@ streams:
             type:
               - string
               - "null"
-          created_time:
+          title:
             type:
               - string
               - "null"
-          updated_time:
-            type:
-              - string
-              - "null"
-          published_time:
-            type:
-              - string
-              - "null"
-          lifecycle_state:
-            type:
-              - string
-              - "null"
-
-  - type: DeclarativeStream
-    name: templates
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: https://api.oneflow.com/v1/templates
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 100
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
+        required:
+          - id
         additionalProperties: true
-        properties:
-          id:
-            type: integer
-          name:
-            type:
-              - string
-              - "null"
-          template_type:
-            type:
-              - object
-              - "null"
-
   - type: DeclarativeStream
-    name: template_types
-    primary_key:
-      - id
+    name: contacts
     retriever:
       type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
       requester:
         type: HttpRequester
+        url: https://api.oneflow.com/v1/contacts
         http_method: GET
         authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: https://api.oneflow.com/v1/template_types
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        request_parameters:
+          workspace_id: "{{ stream_partition['workspace_id'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path:
             - data
-      paginator:
-        type: DefaultPaginator
-        page_size_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: limit
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 100
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type: integer
-          name:
-            type:
-              - string
-              - "null"
-          description:
-            type:
-              - string
-              - "null"
-
-  - type: DeclarativeStream
-    name: contract_events
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: "https://api.oneflow.com/v1/contracts/{{ stream_partition['contract_id'] }}/events"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-      paginator:
-        type: NoPagination
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            parent_key: id
-            partition_field: contract_id
             stream:
-              $ref: "#/streams/3"
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - contract_id
-            value: "{{ stream_partition['contract_id'] }}"
+              $ref: "#/streams/5"
+            parent_key: id
+            partition_field: workspace_id
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
         type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
+        $schema: http://json-schema.org/schema#
         properties:
-          id:
-            type: integer
-          contract_id:
-            type: integer
-          type:
+          company_name:
             type:
               - string
               - "null"
-          created_time:
-            type:
-              - string
-              - "null"
-
-  - type: DeclarativeStream
-    name: contract_data_fields
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: "https://api.oneflow.com/v1/contracts/{{ stream_partition['contract_id'] }}/data_fields"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: id
-            partition_field: contract_id
-            stream:
-              $ref: "#/streams/3"
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - contract_id
-            value: "{{ stream_partition['contract_id'] }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type: integer
-          contract_id:
-            type: integer
-          name:
-            type:
-              - string
-              - "null"
-          value:
-            type:
-              - string
-              - "null"
-          custom_id:
-            type:
-              - string
-              - "null"
-
-  - type: DeclarativeStream
-    name: contract_parties
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        http_method: GET
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: "{{ config['api_token'] }}"
-          inject_into:
-            type: RequestOption
-            inject_into: header
-            field_name: X-Oneflow-API-Token
-        url: "https://api.oneflow.com/v1/contracts/{{ stream_partition['contract_id'] }}/parties"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - data
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: id
-            partition_field: contract_id
-            stream:
-              $ref: "#/streams/3"
-    transformations:
-      - type: AddFields
-        fields:
-          - path:
-              - contract_id
-            value: "{{ stream_partition['contract_id'] }}"
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties:
-          id:
-            type: integer
-          contract_id:
-            type: integer
-          name:
-            type:
-              - string
-              - "null"
-          type:
+          company_registration_number:
             type:
               - string
               - "null"
@@ -581,11 +152,1603 @@ streams:
             type:
               - string
               - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          date_of_birth:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          notes:
+            type:
+              - string
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+          workspace_id:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - workspace_id
+            value: "{{ stream_partition['workspace_id'] }}"
+  - type: DeclarativeStream
+    name: contracts
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.oneflow.com/v1/contracts
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          _integration_permissions:
+            type:
+              - array
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              comments:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              data_fields:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              events:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              files:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              parties:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              publish:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              template:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              template_type:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              workspace:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          _permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              contract:delete:
+                type:
+                  - boolean
+                  - "null"
+              contract:download:pdf:
+                type:
+                  - boolean
+                  - "null"
+              contract:send:
+                type:
+                  - boolean
+                  - "null"
+          _private:
+            type:
+              - object
+              - "null"
+            properties:
+              date_format:
+                type:
+                  - string
+                  - "null"
+              language:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              signing_period_expiration:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  expire_date:
+                    type:
+                      - string
+                      - "null"
+                  expire_days_after_publish:
+                    type:
+                      - number
+                      - "null"
+              value:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount:
+                    type:
+                      - string
+                      - "null"
+                  currency:
+                    type:
+                      - string
+                      - "null"
+              workspace_id:
+                type:
+                  - number
+                  - "null"
+          _private_ownerside:
+            type:
+              - object
+              - "null"
+            properties:
+              created_time:
+                type:
+                  - string
+                  - "null"
+              template_id:
+                type:
+                  - number
+                  - "null"
+              template_type_id:
+                type:
+                  - number
+                  - "null"
+          draft_approval_workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              status:
+                type:
+                  - string
+                  - "null"
+          id:
+            type: number
+          imported:
+            type:
+              - boolean
+              - "null"
+          lifecycle_state:
+            type:
+              - object
+              - "null"
+            properties:
+              cancel_time:
+                type:
+                  - string
+                  - "null"
+              composite:
+                type:
+                  - string
+                  - "null"
+              contract_end_time:
+                type:
+                  - string
+                  - "null"
+              contract_start_time:
+                type:
+                  - string
+                  - "null"
+              has_ended_by_termination:
+                type:
+                  - boolean
+                  - "null"
+              has_passed_notice_period_start_time:
+                type:
+                  - boolean
+                  - "null"
+              is_canceled:
+                type:
+                  - boolean
+                  - "null"
+              is_recurring:
+                type:
+                  - boolean
+                  - "null"
+              lifecycle_state:
+                type:
+                  - string
+                  - "null"
+              lifecycle_state_updated_time:
+                type:
+                  - string
+                  - "null"
+              period:
+                type:
+                  - number
+                  - "null"
+          parties:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                _private_ownerside:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    created_time:
+                      type:
+                        - string
+                        - "null"
+                    updated_time:
+                      type:
+                        - string
+                        - "null"
+                country_code:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                identification_number:
+                  type:
+                    - string
+                    - "null"
+                my_party:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                participants:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      _permissions:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          contract:update:
+                            type:
+                              - boolean
+                              - "null"
+                      _private_ownerside:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          created_time:
+                            type:
+                              - string
+                              - "null"
+                          first_visited_time:
+                            type:
+                              - string
+                              - "null"
+                          last_visited_time:
+                            type:
+                              - string
+                              - "null"
+                          updated_time:
+                            type:
+                              - string
+                              - "null"
+                          visits:
+                            type:
+                              - number
+                              - "null"
+                      delivery_channel:
+                        type:
+                          - string
+                          - "null"
+                      delivery_status:
+                        type:
+                          - string
+                          - "null"
+                      draft_approver:
+                        type:
+                          - boolean
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      identification_number:
+                        type:
+                          - string
+                          - "null"
+                      my_participant:
+                        type:
+                          - boolean
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      organizer:
+                        type:
+                          - boolean
+                          - "null"
+                      pending_approver:
+                        type:
+                          - boolean
+                          - "null"
+                      phone_number:
+                        type:
+                          - string
+                          - "null"
+                      sign_method:
+                        type:
+                          - string
+                          - "null"
+                      sign_state:
+                        type:
+                          - string
+                          - "null"
+                      sign_state_updated_time:
+                        type:
+                          - string
+                          - "null"
+                      signatory:
+                        type:
+                          - boolean
+                          - "null"
+                      title:
+                        type:
+                          - string
+                          - "null"
+                      two_step_authentication_method:
+                        type:
+                          - string
+                          - "null"
+                participant:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    _permissions:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        contract:update:
+                          type:
+                            - boolean
+                            - "null"
+                    _private_ownerside:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        created_time:
+                          type:
+                            - string
+                            - "null"
+                        first_visited_time:
+                          type:
+                            - string
+                            - "null"
+                        last_visited_time:
+                          type:
+                            - string
+                            - "null"
+                        updated_time:
+                          type:
+                            - string
+                            - "null"
+                        visits:
+                          type:
+                            - number
+                            - "null"
+                    delivery_channel:
+                      type:
+                        - string
+                        - "null"
+                    delivery_status:
+                      type:
+                        - string
+                        - "null"
+                    draft_approver:
+                      type:
+                        - boolean
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    identification_number:
+                      type:
+                        - string
+                        - "null"
+                    my_participant:
+                      type:
+                        - boolean
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    organizer:
+                      type:
+                        - boolean
+                        - "null"
+                    pending_approver:
+                      type:
+                        - boolean
+                        - "null"
+                    phone_number:
+                      type:
+                        - string
+                        - "null"
+                    sign_method:
+                      type:
+                        - string
+                        - "null"
+                    sign_state:
+                      type:
+                        - string
+                        - "null"
+                    sign_state_updated_time:
+                      type:
+                        - string
+                        - "null"
+                    signatory:
+                      type:
+                        - boolean
+                        - "null"
+                    title:
+                      type:
+                        - string
+                        - "null"
+                    two_step_authentication_method:
+                      type:
+                        - string
+                        - "null"
+          pending_approval_workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              status:
+                type:
+                  - string
+                  - "null"
+          published_time:
+            type:
+              - string
+              - "null"
+          sign_order:
+            type:
+              - array
+              - "null"
+          signing_period_expiry_time:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          state_updated_time:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+          marked_as_signed:
+            type:
+              - boolean
+              - "null"
+          sign_later:
+            type:
+              - boolean
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: templates
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.oneflow.com/v1/templates
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              template_type:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          _private:
+            type:
+              - object
+              - "null"
+            properties:
+              date_format:
+                type:
+                  - string
+                  - "null"
+              language:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              signing_period_expiration:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  expire_days_after_publish:
+                    type:
+                      - number
+                      - "null"
+              workspace_id:
+                type:
+                  - number
+                  - "null"
+          available_options:
+            type:
+              - object
+              - "null"
+            properties:
+              can_receive_attachments:
+                type:
+                  - boolean
+                  - "null"
+              can_receive_expanded_pdf:
+                type:
+                  - boolean
+                  - "null"
+              can_receive_product_tax:
+                type:
+                  - boolean
+                  - "null"
+              can_receive_products:
+                type:
+                  - boolean
+                  - "null"
+              delivery_channels:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    preferred:
+                      type:
+                        - boolean
+                        - "null"
+                    required_participant_attributes:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+              sign_methods:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    preferred:
+                      type:
+                        - boolean
+                        - "null"
+              two_step_authentication_methods:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    preferred:
+                      type:
+                        - boolean
+                        - "null"
+                    required_participant_attributes:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+          configuration:
+            type:
+              - object
+              - "null"
+            properties:
+              default_counterparty_type:
+                type:
+                  - string
+                  - "null"
+              default_creator_roles:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  _permissions:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      contract:update:
+                        type:
+                          - boolean
+                          - "null"
+                  organizer:
+                    type:
+                      - boolean
+                      - "null"
+                  signatory:
+                    type:
+                      - boolean
+                      - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          draft_approval_workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              status:
+                type:
+                  - string
+                  - "null"
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          pending_approval_workflow:
+            type:
+              - object
+              - "null"
+            properties:
+              status:
+                type:
+                  - string
+                  - "null"
+          tags:
+            type:
+              - array
+              - "null"
+          template_active:
+            type:
+              - boolean
+              - "null"
+          template_type:
+            type:
+              - object
+              - "null"
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              created_time:
+                type:
+                  - string
+                  - "null"
+              extension_type:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              updated_time:
+                type:
+                  - string
+                  - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+          workspaces:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+          source_contract_id:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: template_types
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.oneflow.com/v1/template_types
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          extension_type:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: workspaces
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        url: https://api.oneflow.com/v1/workspaces
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          _integration_permissions:
+            type:
+              - array
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          _permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              contract:create:
+                type:
+                  - boolean
+                  - "null"
+          company_name:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          date_format:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          registration_number:
+            type:
+              - string
+              - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: contract_events
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.oneflow.com/v1/contracts/{{
+          stream_partition['contract_id'] }}/events
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/2"
+            parent_key: id
+            partition_field: contract_id
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              contract:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          actor:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              party:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          data:
+            type:
+              - object
+              - "null"
+            properties:
+              changes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    attribute:
+                      type:
+                        - string
+                        - "null"
+                    from:
+                      type:
+                        - string
+                        - "null"
+                    to:
+                      type:
+                        - string
+                        - "null"
+              subject:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  party:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                  contract_id:
+                    type:
+                      - number
+                      - "null"
+                  custom_id:
+                    type:
+                      - string
+                      - "null"
+          id:
+            type: number
+          contract_id:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - contract_id
+            value: "{{ stream_partition['contract_id'] }}"
+  - type: DeclarativeStream
+    name: contract_data_fields
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.oneflow.com/v1/contracts/{{
+          stream_partition['contract_id'] }}/data_fields
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/2"
+            parent_key: id
+            partition_field: contract_id
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              contract:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          _private_ownerside:
+            type:
+              - object
+              - "null"
+            properties:
+              created_time:
+                type:
+                  - string
+                  - "null"
+              custom_id:
+                type:
+                  - string
+                  - "null"
+              updated_time:
+                type:
+                  - string
+                  - "null"
+          id:
+            type: number
+          name:
+            type:
+              - string
+              - "null"
+          placeholder:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+          contract_id:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - contract_id
+            value: "{{ stream_partition['contract_id'] }}"
+  - type: DeclarativeStream
+    name: contract_parties
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url: >-
+          https://api.oneflow.com/v1/contracts/{{
+          stream_partition['contract_id'] }}/parties
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/2"
+            parent_key: id
+            partition_field: contract_id
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              contract:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+              self:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  href:
+                    type:
+                      - string
+                      - "null"
+          _private_ownerside:
+            type:
+              - object
+              - "null"
+            properties:
+              created_time:
+                type:
+                  - string
+                  - "null"
+              updated_time:
+                type:
+                  - string
+                  - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          id:
+            type: number
+          identification_number:
+            type:
+              - string
+              - "null"
+          my_party:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          participants:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                _permissions:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    contract:update:
+                      type:
+                        - boolean
+                        - "null"
+                _private_ownerside:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    created_time:
+                      type:
+                        - string
+                        - "null"
+                    first_visited_time:
+                      type:
+                        - string
+                        - "null"
+                    last_visited_time:
+                      type:
+                        - string
+                        - "null"
+                    updated_time:
+                      type:
+                        - string
+                        - "null"
+                    visits:
+                      type:
+                        - number
+                        - "null"
+                delivery_channel:
+                  type:
+                    - string
+                    - "null"
+                delivery_status:
+                  type:
+                    - string
+                    - "null"
+                draft_approver:
+                  type:
+                    - boolean
+                    - "null"
+                email:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                identification_number:
+                  type:
+                    - string
+                    - "null"
+                my_participant:
+                  type:
+                    - boolean
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                organizer:
+                  type:
+                    - boolean
+                    - "null"
+                pending_approver:
+                  type:
+                    - boolean
+                    - "null"
+                phone_number:
+                  type:
+                    - string
+                    - "null"
+                sign_method:
+                  type:
+                    - string
+                    - "null"
+                sign_state:
+                  type:
+                    - string
+                    - "null"
+                sign_state_updated_time:
+                  type:
+                    - string
+                    - "null"
+                signatory:
+                  type:
+                    - boolean
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                two_step_authentication_method:
+                  type:
+                    - string
+                    - "null"
+          contract_id:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - contract_id
+            value: "{{ stream_partition['contract_id'] }}"
 
 spec:
   type: Spec
+  documentation_url: https://developer.oneflow.com/docs/getting-started
   connection_specification:
     type: object
+    title: OneFlow Source Spec
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_token
@@ -596,7 +1759,100 @@ spec:
         order: 0
         title: API Token
         airbyte_secret: true
-    additionalProperties: true
+      start_date:
+        type: string
+        description: "Start date for incremental sync (contracts). Format: YYYY-MM-DD"
+        order: 1
+        title: Start Date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2020-01-01"
 
 metadata:
   autoImportSchema: {}
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: "*"
+      migrated_at: "2026-03-25T09:54:47.891093+00:00"
+      from_version: 6.44.0
+    - migration: HttpRequesterPathToUrl
+      to_version: "*"
+      migrated_at: "2026-03-25T09:54:47.892939+00:00"
+      from_version: 6.44.0
+  testedStreams:
+    users:
+      streamHash: 45eefa79cbfe1ef3004245f9f7a903934e58f528
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contacts:
+      streamHash: f93460eef5975eb8cfc186c8015337dd167dbb37
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contracts:
+      streamHash: c3be5762f8cae035ada87ea9ae4fab3e101e15f4
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    templates:
+      streamHash: d5098d92e23e45640c252145c75812e70d75155a
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    template_types:
+      streamHash: 3c1a1627333502d4387d4f7ab6621047c2ec9221
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workspaces:
+      streamHash: 23829b35b3e05c08cb811bafcb2d2303efe15204
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contract_events:
+      streamHash: e5e5b4073e341b48a9a4bf74a498d42ee4bacb80
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contract_data_fields:
+      streamHash: 38ad915a81ef8fb6755a9b532361787520a85ebb
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    contract_parties:
+      streamHash: 8c91c130781ec0d0da6157fce8b858b194c84057
+      isStale: false
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
