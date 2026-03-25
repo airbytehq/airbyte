@@ -17,10 +17,10 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_qdrant"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.14"
 airbyte-cdk = { version = "< 3", extras = ["vector-db-based"] }
 qdrant-client = "*"
-fastembed = "< 0.3"
+fastembed = ">=0.7,<0.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
