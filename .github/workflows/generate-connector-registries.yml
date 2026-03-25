@@ -79,6 +79,8 @@ jobs:
         run: |
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           PR_NUMBER="${{ inputs.pr }}"
+          CONNECTOR_NAME="${{ inputs.connector-name }}"
+          FORCE="${{ inputs.force }}"
 
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
             RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
@@ -86,6 +88,15 @@ jobs:
           else
             echo "pr-text=" >> $GITHUB_OUTPUT
           fi
+
+          DETAILS=""
+          if [[ -n "$CONNECTOR_NAME" ]]; then
+            DETAILS="${DETAILS}\nConnector: \`${CONNECTOR_NAME}\`"
+          fi
+          if [[ "$FORCE" == "true" ]]; then
+            DETAILS="${DETAILS}\nForce: true"
+          fi
+          echo "details-text=${DETAILS}" >> $GITHUB_OUTPUT
 
           echo "run-url=${RUN_URL}" >> $GITHUB_OUTPUT
 
@@ -97,7 +108,7 @@ jobs:
             {
               "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
-              "text": "✅ *Registry Compile SUCCESS*\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
+              "text": "✅ *Registry Compile SUCCESS*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
@@ -110,7 +121,7 @@ jobs:
             {
               "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
-              "text": "❌ *Registry Compile FAILED*\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
+              "text": "❌ *Registry Compile FAILED*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
