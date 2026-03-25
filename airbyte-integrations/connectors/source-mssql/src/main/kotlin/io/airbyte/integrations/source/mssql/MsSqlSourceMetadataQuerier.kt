@@ -246,8 +246,9 @@ class MsSqlSourceMetadataQuerier(
         metadata: JdbcMetadataQuerier.ColumnMetadata
     ): JdbcMetadataQuerier.ColumnMetadata {
         val type = metadata.type
-        if (type !is SystemType || type.typeName == null) return metadata
-        val baseTypeName = memoizedAliasTypeMapping[type.typeName.uppercase()] ?: return metadata
+        if (type !is SystemType) return metadata
+        val typeName = type.typeName ?: return metadata
+        val baseTypeName = memoizedAliasTypeMapping[typeName.uppercase()] ?: return metadata
         val resolvedType = type.copy(typeName = baseTypeName)
         return metadata.copy(type = resolvedType)
     }
