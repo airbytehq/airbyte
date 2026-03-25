@@ -3980,7 +3980,7 @@
               }
             ],
             "title": "Entities",
-            "description": "Optional entity/mode pairs used to constrain OAuth scope and stream selection."
+            "description": "Optional entity/mode pairs used to constrain stream selection. For OAuth connectors, also used to determine requested scopes."
           },
           "server_side_oauth_secret_id": {
             "anyOf": [
@@ -4210,7 +4210,7 @@
               }
             ],
             "title": "Entities",
-            "description": "Optional entity/mode pairs used to constrain OAuth scope and stream selection."
+            "description": "Optional entity/mode pairs used to constrain stream selection. For OAuth connectors, also used to determine requested scopes."
           },
           "server_side_oauth_secret_id": {
             "anyOf": [
