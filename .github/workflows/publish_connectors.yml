@@ -398,6 +398,22 @@ jobs:
           grep -n "enableProgressiveRollout" metadata.yaml
           echo "Progressive rollout enabled in metadata.yaml"
 
+      # --- Ephemeral version bump for pre-release builds ---
+      # For preview builds, the metadata.yaml still contains the base version (e.g. 3.2.3)
+      # but the actual published tag is the preview version (e.g. 3.2.3-preview.820ce48).
+      # The artifact generator reads dockerImageTag from metadata.yaml, so we need to
+      # bump it in-place before generating artifacts. This is ephemeral — not committed.
+      # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/604
+      - name: Ephemeral version bump for pre-release
+        if: needs.publish_options.outputs.with-semver-suffix == 'preview'
+        run: |
+          echo "Bumping metadata.yaml version to ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          airbyte-ops local connector bump-version \
+            --name "${{ matrix.connector }}" \
+            --repo-path "$GITHUB_WORKSPACE" \
+            --new-version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+
+      # --- Registry artifact generation and publishing ---
       - name: Generate Registry Artifacts
         id: generate-registry-artifacts
         shell: bash
