@@ -193,9 +193,7 @@ class SerializeMessageFieldsTransformation(RecordTransformation):
                     if isinstance(value, dict):
                         current[last_part] = json.dumps(value)
                     elif isinstance(value, list):
-                        current[last_part] = [
-                            json.dumps(item) if isinstance(item, dict) else item for item in value
-                        ]
+                        current[last_part] = [json.dumps(item) if isinstance(item, dict) else item for item in value]
 
 
 class DoubleQuotedDictTypeTransformer(TypeTransformer):

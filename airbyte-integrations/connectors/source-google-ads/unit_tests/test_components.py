@@ -833,7 +833,7 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
     assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
+        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
     )
 
 
@@ -849,7 +849,7 @@ def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriev
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
     assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
+        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
     )
 
 
