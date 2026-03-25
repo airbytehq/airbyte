@@ -109,9 +109,13 @@ concurrent rate limit, making it easier to start many queries at once.
 The BigQuery destination connector supports the following
 [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- Full Refresh Sync
-- Incremental - Append Sync
-- Incremental - Append + Deduped
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
 ## Output schema
 
@@ -178,7 +182,9 @@ namespace with `n` for converted namespaces.
 | OBJECT                              | JSON          |
 | ARRAY                               | JSON          |
 
-## Troubleshooting permission issues
+## Troubleshooting
+
+### Permission errors
 
 The service account does not have the proper permissions.
 
@@ -193,6 +199,36 @@ The HMAC key is wrong.
 - Make sure the HMAC key is created for the BigQuery service account, and the service account has
   permission to access the GCS bucket and path.
 
+### HTTP 400 "Request had invalid euc header" during upload
+
+If your sync fails with `BigQueryException: 400 Bad Request` and the message
+`Request had invalid euc header`:
+
+- This error originates from the Google BigQuery resumable-upload API. It is usually transient.
+- **Retry the sync.** In most cases the error resolves on the next attempt.
+- If the error recurs on every sync, the underlying causes can be complex. Google does not
+  publicly document this specific error. The following steps may help narrow the issue:
+  - If you self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP
+    headers on requests to `bigquery.googleapis.com`.
+  - Verify the service account key has not been rotated or revoked since the connection was
+    configured.
+  - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
+    smaller value (for example, 5 MiB).
+  - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
+    possible contributing factor.
+
+### Load job timeouts
+
+If your sync fails with `Fail to complete a load job in big query`:
+
+- BigQuery load jobs have a 30-minute wait timeout. Very large batches or high BigQuery queue
+  contention can exceed this limit.
+- Running concurrent syncs that load into the same BigQuery table is not supported and can
+  also trigger this timeout. See [Stream uniqueness](https://docs.airbyte.com/platform/using-airbyte/configuring-schema#stream-uniqueness)
+  for details.
+- Try reducing the volume per sync by using incremental sync mode or reducing the number of
+  streams per connection.
+
 ## Tutorials
 
 Now that you have set up the BigQuery destination connector, check out the following BigQuery
@@ -202,6 +238,10 @@ tutorials:
 - [Load data from Facebook Ads to BigQuery](https://airbyte.com/tutorials/facebook-ads-to-bigquery)
 - [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 - [Partition and cluster BigQuery tables with Airbyte and dbt](https://airbyte.com/tutorials/bigquery-partition-cluster)
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a BigQuery dataset.
 
 ## Changelog
 

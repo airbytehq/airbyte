@@ -103,6 +103,8 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.13 | 2026-03-17 | [75101](https://github.com/airbytehq/airbyte/pull/75101) | Update dependencies |
+| 1.7.12 | 2026-03-10 | [74570](https://github.com/airbytehq/airbyte/pull/74570) | Update dependencies |
 | 1.7.11 | 2026-02-17 | [72374](https://github.com/airbytehq/airbyte/pull/72374) | Update dependencies |
 | 1.7.10 | 2025-11-25 | [70017](https://github.com/airbytehq/airbyte/pull/70017) | Update dependencies |
 | 1.7.9 | 2025-11-18 | [69524](https://github.com/airbytehq/airbyte/pull/69524) | Update dependencies |

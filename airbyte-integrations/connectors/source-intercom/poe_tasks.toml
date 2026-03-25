@@ -1,0 +1,10 @@
+# Override the default manifest-only connector tasks to pin the CDK CLI
+# to the same dev version used by the connector's base image.
+# This is needed because the connector uses features (stream_groups)
+# that are not yet available in the latest stable CDK release.
+include = [
+    "${POE_GIT_DIR}/poe-tasks/manifest-only-connector-tasks.toml",
+]
+
+[tasks]
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]==7.6.1.post28.dev22724700845'"
