@@ -2,6 +2,9 @@
 sidebar_position: 6
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Airbyte Agent Engine MCP server
 
 The Airbyte Agent Engine MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf.
@@ -20,26 +23,10 @@ Before you begin, make sure you have the following:
 
 ## Add the MCP server to your agent
 
-Add the Airbyte MCP server to your client by placing this in your client's MCP configuration:
+Select your client below for setup instructions. Each client requires you to authenticate with your Airbyte account before you can use the MCP server.
 
-```json
-{
-  "mcpServers": {
-    "Airbyte": {
-      "url": "https://mcp.airbyte.ai/mcp"
-    }
-  }
-}
-```
-
-Most clients support this configuration format. When you first connect, a browser window opens and prompts you to:
-
-1. Log in with your Airbyte account.
-2. Accept the OAuth authorization.
-
-After you authenticate, the MCP server's tools are available to your agent.
-
-### Claude Code
+<Tabs>
+<TabItem value="claude-code" label="Claude Code" default>
 
 1. Run the following command in your terminal:
 
@@ -57,65 +44,137 @@ After you authenticate, the MCP server's tools are available to your agent.
 
 6. If you're not logged into the Agent Engine, log in now.
 
-7. Grant access to the Agent Engine MCP
+7. Grant access to the Agent Engine MCP.
 
     ![Grant access to the Agent Engine MCP](grant-access.png)
 
-8. Return to Claude and begin using the MCP server.
+8. Return to Claude Code and begin using the MCP server.
 
-### Cursor
+</TabItem>
+<TabItem value="cursor" label="Cursor">
 
-Go to **Cursor** > **Settings** > **Cursor Settings** > **MCP** and add the Airbyte MCP server. Cursor 1.0 and later include native OAuth and Streamable HTTP support.
+1. Go to **Cursor** > **Settings** > **Cursor Settings** > **MCP**.
 
-You can also add the server manually by editing your `mcp.json` file:
+2. Click **Add new MCP server**.
 
-```json
-{
-  "mcpServers": {
-    "Airbyte": {
-      "url": "https://mcp.airbyte.ai/mcp"
+3. Set the type to **URL** and enter the server URL:
+
+    ```text
+    https://mcp.airbyte.ai/mcp
+    ```
+
+    You can also add the server manually by editing your `mcp.json` file:
+
+    ```json
+    {
+      "mcpServers": {
+        "Airbyte": {
+          "url": "https://mcp.airbyte.ai/mcp"
+        }
+      }
     }
-  }
-}
-```
+    ```
 
-### Claude Desktop
+4. Cursor detects that the server requires OAuth and opens your browser automatically.
 
-Open developer settings with **CMD + ,** > **Developer** > **Edit Config**, then add the server to your `claude_desktop_config.json`:
+5. Log in with your Airbyte account and grant access.
 
-```json
-{
-  "mcpServers": {
-    "Airbyte": {
-      "url": "https://mcp.airbyte.ai/mcp"
+6. Return to Cursor. The MCP server tools are now available.
+
+:::note
+Cursor 1.0 and later support OAuth and Streamable HTTP natively. If the browser doesn't open automatically, check that you're running Cursor 1.0 or later.
+:::
+
+</TabItem>
+<TabItem value="claude-desktop" label="Claude Desktop">
+
+1. Open **Settings** with **CMD + ,** (macOS) or **Ctrl + ,** (Windows/Linux).
+
+2. Go to **Developer** > **Edit Config** to open `claude_desktop_config.json`.
+
+3. Add the Airbyte MCP server:
+
+    ```json
+    {
+      "mcpServers": {
+        "Airbyte": {
+          "url": "https://mcp.airbyte.ai/mcp"
+        }
+      }
     }
-  }
-}
-```
+    ```
 
-Restart Claude Desktop after making changes.
+4. Save the file and restart Claude Desktop.
 
-### Codex
+5. After restarting, Claude Desktop detects the remote server and opens your browser for OAuth authentication.
 
-Run the following command in your terminal:
+6. Log in with your Airbyte account and grant access.
 
-```bash
-codex mcp add airbyte --url https://mcp.airbyte.ai/mcp
-```
+7. Return to Claude Desktop and begin using the MCP server.
 
-Then launch Codex with `codex`. You'll be prompted to authenticate with Airbyte using OAuth.
+</TabItem>
+<TabItem value="codex" label="Codex">
 
-### VS Code and GitHub Copilot
+1. Run the following command in your terminal to add the server:
 
-Open the Command Palette with **CMD+Shift+P** and select **MCP: Add Server**. Enter the Airbyte MCP server URL:
+    ```bash
+    codex mcp add airbyte --url https://mcp.airbyte.ai/mcp
+    ```
+
+2. Launch Codex with `codex`.
+
+3. Codex detects that the server requires OAuth and opens your browser.
+
+4. Log in with your Airbyte account and grant access.
+
+5. Return to Codex and begin using the MCP server.
+
+</TabItem>
+<TabItem value="vscode" label="VS Code / GitHub Copilot">
+
+1. Open the Command Palette with **CMD+Shift+P** (macOS) or **Ctrl+Shift+P** (Windows/Linux).
+
+2. Select **MCP: Add Server**.
+
+3. Choose **HTTP** as the server type.
+
+4. Enter the Airbyte MCP server URL:
+
+    ```text
+    https://mcp.airbyte.ai/mcp
+    ```
+
+5. VS Code detects that the server requires OAuth and shows a sign-in prompt.
+
+6. Follow the prompt to open your browser, log in with your Airbyte account, and grant access.
+
+7. Return to VS Code. The MCP server tools are now available in Copilot Chat.
+
+</TabItem>
+<TabItem value="other" label="Other clients">
+
+The Airbyte MCP server works with any client that supports OAuth authentication and Streamable HTTP transport. Use the following server URL in your client's MCP configuration:
 
 ```text
 https://mcp.airbyte.ai/mcp
 ```
 
-### Other clients
+Most clients that support remote MCP servers accept a JSON configuration like this:
 
-The Airbyte MCP server works with any client that supports OAuth authentication and Streamable HTTP transport. Use the server URL `https://mcp.airbyte.ai/mcp` in your client's MCP configuration.
+```json
+{
+  "mcpServers": {
+    "Airbyte": {
+      "url": "https://mcp.airbyte.ai/mcp"
+    }
+  }
+}
+```
+
+When your client first connects, it detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access. After you authenticate, the MCP server's tools are available to your agent.
+
+</TabItem>
+</Tabs>
 
 ## Example usage
 
