@@ -1066,19 +1066,25 @@ api_budget:
   type: HTTPAPIBudget
   policies:
     # /2/sessions/average: 108,000 cost/hr ÷ 60 cost/request = 1,800 requests/hr
+    #                       1,000 cost/5min ÷ 60 cost/request = 16 requests/5min
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 1800
           interval: PT1H
+        - limit: 16
+          interval: PT5M
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
           url_path_pattern: "/2/sessions/average"
     # /2/users: 108,000 cost/hr ÷ 120 cost/request = 900 requests/hr (conservative, assumes group_by=country)
+    #            1,000 cost/5min ÷ 120 cost/request = 8 requests/5min
     - type: MovingWindowCallRatePolicy
       rates:
         - limit: 900
           interval: PT1H
+        - limit: 8
+          interval: PT5M
       matchers:
         - type: HttpRequestRegexMatcher
           method: GET
