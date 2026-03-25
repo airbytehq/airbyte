@@ -500,7 +500,7 @@ jobs:
             RELEASE_TYPE="GA"
             EMOJI="🟢"
           else
-            RELEASE_TYPE="Pre-release (${SEMVER_SUFFIX})"
+            RELEASE_TYPE="Pre-release"
             EMOJI="🔵"
           fi
 
