@@ -498,10 +498,10 @@ jobs:
           # Determine release type label and emoji
           if [[ "$SEMVER_SUFFIX" == "none" || -z "$SEMVER_SUFFIX" ]]; then
             RELEASE_TYPE="GA"
-            EMOJI=":large_green_circle:"
+            EMOJI="🟢"
           else
             RELEASE_TYPE="Pre-release (${SEMVER_SUFFIX})"
-            EMOJI=":large_blue_circle:"
+            EMOJI="🔵"
           fi
 
           # Build URLs for hyperlinks
