@@ -6,7 +6,6 @@ import gzip
 
 import pytest
 import requests
-
 from components import GzipXmlDecoder
 
 
