@@ -1,0 +1,228 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/azure-onelake",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Microsoft OneLake Destination Spec",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+      "azure_blob_storage_endpoint_domain_name": {
+        "type": "string",
+        "description": "OneLake uses a fixed endpoint. Leave default for Microsoft Fabric OneLake.",
+        "title": "Azure Storage Endpoint Domain Name",
+        "group": "onelake",
+        "order": 0
+      },
+      "azure_blob_storage_account_name": {
+        "type": "string",
+        "description": "The name or GUID of your Microsoft Fabric workspace. Use GUID if the name has spaces.",
+        "title": "Fabric Workspace Name or GUID",
+        "group": "onelake",
+        "examples": [
+          "mystorageaccount"
+        ],
+        "order": 1
+      },
+      "azure_blob_storage_container_name": {
+        "type": "string",
+        "description": "The Lakehouse (or Fabric item) that will receive the data. E.g. 'MyLakehouse.Lakehouse' or 'lakehouse_raw'.",
+        "title": "Lakehouse Item Path",
+        "group": "onelake",
+        "examples": [
+          "mycontainer"
+        ],
+        "order": 2
+      },
+      "shared_access_signature": {
+        "type": "string",
+        "description": "Not used for OneLake. Leave empty.",
+        "title": "Shared Access Signature",
+        "group": "onelake",
+        "order": 12,
+        "airbyte_hidden": true,
+        "examples": [
+          "sv=2021-08-06&st=2025-04-11T00%3A00%3A00Z&se=2025-04-12T00%3A00%3A00Z&sr=b&sp=rw&sig=abcdefghijklmnopqrstuvwxyz1234567890%2Fabcdefg%3D"
+        ],
+        "airbyte_secret": true
+      },
+      "azure_blob_storage_account_key": {
+        "type": "string",
+        "description": "Not used for OneLake. Leave empty.",
+        "title": "Azure Blob Storage Account Key",
+        "group": "onelake",
+        "order": 13,
+        "airbyte_hidden": true,
+        "examples": [
+          "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
+        ],
+        "airbyte_secret": true
+      },
+      "azure_tenant_id": {
+        "type": "string",
+        "description": "The Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication.",
+        "title": "Azure Tenant ID",
+        "group": "onelake",
+        "examples": [
+          "12345678-1234-1234-1234-123456789012"
+        ],
+        "airbyte_secret": false,
+        "order": 6
+      },
+      "azure_client_id": {
+        "type": "string",
+        "description": "The Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication.",
+        "title": "Azure Client ID",
+        "group": "onelake",
+        "examples": [
+          "87654321-4321-4321-4321-210987654321"
+        ],
+        "airbyte_secret": false,
+        "order": 7
+      },
+      "use_managed_identity": {
+        "type": "boolean",
+        "description": "Use the Azure Managed Identity of the host (e.g. Airbyte runner) instead of Service Principal. Requires the identity to have Storage Blob Data Contributor (or similar) on the Fabric workspace.",
+        "title": "Use Managed Identity",
+        "group": "onelake",
+        "default": false,
+        "order": 4
+      },
+      "managed_identity_client_id": {
+        "type": "string",
+        "description": "For user-assigned Managed Identity, set this to the identity's client ID. Leave empty for system-assigned.",
+        "title": "Managed Identity Client ID (optional)",
+        "group": "onelake",
+        "order": 5
+      },
+      "azure_blob_storage_spill_size": {
+        "type": "integer",
+        "description": "The amount of megabytes after which the connector should spill to a new blob. Enter 0 if not applicable.",
+        "title": "Target Object Size (MB)",
+        "group": "onelake",
+        "default": 500,
+        "order": 9
+      },
+      "destination_path_format": {
+        "type": "string",
+        "description": "Format of the output directory inside the Lakehouse Files section. Variables: ${NAMESPACE}, ${STREAM_NAME}, etc. Leave empty for default.",
+        "title": "Output Path Format",
+        "group": "onelake",
+        "examples": [
+          "${NAMESPACE}/${STREAM_NAME}/"
+        ],
+        "default": "",
+        "order": 10
+      },
+      "file_name_pattern": {
+        "type": "string",
+        "description": "Pattern for output file names. Variables: {date}, {timestamp}, {part_number}, {format_extension}. Leave empty for default.",
+        "title": "File Name Pattern",
+        "group": "onelake",
+        "examples": [
+          "{date}_{timestamp}_{part_number}{format_extension}"
+        ],
+        "default": "",
+        "order": 11
+      },
+      "azure_client_secret": {
+        "type": "string",
+        "description": "The Azure Active Directory (Entra ID) client secret. Required when Use Managed Identity is off. Enter after Tenant ID and Client ID.",
+        "title": "Azure Client Secret",
+        "group": "onelake",
+        "examples": [
+          "your-client-secret"
+        ],
+        "airbyte_secret": true,
+        "order": 8
+      },
+      "one_lake_files_sub_path": {
+        "type": "string",
+        "group": "onelake",
+        "airbyte_hidden": true,
+        "default": "",
+        "order": 99
+      },
+      "format": {
+        "oneOf": [
+          {
+            "title": "CSV: Comma-Separated Values",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "format_type": {
+                "type": "string",
+                "enum": [
+                  "CSV"
+                ],
+                "default": "CSV"
+              },
+              "flattening": {
+                "type": "string",
+                "default": "No flattening",
+                "enum": [
+                  "No flattening",
+                  "Root level flattening"
+                ],
+                "title": "Flattening"
+              }
+            },
+            "required": [
+              "format_type",
+              "flattening"
+            ]
+          },
+          {
+            "title": "JSON Lines: Newline-delimited JSON",
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "format_type": {
+                "type": "string",
+                "enum": [
+                  "JSONL"
+                ],
+                "default": "JSONL"
+              },
+              "flattening": {
+                "type": "string",
+                "default": "No flattening",
+                "enum": [
+                  "No flattening",
+                  "Root level flattening"
+                ],
+                "title": "Flattening"
+              }
+            },
+            "required": [
+              "format_type"
+            ]
+          }
+        ],
+        "description": "Format of the data output.",
+        "title": "Output Format",
+        "group": "onelake",
+        "order": 3,
+        "type": "object"
+      }
+    },
+    "required": [
+      "azure_blob_storage_account_name",
+      "azure_blob_storage_container_name",
+      "use_managed_identity",
+      "format"
+    ],
+    "groups": [
+      {
+        "id": "onelake",
+        "title": "Microsoft OneLake"
+      }
+    ]
+  },
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append"
+  ]
+}

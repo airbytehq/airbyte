@@ -1,0 +1,2 @@
+# Local virtualenv for scripts (e.g. validate_onelake_config.py --connectivity)
+.venv/

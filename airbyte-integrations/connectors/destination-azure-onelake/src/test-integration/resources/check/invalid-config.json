@@ -1,0 +1,7 @@
+{
+  "format": { "format_type": "JSONL" },
+  "azure_blob_storage_endpoint_domain_name": "blob.core.windows.net",
+  "azure_blob_storage_account_name": "airbyteteststorage",
+  "azure_blob_storage_account_key": "YmFkYWNjb3VudF9rZXkK",
+  "azure_blob_storage_container_name": "badcontainer"
+}

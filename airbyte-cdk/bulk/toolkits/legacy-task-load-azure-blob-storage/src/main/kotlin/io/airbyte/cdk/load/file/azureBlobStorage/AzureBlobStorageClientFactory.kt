@@ -5,6 +5,8 @@
 package io.airbyte.cdk.load.file.azureBlobStorage
 
 import com.azure.identity.ClientSecretCredentialBuilder
+import com.azure.identity.DefaultAzureCredentialBuilder
+import com.azure.identity.ManagedIdentityCredentialBuilder
 import com.azure.storage.blob.BlobServiceClientBuilder
 import com.azure.storage.common.StorageSharedKeyCredential
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfigurationProvider
@@ -21,14 +23,28 @@ class AzureBlobStorageClientFactory(
     @Singleton
     @Secondary
     fun make(): AzureBlobClient {
-        val endpoint =
-            "https://${azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration.accountName}.blob.core.windows.net"
-
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
+
+        val endpoint =
+            config.endpointUrl
+                ?: "https://${config.accountName}.blob.core.windows.net"
 
         val clientBuilder = BlobServiceClientBuilder().endpoint(endpoint)
         when {
-            // EntraId config is available
+            // Managed Identity (system-assigned or user-assigned)
+            config.useManagedIdentity -> {
+                val credential =
+                    if (!config.managedIdentityClientId.isNullOrBlank()) {
+                        ManagedIdentityCredentialBuilder()
+                            .clientId(config.managedIdentityClientId)
+                            .build()
+                    } else {
+                        DefaultAzureCredentialBuilder().build()
+                    }
+                clientBuilder.credential(credential)
+            }
+
+            // EntraId (Service Principal) config is available
             !config.tenantId.isNullOrBlank() &&
                 !config.clientId.isNullOrBlank() &&
                 !config.clientSecret.isNullOrBlank() -> {

@@ -1,0 +1,9 @@
+{
+  "azure_blob_storage_account_name": "EG_Dataplatform_Dev",
+  "azure_blob_storage_container_name": "lakehouse_raw",
+  "use_managed_identity": true,
+  "managed_identity_client_id": "",
+  "format": {
+    "format_type": "JSONL"
+  }
+}
