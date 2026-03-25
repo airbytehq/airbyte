@@ -121,8 +121,8 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
-          start-message: '🔬 **Dev playbook session starting...** Using dev macro `${{ steps.resolve.outputs.dev_macro }}` from [ai-skills PR #${{ steps.resolve.outputs.pr_number }}](https://github.com/airbytehq/ai-skills/pull/${{ steps.resolve.outputs.pr_number }})'
-          bypass-approval: 'true'
+          start-message: "🔬 **Dev playbook session starting...** Using dev macro `${{ steps.resolve.outputs.dev_macro }}` from [ai-skills PR #${{ steps.resolve.outputs.pr_number }}](https://github.com/airbytehq/ai-skills/pull/${{ steps.resolve.outputs.pr_number }})"
+          bypass-approval: "true"
           tags: |
             ai-oncall
             playbook-dev
