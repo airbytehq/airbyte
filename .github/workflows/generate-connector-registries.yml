@@ -108,7 +108,7 @@ jobs:
             {
               "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
-              "text": "✅ *Registry Compile SUCCESS*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
+              "text": ":ballot_box_with_check: *Registry Compile SUCCESS*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
