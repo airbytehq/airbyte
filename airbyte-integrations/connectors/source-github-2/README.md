@@ -25,7 +25,7 @@ To generate a PAT: `GitHub` -> `Settings` -> `Developer settings` -> `Personal a
 
 When syncing historical data for the first time, do **not** run an open-ended sync. Use successive bounded batches by setting both `start_date` and `end_date` to a realistic window based on the data distribution, then advancing both dates forward for each batch:
 
-```
+```text
 Batch 1: start_date=2026-01-01T00:00:00Z  end_date=2026-01-15T00:00:00Z
 Batch 2: start_date=2026-01-15T00:00:00Z  end_date=2026-01-29T00:00:00Z
 ...
@@ -69,7 +69,6 @@ Synced incrementally using a cursor field. Only records created or updated after
 | `deployment_statuses` | `updated_at` | `GET /repos/{org}/{repo}/deployments/{id}/statuses` | Substream of `deployments`. Pagination stop condition |
 | `issue_comments` | `updated_at` | `GET /repos/{org}/{repo}/issues/{number}/comments` | Substream of `issues` |
 | `pr_comments` | `updated_at` | `GET /repos/{org}/{repo}/pulls/{pr}/comments` | Substream of `pull_requests` |
-
 
 ## Local development
 
