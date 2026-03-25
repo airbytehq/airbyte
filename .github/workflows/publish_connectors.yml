@@ -411,7 +411,8 @@ jobs:
           airbyte-ops local connector bump-version \
             --name "${{ matrix.connector }}" \
             --repo-path "$GITHUB_WORKSPACE" \
-            --new-version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+            --new-version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
+            --no-changelog
 
       # --- Registry artifact generation and publishing ---
       - name: Generate Registry Artifacts
