@@ -15,22 +15,14 @@ import io
 import json
 import logging
 import re
-from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import dpath
 import requests
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.declarative.resolvers.components_resolver import (
-    ComponentMappingDefinition,
-    ComponentsResolver,
-    ResolvedComponentMappingDefinition,
-)
-from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
@@ -242,6 +234,15 @@ class MarketoBulkExportCreationRequester:
             start_time = stream_slice.cursor_slice.get("start_time", "")
             end_time = stream_slice.cursor_slice.get("end_time", "")
             if start_time and end_time:
+                # NOTE: The Marketo Bulk Lead Export API uses ``createdAt``
+                # as the filter key here, matching the original connector
+                # implementation.  The Leads stream tracks incremental
+                # state by ``updatedAt``, but the bulk-export endpoint
+                # only supports createdAt / updatedAt / staticListId as
+                # filter keys.  The original code also hardcoded
+                # ``createdAt``.  A follow-up issue should evaluate
+                # whether switching to ``updatedAt`` would be more
+                # correct for incremental syncs.
                 filter_params["createdAt"] = {
                     "startAt": start_time,
                     "endAt": end_time,
@@ -323,10 +324,44 @@ class MarketoCsvDecoder:
 
     def decode(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
         response.encoding = "utf-8"
-        text = response.text.replace("\x00", "")
-        reader = csv.DictReader(io.StringIO(text))
-        for row in reader:
-            yield {k: (None if v in ("", "null") else v) for k, v in row.items()}
+        # Stream response line-by-line instead of loading the entire CSV
+        # into memory via response.text (bulk exports can be very large).
+        lines = response.iter_lines(decode_unicode=True)
+
+        # Read the header row
+        header_line = next(lines, None)
+        if header_line is None:
+            return
+
+        # Strip null bytes from header
+        header_line = header_line.replace("\x00", "")
+        header_reader = csv.reader(io.StringIO(header_line))
+        headers = next(header_reader)
+        num_columns = len(headers)
+
+        for line in lines:
+            if not line:
+                continue
+            # Strip null bytes
+            line = line.replace("\x00", "")
+            row_reader = csv.reader(io.StringIO(line))
+            values = next(row_reader, None)
+            if values is None:
+                continue
+
+            # Explicit column-count validation to catch CJK encoding
+            # misalignment (parity with v1.6.1 fix).
+            if len(values) != num_columns:
+                raise AirbyteTracedException(
+                    message=(
+                        f"CSV row has {len(values)} columns but header has {num_columns}. "
+                        "This may indicate a character encoding issue (e.g. CJK characters). "
+                        "Please contact support."
+                    ),
+                    failure_type=FailureType.system_error,
+                )
+
+            yield {headers[i]: (None if values[i] in ("", "null") else values[i]) for i in range(num_columns)}
 
 
 # ---------------------------------------------------------------------------
@@ -347,9 +382,27 @@ class MarketoRecordTransformation(RecordTransformation):
 
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    schema_loader: Optional[SchemaLoader] = None
+
+    _cached_schema_properties: Optional[Mapping[str, Any]] = field(init=False, repr=False, default=None)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters
+
+    def _get_schema_properties(self) -> Mapping[str, Any]:
+        """Lazily load and cache the stream schema properties for type coercion."""
+        if self._cached_schema_properties is not None:
+            return self._cached_schema_properties
+        if self.schema_loader is None:
+            self._cached_schema_properties = {}
+            return self._cached_schema_properties
+        try:
+            schema = self.schema_loader.get_json_schema()
+            self._cached_schema_properties = schema.get("properties", {})
+        except Exception:
+            logger.warning("Failed to load schema for type coercion; emitting raw string values")
+            self._cached_schema_properties = {}
+        return self._cached_schema_properties
 
     def transform(
         self,
@@ -372,6 +425,15 @@ class MarketoRecordTransformation(RecordTransformation):
 
         for key, value in attributes.items():
             record[clean_string(key)] = value
+
+        # Coerce every field value to its declared JSON-Schema type.
+        # Without this step all CSV values would be emitted as raw strings.
+        properties = self._get_schema_properties()
+        if properties:
+            for field_name in list(record.keys()):
+                field_schema = properties.get(field_name)
+                if field_schema and "type" in field_schema:
+                    record[field_name] = format_value(record[field_name], field_schema)
 
 
 # ---------------------------------------------------------------------------
@@ -512,75 +574,3 @@ class MarketoActivitySchemaLoader(SchemaLoader):
             "additionalProperties": True,
             "properties": properties,
         }
-
-
-# ---------------------------------------------------------------------------
-# Custom Components Resolver: per-activity-type stream generation
-# ---------------------------------------------------------------------------
-
-
-@dataclass
-class MarketoActivitiesComponentsResolver(ComponentsResolver):
-    """Resolves activity-type metadata into per-type stream configurations.
-
-    Fetches the ``/rest/v1/activities/types.json`` endpoint and yields one
-    resolved stream template per activity type, mapping:
-
-    * ``stream_name``  -> ``activities_{clean_string(name)}``
-    * ``activity_type_id`` -> the numeric Marketo activity-type ID
-    * ``activity_attributes`` -> JSON-encoded attribute list for the schema loader
-    """
-
-    retriever: Retriever
-    config: Config
-    components_mapping: List[ComponentMappingDefinition]
-    parameters: InitVar[Mapping[str, Any]]
-
-    _resolved_components: List[ResolvedComponentMappingDefinition] = field(init=False, repr=False, default_factory=list)
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        for component_mapping in self.components_mapping:
-            if isinstance(component_mapping.value, (str, InterpolatedString)):
-                interpolated_value = (
-                    InterpolatedString.create(component_mapping.value, parameters=parameters)
-                    if isinstance(component_mapping.value, str)
-                    else component_mapping.value
-                )
-
-                field_path = [InterpolatedString.create(path, parameters=parameters) for path in component_mapping.field_path]
-
-                self._resolved_components.append(
-                    ResolvedComponentMappingDefinition(
-                        field_path=field_path,
-                        value=interpolated_value,
-                        value_type=component_mapping.value_type,
-                        parameters=parameters,
-                    )
-                )
-            else:
-                raise ValueError(f"Expected a string or InterpolatedString for value in mapping: {component_mapping}")
-
-    def resolve_components(self, stream_template_config: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
-        kwargs = {"stream_template_config": stream_template_config}
-
-        for stream_slice in self.retriever.stream_slices():
-            for components_values in self.retriever.read_records(records_schema={}, stream_slice=stream_slice):
-                updated_config = deepcopy(stream_template_config)
-
-                # Enrich components_values with computed fields
-                raw_name = components_values.get("name", "")
-                enriched: Dict[str, Any] = dict(components_values)
-                enriched["stream_name"] = f"activities_{clean_string(raw_name)}"
-                enriched["activity_attributes_json"] = json.dumps(components_values.get("attributes", []))
-
-                kwargs["components_values"] = enriched
-                kwargs["stream_slice"] = stream_slice
-
-                for resolved_component in self._resolved_components:
-                    valid_types = (resolved_component.value_type,) if resolved_component.value_type else None
-                    value = resolved_component.value.eval(self.config, valid_types=valid_types, **kwargs)
-
-                    path = [p.eval(self.config, **kwargs) for p in resolved_component.field_path]
-                    dpath.set(updated_config, path, value)
-
-                yield updated_config

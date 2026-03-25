@@ -309,7 +309,7 @@ definitions:
       download_decoder:
         type: CustomDecoder
         class_name: components.MarketoCsvDecoder
-      polling_job_timeout: 60
+      polling_job_timeout: 240
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updatedAt"
@@ -321,6 +321,9 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: components.MarketoRecordTransformation
+        schema_loader:
+          type: CustomSchemaLoader
+          class_name: components.MarketoLeadsSchemaLoader
 
   # Activities bulk export stream template (used by DynamicDeclarativeStream)
   # API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/
@@ -399,7 +402,7 @@ definitions:
       download_decoder:
         type: CustomDecoder
         class_name: components.MarketoCsvDecoder
-      polling_job_timeout: 60
+      polling_job_timeout: 240
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "activityDate"
@@ -411,6 +414,10 @@ definitions:
     transformations:
       - type: CustomTransformation
         class_name: components.MarketoRecordTransformation
+        schema_loader:
+          type: CustomSchemaLoader
+          class_name: components.MarketoActivitySchemaLoader
+          activity_attributes: "placeholder_attributes"
 
 streams:
   # Full refresh streams
@@ -451,12 +458,17 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - name
+          # NOTE: Marketo activity type names are in "Title Case With Spaces"
+          # format (e.g. "Send Email", "Visit Web Page").  The Jinja
+          # ``| lower | replace`` filters produce the same result as
+          # ``clean_string()`` for these space-separated names.  If
+          # Marketo ever returns camelCase names, this would diverge.
           value: "activities_{{ components_values['name'] | lower | replace(' ', '_') }}"
         - type: ComponentMappingDefinition
           field_path:
             - schema_loader
             - activity_attributes
-          value: "{{ components_values.get('attributes', []) }}"
+          value: "{{ components_values.get('attributes', []) | tojson }}"
 
 check:
   type: CheckStream

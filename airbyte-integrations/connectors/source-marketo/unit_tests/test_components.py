@@ -92,14 +92,20 @@ class TestMapMarketoType:
         assert _map_marketo_type("xyz") == {"type": ["string", "null"]}
 
 
+def _make_streaming_response(text: str) -> Mock:
+    """Create a mock response that supports iter_lines (streaming)."""
+    response = Mock()
+    response.encoding = None
+    response.iter_lines = Mock(return_value=iter(text.splitlines()))
+    return response
+
+
 class TestMarketoCsvDecoder:
     def setup_method(self):
         self.decoder = MarketoCsvDecoder(config={}, parameters={})
 
     def test_decode_basic_csv(self):
-        response = Mock()
-        response.encoding = None
-        response.text = "Name,Email\nJohn,john@test.com\nJane,jane@test.com"
+        response = _make_streaming_response("Name,Email\nJohn,john@test.com\nJane,jane@test.com")
         records = list(self.decoder.decode(response))
         assert records == [
             {"Name": "John", "Email": "john@test.com"},
@@ -107,14 +113,46 @@ class TestMarketoCsvDecoder:
         ]
 
     def test_decode_filters_null_bytes(self):
-        response = Mock()
-        response.encoding = None
-        response.text = "Name,Email\nJo\x00hn,john@test.com"
+        response = _make_streaming_response("Name,Email\nJo\x00hn,john@test.com")
         records = list(self.decoder.decode(response))
         assert records == [{"Name": "John", "Email": "john@test.com"}]
 
     def test_is_stream_response(self):
         assert self.decoder.is_stream_response() is False
+
+    def test_decode_empty_response(self):
+        response = _make_streaming_response("")
+        records = list(self.decoder.decode(response))
+        assert records == []
+
+    def test_decode_header_only(self):
+        response = _make_streaming_response("Name,Email")
+        records = list(self.decoder.decode(response))
+        assert records == []
+
+    def test_decode_null_values_normalised(self):
+        response = _make_streaming_response("Name,Email\nnull,")
+        records = list(self.decoder.decode(response))
+        assert records == [{"Name": None, "Email": None}]
+
+    def test_decode_column_count_mismatch_raises(self):
+        # Simulates a CJK encoding issue where a row has more/fewer columns
+        response = _make_streaming_response("Name,Email\nJohn,john@test.com,extra_field")
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(self.decoder.decode(response))
+        assert "columns" in exc_info.value.message.lower()
+
+    def test_decode_cjk_characters(self):
+        # Ensure CJK characters are handled correctly when column counts match
+        response = _make_streaming_response("Name,Email\n\u5f20\u4e09,zhang@test.com")
+        records = list(self.decoder.decode(response))
+        assert records == [{"Name": "\u5f20\u4e09", "Email": "zhang@test.com"}]
+
+    def test_decode_uses_streaming(self):
+        """Verify decode calls iter_lines instead of loading response.text."""
+        response = _make_streaming_response("Name\nJohn")
+        list(self.decoder.decode(response))
+        response.iter_lines.assert_called_once_with(decode_unicode=True)
 
 
 class TestMarketoRecordTransformation:
@@ -143,6 +181,72 @@ class TestMarketoRecordTransformation:
         record = {"id": 1, "attributes": "not-valid-json"}
         self.transformation.transform(record)
         assert "attributes" not in record
+
+    def test_type_coercion_with_schema_loader(self):
+        """Verify that format_value() is called for every field when a schema_loader is provided."""
+        mock_loader = Mock()
+        mock_loader.get_json_schema.return_value = {
+            "properties": {
+                "id": {"type": ["integer", "null"]},
+                "score": {"type": ["number", "null"]},
+                "is_active": {"type": ["boolean", "null"]},
+                "name": {"type": ["string", "null"]},
+            }
+        }
+        transformation = MarketoRecordTransformation(config={}, parameters={}, schema_loader=mock_loader)
+        record = {"id": "42", "score": "3.14", "is_active": "true", "name": "test"}
+        transformation.transform(record)
+        assert record["id"] == 42
+        assert record["score"] == 3.14
+        assert record["is_active"] is True
+        assert record["name"] == "test"
+
+    def test_type_coercion_null_values(self):
+        """Verify null/empty CSV values are coerced to None."""
+        mock_loader = Mock()
+        mock_loader.get_json_schema.return_value = {
+            "properties": {
+                "id": {"type": ["integer", "null"]},
+                "name": {"type": ["string", "null"]},
+            }
+        }
+        transformation = MarketoRecordTransformation(config={}, parameters={}, schema_loader=mock_loader)
+        record = {"id": "null", "name": ""}
+        transformation.transform(record)
+        assert record["id"] is None
+        assert record["name"] is None
+
+    def test_type_coercion_without_schema_loader(self):
+        """Without a schema_loader, values should remain as raw strings."""
+        transformation = MarketoRecordTransformation(config={}, parameters={})
+        record = {"id": "42", "score": "3.14"}
+        transformation.transform(record)
+        assert record["id"] == "42"
+        assert record["score"] == "3.14"
+
+    def test_type_coercion_with_attributes_flattening(self):
+        """Verify that both attribute flattening and type coercion work together."""
+        mock_loader = Mock()
+        mock_loader.get_json_schema.return_value = {
+            "properties": {
+                "id": {"type": ["integer", "null"]},
+                "campaign_run_id": {"type": ["integer", "null"]},
+            }
+        }
+        transformation = MarketoRecordTransformation(config={}, parameters={}, schema_loader=mock_loader)
+        record = {"id": "1", "attributes": '{"Campaign Run ID": "123"}'}
+        transformation.transform(record)
+        assert record["id"] == 1
+        assert record["campaign_run_id"] == 123
+
+    def test_schema_loader_error_falls_back_gracefully(self):
+        """If schema_loader raises, values should pass through as raw strings."""
+        mock_loader = Mock()
+        mock_loader.get_json_schema.side_effect = RuntimeError("API unavailable")
+        transformation = MarketoRecordTransformation(config={}, parameters={}, schema_loader=mock_loader)
+        record = {"id": "42"}
+        transformation.transform(record)
+        assert record["id"] == "42"
 
 
 class TestMarketoActivitySchemaLoader:
