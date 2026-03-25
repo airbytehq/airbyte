@@ -442,6 +442,31 @@ class ShopifyBulkManager:
                     return True
         return False
 
+    def _has_bulk_rate_limit_error(self, errors: Optional[Iterable[Mapping[str, Any]]] = None) -> bool:
+        """
+        When too many recent bulk operations have failed or returned no results, Shopify returns:
+        Error example:
+        [
+            {
+                'code': 'INVALID',
+                'field': None,
+                'message': 'Too many recent bulk operations with no results or that have failed. Please adjust your query and try again in 9 minutes.',
+            }
+        ]
+        This is a transient rate-limit condition and should be retried after waiting.
+        """
+        if errors:
+            for error in errors:
+                if isinstance(error, dict):
+                    error_code = error.get("code", "")
+                    error_message = error.get("message", "")
+                    if (
+                        error_code == BulkOperationUserErrorCode.INVALID.value
+                        and "too many recent bulk operations" in error_message.lower()
+                    ):
+                        return True
+        return False
+
     def _has_reached_max_concurrency(self) -> bool:
         return self._concurrent_attempt == self._concurrent_max_retry
 
@@ -494,6 +519,12 @@ class ShopifyBulkManager:
             # when the concurrent job takes place, another job could not be created
             # we typically need to wait and retry, but no longer than 10 min. (see retry in `bulk_retry_on_exception`)
             raise ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError(f"Failed to create job for stream {self.http_client.name}")
+        elif self._has_bulk_rate_limit_error(errors):
+            # when Shopify returns INVALID with "Too many recent bulk operations", this is a transient rate-limit
+            # condition that should be retried after waiting, similar to concurrent job errors.
+            raise ShopifyBulkExceptions.BulkJobCreationFailedRateLimitError(
+                f"Stream `{self.http_client.name}`: Shopify bulk operation rate limit reached. Will retry after backoff."
+            )
         elif self._should_switch_shop_name(response):
             # assign new shop name, since the one that specified in `config` was redirected to the different one.
             raise ShopifyBulkExceptions.BulkJobRedirectToOtherShopError(f"Switching the `store` name, redirected to: {response.url}")

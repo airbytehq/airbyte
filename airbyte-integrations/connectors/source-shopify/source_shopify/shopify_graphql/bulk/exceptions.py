@@ -66,3 +66,8 @@ class ShopifyBulkExceptions:
         """Raised when failing the job after hitting too many BulkJobCreationFailedConcurrentError."""
 
         failure_type: FailureType = FailureType.transient_error
+
+    class BulkJobCreationFailedRateLimitError(BaseBulkException):
+        """Raised when Shopify returns an INVALID error due to too many recent bulk operations with no results or failures."""
+
+        failure_type: FailureType = FailureType.transient_error
