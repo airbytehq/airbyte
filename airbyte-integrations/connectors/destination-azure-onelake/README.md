@@ -1,91 +1,256 @@
-# OneLake Airbyte Destination Connector
+# Destination: Microsoft OneLake
 
-An **Airbyte destination connector** that writes data to **Microsoft Fabric OneLake** (Lakehouse Files) via the Azure Blob–compatible API. Supports **Service Principal** and **Managed Identity** authentication, configurable output paths, and CSV/JSONL formats.
+## Overview
 
-## Documentation
+The Microsoft OneLake destination connector writes data from Airbyte into a **Microsoft Fabric Lakehouse** using the OneLake endpoint. It supports CSV and JSONL output formats and authenticates via either a **Service Principal (Entra ID)** or **Managed Identity**.
 
-- **[Connector reference](docs/CONNECTOR_REFERENCE.md)** — Auth (SP vs MI), mandatory fields, OneLake folder layout, UI notes.
-- **[Build, deploy & operations](docs/BUILD_AND_DEPLOY.md)** — Build image, deploy to Kind/Kubernetes, configure, troubleshoot.
-- **[GitHub repo setup](docs/GITHUB_SETUP.md)** — Create and push the repo (e.g. **OneLake Airbyte Destination Connector**).
-- **[LinkedIn posts](docs/LINKEDIN_POSTS.md)** — Ready-to-use post drafts and promo image (`assets/onelake-airbyte-promo.png`) for promotion.
-- **Sample configs** — [`sample_secrets/`](sample_secrets/) for Service Principal (`config.json`) and Managed Identity (`config_managed_identity.json`).
-
-## Quick start
-
-1. **Build & tag image** (from [Airbyte](https://github.com/airbytehq/airbyte) monorepo root):
-   ```bash
-   ./gradlew :airbyte-integrations:connectors:destination-azure-onelake:assemble --no-daemon -q
-   docker tag airbyte/destination-azure-onelake:dev airbyte/destination-azure-onelake:1.1
-   ```
-2. **Load into Kind** (if using Kind): `kind load docker-image airbyte/destination-azure-onelake:1.1 --name airbyte-abctl`
-3. **In Airbyte**: Add destination → Custom connector → Image `airbyte/destination-azure-onelake:1.1`. Set Fabric workspace, Lakehouse, auth (SP or MI), and **Output Path Format** (e.g. `Direct_Onelake_Connector_Data/`).
+| Feature | Supported |
+|---|---|
+| Full Refresh (Overwrite) | ✅ |
+| Append | ✅ |
+| Incremental (Deduped) | ❌ |
+| Normalization | ❌ |
+| dbt | ❌ |
 
 ---
 
-## Authentication
+## Prerequisites
 
-### Option 1: Service Principal (default)
+Before connecting, ensure you have:
 
-Use Azure Tenant ID, Client ID, and Client Secret. The service principal must have **Storage Blob Data Contributor** (or equivalent) on the Fabric workspace.
+- A **Microsoft Fabric workspace** with at least one Lakehouse item created.
+- An **Azure Entra ID (AAD) Service Principal** with the **Storage Blob Data Contributor** role on the Fabric workspace, **or** a **Managed Identity** assigned to the host running Airbyte with equivalent permissions.
+- The **OneLake endpoint** enabled on your Fabric tenant (enabled by default: `onelake.dfs.fabric.microsoft.com`).
 
-### Option 2: Managed Identity
+### Self-Managed Note
 
-Set **Use Managed Identity** to `true` in the destination configuration. Leave Tenant ID, Client ID, and Client Secret empty.
+When running Airbyte OSS, ensure your instance can reach `onelake.dfs.fabric.microsoft.com` over HTTPS (port 443). If you are using Managed Identity, the host VM or Kubernetes node must have a managed identity assigned with the appropriate Fabric permissions.
 
-**What you need when using Managed Identity:**
-
-1. **Where the connector runs** must have an Azure Managed Identity attached:
-   - **Azure VM / VMSS:** enable System-assigned or assign a User-assigned identity.
-   - **Azure Container Apps / App Service:** enable Managed identity in the resource’s Identity blade.
-   - **AKS:** use [Azure AD pod identity](https://learn.microsoft.com/en-us/azure/aks/use-azure-ad-pod-identity) or [workload identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) so the Airbyte worker pod runs with a managed identity.
-   - **Airbyte Cloud:** use the identity Airbyte provides for your destination (if supported) or continue using Service Principal.
-
-2. **Permissions:** The managed identity needs **Storage Blob Data Contributor** (or at least **Storage Blob Data Owner**) on the **Fabric workspace** that backs your OneLake account.
-   - In **Azure Portal:** find the workspace’s underlying storage (Microsoft Fabric uses a storage account per workspace) or use **Microsoft Fabric** admin to assign the identity to the workspace with the right role.
-   - In **Fabric:** Workspace → Manage access → Add the identity (by name or client ID for user-assigned) and grant **Contributor** or the role that includes write to the Lakehouse.
-
-3. **User-assigned identity (optional):** If you use a **user-assigned** managed identity, set **Managed Identity Client ID** in the destination config to that identity’s client ID. Leave it empty for **system-assigned** identity.
-
-4. **No secrets:** With Managed Identity you do not store Tenant ID, Client ID, or Client Secret; the host obtains a token automatically.
 
 ---
 
-# Azure OneLake Test Configuration
+## Setup Guide
 
-In order to test the Azure OneLake destination, you need a Microsoft account.
+### Step 1: Create a Lakehouse in Microsoft Fabric
 
-## Community Contributor
+1. Go to [Microsoft Fabric](https://app.fabric.microsoft.com) and open your workspace.
+2. Click **New** → **Lakehouse** and give it a name (e.g., `lakehouse_raw`).
+3. Note the **Workspace name or GUID** from the URL. If the workspace name contains spaces, use the GUID instead.
+4. Note the **Lakehouse item path** — this is typically `YourLakehouse.Lakehouse`.
 
-As a community contributor, you will need access to Azure to run the integration tests.
+### Step 2: Configure Authentication
 
-- Create an Azure Storage account (or identify your OneLake-compatible endpoint) for testing. Check if it works under https://portal.azure.com/ -> "Storage explorer (preview)".
-- Get your `azure_blob_storage_account_name` and `azure_blob_storage_account_key` that can read and write to the target container.
-- Paste the accountName and key information into the config files under [`./sample_secrets`](./sample_secrets).
-- Rename the directory from `sample_secrets` to `secrets`.
-- Feel free to modify the config files with different settings in the acceptance test file (e.g. `AzureBlobStorageJsonlDestinationAcceptanceTest.java`, method `getFormatConfig`), as long as they follow the schema defined in [spec.json](src/main/resources/spec.json).
+Choose one of the two supported authentication methods:
 
-## Airbyte Employee
+#### Option A: Service Principal (Entra ID)
 
-- Access the `Azure Blob Storage Account` secrets on Last Pass.
-- Replace the `config.json` under `sample_secrets`.
-- Rename the directory from `sample_secrets` to `secrets`.
+1. In the [Azure Portal](https://portal.azure.com), navigate to **Entra ID** → **App registrations** → **New registration**.
+2. Register an app and copy the **Tenant ID**, **Client ID**, and create a **Client Secret** under **Certificates & secrets**.
+3. In Microsoft Fabric, go to your workspace **Settings** → **Manage access** and grant the service principal the **Contributor** role.
 
-### Infra setup
+#### Option B: Managed Identity
 
-1. Log in to the [Azure portal](https://portal.azure.com/#home) using the `integration-test@airbyte.io` account
-1. Go to [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts)
-1. Create a new storage account with a reasonable name (currently `airbyteteststorage`), under the `integration-test-rg` resource group.
-1. In the `Redundancy` setting, choose `Locally-redundant storage (LRS)`.
-1. Hit `Review` (you can leave all the other settings as the default) and then `Create`.
-1. Navigate into that storage account -> `Containers`. Make a new container with a reasonable name (currently `airbytetescontainername`).
-1. Then go back up to the storage account -> `Access keys`. This is the `azure_blob_storage_account_key` config field.
-1. There are two keys; use the first one. We don't need 100% uptime on our integration tests, so there's no need to alternate between the two keys.
+1. Assign a **System-assigned** or **User-assigned** Managed Identity to the host running Airbyte (VM or AKS node).
+2. In Microsoft Fabric, grant the managed identity the **Contributor** role in workspace access settings.
+3. For user-assigned identities, note the identity's **Client ID**.
 
-## Add New Output Format
+### Step 3: Connect in Airbyte
 
-- Add a new enum in `AzureBlobStorageFormat'.
-- Modify `spec.json` to specify the configuration of this new format.
-- Update `AzureBlobStorageFormatConfigs` to be able to construct a config for this new format.
-- Create a new package under `io.airbyte.integrations.destination.azure_onelake` (or reuse the existing `azure_blob_storage` package if only rebranding).
-- Implement a new `AzureBlobStorageWriter`. The implementation can extend `BaseAzureBlobStorageWriter`.
-- Write an acceptance test for the new output format. The test can extend `AzureBlobStorageDestinationAcceptanceTest`.
+1. In Airbyte, go to **Destinations** → **New Destination** → **Microsoft OneLake**.
+2. Fill in the fields as described in the [Configuration Reference](#configuration-reference) below.
+3. Click **Test Connection** to validate.
+
+---
+
+## Configuration Reference
+
+### OneLake Endpoint Domain Name
+
+The OneLake DFS endpoint. Leave this as the default value unless you are connecting to a sovereign cloud or private endpoint.
+
+**Default:** `onelake.dfs.fabric.microsoft.com`
+
+---
+
+### Fabric Workspace Name or GUID
+
+The name or GUID of your Microsoft Fabric workspace. If the workspace name contains spaces, use the GUID instead.
+
+**Where to find it:** Open your Fabric workspace in the browser. The URL contains the workspace GUID: `https://app.fabric.microsoft.com/groups/<WORKSPACE_GUID>/...`
+
+**Examples:** `myworkspace`, `12345678-aaaa-bbbb-cccc-123456789012`
+
+---
+
+### Lakehouse Item Path
+
+The target Lakehouse within your workspace. This is the Fabric item that will receive your data under its **Files** section.
+
+**Format:** `LakehouseName.Lakehouse` or just the Lakehouse name if it has no spaces.
+
+**Examples:** `MyLakehouse.Lakehouse`, `lakehouse_raw`
+
+---
+
+### Output Format
+
+The file format used for data written to OneLake. Choose between:
+
+| Format | Description |
+|---|---|
+| **CSV** | Comma-separated values. Supports optional root-level flattening of nested JSON fields. |
+| **JSONL** | Newline-delimited JSON. Each record is written as a single JSON object per line. Supports optional root-level flattening. |
+
+**Flattening options:**
+- `No flattening` — nested objects are preserved as JSON strings inside the output.
+- `Root level flattening` — top-level nested fields are expanded into separate columns/keys.
+
+---
+
+### Use Managed Identity
+
+Toggle this **on** to authenticate using the Azure Managed Identity of the host running Airbyte, instead of a Service Principal.
+
+- Requires the identity to have **Storage Blob Data Contributor** (or equivalent) permissions on the Fabric workspace.
+- When enabled, the **Azure Client Secret** field is not required.
+
+**Default:** `false`
+
+---
+
+### Managed Identity Client ID (optional)
+
+Only required when using a **User-Assigned Managed Identity**. Leave empty if using a System-Assigned Managed Identity.
+
+This is the **Client ID** of the user-assigned identity, found in the Azure Portal under **Managed Identities**.
+
+---
+
+### Azure Tenant ID
+
+The **Directory (Tenant) ID** of your Azure Entra ID. Required when authenticating via Service Principal.
+
+**Where to find it:** Azure Portal → Entra ID → Overview → **Tenant ID**.
+
+**Example:** `12345678-1234-1234-1234-123456789012`
+
+---
+
+### Azure Client ID
+
+The **Application (Client) ID** of your registered Entra ID app (Service Principal). Required when authenticating via Service Principal.
+
+**Where to find it:** Azure Portal → Entra ID → App registrations → your app → **Application (client) ID**.
+
+**Example:** `87654321-4321-4321-4321-210987654321`
+
+---
+
+### Azure Client Secret
+
+The client secret generated for your Entra ID app. Required when **Use Managed Identity** is off.
+
+**Where to find it:** Azure Portal → Entra ID → App registrations → your app → **Certificates & secrets** → **Client secrets**.
+
+> ⚠️ Treat this value as a password. It is stored encrypted by Airbyte.
+
+---
+
+### Target Object Size (MB)
+
+The maximum size (in megabytes) of each output file before the connector starts writing to a new file (spilling). Set to `0` to disable size-based splitting.
+
+**Default:** `500` MB
+
+---
+
+### Output Path Format
+
+Controls the directory structure inside the Lakehouse **Files** section where data is written. Supports the following template variables:
+
+| Variable | Description |
+|---|---|
+| `${NAMESPACE}` | The source namespace (schema) |
+| `${STREAM_NAME}` | The name of the stream (table) |
+| `${YEAR}` | Current year |
+| `${MONTH}` | Current month |
+| `${DAY}` | Current day |
+
+**Example:** `${NAMESPACE}/${STREAM_NAME}/`
+
+Leave empty to use the default path structure.
+
+---
+
+### File Name Pattern
+
+Controls how output files are named. Supports the following template variables:
+
+| Variable | Description |
+|---|---|
+| `{date}` | Date of the sync |
+| `{timestamp}` | Unix timestamp of the sync |
+| `{part_number}` | File part number (for spilled files) |
+| `{format_extension}` | File extension based on output format (`.csv`, `.jsonl`) |
+
+**Example:** `{date}_{timestamp}_{part_number}{format_extension}`
+
+Leave empty to use default naming.
+
+---
+
+## Supported Sync Modes
+
+| Sync Mode | Supported |
+|---|---|
+| Full Refresh — Overwrite | ✅ |
+| Full Refresh — Append | ✅ |
+| Incremental — Append | ✅ |
+| Incremental — Deduped | ❌ |
+
+---
+
+## Output File Structure
+
+Data is written to the **Files** section of the target Lakehouse, not the Tables section. The path structure follows the **Output Path Format** configuration.
+
+Example output path with default settings:
+
+```
+Files/
+└── <namespace>/
+    └── <stream_name>/
+        └── <timestamp>_<part>.jsonl
+```
+
+To use the data in Fabric notebooks or Spark, reference the file path using the OneLake ABFS URI:
+
+```
+abfss://<workspace_guid>@onelake.dfs.fabric.microsoft.com/<lakehouse>.Lakehouse/Files/<path>
+```
+
+---
+
+## Troubleshooting
+
+### Authentication Errors
+
+- **403 Forbidden:** Verify the Service Principal or Managed Identity has the **Contributor** role in the Fabric workspace settings (not just Azure RBAC).
+- **Invalid client secret:** Client secrets expire. Rotate the secret in Entra ID and update the connector configuration.
+- **Managed Identity not found:** Ensure the VM or AKS node has the identity attached, and that the identity has been granted access in Fabric.
+
+### Data Not Appearing in Lakehouse Tables
+
+Data written by this connector goes to the **Files** section of the Lakehouse, not the managed **Tables** section. To query the data as a table, create a shortcut or use a Fabric notebook to load the files into a Delta table.
+
+### File Size Issues
+
+If syncs are producing very large files, reduce the **Target Object Size (MB)** setting to trigger file spilling at a smaller threshold.
+
+---
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+|---|---|---|---|
+| 0.1.0 | 2025-01-01 | | Initial release of destination-azure-onelake |
