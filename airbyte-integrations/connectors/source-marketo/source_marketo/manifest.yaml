@@ -228,6 +228,190 @@ definitions:
             path: ["program_id"]
             value: "{{ stream_partition['program_id'] }}"
 
+  # -----------------------------------------------------------------------
+  # Bulk export streams (Leads + Activities) using AsyncRetriever
+  # -----------------------------------------------------------------------
+
+  # Leads bulk export stream
+  # API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
+  leads_stream:
+    type: DeclarativeStream
+    name: "leads"
+    primary_key: "id"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: components.MarketoLeadsSchemaLoader
+    retriever:
+      type: AsyncRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      status_mapping:
+        type: AsyncJobStatusMap
+        running:
+          - "Queued"
+          - "Processing"
+        completed:
+          - "Completed"
+        failed:
+          - "Cancelled"
+          - "Failed"
+        timeout: []
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - "result"
+          - "0"
+          - "status"
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - "result"
+          - "0"
+          - "exportId"
+      creation_requester:
+        type: CustomRequester
+        class_name: components.MarketoBulkExportCreationRequester
+        create_requester:
+          type: HttpRequester
+          url_base: "{{ config['domain_url'].rstrip('/') }}/"
+          path: "bulk/v1/leads/export/create.json"
+          http_method: POST
+          authenticator: "#/definitions/authenticator"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+          $parameters:
+            name: "leads_create"
+        enqueue_requester:
+          type: HttpRequester
+          url_base: "{{ config['domain_url'].rstrip('/') }}/"
+          path: "bulk/v1/leads/export/{{ stream_slice.extra_fields['export_id'] }}/enqueue.json"
+          http_method: POST
+          authenticator: "#/definitions/authenticator"
+          $parameters:
+            name: "leads_enqueue"
+        include_fields_from_describe: "true"
+      polling_requester:
+        type: HttpRequester
+        url_base: "{{ config['domain_url'].rstrip('/') }}/"
+        path: "bulk/v1/leads/export/{{ creation_response['result'][0]['exportId'] }}/status.json"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+      download_requester:
+        type: HttpRequester
+        url_base: "{{ config['domain_url'].rstrip('/') }}/"
+        path: "bulk/v1/leads/export/{{ creation_response['result'][0]['exportId'] }}/file.json"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+      download_decoder:
+        type: CustomDecoder
+        class_name: components.MarketoCsvDecoder
+      polling_job_timeout: 60
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updatedAt"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime: "{{ config['start_date'] }}"
+      end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+      cursor_granularity: "PT1S"
+      step: "P{{ config.get('window_in_days', 30) }}D"
+    transformations:
+      - type: CustomTransformation
+        class_name: components.MarketoRecordTransformation
+
+  # Activities bulk export stream template (used by DynamicDeclarativeStream)
+  # API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/
+  activities_stream_template:
+    type: DeclarativeStream
+    name: "placeholder_activity_stream"
+    primary_key: "marketoGUID"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: components.MarketoActivitySchemaLoader
+      activity_attributes: "placeholder_attributes"
+    retriever:
+      type: AsyncRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      status_mapping:
+        type: AsyncJobStatusMap
+        running:
+          - "Queued"
+          - "Processing"
+        completed:
+          - "Completed"
+        failed:
+          - "Cancelled"
+          - "Failed"
+        timeout: []
+      status_extractor:
+        type: DpathExtractor
+        field_path:
+          - "result"
+          - "0"
+          - "status"
+      download_target_extractor:
+        type: DpathExtractor
+        field_path:
+          - "result"
+          - "0"
+          - "exportId"
+      creation_requester:
+        type: CustomRequester
+        class_name: components.MarketoBulkExportCreationRequester
+        create_requester:
+          type: HttpRequester
+          url_base: "{{ config['domain_url'].rstrip('/') }}/"
+          path: "bulk/v1/activities/export/create.json"
+          http_method: POST
+          authenticator: "#/definitions/authenticator"
+          error_handler:
+            type: DefaultErrorHandler
+            max_retries: 3
+          $parameters:
+            name: "activities_create"
+        enqueue_requester:
+          type: HttpRequester
+          url_base: "{{ config['domain_url'].rstrip('/') }}/"
+          path: "bulk/v1/activities/export/{{ stream_slice.extra_fields['export_id'] }}/enqueue.json"
+          http_method: POST
+          authenticator: "#/definitions/authenticator"
+          $parameters:
+            name: "activities_enqueue"
+      polling_requester:
+        type: HttpRequester
+        url_base: "{{ config['domain_url'].rstrip('/') }}/"
+        path: "bulk/v1/activities/export/{{ creation_response['result'][0]['exportId'] }}/status.json"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+      download_requester:
+        type: HttpRequester
+        url_base: "{{ config['domain_url'].rstrip('/') }}/"
+        path: "bulk/v1/activities/export/{{ creation_response['result'][0]['exportId'] }}/file.json"
+        http_method: GET
+        authenticator: "#/definitions/authenticator"
+      download_decoder:
+        type: CustomDecoder
+        class_name: components.MarketoCsvDecoder
+      polling_job_timeout: 60
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "activityDate"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime: "{{ config['start_date'] }}"
+      end_datetime: "{{ config.get('end_date', now_utc().strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+      cursor_granularity: "PT1S"
+      step: "P{{ config.get('window_in_days', 30) }}D"
+    transformations:
+      - type: CustomTransformation
+        class_name: components.MarketoRecordTransformation
+
 streams:
   # Full refresh streams
   - "#/definitions/activity_types_stream"
@@ -243,6 +427,36 @@ streams:
 
   # Substreams
   - "#/definitions/program_tokens_stream"
+
+  # Bulk export streams
+  - "#/definitions/leads_stream"
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/activities_stream_template"
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/requester"
+          path: "rest/v1/activities/types.json"
+          http_method: GET
+        record_selector:
+          $ref: "#/definitions/selector"
+        paginator:
+          $ref: "#/definitions/cursor_paginator"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - name
+          value: "activities_{{ components_values['name'] | lower | replace(' ', '_') }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - activity_attributes
+          value: "{{ components_values.get('attributes', []) }}"
 
 check:
   type: CheckStream

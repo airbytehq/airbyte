@@ -1,0 +1,236 @@
+#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+#
+
+import json
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+import requests
+
+from components import (
+    MarketoActivitySchemaLoader,
+    MarketoBulkExportCreationRequester,
+    MarketoCsvDecoder,
+    MarketoLeadsSchemaLoader,
+    MarketoRecordTransformation,
+    clean_string,
+    format_value,
+    _map_marketo_type,
+)
+from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.utils import AirbyteTracedException
+
+
+class TestCleanString:
+    def test_camel_case(self):
+        assert clean_string("updatedAt") == "updated_at"
+
+    def test_pascal_case(self):
+        assert clean_string("UpdatedAt") == "updated_at"
+
+    def test_with_spaces(self):
+        assert clean_string("base URL") == "base_url"
+
+    def test_already_snake_case(self):
+        assert clean_string("updated_at") == "updated_at"
+
+    def test_fix_mapping(self):
+        assert clean_string("api method name") == "api_method_name"
+        assert clean_string("modifying user") == "modifying_user"
+
+
+class TestFormatValue:
+    def test_null_values(self):
+        assert format_value(None, {"type": ["string", "null"]}) is None
+        assert format_value("", {"type": ["string", "null"]}) is None
+        assert format_value("null", {"type": ["string", "null"]}) is None
+
+    def test_integer(self):
+        assert format_value("42", {"type": ["integer", "null"]}) == 42
+
+    def test_integer_with_decimal(self):
+        assert format_value("42.7", {"type": ["integer", "null"]}) == 42
+
+    def test_integer_invalid(self):
+        assert format_value("abc", {"type": ["integer", "null"]}) is None
+
+    def test_string(self):
+        assert format_value("hello", {"type": ["string", "null"]}) == "hello"
+
+    def test_number(self):
+        assert format_value("3.14", {"type": ["number", "null"]}) == 3.14
+
+    def test_boolean(self):
+        assert format_value("true", {"type": ["boolean", "null"]}) is True
+        assert format_value("false", {"type": ["boolean", "null"]}) is False
+        assert format_value(True, {"type": ["boolean", "null"]}) is True
+
+
+class TestMapMarketoType:
+    def test_date(self):
+        assert _map_marketo_type("date") == {"type": ["string", "null"], "format": "date"}
+
+    def test_datetime(self):
+        assert _map_marketo_type("datetime") == {"type": ["string", "null"], "format": "date-time"}
+
+    def test_integer(self):
+        assert _map_marketo_type("integer") == {"type": ["integer", "null"]}
+
+    def test_boolean(self):
+        assert _map_marketo_type("boolean") == {"type": ["boolean", "null"]}
+
+    def test_string_types(self):
+        for st in ["string", "email", "url", "phone", "textarea", "text"]:
+            assert _map_marketo_type(st) == {"type": ["string", "null"]}
+
+    def test_array(self):
+        result = _map_marketo_type("array")
+        assert result["type"] == ["array", "null"]
+
+    def test_unknown(self):
+        assert _map_marketo_type("xyz") == {"type": ["string", "null"]}
+
+
+class TestMarketoCsvDecoder:
+    def setup_method(self):
+        self.decoder = MarketoCsvDecoder(config={}, parameters={})
+
+    def test_decode_basic_csv(self):
+        response = Mock()
+        response.encoding = None
+        response.text = "Name,Email\nJohn,john@test.com\nJane,jane@test.com"
+        records = list(self.decoder.decode(response))
+        assert records == [
+            {"Name": "John", "Email": "john@test.com"},
+            {"Name": "Jane", "Email": "jane@test.com"},
+        ]
+
+    def test_decode_filters_null_bytes(self):
+        response = Mock()
+        response.encoding = None
+        response.text = "Name,Email\nJo\x00hn,john@test.com"
+        records = list(self.decoder.decode(response))
+        assert records == [{"Name": "John", "Email": "john@test.com"}]
+
+    def test_is_stream_response(self):
+        assert self.decoder.is_stream_response() is False
+
+
+class TestMarketoRecordTransformation:
+    def setup_method(self):
+        self.transformation = MarketoRecordTransformation(config={}, parameters={})
+
+    def test_flatten_attributes_json_string(self):
+        record = {"id": 1, "attributes": '{"Campaign Run ID": "123", "Choice Number": "5"}'}
+        self.transformation.transform(record)
+        assert "attributes" not in record
+        assert record["campaign_run_id"] == "123"
+        assert record["choice_number"] == "5"
+
+    def test_flatten_attributes_dict(self):
+        record = {"id": 1, "attributes": {"Some Key": "value"}}
+        self.transformation.transform(record)
+        assert "attributes" not in record
+        assert record["some_key"] == "value"
+
+    def test_no_attributes(self):
+        record = {"id": 1, "name": "test"}
+        self.transformation.transform(record)
+        assert record == {"id": 1, "name": "test"}
+
+    def test_invalid_attributes_json(self):
+        record = {"id": 1, "attributes": "not-valid-json"}
+        self.transformation.transform(record)
+        assert "attributes" not in record
+
+
+class TestMarketoActivitySchemaLoader:
+    def test_basic_schema(self):
+        loader = MarketoActivitySchemaLoader(config={}, parameters={})
+        schema = loader.get_json_schema()
+        assert "marketoGUID" in schema["properties"]
+        assert "leadId" in schema["properties"]
+        assert "activityDate" in schema["properties"]
+
+    def test_schema_with_attributes(self):
+        attrs = json.dumps([
+            {"name": "Campaign Run ID", "dataType": "integer"},
+            {"name": "Has Predictive", "dataType": "boolean"},
+        ])
+        loader = MarketoActivitySchemaLoader(config={}, parameters={}, activity_attributes=attrs)
+        schema = loader.get_json_schema()
+        assert "campaign_run_id" in schema["properties"]
+        assert schema["properties"]["campaign_run_id"]["type"] == ["integer", "null"]
+        assert schema["properties"]["has_predictive"]["type"] == ["boolean", "null"]
+
+
+class TestMarketoBulkExportCreationRequester:
+    def test_quota_error_raises(self):
+        response_json = {"errors": [{"code": "1029", "message": "Export daily quota 500MB exceeded"}]}
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            MarketoBulkExportCreationRequester._check_quota_error(response_json, json.dumps(response_json))
+        assert "quota" in exc_info.value.message.lower()
+
+    def test_no_quota_error(self):
+        response_json = {"result": [{"exportId": "abc"}], "success": True}
+        MarketoBulkExportCreationRequester._check_quota_error(response_json, json.dumps(response_json))
+
+    def test_build_create_body_basic(self):
+        config = {"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"}
+        requester = MarketoBulkExportCreationRequester(
+            config=config, parameters={}, create_requester=MagicMock(),
+            enqueue_requester=MagicMock(), include_fields_from_describe=False,
+        )
+        stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
+        body = requester._build_create_body(stream_slice)
+        assert body["format"] == "CSV"
+        assert "filter" in body
+        assert body["filter"]["createdAt"]["startAt"] == "2024-01-01T00:00:00Z"
+
+    def test_build_create_body_with_activity_type(self):
+        config = {"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"}
+        requester = MarketoBulkExportCreationRequester(
+            config=config, parameters={}, create_requester=MagicMock(), enqueue_requester=MagicMock(),
+        )
+        stream_slice = StreamSlice(partition={"activity_type_id": "6"}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
+        body = requester._build_create_body(stream_slice)
+        assert body["filter"]["activityTypeIds"] == [6]
+
+
+class TestMarketoLeadsSchemaLoader:
+    @patch("components.requests.get")
+    def test_schema_with_custom_fields(self, mock_get):
+        token_response = Mock()
+        token_response.json.return_value = {"access_token": "test_token"}
+        token_response.raise_for_status = Mock()
+        describe_response = Mock()
+        describe_response.json.return_value = {
+            "result": [
+                {"id": 100, "displayName": "Custom Score", "dataType": "score", "rest": {"name": "customScore__c"}},
+                {"id": 101, "displayName": "Custom Date", "dataType": "date", "rest": {"name": "customDate__c"}},
+            ]
+        }
+        describe_response.raise_for_status = Mock()
+        mock_get.side_effect = [token_response, describe_response]
+        loader = MarketoLeadsSchemaLoader(
+            config={"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"},
+            parameters={},
+        )
+        schema = loader.get_json_schema()
+        assert "customScore__c" in schema["properties"]
+        assert schema["properties"]["customScore__c"]["type"] == ["integer", "null"]
+        assert "customDate__c" in schema["properties"]
+        assert schema["properties"]["customDate__c"]["format"] == "date"
+
+    @patch("components.requests.get")
+    def test_schema_fallback_on_error(self, mock_get):
+        mock_get.side_effect = requests.RequestException("Connection failed")
+        loader = MarketoLeadsSchemaLoader(
+            config={"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"},
+            parameters={},
+        )
+        schema = loader.get_json_schema()
+        assert schema["type"] == ["null", "object"]
+        assert "properties" in schema
+
