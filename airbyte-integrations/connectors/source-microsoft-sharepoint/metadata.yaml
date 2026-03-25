@@ -48,6 +48,12 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
+    - title: Microsoft Graph API Changelog
+      url: https://developer.microsoft.com/en-us/graph/changelog
+      type: api_release_history
+    - title: Microsoft Graph API Deprecations (drive sharedWithMe)
+      url: https://learn.microsoft.com/en-us/graph/api/drive-sharedwithme?view=graph-rest-1.0
+      type: api_deprecations
     - title: SharePoint REST API
       url: https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/get-to-know-the-sharepoint-rest-service
       type: api_reference
