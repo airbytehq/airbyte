@@ -233,7 +233,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.5.4 | 2026-03-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Fix misleading SSH error when SQLException has null sqlState during connection check |
+| 3.5.4 | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
 | 3.5.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 3.5.2 | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
 | 3.5.1 | 2025-01-06 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
