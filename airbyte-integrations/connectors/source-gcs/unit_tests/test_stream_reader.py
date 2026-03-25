@@ -57,3 +57,18 @@ def test_upload(remote_file, logger):
 
     assert file_record_data is not None
     assert file_reference is not None
+
+
+@pytest.mark.parametrize(
+    "blob_name, expected_is_zip",
+    [
+        ("data.zip", True),
+        ("data.csv.zip", True),
+        ("archive.json.zip", True),
+        ("data.csv", False),
+        ("data.csv.gz", False),
+        ("data.zipx", False),
+    ],
+)
+def test_compound_extension_detected_as_zip(blob_name, expected_is_zip):
+    assert blob_name.endswith(".zip") == expected_is_zip

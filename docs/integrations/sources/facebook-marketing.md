@@ -300,6 +300,10 @@ The Facebook Marketing source connector supports the following [sync modes](http
 The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data`. See our Troubleshooting section for more information.
 :::
 
+:::info Ad Creatives From Ads
+The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema is identical to `ad_creatives`, but this stream only returns creatives associated with ads — orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
+:::
+
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
 
 | Stream                                            |                           Breakdowns                           |                    Action Breakdowns                    |
