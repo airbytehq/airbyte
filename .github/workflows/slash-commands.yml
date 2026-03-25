@@ -76,6 +76,7 @@ jobs:
             run-connector-tests
             run-regression-tests
             test-performance
+            ai-dev
             update-connector-cdk-version
 
           # Notes regarding static-args:

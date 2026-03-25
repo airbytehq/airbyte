@@ -1,0 +1,129 @@
+name: AI Dev Playbook Command
+
+# Runs a dev version of an ai-skills playbook against an issue in this repo.
+# Triggered via slash command: /ai-dev pr=<PR_NUMBER> playbook=<PLAYBOOK_NAME>
+#
+# Examples:
+#   /ai-dev pr=42 playbook=issue_triage
+#   /ai-dev pr=42 playbook=issue_fix
+#
+# The dev playbook must already exist in the Devin API (created by the
+# dev-playbooks.yml workflow in airbytehq/ai-skills when a PR is opened).
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Issue number to test against"
+        type: number
+        required: false
+      pr:
+        description: "ai-skills PR number with the dev playbook"
+        type: number
+        required: true
+      playbook:
+        description: "Playbook name (e.g. issue_triage, issue_fix)"
+        type: string
+        required: true
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (passed by slash command dispatcher)"
+        required: false
+
+run-name: "AI Dev Playbook: !${{ github.event.inputs.playbook }}__dev-${{ github.event.inputs.pr }}"
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  ai-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: |
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Resolve inputs
+        id: resolve
+        run: |
+          set -euo pipefail
+
+          pr_number="${{ inputs.pr }}"
+          playbook_name="${{ inputs.playbook }}"
+          issue_number="${{ inputs.issue }}"
+          comment_id="${{ inputs.comment-id }}"
+
+          if [[ -z "$pr_number" ]]; then
+            echo "::error::Missing required argument: pr (ai-skills PR number)"
+            exit 1
+          fi
+
+          if [[ -z "$playbook_name" ]]; then
+            echo "::error::Missing required argument: playbook (e.g. issue_triage)"
+            exit 1
+          fi
+
+          dev_macro="!${playbook_name}__dev-${pr_number}"
+
+          echo "pr_number=${pr_number}" >> $GITHUB_OUTPUT
+          echo "playbook_name=${playbook_name}" >> $GITHUB_OUTPUT
+          echo "issue_number=${issue_number}" >> $GITHUB_OUTPUT
+          echo "comment_id=${comment_id}" >> $GITHUB_OUTPUT
+          echo "dev_macro=${dev_macro}" >> $GITHUB_OUTPUT
+
+          echo "Resolved inputs:"
+          echo "  PR number: ${pr_number}"
+          echo "  Playbook: ${playbook_name}"
+          echo "  Issue: ${issue_number}"
+          echo "  Dev macro: ${dev_macro}"
+
+      - name: Post start comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ steps.resolve.outputs.issue_number }}
+          body: |
+            > **AI Dev Playbook Starting**
+            >
+            > Using dev macro `${{ steps.resolve.outputs.dev_macro }}` from [ai-skills PR #${{ steps.resolve.outputs.pr_number }}](https://github.com/airbytehq/ai-skills/pull/${{ steps.resolve.outputs.pr_number }})
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Run dev playbook
+        uses: aaronsteers/devin-action@main
+        with:
+          comment-id: ${{ steps.resolve.outputs.comment_id }}
+          issue-number: ${{ steps.resolve.outputs.issue_number }}
+          playbook-macro: ${{ steps.resolve.outputs.dev_macro }}
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          start-message: '🔬 **Dev playbook session starting...** Using dev macro `${{ steps.resolve.outputs.dev_macro }}` from [ai-skills PR #${{ steps.resolve.outputs.pr_number }}](https://github.com/airbytehq/ai-skills/pull/${{ steps.resolve.outputs.pr_number }})'
+          bypass-approval: 'true'
+          tags: |
+            ai-oncall
+            playbook-dev
+            dev-pr-${{ steps.resolve.outputs.pr_number }}
