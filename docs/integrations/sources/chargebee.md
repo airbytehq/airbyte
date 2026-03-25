@@ -104,7 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.32 | 2026-03-25 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Handle 404 errors in subscription stream to prevent sync failures when Chargebee returns not found for deleted resources |
+| 0.10.32 | 2026-03-25 | [75476](https://github.com/airbytehq/airbyte/pull/75476) | Handle 404 errors in subscription stream to prevent sync failures when Chargebee returns not found for deleted resources |
 | 0.10.31 | 2026-03-24 | [74459](https://github.com/airbytehq/airbyte/pull/74459) | Update dependencies |
 | 0.10.30 | 2026-03-03 | [74228](https://github.com/airbytehq/airbyte/pull/74228) | Update dependencies |
 | 0.10.29 | 2026-02-17 | [73452](https://github.com/airbytehq/airbyte/pull/73452) | Update dependencies |
