@@ -23,7 +23,7 @@ data:
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2
-  maxSecondsBetweenMessages: 86400
+  maxSecondsBetweenMessages: 14400
   name: Google Ads
   remoteRegistries:
     pypi:
