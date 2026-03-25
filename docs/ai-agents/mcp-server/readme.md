@@ -121,13 +121,13 @@ Cursor 1.0 and later support OAuth and Streamable HTTP natively. If the browser 
     codex mcp add airbyte --url https://mcp.airbyte.ai/mcp
     ```
 
-2. Launch Codex with `codex`.
+2. Codex detects that the server requires OAuth and opens your browser.
 
-3. Codex detects that the server requires OAuth and opens your browser.
+3. Log in with your Airbyte account and grant access.
 
-4. Log in with your Airbyte account and grant access.
+4. Launch Codex with `codex`.
 
-5. Return to Codex and begin using the MCP server.
+5. Begin using the MCP server.
 
 </TabItem>
 <TabItem value="vscode" label="VS Code / GitHub Copilot">
