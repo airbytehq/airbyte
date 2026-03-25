@@ -2,6 +2,19 @@
 
 A manifest-only Airbyte connector that syncs data from a **GitHub organisation** into your destination. This connector is not a Python package, it runs inside the base `source-declarative-manifest` image.
 
+## Differences from `source-github`
+
+The `source-github-2` connector and differs in several meaningful ways:
+
+| Aspect | `source-github` | `source-github-2` |
+|---|---|---|
+| Implementation | Python CDK (custom Python code) | Low-code YAML manifest only |
+| Runtime image | `python-connector-base` | `source-declarative-manifest` |
+| Scope | Supports multiple organisations and individual repositories | Single **organisation** with all its repositories |
+| Backfill support | No explicit bounded-batch strategy | First-class `end_date` parameter for bounded backfill batches |
+| `commits` cursor | Author date | Committer date (`committer_datetime`) which aligns with GitHub's `since`/`until` API filter |
+| Authentication | OAuth 2.0 or PAT | PAT only |
+
 ## Configuration
 
 | Field | Type | Required | Description |
