@@ -132,23 +132,30 @@ Cursor 1.0 and later support OAuth and Streamable HTTP natively. If the browser 
 </TabItem>
 <TabItem value="vscode" label="VS Code / GitHub Copilot">
 
-1. Open the Command Palette with **CMD+Shift+P** (macOS) or **Ctrl+Shift+P** (Windows/Linux).
+1. In your project root, create a `.vscode` folder if it doesn't exist, then create a `mcp.json` file inside it:
 
-2. Select **MCP: Add Server**.
-
-3. Choose **HTTP** as the server type.
-
-4. Enter the Airbyte MCP server URL:
-
-    ```text
-    https://mcp.airbyte.ai/mcp
+    ```json
+    {
+      "servers": {
+        "airbyte-agent": {
+          "type": "http",
+          "url": "https://mcp.airbyte.ai/mcp"
+        }
+      }
+    }
     ```
 
-5. VS Code detects that the server requires OAuth and shows a sign-in prompt.
+    Alternatively, open the Command Palette with **CMD+Shift+P** (macOS) or **Ctrl+Shift+P** (Windows/Linux), run **MCP: Add Server**, choose **HTTP**, and enter `https://mcp.airbyte.ai/mcp`.
 
-6. Follow the prompt to open your browser, log in with your Airbyte account, and grant access.
+2. VS Code detects that the server requires OAuth and shows a sign-in prompt.
 
-7. Return to VS Code. The MCP server tools are now available in Copilot Chat.
+3. Follow the prompt to open your browser, log in with your Airbyte account, and grant access.
+
+4. Return to VS Code. The MCP server tools are now available in Copilot Chat.
+
+:::note
+MCP server support requires VS Code 1.99 or later with the GitHub Copilot extension.
+:::
 
 </TabItem>
 <TabItem value="other" label="Other clients">
