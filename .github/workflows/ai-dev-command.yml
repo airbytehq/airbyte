@@ -78,9 +78,17 @@ jobs:
             echo "::error::Missing required argument: pr (ai-skills PR number)"
             exit 1
           fi
+          if ! [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid pr number: must be digits only"
+            exit 1
+          fi
 
           if [[ -z "$playbook_name" ]]; then
             echo "::error::Missing required argument: playbook (e.g. issue_triage)"
+            exit 1
+          fi
+          if ! [[ "$playbook_name" =~ ^[a-z0-9_]+$ ]]; then
+            echo "::error::Invalid playbook name: must match [a-z0-9_]+"
             exit 1
           fi
 
