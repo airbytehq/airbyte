@@ -6,11 +6,16 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
+import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.output.CatalogValidationFailure
+import io.airbyte.cdk.output.FieldNotFound
+import io.airbyte.cdk.output.FieldTypeMismatch
 import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.context.annotation.Property
@@ -36,6 +41,8 @@ class StateManagerStreamStatesTest {
     @Inject lateinit var stateManagerFactory: StateManagerFactory
 
     @Inject lateinit var handler: BufferingCatalogValidationFailureHandler
+
+    @Inject lateinit var outputConsumer: BufferingOutputConsumer
 
     val stateManager: StateManager by lazy {
         stateManagerFactory.create(config, configuredCatalog, inputState)
@@ -89,6 +96,111 @@ class StateManagerStreamStatesTest {
         Assertions.assertEquals(
             listOf(StreamHasNoFields(streamID("EVENTS"))),
             handler.get(),
+        )
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.catalog.json",
+        value =
+            """
+{"streams": [{
+    "stream": {
+        "name": "EVENTS",
+        "json_schema": {
+            "type": "object",
+            "properties": {
+                "MSG": { "type": "string" },
+                "ID": { "type": "string" },
+                "TS": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" },
+                "NONEXISTENT": { "type": "string" }
+            }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ID"]],
+        "namespace": "PUBLIC"
+    },
+    "sync_mode": "full_refresh",
+    "primary_key": [["ID"]],
+    "destination_sync_mode": "overwrite"
+}]}""",
+    )
+    @Property(name = "airbyte.connector.state.json", value = "[]")
+    fun testFieldNotFoundEmitsErrorTrace() {
+        Assertions.assertEquals(listOf<Feed>(), stateManager.feeds)
+        Assertions.assertEquals(
+            listOf(FieldNotFound(streamID("EVENTS"), "NONEXISTENT")),
+            handler.get(),
+        )
+        val errorTraces =
+            outputConsumer.traces().filter {
+                it.type == AirbyteTraceMessage.Type.ERROR
+            }
+        Assertions.assertEquals(1, errorTraces.size)
+        val error: AirbyteErrorTraceMessage = errorTraces.first().error
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            error.failureType,
+        )
+        Assertions.assertTrue(
+            error.message.contains("NONEXISTENT"),
+            "Error message should mention the missing field name",
+        )
+        Assertions.assertTrue(
+            error.message.contains("no longer exists"),
+            "Error message should indicate the field no longer exists",
+        )
+    }
+
+    @Test
+    @Property(
+        name = "airbyte.connector.catalog.json",
+        value =
+            """
+{"streams": [{
+    "stream": {
+        "name": "EVENTS",
+        "json_schema": {
+            "type": "object",
+            "properties": {
+                "MSG": { "type": "number" },
+                "ID": { "type": "string" },
+                "TS": { "type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone" }
+            }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ID"]],
+        "namespace": "PUBLIC"
+    },
+    "sync_mode": "full_refresh",
+    "primary_key": [["ID"]],
+    "destination_sync_mode": "overwrite"
+}]}""",
+    )
+    @Property(name = "airbyte.connector.state.json", value = "[]")
+    fun testFieldTypeMismatchEmitsErrorTrace() {
+        Assertions.assertEquals(listOf<Feed>(), stateManager.feeds)
+        // MSG is STRING in the source but NUMBER in the catalog
+        val failures = handler.get()
+        Assertions.assertEquals(1, failures.size)
+        Assertions.assertTrue(failures.first() is FieldTypeMismatch)
+        val errorTraces =
+            outputConsumer.traces().filter {
+                it.type == AirbyteTraceMessage.Type.ERROR
+            }
+        Assertions.assertEquals(1, errorTraces.size)
+        val error: AirbyteErrorTraceMessage = errorTraces.first().error
+        Assertions.assertEquals(
+            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+            error.failureType,
+        )
+        Assertions.assertTrue(
+            error.message.contains("MSG"),
+            "Error message should mention the mismatched field name",
+        )
+        Assertions.assertTrue(
+            error.message.contains("type changed"),
+            "Error message should indicate a type change",
         )
     }
 

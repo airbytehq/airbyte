@@ -209,6 +209,18 @@ class StateManagerFactory(
             val actualColumn: Field? = actualDataColumns[id]
             if (actualColumn == null) {
                 handler.accept(FieldNotFound(streamID, id))
+                outputConsumer.accept(
+                    AirbyteErrorTraceMessage()
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
+                        .withFailureType(
+                            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+                        )
+                        .withMessage(
+                            "Stream '$streamLabel' was not synced because field" +
+                                " '$id' no longer exists in the source." +
+                                " Refresh the connection schema to update the catalog.",
+                        ),
+                )
                 return null
             }
             val expectedAirbyteSchemaType: AirbyteSchemaType = expectedSchema[id] ?: return null
@@ -221,6 +233,19 @@ class StateManagerFactory(
                         expectedAirbyteSchemaType,
                         actualAirbyteSchemaType,
                     ),
+                )
+                outputConsumer.accept(
+                    AirbyteErrorTraceMessage()
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
+                        .withFailureType(
+                            AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+                        )
+                        .withMessage(
+                            "Stream '$streamLabel' was not synced because field" +
+                                " '$id' type changed from $expectedAirbyteSchemaType" +
+                                " to $actualAirbyteSchemaType." +
+                                " Refresh the connection schema to update the catalog.",
+                        ),
                 )
                 return null
             }
