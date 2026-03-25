@@ -12,7 +12,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 @pytest.mark.parametrize(
@@ -669,10 +669,10 @@ def test_crm_search_pagination_strategy(
         pytest.param(
             "OAuth Credentials",
             401,
-            ResponseAction.RETRY,
+            ResponseAction.REFRESH_TOKEN_THEN_RETRY,
             None,
             None,
-            id="oauth_401_retries",
+            id="oauth_401_refreshes_token_then_retries",
         ),
         pytest.param(
             "Private App Credentials",
@@ -715,7 +715,7 @@ def test_hubspot_error_handler_401_by_auth_type(
                 parameters=parameters,
             ),
             HttpResponseFilter(
-                action="RETRY",
+                action="REFRESH_TOKEN_THEN_RETRY",
                 http_codes={401},
                 error_message="Authentication to HubSpot has expired.",
                 config=config,

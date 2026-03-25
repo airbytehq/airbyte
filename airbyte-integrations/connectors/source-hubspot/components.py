@@ -64,7 +64,7 @@ class HubspotErrorHandler(DefaultErrorHandler):
         if (
             isinstance(response_or_exception, requests.Response)
             and response_or_exception.status_code == 401
-            and resolution.response_action == ResponseAction.RETRY
+            and resolution.response_action == ResponseAction.REFRESH_TOKEN_THEN_RETRY
             and self.config.get("credentials", {}).get("credentials_title") == _PRIVATE_APP_CREDENTIALS
         ):
             return ErrorResolution(
@@ -726,7 +726,7 @@ def build_associations_retriever(
                     parameters=parameters,
                 ),
                 HttpResponseFilter(
-                    action="RETRY",
+                    action="REFRESH_TOKEN_THEN_RETRY",
                     http_codes={401},
                     error_message="Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot.",
                     config=config,

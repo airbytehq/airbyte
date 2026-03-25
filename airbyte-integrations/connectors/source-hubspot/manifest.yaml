@@ -62,7 +62,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -114,7 +114,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
