@@ -59,12 +59,9 @@ class HubspotErrorHandler(DefaultErrorHandler):
     """
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
-        resolution = super().interpret_response(response_or_exception)
-
         if (
             isinstance(response_or_exception, requests.Response)
             and response_or_exception.status_code == 401
-            and resolution.response_action == ResponseAction.REFRESH_TOKEN_THEN_RETRY
             and self.config.get("credentials", {}).get("credentials_title") == _PRIVATE_APP_CREDENTIALS
         ):
             return ErrorResolution(
@@ -73,7 +70,7 @@ class HubspotErrorHandler(DefaultErrorHandler):
                 error_message="Private App access token is invalid or expired.",
             )
 
-        return resolution
+        return super().interpret_response(response_or_exception)
 
 
 @dataclass
