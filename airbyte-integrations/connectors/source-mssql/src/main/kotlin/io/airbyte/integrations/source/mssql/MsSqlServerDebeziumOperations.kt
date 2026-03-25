@@ -721,30 +721,32 @@ class MsSqlServerDebeziumOperations(
     }
 
     /**
-     * Queries sys.types to build a mapping of user-defined alias type names
-     * to their base system type names. This mapping is passed to the Debezium
-     * converter so it can resolve alias types during CDC processing.
+     * Queries sys.types to build a mapping of user-defined alias type names to their base system
+     * type names. This mapping is passed to the Debezium converter so it can resolve alias types
+     * during CDC processing.
      */
     private fun queryAliasTypeMapping(): Map<String, String> {
         val mapping = mutableMapOf<String, String>()
         try {
             jdbcConnectionFactory.get().use { conn: Connection ->
                 conn.createStatement().use { stmt ->
-                    stmt.executeQuery(
-                        """
+                    stmt
+                        .executeQuery(
+                            """
                         SELECT t.name AS alias_name, bt.name AS base_type_name
                         FROM sys.types t
                         JOIN sys.types bt ON t.system_type_id = bt.system_type_id
                             AND bt.user_type_id = bt.system_type_id
                         WHERE t.is_user_defined = 1
                         """
-                    ).use { rs ->
-                        while (rs.next()) {
-                            val aliasName = rs.getString("alias_name")
-                            val baseTypeName = rs.getString("base_type_name")
-                            mapping[aliasName.uppercase()] = baseTypeName.uppercase()
+                        )
+                        .use { rs ->
+                            while (rs.next()) {
+                                val aliasName = rs.getString("alias_name")
+                                val baseTypeName = rs.getString("base_type_name")
+                                mapping[aliasName.uppercase()] = baseTypeName.uppercase()
+                            }
                         }
-                    }
                 }
             }
             if (mapping.isNotEmpty()) {

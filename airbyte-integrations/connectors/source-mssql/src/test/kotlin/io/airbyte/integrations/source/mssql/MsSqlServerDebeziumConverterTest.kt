@@ -158,10 +158,7 @@ class MsSqlServerDebeziumConverterTest {
         val registration = TrackingConverterRegistration()
         converter.converterFor(field, registration)
 
-        assertTrue(
-            registration.wasRegistered,
-            "Should resolve alias type case-insensitively"
-        )
+        assertTrue(registration.wasRegistered, "Should resolve alias type case-insensitively")
     }
 
     @Test
@@ -184,7 +181,10 @@ class MsSqlServerDebeziumConverterTest {
         val moneyField = mockRelationalColumn("money_col", "GOOD_MONEY")
         val moneyReg = TrackingConverterRegistration()
         converter.converterFor(moneyField, moneyReg)
-        assertTrue(moneyReg.wasRegistered, "Valid MONEY alias should work despite malformed entries")
+        assertTrue(
+            moneyReg.wasRegistered,
+            "Valid MONEY alias should work despite malformed entries"
+        )
     }
 
     @Test
@@ -211,17 +211,12 @@ class MsSqlServerDebeziumConverterTest {
         return column
     }
 
-    /**
-     * Tracks whether a converter was registered via the registration callback.
-     */
+    /** Tracks whether a converter was registered via the registration callback. */
     private class TrackingConverterRegistration :
         CustomConverter.ConverterRegistration<SchemaBuilder> {
         var wasRegistered = false
 
-        override fun register(
-            fieldSchema: SchemaBuilder,
-            converter: CustomConverter.Converter
-        ) {
+        override fun register(fieldSchema: SchemaBuilder, converter: CustomConverter.Converter) {
             wasRegistered = true
         }
     }

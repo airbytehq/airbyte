@@ -43,8 +43,8 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         private const val MSSQL_SQL_VARIANT_TYPE = "SQL_VARIANT"
 
         /**
-         * Debezium property key prefix for passing alias type mappings.
-         * The mapping is serialized as a comma-separated list of alias=baseType pairs.
+         * Debezium property key prefix for passing alias type mappings. The mapping is serialized
+         * as a comma-separated list of alias=baseType pairs.
          */
         const val ALIAS_TYPE_MAPPING_PROPERTY = "alias.type.mapping"
     }
@@ -58,13 +58,16 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
     override fun configure(properties: Properties) {
         val mappingStr = properties.getProperty(ALIAS_TYPE_MAPPING_PROPERTY)
         if (!mappingStr.isNullOrBlank()) {
-            aliasTypeMapping = mappingStr.split(",")
-                .mapNotNull { entry ->
-                    val parts = entry.split("=", limit = 2)
-                    if (parts.size == 2) parts[0].trim().uppercase() to parts[1].trim().uppercase()
-                    else null
-                }
-                .toMap()
+            aliasTypeMapping =
+                mappingStr
+                    .split(",")
+                    .mapNotNull { entry ->
+                        val parts = entry.split("=", limit = 2)
+                        if (parts.size == 2)
+                            parts[0].trim().uppercase() to parts[1].trim().uppercase()
+                        else null
+                    }
+                    .toMap()
             if (aliasTypeMapping.isNotEmpty()) {
                 logger.info(
                     "Loaded {} alias type mapping(s) for CDC conversion: {}",
@@ -75,9 +78,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         }
     }
 
-    /**
-     * Resolves a type name to its base system type name if it is a user-defined alias.
-     */
+    /** Resolves a type name to its base system type name if it is a user-defined alias. */
     private fun resolveTypeName(typeName: String): String {
         return aliasTypeMapping[typeName] ?: typeName
     }
@@ -91,7 +92,9 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         if (typeName != rawTypeName) {
             logger.info(
                 "Resolved alias type '{}' to base type '{}' for column '{}'",
-                rawTypeName, typeName, field.name()
+                rawTypeName,
+                typeName,
+                field.name()
             )
         }
 

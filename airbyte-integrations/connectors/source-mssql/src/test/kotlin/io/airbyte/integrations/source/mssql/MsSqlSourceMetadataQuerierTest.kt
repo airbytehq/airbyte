@@ -542,9 +542,15 @@ class MsSqlSourceMetadataQuerierTest {
             connection.createStatement().use { stmt ->
                 // Clean up first
                 stmt.execute("DROP TABLE IF EXISTS dbo.table_with_alias_types")
-                try { stmt.execute("DROP TYPE dbo.my_int_type") } catch (_: Exception) {}
-                try { stmt.execute("DROP TYPE dbo.my_varchar_type") } catch (_: Exception) {}
-                try { stmt.execute("DROP TYPE dbo.my_date_type") } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_int_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_varchar_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_date_type")
+                } catch (_: Exception) {}
 
                 // Create user-defined alias types
                 stmt.execute("CREATE TYPE dbo.my_int_type FROM int")
@@ -583,20 +589,18 @@ class MsSqlSourceMetadataQuerierTest {
         // Verify the alias type mapping was discovered
         val aliasMapping = freshQuerier.memoizedAliasTypeMapping
         assertTrue(aliasMapping.isNotEmpty(), "Should discover at least one alias type mapping")
-        assertTrue(
-            aliasMapping.containsKey("MY_INT_TYPE"),
-            "Should discover MY_INT_TYPE alias"
-        )
+        assertTrue(aliasMapping.containsKey("MY_INT_TYPE"), "Should discover MY_INT_TYPE alias")
         assertEquals("int", aliasMapping["MY_INT_TYPE"], "MY_INT_TYPE should map to int")
         assertTrue(
             aliasMapping.containsKey("MY_VARCHAR_TYPE"),
             "Should discover MY_VARCHAR_TYPE alias"
         )
-        assertEquals("varchar", aliasMapping["MY_VARCHAR_TYPE"], "MY_VARCHAR_TYPE should map to varchar")
-        assertTrue(
-            aliasMapping.containsKey("MY_DATE_TYPE"),
-            "Should discover MY_DATE_TYPE alias"
+        assertEquals(
+            "varchar",
+            aliasMapping["MY_VARCHAR_TYPE"],
+            "MY_VARCHAR_TYPE should map to varchar"
         )
+        assertTrue(aliasMapping.containsKey("MY_DATE_TYPE"), "Should discover MY_DATE_TYPE alias")
         assertEquals("date", aliasMapping["MY_DATE_TYPE"], "MY_DATE_TYPE should map to date")
 
         // Verify that columns with alias types are resolved to base types in column metadata
@@ -620,9 +624,15 @@ class MsSqlSourceMetadataQuerierTest {
             connection.isReadOnly = false
             connection.createStatement().use { stmt ->
                 stmt.execute("DROP TABLE IF EXISTS dbo.table_with_alias_types")
-                try { stmt.execute("DROP TYPE dbo.my_int_type") } catch (_: Exception) {}
-                try { stmt.execute("DROP TYPE dbo.my_varchar_type") } catch (_: Exception) {}
-                try { stmt.execute("DROP TYPE dbo.my_date_type") } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_int_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_varchar_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_date_type")
+                } catch (_: Exception) {}
             }
         }
     }

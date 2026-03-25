@@ -32,29 +32,31 @@ class MsSqlSourceMetadataQuerier(
 ) : MetadataQuerier by base {
 
     /**
-     * Mapping of user-defined alias type names to their base system type names.
-     * Queried from sys.types to resolve alias types during discovery.
+     * Mapping of user-defined alias type names to their base system type names. Queried from
+     * sys.types to resolve alias types during discovery.
      */
     val memoizedAliasTypeMapping: Map<String, String> by lazy {
         log.info { "Querying SQL Server sys.types for user-defined alias type mappings." }
         val mapping = mutableMapOf<String, String>()
         try {
             base.conn.createStatement().use { stmt: Statement ->
-                stmt.executeQuery(
-                    """
+                stmt
+                    .executeQuery(
+                        """
                     SELECT t.name AS alias_name, bt.name AS base_type_name
                     FROM sys.types t
                     JOIN sys.types bt ON t.system_type_id = bt.system_type_id
                         AND bt.user_type_id = bt.system_type_id
                     WHERE t.is_user_defined = 1
                     """
-                ).use { rs: ResultSet ->
-                    while (rs.next()) {
-                        val aliasName = rs.getString("alias_name")
-                        val baseTypeName = rs.getString("base_type_name")
-                        mapping[aliasName.uppercase()] = baseTypeName
+                    )
+                    .use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val aliasName = rs.getString("alias_name")
+                            val baseTypeName = rs.getString("base_type_name")
+                            mapping[aliasName.uppercase()] = baseTypeName
+                        }
                     }
-                }
             }
             if (mapping.isNotEmpty()) {
                 log.info {
@@ -236,9 +238,9 @@ class MsSqlSourceMetadataQuerier(
     }
 
     /**
-     * Resolves alias type names to their base system type names in [ColumnMetadata].
-     * If the type name is a user-defined alias, it is replaced with the base type name
-     * so that [MsSqlSourceOperations.toFieldType] can correctly map it.
+     * Resolves alias type names to their base system type names in [ColumnMetadata]. If the type
+     * name is a user-defined alias, it is replaced with the base type name so that
+     * [MsSqlSourceOperations.toFieldType] can correctly map it.
      */
     private fun resolveAliasType(
         metadata: JdbcMetadataQuerier.ColumnMetadata
@@ -268,7 +270,8 @@ class MsSqlSourceMetadataQuerier(
                 val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
                 rsMethod(catalog, schema, tablePattern, null).use { rs ->
                     while (rs.next()) {
-                        val (tableName: TableName, rawMetadata: JdbcMetadataQuerier.ColumnMetadata) =
+                        val (
+                            tableName: TableName, rawMetadata: JdbcMetadataQuerier.ColumnMetadata) =
                             base.columnMetadataFromResultSet(rs, isPseudoColumn)
                         val joinedTableName: TableName = joinMap[tableName] ?: continue
                         // Resolve alias types to their base system types
