@@ -201,6 +201,16 @@ This normalization is intended for occasional type inconsistencies. If your coll
 
 To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting).
 
+### Schema discovery performance impact
+
+:::warning
+Schema discovery runs heavy aggregation queries against your MongoDB cluster **in parallel across all collections**. On production clusters with many collections or large documents, this can cause significant resource pressure, including degraded query performance, replication lag, or in extreme cases, cluster instability.
+:::
+
+Because MongoDB collections are schemaless, no sample size can guarantee a complete or stable schema — new fields can appear in documents at any time. When schema enforcement is enabled, the connector's Discover phase runs `$sample` aggregation pipelines against every collection in the configured databases **in parallel**. On clusters with many collections or large documents, these concurrent queries can cause significant resource pressure on your MongoDB deployment, including degraded performance or cluster instability.
+
+For recommended approaches and other alternatives to protect your production cluster, see [Schema discovery performance impact](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
+
 ### MongoDB CDC Limitations
 
 MongoDB has a 16MB maximum document size limit for BSON documents. During CDC syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. For details on resolving this error, see the [MongoDB CDC Limitations](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-cdc-limitations) section in the troubleshooting guide.
