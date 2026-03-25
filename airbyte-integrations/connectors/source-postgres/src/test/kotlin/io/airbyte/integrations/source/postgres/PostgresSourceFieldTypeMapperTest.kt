@@ -293,8 +293,8 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
             mapOf(
                     "null" to "null",
-                    "'1000-01-01 00:00:00'" to "\"1000-01-01T00:00:00.000000\"",
                     // TODO: inconsistent mapping: We only preserve trailing 0s on zero value
+                    "'1000-01-01 00:00:00'" to "\"1000-01-01T00:00:00.000000\"",
                     "'9999-12-31 23:59:59'" to "\"9999-12-31T23:59:59\"",
                 )
                 .mapKeys { "${it.key}::timestamp" },
