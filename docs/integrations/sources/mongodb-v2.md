@@ -203,9 +203,9 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 
 ### Schema discovery performance impact
 
-When schema enforcement is enabled, the connector's Discover phase runs `$sample` aggregation pipelines against every collection in the configured databases **in parallel**. Each pipeline samples up to 10,000 documents by default. On clusters with many collections or large documents, these concurrent aggregation queries can cause significant CPU, memory, and I/O pressure on your MongoDB deployment — in extreme cases, enough to degrade or disrupt production workloads.
+Because MongoDB collections are schemaless, no sample size can guarantee a complete or stable schema — new fields can appear in documents at any time. When schema enforcement is enabled, the connector's Discover phase runs `$sample` aggregation pipelines against every collection in the configured databases **in parallel**. On clusters with many collections or large documents, these concurrent queries can cause significant resource pressure on your MongoDB deployment, including degraded performance or cluster instability.
 
-For precautions you can take to protect your production cluster, see [Schema discovery performance impact](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
+For recommended approaches and other alternatives to protect your production cluster, see [Schema discovery performance impact](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#schema-discovery-performance-impact) in the troubleshooting guide.
 
 ### MongoDB CDC Limitations
 

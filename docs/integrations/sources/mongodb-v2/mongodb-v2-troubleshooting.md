@@ -59,19 +59,31 @@ For more information about MongoDB's document size limits, see the [MongoDB docu
 Schema discovery runs heavy aggregation queries against your MongoDB cluster **in parallel across all collections**. On production clusters with many collections or large documents, this can cause significant resource pressure, including degraded query performance, replication lag, or in extreme cases, cluster instability.
 :::
 
+Because MongoDB collections are [schemaless](https://www.mongodb.com/docs/manual/data-modeling/), documents in the same collection can have different fields and data types. The connector attempts to infer a schema by sampling documents, but no sample size can guarantee a complete or stable schema. New fields can be added to documents at any time, and a schema derived from today's sample may not represent tomorrow's data. Keep this inherent limitation in mind when choosing between schema-enforced and schemaless modes.
+
 When schema enforcement is enabled, the Discover phase executes a [`$sample`](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) aggregation pipeline against every collection in each configured database. These pipelines run **concurrently** using parallel threads, one per collection. Each pipeline samples up to 10,000 documents by default, then processes them through `$project`, `$unwind`, and `$group` stages to extract field names and types.
 
-On clusters with hundreds of collections, this means hundreds of simultaneous aggregation queries hitting the database at once. The `$sample` stage performs a random collection scan, which can be I/O-intensive on large collections. Combined with the downstream aggregation stages, this can exhaust available CPU and memory on your MongoDB nodes.
+On clusters with hundreds of collections, this means hundreds of simultaneous aggregation queries hitting the database at once. The `$sample` stage performs a [random collection scan](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/#behavior), which can be I/O-intensive on large collections. Combined with the downstream aggregation stages, this can exhaust available CPU and memory on your MongoDB nodes.
 
-**Precautions to protect your production cluster:**
+#### Recommended approaches
 
-1. **Direct reads to a secondary node.** Add `readPreference=secondary` or `readPreference=secondaryPreferred` to your MongoDB connection string. This routes the discovery queries to a secondary replica set member instead of the primary, protecting your primary node from the additional load.
+These approaches address the root cause of the performance risk by reducing or eliminating the discovery workload.
+
+1. **Disable schema enforcement.** Set **Schema Enforced** to `false` to skip the sampling-based discovery entirely. In schemaless mode, the connector samples only one document per collection to confirm the `_id` field exists. This dramatically reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields. See [Schema Enforcement](/integrations/sources/mongodb-v2#schema-enforcement) for configuration details.
+
+2. **Reduce the discovery sample size.** If you need schema enforcement, lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster but may miss fields in collections with highly variable document structures. See the [Discovery Sample Size](https://docs.airbyte.com/integrations/sources/mongodb-v2#configuration-parameters) configuration parameter.
+
+#### Other alternatives
+
+These approaches do not reduce the discovery workload itself, but can help isolate it from your production traffic.
+
+1. **Direct reads to a secondary node.** Add [`readPreference=secondary`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondary) or [`readPreference=secondaryPreferred`](https://www.mongodb.com/docs/manual/core/read-preference/#mongodb-readmode-secondaryPreferred) to your MongoDB [connection string](https://www.mongodb.com/docs/manual/reference/connection-string/). This routes the discovery queries to a secondary replica set member instead of the primary, protecting your primary node from the additional load.
 
    ```text
    mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondaryPreferred
    ```
 
-2. **Use MongoDB Atlas analytics nodes.** If you use MongoDB Atlas (M10 tier or above), you can provision [analytics nodes](https://www.mongodb.com/docs/atlas/reference/replica-set-tags/) that are isolated from your operational workload. Direct Airbyte's reads to an analytics node by adding read preference tags to your connection string:
+2. **Use MongoDB Atlas analytics nodes.** If you use MongoDB Atlas (M10 tier or above), you can provision [analytics nodes](https://www.mongodb.com/docs/atlas/reference/replica-set-tags/) that are isolated from your operational workload. Direct Airbyte's reads to an analytics node by adding [read preference tags](https://www.mongodb.com/docs/manual/core/read-preference-tags/) to your connection string:
 
    ```text
    mongodb+srv://cluster0.abcd1.mongodb.net/?readPreference=secondary&readPreferenceTags=nodeType:ANALYTICS
@@ -79,13 +91,9 @@ On clusters with hundreds of collections, this means hundreds of simultaneous ag
 
    This fully isolates the discovery workload from your production traffic.
 
-3. **Reduce the discovery sample size.** Lower the **Discovery Sample Size** setting to reduce the number of documents sampled per collection. The default is 10,000. A smaller value such as 1,000 reduces the load on your cluster at the cost of potentially missing some fields in collections with highly variable schemas.
+3. **Schedule syncs during off-peak hours.** If you cannot isolate the read workload, [schedule your Airbyte syncs](https://docs.airbyte.com/cloud/managing-airbyte-cloud/configuring-connections#connection-schedule) to run during periods of low production traffic. Schema discovery runs at the start of every sync, so timing matters.
 
-4. **Disable schema enforcement.** Set **Schema Enforced** to `false` to skip the sampling-based discovery entirely. In schemaless mode, the connector samples only one document per collection to confirm the `_id` field exists. This dramatically reduces the load on your cluster, but all data is returned as a single JSON object per document rather than individual typed fields.
-
-5. **Schedule syncs during off-peak hours.** If you cannot isolate the read workload, schedule your Airbyte syncs to run during periods of low production traffic. Schema discovery runs at the start of every sync, so timing matters.
-
-6. **Reduce the number of configured databases.** The connector discovers collections across all configured databases. If you only need data from specific databases, remove unnecessary databases from your source configuration to reduce the total number of collections discovered.
+4. **Reduce the number of configured databases.** The connector discovers collections across all configured databases. If you only need data from specific databases, remove unnecessary databases from your source configuration to reduce the total number of collections discovered.
 
 ### Vendor-Specific Connector Limitations
 
