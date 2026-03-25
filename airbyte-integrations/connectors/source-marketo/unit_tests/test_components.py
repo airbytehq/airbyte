@@ -7,17 +7,17 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import requests
-
 from components import (
     MarketoActivitySchemaLoader,
     MarketoBulkExportCreationRequester,
     MarketoCsvDecoder,
     MarketoLeadsSchemaLoader,
     MarketoRecordTransformation,
+    _map_marketo_type,
     clean_string,
     format_value,
-    _map_marketo_type,
 )
+
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -154,10 +154,12 @@ class TestMarketoActivitySchemaLoader:
         assert "activityDate" in schema["properties"]
 
     def test_schema_with_attributes(self):
-        attrs = json.dumps([
-            {"name": "Campaign Run ID", "dataType": "integer"},
-            {"name": "Has Predictive", "dataType": "boolean"},
-        ])
+        attrs = json.dumps(
+            [
+                {"name": "Campaign Run ID", "dataType": "integer"},
+                {"name": "Has Predictive", "dataType": "boolean"},
+            ]
+        )
         loader = MarketoActivitySchemaLoader(config={}, parameters={}, activity_attributes=attrs)
         schema = loader.get_json_schema()
         assert "campaign_run_id" in schema["properties"]
@@ -179,8 +181,11 @@ class TestMarketoBulkExportCreationRequester:
     def test_build_create_body_basic(self):
         config = {"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"}
         requester = MarketoBulkExportCreationRequester(
-            config=config, parameters={}, create_requester=MagicMock(),
-            enqueue_requester=MagicMock(), include_fields_from_describe=False,
+            config=config,
+            parameters={},
+            create_requester=MagicMock(),
+            enqueue_requester=MagicMock(),
+            include_fields_from_describe=False,
         )
         stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
         body = requester._build_create_body(stream_slice)
@@ -191,9 +196,14 @@ class TestMarketoBulkExportCreationRequester:
     def test_build_create_body_with_activity_type(self):
         config = {"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"}
         requester = MarketoBulkExportCreationRequester(
-            config=config, parameters={}, create_requester=MagicMock(), enqueue_requester=MagicMock(),
+            config=config,
+            parameters={},
+            create_requester=MagicMock(),
+            enqueue_requester=MagicMock(),
         )
-        stream_slice = StreamSlice(partition={"activity_type_id": "6"}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
+        stream_slice = StreamSlice(
+            partition={"activity_type_id": "6"}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"}
+        )
         body = requester._build_create_body(stream_slice)
         assert body["filter"]["activityTypeIds"] == [6]
 
@@ -233,4 +243,3 @@ class TestMarketoLeadsSchemaLoader:
         schema = loader.get_json_schema()
         assert schema["type"] == ["null", "object"]
         assert "properties" in schema
-

@@ -36,6 +36,7 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
 
+
 logger = logging.getLogger("airbyte")
 
 
@@ -294,9 +295,7 @@ class MarketoBulkExportCreationRequester:
         if not errors:
             return
         error = errors[0]
-        if error.get("code") == "1029" and re.match(
-            r"Export daily quota \d+MB exceeded", error.get("message", "")
-        ):
+        if error.get("code") == "1029" and re.match(r"Export daily quota \d+MB exceeded", error.get("message", "")):
             raise AirbyteTracedException(
                 internal_message=response_text,
                 message="Bulk export daily quota exceeded (resets at 12:00 AM CST).",
@@ -537,9 +536,7 @@ class MarketoActivitiesComponentsResolver(ComponentsResolver):
     components_mapping: List[ComponentMappingDefinition]
     parameters: InitVar[Mapping[str, Any]]
 
-    _resolved_components: List[ResolvedComponentMappingDefinition] = field(
-        init=False, repr=False, default_factory=list
-    )
+    _resolved_components: List[ResolvedComponentMappingDefinition] = field(init=False, repr=False, default_factory=list)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         for component_mapping in self.components_mapping:
@@ -550,10 +547,7 @@ class MarketoActivitiesComponentsResolver(ComponentsResolver):
                     else component_mapping.value
                 )
 
-                field_path = [
-                    InterpolatedString.create(path, parameters=parameters)
-                    for path in component_mapping.field_path
-                ]
+                field_path = [InterpolatedString.create(path, parameters=parameters) for path in component_mapping.field_path]
 
                 self._resolved_components.append(
                     ResolvedComponentMappingDefinition(
@@ -564,43 +558,29 @@ class MarketoActivitiesComponentsResolver(ComponentsResolver):
                     )
                 )
             else:
-                raise ValueError(
-                    f"Expected a string or InterpolatedString for value in mapping: {component_mapping}"
-                )
+                raise ValueError(f"Expected a string or InterpolatedString for value in mapping: {component_mapping}")
 
-    def resolve_components(
-        self, stream_template_config: Dict[str, Any]
-    ) -> Iterable[Dict[str, Any]]:
+    def resolve_components(self, stream_template_config: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         kwargs = {"stream_template_config": stream_template_config}
 
         for stream_slice in self.retriever.stream_slices():
-            for components_values in self.retriever.read_records(
-                records_schema={}, stream_slice=stream_slice
-            ):
+            for components_values in self.retriever.read_records(records_schema={}, stream_slice=stream_slice):
                 updated_config = deepcopy(stream_template_config)
 
                 # Enrich components_values with computed fields
                 raw_name = components_values.get("name", "")
                 enriched: Dict[str, Any] = dict(components_values)
                 enriched["stream_name"] = f"activities_{clean_string(raw_name)}"
-                enriched["activity_attributes_json"] = json.dumps(
-                    components_values.get("attributes", [])
-                )
+                enriched["activity_attributes_json"] = json.dumps(components_values.get("attributes", []))
 
                 kwargs["components_values"] = enriched
                 kwargs["stream_slice"] = stream_slice
 
                 for resolved_component in self._resolved_components:
-                    valid_types = (
-                        (resolved_component.value_type,) if resolved_component.value_type else None
-                    )
-                    value = resolved_component.value.eval(
-                        self.config, valid_types=valid_types, **kwargs
-                    )
+                    valid_types = (resolved_component.value_type,) if resolved_component.value_type else None
+                    value = resolved_component.value.eval(self.config, valid_types=valid_types, **kwargs)
 
-                    path = [
-                        p.eval(self.config, **kwargs) for p in resolved_component.field_path
-                    ]
+                    path = [p.eval(self.config, **kwargs) for p in resolved_component.field_path]
                     dpath.set(updated_config, path, value)
 
                 yield updated_config

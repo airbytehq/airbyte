@@ -5,6 +5,7 @@
 import json
 import logging
 from datetime import timedelta
+
 import requests
 from source_marketo.source import SourceMarketo
 
@@ -78,9 +79,10 @@ def test_programs_next_page_token(config):
     last_record = {"id": page_size - 1}
     response = _make_response({"result": records})
     stream = get_stream_by_name("programs", config)
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(
-        response, len(records), last_record, last_page_token_value=None
-    ) == page_size
+    assert (
+        stream.retriever.paginator.pagination_strategy.next_page_token(response, len(records), last_record, last_page_token_value=None)
+        == page_size
+    )
 
 
 def test_segmentations_next_page_token(config):
@@ -89,6 +91,7 @@ def test_segmentations_next_page_token(config):
     last_record = {"id": page_size - 1}
     response = _make_response({"result": records})
     stream = get_stream_by_name("segmentations", config)
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(
-        response, len(records), last_record, last_page_token_value=None
-    ) == page_size
+    assert (
+        stream.retriever.paginator.pagination_strategy.next_page_token(response, len(records), last_record, last_page_token_value=None)
+        == page_size
+    )

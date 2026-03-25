@@ -5,9 +5,8 @@
 import os.path
 import sys
 import time
-from typing import Any, Mapping
-
 from datetime import datetime, timedelta
+from typing import Any, Mapping
 
 import pytest
 from source_marketo.source import SourceMarketo
@@ -76,7 +75,7 @@ def activity():
 @pytest.fixture
 def file_generator(faker):
     def _generator(min_size: int):
-        print(f"Generating a test file of {min_size // 1024 ** 2} MB, this could take some time")
+        print(f"Generating a test file of {min_size // 1024**2} MB, this could take some time")
 
         def fake_records_gen():
             new_line = "\n"
