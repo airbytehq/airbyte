@@ -9,6 +9,7 @@ import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
 import io.airbyte.cdk.output.sockets.ProtobufAwareCustomConnectorJsonCodec
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.sql.Timestamp
 import java.time.LocalDateTime
 
 object PostgresTimestampFieldType :
@@ -51,6 +52,10 @@ private object PgTimestampAccessor : JdbcAccessor<String> {
     }
 
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: String) {
-        stmt.setString(paramIdx, value)
+        val isBce = value.endsWith(" BC")
+        val str = if (isBce) value.removeSuffix(" BC") else value
+        val parsed = LocalDateTime.parse(str)
+        val adjusted = if (isBce) parsed.withYear(1 - parsed.year) else parsed
+        stmt.setTimestamp(paramIdx, Timestamp.valueOf(adjusted))
     }
 }

@@ -47,6 +47,10 @@ private object PgDateAccessor : JdbcAccessor<String> {
     }
 
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: String) {
-        stmt.setString(paramIdx, value)
+        val isBce = value.endsWith(" BC")
+        val str = if (isBce) value.removeSuffix(" BC") else value
+        val parsed = LocalDate.parse(str, DateTimeConverter.DATE_FORMATTER)
+        val adjusted = if (isBce) parsed.withYear(1 - parsed.year) else parsed
+        stmt.setDate(paramIdx, java.sql.Date.valueOf(adjusted))
     }
 }
