@@ -9,6 +9,10 @@ Bulk export streams (Leads + Activities) use the CDK ``AsyncRetriever``
 pattern with custom components defined in ``components.py``.
 """
 
+import logging
+from typing import Any, Mapping
+
+from airbyte_cdk.models import AirbyteConnectionStatus
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 
@@ -17,3 +21,10 @@ class SourceMarketo(YamlDeclarativeSource):
 
     def __init__(self) -> None:
         super().__init__(path_to_yaml="manifest.yaml")
+
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+        # Ensure _config is populated before the check flow accesses the
+        # ``dynamic_streams`` property, which resolves HTTP components and
+        # therefore needs the real config for Jinja interpolation.
+        self._config = config
+        return super().check(logger, config)
