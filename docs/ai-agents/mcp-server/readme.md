@@ -2,19 +2,21 @@
 sidebar_position: 6
 ---
 
-# Airbyte MCP server
+# Airbyte Agent Engine MCP server
 
-The Airbyte MCP server connects your AI agent to your business data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives agents authenticated access to the SaaS platforms you use every day, such as your CRM, support desk, analytics tools, and more, so they can read and query data on your behalf.
+The Airbyte Agent Engine MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf.
 
-Airbyte hosts and manages a remote MCP server with OAuth authentication, so there's nothing to install.
+Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
 ## Requirements
 
 Before you begin, make sure you have the following:
 
 - **An Agent Engine account.** Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
-- **An AI agent that supports MCP.** For example, Claude Desktop, Claude Code, Cursor, Codex, or any client that supports the Model Context Protocol.
-- **Credentials for the connectors you want to use.** Each data source requires its own authentication. For example, you need a Gong API key to connect Gong, or Salesforce OAuth credentials to connect Salesforce.
+
+- **An AI agent that supports MCP.** For example, Claude Desktop, Claude Code, Cursor, or Codex.
+
+- **Credentials for the connectors you want to use.** Each service requires its own authentication. For example, you need a Linear API key to connect Linear, or Salesforce OAuth credentials to connect Salesforce.
 
 ## Add the MCP server to your agent
 
@@ -39,13 +41,27 @@ After you authenticate, the MCP server's tools are available to your agent.
 
 ### Claude Code
 
-Run the following command in your terminal:
+1. Run the following command in your terminal:
 
-```bash
-claude mcp add --transport http airbyte https://mcp.airbyte.ai/mcp
-```
+    ```bash
+    claude mcp add --transport http airbyte-agent https://mcp.airbyte.ai/mcp
+    ```
 
-Then launch Claude Code with `claude`. You'll be prompted to authenticate with OAuth to Airbyte.
+2. Run Claude Code with `claude`.
+
+3. Type `/mcp`.
+
+4. Select the **airbyte-agent** MCP you added in step 1.
+
+5. Select **Authenticate**. Your web browser opens.
+
+6. If you're not logged into the Agent Engine, log in now.
+
+7. Grant access to the Agent Engine MCP
+
+    ![Grant access to the Agent Engine MCP](grant-access.png)
+
+8. Return to Claude and begin using the MCP server.
 
 ### Cursor
 
@@ -107,10 +123,10 @@ After you connect the MCP server, your agent can discover and call its tools aut
 
 ### Add a connector
 
-To connect a new data source, prompt your agent with what you want to connect. The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
+To connect a new data source, prompt your agent with the service you want to connect. The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
 
 ```text
-Connect my Gong account
+Connect my Linear account
 ```
 
 The agent:
@@ -129,12 +145,12 @@ Credentials are always entered in the browser, never in the chat. The agent give
 To remove a connector you no longer need:
 
 ```text
-Delete my Gong connector
+Delete my Linear connector
 ```
 
 ### Query data
 
-After you connect a data source, prompt your agent with natural language questions. The agent discovers the available entities, understands their schemas, and executes the right queries.
+After you connect a data source, prompt your agent. The agent discovers the available entities, understands their schemas, and executes the right queries.
 
 ```text
 Show me the 10 most recent Gong calls
@@ -158,9 +174,9 @@ The agent uses field selection to return only the data you need, which reduces t
 
 ### Authentication fails
 
-- Make sure your Airbyte account is active at [app.airbyte.ai](https://app.airbyte.ai).
+- Make sure you have an active account at [app.airbyte.ai](https://app.airbyte.ai).
 - Try logging out of your agent's MCP integration and reconnecting to trigger a fresh OAuth flow.
-- If you joined a new Airbyte organization, reauthenticate to refresh your access.
+- If you joined a new Airbyte organization, authenticate again to refresh your access.
 
 ### Agent can't find the MCP server
 
