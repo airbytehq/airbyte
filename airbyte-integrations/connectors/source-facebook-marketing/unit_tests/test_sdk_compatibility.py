@@ -10,10 +10,7 @@ bumping the facebook-business SDK from v23 to v25.
 """
 
 import pytest
-from facebook_business.adobjects.ad import Ad
-from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
-from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApi
 
 

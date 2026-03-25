@@ -7,9 +7,9 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Mapping, Optional, Union
 
-from airbyte_cdk.test.mock_http.request import HttpRequest
-
 from facebook_business.api import FacebookAdsApi
+
+from airbyte_cdk.test.mock_http.request import HttpRequest
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID
 
