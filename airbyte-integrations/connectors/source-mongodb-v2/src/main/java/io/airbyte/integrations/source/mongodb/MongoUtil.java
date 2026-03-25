@@ -57,14 +57,14 @@ public class MongoUtil {
   private static final Set<String> IGNORED_COLLECTIONS = Set.of("system.", "replset.", "oplog.");
 
   /**
-   * Maximum number of collections to discover in parallel. Each parallel discovery runs a $sample
-   * aggregation pipeline that can trigger expensive COLLSCAN operations on the MongoDB server.
-   * Unbounded parallelism (via the default ForkJoinPool) can overwhelm production clusters,
+   * Default maximum number of collections to discover in parallel. Each parallel discovery runs a
+   * $sample aggregation pipeline that can trigger expensive COLLSCAN operations on the MongoDB
+   * server. Unbounded parallelism (via the default ForkJoinPool) can overwhelm production clusters,
    * especially with large collections. This limit caps the number of concurrent discovery operations
-   * to protect the source database.
+   * to protect the source database. Users can override this via the "discover_parallelism" config.
    */
   @VisibleForTesting
-  static final int MAX_DISCOVER_PARALLELISM = 5;
+  static final int DEFAULT_DISCOVER_PARALLELISM = MongoConstants.DEFAULT_DISCOVER_PARALLELISM;
 
   @VisibleForTesting
   static final int DEFAULT_CHUNK_SIZE = 1_000_000;
@@ -133,10 +133,12 @@ public class MongoUtil {
                                                       final String databaseName,
                                                       final Integer sampleSize,
                                                       final boolean isSchemaEnforced,
-                                                      final Integer discoverTimeout) {
+                                                      final Integer discoverTimeout,
+                                                      final Integer discoverParallelism) {
+    final int parallelism = discoverParallelism != null ? Math.max(1, discoverParallelism) : DEFAULT_DISCOVER_PARALLELISM;
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     LOGGER.info("Discovering schema for {} collections in database '{}' with parallelism capped at {}.",
-        authorizedCollections.size(), databaseName, MAX_DISCOVER_PARALLELISM);
+        authorizedCollections.size(), databaseName, parallelism);
 
     // Use a dedicated ForkJoinPool with bounded parallelism instead of the common pool.
     // Each parallel discovery runs a $sample aggregation that can trigger full collection scans
@@ -144,7 +146,7 @@ public class MongoUtil {
     // Without this limit, parallelStream() uses the common ForkJoinPool whose default parallelism
     // equals Runtime.availableProcessors(), which can launch many concurrent $sample operations
     // and overwhelm production clusters.
-    final ForkJoinPool discoveryPool = new ForkJoinPool(MAX_DISCOVER_PARALLELISM);
+    final ForkJoinPool discoveryPool = new ForkJoinPool(parallelism);
     try {
       return discoveryPool.submit(() -> authorizedCollections.parallelStream()
           .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, discoverTimeout))
