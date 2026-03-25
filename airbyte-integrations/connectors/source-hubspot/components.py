@@ -16,6 +16,7 @@ from airbyte_cdk import (
     RecordSelector,
     SimpleRetriever,
 )
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
@@ -38,12 +39,41 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
 
 
 logger = logging.getLogger("airbyte")
+
+_PRIVATE_APP_CREDENTIALS = "Private App Credentials"
+
+
+class HubspotErrorHandler(DefaultErrorHandler):
+    """
+    Custom error handler that differentiates 401 handling based on authentication type.
+
+    For OAuth: 401 is retried because the OAuthAuthenticator can transparently refresh expired tokens.
+    For Private App Token (PAT): 401 is a permanent failure because static tokens cannot be refreshed.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        resolution = super().interpret_response(response_or_exception)
+
+        if (
+            isinstance(response_or_exception, requests.Response)
+            and response_or_exception.status_code == 401
+            and resolution.response_action == ResponseAction.RETRY
+            and self.config.get("credentials", {}).get("credentials_title") == _PRIVATE_APP_CREDENTIALS
+        ):
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message="Private App access token is invalid or expired.",
+            )
+
+        return resolution
 
 
 @dataclass
@@ -675,7 +705,7 @@ def build_associations_retriever(
             config=config,
             parameters=parameters,
         ),
-        error_handler=DefaultErrorHandler(
+        error_handler=HubspotErrorHandler(
             backoff_strategies=[
                 WaitTimeFromHeaderBackoffStrategy(header="Retry-After", config=config, parameters=parameters),
                 ExponentialBackoffStrategy(config=config, parameters=parameters),

@@ -8,8 +8,11 @@ import pytest
 import requests
 from requests import Response
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 
 
 @pytest.mark.parametrize(
@@ -650,3 +653,89 @@ def test_crm_search_pagination_strategy(
     )
 
     assert actual_next_page_token == expected_next_page_token
+
+
+@pytest.mark.parametrize(
+    "credentials_title, status_code, expected_action, expected_failure_type, expected_error_message",
+    [
+        pytest.param(
+            "Private App Credentials",
+            401,
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            "Private App access token is invalid or expired.",
+            id="pat_401_fails_immediately",
+        ),
+        pytest.param(
+            "OAuth Credentials",
+            401,
+            ResponseAction.RETRY,
+            None,
+            None,
+            id="oauth_401_retries",
+        ),
+        pytest.param(
+            "Private App Credentials",
+            429,
+            ResponseAction.RETRY,
+            None,
+            None,
+            id="pat_429_retries_normally",
+        ),
+        pytest.param(
+            "Private App Credentials",
+            200,
+            ResponseAction.SUCCESS,
+            None,
+            None,
+            id="pat_200_succeeds",
+        ),
+    ],
+)
+def test_hubspot_error_handler_401_by_auth_type(
+    credentials_title, status_code, expected_action, expected_failure_type, expected_error_message
+):
+    """Verify that 401 with PAT credentials fails immediately while 401 with OAuth retries."""
+    components_module = __import__("components")
+
+    config = {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": credentials_title, "access_token": "test_access_token"},
+    }
+    parameters = {}
+
+    error_handler = components_module.HubspotErrorHandler(
+        backoff_strategies=[],
+        response_filters=[
+            HttpResponseFilter(
+                action="RETRY",
+                http_codes={429},
+                error_message="Rate limited.",
+                config=config,
+                parameters=parameters,
+            ),
+            HttpResponseFilter(
+                action="RETRY",
+                http_codes={401},
+                error_message="Authentication to HubSpot has expired.",
+                config=config,
+                parameters=parameters,
+            ),
+        ],
+        config=config,
+        parameters=parameters,
+    )
+
+    response = Mock(spec=requests.Response)
+    response.status_code = status_code
+    response.ok = status_code == 200
+    response.headers = {}
+    response.json.return_value = {}
+
+    resolution = error_handler.interpret_response(response)
+
+    assert resolution.response_action == expected_action
+    if expected_failure_type is not None:
+        assert resolution.failure_type == expected_failure_type
+    if expected_error_message is not None:
+        assert resolution.error_message == expected_error_message
