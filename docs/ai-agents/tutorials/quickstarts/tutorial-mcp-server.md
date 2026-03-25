@@ -165,7 +165,7 @@ uv run agent-engine mcp add-to claude-code connector-github-package.yaml --name 
 
     - `What are the open issues assigned to octocat?`
 
-Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results. If your agent fails to retrieve data, see [Troubleshoot the MCP server](../../mcp-server/troubleshooting).
+Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server handles executing the connector operations and returning the results. If your agent fails to retrieve data, see the [Troubleshooting](../../mcp-server/#troubleshooting) section of the MCP server documentation.
 
 ## Summary
 
@@ -187,6 +187,4 @@ In this tutorial, you learned how to:
 
 - Try other connectors. Run `uv run agent-engine connectors list-oss` to see all available connectors and repeat these steps with a different data source.
 
-- Learn how to [configure the MCP server](../../mcp-server/configuration) for advanced scenarios like Agent Engine hosted execution, git-based packages, and aggregate configurations with multiple connectors.
-
-- Learn about [field selection, downloads, and other advanced features](../../mcp-server/usage).
+- Learn how to use the [hosted MCP server](../../mcp-server/) to connect your agent to business data without installing anything.
