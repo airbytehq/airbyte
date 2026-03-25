@@ -5,8 +5,6 @@
 import json
 import logging
 from datetime import timedelta
-from unittest.mock import MagicMock
-
 import requests
 from source_marketo.source import SourceMarketo
 
