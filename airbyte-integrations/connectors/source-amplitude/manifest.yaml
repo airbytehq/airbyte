@@ -1040,12 +1040,20 @@ spec:
           According to <a href="https://amplitude.com/docs/apis/analytics/dashboard-rest#query-parameters">Amplitude documentation</a>, grouping by `Country` is optional. If you face issues fetching the stream or checking the connection please set this field to `False`.
         default: true
 
-# Amplitude API rate limits:
-# - Dashboard REST API: 5 concurrent requests, 108,000 cost/hour, 1,000 cost/5min
-#   Cost formula: (# of days) * (# of conditions) * (query type cost)
-#   See: https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits
-# - Export API: No explicit rate limits documented, but large exports may timeout
-# - Chart Annotations & Behavioral Cohorts APIs: No separate rate limits documented
+# Amplitude API rate limits (see https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits):
+#
+# Dashboard REST API has three limits:
+#   1. Concurrent requests: 5 simultaneous requests across all Dashboard REST API endpoints.
+#      Enforced via concurrency_level below (CDK doesn't support per-endpoint concurrency in api_budget).
+#   2. Burst limit: 1,000 cost per 5-minute window.
+#      Note: Amplitude docs label this "Concurrent Limit" but it functions as a short-term rate limit
+#      (cost budget over a time window), not a true concurrency constraint.
+#   3. Hourly limit: 108,000 cost per hour.
+#
+# Cost formula: (# of days) * (# of conditions) * (query type cost)
+#
+# Export API: No explicit rate limits documented, but large exports may timeout.
+# Chart Annotations & Behavioral Cohorts APIs: No separate rate limits documented.
 #
 # Per-stream cost estimates (based on connector's slice sizes and query parameters):
 #   /2/sessions/average (average_session_length): 15 days * 1 condition * 4 (User Sessions) = 60 cost/request
@@ -1056,8 +1064,11 @@ spec:
 # Note: /2/events/list is not given a specific policy because its cost is trivially low (1 per request)
 # and it only makes a single request per sync (full refresh, no date slicing).
 # Other endpoints (annotations, cohorts, export) have no documented rate limits from Amplitude.
-# The 5-concurrent-request limit is enforced globally via concurrency_level (not per-endpoint),
-# as the CDK's api_budget only supports count-based rate policies, not concurrency policies.
+#
+# Caveat: The burst (1,000 cost/5min) and hourly (108,000 cost/hr) budgets are shared across all
+# Dashboard REST API endpoints. Each policy below is calculated as if the endpoint has the full budget.
+# If multiple Dashboard REST API streams sync concurrently, they could collectively exceed the shared
+# budget. The CDK's count-based api_budget doesn't support a shared cost pool across different matchers.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 5
