@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Uploads the metadata (+SBOM+spec cache) to GCS.
-# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery --with-semver-suffix <none|preview|rc>
-# You must have three environment variables set (GCS_CREDENTIALS, METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
+# Uploads additional connector metadata (spec cache + SBOM) to GCS.
+#
+# The legacy `metadata_service upload` (metadata.yaml, icon.svg, doc.md, etc.) has been
+# removed from this script — it is now handled by the ops CLI registry pipeline
+# (publish_connector_registry_entries job in publish_connectors.yml).
+#
+# Usage: ./poe-tasks/upload-additional-connector-metadata.sh --name destination-bigquery --with-semver-suffix <none|preview|rc>
+# You must have two environment variables set (METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
 # each containing a JSON-formatted GCP service account key.
 # SPEC_CACHE_GCS_CREDENTIALS needs write access to `gs://$spec_cache_bucket/specs`.
 # METADATA_SERVICE_GCS_CREDENTIALS needs write access to `gs://$metadata_bucket/sbom`.
-# GCS_CREDENTIALS needs write access to `gs://$metadata_bucket/metadata`.
 
 source "${BASH_SOURCE%/*}/lib/util.sh"
 
@@ -22,10 +26,6 @@ if ! test "$METADATA_SERVICE_GCS_CREDENTIALS"; then
   echo "METADATA_SERVICE_GCS_CREDENTIALS environment variable must be set" >&2
   exit 1
 fi
-if ! test "$GCS_CREDENTIALS"; then
-  echo "GCS_CREDENTIALS environment variable must be set" >&2
-  exit 1
-fi
 
 spec_cache_bucket="io-airbyte-cloud-spec-cache"
 metadata_bucket="prod-airbyte-cloud-connector-metadata-service"
@@ -34,9 +34,6 @@ syft_docker_image="anchore/syft:v1.6.0"
 sbom_extension="spdx.json"
 
 meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
-# isEnterprise flag is usually only set on enterprise connectors,
-is_enterprise=$(yq -r '.data.ab_internal.isEnterprise // false' "$meta")
-doc="$(connector_docs_path $connector $is_enterprise)"
 
 docker_repository=$(yq -r '.data.dockerRepository' "$meta")
 if test -z "$docker_repository" || test "$docker_repository" = "null"; then
@@ -45,26 +42,31 @@ if test -z "$docker_repository" || test "$docker_repository" = "null"; then
 fi
 
 # Figure out the tag that we're working on (i.e. handle the prerelease case)
-base_tag=$(yq -r '.data.dockerImageTag' "$meta")
-if test -z "$base_tag" || test "$base_tag" = "null"; then
-  echo "Error: dockerImageTag missing in ${meta}" >&2
-  exit 1
-fi
-case "$semver_suffix" in
-  none)
-    docker_tag="$base_tag"
-    ;;
-  preview)
-    docker_tag=$(generate_dev_tag "$base_tag")
-    ;;
-  rc)
-    docker_tag=$(generate_rc_tag "$base_tag")
-    ;;
-  *)
-    echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+if [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
+  # When set by the publish workflow, use the pre-resolved tag directly.
+  docker_tag="$CONNECTOR_VERSION_TAG"
+else
+  base_tag=$(yq -r '.data.dockerImageTag' "$meta")
+  if test -z "$base_tag" || test "$base_tag" = "null"; then
+    echo "Error: dockerImageTag missing in ${meta}" >&2
     exit 1
-    ;;
-esac
+  fi
+  case "$semver_suffix" in
+    none)
+      docker_tag="$base_tag"
+      ;;
+    preview)
+      docker_tag=$(generate_dev_tag "$base_tag")
+      ;;
+    rc)
+      docker_tag=$(generate_rc_tag "$base_tag")
+      ;;
+    *)
+      echo "Error: Invalid semver_suffix '$semver_suffix'. Valid options are 'none', 'preview', or 'rc'." >&2
+      exit 1
+      ;;
+  esac
+fi
 
 full_docker_image="$docker_repository:$docker_tag"
 
@@ -114,21 +116,3 @@ docker run \
   "$full_docker_image" > "$sbom_extension"
 gcloud_activate_service_account "$METADATA_SERVICE_GCS_CREDENTIALS"
 gsutil cp "$sbom_extension" "gs://$metadata_bucket/sbom/$docker_repository/$docker_tag.$sbom_extension"
-
-# Upload the metadata
-# `metadata_service upload` skips the upload if the metadata already exists in GCS.
-echo '--- UPLOADING METADATA ---'
-if test "$semver_suffix" = "none"; then
-  metadata_upload_prerelease_flag=''
-else
-  # yes, it's --prerelease and not --pre-release
-  metadata_upload_prerelease_flag="--prerelease $docker_tag"
-fi
-# Under the hood, this reads the GCS_CREDENTIALS environment variable
-# Note: --directory works here because publish_connectors.yml installs poetry 1.x.
-# If we upgrade to 2.x, this needs to be `--project $METADATA_SERVICE_PATH`.
-# TODO: remove the `--disable-dockerhub-checks` flag once we stop supporting strict-encrypt connectors
-#   | For strict-encrypt connectors the dockerhub checks enforce that both {connector}:{version} and {connector}-strict-encrypt:{version}
-#   | Docker images must be published prior to metadata upload. With our current connector publishing process, these images are
-#   | published in parallel and will not necessarily exist before metadata upload.
-poetry run --directory $METADATA_SERVICE_PATH metadata_service upload --disable-dockerhub-checks "$meta" "$doc" "$metadata_bucket" $metadata_upload_prerelease_flag
