@@ -133,9 +133,7 @@ class StateManagerStreamStatesTest {
             handler.get(),
         )
         val errorTraces =
-            outputConsumer.traces().filter {
-                it.type == AirbyteTraceMessage.Type.ERROR
-            }
+            outputConsumer.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
         Assertions.assertEquals(1, errorTraces.size)
         val error: AirbyteErrorTraceMessage = errorTraces.first().error
         Assertions.assertEquals(
@@ -185,9 +183,7 @@ class StateManagerStreamStatesTest {
         Assertions.assertEquals(1, failures.size)
         Assertions.assertTrue(failures.first() is FieldTypeMismatch)
         val errorTraces =
-            outputConsumer.traces().filter {
-                it.type == AirbyteTraceMessage.Type.ERROR
-            }
+            outputConsumer.traces().filter { it.type == AirbyteTraceMessage.Type.ERROR }
         Assertions.assertEquals(1, errorTraces.size)
         val error: AirbyteErrorTraceMessage = errorTraces.first().error
         Assertions.assertEquals(
