@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @pytest.mark.parametrize(
@@ -461,6 +462,7 @@ def test_associations_extractor(config, components_module):
 
 
 def test_associations_extractor_with_permissions_error(requests_mock, config, components_module):
+    """With PAT credentials, a 401 on associations should fail immediately (no retry)."""
     response = requests.Response()
     response._content = (
         b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
@@ -469,30 +471,13 @@ def test_associations_extractor_with_permissions_error(requests_mock, config, co
 
     companies_associations_responses = [
         {"json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."}, "status_code": 401},
-        {
-            "json": {
-                "results": [
-                    {
-                        "from": {"id": "123"},
-                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "408"}],
-                    },
-                    {
-                        "from": {"id": "456"},
-                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "888"}],
-                    },
-                ]
-            },
-            "status_code": 200,
-        },
     ]
-
-    contacts_associations_responses = [{"json": {"results": []}, "status_code": 200}]
 
     requests_mock.register_uri(
         "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
     )
     requests_mock.register_uri(
-        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", contacts_associations_responses
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", [{"json": {"results": []}, "status_code": 200}]
     )
 
     extractor = components_module.HubspotAssociationsExtractor(
@@ -504,13 +489,8 @@ def test_associations_extractor_with_permissions_error(requests_mock, config, co
         parameters={},
     )
 
-    records = list(extractor.extract_records(response=response))
-
-    assert len(records) == 2
-    assert records[0]["id"] == "123"
-    assert records[0]["companies"] == ["408"]
-    assert records[1]["id"] == "456"
-    assert records[1]["companies"] == ["888"]
+    with pytest.raises(AirbyteTracedException, match="Please, update you Private App access token"):
+        list(extractor.extract_records(response=response))
 
 
 def test_extractor_supports_entity_interpolation(config, components_module):
