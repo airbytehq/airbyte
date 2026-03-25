@@ -9,10 +9,12 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
+from facebook_business.api import FacebookAdsApi
+
 from .config import ACCESS_TOKEN, ACCOUNT_ID
 
 
-API_VERSION = "v23.0"
+API_VERSION = FacebookAdsApi.API_VERSION
 
 
 def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:

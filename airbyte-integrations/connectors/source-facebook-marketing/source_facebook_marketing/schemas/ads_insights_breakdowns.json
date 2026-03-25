@@ -72,9 +72,29 @@
       "description": "The country where the ad is being displayed.",
       "type": ["null", "string"]
     },
+    "creative_automation_asset_id": {
+      "type": ["null", "string"],
+      "description": "The ID of the creative automation asset."
+    },
     "creative_relaxation_asset_type": {
       "description": "",
       "type": ["null", "string"]
+    },
+    "crm_advertiser_l12_territory_ids": {
+      "type": ["null", "string"],
+      "description": "CRM advertiser L12 territory IDs."
+    },
+    "crm_advertiser_subvertical_id": {
+      "type": ["null", "string"],
+      "description": "CRM advertiser subvertical ID."
+    },
+    "crm_advertiser_vertical_id": {
+      "type": ["null", "string"],
+      "description": "CRM advertiser vertical ID."
+    },
+    "crm_ult_advertiser_id": {
+      "type": ["null", "string"],
+      "description": "CRM ultimate advertiser ID."
     },
     "description_asset": {
       "description": "Additional descriptive text accompanying the ad content.",
@@ -229,6 +249,38 @@
       "type": ["null", "integer"],
       "description": "Index of the postback sequence."
     },
+    "product_brand_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product brand breakdown."
+    },
+    "product_category_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product category breakdown."
+    },
+    "product_custom_label_0_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product custom label 0 breakdown."
+    },
+    "product_custom_label_1_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product custom label 1 breakdown."
+    },
+    "product_custom_label_2_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product custom label 2 breakdown."
+    },
+    "product_custom_label_3_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product custom label 3 breakdown."
+    },
+    "product_custom_label_4_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product custom label 4 breakdown."
+    },
+    "product_group_content_id_breakdown": {
+      "type": ["null", "string"],
+      "description": "Product group content ID breakdown."
+    },
     "product_id": {
       "description": "The identifier of the product featured in the ad.",
       "type": ["null", "string"]
@@ -241,9 +293,25 @@
       "type": ["null", "boolean"],
       "description": "Indicates if the ad is a redownload."
     },
+    "reels_trending_topic": {
+      "type": ["null", "string"],
+      "description": "Reels trending topic."
+    },
     "region": {
       "description": "The region being targeted by the ad campaign.",
       "type": ["null", "string"]
+    },
+    "rta_ugc_topic": {
+      "type": ["null", "string"],
+      "description": "RTA UGC topic."
+    },
+    "rule_set_id": {
+      "type": ["null", "string"],
+      "description": "Rule set ID."
+    },
+    "rule_set_name": {
+      "type": ["null", "string"],
+      "description": "Rule set name."
     },
     "signal_source_bucket": {
       "type": ["null", "string"],
