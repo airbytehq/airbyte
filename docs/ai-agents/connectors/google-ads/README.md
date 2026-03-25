@@ -122,7 +122,7 @@ See the official [Google-Ads API reference](https://developers.google.com/google
 
 ## Version information
 
-- **Package version:** 0.1.15
-- **Connector version:** 1.0.5
-- **Generated with Connector SDK commit SHA:** 6ad04bc3fb66fc474336c37d69c79fb843ea1609
+- **Package version:** 0.1.17
+- **Connector version:** 1.0.6
+- **Generated with Connector SDK commit SHA:** bbb4625615c5a514170db99dfb0a413153726447
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-ads/CHANGELOG.md)
