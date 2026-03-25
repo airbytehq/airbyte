@@ -4,6 +4,7 @@ An **Airbyte destination connector** that writes data to **Microsoft Fabric OneL
 
 ## Documentation
 
+- **[Connector reference](docs/CONNECTOR_REFERENCE.md)** — Auth (SP vs MI), mandatory fields, OneLake folder layout, UI notes.
 - **[Build, deploy & operations](docs/BUILD_AND_DEPLOY.md)** — Build image, deploy to Kind/Kubernetes, configure, troubleshoot.
 - **[GitHub repo setup](docs/GITHUB_SETUP.md)** — Create and push the repo (e.g. **OneLake Airbyte Destination Connector**).
 - **[LinkedIn posts](docs/LINKEDIN_POSTS.md)** — Ready-to-use post drafts and promo image (`assets/onelake-airbyte-promo.png`) for promotion.

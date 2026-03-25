@@ -7,13 +7,14 @@ This guide covers building the Docker image, deploying to Kubernetes (including 
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Building the Connector](#building-the-connector)
-3. [Running Locally (Gradle)](#running-locally-gradle)
-4. [Building the Docker Image](#building-the-docker-image)
-5. [Deploying to Kind (Local Kubernetes)](#deploying-to-kind-local-kubernetes)
-6. [Deploying to Airbyte (Kubernetes)](#deploying-to-airbyte-kubernetes)
-7. [Configuration Reference](#configuration-reference)
-8. [Troubleshooting](#troubleshooting)
+2. **[Full connector reference (auth, paths, UI)](./CONNECTOR_REFERENCE.md)**
+3. [Building the Connector](#building-the-connector)
+4. [Running Locally (Gradle)](#running-locally-gradle)
+5. [Building the Docker Image](#building-the-docker-image)
+6. [Deploying to Kind (Local Kubernetes)](#deploying-to-kind-local-kubernetes)
+7. [Deploying to Airbyte (Kubernetes)](#deploying-to-airbyte-kubernetes)
+8. [Configuration Reference](#configuration-reference)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -145,6 +146,8 @@ If you run Airbyte on a Kind cluster:
 
 ## Configuration Reference
 
+For **Service Principal vs Managed Identity**, **mandatory fields**, **Output Path Format vs empty (Files/data behavior)**, and **Airbyte UI notes** (including duplicate error toasts), see **[CONNECTOR_REFERENCE.md](./CONNECTOR_REFERENCE.md)**.
+
 | Field | Description | Example |
 |-------|-------------|--------|
 | **Fabric Workspace Name or GUID** | Workspace that contains the Lakehouse | `EG_Dataplatform_Dev` |
@@ -173,6 +176,7 @@ If you run Airbyte on a Kind cluster:
 | **Sync fails: NonUniqueBeanException** | Ensure you use the **onelake** connector image, not a mix of Azure Blob + OneLake in the same classpath. Use the built image as documented. |
 | **Files not under Files/data/...** | Set **Output Path Format** (e.g. `Direct_Onelake_Connector_Data/`). For `Files/data/...`, set `one_lake_files_sub_path` to `data` via JSON/config (default in 1.1 is `data`). |
 | **Permission denied on workspace** | Grant the Service Principal or Managed Identity **Storage Blob Data Contributor** (or equivalent) on the Fabric workspace. |
+| **Same error shown twice** (inline + popup) when save/test fails | Normal Airbyte UI behavior: form error + toast. The connector emits one failure; removing the toast requires an Airbyte platform/UI change, not connector code. See [CONNECTOR_REFERENCE.md](./CONNECTOR_REFERENCE.md#airbyte-ui-behavior). |
 
 ---
 

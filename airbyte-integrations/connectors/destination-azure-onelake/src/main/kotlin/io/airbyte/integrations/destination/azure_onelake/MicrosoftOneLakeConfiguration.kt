@@ -154,9 +154,9 @@ class MicrosoftOneLakeConfigurationFactory(
         val resolvedOneLakeFilesSubPath =
             pojo.oneLakeFilesSubPath
                 ?.takeIf { it.isNotBlank() }
-                // Use "data" only when the user did NOT customise the destination path format.
-                // If a custom path format is provided, respect it and do NOT inject an extra "data" segment.
-                ?: if (pojo.pathFormat.isNullOrBlank()) "data" else ""
+                // Keep the default OneLake layout under Files/data/, even when users provide
+                // a custom destination_path_format. The path format is appended after this segment.
+                ?: "data"
 
         return MicrosoftOneLakeConfiguration(
             azureBlobStorageClientConfiguration = clientConfig,
