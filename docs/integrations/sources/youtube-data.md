@@ -106,6 +106,14 @@ The YouTube Data API source connector supports the following sync modes:
 - **comments**: Comment threads on individual videos from the specified channels. For each video discovered in the channel, this stream fetches the top-level comments and their replies.
 - **channel_comments**: All comment threads related to the specified channels, including comments on the channel's videos and comments that mention the channel. This provides a broader view of channel engagement than the `comments` stream.
 
+## YouTube API Services usage disclosure
+
+This connector uses [YouTube API Services](https://developers.google.com/youtube/v3) to retrieve data from YouTube. By using this connector, you agree to be bound by the [YouTube Terms of Service](https://www.youtube.com/t/terms).
+
+YouTube API Services are provided by Google. Please review the [Google Privacy Policy](http://www.google.com/policies/privacy) to understand how Google handles data.
+
+When using OAuth 2.0 authentication, this connector accesses authorized user data. You can revoke the connector's access to your Google account at any time through the [Google security settings page](https://myaccount.google.com/connections?filters=3,4&hl=en). To delete stored data that was previously synced, remove the relevant connection in your Airbyte workspace or delete the data from your configured destination.
+
 ## Limitations and considerations
 
 - The YouTube Data API has [quota limits](https://developers.google.com/youtube/v3/getting-started#quota). Each API request costs a certain number of quota units, and the default quota is 10,000 units per day. The search endpoint used by the `videos` stream has a higher quota cost (100 units per request) compared to other endpoints.
