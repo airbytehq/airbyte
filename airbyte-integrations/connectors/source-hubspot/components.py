@@ -17,30 +17,49 @@ from airbyte_cdk import (
     SimpleRetriever,
 )
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
-from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.auth.selective_authenticator import (
+    SelectiveAuthenticator,
+)
+from airbyte_cdk.sources.declarative.auth.token_provider import (
+    InterpolatedStringTokenProvider,
+)
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import (
+    ListPartitionRouter,
+)
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
     ExponentialBackoffStrategy,
     WaitTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import (
+    DefaultErrorHandler,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import (
+    HttpResponseFilter,
+)
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import (
+    PaginationStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_format, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.datetime_helpers import (
+    AirbyteDateTime,
+    ab_datetime_format,
+    ab_datetime_now,
+    ab_datetime_parse,
+)
 
 
 logger = logging.getLogger("airbyte")
@@ -250,7 +269,8 @@ class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
     accepts the set of dynamic schema fields as a single record.
-    This might be doable with the existing DpathExtractor configuration.
+
+    Supports both v2 (flat array) and v3 ({"results": [...]}) HubSpot properties API response formats.
     """
 
     config: Config
@@ -258,7 +278,13 @@ class HubspotSchemaExtractor(RecordExtractor):
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
-        yield {"properties": list(self.decoder.decode(response))}
+        all_bodies = list(self.decoder.decode(response))
+        if len(all_bodies) == 1 and isinstance(all_bodies[0], dict) and "results" in all_bodies[0]:
+            # v3 API format: single object with "results" key containing the properties list
+            yield {"properties": all_bodies[0]["results"]}
+        else:
+            # v2 API format: flat array of property objects (used by forms_schema_loader)
+            yield {"properties": all_bodies}
 
 
 @dataclass
@@ -330,7 +356,10 @@ class EngagementsHttpRequester(HttpRequester):
 
         # Recent engagements API returns records updated in the last 30 days only. If start time is older All engagements API should be used
         if int(stream_slice["start_time"]) >= int(
-            DatetimeParser().format((ab_datetime_now() - timedelta(days=self.recent_api_last_days_limit)), "%ms")
+            DatetimeParser().format(
+                (ab_datetime_now() - timedelta(days=self.recent_api_last_days_limit)),
+                "%ms",
+            )
         ):
             # Recent engagements API returns only 10k most recently updated records.
             # API response indicates that there are more records so All engagements API should be used
@@ -425,7 +454,10 @@ class EntitySchemaNormalization(TypeTransformer):
                     except ValueError:
                         logger.exception(f"Could not cast field value {original_value} to {target_type}")
                         return original_value
-                if "boolean" in target_type and original_value.lower() in ["true", "false"]:
+                if "boolean" in target_type and original_value.lower() in [
+                    "true",
+                    "false",
+                ]:
                     transformed_value = str(original_value).lower() == "true"
                     return transformed_value
                 if target_format:
@@ -460,7 +492,9 @@ class EntitySchemaNormalization(TypeTransformer):
         return transform_function
 
     @staticmethod
-    def convert_datetime_string_to_ab_datetime(datetime_str: str) -> Optional[AirbyteDateTime]:
+    def convert_datetime_string_to_ab_datetime(
+        datetime_str: str,
+    ) -> Optional[AirbyteDateTime]:
         """
         Implements the existing source-hubspot behavior where the API response can return either a timestamp
         with seconds or milliseconds precision. We first attempt to parse in seconds, then millisecond, or
@@ -595,7 +629,9 @@ class HubspotAssociationsExtractor(RecordExtractor):
             for _slice in slices:
                 # Append the list of extracted records so they are usable during interpolation of the JSON request body
                 stream_slice = StreamSlice(
-                    cursor_slice=_slice.cursor_slice, partition=_slice.partition, extra_fields={"record_ids": record_ids}
+                    cursor_slice=_slice.cursor_slice,
+                    partition=_slice.partition,
+                    extra_fields={"record_ids": record_ids},
                 )
                 logger.debug(f"Reading {_slice} associations of {self._entity.eval(config=self.config)}")
                 associations = self._associations_retriever.read_records({}, stream_slice=stream_slice)
@@ -660,7 +696,10 @@ def build_associations_retriever(
 
     authenticator = SelectiveAuthenticator(
         config,
-        authenticators={"Private App Credentials": bearer_authenticator, "OAuth Credentials": oauth_authenticator},
+        authenticators={
+            "Private App Credentials": bearer_authenticator,
+            "OAuth Credentials": oauth_authenticator,
+        },
         authenticator_selection_path=["credentials", "credentials_title"],
     )
 
@@ -732,7 +771,12 @@ def build_associations_retriever(
     )
 
     # Slice over IDs emitted by the parent stream
-    slicer = ListPartitionRouter(values=associations, cursor_field="association_name", config=config, parameters=parameters)
+    slicer = ListPartitionRouter(
+        values=associations,
+        cursor_field="association_name",
+        config=config,
+        parameters=parameters,
+    )
 
     selector = RecordSelector(
         extractor=DpathExtractor(field_path=["results"], config=config, parameters=parameters),
@@ -791,7 +835,10 @@ class HubspotCRMSearchPaginationStrategy(PaginationStrategy):
 
         last_id_of_previous_chunk = last_page_token_value.get("id")
         if last_id_of_previous_chunk:
-            return {"after": last_page_token_value["after"] + last_page_size, self.primary_key: last_id_of_previous_chunk}
+            return {
+                "after": last_page_token_value["after"] + last_page_size,
+                self.primary_key: last_id_of_previous_chunk,
+            }
         else:
             return {"after": last_page_token_value["after"] + last_page_size}
 
@@ -822,7 +869,13 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
     def _field_to_property_schema(self, field: Mapping[str, Any]) -> Mapping[str, Any]:
         field_type = field["type"]
 
-        if field_type in ["string", "enumeration", "phone_number", "object_coordinates", "json"]:
+        if field_type in [
+            "string",
+            "enumeration",
+            "phone_number",
+            "object_coordinates",
+            "json",
+        ]:
             return {"type": ["null", "string"]}
         elif field_type == "datetime" or field_type == "date-time":
             return {"type": ["null", "string"], "format": "date-time"}

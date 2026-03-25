@@ -12,6 +12,53 @@ from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
 
+def test_hubspot_schema_extractor_v3_format(components_module):
+    """Test that HubspotSchemaExtractor correctly handles v3 API response format ({"results": [...]})."""
+    v3_properties = [
+        {"name": "email", "type": "string", "label": "Email"},
+        {"name": "phone", "type": "phone_number", "label": "Phone Number"},
+        {"name": "createdate", "type": "datetime", "label": "Create Date"},
+    ]
+
+    decoder = Mock()
+    decoder.decode.return_value = [{"results": v3_properties}]
+
+    extractor = components_module.HubspotSchemaExtractor(decoder=decoder, config={}, parameters={})
+    records = list(extractor.extract_records(response=requests.Response()))
+
+    assert len(records) == 1
+    assert records[0] == {"properties": v3_properties}
+
+
+def test_hubspot_schema_extractor_v2_format(components_module):
+    """Test that HubspotSchemaExtractor correctly handles v2 API response format (flat array)."""
+    v2_properties = [
+        {"name": "email", "type": "string", "label": "Email"},
+        {"name": "phone", "type": "phone_number", "label": "Phone Number"},
+    ]
+
+    decoder = Mock()
+    decoder.decode.return_value = v2_properties
+
+    extractor = components_module.HubspotSchemaExtractor(decoder=decoder, config={}, parameters={})
+    records = list(extractor.extract_records(response=requests.Response()))
+
+    assert len(records) == 1
+    assert records[0] == {"properties": v2_properties}
+
+
+def test_hubspot_schema_extractor_v3_empty_results(components_module):
+    """Test that HubspotSchemaExtractor handles v3 format with empty results."""
+    decoder = Mock()
+    decoder.decode.return_value = [{"results": []}]
+
+    extractor = components_module.HubspotSchemaExtractor(decoder=decoder, config={}, parameters={})
+    records = list(extractor.extract_records(response=requests.Response()))
+
+    assert len(records) == 1
+    assert records[0] == {"properties": []}
+
+
 @pytest.mark.parametrize(
     "input, expected",
     [
@@ -34,7 +81,12 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
             },
         ),
         (
-            {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "hs_v2_date_entered_poetry": 1827},
+            {
+                "name": "Edgar Allen Poe",
+                "age": 215,
+                "birthplace": "Boston",
+                "hs_v2_date_entered_poetry": 1827,
+            },
             {
                 "name": "Edgar Allen Poe",
                 "age": 215,
@@ -44,7 +96,12 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
             },
         ),
         (
-            {"name": "Edgar Allen Poe", "age": 215, "birthplace": "Boston", "properties": {"hs_v2_date_entered_poetry": 1827}},
+            {
+                "name": "Edgar Allen Poe",
+                "age": 215,
+                "birthplace": "Boston",
+                "properties": {"hs_v2_date_entered_poetry": 1827},
+            },
             {
                 "name": "Edgar Allen Poe",
                 "age": 215,
@@ -68,7 +125,11 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
             },
         ),
         (
-            {"name": "Edgar Allen Poe", "hs_v2_date_entered_poetry": 1827, "hs_date_entered_poetry": 9999},
+            {
+                "name": "Edgar Allen Poe",
+                "hs_v2_date_entered_poetry": 1827,
+                "hs_date_entered_poetry": 9999,
+            },
             {
                 "name": "Edgar Allen Poe",
                 "hs_v2_date_entered_poetry": 1827,
@@ -99,7 +160,11 @@ def test_new_to_legacy_field_transformation(input, expected, components_module):
     "state, expected_should_migrate, expected_state",
     [
         ({"updatedAt": ""}, True, {"updatedAt": "2021-01-10T00:00:00Z"}),
-        ({"updatedAt": "2022-01-10T00:00:00Z"}, False, {"updatedAt": "2022-01-10T00:00:00Z"}),
+        (
+            {"updatedAt": "2022-01-10T00:00:00Z"},
+            False,
+            {"updatedAt": "2022-01-10T00:00:00Z"},
+        ),
     ],
     ids=[
         "Invalid state: empty string, should migrate",
@@ -119,25 +184,52 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
 def test_hubspot_rename_properties_transformation(components_module):
     expected_properties = {
         "properties_amount": {"type": ["null", "number"]},
-        "properties_hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
-        "properties_hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
-        "properties_hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+        "properties_hs_v2_date_entered_closedwon": {
+            "format": "date-time",
+            "type": ["null", "string"],
+        },
+        "properties_hs_v2_date_exited_closedlost": {
+            "format": "date-time",
+            "type": ["null", "string"],
+        },
+        "properties_hs_v2_latest_time_in_contractsent": {
+            "format": "date-time",
+            "type": ["null", "string"],
+        },
         "properties": {
             "type": "object",
             "properties": {
                 "amount": {"type": ["null", "number"]},
-                "hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
-                "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
-                "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+                "hs_v2_date_entered_closedwon": {
+                    "format": "date-time",
+                    "type": ["null", "string"],
+                },
+                "hs_v2_date_exited_closedlost": {
+                    "format": "date-time",
+                    "type": ["null", "string"],
+                },
+                "hs_v2_latest_time_in_contractsent": {
+                    "format": "date-time",
+                    "type": ["null", "string"],
+                },
             },
         },
     }
 
     dynamic_properties_record = {
         "amount": {"type": ["null", "number"]},
-        "hs_v2_date_entered_closedwon": {"format": "date-time", "type": ["null", "string"]},
-        "hs_v2_date_exited_closedlost": {"format": "date-time", "type": ["null", "string"]},
-        "hs_v2_latest_time_in_contractsent": {"format": "date-time", "type": ["null", "string"]},
+        "hs_v2_date_entered_closedwon": {
+            "format": "date-time",
+            "type": ["null", "string"],
+        },
+        "hs_v2_date_exited_closedlost": {
+            "format": "date-time",
+            "type": ["null", "string"],
+        },
+        "hs_v2_latest_time_in_contractsent": {
+            "format": "date-time",
+            "type": ["null", "string"],
+        },
     }
     transformation = components_module.HubspotRenamePropertiesTransformation()
 
@@ -295,7 +387,12 @@ def test_property_history_extractor(components_module):
     decoder.decode.return_value = response
 
     extractor = components_module.HubspotPropertyHistoryExtractor(
-        field_path=["results"], entity_primary_key="dealId", additional_keys=["archived"], decoder=decoder, config={}, parameters={}
+        field_path=["results"],
+        entity_primary_key="dealId",
+        additional_keys=["archived"],
+        decoder=decoder,
+        config={},
+        parameters={},
     )
 
     actual_records = list(extractor.extract_records(response=requests.Response()))
@@ -359,7 +456,12 @@ def test_property_history_extractor_ignore_hs_lastmodifieddate(components_module
     decoder.decode.return_value = response
 
     extractor = components_module.HubspotPropertyHistoryExtractor(
-        field_path=["results"], entity_primary_key="dealId", additional_keys=[], decoder=decoder, config={}, parameters={}
+        field_path=["results"],
+        entity_primary_key="dealId",
+        additional_keys=[],
+        decoder=decoder,
+        config={},
+        parameters={},
     )
 
     actual_records = list(extractor.extract_records(response=requests.Response()))
@@ -399,37 +501,70 @@ def test_associations_extractor(config, components_module):
     decoder.decode.return_value = [
         {
             "total": 2,
-            "results": [{"id": "123", "updatedAt": "2025-05-01T00:00:00.000Z"}, {"id": "456", "updatedAt": "2025-05-01T00:00:00.000Z"}],
+            "results": [
+                {"id": "123", "updatedAt": "2025-05-01T00:00:00.000Z"},
+                {"id": "456", "updatedAt": "2025-05-01T00:00:00.000Z"},
+            ],
         }
     ]
 
     companies_mocked_associations_records = [
         {
             "from": {"id": "123"},
-            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 909}],
+            "to": [
+                {
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
+                    "toObjectId": 909,
+                }
+            ],
         },
         {
             "from": {"id": "456"},
-            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 606}],
+            "to": [
+                {
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
+                    "toObjectId": 606,
+                }
+            ],
         },
         {
             "from": {"id": "123"},
-            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 424}],
+            "to": [
+                {
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
+                    "toObjectId": 424,
+                }
+            ],
         },
         {
             "from": {"id": "456"},
-            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 510}],
+            "to": [
+                {
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
+                    "toObjectId": 510,
+                }
+            ],
         },
     ]
 
     contacts_mocked_associations_records = [
         {
             "from": {"id": "123"},
-            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 408}],
+            "to": [
+                {
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
+                    "toObjectId": 408,
+                }
+            ],
         },
         {
             "from": {"id": "456"},
-            "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": 888}],
+            "to": [
+                {
+                    "associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}],
+                    "toObjectId": 888,
+                }
+            ],
         },
     ]
 
@@ -443,7 +578,12 @@ def test_associations_extractor(config, components_module):
     )
 
     with patch.object(
-        SimpleRetriever, "read_records", side_effect=[companies_mocked_associations_records, contacts_mocked_associations_records]
+        SimpleRetriever,
+        "read_records",
+        side_effect=[
+            companies_mocked_associations_records,
+            contacts_mocked_associations_records,
+        ],
     ):
         records = list(extractor.extract_records(response=Response()))
 
@@ -465,17 +605,42 @@ def test_associations_extractor_with_permissions_error(requests_mock, config, co
     response.status_code = 200
 
     companies_associations_responses = [
-        {"json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."}, "status_code": 401},
+        {
+            "json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."},
+            "status_code": 401,
+        },
         {
             "json": {
                 "results": [
                     {
                         "from": {"id": "123"},
-                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "408"}],
+                        "to": [
+                            {
+                                "associationTypes": [
+                                    {
+                                        "category": "HUBSPOT_DEFINED",
+                                        "label": None,
+                                        "typeId": 3,
+                                    }
+                                ],
+                                "toObjectId": "408",
+                            }
+                        ],
                     },
                     {
                         "from": {"id": "456"},
-                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "888"}],
+                        "to": [
+                            {
+                                "associationTypes": [
+                                    {
+                                        "category": "HUBSPOT_DEFINED",
+                                        "label": None,
+                                        "typeId": 3,
+                                    }
+                                ],
+                                "toObjectId": "888",
+                            }
+                        ],
                     },
                 ]
             },
@@ -486,10 +651,14 @@ def test_associations_extractor_with_permissions_error(requests_mock, config, co
     contacts_associations_responses = [{"json": {"results": []}, "status_code": 200}]
 
     requests_mock.register_uri(
-        "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
+        "POST",
+        "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read",
+        companies_associations_responses,
     )
     requests_mock.register_uri(
-        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", contacts_associations_responses
+        "POST",
+        "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read",
+        contacts_associations_responses,
     )
 
     extractor = components_module.HubspotAssociationsExtractor(
@@ -555,7 +724,12 @@ def test_extractor_supports_associations_list_interpolation(config, associations
 @pytest.mark.parametrize(
     "original_value,field_schema,expected_value",
     [
-        pytest.param("", {"type": ["null", "number"]}, None, id="test_empty_string_is_none_for_non_string_types"),
+        pytest.param(
+            "",
+            {"type": ["null", "number"]},
+            None,
+            id="test_empty_string_is_none_for_non_string_types",
+        ),
         pytest.param(
             "1748246523456",
             {"type": ["null", "date-time"], "format": "date-time"},
@@ -602,7 +776,12 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
     [
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 200, {"id": 5000}, {"after": 1000}, {"after": 1200}, id="test_next_page_on_first_chunk"
+            {"paging": {"next": {"after": 1200}}},
+            200,
+            {"id": 5000},
+            {"after": 1000},
+            {"after": 1200},
+            id="test_next_page_on_first_chunk",
         ),
         pytest.param(
             {"paging": {"next": {"after": 1200}}},
@@ -613,9 +792,21 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
             id="test_stop_paging_when_last_page_is_less_than_page_size",
         ),
         pytest.param(
-            {"paging": {"next": {"after": 1200}}}, 0, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_last_page_size_is_zero"
+            {"paging": {"next": {"after": 1200}}},
+            0,
+            {"id": 5000},
+            {"after": 1000},
+            None,
+            id="test_stop_paging_when_last_page_size_is_zero",
         ),
-        pytest.param({}, 200, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_no_after_in_response"),
+        pytest.param(
+            {},
+            200,
+            {"id": 5000},
+            {"after": 1000},
+            None,
+            id="test_stop_paging_when_no_after_in_response",
+        ),
         pytest.param(
             {"paging": {"next": {"after": 10000}}},
             200,
@@ -635,7 +826,12 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     ],
 )
 def test_crm_search_pagination_strategy(
-    components_module, json_response, last_page_size, last_record, last_page_token_value, expected_next_page_token
+    components_module,
+    json_response,
+    last_page_size,
+    last_record,
+    last_page_token_value,
+    expected_next_page_token,
 ):
     pagination_strategy = components_module.HubspotCRMSearchPaginationStrategy(page_size=200)
 

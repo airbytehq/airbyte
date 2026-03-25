@@ -17,7 +17,13 @@ from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
-from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, mock_v3_properties, read_from_stream
+from .conftest import (
+    find_stream,
+    get_source,
+    mock_dynamic_schema_requests_with_skip,
+    mock_v3_properties,
+    read_from_stream,
+)
 from .utils import run_read
 
 
@@ -49,7 +55,11 @@ def test_check_connection_ok(requests_mock, config):
 
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
-    requests_mock.register_uri("GET", "/crm/v3/properties/contact", [{"json": {"results": properties}, "status_code": 200}])
+    requests_mock.register_uri(
+        "GET",
+        "/crm/v3/properties/contact",
+        [{"json": {"results": properties}, "status_code": 200}],
+    )
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", {})
     connection_status = get_source(config).check(logger, config=config)
 
@@ -92,7 +102,10 @@ def test_streams_forbidden_returns_default_streams(requests_mock, config):
     # 403 forbidden → no custom streams, should fall back to the built-in ones
     requests_mock.get(
         "https://api.hubapi.com/crm/v3/schemas",
-        json={"status": "error", "message": "This access_token does not have proper permissions!"},
+        json={
+            "status": "error",
+            "message": "This access_token does not have proper permissions!",
+        },
         status_code=403,
     )
     streams = get_source(config).streams(config)
@@ -132,12 +145,20 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
         }
     ]
     responses = [
-        {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
+        {
+            "json": {"error": "limit reached"},
+            "status_code": 429,
+            "headers": {"Retry-After": "0"},
+        },
         {"json": [], "status_code": 200},
     ]
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
-    mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
+    mock_v3_properties(
+        requests_mock,
+        "contact",
+        [{"name": "hs__migration_soft_delete", "type": "enumeration"}],
+    )
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
@@ -165,7 +186,11 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
         {"json": [], "status_code": 200},
     ]
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
-    mock_v3_properties(requests_mock, "contact", [{"name": "hs__migration_soft_delete", "type": "enumeration"}])
+    mock_v3_properties(
+        requests_mock,
+        "contact",
+        [{"name": "hs__migration_soft_delete", "type": "enumeration"}],
+    )
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
     connection_status = source.check(logger=logger, config=config)
@@ -197,7 +222,12 @@ def test_parent_stream_forbidden(requests_mock, config, fake_properties_list, mo
     properties_response = [
         {
             "json": [
-                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                {
+                    "name": property_name,
+                    "type": "string",
+                    "updatedAt": 1571085954360,
+                    "createdAt": 1565059306048,
+                }
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
@@ -224,7 +254,12 @@ class TestSplittingPropertiesFunctionality:
         properties_response = [
             {
                 "json": [
-                    {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                    {
+                        "name": property_name,
+                        "type": "string",
+                        "updatedAt": 1571085954360,
+                        "createdAt": 1565059306048,
+                    }
                     for property_name in fake_properties_list
                 ],
                 "status_code": 200,
@@ -244,11 +279,31 @@ class TestSplittingPropertiesFunctionality:
         mock_dynamic_schema_requests_with_skip(requests_mock, ["product"])
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
+        # Mock v2 URL (still used by base_crm_object_stream PropertiesFromEndpoint for read)
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
+        # Mock v3 URL (used by DynamicSchemaLoader for discover)
+        v3_properties = [
+            {
+                "name": property_name,
+                "type": "string",
+                "updatedAt": 1571085954360,
+                "createdAt": 1565059306048,
+            }
+            for property_name in fake_properties_list
+        ]
+        requests_mock.get(
+            "https://api.hubapi.com/crm/v3/properties/product",
+            json={"results": v3_properties},
+            status_code=200,
+        )
 
         test_stream = find_stream("products", config)
 
-        property_slices = (fake_properties_list[:686], fake_properties_list[686:1351], fake_properties_list[1351:])
+        property_slices = (
+            fake_properties_list[:686],
+            fake_properties_list[686:1351],
+            fake_properties_list[1351:],
+        )
 
         for property_slice in property_slices:
             data = {p: "fake_data" for p in property_slice}
@@ -257,7 +312,13 @@ class TestSplittingPropertiesFunctionality:
                     "json": {
                         "results": [
                             {**self.BASE_OBJECT_BODY, **{"id": id, "properties": data}}
-                            for id in ["6043593519", "1092593519", "1092593518", "1092593517", "1092593516"]
+                            for id in [
+                                "6043593519",
+                                "1092593519",
+                                "1092593518",
+                                "1092593517",
+                                "1092593516",
+                            ]
                         ],
                         "paging": {},
                     },
@@ -324,7 +385,10 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     # Last page... it does not have paging->next->after
     responses.append(
         {
-            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)], "paging": {}},
+            "json": {
+                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
+                "paging": {},
+            },
             "status_code": 200,
         }
     )
@@ -345,7 +409,10 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     # Last page... it does not have paging->next->after
     responses.append(
         {
-            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)], "paging": {}},
+            "json": {
+                "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)],
+                "paging": {},
+            },
             "status_code": 200,
         }
     )
@@ -353,7 +420,12 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     properties_response = [
         {
             "json": [
-                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                {
+                    "name": property_name,
+                    "type": "string",
+                    "updatedAt": 1571085954360,
+                    "createdAt": 1565059306048,
+                }
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
@@ -377,19 +449,34 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         requests_mock,
         "company",
         [
-            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            {
+                "name": property_name,
+                "type": "string",
+                "updatedAt": 1571085954360,
+                "createdAt": 1565059306048,
+            }
             for property_name in fake_properties_list
         ],
     )
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",
-        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
+        [
+            {
+                "status_code": 200,
+                "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]},
+            }
+        ],
     )
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",
-        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
+        [
+            {
+                "status_code": 200,
+                "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]},
+            }
+        ],
     )
 
     with mock.patch("components.HubspotCRMSearchPaginationStrategy.RECORDS_LIMIT", 600):
