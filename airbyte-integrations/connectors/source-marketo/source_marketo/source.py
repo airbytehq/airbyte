@@ -23,8 +23,10 @@ class SourceMarketo(YamlDeclarativeSource):
         super().__init__(path_to_yaml="manifest.yaml")
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        # Ensure _config is populated before the check flow accesses the
-        # ``dynamic_streams`` property, which resolves HTTP components and
-        # therefore needs the real config for Jinja interpolation.
+        # TODO(CDK): Remove this workaround once the CDK fixes the issue where
+        # ``hasattr(source, "dynamic_streams")`` in CheckStream.check_connection
+        # triggers eager resolution of HttpComponentsResolver with an empty
+        # config, causing Jinja UndefinedError. This accesses the private
+        # ``_config`` attribute on ManifestDeclarativeSource.
         self._config = config
         return super().check(logger, config)
