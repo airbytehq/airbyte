@@ -201,6 +201,24 @@ This normalization is intended for occasional type inconsistencies. If your coll
 
 To see connector limitations, or troubleshoot your MongoDB connector, see more [in our MongoDB troubleshooting guide](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting).
 
+### Schema Discovery Performance Impact
+
+:::warning
+Schema discovery can place significant load on your MongoDB cluster. On large or resource-constrained clusters, this load can degrade performance or cause an outage. Read this section before running your first sync.
+:::
+
+During schema discovery, the connector runs an aggregation pipeline on each collection to sample documents and identify field types. These pipelines execute **in parallel across all collections** in the configured database. Each pipeline uses MongoDB's [`$sample`](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) stage, which can trigger a full collection scan (COLLSCAN) on collections where the sample size exceeds 5% of total documents or the collection contains fewer than 100 documents. The pipeline also enables `allowDiskUse`, which permits MongoDB to write temporary data to disk on your server.
+
+On clusters with many collections, large collections, or limited I/O capacity, the combined effect of these concurrent operations can saturate disk throughput and CPU, potentially causing replica set heartbeat failures and primary elections.
+
+To reduce the risk of performance impact during discovery:
+
+- **Reduce the Discovery Sample Size.** The default is 10,000 documents. Lower this to 1,000 in the connector's advanced settings, especially if your collections are small or numerous. This is the single most effective precaution.
+- **Schedule discovery during off-peak hours.** Schema discovery runs during connection setup and whenever you refresh the source schema. Avoid triggering these operations during peak database usage.
+- **Use a dedicated read-only replica.** Configure the connector's connection string to direct reads to a specific secondary replica using a [read preference tag set](https://www.mongodb.com/docs/manual/core/read-preference-mechanics/). This isolates discovery I/O from your primary and other secondaries. The connector already defaults to `secondaryPreferred`, but on a saturated cluster, even secondary I/O pressure can cascade to the primary through heartbeat delays.
+- **Monitor your cluster during the first discovery.** Watch disk I/O, CPU, and replication lag in your MongoDB monitoring tool while the initial discovery runs. If you see resource saturation, cancel the operation and reconfigure with a lower sample size.
+- **Consider disabling schema enforcement.** If you enable schemaless mode, the connector samples only one document per collection during discovery, which reduces load dramatically. See [Schema Enforcement](#schema-enforcement) for trade-offs.
+
 ### MongoDB CDC Limitations
 
 MongoDB has a 16MB maximum document size limit for BSON documents. During CDC syncs, change stream events can exceed this limit when documents are large, causing a `BSONObjectTooLarge` error. For details on resolving this error, see the [MongoDB CDC Limitations](/integrations/sources/mongodb-v2/mongodb-v2-troubleshooting#mongodb-cdc-limitations) section in the troubleshooting guide.
