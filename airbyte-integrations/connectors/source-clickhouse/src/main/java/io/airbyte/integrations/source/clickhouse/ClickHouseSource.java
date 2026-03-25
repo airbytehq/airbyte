@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
@@ -12,11 +13,15 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.streaming.NoOpStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -43,6 +48,8 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   public static final String HTTP_PROTOCOL = "http";
 
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
+  private final FeatureFlags featureFlags;
 
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
@@ -79,7 +86,31 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
    * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
    */
   public ClickHouseSource() {
-    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, new ClickHouseSourceOperations());
+    this(new EnvVariableFeatureFlags());
+  }
+
+  public ClickHouseSource(final FeatureFlags featureFlags) {
+    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+    this.featureFlags = featureFlags;
+  }
+
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    if (cloudDeploymentMode()) {
+      final ConnectorSpecification spec = Jsons.clone(super.spec());
+      // In cloud mode, remove the ssl property so SSL is always enforced
+      ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+      return spec;
+    }
+    return super.spec();
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(getFeatureFlags().deploymentMode());
   }
 
   @Override
