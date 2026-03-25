@@ -531,7 +531,7 @@ jobs:
             {
               "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
-              "text": "${{ steps.success-context.outputs.emoji }} *${{ steps.success-context.outputs.release-type }} Publish SUCCESS:*\nConnector: <${{ steps.success-context.outputs.dockerhub-url }}|airbyte/${{ matrix.connector }}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}>\nRegistry: <${{ steps.success-context.outputs.cloud-registry-url }}|cloud.json> · <${{ steps.success-context.outputs.oss-registry-url }}|oss.json>\n<${{ steps.success-context.outputs.run-url }}|View workflow run>${{ steps.success-context.outputs.pr-text }}"
+              "text": "${{ steps.success-context.outputs.emoji }} *${{ steps.success-context.outputs.release-type }} Publish SUCCESS:*\nConnector: <${{ steps.success-context.outputs.dockerhub-url }}|airbyte/${{ matrix.connector }}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}>\nReference: <${{ steps.success-context.outputs.cloud-registry-url }}|cloud.json> · <${{ steps.success-context.outputs.oss-registry-url }}|oss.json> · <${{ steps.success-context.outputs.run-url }}|CI Logs>${{ steps.success-context.outputs.pr-text }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
