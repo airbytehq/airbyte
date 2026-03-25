@@ -426,6 +426,8 @@ definitions:
       - type: CustomTransformation
         class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
       - type: CustomTransformation
+        class_name: "source_google_ads.components.SerializeMessageFieldsTransformation"
+      - type: CustomTransformation
         class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       - type: AddFields
         fields:
