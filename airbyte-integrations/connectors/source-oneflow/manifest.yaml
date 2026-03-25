@@ -1,0 +1,602 @@
+version: 6.44.0
+
+type: DeclarativeSource
+
+description: >-
+  Syncs data from your OneFlow contract management platform. Extracts users,
+  contacts, contracts, templates, template types, workspaces, contract events,
+  contract data fields, and contract parties. Contacts and contract
+  sub-resources are automatically fetched across all workspaces.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['api_token'] }}"
+        inject_into:
+          type: RequestOption
+          inject_into: header
+          field_name: X-Oneflow-API-Token
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+
+streams:
+  - type: DeclarativeStream
+    name: users
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: https://api.oneflow.com/v1/users
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          email:
+            type: string
+          name:
+            type: string
+          active:
+            type:
+              - boolean
+              - "null"
+
+  - type: DeclarativeStream
+    name: workspaces
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: https://api.oneflow.com/v1/workspaces
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+
+  - type: DeclarativeStream
+    name: contacts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        request_parameters:
+          workspace_id: "{{ stream_partition['workspace_id'] }}"
+        url: https://api.oneflow.com/v1/contacts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: workspace_id
+            stream:
+              $ref: "#/streams/1"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - workspace_id
+            value: "{{ stream_partition['workspace_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          workspace_id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+
+  - type: DeclarativeStream
+    name: contracts
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: https://api.oneflow.com/v1/contracts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+          updated_time:
+            type:
+              - string
+              - "null"
+          published_time:
+            type:
+              - string
+              - "null"
+          lifecycle_state:
+            type:
+              - string
+              - "null"
+
+  - type: DeclarativeStream
+    name: templates
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: https://api.oneflow.com/v1/templates
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          template_type:
+            type:
+              - object
+              - "null"
+
+  - type: DeclarativeStream
+    name: template_types
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: https://api.oneflow.com/v1/template_types
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+
+  - type: DeclarativeStream
+    name: contract_events
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: "https://api.oneflow.com/v1/contracts/{{ stream_partition['contract_id'] }}/events"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: contract_id
+            stream:
+              $ref: "#/streams/3"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - contract_id
+            value: "{{ stream_partition['contract_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          contract_id:
+            type: integer
+          type:
+            type:
+              - string
+              - "null"
+          created_time:
+            type:
+              - string
+              - "null"
+
+  - type: DeclarativeStream
+    name: contract_data_fields
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: "https://api.oneflow.com/v1/contracts/{{ stream_partition['contract_id'] }}/data_fields"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: contract_id
+            stream:
+              $ref: "#/streams/3"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - contract_id
+            value: "{{ stream_partition['contract_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          contract_id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+          custom_id:
+            type:
+              - string
+              - "null"
+
+  - type: DeclarativeStream
+    name: contract_parties
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_token'] }}"
+          inject_into:
+            type: RequestOption
+            inject_into: header
+            field_name: X-Oneflow-API-Token
+        url: "https://api.oneflow.com/v1/contracts/{{ stream_partition['contract_id'] }}/parties"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: contract_id
+            stream:
+              $ref: "#/streams/3"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - contract_id
+            value: "{{ stream_partition['contract_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: integer
+          contract_id:
+            type: integer
+          name:
+            type:
+              - string
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: Your OneFlow API token (generate in Marketplace > API tokens)
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema: {}
