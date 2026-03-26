@@ -98,7 +98,7 @@ public class PartitionKeyExtractor {
    * @return randomly generated UUID string
    */
   public static String generateFallbackKey() {
-    return UUID.randomUUID().toString();
+    return UUID.randomUUID().toString().replace("-", "");
   }
 
   /**
