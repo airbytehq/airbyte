@@ -51,8 +51,6 @@ Add the MCP server to your Claude Code command line tool.
 
 7. Grant access to the Agent Engine MCP.
 
-    ![Grant access to the Agent Engine MCP](grant-access.png)
-
 8. Return to Claude Code and begin using the MCP server.
 
 </TabItem>
@@ -69,7 +67,7 @@ Add the MCP server to your Cursor app.
     ```json
     {
       "mcpServers": {
-        "Airbyte": {
+        "Airbyte Agent Engine MCP": {
           "url": "https://mcp.airbyte.ai/mcp"
         }
       }
@@ -83,8 +81,6 @@ Add the MCP server to your Cursor app.
 6. If you're not logged into the Agent Engine, log in now.
 
 7. Grant access to the Agent Engine MCP.
-
-    ![Grant access to the Agent Engine MCP](grant-access.png)
 
 8. Return to Cursor. The MCP server tools are now available.
 
@@ -104,8 +100,6 @@ Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `cla
 5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
 
 6. Log in with your Airbyte account and grant access.
-
-    ![Grant access to the Agent Engine MCP](grant-access.png)
 
 7. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
 
@@ -142,7 +136,7 @@ Most clients that support remote MCP servers accept a JSON configuration like th
 ```json
 {
   "mcpServers": {
-    "Airbyte": {
+    "Airbyte Agent Engine MCP": {
       "url": "https://mcp.airbyte.ai/mcp"
     }
   }
@@ -168,13 +162,12 @@ Connect my Linear account
 
 The agent:
 
-1. Lists the available connector types.
-2. Starts a credential flow and gives you a URL to visit.
-3. You visit the URL and enter your credentials in the browser.
-4. The agent confirms the connector was created and is ready to query.
+1. Starts a credential flow and gives you a URL to visit.
+2. You visit the URL and enter your credentials in the browser.
+3. The agent confirms the connector was created and is ready to query.
 
 :::note
-Credentials are always entered in the browser, never in the chat. The agent gives you a link to visit.
+Credentials are always entered in the browser, never in the chat.
 :::
 
 ### Remove a connector
