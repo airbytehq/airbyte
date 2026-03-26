@@ -14,14 +14,14 @@ data:
   connectorSubtype: api
   connectorType: source
   dockerImageTag: 1.0.0
-  canonicalImageTag: 1.0.0
+  canonicalImageTag: 1.0.0-canonical-1.0.0
   dockerRepository: airbyte/source-github-2
   documentationUrl: https://docs.airbyte.com/integrations/sources/github-2
   githubIssueLabel: source-github-2
   icon: github.svg
   license: MIT
   name: GitHub 2
-  releaseDate: 2026-02-19
+  releaseDate: 2026-03-25
   releaseStage: alpha
   supportLevel: community
   tags:
