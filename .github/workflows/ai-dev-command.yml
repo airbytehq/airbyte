@@ -75,6 +75,7 @@ jobs:
           INPUT_PLAYBOOK_NAME: ${{ inputs.playbook }}
           INPUT_ISSUE_NUMBER: ${{ inputs.issue }}
           INPUT_COMMENT_ID: ${{ inputs.comment-id }}
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
           set -euo pipefail
 
@@ -83,6 +84,24 @@ jobs:
           playbook_name="$INPUT_PLAYBOOK_NAME"
           issue_number="$INPUT_ISSUE_NUMBER"
           comment_id="$INPUT_COMMENT_ID"
+
+          # When invoked via slash command, inputs.issue is empty because
+          # the slash-commands.yml static-args don't include issue=.
+          # Resolve the issue number from the comment-id via the GitHub API.
+          if [[ -z "$issue_number" && -n "$comment_id" ]]; then
+            echo "Resolving issue number from comment-id..."
+            issue_number=$(curl -s \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" \
+              | jq -r '.issue_url | split("/") | last')
+            if [[ -z "$issue_number" || "$issue_number" == "null" ]]; then
+              echo "::warning::Could not resolve issue number from comment-id $comment_id"
+              issue_number=""
+            else
+              echo "Resolved issue number: $issue_number"
+            fi
+          fi
 
           if [[ -z "$pr_number" ]]; then
             echo "::error::Missing required argument: pr (ai-skills PR number)"
