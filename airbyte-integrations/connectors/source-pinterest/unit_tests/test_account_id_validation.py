@@ -17,7 +17,6 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 import yaml
-
 from components import PinterestAnalyticsBackoffStrategy
 
 
@@ -70,10 +69,7 @@ def test_account_id_length_constraint(account_id, should_be_valid):
     props = _load_manifest_spec_properties()
     max_length = props["account_id"]["maxLength"]
     is_valid = len(account_id) <= max_length
-    assert is_valid == should_be_valid, (
-        f"account_id '{account_id}' (len={len(account_id)}) validity mismatch: "
-        f"expected {'valid' if should_be_valid else 'invalid'}"
-    )
+    assert is_valid == should_be_valid, f"account_id '{account_id}' (len={len(account_id)}) validity mismatch: " f"expected {'valid' if should_be_valid else 'invalid'}"
 
 
 # ---------------------------------------------------------------------------
@@ -90,12 +86,8 @@ def test_analytics_error_handler_has_retry_filter_for_retryable_400():
     assert len(retry_filters) >= 1, "Expected at least one RETRY filter for HTTP 400"
 
     retry_filter = retry_filters[0]
-    assert "error_message_contains" in retry_filter, (
-        "RETRY filter for 400 should use error_message_contains to match retryable errors"
-    )
-    assert "Retry after" in retry_filter["error_message_contains"], (
-        "RETRY filter should match 'Retry after' in error message"
-    )
+    assert "error_message_contains" in retry_filter, "RETRY filter for 400 should use error_message_contains to match retryable errors"
+    assert "Retry after" in retry_filter["error_message_contains"], "RETRY filter should match 'Retry after' in error message"
 
 
 def test_analytics_error_handler_has_fail_filter_for_validation_400():
@@ -104,9 +96,7 @@ def test_analytics_error_handler_has_fail_filter_for_validation_400():
     filters = handler["response_filters"]
 
     fail_filters = [f for f in filters if f["action"] == "FAIL" and 400 in f.get("http_codes", [])]
-    assert len(fail_filters) >= 1, (
-        "Expected a FAIL filter for HTTP 400 to catch deterministic validation errors"
-    )
+    assert len(fail_filters) >= 1, "Expected a FAIL filter for HTTP 400 to catch deterministic validation errors"
 
 
 def test_analytics_error_handler_retry_filter_comes_before_fail():
@@ -126,9 +116,7 @@ def test_analytics_error_handler_retry_filter_comes_before_fail():
 
     assert retry_index is not None, "Missing RETRY filter for 400"
     assert fail_index is not None, "Missing FAIL filter for 400"
-    assert retry_index < fail_index, (
-        f"RETRY filter (index {retry_index}) must come before FAIL filter (index {fail_index})"
-    )
+    assert retry_index < fail_index, f"RETRY filter (index {retry_index}) must come before FAIL filter (index {fail_index})"
 
 
 # ---------------------------------------------------------------------------
