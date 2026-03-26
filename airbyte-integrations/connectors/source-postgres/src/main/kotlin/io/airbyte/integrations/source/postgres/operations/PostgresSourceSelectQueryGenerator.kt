@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.operations
 
 import io.airbyte.cdk.discover.DataField
+import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.NonEmittedField
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -38,6 +39,11 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.WhereNode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.ctidField
+import io.airbyte.integrations.source.postgres.operations.types.PostgresDateFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimeTzFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimestampFieldType
+import io.airbyte.integrations.source.postgres.operations.types.PostgresTimestampTzFieldType
 import io.airbyte.integrations.source.postgres.xminField
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -94,6 +100,21 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             is Where -> "WHERE ${clause.sql()}"
         }
 
+    /**
+     * Returns a Postgres cast suffix for string-backed date/time types whose [set] method uses
+     * [java.sql.PreparedStatement.setString], which would otherwise cause PostgreSQL to see the
+     * parameter as `character varying` and reject comparisons like `timestamp >= character varying`.
+     */
+    fun FieldType.pgBindingCast(): String =
+        when (this) {
+            PostgresTimestampFieldType -> "::timestamp"
+            PostgresTimestampTzFieldType -> "::timestamptz"
+            PostgresDateFieldType -> "::date"
+            PostgresTimeFieldType -> "::time"
+            PostgresTimeTzFieldType -> "::timetz"
+            else -> ""
+        }
+
     fun WhereClauseNode.sql(): String =
         when (this) {
             is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
@@ -106,7 +127,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                             xminField.id -> "${column.sql()}::text::bigint = ?"
                             else -> "${column.sql()} = ?"
                         }
-                    else -> "${column.sql()} = ?"
+                    else -> "${column.sql()} = ?${column.type.pgBindingCast()}"
                 }
             is GreaterOrEqual ->
                 when (column) {
@@ -116,7 +137,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                             xminField.id -> "${column.sql()}::text::bigint >= ?"
                             else -> "${column.sql()} >= ?"
                         }
-                    else -> "${column.sql()} >= ?"
+                    else -> "${column.sql()} >= ?${column.type.pgBindingCast()}"
                 }
             is Greater ->
                 when (column) {
@@ -126,7 +147,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                             xminField.id -> "${column.sql()}::text::bigint > ?"
                             else -> "${column.sql()} > ?"
                         }
-                    else -> "${column.sql()} > ?"
+                    else -> "${column.sql()} > ?${column.type.pgBindingCast()}"
                 }
             is LesserOrEqual ->
                 when (column) {
@@ -136,7 +157,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                             xminField.id -> "${column.sql()}::text::bigint <= ?"
                             else -> "${column.sql()} <= ?"
                         }
-                    else -> "${column.sql()} <= ?"
+                    else -> "${column.sql()} <= ?${column.type.pgBindingCast()}"
                 }
             is Lesser ->
                 when (column) {
@@ -146,7 +167,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                             xminField.id -> "${column.sql()}::text::bigint < ?"
                             else -> "${column.sql()} < ?"
                         }
-                    else -> "${column.sql()} < ?"
+                    else -> "${column.sql()} < ?${column.type.pgBindingCast()}"
                 }
         }
 
