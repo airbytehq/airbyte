@@ -159,9 +159,8 @@ class SanitizeNumericFields(RecordTransformation):
             value = record.get(field_name)
             if value is not None and isinstance(value, complex):
                 logger.warning(
-                    "Complex value encountered for field '%s': %s. Using real component only.",
+                    "Complex value encountered for field '%s'. Using real component only.",
                     field_name,
-                    value,
                 )
                 record[field_name] = value.real
 
