@@ -69,7 +69,9 @@ def test_account_id_length_constraint(account_id, should_be_valid):
     props = _load_manifest_spec_properties()
     max_length = props["account_id"]["maxLength"]
     is_valid = len(account_id) <= max_length
-    assert is_valid == should_be_valid, f"account_id '{account_id}' (len={len(account_id)}) validity mismatch: " f"expected {'valid' if should_be_valid else 'invalid'}"
+    assert is_valid == should_be_valid, (
+        f"account_id '{account_id}' (len={len(account_id)}) validity mismatch: " f"expected {'valid' if should_be_valid else 'invalid'}"
+    )
 
 
 # ---------------------------------------------------------------------------
