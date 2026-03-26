@@ -88,29 +88,25 @@ Cursor 1.0 and later support OAuth and Streamable HTTP natively. If the browser 
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
 
-1. Open **Settings** with **CMD + ,** (macOS) or **Ctrl + ,** (Windows/Linux).
+Claude Desktop uses Custom Connectors for remote MCP servers. The `claude_desktop_config.json` file only supports local servers.
 
-2. Go to **Developer** > **Edit Config** to open `claude_desktop_config.json`.
+1. Open Claude Desktop and go to **Settings** > **Connectors**.
 
-3. Add the Airbyte MCP server:
+2. Click **Add custom connector**.
 
-    ```json
-    {
-      "mcpServers": {
-        "Airbyte": {
-          "url": "https://mcp.airbyte.ai/mcp"
-        }
-      }
-    }
+3. Enter the server URL:
+
+    ```text
+    https://mcp.airbyte.ai/mcp
     ```
 
-4. Save the file and restart Claude Desktop.
+4. Click **Add**.
 
-5. After restarting, Claude Desktop detects the remote server and opens your browser for OAuth authentication.
+5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
 
 6. Log in with your Airbyte account and grant access.
 
-7. Return to Claude Desktop and begin using the MCP server.
+7. Return to Claude Desktop. Use the **+** button in your chat to enable the connector.
 
 </TabItem>
 <TabItem value="codex" label="Codex">
