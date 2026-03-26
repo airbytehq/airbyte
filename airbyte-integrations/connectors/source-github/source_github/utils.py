@@ -177,15 +177,21 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     def check_all_tokens(self):
         for token in self._tokens:
             self._check_token_limits(token)
+        self._budget_logged = False
 
     def _get_budget_reserve(self, token: Token, count_attr: str) -> int:
         """Return the minimum number of calls to keep in reserve for a token.
 
         The reserve is the larger of ``BUDGET_MIN_RESERVE`` and
-        ``BUDGET_RESERVE_FRACTION`` of the token's original limit (we
-        approximate the original limit as 5000 which is the GitHub default).
+        ``BUDGET_RESERVE_FRACTION`` of the token's actual remaining count.
+        We use the current remaining value as an approximation when the
+        original limit is unknown.
         """
-        return max(self.BUDGET_MIN_RESERVE, int(5000 * self.BUDGET_RESERVE_FRACTION))
+        remaining = getattr(token, count_attr)
+        # Use 5000 (GitHub default) as the basis, but fall back to the
+        # remaining count if it's higher (e.g. enterprise tokens).
+        limit_estimate = max(5000, remaining)
+        return max(self.BUDGET_MIN_RESERVE, int(limit_estimate * self.BUDGET_RESERVE_FRACTION))
 
     def _apply_budget_throttle(self, token: Token, count_attr: str, reset_attr: str) -> None:
         """Optionally sleep a little to spread remaining calls over the reset window.
@@ -227,6 +233,24 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
                 self._budget_logged = True
             time.sleep(delay)
 
+    HEARTBEAT_INTERVAL = 60.0  # Log every 60s during exhaustion sleep
+
+    def _sleep_with_heartbeat(self, total_seconds: float, count_attr: str) -> None:
+        """Sleep for *total_seconds* but log progress periodically so the
+        platform heartbeat stays alive and operators can see the connector
+        is not stuck."""
+        remaining = total_seconds
+        while remaining > 0:
+            chunk = min(remaining, self.HEARTBEAT_INTERVAL)
+            time.sleep(chunk)
+            remaining -= chunk
+            if remaining > 0:
+                self._logger.info(
+                    "Rate limit exhausted (%s). Waiting for reset — %.0fs remaining.",
+                    count_attr,
+                    remaining,
+                )
+
     def process_token(self, current_token, count_attr, reset_attr):
         if getattr(current_token, count_attr) > 0:
             self._apply_budget_throttle(current_token, count_attr, reset_attr)
@@ -235,7 +259,12 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
             min_time_to_wait = min((getattr(x, reset_attr) - ab_datetime_now()).total_seconds() for x in self._tokens.values())
             if min_time_to_wait < self.max_time:
-                time.sleep(min_time_to_wait if min_time_to_wait > 0 else 0)
+                self._logger.info(
+                    "All tokens exhausted (%s). Sleeping %.0fs until rate limit resets.",
+                    count_attr,
+                    max(min_time_to_wait, 0),
+                )
+                self._sleep_with_heartbeat(max(min_time_to_wait, 0), count_attr)
                 self.check_all_tokens()
             else:
                 raise GitHubAPILimitException(f"Rate limits for all tokens ({count_attr}) were reached")
