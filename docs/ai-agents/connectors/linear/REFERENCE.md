@@ -60,6 +60,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `state` | `object \| any` |  |
 | `priority` | `number \| any` |  |
 | `assignee` | `object \| any` |  |
+| `team` | `object \| any` |  |
+| `project` | `object \| any` |  |
 | `createdAt` | `string` |  |
 | `updatedAt` | `string` |  |
 
