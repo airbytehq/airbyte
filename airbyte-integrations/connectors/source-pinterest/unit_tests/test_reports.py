@@ -51,9 +51,9 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
             "status_code": 500,
             "json": {"message": "internal error"},
         },
-        {  # 400 treated as retryable by your error handler
+        {  # 400 with rate-limit message is retryable
             "status_code": 400,
-            "json": {"code": 1, "message": "transient creation error"},
+            "json": {"code": 1, "message": "Retry after 5 seconds"},
         },
         {  # finally succeed creating the job
             "status_code": 200,
@@ -91,6 +91,27 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
     expected_record = {"metric": 1}
 
     assert records[0] == expected_record
+
+
+def test_non_rate_limit_400_fails_with_error_message(requests_mock, test_config):
+    """Non-rate-limit 400 errors should fail immediately with the actual API error message,
+    instead of being retried and masked with a generic 'Bad request' fallback."""
+    ad_account_id = "1234567890123456789"  # 19 chars - too long
+    error_message = "'ad_account_id' is too long. The maximum length is 18 characters while your value is 19 characters"
+
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": ad_account_id}]})
+    requests_mock.get(
+        f"https://api.pinterest.com/v5/ad_accounts/{ad_account_id}/analytics",
+        status_code=400,
+        json={"code": 1, "message": error_message},
+    )
+
+    output = read_from_stream(test_config, "ad_account_analytics", SyncMode.incremental, expecting_exception=True)
+    assert output.errors, "Expected at least one error trace message for non-rate-limit 400"
+    error_messages = [e.trace.error.message for e in output.errors]
+    assert any("ad_account_id" in msg for msg in error_messages), (
+        f"Expected error message to contain the actual API error about ad_account_id, got: {error_messages}"
+    )
 
 
 def test_streams(test_config):
