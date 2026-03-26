@@ -14,9 +14,9 @@ The issue has been identified and resolved.
 
 If you updated your source configuration during the incident window, you may find that your source config is now empty. In this case, simply re-enter your connection details and resume syncing as usual.
 
-If you are using **CDC (Incremental) syncs** and your oplog position was lost during this window, you will need to [refresh your connection](https://docs.airbyte.com/platform/operator-guides/refreshes). If you need assistance with this, please reach out to [Support](https://support.airbyte.com).
+If you are using **CDC (Incremental) syncs** and your oplog position was lost during this window, you will need to [refresh your connection](https://docs.airbyte.com/platform/operator-guides/refreshes). If you needed to run a full refresh to recover your sync, please reach out to our [Support](https://support.airbyte.com).
 
-If you have any questions, don't hesitate to contact our Support team.
+If you have any further questions, don't hesitate to contact us. 
 
 ## Upgrading to 2.0.0
 
