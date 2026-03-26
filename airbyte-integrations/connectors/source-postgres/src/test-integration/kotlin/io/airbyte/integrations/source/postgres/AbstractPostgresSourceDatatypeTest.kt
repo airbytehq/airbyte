@@ -2,12 +2,11 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.legacy
+package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.test.fixtures.legacy.AbstractSourceDatabaseTypeTest
 import io.airbyte.cdk.test.fixtures.legacy.TestDataHolder
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.JsonSchemaType
 import java.util.Locale

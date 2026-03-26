@@ -2,11 +2,10 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.legacy
+package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Database
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 
 class CdcInitialSnapshotPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
     @Throws(Exception::class)

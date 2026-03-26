@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.legacy
+package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.ContextQueryFunction
@@ -11,8 +11,7 @@ import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase.BaseImage
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage

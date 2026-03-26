@@ -2,12 +2,12 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres.legacy
+package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -16,17 +16,23 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
 
-abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
-    AbstractPostgresSourceAcceptanceTest() {
-    protected lateinit var testdb: PostgresTestDatabase
+class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() {
+    private lateinit var testdb: PostgresTestDatabase
+
+    @get:Throws(Exception::class)
+    override val config: JsonNode
+        get() =
+            testdb
+                .integrationTestConfigBuilder()
+                .withSchemas("public")
+                .withSsl(mutableMapOf(MODE_KEY to "disable"))
+                .withXminReplication()
+                .build()
 
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
-            PostgresTestDatabase.`in`(
-                    PostgresTestDatabase.BaseImage.POSTGRES_17,
-                    PostgresTestDatabase.ContainerModifier.CERT
-                )
+            PostgresTestDatabase.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17)
                 .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
                 .with(
                     "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
@@ -40,21 +46,12 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                 )
     }
 
-    abstract val certificateConfiguration: MutableMap<Any?, Any?>
-
+    @Throws(Exception::class)
     protected override fun tearDown(testEnv: TestDestinationEnv?) {
         testdb.close()
     }
 
-    override val config: JsonNode
-        get() =
-            testdb
-                .integrationTestConfigBuilder()
-                .withSchemas("public")
-                .withStandardReplication()
-                .withSsl(this.certificateConfiguration)
-                .build()
-
+    @get:Throws(Exception::class)
     override val configuredCatalog: ConfiguredAirbyteCatalog
         get() =
             ConfiguredAirbyteCatalog()
@@ -62,7 +59,6 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                     mutableListOf<ConfiguredAirbyteStream?>(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -72,11 +68,9 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        mutableListOf<SyncMode?>(
-                                            SyncMode.FULL_REFRESH,
-                                            SyncMode.INCREMENTAL,
-                                        ),
+                                        mutableListOf<SyncMode?>(SyncMode.INCREMENTAL)
                                     )
+                                    .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
                                         listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
@@ -85,7 +79,6 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -95,11 +88,9 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        mutableListOf<SyncMode?>(
-                                            SyncMode.FULL_REFRESH,
-                                            SyncMode.INCREMENTAL,
-                                        ),
+                                        mutableListOf<SyncMode?>(SyncMode.INCREMENTAL)
                                     )
+                                    .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
                                         listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
@@ -108,7 +99,6 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -118,11 +108,9 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        mutableListOf<SyncMode?>(
-                                            SyncMode.FULL_REFRESH,
-                                            SyncMode.INCREMENTAL,
-                                        ),
+                                        mutableListOf<SyncMode?>(SyncMode.INCREMENTAL)
                                     )
+                                    .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
                                         listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
@@ -132,6 +120,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                     ),
                 )
 
+    @get:Throws(Exception::class)
     override val state: JsonNode?
         get() = Jsons.jsonNode<HashMap<Any?, Any?>?>(HashMap<Any?, Any?>())
 
@@ -140,6 +129,5 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
         private const val STREAM_NAME2 = "starships"
         private const val STREAM_NAME_MATERIALIZED_VIEW = "testview"
         private const val SCHEMA_NAME = "public"
-        const val PASSWORD: String = "Passw0rd"
     }
 }

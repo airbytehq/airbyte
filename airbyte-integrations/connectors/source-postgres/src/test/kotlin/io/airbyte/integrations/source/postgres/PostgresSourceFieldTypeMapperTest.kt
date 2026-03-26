@@ -17,8 +17,7 @@ import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
 import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase.BaseImage
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.PostgreSQLContainer
