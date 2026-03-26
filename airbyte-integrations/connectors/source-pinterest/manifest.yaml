@@ -54,6 +54,11 @@ definitions:
       - type: HttpResponseFilter
         action: RETRY
         http_codes: [400]
+        error_message_contains: "Retry after"
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes: [400]
+        error_message: "Request validation failed. Verify account_id and request parameters."
 
   # Requester
   requester:
@@ -4963,6 +4968,7 @@ spec:
         type: string
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
+        maxLength: 18
         examples: ["1234567890"]
       num_threads:
         type: integer
