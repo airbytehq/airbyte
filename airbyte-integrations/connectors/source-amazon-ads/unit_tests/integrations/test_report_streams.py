@@ -363,9 +363,7 @@ class TestDisplayReportStreams:
             status_code=200,
             request_headers={"Authorization": "Bearer test-access-token"},
         )
-        report_data = gzip.compress(
-            b'[{"date": "2023-01-15", "campaignId": "c1"}, {"date": "2023-01-16", "campaignId": "c2"}]'
-        )
+        report_data = gzip.compress(b'[{"date": "2023-01-15", "campaignId": "c1"}, {"date": "2023-01-16", "campaignId": "c2"}]')
         requests_mock.get(
             download_url,
             content=report_data,
@@ -375,9 +373,10 @@ class TestDisplayReportStreams:
         assert len(output.records) == 2
         # The reportDate field should match the record's 'date' field, NOT the stream interval end time
         report_dates = [record.record.data["reportDate"] for record in output.records]
-        assert report_dates == ["2023-01-15", "2023-01-16"], (
-            f"reportDate should use the record's 'date' field, not stream_interval.end_time. Got: {report_dates}"
-        )
+        assert report_dates == [
+            "2023-01-15",
+            "2023-01-16",
+        ], f"reportDate should use the record's 'date' field, not stream_interval.end_time. Got: {report_dates}"
 
     def test_non_daily_stream_report_date_falls_back_to_interval(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
