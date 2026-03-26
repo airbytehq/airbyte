@@ -1,4 +1,4 @@
-version: 6.51.0
+version: 6.52.0
 
 type: DeclarativeSource
 
@@ -40,7 +40,8 @@ definitions:
       $ref: "#/definitions/base_error_handler"
 
   base_error_handler:
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -61,7 +62,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -91,7 +92,8 @@ definitions:
   error_handler_ignore_403:
     # Same as the base error handler, but ignores 403 errors
     # to avoid failing the sync when fetching dynamic streams.
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -112,7 +114,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
