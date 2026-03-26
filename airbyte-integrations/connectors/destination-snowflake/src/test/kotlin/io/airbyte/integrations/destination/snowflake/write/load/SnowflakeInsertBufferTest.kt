@@ -107,7 +107,6 @@ internal class SnowflakeInsertBufferTest {
                 columnSchema = columnSchema,
                 columnManager = columnManager,
                 snowflakeRecordFormatter = snowflakeRecordFormatter,
-                flushLimit = 1,
             )
         val expectedColumnNames =
             listOf(
@@ -148,7 +147,6 @@ internal class SnowflakeInsertBufferTest {
                 columnSchema = columnSchema,
                 columnManager = columnManager,
                 snowflakeRecordFormatter = snowflakeRecordFormatter,
-                flushLimit = 1,
             )
         val expectedColumnNames =
             listOf(
@@ -189,7 +187,6 @@ internal class SnowflakeInsertBufferTest {
                 columnSchema = columnSchema,
                 columnManager = columnManager,
                 snowflakeRecordFormatter = snowflakeRecordFormatter,
-                flushLimit = 1,
             )
         runBlocking {
             buffer.accumulate(record)

@@ -29,7 +29,6 @@ internal const val CSV_FILE_EXTENSION = ".csv"
 internal const val CSV_FIELD_SEPARATOR = ','
 internal const val CSV_QUOTE_CHARACTER = '"'
 internal val CSV_LINE_DELIMITER = LineDelimiter.LF
-internal const val DEFAULT_FLUSH_LIMIT = 1000
 internal const val FILE_PREFIX = "snowflake"
 internal const val FILE_SUFFIX = ".gz"
 
@@ -42,7 +41,6 @@ class SnowflakeInsertBuffer(
     val columnSchema: ColumnSchema,
     private val columnManager: SnowflakeColumnManager,
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
-    private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
     @VisibleForTesting internal var csvFilePath: Path? = null
@@ -119,9 +117,6 @@ class SnowflakeInsertBuffer(
                 snowflakeRecordFormatter.format(record, columnSchema).map { col -> col.toString() }
             )
             recordCount++
-            if ((recordCount % flushLimit) == 0) {
-                it.flush()
-            }
         }
     }
 
