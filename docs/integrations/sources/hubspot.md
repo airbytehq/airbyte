@@ -308,6 +308,12 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
   }
   ```
 
+- **401 Unauthorized Error (Private App Token)**
+
+  If you authenticate using a Private App access token and receive a 401 Unauthorized error, the connector fails immediately with a configuration error asking you to update your token. Private App tokens are static and cannot be refreshed, so retrying won't help. To resolve this, generate a new access token in your [HubSpot Private App settings](https://developers.hubspot.com/docs/api/private-apps) and update the connector configuration.
+
+  If you authenticate using OAuth, the connector automatically refreshes expired tokens and retries the request. No action is needed unless the error persists, in which case you should re-authenticate the connector.
+
 - **403 Forbidden Error**
 
   - Hubspot has **scopes** for each API call.
@@ -336,7 +342,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.3.3 | 2026-03-25 | [75452](https://github.com/airbytehq/airbyte/pull/75452) | Fixed HTTP 401 errors retrying indefinitely for Private App Token authentication |
+| 6.3.3 | 2026-03-26 | [75452](https://github.com/airbytehq/airbyte/pull/75452) | Fixed HTTP 401 errors retrying indefinitely for Private App Token authentication |
 | 6.3.2 | 2026-03-17 | [74526](https://github.com/airbytehq/airbyte/pull/74526) | Update dependencies |
 | 6.3.1 | 2026-03-09 | [74410](https://github.com/airbytehq/airbyte/pull/74410) | Promoting release candidate 6.3.1-rc.1 to a main version. |
 | 6.3.1-rc.1 | 2026-03-03 | [74032](https://github.com/airbytehq/airbyte/pull/74032) | fix(source-hubspot): use v3 properties API for CRM search streams |
