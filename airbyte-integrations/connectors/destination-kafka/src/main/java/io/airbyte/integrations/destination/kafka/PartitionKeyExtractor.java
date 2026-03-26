@@ -22,7 +22,7 @@ public class PartitionKeyExtractor {
   private static final Logger LOGGER = LoggerFactory.getLogger(PartitionKeyExtractor.class);
   private static final String FIELD_DELIMITER = "|";
   private static final String NESTED_FIELD_DELIMITER = "\\.";
-  
+
   // Cache for split field names to optimize performance in hot path
   private static final ConcurrentMap<String, String[]> FIELD_SPLIT_CACHE = new ConcurrentHashMap<>();
 
