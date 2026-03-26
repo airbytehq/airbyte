@@ -38,6 +38,7 @@ All notable changes to the Kafka Destination Connector will be documented in thi
 - No breaking changes - existing configurations continue to work unchanged
 - To enable partition routing, add `partition_key_field` to your connector configuration
 - Example: `"partition_key_field": "value.user_id"` will route all records with the same `user_id` to the same partition
+- **Note**: When `partition_key_field` is configured, the `_airbyte_ab_id` field will contain the partition key value instead of a UUID. Downstream consumers should handle both UUID and partition key values.
 
 ## [0.1.11] - Previous Release
 

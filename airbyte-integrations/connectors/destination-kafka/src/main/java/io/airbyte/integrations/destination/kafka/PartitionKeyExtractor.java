@@ -56,49 +56,12 @@ public class PartitionKeyExtractor {
   }
 
   /**
-   * Extracts a single field value from JSON record data. Supports nested field access using dot
-   * notation (e.g., "user.id").
-   *
-   * @param recordData the JSON record data
-   * @param fieldName the field name (supports dot notation for nested fields)
-   * @return field value as string, or null if not found
-   */
-  private static String extractFieldValue(JsonNode recordData, String fieldName) {
-    if (recordData == null || !recordData.isObject()) {
-      return null;
-    }
-
-    String[] fieldParts = fieldName.split("\\.");
-    JsonNode currentNode = recordData;
-
-    // Navigate through nested fields
-    for (String part : fieldParts) {
-      if (!currentNode.has(part)) {
-        return null;
-      }
-      currentNode = currentNode.get(part);
-      if (currentNode == null || currentNode.isNull()) {
-        return null;
-      }
-    }
-
-    // Convert to string for primitive types, serialize complex objects
-    if (currentNode.isValueNode()) {
-      return currentNode.asText();
-    } else if (currentNode.isObject() || currentNode.isArray()) {
-      return currentNode.toString();
-    } else {
-      return null;
-    }
-  }
-
-  /**
    * Generates a fallback key using UUID when no partition key is configured or found.
    *
    * @return randomly generated UUID string
    */
   public static String generateFallbackKey() {
-    return UUID.randomUUID().toString().replace("-", "");
+    return UUID.randomUUID().toString();
   }
 
   /**

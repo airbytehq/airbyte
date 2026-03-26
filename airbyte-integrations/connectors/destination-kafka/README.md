@@ -33,6 +33,15 @@ Add the `partition_key_field` parameter to your connector configuration:
 - **Null Values**: Treated as missing field, falls back to UUID
 - **Multiple Fields**: Concatenated with "|" delimiter
 
+#### Note on `_airbyte_ab_id` Field
+
+When `partition_key_field` is configured, the `_airbyte_ab_id` field in Kafka messages will contain the partition key value instead of a UUID. This change is opt-in and only applies when partition routing is enabled.
+
+- **Without partition_key_field**: `_airbyte_ab_id` = random UUID (existing behavior)
+- **With partition_key_field**: `_airbyte_ab_id` = partition key value (new behavior)
+
+Downstream consumers should handle both UUID and partition key values when processing messages.
+
 #### Examples
 
 **Single Field Partitioning:**
