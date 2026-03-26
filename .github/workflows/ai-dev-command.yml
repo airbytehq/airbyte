@@ -28,6 +28,10 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      pr:
+        description: "PR number (passed by slash command dispatcher, unused)"
+        type: number
+        required: false
       repo:
         description: "Repo (passed by slash command dispatcher)"
         required: false
