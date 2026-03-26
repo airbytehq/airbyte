@@ -5,9 +5,9 @@ sidebar_position: 6
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Airbyte Agent Engine MCP server
+# Agent Engine MCP server
 
-The Airbyte Agent Engine MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf.
+The Airbyte Agent Engine MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../connectors) for a list of available connectors.
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
@@ -156,11 +156,11 @@ When your client first connects, it detects that the server requires OAuth. It m
 
 ## Example usage
 
-After you connect the MCP server, your agent can discover and call its tools automatically based on your prompts. The following examples show common workflows.
+After you connect the MCP server, your agent can discover and call its tools automatically based on your prompts. The following examples show common actions.
 
 ### Add a connector
 
-To connect a new data source, prompt your agent with the service you want to connect. The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
+To connect a new data source, prompt your agent with the service you want to connect. The MCP can use any Airbyte [agent connector](../connectors). The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
 
 ```text
 Connect my Linear account
