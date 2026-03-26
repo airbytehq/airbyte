@@ -109,9 +109,9 @@ def test_non_rate_limit_400_fails_with_error_message(requests_mock, test_config)
     output = read_from_stream(test_config, "ad_account_analytics", SyncMode.incremental, expecting_exception=True)
     assert output.errors, "Expected at least one error trace message for non-rate-limit 400"
     error_messages = [e.trace.error.message for e in output.errors]
-    assert any("ad_account_id" in msg for msg in error_messages), (
-        f"Expected error message to contain the actual API error about ad_account_id, got: {error_messages}"
-    )
+    assert any(
+        "ad_account_id" in msg for msg in error_messages
+    ), f"Expected error message to contain the actual API error about ad_account_id, got: {error_messages}"
 
 
 def test_streams(test_config):
