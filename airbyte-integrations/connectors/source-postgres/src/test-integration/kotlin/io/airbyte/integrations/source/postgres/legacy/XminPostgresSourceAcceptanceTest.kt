@@ -2,12 +2,13 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres
+package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -32,7 +33,7 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
-            PostgresTestDatabase.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17)
+            PostgresTestDatabase.Companion.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17)
                 .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
                 .with(
                     "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"

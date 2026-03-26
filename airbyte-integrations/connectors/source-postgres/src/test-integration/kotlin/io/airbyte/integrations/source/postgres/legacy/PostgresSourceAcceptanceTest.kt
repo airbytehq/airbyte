@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres
+package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.ContextQueryFunction
@@ -11,6 +11,7 @@ import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteCatalog
@@ -32,7 +33,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
 
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
-        testdb = PostgresTestDatabase.`in`(this.serverImage)
+        testdb = PostgresTestDatabase.Companion.`in`(this.serverImage)
         config = getConfig(testdb.userName, testdb.password, "public")
         testdb.query<Any?>({ ctx ->
             ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")

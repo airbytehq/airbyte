@@ -2,11 +2,12 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres
+package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -22,7 +23,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
-            PostgresTestDatabase.`in`(
+            PostgresTestDatabase.Companion.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
                     PostgresTestDatabase.ContainerModifier.CERT
                 )

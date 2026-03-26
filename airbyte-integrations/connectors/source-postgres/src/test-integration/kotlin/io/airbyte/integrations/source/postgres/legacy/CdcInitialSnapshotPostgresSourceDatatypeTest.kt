@@ -2,16 +2,17 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres
+package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Database
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 
 class CdcInitialSnapshotPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
     @Throws(Exception::class)
     protected override fun setupDatabase(): Database {
         testdb =
-            PostgresTestDatabase.`in`(
+            PostgresTestDatabase.Companion.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
                     PostgresTestDatabase.ContainerModifier.CONF
                 )

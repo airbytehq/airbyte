@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres
+package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.CheckedConsumer
@@ -17,6 +17,7 @@ import io.airbyte.cdk.test.fixtures.legacy.SshBastionContainer
 import io.airbyte.cdk.test.fixtures.legacy.SshTunnel
 import io.airbyte.cdk.test.fixtures.legacy.SshTunnel.Companion.sshWrap
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -47,7 +48,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
             JdbcUtils.HOST_LIST_KEY,
             JdbcUtils.PORT_LIST_KEY,
             CheckedConsumer<JsonNode?, Exception?> { mangledConfig: JsonNode? ->
-                Companion.getDatabaseFromConfig(mangledConfig!!)
+                getDatabaseFromConfig(mangledConfig!!)
                     .query<Any?>(
                         ContextQueryFunction { ctx: DSLContext? ->
                             ctx!!.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
@@ -73,7 +74,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
-            PostgresTestDatabase.`in`(
+            PostgresTestDatabase.Companion.`in`(
                 PostgresTestDatabase.BaseImage.POSTGRES_17,
                 PostgresTestDatabase.ContainerModifier.NETWORK
             )
