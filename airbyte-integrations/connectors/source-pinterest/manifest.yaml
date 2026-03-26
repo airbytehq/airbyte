@@ -52,6 +52,12 @@ definitions:
         class_name: source_declarative_manifest.components.PinterestAnalyticsBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
+        action: FAIL
+        http_codes: [400]
+        error_message_contains: "is too long"
+        error_message: "Account ID exceeds maximum allowed length. Verify the account_id value in your source configuration."
+        failure_type: config_error
+      - type: HttpResponseFilter
         action: RETRY
         http_codes: [400]
 
@@ -4963,6 +4969,7 @@ spec:
         type: string
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
+        maxLength: 18
         examples: ["1234567890"]
       num_threads:
         type: integer
