@@ -1170,6 +1170,45 @@ definitions:
       schema:
         $ref: "#/schemas/contact_lists"
 
+  list_memberships_stream:
+    $ref: "#/definitions/stream_base"
+    name: list_memberships
+    primary_key:
+      - - recordId
+      - - listId
+    $parameters:
+      name: list_memberships
+      required_scopes: crm.lists.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/lists/{{ stream_partition['list_id'] }}/memberships"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/contact_lists_stream"
+            parent_key: "listId"
+            partition_field: "list_id"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["listId"]
+            value: "{{ stream_partition['list_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/list_memberships"
+
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
     name: deal_pipelines
@@ -1974,6 +2013,7 @@ streams:
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
   - "#/definitions/contacts_stream"
+  - "#/definitions/list_memberships_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deal_splits_stream"
@@ -2485,6 +2525,27 @@ schemas:
           - "null"
           - string
       updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  list_memberships:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      recordId:
+        type:
+          - "null"
+          - string
+      listId:
+        type:
+          - "null"
+          - string
+      membershipTimestamp:
         type:
           - "null"
           - string
