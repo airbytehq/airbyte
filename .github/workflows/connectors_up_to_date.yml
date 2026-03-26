@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--language=python --language=low-code --language=manifest-only"
+        description: "Extra flags to pass to `airbyte-ops local connector list` (e.g. --name=source-github)."
+        default: ""
 jobs:
   generate_matrix:
     name: Generate matrix
@@ -21,29 +21,70 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - name: Run airbyte-ci connectors list [SCHEDULED TRIGGER]
-        if: github.event_name == 'schedule'
-        id: airbyte-ci-connectors-list-scheduled
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "master"
-          subcommand: 'connectors --language=python --language=low-code --language=manifest-only  --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
-      - name: Run airbyte-ci connectors list [MANUAL TRIGGER]
-        if: github.event_name == 'workflow_dispatch'
-        id: airbyte-ci-connectors-list-workflow-dispatch
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "master"
-          subcommand: 'connectors ${{ github.event.inputs.connectors-options }} --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
-      # We generate a dynamic matrix from the list of selected connectors.
-      # A matrix is required in this situation because the number of connectors is large and running them all in a single job would exceed the maximum job time limit of 6 hours.
-      # We use 25 connectors per job, with hopes they can finish within the 1 hours duration of the GitHub App's
-      # token.
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      # --- Connector selection (three-call pattern) ---
+      # Call 1: Sources - all support levels, Python/low-code/manifest-only languages
+      - name: List source connectors
+        id: list-sources
+        run: |
+          SOURCES=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --connector-type=source \
+              --language python --language low-code --language manifest-only \
+              --exclude-connectors=source-declarative-manifest \
+              ${{ github.event.inputs.connectors-options }} \
+              --output-format=csv
+          )
+          echo "Sources: $SOURCES"
+          echo "sources=$SOURCES" >> "$GITHUB_OUTPUT"
+
+      # Call 2: Destinations - certified only, Python/low-code/manifest-only languages
+      - name: List destination connectors
+        id: list-destinations
+        run: |
+          DESTINATIONS=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --connector-type=destination \
+              --certified-only \
+              --language python --language low-code --language manifest-only \
+              ${{ github.event.inputs.connectors-options }} \
+              --output-format=csv
+          )
+          echo "Destinations: $DESTINATIONS"
+          echo "destinations=$DESTINATIONS" >> "$GITHUB_OUTPUT"
+
+      # Call 3: Combine both sets and output as GH Actions matrix
       - name: Generate matrix - 25 connectors per job
         id: generate_matrix
         run: |
-          matrix=$(jq -c -r '{include: [.[] | "--name=" + .] | to_entries | group_by(.key / 25 | floor) | map(map(.value) | {"connector_names": join(" ")})}' selected_connectors.json)
-          echo "generated_matrix=$matrix" >> $GITHUB_OUTPUT
+          SOURCES="${{ steps.list-sources.outputs.sources }}"
+          DESTINATIONS="${{ steps.list-destinations.outputs.destinations }}"
+
+          # Combine sources and destinations, then generate matrix via json-gh-matrix
+          COMBINED=""
+          if [ -n "$SOURCES" ] && [ -n "$DESTINATIONS" ]; then
+            COMBINED="${SOURCES},${DESTINATIONS}"
+          elif [ -n "$SOURCES" ]; then
+            COMBINED="$SOURCES"
+          else
+            COMBINED="$DESTINATIONS"
+          fi
+
+          MATRIX=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --connectors-filter="$COMBINED" \
+              --output-format=json-gh-matrix
+          )
+          echo "generated_matrix=$MATRIX" >> "$GITHUB_OUTPUT"
 
   run_connectors_up_to_date:
     needs: generate_matrix
@@ -51,12 +92,20 @@ jobs:
     runs-on: connector-up-to-date-medium
     continue-on-error: true
     strategy:
-      matrix: ${{fromJson(needs.generate_matrix.outputs.generated_matrix)}}
+      matrix: ${{ fromJson(needs.generate_matrix.outputs.generated_matrix) }}
     permissions:
       pull-requests: write
+      contents: write
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
@@ -65,19 +114,36 @@ jobs:
           repositories: ${{ inputs.repo || github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
-      # Token is good for 1 hour
-      - name: Run airbyte-ci connectors up-to-date [WORKFLOW]
-        id: airbyte-ci-connectors-up-to-date-workflow-dispatch
-        uses: ./.github/actions/run-airbyte-ci
+
+      - name: Docker login
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
-          context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --concurrency=10 ${{ matrix.connector_names}} up-to-date  --create-prs --auto-merge"
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      # TK-TODO: The `airbyte-ops local connector up-to-date` command does not exist yet.
+      # It needs to be implemented in the airbyte-ops-mcp repo to replace the Dagger-based
+      # `airbyte-ci connectors up-to-date` pipeline. The command should perform these steps
+      # for each connector:
+      #   1. Update base image in metadata.yaml to the latest stable tag
+      #   2. Run `poetry update` (for Python/Poetry connectors)
+      #   3. Bump connector version (patch)
+      #   4. Add changelog entry ("Update dependencies")
+      #   5. Create or update a GitHub PR with the changes
+      #   6. Optionally set auto-merge label on the PR
+      #
+      # Steps 3 and 4 are already available via `airbyte-ops local connector bump-version`.
+      # Steps 1, 2, 5, and 6 need new implementations. See the analysis in the PR description
+      # for detailed requirements.
+      - name: Run connectors up-to-date
+        env:
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          airbyte-ops local connector up-to-date \
+            --repo-path "$GITHUB_WORKSPACE" \
+            --concurrency=10 \
+            ${{ matrix.connector_names }} \
+            --create-prs \
+            --auto-merge
