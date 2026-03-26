@@ -53,7 +53,6 @@ definitions:
     response_filters:
       - type: HttpResponseFilter
         action: FAIL
-        http_codes: [400]
         error_message_contains: "is too long"
         error_message: "Account ID exceeds maximum allowed length. Verify the account_id value in your source configuration."
         failure_type: config_error
