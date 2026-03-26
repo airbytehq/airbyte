@@ -88,31 +88,23 @@ Add the MCP serer to your Cursor app.
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
 
-Add the MCP server to your Claude desktop app.
+Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `claude_desktop_config.json` file, as it only supports local servers.
 
-1. Open **Settings** with **CMD + ,** (macOS) or **Ctrl + ,** (Windows/Linux).
+1. Open Claude Desktop and go to **Settings** > **Connectors**.
 
-2. Go to **Developer** > **Edit Config** to open `claude_desktop_config.json`.
+2. Click **Add custom connector**.
 
-3. Add the Airbyte MCP server:
+3. Enter the server name and URL: `https://mcp.airbyte.ai/mcp`
 
-    ```json
-    {
-      "mcpServers": {
-        "Airbyte": {
-          "url": "https://mcp.airbyte.ai/mcp"
-        }
-      }
-    }
-    ```
+4. Click **Add**.
 
-4. Save the file and restart Claude Desktop.
-
-5. After restarting, Claude Desktop detects the remote server and opens your browser for OAuth authentication.
+5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
 
 6. Log in with your Airbyte account and grant access.
 
-7. Return to Claude Desktop and begin using the MCP server.
+    ![Grant access to the Agent Engine MCP](grant-access.png)
+
+7. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
 
 </TabItem>
 <TabItem value="codex" label="Codex">
@@ -154,7 +146,7 @@ Most clients that support remote MCP servers accept a JSON configuration like th
 }
 ```
 
-When your client first connects, it detects that the server requires OAuth. It may or may not open your browser automatically. Log in with your app.airbyte.ai account and grant access. After you authenticate, the MCP server's tools are available to your agent.
+When your client first connects, it detects that the server requires OAuth. It may or may not open your browser automatically. You may need to click a button to do this. Log in with your app.airbyte.ai account and grant access. After you authenticate, the MCP server's tools are available to your agent.
 
 </TabItem>
 </Tabs>
