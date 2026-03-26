@@ -15,7 +15,7 @@ on:
     inputs:
       issue:
         description: "Issue number to test against"
-        type: number
+        type: string
         required: false
       skills-pr:
         description: "ai-skills PR number with the dev playbook (named skills-pr to avoid collision with the pr static-arg)"
@@ -88,7 +88,7 @@ jobs:
           # When invoked via slash command, inputs.issue is empty because
           # the slash-commands.yml static-args don't include issue=.
           # Resolve the issue number from the comment-id via the GitHub API.
-          if [[ -z "$issue_number" && -n "$comment_id" ]]; then
+          if [[ -z "$issue_number" || "$issue_number" == "0" ]] && [[ -n "$comment_id" ]]; then
             echo "Resolving issue number from comment-id..."
             issue_number=$(curl -s \
               -H "Authorization: Bearer $GH_TOKEN" \
