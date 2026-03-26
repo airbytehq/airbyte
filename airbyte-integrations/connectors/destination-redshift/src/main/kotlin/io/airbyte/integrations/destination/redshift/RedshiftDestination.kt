@@ -241,8 +241,7 @@ class RedshiftDestination : BaseConnector(), Destination {
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: SQLException) {
-            // copied from AbstractJdbcDestination's attemptTableOperations
-            val stateCode: String = e.sqlState
+            val stateCode: String? = e.sqlState
             val errorCode: Int
             val exceptionMessage: String?
             if (Objects.isNull(e.cause) || e.cause !is SQLException) {
