@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +22,9 @@ public class PartitionKeyExtractor {
   private static final Logger LOGGER = LoggerFactory.getLogger(PartitionKeyExtractor.class);
   private static final String FIELD_DELIMITER = "|";
   private static final String NESTED_FIELD_DELIMITER = "\\.";
+  
+  // Cache for split field names to optimize performance in hot path
+  private static final ConcurrentMap<String, String[]> FIELD_SPLIT_CACHE = new ConcurrentHashMap<>();
 
   /**
    * Extracts partition key from record data based on configured fields.
@@ -34,7 +39,8 @@ public class PartitionKeyExtractor {
       return null;
     }
 
-    String[] fields = partitionKeyFields.split(",");
+    // Use cached split result for performance optimization
+    String[] fields = FIELD_SPLIT_CACHE.computeIfAbsent(partitionKeyFields, key -> key.split(","));
     List<String> keyValues = new ArrayList<>();
 
     for (String field : fields) {
