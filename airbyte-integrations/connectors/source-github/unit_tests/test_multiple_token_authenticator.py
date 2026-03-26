@@ -153,7 +153,9 @@ def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, ca
     all_sleeps = [c.args[0] for c in sleep_mock.call_args_list]
     total_sleep = sum(all_sleeps)
     # Total sleep should be at least the expected waiting time (budget throttle adds small extras)
-    assert total_sleep >= ACCEPTED_WAITING_TIME_IN_SECONDS, f"Expected total sleep >= {ACCEPTED_WAITING_TIME_IN_SECONDS}s, got {total_sleep:.1f}s"
+    assert (
+        total_sleep >= ACCEPTED_WAITING_TIME_IN_SECONDS
+    ), f"Expected total sleep >= {ACCEPTED_WAITING_TIME_IN_SECONDS}s, got {total_sleep:.1f}s"
     # Verify heartbeat chunking: there should be multiple sleep calls for the exhaustion wait
     heartbeat_sleeps = [s for s in all_sleeps if s >= 1.0]
     assert len(heartbeat_sleeps) > 1, "Expected multiple heartbeat sleep chunks, not a single blocking sleep"
