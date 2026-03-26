@@ -9,7 +9,7 @@ from typing import Dict
 from unittest.mock import ANY, MagicMock, call, patch
 
 import pytest
-from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
+from source_google_drive.spec import GoogleDocExportFormat, ServiceAccountCredentials, SourceGoogleDriveSpec
 from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -807,6 +807,24 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             False,
             id="Read google doc as binary file with export",
         ),
+        pytest.param(
+            GoogleDriveRemoteFile(
+                uri="abc",
+                id="abc",
+                mime_type="text/markdown",
+                original_mime_type="application/vnd.google-apps.document",
+                last_modified=datetime.datetime(2021, 1, 1),
+                created_at=datetime.datetime(2021, 1, 1),
+                view_link=f"https://docs.google.com/document/d/abc/edit?usp=drivesdk",
+            ),
+            b"# Hello\nThis is markdown",
+            FileReadMode.READ_BINARY,
+            True,
+            "text/markdown",
+            b"# Hello\nThis is markdown",
+            False,
+            id="Read google doc as markdown with export",
+        ),
     ],
 )
 @patch("source_google_drive.stream_reader.MediaIoBaseDownload")
@@ -1135,3 +1153,142 @@ def test_source_uri_format(
 
     file_record_data, _ = create_reader().upload(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
     assert file_record_data.source_uri == expected_source_uri
+
+
+def _create_markdown_reader():
+    return create_reader(
+        config=SourceGoogleDriveSpec(
+            folder_url="https://drive.google.com/drive/folders/1Z2Q3",
+            streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
+            credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
+            google_doc_export_format=GoogleDocExportFormat.MARKDOWN,
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "original_mime_type, export_format, expected_mime_type",
+    [
+        pytest.param(
+            "application/vnd.google-apps.document",
+            GoogleDocExportFormat.DOCX,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            id="Google Doc default exports as docx",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.document",
+            GoogleDocExportFormat.MARKDOWN,
+            "text/markdown",
+            id="Google Doc exports as markdown when configured",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.presentation",
+            GoogleDocExportFormat.MARKDOWN,
+            "application/pdf",
+            id="Presentation still exports as PDF even with markdown config",
+        ),
+        pytest.param(
+            "application/vnd.google-apps.drawing",
+            GoogleDocExportFormat.MARKDOWN,
+            "application/pdf",
+            id="Drawing still exports as PDF even with markdown config",
+        ),
+    ],
+)
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_get_export_mime_type(mock_build_service, mock_service_account, original_mime_type, export_format, expected_mime_type):
+    reader = create_reader(
+        config=SourceGoogleDriveSpec(
+            folder_url="https://drive.google.com/drive/folders/1Z2Q3",
+            streams=[FileBasedStreamConfig(name="test", format=JsonlFormat())],
+            credentials=ServiceAccountCredentials(auth_type="Service", service_account_info='{"test": "abc"}'),
+            google_doc_export_format=export_format,
+        ),
+    )
+    assert reader._get_export_mime_type(original_mime_type) == expected_mime_type
+
+
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_matching_files_google_doc_as_markdown(mock_build_service, mock_service_account):
+    mock_request = MagicMock()
+    mock_request.execute.return_value = {
+        "files": [
+            {
+                "id": "abc",
+                "mimeType": "application/vnd.google-apps.document",
+                "name": "MyDoc",
+                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                "createdTime": "2021-01-01T00:00:00.000Z",
+                "webViewLink": "https://docs.google.com/document/d/abc/edit?usp=drivesdk",
+            }
+        ]
+    }
+    files_service = MagicMock()
+    files_service.list.return_value = mock_request
+    files_service.list_next.return_value = None
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    mock_build_service.return_value = drive_service
+
+    reader = _create_markdown_reader()
+    found_files = list(reader.get_matching_files(["*"], None, MagicMock()))
+
+    assert len(found_files) == 1
+    assert found_files[0].mime_type == "text/markdown"
+    assert found_files[0].original_mime_type == "application/vnd.google-apps.document"
+
+
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_upload_google_doc_as_markdown(mock_build_service, mock_service_account, mock_basedownload):
+    file = GoogleDriveRemoteFile(
+        uri="testdoc_google",
+        last_modified=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
+        created_at=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
+        mime_type="text/markdown",
+        id="testdoc_google",
+        original_mime_type="application/vnd.google-apps.document",
+        view_link="https://docs.google.com/document/d/testdoc_google/edit?usp=drivesdk",
+    )
+    file_content = b"# Hello\nThis is markdown"
+
+    mock_request = MagicMock()
+    mock_downloader = MagicMock()
+
+    def mock_next_chunk(num_retries):
+        handle = mock_basedownload.call_args[0][0]
+        total_size = len(file_content)
+        mock_progress = MagicMock()
+        mock_progress.total_size = total_size
+        mock_progress.resumable_progress = handle.tell()
+
+        if handle.tell() > 0:
+            return (mock_progress, True)
+        else:
+            handle.write(file_content)
+            return (mock_progress, False)
+
+    mock_downloader.next_chunk.side_effect = mock_next_chunk
+    mock_basedownload.return_value = mock_downloader
+
+    files_service = MagicMock()
+    mock_get = MagicMock()
+    mock_get.execute.return_value = {"size": 1024}
+    files_service.get.return_value = mock_get
+    files_service.export_media.return_value = mock_request
+
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    mock_build_service.return_value = drive_service
+
+    reader = _create_markdown_reader()
+    file_record_data, file_reference = reader.upload(file, local_directory=TEST_LOCAL_DIRECTORY, logger=MagicMock())
+
+    assert file_reference.source_file_relative_path == "testdoc_google.md"
+    assert file_reference.staging_file_url.endswith("testdoc_google.md")
+    assert file_record_data.mime_type == "text/markdown"
+    assert file_record_data.file_name == "testdoc_google.md"
+    files_service.export_media.assert_called_once_with(fileId="testdoc_google", mimeType="text/markdown")

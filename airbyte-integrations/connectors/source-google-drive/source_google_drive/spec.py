@@ -85,6 +85,11 @@ class ServiceAccountCredentials(BaseModel):
     )
 
 
+class GoogleDocExportFormat(str, Enum):
+    DOCX = "docx"
+    MARKDOWN = "markdown"
+
+
 class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     class Config:
         title = "Google Drive Source Spec"
@@ -109,6 +114,13 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type", type="object"
+    )
+
+    google_doc_export_format: GoogleDocExportFormat = Field(
+        title="Google Doc Export Format",
+        description="The format to export native Google Docs as. Choose 'markdown' for AI/LLM pipelines or 'docx' for rich document processing.",
+        default=GoogleDocExportFormat.DOCX,
+        order=3,
     )
 
     @classmethod
