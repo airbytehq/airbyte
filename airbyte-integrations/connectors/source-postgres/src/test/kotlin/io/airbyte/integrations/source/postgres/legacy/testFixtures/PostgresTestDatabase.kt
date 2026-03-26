@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.postgres.legacy.testFixtures
 
-import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.test.fixtures.legacy.DatabaseDriver
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
@@ -13,7 +12,6 @@ import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresSpecC
 import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresSpecConstants.RESYNC_DATA_OPTION
 import java.io.IOException
 import java.io.UncheckedIOException
-import java.util.List
 import java.util.stream.Stream
 import org.jooq.SQLDialect
 import org.testcontainers.containers.PostgreSQLContainer
@@ -186,13 +184,13 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
             testdb,
         ) {
         fun withSchemas(vararg schemas: String?): PostgresConfigBuilder {
-            return with(JdbcUtils.SCHEMAS_KEY, List.of<String?>(*schemas))
+            return with(JdbcUtils.SCHEMAS_KEY, listOf<String?>(*schemas))
         }
 
         fun withStandardReplication(): PostgresConfigBuilder {
             return with(
                 "replication_method",
-                ImmutableMap.builder<Any, Any>().put("method", "Standard").build(),
+                mapOf("method" to "Standard"),
             )
         }
 
@@ -204,18 +202,16 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
             return this.with("is_test", true)
                 .with(
                     "replication_method",
-                    Jsons.jsonNode<ImmutableMap<Any, Any>?>(
-                        ImmutableMap.builder<Any?, Any?>()
-                            .put("method", "CDC")
-                            .put("replication_slot", testDatabase.replicationSlotName)
-                            .put("publication", testDatabase.publicationName)
-                            .put(
-                                "initial_waiting_seconds",
+                    Jsons.jsonNode<Map<String, Any?>?>(
+                        mapOf(
+                            "method" to "CDC",
+                            "replication_slot" to testDatabase.replicationSlotName,
+                            "publication" to testDatabase.publicationName,
+                            "initial_waiting_seconds" to
                                 DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds(),
-                            )
-                            .put("lsn_commit_behaviour", LsnCommitBehaviour)
-                            .put(INVALID_CDC_CURSOR_POSITION_PROPERTY, cdcCursorFailBehaviour)
-                            .build(),
+                            "lsn_commit_behaviour" to LsnCommitBehaviour,
+                            INVALID_CDC_CURSOR_POSITION_PROPERTY to cdcCursorFailBehaviour,
+                        ),
                     ),
                 )
         }
@@ -223,9 +219,7 @@ class PostgresTestDatabase(container: PostgreSQLContainer<*>) :
         fun withXminReplication(): PostgresConfigBuilder {
             return this.with(
                 "replication_method",
-                Jsons.jsonNode<ImmutableMap<Any, Any>>(
-                    ImmutableMap.builder<Any, Any>().put("method", "Xmin").build(),
-                ),
+                Jsons.jsonNode<Map<String, String>>(mapOf("method" to "Xmin")),
             )
         }
     }

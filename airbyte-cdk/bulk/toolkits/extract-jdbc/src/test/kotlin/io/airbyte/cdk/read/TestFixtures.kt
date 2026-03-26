@@ -13,7 +13,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
@@ -38,9 +38,9 @@ import org.junit.jupiter.api.Assertions
 
 object TestFixtures {
 
-    val id = Field("id", IntFieldType)
-    val ts = Field("ts", LocalDateFieldType)
-    val msg = Field("msg", StringFieldType)
+    val id = EmittedField("id", IntFieldType)
+    val ts = EmittedField("ts", LocalDateFieldType)
+    val msg = EmittedField("msg", StringFieldType)
 
     fun stream(
         withPK: Boolean = true,
@@ -175,7 +175,7 @@ object TestFixtures {
                 override fun next(): SelectQuerier.ResultRow =
                     object : SelectQuerier.ResultRow {
                         override val data: NativeRecordPayload = wrapped.next()
-                        override val changes: Map<Field, FieldValueChange> = emptyMap()
+                        override val changes: Map<EmittedField, FieldValueChange> = emptyMap()
                         override val nonEmittedData: NativeRecordPayload = mutableMapOf()
                     }
                 override fun close() {}

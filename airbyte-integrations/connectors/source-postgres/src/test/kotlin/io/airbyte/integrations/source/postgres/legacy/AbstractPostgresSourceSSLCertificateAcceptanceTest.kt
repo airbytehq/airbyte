@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.Lists
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
 import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
@@ -16,7 +15,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
-import java.util.List
 
 abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
     AbstractPostgresSourceAcceptanceTest() {
@@ -61,10 +59,10 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
         get() =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    Lists.newArrayList<ConfiguredAirbyteStream?>(
+                    mutableListOf<ConfiguredAirbyteStream?>(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -74,20 +72,20 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -97,20 +95,20 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -120,13 +118,13 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

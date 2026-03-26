@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.Lists
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
@@ -17,7 +16,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
-import java.util.List
 
 class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() {
     private lateinit var testdb: PostgresTestDatabase
@@ -59,7 +57,7 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
         get() =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    Lists.newArrayList<ConfiguredAirbyteStream?>(
+                    mutableListOf<ConfiguredAirbyteStream?>(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -71,11 +69,11 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(SyncMode.INCREMENTAL)
+                                        mutableListOf<SyncMode?>(SyncMode.INCREMENTAL)
                                     )
                                     .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -91,11 +89,11 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(SyncMode.INCREMENTAL)
+                                        mutableListOf<SyncMode?>(SyncMode.INCREMENTAL)
                                     )
                                     .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -111,11 +109,11 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(SyncMode.INCREMENTAL)
+                                        mutableListOf<SyncMode?>(SyncMode.INCREMENTAL)
                                     )
                                     .withSourceDefinedCursor(true)
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

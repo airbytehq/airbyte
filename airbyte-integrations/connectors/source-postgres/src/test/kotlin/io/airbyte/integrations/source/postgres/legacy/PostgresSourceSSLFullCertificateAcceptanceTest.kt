@@ -4,17 +4,15 @@
 
 package io.airbyte.integrations.source.postgres.legacy
 
-import com.google.common.collect.ImmutableMap
-
 class PostgresSourceSSLFullCertificateAcceptanceTest :
     AbstractPostgresSourceSSLCertificateAcceptanceTest() {
     override val certificateConfiguration: MutableMap<Any?, Any?>
         get() =
-            ImmutableMap.builder<Any?, Any?>()
-                .put("mode", "verify-ca")
-                .put("ca_certificate", testdb.certificates.caCertificate)
-                .put("client_certificate", testdb.certificates.clientCertificate)
-                .put("client_key", testdb.certificates.clientKey)
-                .put("client_key_password", PASSWORD)
-                .build()
+            mutableMapOf(
+                "mode" to "verify-ca",
+                "ca_certificate" to testdb.certificates.caCertificate,
+                "client_certificate" to testdb.certificates.clientCertificate,
+                "client_key" to testdb.certificates.clientKey,
+                "client_key_password" to PASSWORD,
+            )
 }

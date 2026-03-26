@@ -144,7 +144,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                         testDataHolder.expectedValues
                     testByName[testDataHolder.nameWithTestPrefix] = testDataHolder
                 } else {
-                    LOGGER.warn("Missing expected values for type: " + testDataHolder.sourceType)
+                    LOGGER.warn { "Missing expected values for type: ${testDataHolder.sourceType}" }
                 }
             }
         )
@@ -241,11 +241,9 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         for (test in testDataHolders) {
             database!!.query<Any?> { ctx: DSLContext ->
                 test.insertSqlQueries.forEach(Consumer { sql: String -> ctx.fetch(sql) })
-                LOGGER.info(
-                    "Inserted {} rows in table {}",
-                    test.insertSqlQueries.size,
-                    test.nameWithTestPrefix
-                )
+                LOGGER.info {
+                    "Inserted ${test.insertSqlQueries.size} rows in table ${test.nameWithTestPrefix}"
+                }
                 null
             }
         }
@@ -341,7 +339,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         }
 
     protected fun printMarkdownTestTable() {
-        LOGGER.info(markdownTestTable)
+        LOGGER.info { markdownTestTable }
     }
 
     @Throws(SQLException::class)

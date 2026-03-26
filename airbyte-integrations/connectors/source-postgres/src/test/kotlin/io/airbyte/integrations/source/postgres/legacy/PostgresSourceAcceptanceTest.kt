@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.Lists
 import io.airbyte.cdk.test.fixtures.legacy.ContextQueryFunction
 import io.airbyte.cdk.test.fixtures.legacy.Database
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
@@ -24,7 +23,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
 import java.sql.SQLException
-import java.util.List
 import org.jooq.DSLContext
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -37,7 +35,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb = PostgresTestDatabase.`in`(this.serverImage)
         config = getConfig(testdb.userName, testdb.password, "public")
-        testdb.query({ ctx ->
+        testdb.query<Any?>({ ctx ->
             ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
             ctx.fetch(
                 "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
@@ -212,10 +210,10 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
         get() =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    Lists.newArrayList<ConfiguredAirbyteStream?>(
+                    mutableListOf<ConfiguredAirbyteStream?>(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -225,20 +223,20 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -248,20 +246,20 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -271,13 +269,13 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
@@ -289,10 +287,10 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
         get() =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    Lists.newArrayList<ConfiguredAirbyteStream?>(
+                    mutableListOf<ConfiguredAirbyteStream?>(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -302,7 +300,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),

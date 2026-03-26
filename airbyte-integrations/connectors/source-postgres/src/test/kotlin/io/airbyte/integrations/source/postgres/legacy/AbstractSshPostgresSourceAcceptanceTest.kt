@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.collect.Lists
 import io.airbyte.cdk.test.fixtures.legacy.CheckedConsumer
 import io.airbyte.cdk.test.fixtures.legacy.ContextQueryFunction
 import io.airbyte.cdk.test.fixtures.legacy.DSLContextFactory
@@ -28,7 +27,6 @@ import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
 import java.io.IOException
 import java.io.UncheckedIOException
-import java.util.List
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 
@@ -108,10 +106,10 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
         get() =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    Lists.newArrayList<ConfiguredAirbyteStream?>(
+                    mutableListOf<ConfiguredAirbyteStream?>(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -121,20 +119,20 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),
                             ),
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
-                            .withCursorField(Lists.newArrayList<String?>("id"))
+                            .withCursorField(mutableListOf<String?>("id"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
@@ -144,13 +142,13 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
                                     .withSupportedSyncModes(
-                                        Lists.newArrayList<SyncMode?>(
+                                        mutableListOf<SyncMode?>(
                                             SyncMode.FULL_REFRESH,
                                             SyncMode.INCREMENTAL,
                                         ),
                                     )
                                     .withSourceDefinedPrimaryKey(
-                                        List.of<MutableList<String?>?>(
+                                        listOf<MutableList<String?>?>(
                                             mutableListOf<String?>("id"),
                                         ),
                                     ),

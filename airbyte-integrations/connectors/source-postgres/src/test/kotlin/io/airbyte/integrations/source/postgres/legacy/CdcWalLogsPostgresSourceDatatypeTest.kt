@@ -46,7 +46,7 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
 
         val allMessages: List<AirbyteMessage> = super.runRead(catalog)
         val stateAfterFirstBatch: List<AirbyteStateMessage?> = extractStateMessages(allMessages)
-        if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
+        if (stateAfterFirstBatch.isEmpty()) {
             throw RuntimeException("stateAfterFirstBatch should not be null or empty")
         }
         stateAfterFirstSync =
