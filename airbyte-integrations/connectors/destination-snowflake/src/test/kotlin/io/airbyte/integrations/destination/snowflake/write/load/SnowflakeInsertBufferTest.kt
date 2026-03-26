@@ -22,7 +22,6 @@ import io.mockk.every
 import io.mockk.mockk
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -190,20 +189,31 @@ internal class SnowflakeInsertBufferTest {
             )
         runBlocking {
             buffer.accumulate(record)
-            // The csvFilePath is internal, we can access it for testing
             val filepath = buffer.csvFilePath
             assertNotNull(filepath)
             val file = filepath!!.toFile()
             assert(file.exists())
-            // Close the writer to ensure all data is flushed
+            // Close the writer to ensure all data is flushed to disk
             buffer.csvWriter?.close()
+
+            // Read back and verify the file contains valid, parseable CSV
             val lines = mutableListOf<String>()
-            GZIPInputStream(file.inputStream()).use { gzip ->
-                BufferedReader(InputStreamReader(gzip)).use { bufferedReader ->
-                    bufferedReader.forEachLine { line -> lines.add(line) }
-                }
+            BufferedReader(InputStreamReader(file.inputStream())).use { bufferedReader ->
+                bufferedReader.forEachLine { line -> lines.add(line) }
             }
-            assertEquals(1, lines.size)
+            assertEquals(1, lines.size, "Expected exactly 1 CSV row")
+
+            // Verify the file is readable as plain-text CSV (not binary/compressed)
+            // and has the expected number of fields (4 meta + 1 user column)
+            val csvRow = lines[0]
+            assert(csvRow.all { it.isDefined() && !it.isISOControl() || it == '\t' }) {
+                "CSV row contains non-printable characters — file may still be compressed"
+            }
+            val fields = csvRow.split(",")
+            assert(fields.size >= 5) {
+                "CSV row should have at least 5 fields (4 meta + 1 user column), got ${fields.size}"
+            }
+
             file.delete()
         }
     }

@@ -242,8 +242,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedSql =
             """
             PUT 'file://$tempFilePath' '@$stagingTableName'
-            AUTO_COMPRESS = FALSE
-            SOURCE_COMPRESSION = GZIP
+            AUTO_COMPRESS = TRUE
             OVERWRITE = TRUE
         """.trimIndent()
         assertEquals(expectedSql, sql)
@@ -254,14 +253,14 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val targetTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
-        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv")
         val expectedSql =
             """
             |COPY INTO $targetTableName
             |FROM '@$stagingTableName'
             |FILE_FORMAT = (
             |    TYPE = 'CSV'
-            |    COMPRESSION = GZIP
+            |    COMPRESSION = AUTO
             |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -273,7 +272,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |)
             |ON_ERROR = 'ABORT_STATEMENT'
             |PURGE = TRUE
-            |files = ('test.csv.gz')
+            |files = ('test.csv')
         """.trimMargin()
         assertEquals(expectedSql, sql)
     }
@@ -294,14 +293,14 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "COL2"
             )
         val sql =
-            snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz", schemaColumns)
+            snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv", schemaColumns)
         val expectedSql =
             """
             |COPY INTO $targetTableName("_AIRBYTE_RAW_ID", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_META", "_AIRBYTE_GENERATION_ID", "COL1", "COL2")
             |FROM '@$stagingTableName'
             |FILE_FORMAT = (
             |    TYPE = 'CSV'
-            |    COMPRESSION = GZIP
+            |    COMPRESSION = AUTO
             |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -313,7 +312,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |)
             |ON_ERROR = 'ABORT_STATEMENT'
             |PURGE = TRUE
-            |files = ('test.csv.gz')
+            |files = ('test.csv')
         """.trimMargin()
         assertEquals(expectedSql, sql)
     }
@@ -333,15 +332,14 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 "_airbyte_loaded_at",
                 "_airbyte_data"
             )
-        val sql =
-            snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz", rawColumns)
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv", rawColumns)
         val expectedSql =
             """
             |COPY INTO $targetTableName("_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta", "_airbyte_generation_id", "_airbyte_loaded_at", "_airbyte_data")
             |FROM '@$stagingTableName'
             |FILE_FORMAT = (
             |    TYPE = 'CSV'
-            |    COMPRESSION = GZIP
+            |    COMPRESSION = AUTO
             |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -353,7 +351,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             |)
             |ON_ERROR = 'ABORT_STATEMENT'
             |PURGE = TRUE
-            |files = ('test.csv.gz')
+            |files = ('test.csv')
         """.trimMargin()
         assertEquals(expectedSql, sql)
     }
@@ -1007,8 +1005,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expected =
             """
             PUT 'file:///tmp/test.csv' '@$expectedStageName'
-            AUTO_COMPRESS = FALSE
-            SOURCE_COMPRESSION = GZIP
+            AUTO_COMPRESS = TRUE
             OVERWRITE = TRUE
         """.trimIndent()
         assertEquals(expected, sql)

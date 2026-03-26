@@ -16,10 +16,9 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.BufferedOutputStream
 import java.io.File
-import java.io.OutputStream
 import java.nio.file.Path
-import java.util.zip.GZIPOutputStream
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
 
@@ -30,7 +29,7 @@ internal const val CSV_FIELD_SEPARATOR = ','
 internal const val CSV_QUOTE_CHARACTER = '"'
 internal val CSV_LINE_DELIMITER = LineDelimiter.LF
 internal const val FILE_PREFIX = "snowflake"
-internal const val FILE_SUFFIX = ".gz"
+internal const val FILE_SUFFIX = ""
 
 private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
@@ -61,10 +60,7 @@ class SnowflakeInsertBuffer(
         if (csvFilePath == null) {
             val csvFile = createCsvFile()
             csvFilePath = csvFile.toPath()
-            csvWriter =
-                csvWriterBuilder.build(
-                    CompressionOutputStream(outputStream = csvFile.outputStream(), level = 5)
-                )
+            csvWriter = csvWriterBuilder.build(BufferedOutputStream(csvFile.outputStream()))
         }
 
         writeToCsvFile(recordFields)
@@ -88,7 +84,14 @@ class SnowflakeInsertBuffer(
                 // Finally, copy the data from the staging table to the final table
                 // Pass column names to ensure correct mapping even after ALTER TABLE operations
                 val columnNames = columnManager.getTableColumnNames(columnSchema)
-                snowflakeClient.copyFromStage(tableName, filePath.fileName.toString(), columnNames)
+                // When PUT uses AUTO_COMPRESS = TRUE, Snowflake GZIP-compresses the file
+                // during upload and silently appends ".gz" to the staged filename.
+                // The COPY INTO files clause must reference this post-rename filename.
+                snowflakeClient.copyFromStage(
+                    tableName,
+                    filePath.fileName.toString() + ".gz",
+                    columnNames
+                )
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}."
                 }
@@ -117,13 +120,6 @@ class SnowflakeInsertBuffer(
                 snowflakeRecordFormatter.format(record, columnSchema).map { col -> col.toString() }
             )
             recordCount++
-        }
-    }
-
-    private class CompressionOutputStream(outputStream: OutputStream, level: Int) :
-        GZIPOutputStream(outputStream) {
-        init {
-            def.setLevel(level)
         }
     }
 }
