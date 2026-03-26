@@ -33,7 +33,10 @@ Add the MCP server to your Claude Code command line tool.
 1. Run the following command in your terminal:
 
     ```bash
-    claude mcp add --transport http airbyte-agent https://mcp.airbyte.ai/mcp
+    claude mcp add \
+      --transport http \
+      airbyte-agent \
+      https://mcp.airbyte.ai/mcp
     ```
 
 2. Run Claude Code with `claude`.
@@ -55,7 +58,7 @@ Add the MCP server to your Claude Code command line tool.
 </TabItem>
 <TabItem value="cursor" label="Cursor">
 
-Add the MCP serer to your Cursor app.
+Add the MCP server to your Cursor app.
 
 1. Go to **Cursor** > **Settings** > **Cursor Settings** > **Tools and MCP**.
 
