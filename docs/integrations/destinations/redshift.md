@@ -1,55 +1,47 @@
 # Redshift
 
-This page guides you through the process of setting up the Redshift destination connector.
+This page guides you through setting up the Redshift destination connector.
 
 ## Prerequisites
 
-The Airbyte Redshift destination allows you to sync data to Redshift. Airbyte replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html). Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file.
+The Airbyte Redshift destination syncs data to Redshift by uploading data to an S3 bucket and issuing a [COPY](https://docs.aws.amazon.com/redshift/latest/dg/r_COPY.html) command. This is the [recommended loading approach](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html) described by AWS. An S3 bucket with appropriate credentials is required.
 
-### Configuration Options
+### Configuration options
 
-- **Host**
-- **Port**
-- **Username**
-- **Password**
-- **Schema**
-- **Database**
-  - This database needs to exist within the cluster provided.
-- **S3 Bucket Name**
-  - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to
-    create an S3 bucket.
-- **S3 Bucket Region**
-  - Place the S3 bucket and the Redshift cluster in the same region to save on networking costs.
-- **Access Key Id**
-  - See
-    [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
-    on how to generate an access key.
-  - We recommend creating an Airbyte-specific user. This user will require
-    [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
-    to objects in the staging bucket.
-- **Secret Access Key**
-  - Corresponding key to the above key id.
+The following fields are required:
 
-Optional parameters:
+- **Host** — The endpoint of your Redshift cluster. This must include the cluster ID, region, and end with `.redshift.amazonaws.com`.
+- **Port** — The port number for the Redshift cluster. The default is `5439`.
+- **Username** — The username to access the database.
+- **Password** — The password associated with the username.
+- **Database** — The name of the database. This database must already exist in the cluster.
+- **Default Schema** — The schema to write tables into if the source does not specify a namespace. The default is `public`.
 
-- **Bucket Path**
-  - The directory within the S3 bucket to place the staging data. For example, if you set this to
-    `yourFavoriteSubdirectory`, we will place the staging data inside
-    `s3://yourBucket/yourFavoriteSubdirectory`. If not provided, defaults to the root directory.
-- **S3 Filename pattern**
-  - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
-    `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
-    The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
-- **Purge Staging Data**
-  - Whether to delete the staging files from S3 after completing the sync. Specifically, the
-    connector will create CSV files named
-    `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns
-    (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command
-    completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
+#### S3 staging options
 
-NOTE: S3 staging does not use the SSH Tunnel option for copying data, if configured. SSH Tunnel
-supports the SQL connection only. S3 is secured through public HTTPS access only. Subsequent typing
-and deduping queries on final table are executed over using provided SSH Tunnel configuration.
+The following S3 staging fields are required:
+
+- **S3 Bucket Name** — The name of the staging S3 bucket. See the [AWS documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) for instructions on creating an S3 bucket.
+- **S3 Bucket Region** — The region of the S3 staging bucket. Place the S3 bucket and the Redshift cluster in the same region to reduce networking costs.
+- **S3 Access Key Id** — See the [AWS documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) for instructions on generating an access key. We recommend creating an Airbyte-specific IAM user with [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to the staging bucket.
+- **S3 Secret Access Key** — The secret key corresponding to the access key ID.
+
+The following S3 staging fields are optional:
+
+- **S3 Bucket Path** — The directory under the S3 bucket where staging data is written. For example, if you set this to `yourFavoriteSubdirectory`, staging data is written to `s3://yourBucket/yourFavoriteSubdirectory`. Defaults to the root directory.
+- **S3 Filename Pattern** — Sets the file-name format for S3 staging files. Supported placeholders: `{date}`, `{date:yyyy_MM}`, `{timestamp}`, `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`. The pattern applies to files under the bucket path. If left blank, a default pattern is used. Avoid using spaces or unsupported placeholders.
+- **Purge Staging Files and Tables** — Whether to delete the staging files from S3 after completing the sync. Defaults to `true`. Set to `false` to retain staging files for debugging or other purposes.
+
+#### Advanced options
+
+- **JDBC URL Params** — Additional properties to pass to the JDBC URL when connecting to the database, formatted as `key=value` pairs separated by `&` (for example, `key1=value1&key2=value2`).
+- **Raw Table Schema** — The schema to write raw tables into. Defaults to `airbyte_internal`.
+- **Disable Final Tables** — When enabled, Airbyte writes only raw tables and skips typing and deduplication. The raw table schema may change between connector versions.
+- **Drop Tables with CASCADE** — When enabled, table drops use `CASCADE`, which deletes all dependent objects such as views. Use with caution.
+
+:::note
+S3 staging does not use the SSH tunnel for data transfer. The SSH tunnel applies only to the SQL connection. S3 data transfer uses HTTPS. Typing and deduping queries on final tables use the SSH tunnel configuration if provided.
+:::
 
 ## Step 1: Set up Redshift
 
@@ -58,11 +50,11 @@ and deduping queries on final table are executed over using provided SSH Tunnel 
    [create](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
    one in order to use the API.
 2. Go to the AWS Redshift service.
-3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and
-   activate AWS Redshift cluster if you don't have one ready.
+3. [Create](https://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-launch-sample-cluster.html) and
+   activate a Redshift cluster if you don't have one ready.
 4. (Optional)
    [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/)
-   connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\).
+   connections from Airbyte to your Redshift cluster if they exist in separate VPCs.
 5. [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket. S3 staging is required for the Redshift destination.
 
@@ -89,12 +81,9 @@ GRANT usage, create on schema my_schema TO airbyte_user; -- add create table per
 GRANT SELECT ON TABLE SVV_TABLE_INFO TO airbyte_user; -- add select permission for svv_table_info
 ```
 
-### Optional Use of SSH Bastion Host
+### Optional use of an SSH bastion host
 
-This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH
-Tunneling. Setup of the host is beyond the scope of this document but several tutorials are
-available online to facilitate this task. Enter the bastion host, port and credentials in the
-destination configuration.
+This connector supports connecting to a private Redshift cluster through an SSH tunnel via a bastion host. Setting up the bastion host is beyond the scope of this document. Enter the bastion host, port, and credentials in the destination configuration.
 
 ## Step 2: Set up the destination connector in Airbyte
 
@@ -153,8 +142,8 @@ From [Redshift Names & Identifiers](https://docs.aws.amazon.com/redshift/latest/
 
 #### Delimited Identifiers
 
-Delimited identifiers \(also known as quoted identifiers\) begin and end with double quotation marks
-\("\). If you use a delimited identifier, you must use the double quotation marks for every
+Delimited identifiers (also known as quoted identifiers) begin and end with double quotation marks
+(`"`). If you use a delimited identifier, you must use the double quotation marks for every
 reference to that object. The identifier can contain any standard UTF-8 printable characters other
 than the double quotation mark itself. Therefore, you can create column or table names that include
 otherwise illegal characters, such as spaces or the percent symbol. ASCII letters in delimited
@@ -233,7 +222,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.5.4 | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
+| 3.5.4 | 2026-03-26 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
 | 3.5.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 3.5.2 | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
 | 3.5.1 | 2025-01-06 | [49903](https://github.com/airbytehq/airbyte/pull/49903) | Use a base image: airbyte/java-connector-base:1.0.0 |
