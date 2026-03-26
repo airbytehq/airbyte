@@ -28,6 +28,8 @@ Select your client below for setup instructions. Each client requires you to aut
 <Tabs>
 <TabItem value="claude-code" label="Claude Code" default>
 
+Add the MCP server to your Claude Code command line tool.
+
 1. Run the following command in your terminal:
 
     ```bash
@@ -53,17 +55,13 @@ Select your client below for setup instructions. Each client requires you to aut
 </TabItem>
 <TabItem value="cursor" label="Cursor">
 
-1. Go to **Cursor** > **Settings** > **Cursor Settings** > **MCP**.
+Add the MCP serer to your Cursor app.
 
-2. Click **Add new MCP server**.
+1. Go to **Cursor** > **Settings** > **Cursor Settings** > **Tools and MCP**.
 
-3. Set the type to **URL** and enter the server URL:
+2. Click **Add custom MCP**.
 
-    ```text
-    https://mcp.airbyte.ai/mcp
-    ```
-
-    You can also add the server manually by editing your `mcp.json` file:
+3. In `mcp.json`, add:
 
     ```json
     {
@@ -75,18 +73,22 @@ Select your client below for setup instructions. Each client requires you to aut
     }
     ```
 
-4. Cursor detects that the server requires OAuth and opens your browser automatically.
+4. Close `mcp.json` and return to Cursor Settings.
 
-5. Log in with your Airbyte account and grant access.
+5. Find the Airbyte MCP server and click **Connect**.
 
-6. Return to Cursor. The MCP server tools are now available.
+6. If you're not logged into the Agent Engine, log in now.
 
-:::note
-Cursor 1.0 and later support OAuth and Streamable HTTP natively. If the browser doesn't open automatically, check that you're running Cursor 1.0 or later.
-:::
+7. Grant access to the Agent Engine MCP.
+
+    ![Grant access to the Agent Engine MCP](grant-access.png)
+
+8. Return to Cursor. The MCP server tools are now available.
 
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
+
+Add the MCP server to your Claude desktop app.
 
 1. Open **Settings** with **CMD + ,** (macOS) or **Ctrl + ,** (Windows/Linux).
 
@@ -115,6 +117,8 @@ Cursor 1.0 and later support OAuth and Streamable HTTP natively. If the browser 
 </TabItem>
 <TabItem value="codex" label="Codex">
 
+Add the MCP server to your Codex command line tool.
+
 1. Run the following command in your terminal to add the server:
 
     ```bash
@@ -128,34 +132,6 @@ Cursor 1.0 and later support OAuth and Streamable HTTP natively. If the browser 
 4. Launch Codex with `codex`.
 
 5. Begin using the MCP server.
-
-</TabItem>
-<TabItem value="vscode" label="VS Code / GitHub Copilot">
-
-1. In your project root, create a `.vscode` folder if it doesn't exist, then create a `mcp.json` file inside it:
-
-    ```json
-    {
-      "servers": {
-        "airbyte-agent": {
-          "type": "http",
-          "url": "https://mcp.airbyte.ai/mcp"
-        }
-      }
-    }
-    ```
-
-    Alternatively, open the Command Palette with **CMD+Shift+P** (macOS) or **Ctrl+Shift+P** (Windows/Linux), run **MCP: Add Server**, choose **HTTP**, and enter `https://mcp.airbyte.ai/mcp`.
-
-2. VS Code detects that the server requires OAuth and shows a sign-in prompt.
-
-3. Follow the prompt to open your browser, log in with your Airbyte account, and grant access.
-
-4. Return to VS Code. The MCP server tools are now available in Copilot Chat.
-
-:::note
-MCP server support requires VS Code 1.99 or later with the GitHub Copilot extension.
-:::
 
 </TabItem>
 <TabItem value="other" label="Other clients">
@@ -178,7 +154,7 @@ Most clients that support remote MCP servers accept a JSON configuration like th
 }
 ```
 
-When your client first connects, it detects that the server requires OAuth and opens your browser. Log in with your Airbyte account and grant access. After you authenticate, the MCP server's tools are available to your agent.
+When your client first connects, it detects that the server requires OAuth. It may or may not open your browser automatically. Log in with your app.airbyte.ai account and grant access. After you authenticate, the MCP server's tools are available to your agent.
 
 </TabItem>
 </Tabs>
