@@ -293,7 +293,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             if self._is_exportable_document(file.original_mime_type):
                 request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
 
-                if file.original_mime_type == GOOGLE_DOC_MIME_TYPE and self.config.google_doc_export_format == GoogleDocExportFormat.MARKDOWN:
+                if (
+                    file.original_mime_type == GOOGLE_DOC_MIME_TYPE
+                    and self.config.google_doc_export_format == GoogleDocExportFormat.MARKDOWN
+                ):
                     file_extension = ".md"
                 else:
                     file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
