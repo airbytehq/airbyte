@@ -81,6 +81,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - calls
+          record_filter:
+            type: RecordFilter
+            condition: "{{ config.get('credentials', {}).get('auth_type') != 'OAuth2.0' or not record.get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -170,6 +173,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - calls
+          record_filter:
+            type: RecordFilter
+            condition: "{{ config.get('credentials', {}).get('auth_type') != 'OAuth2.0' or not record.get('metaData', {}).get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
