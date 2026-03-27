@@ -84,6 +84,10 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
+    env:
+      CONNECTOR_NAME: ${{ matrix.connector }}
+      CONNECTOR_DIR: ${{ matrix.connector_dir }}
+      CONNECTOR_LANGUAGE: ${{ matrix.connector_language }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -132,6 +136,6 @@ jobs:
           airbyte-ops local connector up-to-date \
             --repo-path "$GITHUB_WORKSPACE" \
             --concurrency=10 \
-            ${{ matrix.connector_names }} \
+            --name="$CONNECTOR_NAME" \
             --create-prs \
             --auto-merge
