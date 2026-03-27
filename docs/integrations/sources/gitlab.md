@@ -80,8 +80,8 @@ This connector outputs the following streams:
 - [Branches](https://docs.gitlab.com/ee/api/branches.html)
 - [Commits](https://docs.gitlab.com/ee/api/commits.html) (Incremental)
 - [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
-- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) (GitLab Ultimate and GitLab.com Gold only)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) (GitLab Ultimate and GitLab.com Gold only)
+- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) (GitLab Ultimate only)
+- [Epics](https://docs.gitlab.com/ee/api/epics.html) (GitLab Ultimate only)
 - [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
 - [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
 - [Group Members](https://docs.gitlab.com/ee/api/members.html)
@@ -109,7 +109,7 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 ### Rate limits
 
-GitLab.com enforces [per-endpoint rate limits](https://docs.gitlab.com/ee/user/gitlab_com/#gitlabcom-specific-rate-limits) on its REST API. Key limits that affect this connector include:
+GitLab.com enforces per-endpoint rate limits on its REST API. The following defaults apply to [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
 
 | Endpoint | Rate limit |
 | :--- | :--- |
@@ -120,9 +120,13 @@ GitLab.com enforces [per-endpoint rate limits](https://docs.gitlab.com/ee/user/g
 | `GET /projects/:id/members/all` | 200 requests/min |
 | All other authenticated requests | 2,000 requests/min |
 
-Self-hosted GitLab instances may have different rate limits configured by the administrator. If you encounter rate limit errors that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues).
+Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector automatically retries requests that receive HTTP 429 responses. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
-You can adjust the **Number of Concurrent Workers** setting to control how many parallel requests the connector makes. The default value of 8 is suitable for most GitLab.com users. Lower this value if you share your API quota with other integrations.
+You can adjust the **Number of Concurrent Workers** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
+
+### Inaccessible resources
+
+The connector silently skips any group, project, or resource that returns an HTTP 403 (Forbidden) response. If you notice missing data, verify that your access token has the required permissions for the groups and projects you want to sync.
 
 ## Changelog
 
@@ -131,6 +135,7 @@ You can adjust the **Number of Concurrent Workers** setting to control how many 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.23-rc.3 | 2026-03-27 | [75537](https://github.com/airbytehq/airbyte/pull/75537) | Increase default concurrency from 8 to 10 for progressive rollout tuning |
 | 4.4.23-rc.2 | 2026-03-25 | [75480](https://github.com/airbytehq/airbyte/pull/75480) | Comment out HTTPAPIBudget to isolate concurrency tuning during progressive rollout |
 | 4.4.23-rc.1 | 2026-03-09 | [70858](https://github.com/airbytehq/airbyte/pull/70858) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
 | 4.4.22 | 2026-02-24 | [73774](https://github.com/airbytehq/airbyte/pull/73774) | Update dependencies |
