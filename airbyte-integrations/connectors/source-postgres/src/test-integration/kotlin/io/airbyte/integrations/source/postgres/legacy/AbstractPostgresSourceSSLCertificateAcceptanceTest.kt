@@ -5,82 +5,57 @@
 package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.test.fixtures.legacy.AdaptiveSourceRunner
-import io.airbyte.cdk.test.fixtures.legacy.FeatureFlags
-import io.airbyte.cdk.test.fixtures.legacy.FeatureFlagsWrapper
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
-import io.airbyte.cdk.test.fixtures.legacy.SourceAcceptanceTest
-import io.airbyte.cdk.test.fixtures.legacy.SshHelpers
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.Field
 import io.airbyte.protocol.models.v0.SyncMode
-import java.util.*
 
-class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
-    private lateinit var testdb: PostgresTestDatabase
+abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
+    AbstractPostgresSourceAcceptanceTest() {
+    protected lateinit var testdb: PostgresTestDatabase
 
-    override fun featureFlags(): FeatureFlags {
-        return FeatureFlagsWrapper.overridingDeploymentMode(
-            super.featureFlags(),
-            AdaptiveSourceRunner.CLOUD_MODE,
-        )
-    }
+    protected abstract val nameSpace: String
 
     @Throws(Exception::class)
-    override fun setupEnvironment(environment: TestDestinationEnv?) {
+    protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
             PostgresTestDatabase.`in`(
-                PostgresTestDatabase.BaseImage.POSTGRES_17,
-                PostgresTestDatabase.ContainerModifier.CERT
-            )
-        testdb.query<Any?>({ ctx ->
-            ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
-            ctx.fetch(
-                "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
-            )
-            ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
-            ctx.fetch(
-                "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
-            )
-            null
-        },)
+                    PostgresTestDatabase.BaseImage.POSTGRES_17,
+                    PostgresTestDatabase.ContainerModifier.CERT
+                )
+                .with("CREATE SCHEMA $nameSpace;")
+                .with("CREATE TABLE $nameSpace.id_and_name(id INTEGER, name VARCHAR(200));")
+                .with(
+                    "INSERT INTO $nameSpace.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                )
+                .with("CREATE TABLE $nameSpace.starships(id INTEGER, name VARCHAR(200));")
+                .with(
+                    "INSERT INTO $nameSpace.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                )
+                .with(
+                    "CREATE MATERIALIZED VIEW $nameSpace.testview AS select * from $nameSpace.id_and_name where id = '2';"
+                )
     }
 
-    override fun tearDown(testEnv: TestDestinationEnv?) {
+    abstract val certificateConfiguration: MutableMap<Any?, Any?>
+
+    protected override fun tearDown(testEnv: TestDestinationEnv?) {
         testdb.close()
     }
 
-    override val imageName: String
-        get() = "airbyte/source-postgres:dev"
-
-    @get:Throws(Exception::class)
-    override val spec: ConnectorSpecification?
-        get() = SshHelpers.getSpecAndInjectSsh(Optional.empty())
-
     override val config: JsonNode
-        get() {
-            val certs: PostgresTestDatabase.Certificates = testdb.certificates
-            return testdb
+        get() =
+            testdb
                 .integrationTestConfigBuilder()
+                .withSchemas(nameSpace)
                 .withStandardReplication()
-                .withSsl(
-                    mutableMapOf(
-                        "mode" to "verify-ca",
-                        "ca_certificate" to certs.caCertificate,
-                        "client_certificate" to certs.clientCertificate,
-                        "client_key" to certs.clientKey,
-                        "client_key_password" to PASSWORD,
-                    ),
-                )
+                .withSsl(this.certificateConfiguration)
                 .build()
-        }
 
     override val configuredCatalog: ConfiguredAirbyteCatalog
         get() =
@@ -94,7 +69,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
                                         STREAM_NAME,
-                                        SCHEMA_NAME,
+                                        nameSpace,
                                         Field.of("id", JsonSchemaType.INTEGER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
@@ -117,7 +92,30 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
                                         STREAM_NAME2,
-                                        SCHEMA_NAME,
+                                        nameSpace,
+                                        Field.of("id", JsonSchemaType.INTEGER),
+                                        Field.of("name", JsonSchemaType.STRING),
+                                    )
+                                    .withSupportedSyncModes(
+                                        mutableListOf<SyncMode?>(
+                                            SyncMode.FULL_REFRESH,
+                                            SyncMode.INCREMENTAL,
+                                        ),
+                                    )
+                                    .withSourceDefinedPrimaryKey(
+                                        listOf<MutableList<String?>?>(
+                                            mutableListOf<String?>("id"),
+                                        ),
+                                    ),
+                            ),
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withCursorField(mutableListOf<String?>("id"))
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withStream(
+                                CatalogHelpers.createAirbyteStream(
+                                        STREAM_NAME_MATERIALIZED_VIEW,
+                                        nameSpace,
                                         Field.of("id", JsonSchemaType.INTEGER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
@@ -136,14 +134,13 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
                     ),
                 )
 
-    override val state: JsonNode
+    override val state: JsonNode?
         get() = Jsons.jsonNode<HashMap<Any?, Any?>?>(HashMap<Any?, Any?>())
 
     companion object {
         private const val STREAM_NAME = "id_and_name"
         private const val STREAM_NAME2 = "starships"
-        private const val SCHEMA_NAME = "public"
-
-        protected const val PASSWORD: String = "Passw0rd"
+        private const val STREAM_NAME_MATERIALIZED_VIEW = "testview"
+        const val PASSWORD: String = "Passw0rd"
     }
 }

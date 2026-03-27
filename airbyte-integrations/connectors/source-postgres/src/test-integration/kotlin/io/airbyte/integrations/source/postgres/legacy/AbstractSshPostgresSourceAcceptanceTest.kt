@@ -17,7 +17,6 @@ import io.airbyte.cdk.test.fixtures.legacy.SshBastionContainer
 import io.airbyte.cdk.test.fixtures.legacy.SshTunnel
 import io.airbyte.cdk.test.fixtures.legacy.SshTunnel.Companion.sshWrap
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -34,12 +33,14 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
     private val bastion: SshBastionContainer = SshBastionContainer()
     private lateinit var testdb: PostgresTestDatabase
 
+    protected abstract val schemaName: String
+
     @Throws(Exception::class)
     private fun populateDatabaseTestData() {
         val outerConfig: JsonNode =
             testdb
                 .integrationTestConfigBuilder()
-                .withSchemas("public")
+                .withSchemas(schemaName)
                 .withoutSsl()
                 .with("tunnel_method", bastion.getTunnelMethod(this.tunnelMethod, false)!!)
                 .build()
@@ -48,16 +49,21 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
             JdbcUtils.HOST_LIST_KEY,
             JdbcUtils.PORT_LIST_KEY,
             CheckedConsumer<JsonNode?, Exception?> { mangledConfig: JsonNode? ->
-                Companion.getDatabaseFromConfig(mangledConfig!!)
+                getDatabaseFromConfig(mangledConfig!!)
                     .query<Any?>(
                         ContextQueryFunction { ctx: DSLContext? ->
-                            ctx!!.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+                            ctx!!.fetch("CREATE SCHEMA $schemaName;")
                             ctx.fetch(
-                                "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                                "CREATE TABLE $schemaName.id_and_name(id INTEGER, name VARCHAR(200));"
                             )
-                            ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
                             ctx.fetch(
-                                "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                                "INSERT INTO $schemaName.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                            )
+                            ctx.fetch(
+                                "CREATE TABLE $schemaName.starships(id INTEGER, name VARCHAR(200));"
+                            )
+                            ctx.fetch(
+                                "INSERT INTO $schemaName.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
                             )
                             null
                         },
@@ -74,7 +80,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
-            PostgresTestDatabase.`in`(
+            PostgresTestDatabase.Companion.`in`(
                 PostgresTestDatabase.BaseImage.POSTGRES_17,
                 PostgresTestDatabase.ContainerModifier.NETWORK
             )
@@ -91,7 +97,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
             try {
                 return testdb
                     .integrationTestConfigBuilder()
-                    .withSchemas("public")
+                    .withSchemas(schemaName)
                     .withSsl(mutableMapOf(MODE_KEY to "disable"))
                     .with("tunnel_method", bastion.getTunnelMethod(this.tunnelMethod, true)!!)
                     .build()
@@ -114,7 +120,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
                                         STREAM_NAME,
-                                        SCHEMA_NAME,
+                                        schemaName,
                                         Field.of("id", JsonSchemaType.INTEGER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
@@ -137,7 +143,7 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
                                         STREAM_NAME2,
-                                        SCHEMA_NAME,
+                                        schemaName,
                                         Field.of("id", JsonSchemaType.INTEGER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
@@ -162,7 +168,6 @@ abstract class AbstractSshPostgresSourceAcceptanceTest : AbstractPostgresSourceA
     companion object {
         private const val STREAM_NAME = "id_and_name"
         private const val STREAM_NAME2 = "starships"
-        private const val SCHEMA_NAME = "public"
 
         private fun getDatabaseFromConfig(config: JsonNode): Database {
             return Database(

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Database
 import io.airbyte.cdk.test.fixtures.legacy.Jsons.jsonNode
 import io.airbyte.cdk.test.fixtures.legacy.TestDataHolder
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -19,6 +18,9 @@ import org.jooq.DSLContext
 
 class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
     private var stateAfterFirstSync: JsonNode? = null
+
+    override val nameSpace: String
+        get() = SCHEMA_NAME
 
     @Throws(Exception::class)
     protected override fun runRead(
@@ -31,7 +33,7 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
     }
 
     @Throws(Exception::class)
-    protected override fun postSetup() {
+    override fun postSetup() {
         val database: Database = setupDatabase()
         for (test in testDataHolders) {
             database.query<Any?> { ctx: DSLContext ->
@@ -66,14 +68,14 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
         }
     }
 
-    protected override fun setupDatabase(): Database {
+    override fun setupDatabase(): Database {
         testdb =
             PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
                     PostgresTestDatabase.ContainerModifier.CONF
                 )
                 .with("CREATE EXTENSION hstore;")
-                .with("CREATE SCHEMA $SCHEMA_NAME;")
+                .with("CREATE SCHEMA $nameSpace;")
                 .with("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');")
                 .with(
                     ("CREATE TYPE inventory_item AS (\n" +
@@ -93,7 +95,7 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
         get() =
             testdb
                 .integrationTestConfigBuilder()
-                .withSchemas(SCHEMA_NAME)
+                .withSchemas(nameSpace)
                 .withoutSsl()
                 .withCdcReplication()
                 .build()
@@ -198,5 +200,9 @@ class CdcWalLogsPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest(
                     .build(),
             )
         }
+    }
+
+    companion object {
+        val SCHEMA_NAME: String = "cdc_wal_log_postgres_source_datatype_test"
     }
 }

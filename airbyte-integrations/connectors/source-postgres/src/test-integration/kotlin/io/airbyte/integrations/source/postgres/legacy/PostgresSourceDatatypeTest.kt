@@ -7,12 +7,15 @@ package io.airbyte.integrations.source.postgres.legacy
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Database
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
 import java.sql.SQLException
 
 class PostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
+
+    override val nameSpace: String
+        get() = SCHEMA_NAME
+
     @Throws(SQLException::class)
-    protected override fun setupDatabase(): Database {
+    override fun setupDatabase(): Database {
         testdb =
             PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
@@ -50,4 +53,8 @@ class PostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
                 .withStandardReplication()
                 .withSchemas(SCHEMA_NAME)
                 .build()
+
+    companion object {
+        val SCHEMA_NAME: String = "postgres_source_datatype_test"
+    }
 }

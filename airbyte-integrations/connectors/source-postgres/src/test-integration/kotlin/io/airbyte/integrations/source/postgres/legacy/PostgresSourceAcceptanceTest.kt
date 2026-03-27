@@ -11,8 +11,7 @@ import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase.BaseImage
+import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase.BaseImage
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -33,19 +32,19 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
 
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
-        testdb = PostgresTestDatabase.`in`(this.serverImage)
-        config = getConfig(testdb.userName, testdb.password, "public")
+        testdb = PostgresTestDatabase.`in`(this.serverImage).with("CREATE SCHEMA %S;", SCHEMA_NAME)
+        config = getConfig(testdb.userName, testdb.password, SCHEMA_NAME)
         testdb.query<Any?>({ ctx ->
-            ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+            ctx.fetch("CREATE TABLE $SCHEMA_NAME.id_and_name(id INTEGER, name VARCHAR(200));")
             ctx.fetch(
-                "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                "INSERT INTO $SCHEMA_NAME.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
             )
-            ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
+            ctx.fetch("CREATE TABLE $SCHEMA_NAME.starships(id INTEGER, name VARCHAR(200));")
             ctx.fetch(
-                "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                "INSERT INTO $SCHEMA_NAME.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
             )
             ctx.fetch(
-                "CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';"
+                "CREATE MATERIALIZED VIEW $SCHEMA_NAME.testview AS select * from $SCHEMA_NAME.id_and_name where id = '2';"
             )
             null
         },)
@@ -316,7 +315,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
         private const val STREAM_NAME = "id_and_name"
         private const val STREAM_NAME2 = "starships"
         private const val STREAM_NAME_MATERIALIZED_VIEW = "testview"
-        private const val SCHEMA_NAME = "public"
+        private const val SCHEMA_NAME = "postgres_source_acceptance_test"
         const val LIMIT_PERMISSION_SCHEMA: String = "limit_perm_schema"
         const val LIMIT_PERMISSION_ROLE_PASSWORD: String = "test"
     }
