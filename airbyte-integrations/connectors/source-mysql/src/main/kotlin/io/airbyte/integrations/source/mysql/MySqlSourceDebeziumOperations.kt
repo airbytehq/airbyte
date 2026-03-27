@@ -240,8 +240,7 @@ class MySqlSourceDebeziumOperations(
             if (!newGtidSet.isEmpty) {
                 val purgedGtidSet = queryPurgedIds()
                 if (
-                    !purgedGtidSet.isEmpty &&
-                        !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)
+                    !purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)
                 ) {
                     return abortCdcSync(
                         "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
@@ -289,9 +288,9 @@ class MySqlSourceDebeziumOperations(
     private fun parseSavedOffset(debeziumState: UnvalidatedDeserializedState): SavedOffset {
         val position: MySqlSourceCdcPosition = position(debeziumState.offset)
         val gtidSet: String? =
-            debeziumState.offset.wrapped.values.first()["gtids"]
-                ?.asText()
-                ?.takeUnless { it.isBlank() || it == "null" }
+            debeziumState.offset.wrapped.values.first()["gtids"]?.asText()?.takeUnless {
+                it.isBlank() || it == "null"
+            }
         return SavedOffset(position, gtidSet)
     }
 

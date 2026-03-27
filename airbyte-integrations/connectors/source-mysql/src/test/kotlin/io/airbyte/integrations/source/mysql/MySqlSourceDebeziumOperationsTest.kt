@@ -6,14 +6,10 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.read.cdc.AbortDebeziumWarmStartState
-import io.airbyte.cdk.read.cdc.DebeziumOffset
-import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.mysql.MySqlSourceDebeziumOperations.Companion.IS_COMPRESSED
 import io.airbyte.integrations.source.mysql.MySqlSourceDebeziumOperations.Companion.MYSQL_CDC_OFFSET
-import io.airbyte.integrations.source.mysql.MySqlSourceDebeziumOperations.Companion.MYSQL_DB_HISTORY
 import io.airbyte.integrations.source.mysql.MySqlSourceDebeziumOperations.Companion.STATE
 import io.airbyte.integrations.source.mysql.MySqlSourceDebeziumOperations.Companion.deserializeStateUnvalidated
 import io.mockk.every
@@ -104,8 +100,8 @@ class MySqlSourceDebeziumOperationsTest {
     // ──────────── Integration tests: deserializeState with mocked JDBC ────────────
 
     /**
-     * Creates a [MySqlSourceDebeziumOperations] with mocked JDBC that simulates a MySQL server
-     * with the given binlog position and GTID set.
+     * Creates a [MySqlSourceDebeziumOperations] with mocked JDBC that simulates a MySQL server with
+     * the given binlog position and GTID set.
      */
     private fun createOpsWithMockedJdbc(
         serverFile: String = "mysql-bin.000001",
@@ -137,13 +133,16 @@ class MySqlSourceDebeziumOperationsTest {
         // Mock binary log names query
         val binaryLogsRs = mockk<ResultSet>()
         var binaryLogsIndex = 0
-        every { binaryLogsRs.next() } answers {
-            binaryLogsIndex < binaryLogFiles.size && run { binaryLogsIndex++; true }
-        }
+        every { binaryLogsRs.next() } answers
+            {
+                binaryLogsIndex < binaryLogFiles.size &&
+                    run {
+                        binaryLogsIndex++
+                        true
+                    }
+            }
         binaryLogsIndex = 0
-        every { binaryLogsRs.getString(1) } answers {
-            binaryLogFiles[binaryLogsIndex - 1]
-        }
+        every { binaryLogsRs.getString(1) } answers { binaryLogFiles[binaryLogsIndex - 1] }
         every { binaryLogsRs.close() } returns Unit
         every { stmt.executeQuery("SHOW BINARY LOGS") } returns binaryLogsRs
 
@@ -151,8 +150,7 @@ class MySqlSourceDebeziumOperationsTest {
         every { conn.createStatement() } returns stmt
         every { conn.close() } returns Unit
 
-        val connFactory =
-            mockk<io.airbyte.cdk.jdbc.JdbcConnectionFactory>()
+        val connFactory = mockk<io.airbyte.cdk.jdbc.JdbcConnectionFactory>()
         every { connFactory.get() } returns conn
 
         val cdcConfig = mockk<CdcIncrementalConfiguration>()
@@ -169,17 +167,19 @@ class MySqlSourceDebeziumOperationsTest {
     fun `deserializeState treats literal null gtids as absent and validates via binlog`() {
         // Scenario 1: Saved state has "gtids": null (NullNode.asText() == "null").
         // The fix should treat this as no GTIDs, and fall through to binlog validation.
-        val ops = createOpsWithMockedJdbc(
-            serverFile = "mysql-bin.000001",
-            serverPos = 200,
-            serverGtidSet = null,
-            binaryLogFiles = listOf("mysql-bin.000001"),
-        )
-        val stateNode = buildStateNode(
-            file = "mysql-bin.000001",
-            pos = 154,
-            gtidsExplicitNull = true,
-        )
+        val ops =
+            createOpsWithMockedJdbc(
+                serverFile = "mysql-bin.000001",
+                serverPos = 200,
+                serverGtidSet = null,
+                binaryLogFiles = listOf("mysql-bin.000001"),
+            )
+        val stateNode =
+            buildStateNode(
+                file = "mysql-bin.000001",
+                pos = 154,
+                gtidsExplicitNull = true,
+            )
         val result = ops.deserializeState(stateNode)
         // With null GTIDs on both sides and matching binlog file, the state should be valid.
         assertTrue(
@@ -190,17 +190,19 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun `deserializeState treats blank gtids string as absent`() {
-        val ops = createOpsWithMockedJdbc(
-            serverFile = "mysql-bin.000001",
-            serverPos = 200,
-            serverGtidSet = null,
-            binaryLogFiles = listOf("mysql-bin.000001"),
-        )
-        val stateNode = buildStateNode(
-            file = "mysql-bin.000001",
-            pos = 154,
-            gtids = "  ",
-        )
+        val ops =
+            createOpsWithMockedJdbc(
+                serverFile = "mysql-bin.000001",
+                serverPos = 200,
+                serverGtidSet = null,
+                binaryLogFiles = listOf("mysql-bin.000001"),
+            )
+        val stateNode =
+            buildStateNode(
+                file = "mysql-bin.000001",
+                pos = 154,
+                gtids = "  ",
+            )
         val result = ops.deserializeState(stateNode)
         assertTrue(
             result is ValidDebeziumWarmStartState,
@@ -211,9 +213,10 @@ class MySqlSourceDebeziumOperationsTest {
     @Test
     fun `deserializeState handles valid gtid set comparison`() {
         val gtid = "3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5"
-        val ops = createOpsWithMockedJdbc(
-            serverGtidSet = "3E11FA47-71CA-11E1-9E33-C80AA9429562:1-10",
-        )
+        val ops =
+            createOpsWithMockedJdbc(
+                serverGtidSet = "3E11FA47-71CA-11E1-9E33-C80AA9429562:1-10",
+            )
         val stateNode = buildStateNode(gtids = gtid)
         val result = ops.deserializeState(stateNode)
         assertTrue(
@@ -224,12 +227,14 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun `deserializeState returns abort when saved gtid set not contained in server`() {
-        val ops = createOpsWithMockedJdbc(
-            serverGtidSet = "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA:1-5",
-        )
-        val stateNode = buildStateNode(
-            gtids = "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB:1-5",
-        )
+        val ops =
+            createOpsWithMockedJdbc(
+                serverGtidSet = "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA:1-5",
+            )
+        val stateNode =
+            buildStateNode(
+                gtids = "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB:1-5",
+            )
         val result = ops.deserializeState(stateNode)
         assertTrue(
             result is AbortDebeziumWarmStartState,
@@ -239,12 +244,14 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun `deserializeState aborts when saved state has gtids but server has none`() {
-        val ops = createOpsWithMockedJdbc(
-            serverGtidSet = null,
-        )
-        val stateNode = buildStateNode(
-            gtids = "3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5",
-        )
+        val ops =
+            createOpsWithMockedJdbc(
+                serverGtidSet = null,
+            )
+        val stateNode =
+            buildStateNode(
+                gtids = "3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5",
+            )
         val result = ops.deserializeState(stateNode)
         assertTrue(
             result is AbortDebeziumWarmStartState,
@@ -254,13 +261,15 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun `deserializeState returns reset when configured with RESET_SYNC behavior`() {
-        val ops = createOpsWithMockedJdbc(
-            serverGtidSet = null,
-            behavior = InvalidCdcCursorPositionBehavior.RESET_SYNC,
-        )
-        val stateNode = buildStateNode(
-            gtids = "3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5",
-        )
+        val ops =
+            createOpsWithMockedJdbc(
+                serverGtidSet = null,
+                behavior = InvalidCdcCursorPositionBehavior.RESET_SYNC,
+            )
+        val stateNode =
+            buildStateNode(
+                gtids = "3E11FA47-71CA-11E1-9E33-C80AA9429562:1-5",
+            )
         val result = ops.deserializeState(stateNode)
         assertTrue(
             result is ResetDebeziumWarmStartState,
@@ -270,16 +279,18 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun `deserializeState aborts when binlog file not found on server`() {
-        val ops = createOpsWithMockedJdbc(
-            serverFile = "mysql-bin.000003",
-            serverPos = 200,
-            serverGtidSet = null,
-            binaryLogFiles = listOf("mysql-bin.000002", "mysql-bin.000003"),
-        )
-        val stateNode = buildStateNode(
-            file = "mysql-bin.000001",
-            pos = 154,
-        )
+        val ops =
+            createOpsWithMockedJdbc(
+                serverFile = "mysql-bin.000003",
+                serverPos = 200,
+                serverGtidSet = null,
+                binaryLogFiles = listOf("mysql-bin.000002", "mysql-bin.000003"),
+            )
+        val stateNode =
+            buildStateNode(
+                file = "mysql-bin.000001",
+                pos = 154,
+            )
         val result = ops.deserializeState(stateNode)
         assertTrue(
             result is AbortDebeziumWarmStartState,
