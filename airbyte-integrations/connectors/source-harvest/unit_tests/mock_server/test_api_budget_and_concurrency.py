@@ -15,7 +15,6 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import HarvestRequestBuilder
-from mock_server.response_builder import HarvestPaginatedResponseBuilder
 
 
 _NOW = datetime.now(timezone.utc)

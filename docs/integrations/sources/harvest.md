@@ -101,7 +101,7 @@ This connector uses Harvest's granular permission model. If your credentials lac
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3.0-rc.1 | 2026-03-27 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Added HTTPAPIBudget rate limiting and configurable concurrency level |
+| 1.3.0-rc.1 | 2026-03-27 | [75543](https://github.com/airbytehq/airbyte/pull/75543) | Added HTTPAPIBudget rate limiting and configurable concurrency level |
 | 1.2.32-rc.1 | 2026-03-24 | [75409](https://github.com/airbytehq/airbyte/pull/75409) | Test dev image of source-declarative-manifest (7.13.0.post6.dev23497311155) |
 | 1.2.31 | 2026-03-10 | [74687](https://github.com/airbytehq/airbyte/pull/74687) | Update dependencies |
 | 1.2.30 | 2026-02-24 | [73930](https://github.com/airbytehq/airbyte/pull/73930) | Update dependencies |
