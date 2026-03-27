@@ -51,7 +51,6 @@ class TestFieldsExceptions:
             }
         }
         stream.get_json_schema = lambda: schema
-        stream.configured_json_schema = None
 
         # No exceptions: all fields returned
         stream.fields_exceptions = []
@@ -79,7 +78,6 @@ class TestFieldsExceptions:
             }
         }
         stream.get_json_schema = lambda: schema
-        stream.configured_json_schema = None
         stream.fields_exceptions = ["rule", "extra"]
         stream._saved_fields = None
         stream.fields.cache_clear()
