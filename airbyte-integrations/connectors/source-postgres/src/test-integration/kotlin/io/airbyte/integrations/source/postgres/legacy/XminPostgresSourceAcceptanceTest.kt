@@ -33,7 +33,7 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
-            PostgresTestDatabase.Companion.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17)
+            PostgresTestDatabase.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17)
                 .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
                 .with(
                     "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
@@ -129,6 +129,6 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
         private const val STREAM_NAME = "id_and_name"
         private const val STREAM_NAME2 = "starships"
         private const val STREAM_NAME_MATERIALIZED_VIEW = "testview"
-        private const val SCHEMA_NAME = "public"
+        private const val SCHEMA_NAME = "xmin_postgres_source_acceptance_test"
     }
 }

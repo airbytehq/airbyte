@@ -142,7 +142,7 @@ class CloudDeploymentPostgresSourceAcceptanceTest : SourceAcceptanceTest() {
     companion object {
         private const val STREAM_NAME = "id_and_name"
         private const val STREAM_NAME2 = "starships"
-        private const val SCHEMA_NAME = "public"
+        private const val SCHEMA_NAME = "cloud_deployment_postgres_source_acceptance_test"
 
         protected const val PASSWORD: String = "Passw0rd"
     }

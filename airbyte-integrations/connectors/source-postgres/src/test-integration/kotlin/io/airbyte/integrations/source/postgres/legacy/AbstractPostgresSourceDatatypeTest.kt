@@ -15,9 +15,6 @@ import java.util.Locale
 abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTest() {
     protected lateinit var testdb: PostgresTestDatabase
 
-    override val nameSpace: String
-        get() = SCHEMA_NAME
-
     override val imageName: String
         get() = "airbyte/source-postgres:dev"
 
@@ -1317,9 +1314,5 @@ abstract class AbstractPostgresSourceDatatypeTest : AbstractSourceDatabaseTypeTe
                     .build(),
             )
         }
-    }
-
-    companion object {
-        val SCHEMA_NAME: String = "rodi"
     }
 }

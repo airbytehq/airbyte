@@ -6,6 +6,10 @@ package io.airbyte.integrations.source.postgres.legacy
 
 class PostgresSourceSSLFullCertificateAcceptanceTest :
     AbstractPostgresSourceSSLCertificateAcceptanceTest() {
+
+    override val nameSpace: String
+        get() = SCHEMA_NAME
+
     override val certificateConfiguration: MutableMap<Any?, Any?>
         get() =
             mutableMapOf(
@@ -15,4 +19,8 @@ class PostgresSourceSSLFullCertificateAcceptanceTest :
                 "client_key" to testdb.certificates.clientKey,
                 "client_key_password" to PASSWORD,
             )
+
+    companion object {
+        val SCHEMA_NAME: String = "postgres_source_ssl_full_certificate_acceptance_test"
+    }
 }

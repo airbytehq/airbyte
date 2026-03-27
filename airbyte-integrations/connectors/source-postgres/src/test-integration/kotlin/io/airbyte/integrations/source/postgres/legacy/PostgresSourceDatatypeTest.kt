@@ -11,10 +11,14 @@ import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import java.sql.SQLException
 
 class PostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
+
+    override val nameSpace: String
+        get() = SCHEMA_NAME
+
     @Throws(SQLException::class)
-    protected override fun setupDatabase(): Database {
+    override fun setupDatabase(): Database {
         testdb =
-            PostgresTestDatabase.Companion.`in`(
+            PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
                     PostgresTestDatabase.ContainerModifier.CONF
                 )
@@ -50,4 +54,8 @@ class PostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
                 .withStandardReplication()
                 .withSchemas(SCHEMA_NAME)
                 .build()
+
+    companion object {
+        val SCHEMA_NAME: String = "postgres_source_datatype_test"
+    }
 }

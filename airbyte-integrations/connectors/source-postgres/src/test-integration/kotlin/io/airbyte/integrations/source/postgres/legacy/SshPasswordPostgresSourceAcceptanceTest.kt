@@ -9,4 +9,7 @@ import io.airbyte.cdk.test.fixtures.legacy.SshTunnel
 class SshPasswordPostgresSourceAcceptanceTest : AbstractSshPostgresSourceAcceptanceTest() {
     override val tunnelMethod: SshTunnel.TunnelMethod
         get() = SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH
+
+    override val schemaName: String
+        get() = "ssh_password_postgres_source_acceptance_test"
 }

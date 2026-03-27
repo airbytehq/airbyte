@@ -20,10 +20,12 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
     AbstractPostgresSourceAcceptanceTest() {
     protected lateinit var testdb: PostgresTestDatabase
 
+    protected abstract val nameSpace: String
+
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
-            PostgresTestDatabase.Companion.`in`(
+            PostgresTestDatabase.`in`(
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
                     PostgresTestDatabase.ContainerModifier.CERT
                 )
@@ -67,7 +69,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
                                         STREAM_NAME,
-                                        SCHEMA_NAME,
+                                        nameSpace,
                                         Field.of("id", JsonSchemaType.INTEGER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
@@ -90,7 +92,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
                                         STREAM_NAME2,
-                                        SCHEMA_NAME,
+                                        nameSpace,
                                         Field.of("id", JsonSchemaType.INTEGER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
@@ -113,7 +115,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                             .withStream(
                                 CatalogHelpers.createAirbyteStream(
                                         STREAM_NAME_MATERIALIZED_VIEW,
-                                        SCHEMA_NAME,
+                                        nameSpace,
                                         Field.of("id", JsonSchemaType.INTEGER),
                                         Field.of("name", JsonSchemaType.STRING),
                                     )
@@ -139,7 +141,6 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
         private const val STREAM_NAME = "id_and_name"
         private const val STREAM_NAME2 = "starships"
         private const val STREAM_NAME_MATERIALIZED_VIEW = "testview"
-        private const val SCHEMA_NAME = "public"
         const val PASSWORD: String = "Passw0rd"
     }
 }
