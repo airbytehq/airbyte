@@ -16,7 +16,7 @@ If you updated your source configuration during the incident window, you may fin
 
 If you are using **CDC (Incremental) syncs** and your oplog position was lost during this window, you will need to [refresh your connection](https://docs.airbyte.com/platform/operator-guides/refreshes). If you needed to run a full refresh to recover your sync, please reach out to our [Support](https://support.airbyte.com).
 
-If you have any further questions, don't hesitate to contact us. 
+If you have any further questions, don't hesitate to contact us.
 
 ## Upgrading to 2.0.0
 
