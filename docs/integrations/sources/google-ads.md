@@ -221,7 +221,11 @@ Represents the budget settings of a campaign.
 
 - [geographic_view](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
 
-Geographic View includes all metrics aggregated at the country level. It reports metrics at either actual physical location of the user or an area of interest.
+Geographic View provides dimension fields aggregated at the country level, such as country, location type, and ad group. It reports data at either the actual physical location of the user or an area of interest. This stream does not include performance metrics — use `geographic_view_with_metrics` if you need metrics like clicks, impressions, and conversions.
+
+- [geographic_view_with_metrics](https://developers.google.com/google-ads/api/fields/v20/geographic_view)
+
+An enhanced version of `geographic_view` that includes performance metrics (clicks, impressions, cost, conversions, CTR, etc.) alongside dimension fields. Use this stream when you need geographic performance data.
 
 - [user_location_view](https://developers.google.com/google-ads/api/fields/v20/user_location_view)
 
@@ -255,6 +259,10 @@ Due to Google Ads API constraints, the `click_view` stream retrieves data one da
 Google Ads doesn't support `PERFORMANCE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level.
 If you have this type of campaign Google will remove them from the results for the `ads` reports.
 More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
+:::
+
+:::note
+Streams that include metric fields (e.g., clicks, impressions, cost, conversions) may return fewer rows than dimension-only streams for the same resource. This is because the [Google Ads API omits rows where all metrics are zero](https://developers.google.com/google-ads/api/docs/reporting/zero-impressions) when metrics are included in the query. The omitted rows represent entity/segment combinations with no recorded activity.
 :::
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v20/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
@@ -339,6 +347,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.0 | 2026-03-19 | [73321](https://github.com/airbytehq/airbyte/pull/73321) | Add new `geographic_view_with_metrics` stream with metrics and dimension fields (geographic_view remains unchanged) |
 | 4.1.6 | 2026-02-18 | [73636](https://github.com/airbytehq/airbyte/pull/73636) | Promoting release candidate 4.1.6-rc.1 to a main version. |
 | 4.1.6-rc.1 | 2026-02-16 | [72953](https://github.com/airbytehq/airbyte/pull/72953) | Add HTTPAPIBudget and configurable concurrency level |
 | 4.1.5 | 2026-02-16 | [73363](https://github.com/airbytehq/airbyte/pull/73363) | Promoting release candidate 4.1.5-rc.2 to a main version. |
