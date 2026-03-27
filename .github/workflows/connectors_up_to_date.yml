@@ -32,6 +32,8 @@ jobs:
       # Call 1: Sources - all support levels, Python/low-code/manifest-only languages
       - name: List source connectors
         id: list-sources
+        env:
+          CONNECTOR_OPTIONS: ${{ github.event.inputs.connectors-options }}
         run: |
           SOURCES=$(
             airbyte-ops local connector list \
@@ -39,15 +41,16 @@ jobs:
               --connector-type=source \
               --language python --language low-code --language manifest-only \
               --exclude-connectors=source-declarative-manifest \
-              ${{ github.event.inputs.connectors-options }} \
+              $CONNECTOR_OPTIONS \
               --output-format=csv
           )
-          echo "Sources: $SOURCES"
-          echo "sources=$SOURCES" >> "$GITHUB_OUTPUT"
+          echo "sources=$SOURCES" | tee -a $GITHUB_OUTPUT
 
       # Call 2: Destinations - certified only, Python/low-code/manifest-only languages
       - name: List destination connectors
         id: list-destinations
+        env:
+          CONNECTOR_OPTIONS: ${{ github.event.inputs.connectors-options }}
         run: |
           DESTINATIONS=$(
             airbyte-ops local connector list \
@@ -55,36 +58,21 @@ jobs:
               --connector-type=destination \
               --certified-only \
               --language python --language low-code --language manifest-only \
-              ${{ github.event.inputs.connectors-options }} \
+              $CONNECTOR_OPTIONS \
               --output-format=csv
           )
-          echo "Destinations: $DESTINATIONS"
-          echo "destinations=$DESTINATIONS" >> "$GITHUB_OUTPUT"
+          echo "destinations=$DESTINATIONS" | tee -a $GITHUB_OUTPUT
 
       # Call 3: Combine both sets and output as GH Actions matrix
       - name: Generate matrix - 25 connectors per job
         id: generate_matrix
         run: |
-          SOURCES="${{ steps.list-sources.outputs.sources }}"
-          DESTINATIONS="${{ steps.list-destinations.outputs.destinations }}"
-
-          # Combine sources and destinations, then generate matrix via json-gh-matrix
-          COMBINED=""
-          if [ -n "$SOURCES" ] && [ -n "$DESTINATIONS" ]; then
-            COMBINED="${SOURCES},${DESTINATIONS}"
-          elif [ -n "$SOURCES" ]; then
-            COMBINED="$SOURCES"
-          else
-            COMBINED="$DESTINATIONS"
-          fi
-
-          MATRIX=$(
+          echo "generated_matrix=$( \
             airbyte-ops local connector list \
               --repo-path "$GITHUB_WORKSPACE" \
-              --connectors-filter="$COMBINED" \
-              --output-format=json-gh-matrix
-          )
-          echo "generated_matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+              --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
+              --output-format=json-gh-matrix \
+          )" | tee -a $GITHUB_OUTPUT
 
   run_connectors_up_to_date:
     needs: generate_matrix
