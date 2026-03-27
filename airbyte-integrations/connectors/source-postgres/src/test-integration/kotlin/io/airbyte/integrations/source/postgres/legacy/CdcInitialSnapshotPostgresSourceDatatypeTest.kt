@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.postgres.legacy
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Database
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 
 class CdcInitialSnapshotPostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {
     override val nameSpace: String

@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.postgres.legacy
 
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase
-
 class PostgresSourceAcceptanceLegacyCtidTest : PostgresSourceAcceptanceTest() {
     override val serverImage: PostgresTestDatabase.BaseImage
         get() = PostgresTestDatabase.BaseImage.POSTGRES_12

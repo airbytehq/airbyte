@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.postgres.legacy
 import io.airbyte.cdk.test.fixtures.legacy.AbstractSourceDatabaseTypeTest
 import io.airbyte.cdk.test.fixtures.legacy.TestDataHolder
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.JsonSchemaType
 import java.util.Locale

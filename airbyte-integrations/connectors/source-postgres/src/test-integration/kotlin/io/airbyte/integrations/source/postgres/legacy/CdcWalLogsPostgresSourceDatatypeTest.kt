@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Database
 import io.airbyte.cdk.test.fixtures.legacy.Jsons.jsonNode
 import io.airbyte.cdk.test.fixtures.legacy.TestDataHolder
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage

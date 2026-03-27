@@ -2,14 +2,14 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres
+package io.airbyte.integrations.source.postgres.legacy
 
 import io.airbyte.cdk.test.fixtures.legacy.DatabaseDriver
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDatabase
-import io.airbyte.integrations.source.postgres.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY
-import io.airbyte.integrations.source.postgres.PostgresSpecConstants.RESYNC_DATA_OPTION
+import io.airbyte.integrations.source.postgres.legacy.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY
+import io.airbyte.integrations.source.postgres.legacy.PostgresSpecConstants.RESYNC_DATA_OPTION
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.util.stream.Stream

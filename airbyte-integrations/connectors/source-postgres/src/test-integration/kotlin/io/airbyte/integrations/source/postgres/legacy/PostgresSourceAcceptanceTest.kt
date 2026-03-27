@@ -11,8 +11,7 @@ import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.airbyte.cdk.test.fixtures.legacy.Jsons
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage
+import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase.BaseImage
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage

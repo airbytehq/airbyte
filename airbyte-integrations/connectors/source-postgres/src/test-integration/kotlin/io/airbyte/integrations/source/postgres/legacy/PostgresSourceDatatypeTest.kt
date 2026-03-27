@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.postgres.legacy
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.test.fixtures.legacy.Database
 import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import java.sql.SQLException
 
 class PostgresSourceDatatypeTest : AbstractPostgresSourceDatatypeTest() {

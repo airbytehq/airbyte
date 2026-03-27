@@ -17,7 +17,6 @@ import io.airbyte.cdk.test.fixtures.legacy.SshBastionContainer
 import io.airbyte.cdk.test.fixtures.legacy.SshTunnel
 import io.airbyte.cdk.test.fixtures.legacy.SshTunnel.Companion.sshWrap
 import io.airbyte.cdk.test.fixtures.legacy.TestDestinationEnv
-import io.airbyte.integrations.source.postgres.PostgresTestDatabase
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
