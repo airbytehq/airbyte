@@ -10,7 +10,8 @@ This page contains the setup guide and reference information for the [Gong](http
 
 - A Gong account with technical administrator permissions
 - For API Key authentication: an access key and access key secret generated from the Gong API settings
-- For OAuth 2.0 authentication: the following API scopes must be granted: `api:calls:read:basic`, `api:calls:read:extensive`, `api:users:read`, `api:stats:scorecards`, `api:stats:interaction`
+- For OAuth 2.0 authentication: the following API scopes must be granted: `api:calls:read:basic`, `api:calls:read:extensive`, `api:calls:read:transcript`, `api:users:read`, `api:stats:scorecards`, `api:stats:interaction`, `api:settings:scorecards:read`
+- For API Key authentication: the API key must have the same scopes listed above granted in the Gong API settings
 
 ## Setup guide
 
@@ -77,7 +78,7 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.6.3 | 2026-03-26 | [75195](https://github.com/airbytehq/airbyte/pull/75195) | Migrate OAuth scope to scopes object array for granular scopes support |
+| 0.6.3 | 2026-03-27 | [75195](https://github.com/airbytehq/airbyte/pull/75195) | Migrate OAuth scope to scopes object array for granular scopes support |
 | 0.6.2 | 2026-03-24 | [75388](https://github.com/airbytehq/airbyte/pull/75388) | Update dependencies |
 | 0.6.1 | 2026-03-20 | [75253](https://github.com/airbytehq/airbyte/pull/75253) | Fix incremental sync for extensiveCalls and answeredScorecards not filtering server-side |
 | 0.6.0 | 2026-03-18 | [75132](https://github.com/airbytehq/airbyte/pull/75132) | Add incremental sync support for callTranscripts stream |
