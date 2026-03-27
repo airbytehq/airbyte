@@ -368,6 +368,7 @@ class IcebergTableSynchronizer(
                 when (sortField.direction()) {
                     SortDirection.ASC -> builder.asc(fieldName, sortField.nullOrder())
                     SortDirection.DESC -> builder.desc(fieldName, sortField.nullOrder())
+                    else -> builder.asc(fieldName, sortField.nullOrder())
                 }
             }
         }
