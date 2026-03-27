@@ -2,9 +2,11 @@
 
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from unittest import TestCase
 
 import freezegun
+import yaml
 from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
@@ -138,10 +140,6 @@ class TestAPIBudgetAndConcurrency(TestCase):
               - Reports API: 100 requests per 15 minutes
               - General API: 100 requests per 15 seconds
         """
-        from pathlib import Path
-
-        import yaml
-
         manifest_path = Path(__file__).parent.parent.parent / "manifest.yaml"
         with open(manifest_path) as f:
             manifest = yaml.safe_load(f)
@@ -176,10 +174,6 @@ class TestAPIBudgetAndConcurrency(TestCase):
         When: Loading and parsing the manifest
         Then: The concurrency_level should have ConcurrencyLevel type with correct defaults
         """
-        from pathlib import Path
-
-        import yaml
-
         manifest_path = Path(__file__).parent.parent.parent / "manifest.yaml"
         with open(manifest_path) as f:
             manifest = yaml.safe_load(f)
