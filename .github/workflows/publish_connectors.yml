@@ -481,6 +481,61 @@ jobs:
             --name "${{ matrix.connector }}" \
             --store "${REGISTRY_STORE}"
 
+      - name: Build success notification context
+        id: success-context
+        if: success() && needs.publish_options.outputs.dry-run != 'true'
+        run: |
+          CONNECTOR="${{ matrix.connector }}"
+          DOCKER_TAG="${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+          PR_NUMBER="${{ inputs.pr }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
+          fi
+
+          # Determine release type label and emoji
+          if [[ "$SEMVER_SUFFIX" == "none" || -z "$SEMVER_SUFFIX" ]]; then
+            RELEASE_TYPE="GA"
+            EMOJI="🟢"
+          else
+            RELEASE_TYPE="Pre-release"
+            EMOJI="🔵"
+          fi
+
+          # Build URLs for hyperlinks
+          DOCKERHUB_URL="https://hub.docker.com/r/airbyte/${CONNECTOR}/tags?name=${DOCKER_TAG}"
+          CLOUD_REGISTRY_URL="https://connectors.airbyte.com/files/metadata/airbyte/${CONNECTOR}/${DOCKER_TAG}/cloud.json"
+          OSS_REGISTRY_URL="https://connectors.airbyte.com/files/metadata/airbyte/${CONNECTOR}/${DOCKER_TAG}/oss.json"
+
+          # Build PR text
+          PR_TEXT=""
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            PR_TEXT="\nPR: <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
+          fi
+
+          echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "emoji=$EMOJI" >> $GITHUB_OUTPUT
+          echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
+          echo "dockerhub-url=$DOCKERHUB_URL" >> $GITHUB_OUTPUT
+          echo "cloud-registry-url=$CLOUD_REGISTRY_URL" >> $GITHUB_OUTPUT
+          echo "oss-registry-url=$OSS_REGISTRY_URL" >> $GITHUB_OUTPUT
+          echo "pr-text=$PR_TEXT" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack on connector publish success
+        if: success() && needs.publish_options.outputs.dry-run != 'true' && steps.success-context.outcome == 'success'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "${{ steps.success-context.outputs.emoji }} *${{ steps.success-context.outputs.release-type }} Publish SUCCESS:*\nConnector: <${{ steps.success-context.outputs.dockerhub-url }}|airbyte/${{ matrix.connector }}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}>\nReference: <${{ steps.success-context.outputs.cloud-registry-url }}|cloud.json> · <${{ steps.success-context.outputs.oss-registry-url }}|oss.json> · <${{ steps.success-context.outputs.run-url }}|CI Logs>${{ steps.success-context.outputs.pr-text }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
   generate_connector_registry:
     name: Generate connector registry
     needs: [publish_options, publish_connectors]
@@ -540,6 +595,15 @@ jobs:
             RELEASE_TYPE="Pre-release (${SEMVER_SUFFIX})"
           fi
 
+          # Extract connector names from the matrix JSON
+          CONNECTORS_JSON='${{ needs.publish_options.outputs.connectors-to-publish }}'
+          CONNECTOR_NAMES=$(echo "$CONNECTORS_JSON" | jq -r '.connector | join(", ")')
+          if [[ -n "$CONNECTOR_NAMES" ]]; then
+            CONNECTOR_TEXT="\nConnector(s): \`${CONNECTOR_NAMES}\`"
+          else
+            CONNECTOR_TEXT=""
+          fi
+
           # Build trigger description
           if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
             TRIGGER_TEXT="triggered from PR <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
@@ -556,6 +620,7 @@ jobs:
           echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
           echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
           echo "trigger-text=$TRIGGER_TEXT" >> $GITHUB_OUTPUT
+          echo "connector-text=$CONNECTOR_TEXT" >> $GITHUB_OUTPUT
       - name: Send publish failures to connector-publish-failures channel
         id: slack
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
@@ -565,7 +630,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 ${{ steps.context.outputs.release-type }} publish workflow failed:\n <${{ steps.context.outputs.run-url }}|View workflow run>\n ${{ steps.context.outputs.trigger-text }} by ${{ github.actor }}${{ steps.match-github-to-slack-user.outputs.slack_user_ids && format(' (<@{0}>)', steps.match-github-to-slack-user.outputs.slack_user_ids) || '' }}."
+              "text": "🚨 ${{ steps.context.outputs.release-type }} publish workflow failed:${{ steps.context.outputs.connector-text }}\n <${{ steps.context.outputs.run-url }}|View workflow run>\n ${{ steps.context.outputs.trigger-text }} by ${{ github.actor }}${{ steps.match-github-to-slack-user.outputs.slack_user_ids && format(' (<@{0}>)', steps.match-github-to-slack-user.outputs.slack_user_ids) || '' }}."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
