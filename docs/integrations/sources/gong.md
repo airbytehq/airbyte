@@ -77,7 +77,7 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.6.3 | 2026-03-27 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Filter out private calls when authenticating with OAuth |
+| 0.6.3 | 2026-03-27 | [75526](https://github.com/airbytehq/airbyte/pull/75526) | Filter out private calls when authenticating with OAuth |
 | 0.6.2 | 2026-03-24 | [75388](https://github.com/airbytehq/airbyte/pull/75388) | Update dependencies |
 | 0.6.1 | 2026-03-20 | [75253](https://github.com/airbytehq/airbyte/pull/75253) | Fix incremental sync for extensiveCalls and answeredScorecards not filtering server-side |
 | 0.6.0 | 2026-03-18 | [75132](https://github.com/airbytehq/airbyte/pull/75132) | Add incremental sync support for callTranscripts stream |
