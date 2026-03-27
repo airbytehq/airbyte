@@ -1,4 +1,7 @@
 name: On-Demand Live Connector Validation Tests
+# This workflow triggers the live test workflow in airbyte-ops-mcp.
+# Logs and artifacts are kept in the private airbyte-ops-mcp repo.
+# See: https://github.com/airbytehq/airbyte-ops-mcp
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -34,144 +37,127 @@ on:
         type: number
 
       # Workflow-specific inputs
-      connector_filter:
-        description: >
-          Connector filter. Will be passed to the `airbyte-ci connectors` command.
-          To select all modified connectors, use '--modified'. To select specific connectors,
-          pass one or or more `--name` args, e.g. '--name=source-faker --name=source-hardcoded-records'.
-        default: "--modified"
-      connection_id:
-        description: >
-          Connection ID. ID of the connection to test; use "auto" to let the
-          connection retriever choose a connection.
-        default: "auto"
-      streams:
-        description: >
-          (Optional) Streams. Which streams to include in tests.
-          If not set, these will be chosen automatically.
-        required: false
-        default: ""
+      connector_image:
+        description: "Full connector image name with tag (e.g., airbyte/source-github:1.0.0)"
+        required: true
         type: string
-      should_read_with_state:
-        description: Whether to run tests against the read command with state
-        default: "true"
-        type: boolean
-      use_local_cdk:
-        description: Use the local CDK when building the target connector
-        default: "false"
-        type: boolean
-      disable_proxy:
-        description: Disable proxy for requests
-        default: "false"
-        type: boolean
-
-      # Workaround: GitHub currently supports a max of 10 inputs for workflow_dispatch events.
-      # We need to consolidate some inputs to stay within this limit.
-      # connection_subset:
-      #   description: The subset of connections to select from.
-      #   default: "sandboxes"
-      #   type: choice
-      #   options:
-      #     - sandboxes
-      #     - all
+      command:
+        description: "Airbyte command to run"
+        required: false
+        type: choice
+        options:
+          - spec
+          - check
+          - discover
+          - read
+        default: check
+      connection_id:
+        description: "Airbyte Cloud connection ID to fetch config/catalog from"
+        required: false
+        type: string
+      state_path:
+        description: "Path to state JSON file (optional for read)"
+        required: false
+        type: string
 
 jobs:
-  live_tests:
-    name: Live Tests
-    runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
-    timeout-minutes: 360 # 6 hours
+  trigger_live_tests:
+    name: Trigger Live Tests in airbyte-ops-mcp
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - name: Extract branch name [WORKFLOW DISPATCH]
-        shell: bash
-        if: github.event_name == 'workflow_dispatch'
-        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
-      - name: Install Poetry
-        id: install_poetry
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
         with:
-          version: 1.8.5
+          owner: airbytehq
+          repositories: |
+            airbyte
+            airbyte-ops-mcp
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Make poetry venv in project
-        id: poetry_venv
-        run: poetry config virtualenvs.in-project true
-
-      - name: Install Python packages
-        id: install_python_packages
-        working-directory: airbyte-ci/connectors/pipelines
-        run: poetry install
-
-      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
-        id: fetch_last_commit_id_wd
-        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
-
-      - name: Setup Stream Parameters
-        if: github.event_name == 'workflow_dispatch'
+      - name: Build inputs JSON
+        id: build-inputs
         run: |
-          if [ -z "${{ github.event.inputs.streams }}" ]; then
-            echo "STREAM_PARAMS=" >> $GITHUB_ENV
-          else
-            STREAMS=$(echo "${{ github.event.inputs.streams }}" | sed 's/,/ --connector_live_tests.selected-streams=/g')
-            echo "STREAM_PARAMS=--connector_live_tests.selected-streams=$STREAMS" >> $GITHUB_ENV
-          fi
+          # Build the inputs JSON as compact single-line output for GITHUB_OUTPUT
+          INPUTS_JSON=$(jq -c -n \
+            --arg connector_image "${{ inputs.connector_image }}" \
+            --arg command "${{ inputs.command || 'check' }}" \
+            --arg connection_id "${{ inputs.connection_id }}" \
+            --arg state_path "${{ inputs.state_path }}" \
+            '{
+              connector_image: $connector_image,
+              command: $command
+            } + (if $connection_id != "" then {connection_id: $connection_id} else {} end)
+              + (if $state_path != "" then {state_path: $state_path} else {} end)')
 
-      - name: Setup Local CDK Flag
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          if ${{ github.event.inputs.use_local_cdk }}; then
-            echo "USE_LOCAL_CDK_FLAG=--use-local-cdk" >> $GITHUB_ENV
-          else
-            echo "USE_LOCAL_CDK_FLAG=" >> $GITHUB_ENV
-          fi
+          echo "Triggering live test workflow with inputs:"
+          echo "$INPUTS_JSON" | jq .
+          echo "inputs_json=$INPUTS_JSON" >> "$GITHUB_OUTPUT"
 
-      - name: Setup State Flag
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          if ${{ github.event.inputs.should_read_with_state }}; then
-            echo "READ_WITH_STATE_FLAG=--connector_live_tests.should-read-with-state" >> $GITHUB_ENV
-          else
-            echo "READ_WITH_STATE_FLAG=" >> $GITHUB_ENV
-          fi
-
-      - name: Setup Proxy Flag
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          if ${{ github.event.inputs.disable_proxy }}; then
-            echo "DISABLE_PROXY_FLAG=--connector_live_tests.disable-proxy" >> $GITHUB_ENV
-          else
-            echo "DISABLE_PROXY_FLAG=" >> $GITHUB_ENV
-          fi
-
-      - name: Setup Connection Subset Option
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=sandboxes" >> $GITHUB_ENV
-        # TODO: re-enable when we have resolved the more-than-10-inputs issue in workflow_dispatch.
-        # run: |
-        #   echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
-
-      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
-      # permissions to add commits to our main repo as well as forks. This will only work on
-      # forks if the user installs the app into their fork. Until we document this as a clear
-      # path, we will have to keep using the PAT.
-      - name: Run Live Tests [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch' # TODO: consider using the matrix strategy (https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs). See https://github.com/airbytehq/airbyte/pull/37659#discussion_r1583380234 for details.
-        uses: ./.github/actions/run-airbyte-ci
+      - name: Trigger live test workflow in airbyte-ops-mcp
+        id: trigger-workflow
+        uses: the-actions-org/workflow-dispatch@v4
         with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          git_branch: ${{ steps.extract_branch.outputs.branch }}
-          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} ${{ inputs.connector_filter }} test --only-step connector_live_tests --connector_live_tests.test-suite=live --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url="https://github.com/airbytehq/airbyte/pull/${{ github.event.inputs.pr }}" ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }}
+          workflow: connector-live-test.yml
+          repo: airbytehq/airbyte-ops-mcp
+          ref: main
+          token: ${{ steps.get-app-token.outputs.token }}
+          inputs: ${{ steps.build-inputs.outputs.inputs_json }}
+          wait-for-completion: true
+          wait-for-completion-timeout: 30m
+          wait-for-completion-interval: 30s
+          display-workflow-run-url: true
+
+      - name: Post result to PR comment
+        if: always() && inputs.pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          script: |
+            const conclusion = '${{ steps.trigger-workflow.outputs.workflow-conclusion }}' || 'unknown';
+            const workflowUrl = '${{ steps.trigger-workflow.outputs.workflow-url }}' || 'https://github.com/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml';
+            const connector = '${{ inputs.connector_image }}';
+            const command = '${{ inputs.command || 'check' }}';
+
+            const statusEmoji = conclusion === 'success' ? ':white_check_mark:' : conclusion === 'failure' ? ':x:' : ':warning:';
+
+            const body = `## Live Test Results ${statusEmoji}
+
+            **Connector:** \`${connector}\`
+            **Command:** \`${command}\`
+            **Result:** \`${conclusion}\`
+
+            [View full test logs](${workflowUrl}) (requires access to airbyte-ops-mcp)`;
+
+            await github.rest.issues.createComment({
+              owner: 'airbytehq',
+              repo: 'airbyte',
+              issue_number: ${{ inputs.pr || 0 }},
+              body: body
+            });
+
+      - name: Output workflow result
+        if: always()
+        run: |
+          conclusion="${{ steps.trigger-workflow.outputs.workflow-conclusion }}"
+          conclusion="${conclusion:-unknown}"
+          workflow_url="${{ steps.trigger-workflow.outputs.workflow-url }}"
+          workflow_url="${workflow_url:-https://github.com/airbytehq/airbyte-ops-mcp/actions/workflows/connector-live-test.yml}"
+          connector="${{ inputs.connector_image }}"
+          command="${{ inputs.command }}"
+          command="${command:-check}"
+
+          echo "Live test workflow completed."
+          echo "Conclusion: $conclusion"
+          echo "Workflow URL: $workflow_url"
+
+          {
+            echo "## Live Test Results"
+            echo ""
+            echo "**Connector:** \`$connector\`"
+            echo "**Command:** \`$command\`"
+            echo "**Conclusion:** \`$conclusion\`"
+            echo ""
+            echo "[View full test logs in airbyte-ops-mcp]($workflow_url)"
+          } >> "$GITHUB_STEP_SUMMARY"
