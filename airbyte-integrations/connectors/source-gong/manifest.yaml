@@ -560,10 +560,11 @@ spec:
         scopes:
           - scope: "api:calls:read:basic"
           - scope: "api:calls:read:extensive"
+          - scope: "api:calls:read:transcript"
           - scope: "api:users:read"
           - scope: "api:stats:scorecards"
           - scope: "api:stats:interaction"
-          - scope: "api:calls:read:transcript"
+          - scope: "api:settings:scorecards:read"
         extract_output:
           - access_token
           - refresh_token
