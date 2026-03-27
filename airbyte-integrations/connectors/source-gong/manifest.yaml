@@ -563,6 +563,7 @@ spec:
           - scope: "api:users:read"
           - scope: "api:stats:scorecards"
           - scope: "api:stats:interaction"
+          - scope: "api:calls:read:transcript"
         extract_output:
           - access_token
           - refresh_token
