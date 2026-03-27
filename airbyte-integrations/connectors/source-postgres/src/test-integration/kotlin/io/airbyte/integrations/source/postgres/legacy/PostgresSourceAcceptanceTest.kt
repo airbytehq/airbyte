@@ -33,8 +33,7 @@ open class PostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest()
 
     @Throws(Exception::class)
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
-        testdb = PostgresTestDatabase.`in`(this.serverImage)
-            .with("CREATE SCHEMA %S;", SCHEMA_NAME)
+        testdb = PostgresTestDatabase.`in`(this.serverImage).with("CREATE SCHEMA %S;", SCHEMA_NAME)
         config = getConfig(testdb.userName, testdb.password, SCHEMA_NAME)
         testdb.query<Any?>({ ctx ->
             ctx.fetch("CREATE TABLE $SCHEMA_NAME.id_and_name(id INTEGER, name VARCHAR(200));")

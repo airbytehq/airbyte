@@ -45,6 +45,7 @@ class CdcInitialSnapshotPostgresSourceDatatypeTest : AbstractPostgresSourceDatat
                 .build()
 
     companion object {
-        val SCHEMA_NAME: String = /*"cdc_initial_snapshot_postgres_source_datatype_test"*/"cdc_" // TEMP
+        val SCHEMA_NAME: String = /*"cdc_initial_snapshot_postgres_source_datatype_test"*/
+            "cdc_" // TEMP
     }
 }
