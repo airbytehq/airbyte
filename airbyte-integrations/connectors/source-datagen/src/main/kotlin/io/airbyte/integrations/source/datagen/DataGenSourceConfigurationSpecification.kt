@@ -57,6 +57,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
 @JsonSubTypes(
     JsonSubTypes.Type(value = Incremental::class, name = "increment"),
     JsonSubTypes.Type(value = Types::class, name = "types"),
+    JsonSubTypes.Type(value = Wide::class, name = "wide"),
 )
 @JsonSchemaTitle("Data Type")
 @JsonSchemaDescription("Configures what kind of data is generated for the source.")
@@ -73,3 +74,15 @@ data object Incremental : FlavorSpec
     "Generates one column of each Airbyte data type.",
 )
 data object Types : FlavorSpec
+
+@JsonSchemaTitle("Wide")
+@JsonSchemaDescription(
+    "Generates a wide schema with a configurable number of columns using a mix of Airbyte data types.",
+)
+data class Wide(
+    @JsonProperty("column_count")
+    @JsonSchemaTitle("Column Count")
+    @JsonSchemaDescription("Number of columns to generate (including the id column). Min 1. Max 1000.")
+    @JsonSchemaInject(json = """{"default":50,"minimum":1,"maximum":1000}""")
+    val columnCount: Int = 50
+) : FlavorSpec
