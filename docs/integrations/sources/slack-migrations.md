@@ -12,13 +12,13 @@ This update fixes a bug that prevented incremental syncs from progressing for so
 1. **Threads stream state** — if the state is empty, follow the migration steps.  
 2. **Destination records** — if duplicate records exist for the Threads stream, follow the migration steps.  
 
-## How to check Connection State for Threads stream
+### How to check connection state for the Threads stream
 
-1. Go to connection using Source Slack
+1. Go to the connection using source Slack.
 2. Select the **Settings** tab.
-3. Under **Connection state** section you can find a connection state json object, look for `streamDescriptor` with `"name": "threads"` and check `streamState` for it.
+3. Under **Connection state**, find the JSON object with `"name": "threads"` in `streamDescriptor` and check its `streamState`.
 
-If state looks similar to the example below, you should follow the Migration Steps:
+If the state looks similar to the following example, follow the migration steps:
 
 ```json
 {
@@ -31,9 +31,9 @@ If state looks similar to the example below, you should follow the Migration Ste
 }
 ```
 
-## Migration Steps
+### Migration steps
 
-To clear your data for the `Threads` stream, follow the steps below:
+To clear your data for the `Threads` stream:
 
 1. Select **Connections** in the main nav bar.
    1. Select the connection(s) affected by the update.
@@ -44,24 +44,21 @@ After the clear succeeds, trigger a sync by clicking **Sync Now**. For more info
 
 ## Upgrading to 2.0.0
 
-As part of recent changes to the Slack API's [Terms of Service](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq), we are migrating to a new Marketplace OAuth application. Users will need to re-authenticate their source with the new application to refresh their access token that is used to retrieve data. This does not apply if you use an API token, are on OSS, or supply your own Slack OAuth application credentials.
+Due to changes in the Slack API [Terms of Service](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq), the connector migrated to a new Marketplace OAuth application. Users must re-authenticate their source with the new application to refresh their access token. This does not apply if you use an API token, are on Airbyte Open Source, or supply your own Slack OAuth application credentials.
 
-## Migration Steps
+### Migration steps
 
-On the Airbyte application, navigate to your Slack source.
-
-1. Under Authentication mechanism, click `Authenticate your Slack account`.
-2. Follow the instructions in the pop-up window and click `Allow` to grant permissions to access your workspace.
+1. In the Airbyte application, navigate to your Slack source.
+2. Under **Authentication mechanism**, click **Authenticate your Slack account**.
+3. Follow the instructions in the pop-up window and click **Allow** to grant permissions to access your workspace.
 
 ## Upgrading to 1.0.0
 
-We're continuously striving to enhance the quality and reliability of our connectors at Airbyte. As part of our commitment to delivering exceptional service, we are transitioning source Slack from the Python Connector Development Kit (CDK) to our innovative low-code framework. This is part of a strategic move to streamline many processes across connectors, bolstering maintainability and freeing us to focus more of our efforts on improving the performance and features of our evolving platform and growing catalog. However, due to differences between the Python and low-code CDKs, this migration constitutes a breaking change.
+This version migrated the Slack source connector from the Python CDK to the low-code declarative framework. Due to differences in how state is managed for incremental substreams, this is a breaking change for the `Channel Messages` stream. The new state format uses a more structured approach for partition-level state management.
 
-We’ve evolved and standardized how state is managed for incremental streams that are nested within a parent stream. This change impacts how individual states are tracked and stored for each partition, using a more structured approach to ensure the most granular and flexible state management. This change will affect the `Channel Messages` stream.
+### Migration steps
 
-## Migration Steps
-
-Clearing your data is required in order to continue syncing `Channel Messages` successfully. To clear your data for the `Channel Messages` stream, follow the steps below:
+You must clear data for the `Channel Messages` stream to continue syncing successfully:
 
 1. Select **Connections** in the main nav bar.
    1. Select the connection(s) affected by the update.
