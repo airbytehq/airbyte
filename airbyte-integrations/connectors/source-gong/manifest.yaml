@@ -133,8 +133,6 @@ definitions:
                     http_codes:
                       - 404
           request_body_json:
-            filter:
-              fromDateTime: "{{ config['start_date'] }}"
             contentSelector:
               exposedFields:
                 media: true
@@ -202,8 +200,10 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
-          field_name: fromDateTime
+          inject_into: body_json
+          field_path:
+            - filter
+            - fromDateTime
       transformations:
         - type: AddFields
           fields:
@@ -275,8 +275,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -313,7 +311,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -549,7 +548,7 @@ spec:
     predicate_value: OAuth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
-        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value | urlEncode}}
+        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&{{scopes_param}}
         access_token_url: https://app.gong.io/oauth2/generate-customer-token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
@@ -558,7 +557,14 @@ spec:
           grant_type: authorization_code
           redirect_uri: "{{ redirect_uri_value }}"
           code: "{{ auth_code_value }}"
-        scope: api:calls:read:basic api:calls:read:extensive api:users:read api:stats:scorecards api:stats:interaction
+        scopes:
+          - scope: "api:calls:read:basic"
+          - scope: "api:calls:read:extensive"
+          - scope: "api:calls:read:transcript"
+          - scope: "api:users:read"
+          - scope: "api:stats:scorecards"
+          - scope: "api:stats:interaction"
+          - scope: "api:settings:scorecards:read"
         extract_output:
           - access_token
           - refresh_token

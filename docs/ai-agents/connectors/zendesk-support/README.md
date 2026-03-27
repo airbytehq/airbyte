@@ -97,6 +97,7 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Search](./REFERENCE.md#tickets-search) |
+| Deleted Tickets | [List](./REFERENCE.md#deleted-tickets-list), [Search](./REFERENCE.md#deleted-tickets-search) |
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
 | Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Search](./REFERENCE.md#organizations-search) |
 | Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Search](./REFERENCE.md#groups-search) |
@@ -130,7 +131,7 @@ See the official [Zendesk-Support API reference](https://developer.zendesk.com/a
 
 ## Version information
 
-- **Package version:** 0.18.120
-- **Connector version:** 0.1.16
-- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
+- **Package version:** 0.18.126
+- **Connector version:** 0.1.17
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-support/CHANGELOG.md)
