@@ -101,7 +101,7 @@ def test_multiple_token_authenticator_with_rate_limiter(sleep_mock, requests_moc
 def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, caplog, requests_mock):
     """
     This test ensures that:
-     1. The rate limiter will only wait (sleep) for token availability if the nearest available token appears within 600 seconds (see max_time).
+     1. The rate limiter will only wait (sleep) for token availability if the nearest available token appears within max_time (default 7200 seconds / 120 minutes).
      2. Token Counter is reset to new values after 1500 requests were made and last token is still in use.
     """
 

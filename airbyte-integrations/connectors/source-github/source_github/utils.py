@@ -79,7 +79,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         self.check_all_tokens()
         self._tokens_iter = cycle(self._tokens)
         self._active_token = next(self._tokens_iter)
-        self._max_time = 60 * 10  # 10 minutes as default
+        self._max_time = 60 * 120  # 120 minutes as default (must exceed GitHub's 60-min rate limit window)
         self._budget_logged = False  # avoid log spam for throttle messages
 
     def _initialize_http_clients(self, tokens: List[str]) -> Mapping[str, HttpClient]:
