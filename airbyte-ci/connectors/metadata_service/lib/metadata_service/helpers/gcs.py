@@ -34,3 +34,23 @@ def safe_read_gcs_file(gcs_blob: storage.Blob) -> Optional[str]:
         return None
 
     return gcs_blob.download_as_string().decode("utf-8")
+
+
+def is_version_yanked(bucket: storage.Bucket, docker_repository: str, version: str) -> bool:
+    """Check if a specific connector version has been yanked.
+
+    A version is considered yanked if a .yanked marker file exists in its GCS directory.
+
+    Args:
+        bucket (storage.Bucket): The GCS bucket.
+        docker_repository (str): The docker repository (e.g., 'airbyte/source-postgres').
+        version (str): The version to check (e.g., '3.7.0').
+
+    Returns:
+        bool: True if the version is yanked, False otherwise.
+    """
+    from metadata_service.constants import METADATA_FOLDER
+
+    yank_marker_path = f"{METADATA_FOLDER}/{docker_repository}/{version}/.yanked"
+    yank_marker_blob = bucket.blob(yank_marker_path)
+    return yank_marker_blob.exists()
