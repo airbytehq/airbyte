@@ -108,7 +108,7 @@ See the official [Amazon-Ads API reference](https://advertising.amazon.com/API/d
 
 ## Version information
 
-- **Package version:** 0.1.69
+- **Package version:** 0.1.70
 - **Connector version:** 1.0.9
-- **Generated with Connector SDK commit SHA:** 20f00dda69661bd8f1fe16371d553e41a819e109
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/amazon-ads/CHANGELOG.md)
