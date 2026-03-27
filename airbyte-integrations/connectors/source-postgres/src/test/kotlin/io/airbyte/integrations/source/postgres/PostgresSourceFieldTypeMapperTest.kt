@@ -13,12 +13,12 @@ import io.airbyte.cdk.test.fixtures.connector.JdbcTestDbExecutor
 import io.airbyte.cdk.test.fixtures.tests.AnsiSql
 import io.airbyte.cdk.test.fixtures.tests.ExtendedSql
 import io.airbyte.cdk.test.fixtures.tests.FieldTypeMapperTest
-import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase.BaseImage
 import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
 import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
 import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase
+import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase.BaseImage
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.PostgreSQLContainer

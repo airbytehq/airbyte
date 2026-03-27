@@ -13,12 +13,12 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.test.fixtures.cleanup.TestAssetResourceNamer
 import io.airbyte.cdk.test.fixtures.connector.JdbcTestDbExecutor
-import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase.BaseImage
 import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
 import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
 import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase
+import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase.BaseImage
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceStreamFactory
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
