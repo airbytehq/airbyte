@@ -12,8 +12,7 @@ import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
 import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase
-import io.airbyte.integrations.source.postgres.legacy.testFixtures.PostgresTestDatabase.BaseImage
+import io.airbyte.integrations.source.postgres.legacy.PostgresTestDatabase
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.PostgreSQLContainer
@@ -180,8 +179,8 @@ class PostgresSourceCursorBasedSyncTest : CursorBasedSyncTest() {
 
         private lateinit var testdb: PostgresTestDatabase
 
-        protected val serverImage: BaseImage
-            get() = BaseImage.POSTGRES_17
+        protected val serverImage: PostgresTestDatabase.BaseImage
+            get() = PostgresTestDatabase.BaseImage.POSTGRES_17
 
         fun config(
             postgresContainer: PostgreSQLContainer<*>,
