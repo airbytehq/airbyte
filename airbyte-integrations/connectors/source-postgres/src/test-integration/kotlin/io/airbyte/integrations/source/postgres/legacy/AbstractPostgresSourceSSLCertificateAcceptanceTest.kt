@@ -29,16 +29,17 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
                     PostgresTestDatabase.BaseImage.POSTGRES_17,
                     PostgresTestDatabase.ContainerModifier.CERT
                 )
-                .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+                .with("CREATE SCHEMA $nameSpace;")
+                .with("CREATE TABLE $nameSpace.id_and_name(id INTEGER, name VARCHAR(200));")
                 .with(
-                    "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                    "INSERT INTO $nameSpace.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
                 )
-                .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
+                .with("CREATE TABLE $nameSpace.starships(id INTEGER, name VARCHAR(200));")
                 .with(
-                    "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                    "INSERT INTO $nameSpace.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
                 )
                 .with(
-                    "CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';"
+                    "CREATE MATERIALIZED VIEW $nameSpace.testview AS select * from $nameSpace.id_and_name where id = '2';"
                 )
     }
 
@@ -52,7 +53,7 @@ abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest :
         get() =
             testdb
                 .integrationTestConfigBuilder()
-                .withSchemas("public")
+                .withSchemas(nameSpace)
                 .withStandardReplication()
                 .withSsl(this.certificateConfiguration)
                 .build()

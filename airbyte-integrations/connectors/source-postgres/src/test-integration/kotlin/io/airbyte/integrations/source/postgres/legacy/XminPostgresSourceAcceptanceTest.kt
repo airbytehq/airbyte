@@ -25,7 +25,7 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
         get() =
             testdb
                 .integrationTestConfigBuilder()
-                .withSchemas("public")
+                .withSchemas(SCHEMA_NAME)
                 .withSsl(mutableMapOf(MODE_KEY to "disable"))
                 .withXminReplication()
                 .build()
@@ -34,16 +34,17 @@ class XminPostgresSourceAcceptanceTest : AbstractPostgresSourceAcceptanceTest() 
     protected override fun setupEnvironment(environment: TestDestinationEnv?) {
         testdb =
             PostgresTestDatabase.`in`(PostgresTestDatabase.BaseImage.POSTGRES_17)
-                .with("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));")
+                .with("CREATE SCHEMA $SCHEMA_NAME;")
+                .with("CREATE TABLE $SCHEMA_NAME.id_and_name(id INTEGER, name VARCHAR(200));")
                 .with(
-                    "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
+                    "INSERT INTO $SCHEMA_NAME.id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');"
                 )
-                .with("CREATE TABLE starships(id INTEGER, name VARCHAR(200));")
+                .with("CREATE TABLE $SCHEMA_NAME.starships(id INTEGER, name VARCHAR(200));")
                 .with(
-                    "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
+                    "INSERT INTO $SCHEMA_NAME.starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');"
                 )
                 .with(
-                    "CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';"
+                    "CREATE MATERIALIZED VIEW $SCHEMA_NAME.testview AS select * from $SCHEMA_NAME.id_and_name where id = '2';"
                 )
     }
 
