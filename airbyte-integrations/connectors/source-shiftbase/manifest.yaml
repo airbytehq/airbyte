@@ -469,7 +469,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
       end_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config.get('end_date', day_delta(30, '%Y-%m-%d')) }}"
+        datetime: "{{ config.get('schedule_report_end_date', day_delta(30, '%Y-%m-%d')) }}"
         datetime_format: "%Y-%m-%d"
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
@@ -1622,9 +1622,9 @@ spec:
         order: 1
         examples:
         - "2024-01-01"
-      end_date:
+      schedule_report_end_date:
         type: string
-        title: End Date
+        title: Schedule Report End Date
         description: >-
           End date for the Scheduled Detail Report stream in YYYY-MM-DD format.
           Defaults to 1 month into the future from the current date if not provided.
