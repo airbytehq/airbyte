@@ -83,7 +83,7 @@ class CdcPartitionsCreator<T : Comparable<T>>(
             is AbortDebeziumWarmStartState -> {
                 val e =
                     ConfigErrorException(
-                        "Saved CDC replication state is invalid. ${warmStartState.reason}. Reset the connection to re-sync from the current server state."
+                        "Incumbent CDC state is invalid, reason: ${warmStartState.reason}"
                     )
                 log.error(e) { "Aborting. ${e.message}." }
                 throw e
