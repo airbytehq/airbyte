@@ -33,6 +33,6 @@ private object PgTimeTzAccessor : JdbcAccessor<String> {
     }
 
     override fun set(stmt: PreparedStatement, paramIdx: Int, value: String) {
-        stmt.setString(paramIdx, value)
+        stmt.setObject(paramIdx, OffsetTime.parse(value))
     }
 }
