@@ -7,8 +7,8 @@ version = "0.0.0"
 description = "Unit tests for source-stripe"
 authors = ["Airbyte <contact@airbyte.io>"]
 [tool.poetry.dependencies]
-python = "^3.10,<3.13"
-airbyte-cdk = "^6"
+python = "^3.10,<3.14"
+airbyte-cdk = {version = "^6", python = "<3.13"}
 pytest = "^8"
 freezegun = "^1.4.0"
 pytest-mock = "^3.6.1"

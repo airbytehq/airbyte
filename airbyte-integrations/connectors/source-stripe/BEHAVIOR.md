@@ -14,11 +14,13 @@ The base error handler is configured to IGNORE (not fail) responses with HTTP st
 
 **Why this matters:** If an API key loses access to a specific Stripe resource (e.g., Issuing endpoints require special permissions), those records will silently disappear from incremental syncs without any error or warning in the sync logs. A user may not notice they are missing data until they check record counts against the Stripe dashboard.
 
-## 3. Inaccessible Expandable Fields in Events API
+## 3. Incremental Event Rehydration for Expandable Fields
 
-As of April 2024, the Stripe API does not support retrieving [expandable fields](https://docs.stripe.com/api/expanding_objects) from the Events API. This limits how the connector can process events during incremental syncs — it cannot reconstruct the full latest state of an object solely from event payloads when expandable fields are involved.
+Stripe still does not support retrieving [expandable fields](https://docs.stripe.com/api/expanding_objects) directly from the Events API. To work around this, most `StateDelegatingStream` incremental streams now treat `/v1/events` as a change feed only: after an update event is detected, the connector makes a second request to the object's detail endpoint (for example, `/v1/charges/{id}`) and emits that refreshed object instead of the raw event payload. Deleted events still use the event payload because the object may no longer be retrievable.
 
-**Why this matters:** During incremental syncs (which read from `/v1/events`), the connector only sees the non-expanded version of each object. Fields that require expansion (e.g., nested customer details on a charge) will be missing or returned as just an ID string. This is a fundamental Stripe API limitation, not a connector bug.
+If the follow-up detail request fails, the connector falls back to the event payload rather than failing the whole sync.
+
+**Why this matters:** Expandable fields and other latest-state fields are now usually populated during incremental syncs, but each changed record can require an extra API call. Special child streams that do not map 1:1 to a single detail endpoint still rely on event payloads.
 
 ## 4. Populating Data for Sandbox Accounts
 

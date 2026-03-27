@@ -283,6 +283,20 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Transactions`
 - `Transfers`
 
+#### Expandable fields during incremental syncs
+
+For most streams that use the Events API for incremental syncs, the connector now treats `/v1/events` as a change feed only. After it detects a changed object, it fetches the latest version of that object from the corresponding detail endpoint before emitting the record. This restores expandable fields and other latest-state fields that may be incomplete in the event payload.
+
+Delete events still emit the event payload because the underlying object may no longer be retrievable. If the follow-up detail request returns `400`, `403`, or `404`, the connector falls back to the event payload so the sync can continue.
+
+The following incremental streams still rely on the event payload because the changed record does not map cleanly to a single detail endpoint:
+
+- `Accounts`
+- `Application Fee Refunds`
+- `Bank Accounts`
+- `Invoice Line Items`
+- `Subscription Items`
+
 ## Incremental deletes
 
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
@@ -313,6 +327,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.15.23-rc.1 | 2026-03-24 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Rehydrate most event-based incremental records from their detail endpoints to restore expandable fields |
 | 5.15.22 | 2026-03-12 | [74770](https://github.com/airbytehq/airbyte/pull/74770) | Upgrade CDK to 7.13.0 |
 | 5.15.21 | 2026-03-06 | [74342](https://github.com/airbytehq/airbyte/pull/74342) | Promoting release candidate 5.15.21-rc.5 to a main version. |
 | 5.15.21-rc.5 | 2026-03-06 | [74337](https://github.com/airbytehq/airbyte/pull/74337) | Make API data retention validation optional per stream via new `api_retention_streams` config field, upgrade CDK to 7.8.1.post54 |
