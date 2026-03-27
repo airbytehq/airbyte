@@ -512,6 +512,122 @@ def test_contact_lists_transform(requests_mock, config, custom_object_schema, mo
         assert isinstance(record.record.data["updatedAt"], str)
 
 
+def test_list_memberships_stream(requests_mock, config, custom_object_schema, mock_dynamic_schema_requests):
+    """Test that the list_memberships substream reads membership records from the V3 Lists API."""
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+
+    # Mock the parent contact_lists stream (POST /crm/v3/lists/search)
+    contact_lists_response = [
+        {
+            "json": {
+                "lists": [
+                    {
+                        "listId": "101",
+                        "createdAt": "2022-02-25T16:43:11Z",
+                        "updatedAt": "2022-02-25T16:43:11Z",
+                    },
+                    {
+                        "listId": "202",
+                        "createdAt": "2022-03-25T16:43:11Z",
+                        "updatedAt": "2022-03-25T16:43:11Z",
+                    },
+                ]
+            }
+        }
+    ]
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", contact_lists_response)
+
+    # Mock the memberships endpoint for each list
+    memberships_list_101 = {
+        "json": {
+            "results": [
+                {"recordId": "1001", "membershipTimestamp": "2023-11-07T16:46:04.122Z"},
+                {"recordId": "1002", "membershipTimestamp": "2023-11-07T16:46:04.122Z"},
+            ],
+        }
+    }
+    memberships_list_202 = {
+        "json": {
+            "results": [
+                {"recordId": "2001", "membershipTimestamp": "2023-12-01T10:00:00.000Z"},
+            ],
+        }
+    }
+    requests_mock.register_uri("GET", "https://api.hubapi.com/crm/v3/lists/101/memberships", [memberships_list_101])
+    requests_mock.register_uri("GET", "https://api.hubapi.com/crm/v3/lists/202/memberships", [memberships_list_202])
+
+    records = read_from_stream(config, "list_memberships", SyncMode.full_refresh).records
+
+    assert len(records) == 3
+    record_data = [r.record.data for r in records]
+
+    # Verify that listId is injected from the parent partition
+    # The partition router passes the parent key value; AddFields renders it via Jinja
+    list_101_records = [r for r in record_data if str(r["listId"]) == "101"]
+    list_202_records = [r for r in record_data if str(r["listId"]) == "202"]
+
+    assert len(list_101_records) == 2
+    assert len(list_202_records) == 1
+
+    # Verify record IDs
+    assert {r["recordId"] for r in list_101_records} == {"1001", "1002"}
+    assert list_202_records[0]["recordId"] == "2001"
+
+    # Verify membershipTimestamp is present
+    for r in record_data:
+        assert "membershipTimestamp" in r
+        assert "listId" in r
+
+
+def test_list_memberships_stream_with_pagination(requests_mock, config, custom_object_schema, mock_dynamic_schema_requests):
+    """Test that the list_memberships stream handles cursor-based pagination correctly."""
+    requests_mock.register_uri("GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
+
+    # Mock the parent contact_lists stream with a single list
+    contact_lists_response = [
+        {
+            "json": {
+                "lists": [
+                    {
+                        "listId": "101",
+                        "createdAt": "2022-02-25T16:43:11Z",
+                        "updatedAt": "2022-02-25T16:43:11Z",
+                    },
+                ]
+            }
+        }
+    ]
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", contact_lists_response)
+
+    # Mock paginated memberships responses
+    page_1 = {
+        "json": {
+            "results": [
+                {"recordId": "1001", "membershipTimestamp": "2023-11-07T16:46:04.122Z"},
+            ],
+            "paging": {
+                "next": {
+                    "after": "CURSOR_TOKEN_1",
+                }
+            },
+        }
+    }
+    page_2 = {
+        "json": {
+            "results": [
+                {"recordId": "1002", "membershipTimestamp": "2023-11-08T16:46:04.122Z"},
+            ],
+        }
+    }
+    requests_mock.register_uri("GET", "https://api.hubapi.com/crm/v3/lists/101/memberships", [page_1, page_2])
+
+    records = read_from_stream(config, "list_memberships", SyncMode.full_refresh).records
+
+    assert len(records) == 2
+    record_ids = {r.record.data["recordId"] for r in records}
+    assert record_ids == {"1001", "1002"}
+
+
 def test_client_side_incremental_stream(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     data_field = "results"

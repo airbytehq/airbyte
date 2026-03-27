@@ -1,4 +1,4 @@
-version: 6.52.0
+version: 6.53.0
 
 type: DeclarativeSource
 
@@ -1170,6 +1170,59 @@ definitions:
       schema:
         $ref: "#/schemas/contact_lists"
 
+  list_memberships_stream:
+    type: DeclarativeStream
+    name: list_memberships
+    primary_key:
+      - listId
+      - recordId
+    $parameters:
+      name: list_memberships
+      required_scopes: crm.lists.read
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/lists/{{ stream_partition['list_id'] }}/memberships"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: after
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 250
+          cursor_value: "{{ response.get('paging', {}).get('next', {}).get('after') }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/contact_lists_stream"
+            parent_key: "listId"
+            partition_field: "list_id"
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["listId"]
+            value: "{{ stream_partition['list_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/list_memberships"
+
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
     name: deal_pipelines
@@ -1973,6 +2026,7 @@ streams:
   - "#/definitions/companies_stream"
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
+  - "#/definitions/list_memberships_stream"
   - "#/definitions/contacts_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
@@ -2485,6 +2539,27 @@ schemas:
           - "null"
           - string
       updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  list_memberships:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      listId:
+        type:
+          - "null"
+          - string
+      recordId:
+        type:
+          - "null"
+          - string
+      membershipTimestamp:
         type:
           - "null"
           - string
