@@ -70,7 +70,7 @@ class WideDataGenerator(private val fields: List<Field>) : DataGenerator {
         val recordData: NativeRecordPayload = mutableMapOf()
 
         for (field in fields) {
-            recordData[field.name] = encodeField(field.type, incrementedID)
+            recordData[field.id] = encodeField(field.type, incrementedID)
         }
 
         return recordData
