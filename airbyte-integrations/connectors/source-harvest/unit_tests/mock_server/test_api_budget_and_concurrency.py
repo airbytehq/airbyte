@@ -141,8 +141,7 @@ class TestAPIBudgetAndConcurrency(TestCase):
               - General API: 100 requests per 15 seconds
         """
         manifest_path = Path(__file__).parent.parent.parent / "manifest.yaml"
-        with open(manifest_path) as f:
-            manifest = yaml.safe_load(f)
+        manifest = yaml.safe_load(manifest_path.read_text())
 
         assert "api_budget" in manifest, "api_budget should be defined in the manifest"
         api_budget = manifest["api_budget"]
@@ -175,8 +174,7 @@ class TestAPIBudgetAndConcurrency(TestCase):
         Then: The concurrency_level should have ConcurrencyLevel type with correct defaults
         """
         manifest_path = Path(__file__).parent.parent.parent / "manifest.yaml"
-        with open(manifest_path) as f:
-            manifest = yaml.safe_load(f)
+        manifest = yaml.safe_load(manifest_path.read_text())
 
         assert "concurrency_level" in manifest, "concurrency_level should be defined in the manifest"
         concurrency = manifest["concurrency_level"]
