@@ -327,7 +327,7 @@ constructor(
                     sslData.clientCertificate,
                     sslData.clientKey,
                     password,
-                    directory = ""
+                    directory = Files.createTempDirectory("ssl-keystore").toString()
                 )
             }
         extraJdbcProperties[CLIENT_KEY_STORE_URL] =
