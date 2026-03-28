@@ -124,7 +124,7 @@ See the official [Twilio API reference](https://www.twilio.com/docs/usage/api).
 
 ## Version information
 
-- **Package version:** 0.1.8
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
+- **Package version:** 0.1.9
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/twilio/CHANGELOG.md)
