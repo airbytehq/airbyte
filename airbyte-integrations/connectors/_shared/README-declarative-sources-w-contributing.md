@@ -1,4 +1,4 @@
-# Connector README
+# Airbyte Declarative Source README
 
 This is a declarative connector built with the [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview). For details on the underlying YAML format, see the [Low-Code CDK Overview](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview).
 
