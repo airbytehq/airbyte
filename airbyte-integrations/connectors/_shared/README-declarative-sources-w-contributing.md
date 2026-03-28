@@ -8,8 +8,8 @@ For user-facing documentation and setup guides, see the connector's page on [doc
 
 For local development and testing, see [Developing Connectors Locally](https://docs.airbyte.com/connector-development/local-connector-development).
 
-For connector-specific behaviors and development notes, see [CONTRIBUTING.md](./CONTRIBUTING.md).
-
 ## Contributing
 
-For contribution guidelines and PR conventions, see the [Pull Requests Handbook](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/).
+This connector has a dedicated contributing guide. For connector-specific guidance and gotchas, please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+For general contribution guidelines and PR conventions, see the [Pull Requests Handbook](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/).

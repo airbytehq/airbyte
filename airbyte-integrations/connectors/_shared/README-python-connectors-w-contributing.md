@@ -8,8 +8,8 @@ For local development and testing, see [Developing Connectors Locally](https://d
 
 For Python CDK API reference, see the [Python CDK docs](https://airbytehq.github.io/airbyte-python-cdk/airbyte_cdk.html). For acceptance test configuration, see the [Connector Acceptance Tests Reference](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference).
 
-For connector-specific behaviors and development notes, see [CONTRIBUTING.md](./CONTRIBUTING.md).
-
 ## Contributing
 
-For contribution guidelines and PR conventions, see the [Pull Requests Handbook](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/).
+This connector has a dedicated contributing guide. For connector-specific guidance and gotchas, please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+For general contribution guidelines and PR conventions, see the [Pull Requests Handbook](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/).
