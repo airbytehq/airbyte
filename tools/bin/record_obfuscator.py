@@ -15,10 +15,8 @@ from typing import Any
 # 3. spits obfuscated lines back to stdout
 # All stdin lines that are not type: RECORD remain unchanged.
 #
-# It's used in live-tests (airbyte-ci/connectors/live-tests) to be able to dump raw data from a live connection
+# It's used in live-tests to be able to dump raw data from a live connection
 # without leaking actual sensitive production data.
-#
-# The script is copied over into the live tests runnder dagger container.
 #
 
 

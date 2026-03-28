@@ -16,42 +16,25 @@ Which method you choose to use depends on the context you are in.
 
 Pre-requisites:
 
-- Setting up a Service Account for Google Secrets Manager (GSM) access. See [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md)
 - Ensuring that you have the `GCP_GSM_CREDENTIALS` environment variable set to the contents of your GSM service account key file.
 - [Poetry](https://python-poetry.org/docs/#installation) installed
-- [Pipx](https://pypa.github.io/pipx/installation/) installed
-
-### Running CAT in the same environment as our CI/CD pipeline (`airbyte-ci`)
-
-_Note: Install instructions for airbyte-ci are [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) _
-
-**This runs connector acceptance and other tests that run in our CI**
-
-```bash
-airbyte-ci connectors --name=<connector-name> test
-```
 
 ### Running CAT locally for Debugging/Development Purposes
 
 **Pre-requisites:**
 
-To learn how to set up `ci_credentials` and your GSM Service account see [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md)
+Ensure your GSM service account is configured:
 
 ```bash
 # Hook up your GSM service account
 export GCP_GSM_CREDENTIALS=`cat <path-to-gsm-service-account-key-file>`
-
-# Install the credentials tool
-pipx install airbyte-ci/connectors/ci_credentials/ --force --editable
 ```
 
-**Retrieve a connectors sandbox secrets**
+**Retrieve a connector's sandbox secrets**
 
 ```bash
 # From the root of the airbyte repo
-
-# Writes the secrets to airbyte-integrations/connectors/source-faker/secrets
-VERSION=dev ci_credentials connectors/source-faker write-to-storage
+uvx airbyte-cdk[dev] secrets list
 ```
 
 **Run install dependencies**
