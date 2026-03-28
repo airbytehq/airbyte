@@ -183,6 +183,7 @@ These two streams are effectively limited to **one request per minute**. Conside
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.16 | 2026-03-28 | [75551](https://github.com/airbytehq/airbyte/pull/75551) | Remove MessagesAndThreadsApiBudget that permanently throttled channel_messages and threads to 1 req/60s on first 429; rely on RATE_LIMITED action with Retry-After header backoff instead |
 | 3.1.15 | 2026-03-28 | [75551](https://github.com/airbytehq/airbyte/pull/75551) | Fix rate limiting for all streams by mapping 429 responses to RATE_LIMITED instead of RETRY, and add WaitTimeFromHeader backoff strategies |
 | 3.1.14 | 2026-03-27 | [75197](https://github.com/airbytehq/airbyte/pull/75197) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 3.1.13 | 2026-03-24 | [75329](https://github.com/airbytehq/airbyte/pull/75329) | Update dependencies |

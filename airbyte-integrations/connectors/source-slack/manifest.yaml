@@ -216,25 +216,9 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        type: CustomRequester
-        class_name: "source_declarative_manifest.components.MessagesAndThreadsHttpRequester"
-        url_match: "https://slack.com/api/conversations.history?.+"
-        url_base: https://slack.com/api/
-        path: "{{ parameters['path'] }}"
-        http_method: GET
+        $ref: "#/definitions/requester"
         request_parameters:
           inclusive: "True"
-        request_headers: {}
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: "WaitTimeFromHeader"
-              header: "retry-after"
-            - type: "WaitTimeFromHeader"
-              header: "Retry-After"
         use_cache: true
       record_selector:
         $ref: "#/definitions/selector"
@@ -309,26 +293,9 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        type: CustomRequester
-        class_name: "source_declarative_manifest.components.MessagesAndThreadsHttpRequester"
-        url_match: "https://slack.com/api/conversations.replies?.+"
-        url_base: https://slack.com/api/
-        path: "{{ parameters['path'] }}"
-        http_method: GET
+        $ref: "#/definitions/requester"
         request_parameters:
           channel: "{{ stream_partition['parent_slice']['channel'] }}"
-        request_headers: {}
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 20
-          backoff_strategies:
-            - type: "WaitTimeFromHeader"
-              header: "retry-after"
-            - type: "WaitTimeFromHeader"
-              header: "Retry-After"
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
