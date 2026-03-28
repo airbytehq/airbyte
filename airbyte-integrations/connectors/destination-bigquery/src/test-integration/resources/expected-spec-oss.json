@@ -153,6 +153,81 @@
         "title" : "Airbyte Internal Table Dataset Name",
         "group" : "advanced",
         "order" : 8
+      },
+      "default_partitioning_field" : {
+        "type" : "string",
+        "description" : "Default field to use for partitioning (e.g. _airbyte_extracted_at)",
+        "title" : "Default Partitioning Field",
+        "group" : "advanced",
+        "order" : 10
+      },
+      "default_partitioning_granularity" : {
+        "type" : "string",
+        "enum" : [ "DAY", "MONTH", "YEAR" ],
+        "description" : "Default partitioning granularity: DAY, MONTH, or YEAR. Defaults to DAY.",
+        "title" : "Default Partitioning Granularity",
+        "group" : "advanced",
+        "order" : 11
+      },
+      "default_clustering_field" : {
+        "type" : "string",
+        "description" : "Default field to use for clustering (e.g. _airbyte_extracted_at)",
+        "title" : "Default Clustering Field",
+        "group" : "advanced",
+        "order" : 12
+      },
+      "default_table_suffix" : {
+        "type" : "string",
+        "description" : "Default suffix to append to table names",
+        "title" : "Default Table Suffix",
+        "group" : "advanced",
+        "order" : 13
+      },
+      "streams" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "name" : {
+              "type" : "string",
+              "description" : "Name of the stream (or namespace.stream_name)",
+              "title" : "Stream Name"
+            },
+            "partitioning_field" : {
+              "type" : "string",
+              "title" : "Partitioning Field"
+            },
+            "partitioning_granularity" : {
+              "type" : "string",
+              "enum" : [ "DAY", "MONTH", "YEAR" ],
+              "description" : "Partitioning granularity for the partitioning field. Allowed values: DAY, MONTH, YEAR. Defaults to DAY.",
+              "title" : "Partitioning Granularity"
+            },
+            "clustering_field" : {
+              "type" : "string",
+              "title" : "Clustering Field"
+            },
+            "base_table_name" : {
+              "type" : "string",
+              "description" : "Optional destination base table name override for this stream. The configured suffix, if any, is still appended after this value.",
+              "title" : "Base Table Name"
+            },
+            "table_suffix" : {
+              "type" : "string",
+              "title" : "Table Suffix"
+            },
+            "dataset" : {
+              "type" : "string",
+              "title" : "Target Dataset"
+            }
+          },
+          "required" : [ "name" ]
+        },
+        "description" : "Per-stream configuration overrides.",
+        "title" : "Stream Configuration",
+        "group" : "advanced",
+        "order" : 14
       }
     },
     "required" : [ "project_id", "dataset_location", "dataset_id" ],
