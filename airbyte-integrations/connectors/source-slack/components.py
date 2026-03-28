@@ -9,13 +9,8 @@ from typing import Any, Iterable, List, Mapping, Optional
 import requests
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-)
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
