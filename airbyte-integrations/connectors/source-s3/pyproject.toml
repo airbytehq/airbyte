@@ -24,6 +24,7 @@ transformers = "^4.38.2"
 urllib3 = "<2"
 airbyte-cdk = {extras = ["file-based"], git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "devin/1774667708-update-nltk-cryptography"}
 pendulum = "^3.0.0"
+psutil = ">=5.8,<7"
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
