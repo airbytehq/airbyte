@@ -24,10 +24,10 @@ Example request:
 
 ```python
 from airbyte_agent_hubspot import HubspotConnector
-from airbyte_agent_hubspot.models import HubspotOauth2AuthConfig
+from airbyte_agent_hubspot.models import HubspotAuthConfig
 
 connector = HubspotConnector(
-    auth_config=HubspotOauth2AuthConfig(
+    auth_config=HubspotAuthConfig(
         client_id="<Your HubSpot OAuth2 Client ID>",
         client_secret="<Your HubSpot OAuth2 Client Secret>",
         refresh_token="<Your HubSpot OAuth2 Refresh Token>",
@@ -37,25 +37,7 @@ connector = HubspotConnector(
 ```
 
 #### Token
-
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `private_app_token` | `str` | Yes | Access token from a HubSpot Private App |
-
-Example request:
-
-```python
-from airbyte_agent_hubspot import HubspotConnector
-from airbyte_agent_hubspot.models import HubspotPrivateAppAuthConfig
-
-connector = HubspotConnector(
-    auth_config=HubspotPrivateAppAuthConfig(
-        private_app_token="<Access token from a HubSpot Private App>"
-    )
-)
-```
+This authentication method isn't available for this connector.
 
 ### Hosted execution
 
@@ -192,31 +174,7 @@ https://yourapp.com/oauth/callback?connector_id=<connector_id>
 Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
 
 #### Token
-Create a connector with Token credentials.
-
-
-`credentials` fields you need:
-
-| Field Name | Type | Required | Description |
-|------------|------|----------|-------------|
-| `private_app_token` | `str` | Yes | Access token from a HubSpot Private App |
-
-Example request:
-
-
-```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
-  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "customer_name": "<CUSTOMER_NAME>",
-    "connector_type": "Hubspot",
-    "name": "My Hubspot Connector",
-    "credentials": {
-      "private_app_token": "<Access token from a HubSpot Private App>"
-    }
-  }'
-```
+This authentication method isn't available for this connector.
 
 #### Execution
 

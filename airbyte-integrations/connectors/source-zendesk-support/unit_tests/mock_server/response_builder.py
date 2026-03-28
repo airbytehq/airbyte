@@ -1199,11 +1199,13 @@ class TicketCommentsResponseBuilder(HttpResponseBuilder):
 
 class TicketMetricEventsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def ticket_metric_events_response(cls, url: Optional[str] = None, cursor: Optional[str] = None) -> "TicketMetricEventsResponseBuilder":
+    def ticket_metric_events_response(
+        cls, request_without_cursor_for_pagination: Optional[HttpRequest] = None
+    ) -> "TicketMetricEventsResponseBuilder":
         return cls(
             find_template("ticket_metric_events", __file__),
             FieldPath("ticket_metric_events"),
-            EndOfStreamPaginationStrategy(url, cursor) if url and cursor else None,
+            CursorBasedPaginationStrategy(http_request_to_str(request_without_cursor_for_pagination)),
         )
 
 

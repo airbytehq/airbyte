@@ -60,8 +60,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `state` | `object \| any` |  |
 | `priority` | `number \| any` |  |
 | `assignee` | `object \| any` |  |
-| `team` | `object \| any` |  |
-| `project` | `object \| any` |  |
 | `createdAt` | `string` |  |
 | `updatedAt` | `string` |  |
 
@@ -134,8 +132,7 @@ await linear.issues.create(
     title="<str>",
     description="<str>",
     state_id="<str>",
-    priority=0,
-    project_id="<str>"
+    priority=0
 )
 ```
 
@@ -153,8 +150,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "title": "<str>",
         "description": "<str>",
         "stateId": "<str>",
-        "priority": 0,
-        "projectId": "<str>"
+        "priority": 0
     }
 }'
 ```
@@ -169,7 +165,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `description` | `string` | No | The description of the issue (supports markdown) |
 | `stateId` | `string` | No | The ID of the workflow state for the issue |
 | `priority` | `integer` | No | The priority of the issue (0=No priority, 1=Urgent, 2=High, 3=Medium, 4=Low) |
-| `projectId` | `string` | No | The ID of the project to add the issue to. Get project IDs from the projects list. |
 
 
 <details>
@@ -200,8 +195,7 @@ await linear.issues.update(
     description="<str>",
     state_id="<str>",
     priority=0,
-    assignee_id="<str>",
-    project_id="<str>"
+    assignee_id="<str>"
 )
 ```
 
@@ -220,8 +214,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "description": "<str>",
         "stateId": "<str>",
         "priority": 0,
-        "assigneeId": "<str>",
-        "projectId": "<str>"
+        "assigneeId": "<str>"
     }
 }'
 ```
@@ -237,7 +230,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `stateId` | `string` | No | The ID of the new workflow state for the issue |
 | `priority` | `integer` | No | The new priority of the issue (0=No priority, 1=Urgent, 2=High, 3=Medium, 4=Low) |
 | `assigneeId` | `string` | No | The ID of the user to assign to this issue. Get user IDs from the users list. |
-| `projectId` | `string` | No | The ID of the project to add this issue to. Get project IDs from the projects list. |
 
 
 <details>

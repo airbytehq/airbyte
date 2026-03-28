@@ -88,7 +88,6 @@ For more details on authentication, see the [Cart.com authentication documentati
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 0.3.46 | 2026-03-24 | [75319](https://github.com/airbytehq/airbyte/pull/75319) | Update dependencies |
 | 0.3.45 | 2026-03-17 | [74934](https://github.com/airbytehq/airbyte/pull/74934) | Update dependencies |
 | 0.3.44 | 2026-03-10 | [74450](https://github.com/airbytehq/airbyte/pull/74450) | Update dependencies |
 | 0.3.43 | 2026-03-03 | [74226](https://github.com/airbytehq/airbyte/pull/74226) | Update dependencies |

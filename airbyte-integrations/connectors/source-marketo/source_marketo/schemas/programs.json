@@ -88,14 +88,6 @@
         }
       }
     },
-    "sfdcId": {
-      "description": "The ID of the corresponding object in Salesforce.",
-      "type": ["null", "string"]
-    },
-    "sfdcName": {
-      "description": "The name of the corresponding object in Salesforce.",
-      "type": ["null", "string"]
-    },
     "costs": {
       "description": "Period costs associated with the program.",
       "type": ["array", "null"],

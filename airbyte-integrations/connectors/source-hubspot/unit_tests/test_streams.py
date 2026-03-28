@@ -434,6 +434,7 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
 @pytest.mark.parametrize(
     "error_response",
     [
+        {"json": {}, "status_code": 401},
         {"json": {}, "status_code": 429},
         {"json": {}, "status_code": 502},
         {"json": {}, "status_code": 504},

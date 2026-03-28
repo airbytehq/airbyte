@@ -133,6 +133,8 @@ definitions:
                     http_codes:
                       - 404
           request_body_json:
+            filter:
+              fromDateTime: "{{ config['start_date'] }}"
             contentSelector:
               exposedFields:
                 media: true
@@ -200,10 +202,8 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: body_json
-          field_path:
-            - filter
-            - fromDateTime
+          inject_into: request_parameter
+          field_name: fromDateTime
       transformations:
         - type: AddFields
           fields:
@@ -275,6 +275,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
+          request_parameters:
+            fromDateTime: "{{ config['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -311,8 +313,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: >-

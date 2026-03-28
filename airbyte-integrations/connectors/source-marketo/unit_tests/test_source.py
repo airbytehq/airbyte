@@ -155,7 +155,7 @@ def test_activities_schema(activity, expected_schema, config):
 )
 def test_export_parse_response(send_email_stream, response_text, expected_records):
     def iter_lines(*args, **kwargs):
-        yield from response_text.split("\n")
+        yield from response_text.splitlines()
 
     assert list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1")))) == expected_records
 
@@ -332,41 +332,6 @@ def test_csv_rows(config):
     records = stream.csv_rows(test_lines)
     for expected_record, record in zip(expected_records, records):
         assert expected_record == record
-
-
-def test_parse_response_with_unicode_line_separator(send_email_stream):
-    """Verify that Unicode line separators (\u2028, \u2029) in CJK field values
-    do not cause CSV column misalignment. This was the root cause of
-    https://github.com/airbytehq/oncall/issues/11468.
-    """
-    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n" "1,\u2028test,true,10,15\n" "2,3,false,11,16"
-
-    def iter_lines(*args, **kwargs):
-        yield from response_text.split("\n")
-
-    records = list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1"))))
-    assert len(records) == 2
-    assert records[0]["Campaign Run ID"] == "1"
-    assert records[0]["Choice Number"] == "\u2028test"
-    assert records[0]["Has Predictive"] == "true"
-    assert records[1]["Campaign Run ID"] == "2"
-
-
-def test_csv_rows_column_count_mismatch(config):
-    stream = Leads(config)
-    # Row has fewer columns than the header
-    test_lines = ["Name,Email,Phone", "John Doe,john@example.com"]
-    with pytest.raises(AirbyteTracedException) as exc_info:
-        list(stream.csv_rows(test_lines))
-    assert exc_info.value.message == "CSV row column count does not match header column count."
-    assert "expected 3 columns, got 2" in exc_info.value.internal_message
-
-    # Row has more columns than the header
-    test_lines_extra = ["Name,Email", "John Doe,john@example.com,extra"]
-    with pytest.raises(AirbyteTracedException) as exc_info:
-        list(stream.csv_rows(test_lines_extra))
-    assert exc_info.value.message == "CSV row column count does not match header column count."
-    assert "expected 2 columns, got 3" in exc_info.value.internal_message
 
 
 def test_availability_strategy(config):

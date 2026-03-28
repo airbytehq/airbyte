@@ -246,12 +246,8 @@ class MarketoExportBase(IncrementalMarketoStream):
         schema = self.get_json_schema()["properties"]
         response.encoding = "utf-8"
 
-        # Use delimiter="\n" to avoid str.splitlines() which splits on Unicode
-        # line separators (\u2028, \u2029) that may appear in CJK text fields,
-        # causing CSV column misalignment. See: https://github.com/airbytehq/airbyte/pull/3327
-        response_lines = response.iter_lines(chunk_size=1024, decode_unicode=True, delimiter="\n")
-        stripped_lines = (line.rstrip("\r") for line in response_lines if line)
-        filtered_response_lines = self.filter_null_bytes(stripped_lines)
+        response_lines = response.iter_lines(chunk_size=1024, decode_unicode=True)
+        filtered_response_lines = self.filter_null_bytes(response_lines)
         reader = self.csv_rows(filtered_response_lines)
 
         for record in reader:
@@ -298,12 +294,6 @@ class MarketoExportBase(IncrementalMarketoStream):
             if headers is None:
                 headers = row
             else:
-                if len(row) != len(headers):
-                    raise AirbyteTracedException(
-                        message="CSV row column count does not match header column count.",
-                        internal_message=f"CSV parse error at row {reader.line_num}: expected {len(headers)} columns, got {len(row)}.",
-                        failure_type=FailureType.system_error,
-                    )
                 yield dict(zip(headers, row))
 
 

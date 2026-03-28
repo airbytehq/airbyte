@@ -107,29 +107,24 @@ if [[ "$CONNECTOR_LANGUAGE" != "python" ]]; then
 fi
 
 # Resolve the connector version
-if [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
-    # When set by the publish workflow, use the pre-resolved tag directly.
-    VERSION="$CONNECTOR_VERSION_TAG"
-else
-    if [[ -z "$VERSION" ]]; then
-        VERSION=$(poe -qq get-version)
-    fi
-    case "$SEMVER_SUFFIX" in
-      none)
-        # Use exact version from metadata.yaml
-        ;;
-      preview)
-        VERSION=$(generate_dev_tag "$VERSION")
-        ;;
-      rc)
-        VERSION=$(generate_rc_tag "$VERSION")
-        ;;
-      *)
-        echo "Error: Invalid semver suffix '$SEMVER_SUFFIX'. Valid options are 'none', 'preview', or 'rc'." >&2
-        exit 1
-        ;;
-    esac
+if [[ -z "$VERSION" ]]; then
+    VERSION=$(poe -qq get-version)
 fi
+case "$SEMVER_SUFFIX" in
+  none)
+    # Use exact version from metadata.yaml
+    ;;
+  preview)
+    VERSION=$(generate_dev_tag "$VERSION")
+    ;;
+  rc)
+    VERSION=$(generate_rc_tag "$VERSION")
+    ;;
+  *)
+    echo "Error: Invalid semver suffix '$SEMVER_SUFFIX'. Valid options are 'none', 'preview', or 'rc'." >&2
+    exit 1
+    ;;
+esac
 
 echo "📋 Uploading dependencies for connector: $CONNECTOR_NAME"
 echo "  🏷️ Version: $VERSION"

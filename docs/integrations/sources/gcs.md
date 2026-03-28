@@ -236,7 +236,6 @@ Google Cloud Storage (GCS) supports following file formats:
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.10.10 | 2026-03-24 | [75390](https://github.com/airbytehq/airbyte/pull/75390) | Update dependencies |
 | 0.10.9 | 2026-03-19 | [74779](https://github.com/airbytehq/airbyte/pull/74779) | Fix ZIP file detection for files with compound extensions (e.g. `.csv.zip`) |
 | 0.10.8 | 2026-03-18 | [74781](https://github.com/airbytehq/airbyte/pull/74781) | Fix records quadratic duplication |
 | 0.10.7 | 2026-03-03 | [70287](https://github.com/airbytehq/airbyte/pull/70287) | Update dependencies |

@@ -52,8 +52,8 @@ After you have your Endpoint URL, Client ID, and Client Secret, you can configur
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click Sources. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Marketo connector and select **Marketo** from the Source type dropdown.
-4. Enter the start date, domain URL, client ID, and secret.
-5. Submit the form.
+4. Enter the start date, domain URL, client ID and secret
+5. Submit the form
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -83,13 +83,13 @@ This connector syncs the following streams from Marketo:
 
 | Stream | Sync mode | Description |
 | :----- | :-------- | :---------- |
-| **Activities_X** | Incremental | Lead activities of type X. For example, `activities_send_email` contains lead activities related to the `send_email` activity type. One stream is created per activity type. Uses `activityDate` as the cursor field. See the [Marketo Activities API docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getLeadActivitiesUsingGET) for details. |
+| **Activities_X** | Incremental | Lead activities of type X. For example, `activities_send_email` contains lead activities related to the `send_email` activity type. One stream is created per activity type. See the [Marketo Activities API docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getLeadActivitiesUsingGET) for details. |
 | **[Activity types](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getAllActivityTypesUsingGET)** | Full Refresh | Metadata about activity types. |
 | **[Campaigns](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET)** | Incremental | Marketo campaigns. Uses `createdAt` as the cursor field. |
 | **[Emails](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/emails)** | Incremental | Marketo email assets, including subject, sender info, status, and template. Uses `updatedAt` as the cursor field. |
-| **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)** | Incremental | Marketo leads. Uses `updatedAt` as the cursor field. The schema is dynamically generated from the `leads/describe.json` API, so custom fields are automatically discovered and included. |
+| **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)** | Incremental | Marketo leads. The schema is dynamically generated from the `leads/describe.json` API, so custom fields are automatically discovered and included. |
 | **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)** | Incremental | Marketo static lists. Uses `createdAt` as the cursor field. |
-| **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)** | Incremental | Marketo programs, including user-defined tags, period costs, and Salesforce cross-reference fields (`sfdcId` and `sfdcName`) for programs synced with Salesforce. Uses `updatedAt` as the cursor field. |
+| **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)** | Incremental | Marketo programs, including user-defined tags and period costs. Uses `updatedAt` as the cursor field. |
 | **[Program Tokens](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/tokens)** | Full Refresh | Token definitions (My Tokens) for each program. This is a child stream of Programs, fetching tokens for every program. |
 | **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)** | Full Refresh | Marketo segmentations. |
 
@@ -105,18 +105,11 @@ The Program Tokens stream makes one API call per program in your Marketo instanc
 
 ## Performance considerations
 
-Marketo enforces the following API limits:
+By default, Marketo caps all accounts to 50,000 API calls per day. The Marketo API also enforces a rate limit of 100 calls per 20 seconds and a maximum of 10 concurrent API calls.
 
-- **Daily API call quota**: 50,000 calls per day, resetting at 12:00 AM CST.
-- **Rate limit**: 100 calls per 20 seconds.
-- **Concurrency limit**: 10 concurrent API calls.
-- **Bulk extract quota**: 500 MB per day, shared between leads and activities. Resets at midnight CST.
+By default, this connector caps itself to 40,000 API calls per day. You can customize the maximum number of API calls this source connector makes per day to Marketo, which is helpful if other applications also use the Marketo API. If this source connector reaches the maximum number you configured, it does not replicate any data until the next day.
 
-The Leads and Activities streams use the [Marketo Bulk Extract API](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/bulk-extract/bulk-extract), which is subject to the bulk extract quota rather than the daily API call quota. If the bulk extract quota is exceeded, the connector stops replicating data until the quota resets.
-
-All other streams use the standard REST API, which counts against the daily API call quota.
-
-If these limits are too restrictive, contact your Marketo account manager for a quota increase.
+If the 50,000 limit is too stringent, contact Marketo support for a quota increase.
 
 ## Data type map
 
@@ -134,8 +127,6 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
-| 1.6.1 | 2026-03-25 | [74088](https://github.com/airbytehq/airbyte/pull/74088) | Fix CSV column misalignment when syncing leads containing CJK characters |
 | 1.6.0 | 2026-03-19 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |
 | 1.5.0 | 2026-03-18 | [74136](https://github.com/airbytehq/airbyte/pull/74136) | Add dynamic schema discovery for custom fields on Leads stream; add tags and costs to Programs schema; add workspace to Segmentations schema |
 | 1.4.40 | 2026-02-25 | [73309](https://github.com/airbytehq/airbyte/pull/73309) | Fix KeyError and TypeError when Marketo API responses lack 'result' key in export status and create endpoints |

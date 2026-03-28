@@ -1,5 +1,3 @@
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
-
 # Sample Data Migration Guide
 
 ## Upgrading to 7.0.0
@@ -17,7 +15,3 @@ Some columns are narrowing from `number` to `integer`. You may need to force nor
 ## Upgrading to 4.0.0
 
 Nothing to do here - this was a test breaking change.
-
-## Connector upgrade guide
-
-<MigrationGuide />

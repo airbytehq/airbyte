@@ -19,7 +19,6 @@ from .utils import datetime_to_string, read_stream, string_to_datetime
 
 _NOW = ab_datetime_now()
 _START_DATE = _NOW.subtract(timedelta(weeks=104))
-_A_CURSOR = "MTU3NjYxMzUzOS4wfHw0Njd8"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -45,7 +44,7 @@ class TestTicketMetricEventsStreamFullRefresh(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
-            .with_any_query_params()
+            .with_page_size(100)
             .build(),
             TicketMetricEventsResponseBuilder.ticket_metric_events_response()
             .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record())
@@ -55,39 +54,6 @@ class TestTicketMetricEventsStreamFullRefresh(TestCase):
         output = read_stream("ticket_metric_events", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 1
-
-    @HttpMocker()
-    def test_given_two_pages_when_read_ticket_metric_events_then_return_all_records(self, http_mocker):
-        api_token_authenticator = self._get_authenticator(self._config)
-        first_page_request = (
-            ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator)
-            .with_start_time(self._config["start_date"])
-            .with_any_query_params()
-            .build()
-        )
-
-        base_url = "https://d3v-airbyte.zendesk.com/api/v2/incremental/ticket_metric_events"
-
-        http_mocker.get(
-            first_page_request,
-            TicketMetricEventsResponseBuilder.ticket_metric_events_response(base_url, _A_CURSOR)
-            .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record().with_id(1))
-            .with_pagination()
-            .build(),
-        )
-        http_mocker.get(
-            ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator).with_cursor(_A_CURSOR).build(),
-            TicketMetricEventsResponseBuilder.ticket_metric_events_response()
-            .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record().with_id(2))
-            .build(),
-        )
-
-        output = read_stream("ticket_metric_events", SyncMode.full_refresh, self._config)
-
-        assert len(output.records) == 2
-        record_ids = [r.record.data["id"] for r in output.records]
-        assert 1 in record_ids
-        assert 2 in record_ids
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -116,7 +82,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
-            .with_any_query_params()
+            .with_page_size(100)
             .build(),
             TicketMetricEventsResponseBuilder.ticket_metric_events_response()
             .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record().with_field(FieldPath("time"), cursor_value))
@@ -138,7 +104,7 @@ class TestTicketMetricEventsStreamIncremental(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.ticket_metric_events_endpoint(api_token_authenticator)
             .with_start_time(datetime_to_string(state_cursor_value))
-            .with_any_query_params()
+            .with_page_size(100)
             .build(),
             TicketMetricEventsResponseBuilder.ticket_metric_events_response()
             .with_record(TicketMetricEventsRecordBuilder.ticket_metric_events_record().with_field(FieldPath("time"), new_cursor_value))

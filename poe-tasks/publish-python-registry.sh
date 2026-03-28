@@ -156,9 +156,6 @@ BASE_VERSION=$(poe -qq get-version)
 # Determine version to use
 if [[ -n "$VERSION_OVERRIDE" ]]; then
     VERSION="$VERSION_OVERRIDE"
-elif [[ -n "${CONNECTOR_VERSION_TAG:-}" ]]; then
-    # When set by the publish workflow, use the pre-resolved tag directly.
-    VERSION="$CONNECTOR_VERSION_TAG"
 elif [[ "$SEMVER_SUFFIX" == "preview" ]]; then
     # Add current timestamp for preview builds.
     # we can't use the git revision because not all python registries allow local version identifiers. 

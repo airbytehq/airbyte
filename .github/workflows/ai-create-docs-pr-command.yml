@@ -143,8 +143,6 @@ jobs:
           playbook-macro: "!connectordocs"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
-          api-version: v3
-          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           start-message: ${{ steps.context.outputs.start-message }}
           extra-context: ${{ steps.context.outputs.extra-context }}
           tags: |

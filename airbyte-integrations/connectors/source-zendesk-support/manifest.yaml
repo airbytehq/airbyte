@@ -1061,7 +1061,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/end_of_stream_paginator"
+        $ref: "#/definitions/links_next_paginator"
     schema_loader:
       type: InlineSchemaLoader
       schema:

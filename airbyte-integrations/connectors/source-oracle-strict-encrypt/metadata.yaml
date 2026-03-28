@@ -1,0 +1,36 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256:119b8506bca069bbc8357a275936c7e2b0994e6947b81f1bf8d6ce9e16db7d47
+  connectorSubtype: database
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+  connectorType: source
+  definitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
+  dockerImageTag: 0.5.7
+  dockerRepository: airbyte/source-oracle-strict-encrypt
+  documentationUrl: https://docs.airbyte.com/integrations/sources/oracle
+  githubIssueLabel: source-oracle
+  icon: oracle.svg
+  license: ELv2
+  name: Oracle DB
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  tags:
+    - language:java
+  externalDocumentationUrls:
+    - title: Oracle Database documentation
+      url: https://docs.oracle.com/en/database/
+      type: api_reference
+    - title: Oracle authentication
+      url: https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-oracle-database-security.html
+      type: authentication_guide
+metadataSpecVersion: "1.0"

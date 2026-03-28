@@ -123,7 +123,7 @@ See the official [Chargebee API reference](https://apidocs.chargebee.com/docs/ap
 
 ## Version information
 
-- **Package version:** 0.1.8
+- **Package version:** 0.1.3
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
+- **Generated with Connector SDK commit SHA:** b541ca65d697dad0915d1b5b8d8c756cd18299a7
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/chargebee/CHANGELOG.md)
