@@ -8,11 +8,15 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from pytest_lazy_fixtures import lf as lazy_fixture
 
 from airbyte_cdk import AirbyteConnectionStatus, AirbyteEntrypoint, AirbyteTracedException
 from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import find_stream, get_source
 
@@ -153,14 +157,14 @@ def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
 def test_streams(config):
     source = get_source(config)
     streams = source.streams(config)
-    assert len(streams) == 15
+    assert len(streams) == 16
 
 
 def test_streams_without_custom_reports(config_gen):
     config = config_gen(custom_reports_array=..., custom_reports=...)
     source = get_source(config)
     streams = source.streams(config)
-    assert len(streams) == 14
+    assert len(streams) == 15
 
 
 @pytest.mark.parametrize(
@@ -215,3 +219,291 @@ def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, 
     schema = stream.get_json_schema()
     assert set(schema["properties"]) == set(schema_props)
     assert set(stream.primary_key) == set(primary_key)
+
+
+# --- Phase 0: Spec Field Tests (Change 1) ---
+
+
+def test_spec_field_title_is_search_console_properties(config):
+    source = get_source(config)
+    spec = source.spec(logger=MagicMock())
+    site_urls_spec = spec.connectionSpecification["properties"]["site_urls"]
+    assert site_urls_spec["title"] == "Search Console Properties"
+
+
+def test_spec_field_description_contains_format_guidance(config):
+    source = get_source(config)
+    spec = source.spec(logger=MagicMock())
+    site_urls_spec = spec.connectionSpecification["properties"]["site_urls"]
+    assert "sc-domain:" in site_urls_spec["description"]
+    assert "https://" in site_urls_spec["description"]
+    assert "Search Console" in site_urls_spec["title"]
+
+
+# --- Phase 0: sites_list Stream Tests (Change 3) ---
+
+
+def test_sites_list_in_stream_names(config):
+    source = get_source(config)
+    streams = source.streams(config)
+    stream_names = [s.name for s in streams]
+    assert "sites_list" in stream_names
+
+
+def test_sites_list_stream_reads_records(config_gen, requests_mock):
+    config = config_gen()
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={
+            "siteEntry": [
+                {"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+                {"siteUrl": "sc-domain:example.com", "permissionLevel": "siteFullUser"},
+            ]
+        },
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    catalog = CatalogBuilder().with_stream("sites_list", SyncMode.full_refresh).build()
+    output = read(source, config=config, catalog=catalog)
+
+    assert len(output.records) == 2
+    assert output.records[0].record.data["siteUrl"] == "https://example.com/"
+    assert output.records[0].record.data["permissionLevel"] == "siteOwner"
+    assert output.records[1].record.data["siteUrl"] == "sc-domain:example.com"
+
+
+def test_sites_list_stream_empty_response(config_gen, requests_mock):
+    config = config_gen()
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={"siteEntry": []},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    catalog = CatalogBuilder().with_stream("sites_list", SyncMode.full_refresh).build()
+    output = read(source, config=config, catalog=catalog)
+
+    assert len(output.records) == 0
+
+
+# --- Phase 0: Enhanced Error Message Tests (Change 2) ---
+
+
+def test_check_enhanced_error_invalid_url_with_suggestions(config_gen, requests_mock):
+    config = config_gen(site_urls=["https://wrong-site.com/"])
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwrong-site.com%2F",
+        status_code=403,
+        json={"error": {"message": "User does not have sufficient permission"}},
+    )
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={
+            "siteEntry": [
+                {"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+                {"siteUrl": "sc-domain:example.com", "permissionLevel": "siteFullUser"},
+            ]
+        },
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config)
+
+    assert result.status == Status.FAILED
+    assert "https://example.com/" in result.message
+    assert "sc-domain:example.com" in result.message
+    # Properties are semicolon-delimited and wrapped in brackets
+    assert "[https://example.com/; sc-domain:example.com]" in result.message
+    assert "Choose the property that matches" in result.message
+    assert "Original error:" in result.message
+
+
+def test_check_enhanced_error_invalid_url_404(config_gen, requests_mock):
+    """404 (property not found) triggers the same enhanced error path as 403."""
+    config = config_gen(site_urls=["https://nonexistent-site.com/"])
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fnonexistent-site.com%2F",
+        status_code=404,
+        json={"error": {"message": "'https://nonexistent-site.com/' is not a verified Search Console site"}},
+    )
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={
+            "siteEntry": [
+                {"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+            ]
+        },
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config)
+
+    assert result.status == Status.FAILED
+    assert "https://example.com/" in result.message
+    assert "Choose the property that matches" in result.message
+    assert "Original error:" in result.message
+
+
+def test_check_enhanced_error_empty_sites_list(config_gen, requests_mock):
+    config = config_gen(site_urls=["https://no-access.com/"])
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fno-access.com%2F",
+        status_code=403,
+        json={"error": {"message": "User does not have sufficient permission"}},
+    )
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        json={"siteEntry": []},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config)
+
+    assert result.status == Status.FAILED
+    assert "No Search Console properties were found" in result.message
+    assert "Original error:" in result.message
+
+
+def test_check_enhanced_error_sites_list_auth_failure(config_gen, requests_mock):
+    """When GET /sites returns 401, the fallback message provides static format guidance."""
+    config = config_gen(site_urls=["https://wrong-site.com/"])
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fwrong-site.com%2F",
+        status_code=403,
+        json={"error": {"message": "Forbidden"}},
+    )
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        status_code=401,
+        json={"error": {"message": "Invalid credentials"}},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config)
+
+    assert result.status == Status.FAILED
+    # Fallback message contains static format examples
+    assert "sc-domain:example.com" in result.message
+    assert "https://example.com/" in result.message
+    assert "Original error:" in result.message
+
+
+def test_check_backward_compatibility_valid_config(config_gen, config, requests_mock):
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F",
+        json={"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+    )
+    requests_mock.post(
+        "https://oauth2.googleapis.com/token",
+        json={"access_token": "token", "expires_in": 3600},
+    )
+
+    source = get_source(config=config)
+    result = source.check(logger=MagicMock(), config=config_gen())
+
+    assert result == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+
+
+# --- Phase 0: Unit Tests for EnhancedSitesErrorHandler (improvements) ---
+
+
+def test_enhanced_error_handler_exception_input_delegates_to_parent():
+    """When interpret_response receives an Exception (not a Response), the parent handler
+    returns RETRY, so the enhanced handler does not modify the resolution."""
+    from components import EnhancedSitesErrorHandler
+
+    handler = EnhancedSitesErrorHandler(config={}, parameters={})
+    resolution = handler.interpret_response(requests.ConnectionError("DNS resolution failed"))
+
+    # ConnectionError triggers RETRY in DefaultErrorHandler, not FAIL,
+    # so the enhancement logic is correctly skipped.
+    assert resolution.response_action == ResponseAction.RETRY
+    assert "DNS resolution failed" in resolution.error_message
+
+
+def test_enhanced_error_handler_retries_on_429(requests_mock):
+    """When GET /sites returns 429 first then 200, the handler retries and returns properties."""
+    from components import EnhancedSitesErrorHandler
+
+    # Mock the /sites endpoint: first call returns 429, second returns properties
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        [
+            {"status_code": 429, "json": {"error": {"message": "Rate limit exceeded"}}},
+            {
+                "status_code": 200,
+                "json": {
+                    "siteEntry": [
+                        {"siteUrl": "https://example.com/", "permissionLevel": "siteOwner"},
+                    ]
+                },
+            },
+        ],
+    )
+
+    # Build a mock failed response with an Authorization header
+    mock_request = requests.PreparedRequest()
+    mock_request.headers = {"Authorization": "Bearer test-token"}
+    failed_response = requests.models.Response()
+    failed_response.status_code = 403
+    failed_response._content = b'{"error": {"message": "Forbidden"}}'
+    failed_response.headers["Content-Type"] = "application/json"
+    failed_response.request = mock_request
+
+    handler = EnhancedSitesErrorHandler(config={}, parameters={})
+    resolution = handler.interpret_response(failed_response)
+
+    assert resolution.response_action == ResponseAction.FAIL
+    assert "https://example.com/" in resolution.error_message
+    assert "Choose the property that matches" in resolution.error_message
+
+
+def test_enhanced_error_handler_429_both_attempts_fail(requests_mock):
+    """When GET /sites returns 429 on both attempts, the handler falls back to generic message."""
+    from components import EnhancedSitesErrorHandler
+
+    requests_mock.get(
+        "https://www.googleapis.com/webmasters/v3/sites",
+        [
+            {"status_code": 429, "json": {"error": {"message": "Rate limit exceeded"}}},
+            {"status_code": 429, "json": {"error": {"message": "Rate limit exceeded"}}},
+        ],
+    )
+
+    mock_request = requests.PreparedRequest()
+    mock_request.headers = {"Authorization": "Bearer test-token"}
+    failed_response = requests.models.Response()
+    failed_response.status_code = 403
+    failed_response._content = b'{"error": {"message": "Forbidden"}}'
+    failed_response.headers["Content-Type"] = "application/json"
+    failed_response.request = mock_request
+
+    handler = EnhancedSitesErrorHandler(config={}, parameters={})
+    resolution = handler.interpret_response(failed_response)
+
+    assert resolution.response_action == ResponseAction.FAIL
+    assert "Could not verify the property" in resolution.error_message

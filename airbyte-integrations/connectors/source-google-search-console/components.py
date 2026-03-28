@@ -2,13 +2,24 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional, Union
+
+import requests
+from airbyte_protocol_dataclasses.models import FailureType
 
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+
+
+logger = logging.getLogger("airbyte")
+
+GSC_SITES_LIST_URL = "https://www.googleapis.com/webmasters/v3/sites"
 
 
 @dataclass
@@ -181,3 +192,96 @@ class CustomReportSchemaLoader(SchemaLoader):
             for field in fields:
                 properties = {**properties, **field}
         return properties
+
+
+@dataclass
+class EnhancedSitesErrorHandler(DefaultErrorHandler):
+    """
+    Custom error handler for the sites stream that enriches error messages with property suggestions.
+
+    When the sites endpoint returns a non-OK response (e.g., 403 for an invalid property URL),
+    this handler calls GET /sites to fetch the user's available properties and includes them
+    as suggestions in the error message.
+    """
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        resolution = super().interpret_response(response_or_exception)
+        if resolution.response_action != ResponseAction.FAIL:
+            return resolution
+
+        enhanced_message = self._build_enhanced_error_message(response_or_exception, resolution.error_message)
+        return ErrorResolution(
+            response_action=ResponseAction.FAIL,
+            failure_type=resolution.failure_type or FailureType.config_error,
+            error_message=enhanced_message,
+        )
+
+    def _build_enhanced_error_message(
+        self,
+        response_or_exception: Optional[Union[requests.Response, Exception]],
+        original_message: Optional[str],
+    ) -> str:
+        """Compose an enhanced error message with property suggestions when available."""
+        available_properties = self._fetch_available_properties(response_or_exception)
+        original_detail = f" (Original error: {original_message})" if original_message else ""
+
+        if available_properties is None:
+            return (
+                "Could not verify the property. "
+                "Make sure each property matches the exact format shown in "
+                "Google Search Console: use 'https://example.com/' for "
+                "URL-prefix properties or 'sc-domain:example.com' for "
+                "domain properties. "
+                "Open Google Search Console to check your property names: "
+                "https://search.google.com/search-console" + original_detail
+            )
+
+        if not available_properties:
+            return (
+                "No Search Console properties were found for this account. "
+                "Make sure the authenticated account (OAuth user or service "
+                "account email) has been added as a user in Google Search "
+                "Console. To add access, go to Settings > Users and "
+                "permissions in Search Console: "
+                "https://search.google.com/search-console" + original_detail
+            )
+
+        property_list = "; ".join(p.get("siteUrl", "unknown") for p in available_properties)
+        return (
+            f"The property was not found in your account. "
+            f"Your account has access to these Search Console properties: "
+            f"[{property_list}]. "
+            f"Choose the property that matches the site you want to sync and "
+            f"enter the exact value into the 'Search Console Properties' field."
+            f"{original_detail}"
+        )
+
+    def _fetch_available_properties(
+        self,
+        response_or_exception: Optional[Union[requests.Response, Exception]],
+    ) -> Optional[List[Dict[str, str]]]:
+        """Call GET /sites to retrieve all properties the authenticated user can access.
+
+        Reuses auth headers from the failed response's request when available.
+        Returns a list of property dicts on success, an empty list if the account has no
+        properties, or None if the request could not be completed.
+        """
+        if not (isinstance(response_or_exception, requests.Response) and response_or_exception.request):
+            return None
+        auth_header = response_or_exception.request.headers.get("Authorization")
+        if not auth_header:
+            return None
+
+        headers = {"Authorization": auth_header}
+        try:
+            response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
+            if response.status_code == 429:
+                logger.warning("GET /sites rate-limited (429), retrying once")
+                response = requests.get(GSC_SITES_LIST_URL, headers=headers, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+        except (requests.RequestException, ValueError):
+            logger.warning("GET /sites request failed during property lookup", exc_info=True)
+            return None
+
+        return data.get("siteEntry", [])
