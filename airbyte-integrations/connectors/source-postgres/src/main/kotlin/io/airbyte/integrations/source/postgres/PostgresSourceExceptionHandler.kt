@@ -200,6 +200,24 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
 
         add(
             ConnectorErrorProfile(
+                errorClass = "Postgres SQL Exception",
+                regexMatchingPattern = "(?i).*unsupported Unicode escape sequence.*",
+                failureType = FailureType.CONFIG,
+                externalMessage =
+                    "Source database contains JSON data with unsupported null character (\\u0000) escape sequences. " +
+                        "Remove or replace null characters in the affected JSON/JSONB columns.",
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: ERROR: unsupported Unicode escape sequence",
+                referenceLinks =
+                    listOf(
+                        "https://github.com/airbytehq/oncall/issues/11724",
+                        "https://github.com/airbytehq/airbyte/issues/3476",
+                    ),
+            ),
+        )
+
+        add(
+            ConnectorErrorProfile(
                 errorClass = "Postgres Debezium Connection Error",
                 regexMatchingPattern =
                     "(?i).*An exception occurred in the change event producer. This connector will be stopped.*",

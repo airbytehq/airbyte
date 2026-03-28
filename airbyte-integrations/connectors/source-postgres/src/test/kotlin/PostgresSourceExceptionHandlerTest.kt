@@ -214,6 +214,18 @@ class PostgresSourceExceptionHandlerTest {
         )
     }
 
+    @Test
+    fun testUnsupportedUnicodeEscapeSequenceException() {
+        val exception = PSQLException("ERROR: unsupported Unicode escape sequence", null)
+        val externalMessage = exceptionHandler!!.getExternalMessage(exception)
+        Assertions.assertTrue(exceptionHandler!!.checkErrorType(exception, FailureType.CONFIG))
+        Assertions.assertEquals(
+            "Source database contains JSON data with unsupported null character (\\u0000) escape sequences. " +
+                "Remove or replace null characters in the affected JSON/JSONB columns.",
+            externalMessage
+        )
+    }
+
     // testing a case when we are throwing an error that is not part of our error handling.
     @Test
     fun testUnhandledFatalException() {
