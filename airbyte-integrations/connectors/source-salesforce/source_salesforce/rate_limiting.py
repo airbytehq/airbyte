@@ -126,6 +126,13 @@ class SalesforceErrorHandler(ErrorHandler):
                     'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
                 )
 
+            if error_code == "NOT_FOUND" or response.status_code == codes.not_found:
+                return ErrorResolution(
+                    ResponseAction.FAIL,
+                    FailureType.config_error,
+                    f"Salesforce object not found. The requested resource does not exist in this Salesforce instance. Error message from Salesforce: {error_message}",
+                )
+
         return ErrorResolution(
             ResponseAction.FAIL,
             FailureType.system_error,
