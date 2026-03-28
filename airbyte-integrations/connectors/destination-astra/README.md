@@ -1,1 +1,1 @@
-../_shared/README-python.md
+../_shared/README-python-connectors.md

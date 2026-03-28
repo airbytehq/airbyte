@@ -1,1 +1,1 @@
-../_shared/README-manifest-contributing.md
+../_shared/README-declarative-sources-w-contributing.md

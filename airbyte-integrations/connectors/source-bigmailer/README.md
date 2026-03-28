@@ -1,1 +1,1 @@
-../_shared/README-manifest.md
+../_shared/README-declarative-sources.md
