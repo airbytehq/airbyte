@@ -106,8 +106,9 @@ class ChannelsRetriever(SimpleRetriever):
         """
         The `is_member` property indicates whether the API Bot is already assigned / joined to the channel.
         https://api.slack.com/types/conversation#booleans
+        Archived channels cannot be joined and attempting to do so wastes rate limit budget.
         """
-        return config["join_channels"] and not record.get("is_member")
+        return config["join_channels"] and not record.get("is_member") and not record.get("is_archived")
 
     def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
         channel_id: str = channel.get("id")
