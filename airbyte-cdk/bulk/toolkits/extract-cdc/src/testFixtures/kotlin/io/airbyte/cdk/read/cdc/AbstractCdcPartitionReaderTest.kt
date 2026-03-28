@@ -298,7 +298,7 @@ abstract class AbstractCdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseab
             val offset =
                 DebeziumOffset(
                     offsetNode
-                        .fields()
+                        .properties()
                         .asSequence()
                         .map { Jsons.readTree(it.key) to Jsons.readTree(it.value.asText()) }
                         .toMap(),

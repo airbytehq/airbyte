@@ -9,6 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                           |
 |---------|------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.3   | 2026-03-27 |              | Bump Debezium to `3.4.2.Final` to avoid MySQL CDC GTID validation failures caused by null UUIDSet subtraction. |
 | 1.0.2   | 2026-02-24 | [74007](https://github.com/airbytehq/airbyte/pull/74007) | Fix infinite loop when cursor-based incremental sync encounters an empty table with prior state by caching NULL cursor upper bound values (toolkit). |
 | 1.0.1   | 2026-02-24 | | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944). |
 | 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-extract. Separate versioning for extract package begins. |
