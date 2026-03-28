@@ -1,1 +1,1 @@
-# HubSpot Destination
+../_shared/README-java.md
