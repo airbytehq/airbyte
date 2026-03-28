@@ -22,7 +22,7 @@ wcmatch = "^10.0"
 dill = "^0.3.4"
 transformers = "^4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "^7.0.4"}
+airbyte-cdk = {extras = ["file-based"], git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "devin/1774667708-update-nltk-cryptography"}
 pendulum = "^3.0.0"
 
 [tool.poetry.scripts]
