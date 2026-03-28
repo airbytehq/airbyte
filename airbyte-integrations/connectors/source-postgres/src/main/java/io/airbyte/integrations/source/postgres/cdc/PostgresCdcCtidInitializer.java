@@ -160,10 +160,11 @@ public class PostgresCdcCtidInitializer {
     final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
         sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
 
-    final JsonNode state =
-        (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
-            ? initialDebeziumState
-            : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+    final boolean isSavedState =
+        stateManager.getCdcStateManager().getCdcState() != null && stateManager.getCdcStateManager().getCdcState().getState() != null;
+    final JsonNode state = isSavedState
+        ? Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState())
+        : initialDebeziumState;
 
     final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(
         Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(database)),
@@ -173,8 +174,16 @@ public class PostgresCdcCtidInitializer {
 
     // We should always be able to extract offset out of state if it's not null
     if (state != null && savedOffset.isEmpty()) {
+      if (isSavedState) {
+        throw new ConfigErrorException(
+            "Saved CDC offset state does not match the current database configuration. Reset the connection to start a fresh sync.",
+            "Failed to extract LSN offset from saved state. The Debezium partition key derived from the current config "
+                + "does not match the partition key in the saved state. This typically occurs after a database rename or "
+                + "replication configuration change. State: " + state.asText());
+      }
       throw new RuntimeException(
-          "Unable extract the offset out of state, State mutation might not be working. " + state.asText());
+          "Failed to initialize CDC offset state from the current database. "
+              + "The connector could not extract a valid LSN from the constructed initial state. State: " + state.asText());
     }
 
     if (!savedOffsetAfterReplicationSlotLSN) {
