@@ -1,1 +1,1 @@
-../_shared/README-java-connectors.md
+../_shared/README-java-destinations.md
