@@ -4,15 +4,22 @@
 
 
 import json
-from dataclasses import dataclass
+import logging
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlencode
 
+import dpath
 import requests
 from requests.exceptions import InvalidURL
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import (
+    ParentStreamConfig,
+    SubstreamPartitionRouter,
+    iterate_with_last_flag,
+)
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -23,6 +30,7 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
+from airbyte_cdk.sources.types import Config, StreamSlice
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 
 
@@ -160,6 +168,97 @@ class LinkedInAdsErrorHandler(DefaultErrorHandler):
                 error_message="source-linkedin-ads has faced a temporary DNS resolution issue. Retrying...",
             )
         return super().interpret_response(response_or_exception)
+
+
+@dataclass
+class LinkedInAdsBatchedPartitionRouter(SubstreamPartitionRouter):
+    """Partition router that batches parent campaign records for efficient LinkedIn adAnalytics API calls.
+
+    Instead of creating one API request per campaign (which causes partition explosion for accounts
+    with many campaigns), this router groups campaign IDs into batches and creates one partition
+    per batch. Each partition contains a pre-formatted URL-encoded URN list for use in LinkedIn's
+    List() query parameter syntax.
+
+    This is safe for CAMPAIGN-pivot analytics streams because the API returns separate records
+    per campaign in the response, with each record's pivotValues containing the specific campaign URN.
+    """
+
+    parent_stream_configs: List[ParentStreamConfig] = field(default_factory=list)
+    config: Config = field(default_factory=dict)
+    parameters: InitVar[Mapping[str, Any]] = None
+    batch_size: Union[int, str] = 20
+    urn_prefix: str = "urn%3Ali%3AsponsoredCampaign%3A"
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        if isinstance(self.batch_size, str):
+            self.batch_size = int(self.batch_size)
+        super().__post_init__(parameters)
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        """Yield stream slices with batched campaign URNs instead of one slice per campaign."""
+        if not self.parent_stream_configs:
+            yield from []
+            return
+
+        for parent_stream_config in self.parent_stream_configs:
+            parent_stream = parent_stream_config.stream
+            parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore[union-attr]
+            partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore[union-attr]
+
+            batch: List[str] = []
+            last_parent_partition: dict = {}
+
+            for partition, is_last_slice in iterate_with_last_flag(parent_stream.generate_partitions()):
+                if partition is None:
+                    break
+
+                for parent_record, is_last_record_in_slice in iterate_with_last_flag(partition.read()):
+                    should_add = parent_record is not None
+                    if parent_record is not None:
+                        parent_stream.cursor.observe(parent_record)
+                        last_parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
+                        record_data = parent_record.data
+
+                        try:
+                            partition_value = dpath.get(record_data, parent_field)
+                            batch.append(str(partition_value))
+                        except KeyError:
+                            should_add = False
+
+                    if is_last_record_in_slice:
+                        parent_stream.cursor.close_partition(partition)
+                        if is_last_slice:
+                            parent_stream.cursor.ensure_at_least_one_state_emitted()
+
+                    if should_add and len(batch) >= self.batch_size:
+                        yield self._create_batch_slice(batch, partition_field, last_parent_partition)
+                        batch = []
+
+            # Yield any remaining records in the final batch
+            if batch:
+                yield self._create_batch_slice(batch, partition_field, last_parent_partition)
+
+            yield from []
+
+    def _create_batch_slice(
+        self,
+        batch: List[str],
+        partition_field: str,
+        parent_partition: Mapping[str, Any],
+    ) -> StreamSlice:
+        """Create a StreamSlice containing batched URL-encoded campaign URNs."""
+        urns = ",".join(f"{self.urn_prefix}{campaign_id}" for campaign_id in batch)
+        return StreamSlice(
+            partition={
+                partition_field: urns,
+                "parent_slice": parent_partition or {},
+            },
+            cursor_slice={},
+        )
+
+    @property
+    def logger(self) -> logging.Logger:
+        return logging.getLogger("airbyte.LinkedInAdsBatchedPartitionRouter")
 
 
 def transform_change_audit_stamps(

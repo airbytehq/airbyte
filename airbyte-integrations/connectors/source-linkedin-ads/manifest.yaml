@@ -543,7 +543,7 @@ definitions:
             q: analytics
             pivot: "(value:CAMPAIGN)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List({{ stream_partition.get('campaign_id') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
@@ -564,7 +564,9 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.LinkedInAdsBatchedPartitionRouter
+          batch_size: 20
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -589,7 +591,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('pivotValues', [''])[0].split(':')[-1] }}"
               value_type: string
         - type: AddFields
           fields:
