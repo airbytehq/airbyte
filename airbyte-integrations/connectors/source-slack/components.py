@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from datetime import timedelta
 from functools import partial
 from typing import Any, Iterable, List, Mapping, Optional, Union
