@@ -8,11 +8,6 @@ check:
   - departments
 
 definitions:
-  account_partition_router:
-    type: ListPartitionRouter
-    values: "{{ config.accounts }}"
-    cursor_field: account
-
   base_requester:
     type: HttpRequester
     url_base: https://api.shiftbase.com/api/
@@ -20,7 +15,7 @@ definitions:
     request_headers:
       Content-Type: application/json
       Accept: application/json
-      Authorization: "API {{ stream_partition.account.access_token }}"
+      Authorization: "API {{ config.access_token }}"
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
@@ -48,14 +43,13 @@ definitions:
     fields:
     - path:
       - account_name
-      value: "{{ stream_partition.account.account_name }}"
+      value: "{{ config.account_name }}"
 
   departments_stream:
     type: DeclarativeStream
     name: departments
     primary_key:
     - - id
-    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -73,8 +67,6 @@ definitions:
           - Department
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     transformations:
     - $ref: "#/definitions/add_account_name_transformation"
     schema_loader:
@@ -87,16 +79,11 @@ definitions:
     primary_key:
     - - id
     - - department_id
-    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
         path: "hr/departments/{{ stream_partition.department_id }}/employeeList"
-        request_headers:
-          Content-Type: application/json
-          Accept: application/json
-          Authorization: "API {{ stream_partition.parent_slice.account.access_token }}"
         request_parameters:
           min_date: "{{ config.start_date }}"
       record_selector:
@@ -113,8 +100,6 @@ definitions:
         - type: ParentStreamConfig
           parent_key: id
           partition_field: department_id
-          extra_fields:
-          - - account_id
           stream:
             $ref: "#/definitions/departments_stream"
     transformations:
@@ -125,10 +110,7 @@ definitions:
         value: "{{ stream_partition.department_id }}"
       - path:
         - account_name
-        value: "{{ stream_partition.parent_slice.account.account_name }}"
-      - path:
-        - account_id
-        value: "{{ stream_partition.extra_fields.account_id }}"
+        value: "{{ config.account_name }}"
       - path:
         - team_id
         value: "{{ record.teamId }}"
@@ -145,16 +127,11 @@ definitions:
     primary_key:
     - - employeeId
     - - year
-    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
         path: "employees/{{ stream_partition.employee_id }}/time_distribution"
-        request_headers:
-          Content-Type: application/json
-          Accept: application/json
-          Authorization: "API {{ stream_partition.parent_slice.parent_slice.account.access_token }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -169,8 +146,6 @@ definitions:
         - type: ParentStreamConfig
           parent_key: id
           partition_field: employee_id
-          extra_fields:
-          - - account_id
           stream:
             $ref: "#/definitions/employees_stream"
     incremental_sync:
@@ -197,10 +172,7 @@ definitions:
       fields:
       - path:
         - account_name
-        value: "{{ stream_partition.parent_slice.parent_slice.account.account_name }}"
-      - path:
-        - account_id
-        value: "{{ stream_partition.extra_fields.account_id }}"
+        value: "{{ config.account_name }}"
       - path:
         - employee_id
         value: "{{ stream_partition.employee_id }}"
@@ -216,7 +188,6 @@ definitions:
     name: absentees
     primary_key:
     - - id
-    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -232,8 +203,6 @@ definitions:
           - Absentee
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updated
@@ -261,7 +230,6 @@ definitions:
     name: availabilities
     primary_key:
     - - id
-    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -277,8 +245,6 @@ definitions:
           - Availability
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date
@@ -305,7 +271,6 @@ definitions:
     name: shifts
     primary_key:
     - - id
-    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -323,8 +288,6 @@ definitions:
           - Shift
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     transformations:
     - $ref: "#/definitions/add_account_name_transformation"
     schema_loader:
@@ -336,7 +299,6 @@ definitions:
     name: users
     primary_key:
     - - id
-    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -352,8 +314,6 @@ definitions:
           - User
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     transformations:
     - $ref: "#/definitions/add_account_name_transformation"
     schema_loader:
@@ -379,8 +339,6 @@ definitions:
           field_path: []
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     transformations:
     - $ref: "#/definitions/add_account_name_transformation"
     schema_loader:
@@ -392,7 +350,6 @@ definitions:
     name: timesheet_detail_report
     primary_key:
     - - timesheetId
-    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -408,8 +365,6 @@ definitions:
           field_path: []
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timesheetDate
@@ -442,7 +397,6 @@ definitions:
     name: schedule_detail_report
     primary_key:
     - - rosterId
-    - - account_name
     retriever:
       type: SimpleRetriever
       requester:
@@ -458,8 +412,6 @@ definitions:
           field_path: []
       paginator:
         type: NoPagination
-      partition_router:
-        $ref: "#/definitions/account_partition_router"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: rosterDate
@@ -693,10 +645,6 @@ definitions:
           type:
           - "null"
           - string
-        account_id:
-          type:
-          - "null"
-          - string
         account_name:
           type:
           - "null"
@@ -741,10 +689,6 @@ definitions:
                 type:
                 - "null"
                 - integer
-        account_id:
-          type:
-          - "null"
-          - string
         account_name:
           type:
           - "null"
@@ -1585,41 +1529,28 @@ spec:
     title: Shiftbase Spec
     type: object
     required:
-    - accounts
+    - access_token
+    - account_name
     - start_date
     properties:
-      accounts:
-        type: array
-        title: Accounts
-        description: List of Shiftbase accounts to sync data from.
-        minItems: 1
+      access_token:
+        type: string
+        title: Access Token
+        description: Access Token generated from the Shiftbase App Center.
+        airbyte_secret: true
         order: 0
-        items:
-          type: object
-          required:
-          - access_token
-          - account_name
-          properties:
-            access_token:
-              type: string
-              title: Access Token
-              description: Access Token generated from Shiftbase App Center.
-              airbyte_secret: true
-              minLength: 1
-              order: 0
-            account_name:
-              type: string
-              title: Account Name
-              description: Account name for tracking purposes.
-              minLength: 1
-              order: 1
+      account_name:
+        type: string
+        title: Account Name
+        description: A name to identify this Shiftbase account.
+        order: 1
       start_date:
         type: string
         title: Start Date
         description: Start date for historical data sync in YYYY-MM-DD format.
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         format: date
-        order: 1
+        order: 2
         examples:
         - "2024-01-01"
       schedule_report_end_date:
