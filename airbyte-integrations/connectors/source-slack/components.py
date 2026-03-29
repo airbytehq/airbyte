@@ -137,15 +137,16 @@ class ThreadsPartitionRouter(SubstreamPartitionRouter):
     limit consumption.
 
     The reply_count field from the parent channel_messages record is passed via
-    extra_fields. Messages with reply_count < 2 are skipped because:
-    - reply_count == 0 or null: message has no thread at all
-    - reply_count == 1: only the parent message itself, no actual replies
+    extra_fields. Messages with reply_count < 1 are skipped because:
+    - reply_count absent or 0: message has no thread replies at all
+    - reply_count >= 1: at least one reply exists (reply_count excludes the
+      parent message per Slack's API — see conversations.replies docs)
     """
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         for stream_slice in super().stream_slices():
             reply_count = stream_slice.extra_fields.get("reply_count")
-            if reply_count is not None and int(reply_count) >= 2:
+            if reply_count is not None and int(reply_count) >= 1:
                 yield stream_slice
             else:
                 LOGGER.debug(
