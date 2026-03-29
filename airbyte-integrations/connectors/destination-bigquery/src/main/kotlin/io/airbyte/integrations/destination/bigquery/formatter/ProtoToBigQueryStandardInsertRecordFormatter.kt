@@ -47,6 +47,7 @@ import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 class ProtoToBigQueryStandardInsertRecordFormatter(
@@ -285,7 +286,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 val timestampValue = proxy.getTimestampWithTimezone(accessor)
                 if (timestampValue != null) {
                     try {
-                        val parsedTimestamp = OffsetDateTime.parse(timestampValue)
+                        val parsedTimestamp =
+                            OffsetDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                         if (
                             parsedTimestamp < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
                                 parsedTimestamp > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
@@ -325,7 +327,8 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 val timestampValue = proxy.getTimestampWithoutTimezone(accessor)
                 if (timestampValue != null) {
                     try {
-                        val parsedDateTime = LocalDateTime.parse(timestampValue)
+                        val parsedDateTime =
+                            LocalDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                         if (
                             parsedDateTime < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
                                 parsedDateTime > BigQueryRecordFormatter.DATETIME_MAX_VALUE
@@ -367,7 +370,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                     try {
                         val formattedValue =
                             BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(
-                                java.time.OffsetTime.parse(timeValue)
+                                java.time.OffsetTime.parse(timeValue).truncatedTo(ChronoUnit.MICROS)
                             )
                         ExtractionResult(formattedValue, null)
                     } catch (_: Exception) {
@@ -391,7 +394,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                     try {
                         val formattedValue =
                             BigQueryRecordFormatter.TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                                java.time.LocalTime.parse(timeValue)
+                                java.time.LocalTime.parse(timeValue).truncatedTo(ChronoUnit.MICROS)
                             )
                         ExtractionResult(formattedValue, null)
                     } catch (_: Exception) {
@@ -559,9 +562,10 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 }
             }
             is TimestampWithTimezoneValue -> {
+                val truncated = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
+                    truncated < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
+                        truncated > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -573,16 +577,15 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                     )
                 } else {
                     val formattedValue =
-                        BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
-                        )
+                        BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(truncated)
                     ExtractionResult(formattedValue, null)
                 }
             }
             is TimestampWithoutTimezoneValue -> {
+                val truncated = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.DATETIME_MAX_VALUE
+                    truncated < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
+                        truncated > BigQueryRecordFormatter.DATETIME_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -595,20 +598,22 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            truncated
                         )
                     ExtractionResult(formattedValue, null)
                 }
             }
             is TimeWithTimezoneValue -> {
                 val formattedValue =
-                    BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(coercedValue.value)
+                    BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(
+                        coercedValue.value.truncatedTo(ChronoUnit.MICROS)
+                    )
                 ExtractionResult(formattedValue, null)
             }
             is TimeWithoutTimezoneValue -> {
                 val formattedValue =
                     BigQueryRecordFormatter.TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                        coercedValue.value
+                        coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                     )
                 ExtractionResult(formattedValue, null)
             }

@@ -49,6 +49,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 class ProtoToBigQueryCSVRowGenerator(
@@ -217,7 +218,8 @@ class ProtoToBigQueryCSVRowGenerator(
                     val timestampValue = proxy.getTimestampWithTimezone(accessor)
                     if (timestampValue != null) {
                         try {
-                            val parsedTimestamp = OffsetDateTime.parse(timestampValue)
+                            val parsedTimestamp =
+                                OffsetDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                             if (
                                 parsedTimestamp < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
                                     parsedTimestamp > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
@@ -257,7 +259,8 @@ class ProtoToBigQueryCSVRowGenerator(
                     val timestampValue = proxy.getTimestampWithoutTimezone(accessor)
                     if (timestampValue != null) {
                         try {
-                            val parsedDateTime = LocalDateTime.parse(timestampValue)
+                            val parsedDateTime =
+                                LocalDateTime.parse(timestampValue).truncatedTo(ChronoUnit.MICROS)
                             if (
                                 parsedDateTime < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
                                     parsedDateTime > BigQueryRecordFormatter.DATETIME_MAX_VALUE
@@ -298,7 +301,7 @@ class ProtoToBigQueryCSVRowGenerator(
                         try {
                             val formattedValue =
                                 BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(
-                                    OffsetTime.parse(timeValue)
+                                    OffsetTime.parse(timeValue).truncatedTo(ChronoUnit.MICROS)
                                 )
                             ExtractionResult(formattedValue, null)
                         } catch (_: Exception) {
@@ -322,7 +325,7 @@ class ProtoToBigQueryCSVRowGenerator(
                         try {
                             val formattedValue =
                                 BigQueryRecordFormatter.TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                                    LocalTime.parse(timeValue)
+                                    LocalTime.parse(timeValue).truncatedTo(ChronoUnit.MICROS)
                                 )
                             ExtractionResult(formattedValue, null)
                         } catch (_: Exception) {
@@ -480,9 +483,10 @@ class ProtoToBigQueryCSVRowGenerator(
                 }
             }
             is TimestampWithTimezoneValue -> {
+                val truncated = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
+                    truncated < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
+                        truncated > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -494,16 +498,15 @@ class ProtoToBigQueryCSVRowGenerator(
                     )
                 } else {
                     val formattedValue =
-                        BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
-                        )
+                        BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(truncated)
                     ExtractionResult(formattedValue, null)
                 }
             }
             is TimestampWithoutTimezoneValue -> {
+                val truncated = coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                 if (
-                    coercedValue.value < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
-                        coercedValue.value > BigQueryRecordFormatter.DATETIME_MAX_VALUE
+                    truncated < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
+                        truncated > BigQueryRecordFormatter.DATETIME_MAX_VALUE
                 ) {
                     ExtractionResult(
                         null,
@@ -516,20 +519,22 @@ class ProtoToBigQueryCSVRowGenerator(
                 } else {
                     val formattedValue =
                         BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                            coercedValue.value
+                            truncated
                         )
                     ExtractionResult(formattedValue, null)
                 }
             }
             is TimeWithTimezoneValue -> {
                 val formattedValue =
-                    BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(coercedValue.value)
+                    BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(
+                        coercedValue.value.truncatedTo(ChronoUnit.MICROS)
+                    )
                 ExtractionResult(formattedValue, null)
             }
             is TimeWithoutTimezoneValue -> {
                 val formattedValue =
                     BigQueryRecordFormatter.TIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                        coercedValue.value
+                        coercedValue.value.truncatedTo(ChronoUnit.MICROS)
                     )
                 ExtractionResult(formattedValue, null)
             }
