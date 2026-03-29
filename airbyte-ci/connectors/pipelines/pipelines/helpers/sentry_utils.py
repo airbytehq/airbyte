@@ -1,92 +1,33 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
-from __future__ import annotations
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-import importlib.metadata
+import contextlib
 import os
-from typing import TYPE_CHECKING
+from typing import Generator
 
 import sentry_sdk
-from connector_ops.utils import Connector  # type: ignore
 
-if TYPE_CHECKING:
-    from typing import Any, Callable, Dict, Optional
-
-    from asyncclick import Command, Context
-
-    from pipelines.models.steps import Step
+from pipelines import main
 
 
-def initialize() -> None:
-    if "SENTRY_DSN" in os.environ:
-        sentry_sdk.init(
-            dsn=os.environ.get("SENTRY_DSN"),
-            environment=os.environ.get("SENTRY_ENVIRONMENT") or "production",
-            before_send=before_send,  # type: ignore
-            release=f"pipelines@{importlib.metadata.version('pipelines')}",
-        )
+def turn_off_sentry() -> None:
+    sentry_sdk.init(dsn="")
 
 
-def before_send(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    # Ignore logged errors that do not contain an exception
-    if "log_record" in hint and "exc_info" not in hint:
-        return None
-
-    return event
-
-
-def with_step_context(func: Callable) -> Callable:
-    def wrapper(self: Step, *args: Any, **kwargs: Any) -> Step:
-        with sentry_sdk.configure_scope() as scope:
-            step_name = self.__class__.__name__
-            scope.set_tag("pipeline_step", step_name)
-            scope.set_context(
-                "Pipeline Step",
-                {
-                    "name": step_name,
-                    "step_title": self.title,
-                    "max_retries": self.max_retries,
-                    "max_duration": self.max_duration,
-                    "retry_count": self.retry_count,
-                },
-            )
-
-            if hasattr(self.context, "connector"):
-                connector: Connector = self.context.connector
-                scope.set_tag("connector", connector.technical_name)
-                scope.set_context(
-                    "Connector",
-                    {
-                        "name": connector.name,
-                        "technical_name": connector.technical_name,
-                        "language": connector.language,
-                        "version": connector.version,
-                        "support_level": connector.support_level,
-                    },
-                )
-
-            return func(self, *args, **kwargs)
-
-    return wrapper
-
-
-def with_command_context(func: Callable) -> Callable:
-    def wrapper(self: Command, ctx: Context, *args: Any, **kwargs: Any) -> Command:
-        with sentry_sdk.configure_scope() as scope:
-            scope.set_tag("pipeline_command", self.name)
-            scope.set_context(
-                "Pipeline Command",
-                {
-                    "name": self.name,
-                    "params": self.params,
-                },
-            )
-
-            scope.set_context("Click Context", ctx.obj)
-            scope.set_tag("git_branch", ctx.obj.get("git_branch", "unknown"))
-            scope.set_tag("git_revision", ctx.obj.get("git_revision", "unknown"))
-
-            return func(self, ctx, *args, **kwargs)
-
-    return wrapper
+@contextlib.contextmanager
+def with_sentry_pipeline_scope(pipeline_name: str) -> Generator[None, None, None]:
+    """
+    Sets up Sentry scope for a pipeline run.
+    This will append context about the pipeline run to all events sent to Sentry within the scope.
+    See https://docs.sentry.io/platforms/python/enriching-events/scopes/#local-scopes.
+    """
+    if os.environ.get("CI") and sentry_sdk.Hub.current.client is not None:
+        with sentry_sdk.isolation_scope() as scope:
+            scope.set_tag("pipeline_name", pipeline_name)
+            scope.set_tag("pull_request", main.is_pr_context())
+            scope.set_tag("branch", main.branch_name())
+            scope.set_tag("commit_sha", os.environ.get("CI_PIPELINE_COMMIT_SHA"))
+            scope.set_tag("pipeline_start_id", os.environ.get("CI_PIPELINE_IID"))
+            scope.set_tag("job_url", os.environ.get("CI_JOB_URL", "unknown"))
+            yield
+    else:
+        yield
