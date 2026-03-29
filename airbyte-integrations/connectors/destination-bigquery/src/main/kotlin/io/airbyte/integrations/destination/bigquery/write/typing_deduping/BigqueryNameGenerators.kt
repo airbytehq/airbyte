@@ -13,32 +13,42 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import java.util.Locale
 import javax.inject.Singleton
 
 private val nameTransformer = BigQuerySQLNameTransformer()
 
-@Singleton
-class BigqueryRawTableNameGenerator(val config: BigqueryConfiguration) : RawTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
-        TableName(
+class BigqueryRawTableNameGenerator(
+    val config: BigqueryConfiguration,
+    val streamConfigProvider: StreamConfigProvider
+) : RawTableNameGenerator {
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        val suffix = streamConfigProvider.getTableSuffix(streamDescriptor)
+        return TableName(
             nameTransformer.getNamespace(config.internalTableDataset),
             nameTransformer.convertStreamName(
                 TypingDedupingUtil.concatenateRawTableName(
                     streamDescriptor.namespace ?: config.datasetId,
                     streamDescriptor.name,
-                )
+                ) + suffix
             ),
         )
+    }
 }
 
-@Singleton
-class BigqueryFinalTableNameGenerator(val config: BigqueryConfiguration) : FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
-        TableName(
-            nameTransformer.getNamespace(streamDescriptor.namespace ?: config.datasetId),
-            nameTransformer.convertStreamName(streamDescriptor.name),
+class BigqueryFinalTableNameGenerator(
+    val config: BigqueryConfiguration,
+    val streamConfigProvider: StreamConfigProvider
+) : FinalTableNameGenerator {
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        val baseTableName = streamConfigProvider.getBaseTableName(streamDescriptor)
+        val suffix = streamConfigProvider.getTableSuffix(streamDescriptor)
+        return TableName(
+            nameTransformer.getNamespace(streamConfigProvider.getDataset(streamDescriptor)),
+            nameTransformer.convertStreamName(baseTableName + suffix),
         )
+    }
 }
 
 @Singleton

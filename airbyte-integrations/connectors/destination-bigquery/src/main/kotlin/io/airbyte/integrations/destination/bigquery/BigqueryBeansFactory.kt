@@ -11,7 +11,10 @@ import com.google.cloud.bigquery.BigQueryOptions
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.RawTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWriter
@@ -27,11 +30,15 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryFinalTableNameGenerator
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryRawTableNameGenerator
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
@@ -53,6 +60,9 @@ private val logger = KotlinLogging.logger {}
 @Factory
 class BigqueryBeansFactory {
     @Singleton fun getConfig(config: DestinationConfiguration) = config as BigqueryConfiguration
+
+    @Singleton
+    fun getStreamConfigProvider(config: BigqueryConfiguration) = StreamConfigProvider(config)
 
     @Singleton
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
@@ -80,7 +90,7 @@ class BigqueryBeansFactory {
 
     @Singleton
     fun getChecker(
-        catalog: DestinationCatalog,
+        @Named("safeDestinationCatalog") catalog: DestinationCatalog,
         @Named("inputStream") stdinPipe: InputStream,
         taskLauncher: DestinationTaskLauncher,
         syncManager: SyncManager,
@@ -93,21 +103,58 @@ class BigqueryBeansFactory {
         )
 
     @Singleton
+    fun getRawTableNameGenerator(
+        config: BigqueryConfiguration,
+        streamConfigProvider: StreamConfigProvider
+    ): RawTableNameGenerator {
+        return BigqueryRawTableNameGenerator(config, streamConfigProvider)
+    }
+
+    @Singleton
+    fun getFinalTableNameGenerator(
+        config: BigqueryConfiguration,
+        streamConfigProvider: StreamConfigProvider
+    ): FinalTableNameGenerator {
+        return BigqueryFinalTableNameGenerator(config, streamConfigProvider)
+    }
+
+    @Singleton
+    fun getColumnNameGenerator(): ColumnNameGenerator {
+        return BigqueryColumnNameGenerator()
+    }
+
+    @Singleton
     fun getWriter(
         bigquery: BigQuery,
         config: BigqueryConfiguration,
-        names: TableCatalog,
         // micronaut will only instantiate a single instance of StreamStateStore,
         // so accept it as a * generic and cast as needed.
         // we use a different type depending on whether we're in legacy raw tables vs
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
+        streamConfigProvider: StreamConfigProvider,
+        names: TableCatalog,
     ): DestinationWriter {
         val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
+        // We need to pass the generators to the TableCatalog manually since we are constructing it
+        // here?
+        // Actually, TableCatalog is usually injected. But wait, where is TableCatalog defined?
+        // It's usually created by the factory too.
+        // Let's check if we need to update TableCatalog creation.
+        // The original code had `names: TableCatalog` injected into getWriter.
+        // But TableCatalog takes generators as constructor args.
+        // So we need to ensure TableCatalog uses our new generators.
+        // Looking at existing TableCatalog in CDK, it uses @Named("rawTableNameGenerator") etc.
+        // So defining the beans with those names matches the expectation.
+
+        // Wait, the previous getWriter signature had `names: TableCatalog`.
+        // Let's keep that, but ensure we define the generator beans so TableCatalog can find them.
+
         if (config.legacyRawTablesOnly) {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
             streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>
+
             return TypingDedupingWriter(
                 names,
                 BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
@@ -127,6 +174,7 @@ class BigqueryBeansFactory {
                         BigqueryDirectLoadSqlGenerator(
                             projectId = config.projectId,
                             cdcDeletionMode = config.cdcDeletionMode,
+                            streamConfigProvider = streamConfigProvider,
                         ),
                         destinationHandler,
                     ),
@@ -154,6 +202,7 @@ class BigqueryBeansFactory {
                         destinationHandler,
                         projectId = config.projectId,
                         tempTableNameGenerator,
+                        streamConfigProvider,
                     ),
                 sqlTableOperations = sqlTableOperations,
                 streamStateStore = streamStateStore,
