@@ -2,15 +2,21 @@
 
 ## Overview
 
-[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on. This destination writes data to the [MotherDuck](https://motherduck.com) service, or to a file on the _local_ filesystem on the host running Airbyte.
+The MotherDuck destination writes data to [MotherDuck](https://motherduck.com), a cloud-based analytics service built on [DuckDB](https://duckdb.org/). You can also use this destination to write to a local DuckDB file on the host running Airbyte.
 
-For file-based DBs, data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
+This destination implements [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides improved final table structures. It works with both MotherDuck and local DuckDB files. Learn more about Destinations V2 in the [Typing and Deduping](/platform/using-airbyte/core-concepts/typing-deduping) documentation.
 
-## Destinations V2
+:::info
 
-This destination implements [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides improved final table structures. It's a new version of the existing DuckDB destination and works both with DuckDB and MotherDuck.
+[Data generations](/platform/operator-guides/refreshes#data-generations) are not currently supported.
 
-Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping). Note that [data generations](/platform/operator-guides/refreshes#data-generations) are not currently supported.
+:::
+
+## Prerequisites
+
+To use this destination, you need:
+
+- A [MotherDuck account](https://motherduck.com) with a valid [access token](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#creating-an-access-token), or a local filesystem path for a DuckDB file.
 
 ## Supported sync modes
 
@@ -22,51 +28,79 @@ Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/co
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-## Use with MotherDuck
-
-This DuckDB destination is compatible with [MotherDuck](https://motherduck.com).
-
-### Specifying a MotherDuck Database
-
-To specify a MotherDuck-hosted database as your destination, simply provide your database uri with the normal `md:` database prefix in the `destination_path` configuration option.
-
-:::caution
-
-We do not recommend providing your API token in the `md:` connection string, as this may cause your token to be printed to execution logs. Please use the `MotherDuck API Key` setting instead.
-
-:::
-
-### Authenticating to MotherDuck
+## Configuration
 
 <FieldAnchor field="motherduck_api_key">
 
-For authentication, you will use your [MotherDuck Access Token](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#creating-an-access-token).
+### MotherDuck API key
+
+Your [MotherDuck access token](https://motherduck.com/docs/key-tasks/authenticating-and-connecting-to-motherduck/authenticating-to-motherduck/#creating-an-access-token). Required for connecting to MotherDuck. You can create a token in the MotherDuck UI under **Settings**.
 
 </FieldAnchor>
 
-### Sync Overview
+<FieldAnchor field="destination_path">
 
-#### Output schema
+### Destination database
 
-Each table will contain at least the following columns:
+The path to a `.duckdb` file or a MotherDuck database URI using the `md:` prefix. Defaults to `md:`, which connects to the default MotherDuck database (`my_db`).
 
-- `_airbyte_raw_id`: a uuid assigned by Airbyte to each event that is processed.
-- `_airbyte_extracted_at`: a timestamp representing when the event was pulled from the data source.
-- `_airbyte_meta`: a json blob storing metadata about the record.
+Examples: `md:`, `md:my_db`, `/local/destination.duckdb`
 
-In addition, columns specified in the [JSON schema](https://docs.airbyte.com/connector-development/schema-reference) will also be created.
+:::caution
 
-#### Performance consideration
+Do not include your API token in the `md:` connection string. This may cause your token to appear in execution logs. Use the **MotherDuck API Key** field instead.
 
-This integration will be constrained by the speed at which your filesystem accepts writes.
+:::
+
+</FieldAnchor>
+
+<FieldAnchor field="schema">
+
+### Schema name
+
+The database schema to write data into. Defaults to `main` if not specified.
+
+</FieldAnchor>
+
+## Output schema
+
+Each destination table contains the following columns in addition to columns from the source data:
+
+| Column | Description |
+| :--- | :--- |
+| `_airbyte_raw_id` | A UUID assigned by Airbyte to each processed record. |
+| `_airbyte_extracted_at` | A timestamp representing when the record was extracted from the source. |
+| `_airbyte_meta` | A JSON object containing metadata about the record. |
+
+## Column name normalization
+
+This destination normalizes column names from the source data before writing them to the destination table. The normalization rules are:
+
+- ASCII letters are converted to lowercase.
+- Whitespace is replaced with underscores.
+- Unicode letters and numbers are preserved.
+- An underscore prefix is added if the name starts with a digit.
+- Other special characters are replaced with underscores.
+
+For example, a source column named `firstName` becomes `firstname` in the destination, and `User Name` becomes `user_name`.
+
+If two source columns produce the same name after normalization (for example, `userid` and `userId` both normalize to `userid`), the record is skipped and a warning is logged. Ensure that source column names are unique after normalization.
+
+:::tip
+
+If you previously observed `NULL` values in columns with mixed-case names, upgrade to version 0.2.2 or later and run a full refresh on affected streams.
+
+:::
 
 ## Working with local DuckDB files
 
-This connector is primarily designed to work with MotherDuck and local DuckDB files for [Destinations V2](/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2). If you would like to work only with local DuckDB files, you may want to consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
+This connector is primarily designed to work with MotherDuck. If you only need to work with local DuckDB files, consider using the [DuckDB destination](https://docs.airbyte.com/integrations/destinations/duckdb).
+
+For local file-based databases, data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a MotherDuck schema.
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a DuckDB schema.
 
 ## Changelog
 
@@ -75,7 +109,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
-| 0.2.2 | 2025-02-02 | [70438](https://github.com/airbytehq/airbyte/pull/70438) | Fix for camelCase columns being `NULL` |
+| 0.2.2 | 2026-03-17 | [70438](https://github.com/airbytehq/airbyte/pull/70438) | Fix for camelCase columns being `NULL` |
 | 0.2.1 | 2025-12-19 | [70999](https://github.com/airbytehq/airbyte/pull/70999) | Fix for empty STRUCTs |
 | 0.2.0 | 2025-12-01 | [70221](https://github.com/airbytehq/airbyte/pull/70221) | Upgrade DuckDB to v1.4.2 and duckdb-engine to v0.17.0 |
 | 0.1.26 | 2025-10-21 | [68338](https://github.com/airbytehq/airbyte/pull/68338) | Update dependencies |
