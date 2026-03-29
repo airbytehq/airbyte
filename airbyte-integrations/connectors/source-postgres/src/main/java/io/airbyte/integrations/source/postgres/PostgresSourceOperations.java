@@ -567,8 +567,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
               .build())
           .build();
       case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
+          .withItems(JsonSchemaType.INTEGER)
           .build();
       case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
           .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
