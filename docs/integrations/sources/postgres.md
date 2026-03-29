@@ -355,8 +355,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                                    |
+|---------|------------|------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.3   | 2026-02-07 | [72937](https://github.com/airbytehq/airbyte/pull/72937) | Fix CTID cursor reset to (0,0) when incremental sync returns 0 records. |
 | 3.7.2   | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                     |
 | 3.7.1   | 2026-01-27 | [72396](https://github.com/airbytehq/airbyte/pull/72396) | This version causes issues discovering streams for some users. Do not use.                                                                                                 |
 | 3.7.0   | 2025-08-12 | [57511](https://github.com/airbytehq/airbyte/pull/57511) | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                     |
