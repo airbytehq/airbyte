@@ -301,7 +301,8 @@ definitions:
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_declarative_manifest.components.ThreadsPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
@@ -313,6 +314,10 @@ definitions:
             incremental_dependency: true
             parent_key: ts
             partition_field: float_ts
+            # Extract reply_count from parent records so ThreadsPartitionRouter can
+            # skip messages with no thread replies, avoiding unnecessary API calls
+            extra_fields:
+              - ["reply_count"]
             request_option:
               type: RequestOption
               field_name: "ts"

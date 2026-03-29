@@ -11,6 +11,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
@@ -126,6 +127,31 @@ class ChannelsRetriever(SimpleRetriever):
                 self.join_channel(self.config, stream_data)
 
             yield stream_data
+
+
+class ThreadsPartitionRouter(SubstreamPartitionRouter):
+    """
+    Custom partition router for the threads stream that skips parent messages
+    with no thread replies. This avoids making unnecessary conversations.replies
+    API calls for messages that have no threads, significantly reducing rate
+    limit consumption.
+
+    The reply_count field from the parent channel_messages record is passed via
+    extra_fields. Messages with reply_count < 2 are skipped because:
+    - reply_count == 0 or null: message has no thread at all
+    - reply_count == 1: only the parent message itself, no actual replies
+    """
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for stream_slice in super().stream_slices():
+            reply_count = stream_slice.extra_fields.get("reply_count")
+            if reply_count is not None and int(reply_count) >= 2:
+                yield stream_slice
+            else:
+                LOGGER.debug(
+                    "Skipping threads partition for message with reply_count=%s",
+                    reply_count,
+                )
 
 
 class ThreadsStateMigration(StateMigration):
