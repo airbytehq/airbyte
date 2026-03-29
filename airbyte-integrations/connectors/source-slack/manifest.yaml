@@ -52,9 +52,11 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
-        - type: "WaitTimeFromHeader"
+        - type: "CustomBackoffStrategy"
+          class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
           header: "retry-after"
-        - type: "WaitTimeFromHeader"
+        - type: "CustomBackoffStrategy"
+          class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
           header: "Retry-After"
       response_filters:
         - error_message_contains: "invalid_auth"
@@ -98,9 +100,11 @@ definitions:
         error_handler:
           type: DefaultErrorHandler
           backoff_strategies:
-            - type: "WaitTimeFromHeader"
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
               header: "retry-after"
-            - type: "WaitTimeFromHeader"
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
               header: "Retry-After"
           response_filters:
             - error_message_contains: "invalid_auth"
@@ -147,9 +151,11 @@ definitions:
           type: DefaultErrorHandler
           max_retries: 10
           backoff_strategies:
-            - type: "WaitTimeFromHeader"
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
               header: "retry-after"
-            - type: "WaitTimeFromHeader"
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
               header: "Retry-After"
         request_parameters:
           types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
@@ -302,7 +308,7 @@ definitions:
         $ref: "#/definitions/default_paginator"
       partition_router:
         type: CustomPartitionRouter
-        class_name: "source_declarative_manifest.components.ThreadsPartitionRouter"
+        class_name: "source_declarative_manifest.components.ThreadsLoggingPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
@@ -314,8 +320,7 @@ definitions:
             incremental_dependency: true
             parent_key: ts
             partition_field: float_ts
-            # Extract reply_count from parent records so ThreadsPartitionRouter can
-            # skip messages with no thread replies, avoiding unnecessary API calls
+            # Pass reply_count for diagnostic logging only (not used for filtering)
             extra_fields:
               - ["reply_count"]
             request_option:
