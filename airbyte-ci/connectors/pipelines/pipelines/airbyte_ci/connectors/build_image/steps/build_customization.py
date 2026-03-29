@@ -63,7 +63,16 @@ def get_entrypoint(connector: Connector) -> List[str]:
 def apply_airbyte_entrypoint(connector_container: Container, connector: Connector) -> Container:
     entrypoint = get_entrypoint(connector)
 
-    return connector_container.with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint)).with_entrypoint(entrypoint)
+    return (
+        connector_container.with_env_variable("DD_PROFILING_ENABLED", "true")
+        .with_env_variable("DD_PROFILING_TIMELINE_ENABLED", "true")
+        .with_env_variable("DD_TRACE_SQLITE3_ENABLED", "false")
+        .with_env_variable("DD_PROFILING_HEAP_SAMPLE_SIZE", "262144")
+        .with_env_variable("AIRBYTE_USE_IN_MEMORY_CACHE", "true")
+        .with_env_variable("AIRBYTE_DISABLE_CACHE", "true")
+        .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
+        .with_entrypoint(entrypoint)
+    )
 
 
 async def pre_install_hooks(connector: Connector, base_container: Container, logger: Logger) -> Container:

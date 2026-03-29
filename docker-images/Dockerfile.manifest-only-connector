@@ -26,8 +26,18 @@ RUN cp manifest.yaml ./source_declarative_manifest/manifest.yaml
 # Copy components.py if it exists (optional)
 RUN if [ -f components.py ]; then cp components.py ./source_declarative_manifest/components.py; fi
 
+# Create entrypoint wrapper: uses ddtrace-run if available in base image, otherwise plain python.
+# This allows the same Dockerfile to work with both ddtrace-enabled and standard base images.
+RUN printf '#!/bin/sh\nif command -v ddtrace-run >/dev/null 2>&1; then\n  exec ddtrace-run python /airbyte/integration_code/main.py "$@"\nelse\n  exec python /airbyte/integration_code/main.py "$@"\nfi\n' > /airbyte/integration_code/entrypoint.sh && chmod +x /airbyte/integration_code/entrypoint.sh
+
 # Set user and entrypoint explicitly
-# This is the same as defined in the source-declarative-manifest base image
+# Uses ddtrace-run wrapper to enable Datadog APM and memory profiling when available.
+# DD env vars are no-ops unless ddtrace is installed in the base image.
 USER airbyte
-ENV AIRBYTE_ENTRYPOINT="python /airbyte/integration_code/main.py"
-ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+ENV DD_PROFILING_ENABLED="true"
+ENV DD_PROFILING_TIMELINE_ENABLED="true"
+ENV DD_TRACE_SQLITE3_ENABLED="false"
+ENV DD_PROFILING_HEAP_SAMPLE_SIZE="262144"
+ENV AIRBYTE_USE_IN_MEMORY_CACHE="true"
+ENV AIRBYTE_ENTRYPOINT="/airbyte/integration_code/entrypoint.sh"
+ENTRYPOINT ["/airbyte/integration_code/entrypoint.sh"]
