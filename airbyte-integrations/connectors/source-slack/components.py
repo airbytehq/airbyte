@@ -174,7 +174,8 @@ class RateLimitLoggingBackoffStrategy(BackoffStrategy):
             if response_or_exception.status_code == 429:
                 retry_after = response_or_exception.headers.get("Retry-After", "NOT_SET")
                 rate_limit_headers = {
-                    k: v for k, v in response_or_exception.headers.items()
+                    k: v
+                    for k, v in response_or_exception.headers.items()
                     if k.lower().startswith("retry-after") or k.lower().startswith("x-rate-limit")
                 }
                 url = ""
@@ -218,7 +219,11 @@ class ThreadsLoggingPartitionRouter(SubstreamPartitionRouter):
             if channel != current_channel and total > 0:
                 LOGGER.info(
                     "THREADS_DEBUG: channel=%s | total_messages=%d | with_replies=%d | without_replies=%d | max_reply_count=%d",
-                    current_channel, total, with_replies, without_replies, max_reply_count,
+                    current_channel,
+                    total,
+                    with_replies,
+                    without_replies,
+                    max_reply_count,
                 )
                 total = 0
                 with_replies = 0
@@ -240,7 +245,11 @@ class ThreadsLoggingPartitionRouter(SubstreamPartitionRouter):
             if total % 1000 == 0:
                 LOGGER.info(
                     "THREADS_DEBUG: channel=%s | progress=%d messages | with_replies=%d | without_replies=%d | max_reply_count=%d",
-                    current_channel, total, with_replies, without_replies, max_reply_count,
+                    current_channel,
+                    total,
+                    with_replies,
+                    without_replies,
+                    max_reply_count,
                 )
 
             yield stream_slice
@@ -249,7 +258,11 @@ class ThreadsLoggingPartitionRouter(SubstreamPartitionRouter):
         if total > 0:
             LOGGER.info(
                 "THREADS_DEBUG: channel=%s | total_messages=%d | with_replies=%d | without_replies=%d | max_reply_count=%d",
-                current_channel, total, with_replies, without_replies, max_reply_count,
+                current_channel,
+                total,
+                with_replies,
+                without_replies,
+                max_reply_count,
             )
 
 
