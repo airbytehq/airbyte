@@ -94,12 +94,14 @@ jobs:
         id: detect-connectors
         env:
           PR_NUMBER: ${{ github.event.inputs.pr }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CONNECTORS=$(
             airbyte-ops local connector list \
               --repo-path "$GITHUB_WORKSPACE" \
               --modified-only \
               --pr "$PR_NUMBER" \
+              --gh-token "$GH_TOKEN" \
               --output-format lines
           )
 
