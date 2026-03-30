@@ -286,18 +286,10 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
-                    action: RETRY
+                    action: RATE_LIMITED
                     http_codes:
                       - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
+                    error_message: Rate limit exceeded for LinkedIn API.
                   - type: HttpResponseFilter
                     action: RETRY
                     http_codes:
