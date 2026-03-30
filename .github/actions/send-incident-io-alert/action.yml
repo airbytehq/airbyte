@@ -33,13 +33,21 @@ runs:
     - name: Send Incident.io alert
       id: send-incident-io-alert
       shell: bash
+      env:
+        INPUT_ALERT_SOURCE_CONFIG_ID: ${{ inputs.alert_source_config_id }}
+        INPUT_ALERT_SOURCE_TOKEN: ${{ inputs.alert_source_token }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_STATUS: ${{ inputs.status }}
+        INPUT_DESCRIPTION: ${{ inputs.description }}
+        INPUT_SOURCE_URL: ${{ inputs.source_url }}
+        INPUT_DEDUP_KEY: ${{ inputs.deduplication_key }}
       run: |
         PAYLOAD=$(jq -n \
-          --arg title "${{ inputs.title }}" \
-          --arg status "${{ inputs.status }}" \
-          --arg description "${{ inputs.description }}" \
-          --arg source_url "${{ inputs.source_url }}" \
-          --arg dedup_key "${{ inputs.deduplication_key }}" \
+          --arg title "$INPUT_TITLE" \
+          --arg status "$INPUT_STATUS" \
+          --arg description "$INPUT_DESCRIPTION" \
+          --arg source_url "$INPUT_SOURCE_URL" \
+          --arg dedup_key "$INPUT_DEDUP_KEY" \
           '{
             title: $title,
             status: $status,
@@ -50,7 +58,7 @@ runs:
 
         curl --request 'POST' \
           --fail \
-          --url "https://api.incident.io/v2/alert_events/http/${{ inputs.alert_source_config_id }}" \
+          --url "https://api.incident.io/v2/alert_events/http/${INPUT_ALERT_SOURCE_CONFIG_ID}" \
           --header 'Content-Type: application/json' \
-          --header 'Authorization: Bearer ${{ inputs.alert_source_token }}' \
+          --header "Authorization: Bearer ${INPUT_ALERT_SOURCE_TOKEN}" \
           --data "$PAYLOAD"
