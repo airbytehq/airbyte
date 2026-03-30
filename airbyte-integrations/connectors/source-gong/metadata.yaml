@@ -30,7 +30,7 @@ data:
           `extensiveCalls` stream must refresh the source schema and reset the
           stream after upgrading. For more information, see the
           [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
-        upgradeDeadline: "2026-04-09"
+        upgradeDeadline: "2026-04-13"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
