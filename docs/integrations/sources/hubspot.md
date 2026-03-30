@@ -342,6 +342,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.3.6 | 2026-04-01 | [75574](https://github.com/airbytehq/airbyte/pull/75574) | Add `oauth_connector_input_specification` with granular scopes and optional_scopes |
 | 6.3.5 | 2026-03-31 | [75665](https://github.com/airbytehq/airbyte/pull/75665) | Update dependencies |
 | 6.3.4 | 2026-03-30 | [75595](https://github.com/airbytehq/airbyte/pull/75595) | Fixed HTTP 429 responses mapped to RETRY instead of RATE_LIMITED, enabling correct rate-limit handling |
 | 6.3.3 | 2026-03-26 | [75452](https://github.com/airbytehq/airbyte/pull/75452) | Fixed HTTP 401 errors retrying indefinitely for Private App Token authentication |

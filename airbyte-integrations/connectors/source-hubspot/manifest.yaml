@@ -2295,6 +2295,44 @@ spec:
       - credentials_title
     predicate_value: OAuth Credentials
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://app.hubspot.com/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}&{{optional_scopes_param}}"
+        access_token_url: "https://api.hubapi.com/oauth/v1/token"
+        access_token_headers:
+          Content-Type: "application/json"
+        access_token_params:
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          grant_type: "authorization_code"
+        scopes:
+          - scope: "crm.schemas.contacts.read"
+          - scope: "crm.objects.contacts.read"
+        optional_scopes:
+          - scope: "content"
+          - scope: "automation"
+          - scope: "e-commerce"
+          - scope: "files"
+          - scope: "files.ui_hidden.read"
+          - scope: "forms"
+          - scope: "forms-uploaded-files"
+          - scope: "sales-email-read"
+          - scope: "tickets"
+          - scope: "crm.lists.read"
+          - scope: "crm.objects.companies.read"
+          - scope: "crm.objects.custom.read"
+          - scope: "crm.objects.deals.read"
+          - scope: "crm.objects.feedback_submissions.read"
+          - scope: "crm.objects.goals.read"
+          - scope: "crm.objects.owners.read"
+          - scope: "crm.schemas.companies.read"
+          - scope: "crm.schemas.custom.read"
+          - scope: "crm.schemas.deals.read"
+          - scope: "crm.objects.leads.read"
+          - scope: "oauth"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
