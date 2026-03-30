@@ -120,7 +120,7 @@ See the official [Zendesk-Talk API reference](https://developer.zendesk.com/api-
 
 ## Version information
 
-- **Package version:** 0.1.3
+- **Package version:** 0.1.8
 - **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 8416af10a3318ca085e842cc6df4ba51eaedca0c
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-talk/CHANGELOG.md)

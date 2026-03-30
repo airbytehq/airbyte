@@ -8,16 +8,13 @@ This page contains the setup guide and reference information for the [Instagram]
 
 ## Prerequisites
 
-- [Meta for Developers account](https://developers.facebook.com)
-- [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your
-  Facebook page
-- [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll
-  use this to configure Instagram as a source in Airbyte
+- A [Meta for Developers](https://developers.facebook.com) account
+- An [Instagram Business or Creator account](https://www.facebook.com/business/help/898752960195806) connected to a Facebook Page
 
 <!-- env:oss -->
 
-- [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-- [Facebook Instagram OAuth Reference](https://developers.facebook.com/docs/instagram-platform/reference/oauth-authorize/)
+- A Facebook app with the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) enabled
+- An access token with these permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`
 
 <!-- /env:oss -->
 
@@ -50,11 +47,7 @@ This page contains the setup guide and reference information for the [Instagram]
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
-5. Enter **Access Token** generated
-   using [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-   or [by using an app you can create on Facebook](https://developers.facebook.com/docs/instagram-basic-display-api/getting-started/)
-   with the required permissions: instagram_basic, instagram_manage_insights, pages_show_list,
-   pages_read_engagement.
+5. Enter the **Access Token** generated using the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) or a [Facebook app](https://developers.facebook.com/docs/instagram-platform/getting-started) with the required permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`.
 6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
    date will be replicated. If left blank, the start date will be set to 2 years before the present
    date.
@@ -83,21 +76,18 @@ stream.
 
 ## Supported Streams
 
-The Instagram source connector supports the following streams. For more information, see
-the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/)
-and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
+The Instagram source connector supports the following streams. For more information, see the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
 
-- [User](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
-    - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
+- [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
+  - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) (incremental)
+  - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—demographic breakdowns by city, country, and age/gender
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
-    - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+  - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 - [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
-    - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+  - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
 :::info
-The Instagram connector syncs data related to Users, Media, and Stories and their insights from
-the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data
-related to Instagram Ads, use the Facebook Marketing source.
+This connector syncs data from the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data related to Instagram Ads, use the Facebook Marketing source.
 :::
 
 ### Entity-Relationship Diagram (ERD)
@@ -119,25 +109,24 @@ must handle records that conform to this type system.
 
 ## Limitations & Troubleshooting
 
-<details>
-<summary>
-Expand to see details about Instagram connector limitations and troubleshooting.
-</summary>
+### Rate limiting
 
-### Connector limitations
+Instagram limits the number of requests that can be made at a time. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
 
-#### Rate limiting
+### Instagram API limitations
 
-Instagram limits the number of requests that can be made at a time. See
-Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api)
-for more information.
+- **Data delay**: Metrics data from the Instagram API may be delayed by up to 48 hours.
+- **Minimum follower count**: The `follower_count` and `online_followers` metrics require at least 100 followers on the Instagram Business or Creator account.
+- **Data retention**: The `online_followers` metric is only available for the last 30 days. The `since` parameter for insights is valid for up to the last 2 years.
+- **Demographic metrics**: Demographic metric calculations only include the top 45 entries and only count viewers for whom Instagram has demographic data.
+
+### User Insights and UTC+ timezones
+
+For accounts in UTC+ timezones, the Instagram API returns `end_time` values at the account's day boundary expressed in UTC. This can result in timestamps that are slightly ahead of the current UTC time. The connector handles this by applying a one-day lookback window and gracefully skipping any time slices with future `since` dates. These skipped slices are picked up on the next sync.
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Instagram source connector on
-  our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
-
-</details>
+- Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 ## Changelog
 
@@ -146,6 +135,7 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.23 | 2026-03-24 | [75344](https://github.com/airbytehq/airbyte/pull/75344) | Update dependencies |
 | 4.2.22 | 2026-03-19 | [75206](https://github.com/airbytehq/airbyte/pull/75206) | Handle Instagram API 'since param is not valid' error gracefully for user_insights stream |
 | 4.2.21 | 2026-03-12 | [74800](https://github.com/airbytehq/airbyte/pull/74800) | Add lookback window and filter future-dated records in user_insights to prevent cursor from advancing past current UTC |
 | 4.2.20 | 2026-03-10 | [74502](https://github.com/airbytehq/airbyte/pull/74502) | Update dependencies |

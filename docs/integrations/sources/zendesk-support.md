@@ -220,6 +220,7 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.2 | 2026-03-23 | [74993](https://github.com/airbytehq/airbyte/pull/74993) | Switch ticket_metric_events to time-based pagination to prevent heartbeat timeout on large datasets |
 | 5.2.1 | 2026-03-17 | [74394](https://github.com/airbytehq/airbyte/pull/74394) | Migrate to scopes object array format |
 | 5.2.0 | 2026-03-12 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | Switch `tickets` stream to Export Search Results endpoint for concurrency and performance. **Behavior change**: deleted tickets are no longer returned in the `tickets` stream — use the new `deleted_tickets` stream instead. Added `deleted_tickets` as a suggested stream for auto-enablement on Cloud. |
 | 5.1.8 | 2026-03-12 | [74771](https://github.com/airbytehq/airbyte/pull/74771) | Upgrade CDK to 7.13.0 |
