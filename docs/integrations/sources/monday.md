@@ -25,8 +25,11 @@ For more details, see Monday.com's [authentication documentation](https://develo
 ### Connect using OAuth 2.0
 
 1. Select **OAuth2.0** in **Authorization Method**.
-2. Click **Authenticate your Monday account**.
-3. Complete the authentication flow using your Monday.com credentials.
+2. If your Monday.com account uses a custom subdomain, enter it in the **Subdomain/Slug** field. This is the first part of the URL that appears before `.monday.com`. Leave this field empty if you use the default `monday.com` domain.
+3. Click **Authenticate your Monday account**.
+4. Complete the authentication flow using your Monday.com credentials.
+
+The connector requests the following OAuth scopes: `me:read`, `boards:read`, `workspaces:read`, `users:read`, `account:read`, `updates:read`, `assets:read`, `tags:read`, and `teams:read`.
 
 ### Connect using API Token
 
@@ -83,6 +86,8 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.5 | 2026-03-17 | [74325](https://github.com/airbytehq/airbyte/pull/74325) | Migrate to scopes object array format |
+| 2.5.4 | 2026-03-10 | [74620](https://github.com/airbytehq/airbyte/pull/74620) | Update dependencies |
 | 2.5.3 | 2026-03-05 | [73658](https://github.com/airbytehq/airbyte/pull/73658) | Add `linked_item_ids` to `BoardRelationValue` and `DependencyValue` column types to restore linked item data lost after API version 2025-04+ |
 | 2.5.2 | 2026-02-24 | [73582](https://github.com/airbytehq/airbyte/pull/73582) | Update dependencies |
 | 2.5.1 | 2026-02-13 | [72192](https://github.com/airbytehq/airbyte/pull/72192) | Add `user_id` field to `activity_logs` stream |

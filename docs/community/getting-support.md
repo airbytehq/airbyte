@@ -8,9 +8,11 @@ If you can't find an answer to your question in the docs, Airbyte has different 
 
 ## For Airbyte Enterprise and Cloud
 
-### In-app support agent (beta)
+### In-app support agent
 
-Airbyte Cloud includes an AI-powered support agent accessible directly within the app. Look for the chat button in the bottom-right corner of the screen. The support agent can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately, without creating a support ticket.
+**The in-app support agent is available 24/7 for Airbyte Enterprise and Cloud customers, and can help with basic troubleshooting anytime.**
+
+Airbyte Cloud includes an AI-powered support agent accessible directly within the app. Look for the chat button in the bottom-right corner of the screen. The support agent can help answer questions about your workspace, connections, and common troubleshooting scenarios. It has context about your current workspace, making it easier to get relevant assistance immediately. The agent can also create Zendesk tickets with additional connection information for the Airbyte support team if further help is needed.
 
 ### Support center
 

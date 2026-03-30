@@ -27,6 +27,8 @@ API Reference: https://aviationstack.com/documentation
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.26 | 2026-03-24 | [75024](https://github.com/airbytehq/airbyte/pull/75024) | Update dependencies |
+| 0.0.25 | 2026-03-10 | [74528](https://github.com/airbytehq/airbyte/pull/74528) | Update dependencies |
 | 0.0.24 | 2026-02-24 | [73808](https://github.com/airbytehq/airbyte/pull/73808) | Update dependencies |
 | 0.0.23 | 2026-02-17 | [73430](https://github.com/airbytehq/airbyte/pull/73430) | Update dependencies |
 | 0.0.22 | 2026-02-03 | [72715](https://github.com/airbytehq/airbyte/pull/72715) | Update dependencies |

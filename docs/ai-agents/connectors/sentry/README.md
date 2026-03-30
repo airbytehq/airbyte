@@ -107,7 +107,7 @@ See the official [Sentry API reference](https://docs.sentry.io/api/).
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 30ffd543469337c2f4bab687caf085e038011f87
+- **Package version:** 0.1.8
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/sentry/CHANGELOG.md)

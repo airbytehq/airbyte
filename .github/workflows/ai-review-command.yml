@@ -15,6 +15,16 @@ on:
       comment-id:
         description: "Comment ID"
         required: false
+  workflow_call:
+    inputs:
+      pr:
+        description: "PR number"
+        required: true
+        type: string
+      comment-id:
+        description: "Comment ID"
+        required: false
+        type: string
 
 run-name: "PR AI Review for PR #${{ inputs.pr }}"
 
@@ -97,11 +107,13 @@ jobs:
           playbook-macro: "!pr_ai_review"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           start-message: |
             **AI PR Review** starting...
 
             Reviewing PR for connector safety and quality.
-            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/pr_ai_review.md)
+            [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/pr_ai_review.md)
           tags: |
             ai-oncall
             pr-review
