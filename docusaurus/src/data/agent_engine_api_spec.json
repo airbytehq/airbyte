@@ -3511,7 +3511,14 @@
       },
       "CheckStatus": {
         "type": "string",
-        "enum": ["pending", "running", "cancelled", "failed", "succeeded"],
+        "enum": [
+          "pending",
+          "running",
+          "cancelled",
+          "failed",
+          "succeeded",
+          "inconclusive"
+        ],
         "title": "CheckStatus"
       },
       "ConnectionSpecification": {
@@ -3967,6 +3974,21 @@
             "title": "Environment",
             "description": "User-provided configuration for the source. Used for DIRECT/MULTI mode sources (can be empty dict)."
           },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Optional entity/mode pairs used to constrain stream selection. For OAuth connectors, also used to determine requested scopes."
+          },
           "server_side_oauth_secret_id": {
             "anyOf": [
               {
@@ -4035,6 +4057,20 @@
                 "type": "null"
               }
             ]
+          },
+          "entity_check_results": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EntityCheckResult"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Check Results"
           }
         },
         "type": "object",
@@ -4167,6 +4203,21 @@
             ],
             "title": "Environment",
             "description": "User-provided configuration for the source. Used for DIRECT/MULTI mode sources (can be empty dict)."
+          },
+          "entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntity"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entities",
+            "description": "Optional entity/mode pairs used to constrain stream selection. For OAuth connectors, also used to determine requested scopes."
           },
           "server_side_oauth_secret_id": {
             "anyOf": [
@@ -4756,6 +4807,42 @@
         "title": "EncryptionMapperConfig",
         "description": "Configuration for encryption mapper - uses snake_case.\n\nEncrypts a specified field using RSA (OAEP-SHA256). The encrypted value\nreplaces the original field value or is emitted with the configured suffix.\n\nNOTE: Symmetric AES is NOT supported in this API.\n\nWhy we don't support AES:\n- Secrets hydration for AES mappers is not currently supported in the platform\n- AES requires symmetric key management which doesn't align well with\n  Sonar's secrets management architecture\n- RSA with public keys is more appropriate for this use case as it\n  allows encryption without exposing private keys in the configuration\n\nIf you need AES encryption, this must be resolved at the platform level\nwith proper secrets storage and hydration support before we can add it here."
       },
+      "EntityCheckResult": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CheckStatus"
+          },
+          "status_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          }
+        },
+        "type": "object",
+        "required": ["entity", "status"],
+        "title": "EntityCheckResult"
+      },
       "ExampleQuestionsByType": {
         "properties": {
           "direct": {
@@ -5182,6 +5269,36 @@
         ],
         "title": "OAuthCredentialsResponse",
         "description": "Response body for OAuth credentials.\n\nNote: configuration is NOT returned for security reasons."
+      },
+      "RequestedEntity": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "modes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestedEntityMode"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Modes"
+          }
+        },
+        "type": "object",
+        "required": ["entity"],
+        "title": "RequestedEntity"
+      },
+      "RequestedEntityMode": {
+        "type": "string",
+        "enum": ["read", "write"],
+        "title": "RequestedEntityMode"
       },
       "RowFilterCondition": {
         "properties": {

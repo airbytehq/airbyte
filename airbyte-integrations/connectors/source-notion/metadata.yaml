@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
-  dockerImageTag: 4.0.1
+  dockerImageTag: 4.0.3
   dockerRepository: airbyte/source-notion
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   externalDocumentationUrls:
@@ -39,7 +39,7 @@ data:
     breakingChanges:
       4.0.0:
         message: "This version migrates the connector to Notion API version 2025-09-03. The `databases` stream has been replaced by a new `data_sources` stream with a different schema. Pages now reference `data_source_id` instead of `database_id` in their parent field. The `blocks` stream has new fields (`in_trash`, `data_source_id` parent type). A full schema refresh and data reset are required for the `data_sources`, `pages`, and `blocks` streams. For more information, see our migration documentation for source Notion."
-        upgradeDeadline: "2026-03-25"
+        upgradeDeadline: "2026-04-10"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["data_sources", "pages", "blocks"]
