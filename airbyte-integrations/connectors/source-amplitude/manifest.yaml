@@ -1091,8 +1091,10 @@ api_budget:
           method: GET
           url_path_pattern: "/2/sessions/average"
           weight: 60
-        # /2/users: 30 days * 4 (group-by country) * 1 = 120 cost/request (worst case with group_by=country)
+        # /2/users: cost depends on active_users_group_by_country config:
+        #   group_by=true (default):  30 days * 4 (group-by segments) * 1 = 120 cost/request
+        #   group_by=false:           30 days * 1 * 1 = 30 cost/request
         - type: HttpRequestRegexMatcher
           method: GET
           url_path_pattern: "/2/users"
-          weight: 120
+          weight: "{{ 120 if config.get('active_users_group_by_country', true) else 30 }}"
