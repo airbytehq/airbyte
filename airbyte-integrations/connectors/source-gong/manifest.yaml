@@ -1135,57 +1135,70 @@ schemas:
                           - string
                           - "null"
       context:
-        description: A list of the agenda of each part of the call.
-        properties:
-          objects:
-            type: array
-            description: List of objects within the external system.
-            items:
-              type: object
-              properties:
-                fields:
-                  type: array
-                  description: array<External object data>.
-                  items:
-                    type: object
-                    properties:
-                      name:
-                        type:
-                          - "null"
-                          - string
-                        description: >-
-                          Field name. For Account supported fields are: Name,
-                          Website, Industry and all the custom fields. For
-                          Opportunity supported fields are Name, LeadSource,
-                          Type, StageName, Probability, Amount, CloseDate and
-                          all the custom fields.
-                      value:
-                        type:
-                          - "null"
-                          - object
-                        description: Field value.
-                objectId:
-                  type:
-                    - "null"
-                    - string
-                  description: Object ID.
-                objectType:
-                  type:
-                    - "null"
-                    - string
-                  description: "Object Type. Allowed: Opportunity, Account"
-                timing:
-                  type:
-                    - "null"
-                    - string
-                  description: "Timing of object. Allowed: Now, TimeOfCall."
-          system:
-            type:
-              - "null"
-              - string
-            description: >-
-              External system name. Allowed: Salesforce, HubSpot,
-              MicrosoftDynamic, Generic.
+        type:
+          - array
+          - "null"
+        description: A list of links to external systems such as CRM, Dialer, Case Management, etc.
+        items:
+          type: object
+          properties:
+            objects:
+              type:
+                - array
+                - "null"
+              description: List of objects within the external system.
+              items:
+                type: object
+                properties:
+                  fields:
+                    type:
+                      - array
+                      - "null"
+                    description: array<External object data>.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                          description: >-
+                            Field name. For Account supported fields are: Name,
+                            Website, Industry and all the custom fields. For
+                            Opportunity supported fields are Name, LeadSource,
+                            Type, StageName, Probability, Amount, CloseDate and
+                            all the custom fields.
+                        value:
+                          type:
+                            - "null"
+                            - string
+                            - number
+                            - boolean
+                            - object
+                            - array
+                          description: Field value.
+                  objectId:
+                    type:
+                      - "null"
+                      - string
+                    description: Object ID.
+                  objectType:
+                    type:
+                      - "null"
+                      - string
+                    description: "Object Type. Allowed: Opportunity, Account"
+                  timing:
+                    type:
+                      - "null"
+                      - string
+                    description: "Timing of object. Allowed: Now, TimeOfCall."
+            system:
+              type:
+                - "null"
+                - string
+              description: >-
+                External system name. Allowed: Salesforce, HubSpot,
+                MicrosoftDynamic, Generic.
       id:
         type:
           - "null"
