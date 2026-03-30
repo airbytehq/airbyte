@@ -1242,6 +1242,10 @@ definitions:
           type:
           - "null"
           - string
+        account_id:
+          type:
+          - "null"
+          - string
 
     timesheet_detail_report_stream:
       $schema: http://json-schema.org/draft-07/schema#
