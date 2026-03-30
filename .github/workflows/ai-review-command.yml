@@ -103,7 +103,7 @@ jobs:
             **AI PR Review** starting...
 
             Reviewing PR for connector safety and quality.
-            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/pr_ai_review.md)
+            [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/pr_ai_review.md)
           tags: |
             ai-oncall
             pr-review
