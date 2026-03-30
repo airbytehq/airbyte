@@ -32,10 +32,11 @@ To set up the Shiftbase source connector, you'll need:
 3. On the Set up the source page, select Shiftbase from the Source type dropdown.
 4. Enter a name for the Shiftbase connector.
 5. Enter your **Account Name** (an identifier for tracking).
-6. Enter your **Access Token** from the Shiftbase App Center.
-7. Enter your **Start Date** for historical data sync (format: YYYY-MM-DD).
-8. Optionally, enter a **Schedule Report End Date** (format: YYYY-MM-DD) to set the end date for the Schedule Detail Report stream. Defaults to 1 month into the future if not provided.
-9. Click **Set up source**.
+6. Enter your **Account ID** (your Shiftbase Account ID for uniquely identifying records).
+7. Enter your **Access Token** from the Shiftbase App Center.
+8. Enter your **Start Date** for historical data sync (format: YYYY-MM-DD).
+9. Optionally, enter a **Schedule Report End Date** (format: YYYY-MM-DD) to set the end date for the Schedule Detail Report stream. Defaults to 1 month into the future if not provided.
+10. Click **Set up source**.
 
 <!-- env:oss -->
 
@@ -48,6 +49,7 @@ To set up the Shiftbase source connector, you'll need:
 5. Add one or more **Accounts** with:
    - **Access Token**: Your Shiftbase API access token generated from the App Center
    - **Account Name**: A name to identify the account
+   - **Account ID**: Your Shiftbase Account ID for uniquely identifying records across accounts
 6. For **Start Date**, enter the date in `YYYY-MM-DD` format. Data from this date onwards will be replicated.
 7. Optionally, for **Schedule Report End Date**, enter a date in `YYYY-MM-DD` format to set the end date for the Schedule Detail Report stream. If not provided, it defaults to 1 month into the future from the current date.
 8. Click **Set up source**.

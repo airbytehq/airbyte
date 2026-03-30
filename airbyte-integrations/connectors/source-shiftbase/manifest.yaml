@@ -37,12 +37,15 @@ definitions:
         - 503
         - 504
 
-  add_account_name_transformation:
+  add_account_fields_transformation:
     type: AddFields
     fields:
     - path:
       - account_name
       value: "{{ stream_partition.account.account_name }}"
+    - path:
+      - account_id
+      value: "{{ stream_partition.account.account_id }}"
 
   departments_stream:
     type: DeclarativeStream
@@ -70,7 +73,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/account_partition_router"
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -245,7 +248,7 @@ definitions:
         field_name: min_date
       is_data_feed: true
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -289,7 +292,7 @@ definitions:
         field_name: min_date
       is_data_feed: true
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -320,7 +323,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/account_partition_router"
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -349,7 +352,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/account_partition_router"
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -376,7 +379,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/account_partition_router"
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -426,7 +429,7 @@ definitions:
         field_name: to
       is_data_feed: true
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -480,7 +483,7 @@ definitions:
         field_name: to
       is_data_feed: true
     transformations:
-    - $ref: "#/definitions/add_account_name_transformation"
+    - $ref: "#/definitions/add_account_fields_transformation"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1605,6 +1608,7 @@ spec:
           required:
           - access_token
           - account_name
+          - account_id
           properties:
             access_token:
               type: string
@@ -1619,6 +1623,12 @@ spec:
               description: Account name for tracking purposes.
               minLength: 1
               order: 1
+            account_id:
+              type: string
+              title: Account ID
+              description: Shiftbase Account ID used to uniquely identify records across accounts.
+              minLength: 1
+              order: 2
       start_date:
         type: string
         title: Start Date
