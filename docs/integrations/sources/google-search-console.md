@@ -2,7 +2,7 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [Google Search Console](https://developers.google.com) source connector.
+This page contains the setup guide and reference information for the [Google Search Console](https://search.google.com/search-console/about) source connector.
 
 </HideInUI>
 
@@ -87,7 +87,7 @@ For more information on this topic, please refer to [this Google article](https:
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Search Console from the Source type dropdown.
 4. Enter a name for the Google Search Console connector.
-5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
+5. For **Website URL Property**, enter the website properties in Google Search Console that contain the data you want to replicate. You can add multiple site URLs.
 6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 <!-- env:cloud -->
@@ -106,15 +106,17 @@ For more information on this topic, please refer to [this Google article](https:
     <!-- /env:cloud -->
     <!-- env:oss -->
 - **For Airbyte Open Source:**
-  - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+  - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
   - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
   <!-- /env:oss -->
 
 8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
 9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
 10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
-11. (Optional) For **Search Analytics API Requests Per Minute**, you may configure the maximum number of requests per minute for Search Analytics API calls. The default value (1200) matches Google's documented maximum quota. If you are experiencing rate limit errors, you may need to lower this value. Most new Google Cloud projects start with a quota of 60 requests per minute. Check your Google Cloud Console quotas to see your actual limit. Refer to the [Rate Limiting](#rate-limiting) section below for more information.
-12. Click **Set up source** and wait for the tests to complete.
+11. (Optional) For **Number of Concurrent Workers**, you may configure the number of worker threads used during sync. The default is 40. If you are syncing a large number of site URLs or experiencing rate limit errors, you may want to reduce this value.
+12. (Optional) For **Always Use Aggregation Type Auto**, enable this setting if your search analytics streams fail with a 400 error related to an unsupported `aggregationType`. This overrides the default aggregation type with `auto`, which resolves the error for certain site configurations.
+13. (Optional) For **Search Analytics API Requests Per Minute**, you may configure the maximum number of requests per minute for Search Analytics API calls. The default value of 1200 matches Google's documented maximum quota. If you are experiencing rate limit errors, you may need to lower this value. Most new Google Cloud projects start with a quota of 60 requests per minute. Check your Google Cloud Console quotas to see your actual limit. Refer to the [Rate Limiting](#rate-limiting) section below for more information.
+14. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -135,7 +137,7 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 - [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
 - [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
-- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) \(this stream has a long sync time because it is very detailed, use with care\)
+- [Full Analytics report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query) — this stream has a long sync time because it is very detailed; use with care
 - [Analytics report by country](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics report by date](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics report by device](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
@@ -177,7 +179,7 @@ For example, to query the API for a report that groups results by country, then 
 
 Please note, that for technical reasons `date` is the default dimension which will be included in your query whether you specify it or not. By specifying it you can change the order the results are grouped in. Primary key will consist of your custom dimensions and the default dimension along with `site_url` and `search_type`.
 
-The information you provide via UI Custom report builder will then be transformed into the custom stream by it's `Name`
+The information you provide via the UI Custom report builder will then be transformed into a custom stream using its `Name`.
 
 You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
 
@@ -227,7 +229,7 @@ If you need higher limits, you can enable billing on your Google Cloud project o
 
 #### Data retention
 
-Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. [Please see this article for more information](https://seotesting.com/google-search-console/how-long-does-gsc-keep-my-data/#:~:text=Google%20Search%20Console%20holds%20relevant,October%2C%202022%2C%20until%20today.).
+Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. For more information, see [Google's documentation on data freshness and availability](https://support.google.com/webmasters/answer/7576553).
 
 ### Troubleshooting
 
@@ -242,7 +244,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.10.27 | 2026-03-24 | [75426](https://github.com/airbytehq/airbyte/pull/75426) | Guard numeric metric fields against complex types to prevent serialization failures and deadlocks |
+| 1.10.27 | 2026-03-30 | [75426](https://github.com/airbytehq/airbyte/pull/75426) | Guard numeric metric fields against complex types to prevent serialization failures and deadlocks |
 | 1.10.26 | 2026-03-24 | [74935](https://github.com/airbytehq/airbyte/pull/74935) | Update dependencies |
 | 1.10.25 | 2026-03-10 | [74685](https://github.com/airbytehq/airbyte/pull/74685) | Update dependencies |
 | 1.10.24 | 2026-02-24 | [73935](https://github.com/airbytehq/airbyte/pull/73935) | Update dependencies |
