@@ -90,21 +90,21 @@ public class MongoDbResumeTokenHelper {
   }
 
   /**
-   * Retrieves the most recent resume token using Debezium's change stream pipeline.
-   * This ensures consistency between the resume token used as the CDC target position
-   * and the pipeline used by Debezium during actual CDC streaming.
+   * Retrieves the most recent resume token using Debezium's change stream pipeline. This ensures
+   * consistency between the resume token used as the CDC target position and the pipeline used by
+   * Debezium during actual CDC streaming.
    * <p>
-   * Using the same pipeline as Debezium prevents potential discrepancies that can occur
-   * when the initial resume token is obtained with a different change stream configuration
-   * than what Debezium uses for CDC. Such discrepancies have been observed to contribute
-   * to the "101-record" pattern where incremental syncs return only metadata records.
+   * Using the same pipeline as Debezium prevents potential discrepancies that can occur when the
+   * initial resume token is obtained with a different change stream configuration than what Debezium
+   * uses for CDC. Such discrepancies have been observed to contribute to the "101-record" pattern
+   * where incremental syncs return only metadata records.
    *
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
    * @param debeziumProperties The Debezium properties used to configure the change stream pipeline.
    * @return The most recent resume token value as a {@link BsonDocument}.
    */
   public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient,
-                                                       final Properties debeziumProperties) {
+                                                      final Properties debeziumProperties) {
     LOGGER.info("Retrieving most recent resume token using Debezium's change stream pipeline.");
     final Configuration config = Configuration.from(debeziumProperties);
     final MongoDbTaskContext taskContext = new MongoDbTaskContext(config);
@@ -112,8 +112,8 @@ public class MongoDbResumeTokenHelper {
 
     try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor = changeStream.cursor()) {
       /*
-       * Must call tryNext before attempting to get the resume token from the cursor directly.
-       * Otherwise, the call to getResumeToken() will return null!
+       * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
+       * the call to getResumeToken() will return null!
        */
       cursor.tryNext();
       return cursor.getResumeToken();

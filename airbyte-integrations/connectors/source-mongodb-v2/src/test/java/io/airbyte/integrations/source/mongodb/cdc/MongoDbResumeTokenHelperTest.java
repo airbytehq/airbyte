@@ -104,11 +104,10 @@ class MongoDbResumeTokenHelperTest {
   }
 
   /**
-   * Tests the new getMostRecentResumeToken method that uses Debezium's change stream pipeline
-   * (via MongoUtils.openChangeStream) instead of a custom pipeline.
-   * This method is the fix for the "101-record" pattern where incremental syncs return only
-   * metadata records due to a pipeline mismatch between initial resume token retrieval and
-   * Debezium's CDC streaming.
+   * Tests the new getMostRecentResumeToken method that uses Debezium's change stream pipeline (via
+   * MongoUtils.openChangeStream) instead of a custom pipeline. This method is the fix for the
+   * "101-record" pattern where incremental syncs return only metadata records due to a pipeline
+   * mismatch between initial resume token retrieval and Debezium's CDC streaming.
    */
   @Test
   void testRetrievingResumeTokenWithDebeziumPipeline() {

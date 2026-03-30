@@ -656,14 +656,13 @@ class MongoDbCdcInitializerTest {
   }
 
   /**
-   * Verifies that the initializer uses Debezium's change stream pipeline
-   * (via MongoUtils.openChangeStream) for initial resume token retrieval.
-   * This prevents the "101-record" pattern caused by pipeline mismatch between
-   * initial token retrieval and Debezium's CDC streaming.
+   * Verifies that the initializer uses Debezium's change stream pipeline (via
+   * MongoUtils.openChangeStream) for initial resume token retrieval. This prevents the "101-record"
+   * pattern caused by pipeline mismatch between initial token retrieval and Debezium's CDC streaming.
    *
-   * Without the fix, getMostRecentResumeTokenForDatabases used a custom pipeline
-   * that differed from Debezium's. With the fix, getMostRecentResumeToken uses
-   * MongoUtils.openChangeStream to ensure pipeline consistency.
+   * Without the fix, getMostRecentResumeTokenForDatabases used a custom pipeline that differed from
+   * Debezium's. With the fix, getMostRecentResumeToken uses MongoUtils.openChangeStream to ensure
+   * pipeline consistency.
    */
   @Test
   void testInitializerUsesDebeziumPipelineForInitialResumeToken() {

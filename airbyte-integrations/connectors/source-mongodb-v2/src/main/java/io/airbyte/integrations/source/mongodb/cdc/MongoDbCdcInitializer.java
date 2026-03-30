@@ -95,7 +95,8 @@ public class MongoDbCdcInitializer {
       streamsByDatabase.add(s);
     }
 
-    // Build cdcStreamList early - needed for initial resume token retrieval, validation, and CDC execution.
+    // Build cdcStreamList early - needed for initial resume token retrieval, validation, and CDC
+    // execution.
     // This ensures all three change stream usages share the same Debezium pipeline configuration.
     final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
