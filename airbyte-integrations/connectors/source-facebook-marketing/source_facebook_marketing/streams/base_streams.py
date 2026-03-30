@@ -6,8 +6,9 @@ import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import cache
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import backoff
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
@@ -178,6 +179,22 @@ class FBMarketingStream(Stream, ABC):
                 state[account_id] = account_state
         return state
 
+    @backoff.on_exception(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5, jitter=None)
+    def _fetch_records(self, params: Mapping[str, Any], account_id: str) -> List[Mapping[str, Any]]:
+        """Fetch all records from list_objects, retrying on FacebookBadObjectError.
+
+        Records are buffered so that a retry does not produce duplicates in the
+        parent generator.
+        """
+        records: List[Mapping[str, Any]] = []
+        for record in self.list_objects(params=params, account_id=account_id):
+            if isinstance(record, AbstractObject):
+                record = record.export_all_data()  # convert FB object to dict
+            self.fix_date_time(record)
+            self.add_account_id(record, account_id)
+            records.append(record)
+        return records
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -190,15 +207,10 @@ class FBMarketingStream(Stream, ABC):
         account_state = stream_slice.get("stream_state", {})
 
         try:
-            for record in self.list_objects(
+            yield from self._fetch_records(
                 params=self.request_params(stream_state=account_state),
                 account_id=account_id,
-            ):
-                if isinstance(record, AbstractObject):
-                    record = record.export_all_data()  # convert FB object to dict
-                self.fix_date_time(record)
-                self.add_account_id(record, stream_slice["account_id"])
-                yield record
+            )
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message="Facebook API returned inconsistent object data.",
@@ -381,6 +393,31 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         """Don't have classic cursor filtering"""
         return {}
 
+    @backoff.on_exception(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5, jitter=None)
+    def _fetch_reversed_records(self, params: Mapping[str, Any], account_id: str) -> Tuple[List[Mapping[str, Any]], Optional[str]]:
+        """Fetch records in reverse-cursor order, retrying on FacebookBadObjectError.
+
+        Returns (records, max_cursor_value) so that the caller can update cursor
+        state only after a successful fetch.
+        """
+        records_iter = self.list_objects(params=params, account_id=account_id)
+        account_cursor = self._cursor_values.get(account_id)
+
+        max_cursor_value = None
+        records: List[Mapping[str, Any]] = []
+        for record in records_iter:
+            record_cursor_value = record[self.cursor_field]
+            if account_cursor and record_cursor_value < account_cursor:
+                break
+
+            max_cursor_value = max(max_cursor_value, record_cursor_value) if max_cursor_value else record_cursor_value
+            record = record.export_all_data()
+            self.fix_date_time(record)
+            self.add_account_id(record, account_id)
+            records.append(record)
+
+        return records, max_cursor_value
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -398,24 +435,11 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         account_state = stream_slice.get("stream_state")
 
         try:
-            records_iter = self.list_objects(
+            records, max_cursor_value = self._fetch_reversed_records(
                 params=self.request_params(stream_state=account_state),
                 account_id=account_id,
             )
-            account_cursor = self._cursor_values.get(account_id)
-
-            max_cursor_value = None
-            for record in records_iter:
-                record_cursor_value = record[self.cursor_field]
-                if account_cursor and record_cursor_value < account_cursor:
-                    break
-
-                max_cursor_value = max(max_cursor_value, record_cursor_value) if max_cursor_value else record_cursor_value
-                record = record.export_all_data()
-                self.fix_date_time(record)
-                self.add_account_id(record, stream_slice["account_id"])
-                yield record
-
+            yield from records
             self._cursor_values[account_id] = max_cursor_value
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
