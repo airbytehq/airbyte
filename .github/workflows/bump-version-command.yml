@@ -90,22 +90,18 @@ jobs:
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
 
-      - name: Fetch base branch for diff
-        # The checkout uses fetch-depth:1 (shallow clone) for speed, so the
-        # default branch ref (origin/master) is not available. Fetch just
-        # enough history for the ops CLI to compute a git diff.
-        run: git fetch origin master --depth=1
-
       - name: Detect modified connectors
         id: detect-connectors
         env:
           PR_NUMBER: ${{ github.event.inputs.pr }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CONNECTORS=$(
             airbyte-ops local connector list \
               --repo-path "$GITHUB_WORKSPACE" \
               --modified-only \
               --pr "$PR_NUMBER" \
+              --gh-token "$GH_TOKEN" \
               --output-format lines
           )
 
