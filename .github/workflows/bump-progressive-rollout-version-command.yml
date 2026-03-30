@@ -112,11 +112,15 @@ jobs:
             echo "$CONNECTORS"
           fi
 
-          # Pass the connector list to the next step via GITHUB_OUTPUT
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "connectors<<$EOF" >> $GITHUB_OUTPUT
-          echo "$CONNECTORS" >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT
+          # Pass the connector list to the next step via GITHUB_OUTPUT.
+          # Only set the multiline output when CONNECTORS is non-empty so that
+          # the downstream `if:` reliably evaluates to false for empty lists.
+          if [ -n "$CONNECTORS" ]; then
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo "connectors<<$EOF" >> $GITHUB_OUTPUT
+            echo "$CONNECTORS" >> $GITHUB_OUTPUT
+            echo "$EOF" >> $GITHUB_OUTPUT
+          fi
 
       - name: Bump RC versions and configure progressive rollout
         if: steps.detect-connectors.outputs.connectors != ''
