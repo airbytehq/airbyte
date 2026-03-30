@@ -4,14 +4,15 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+from requests import Response
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import get_stream_by_name, oauth_config, token_config
+from unit_tests.conftest import get_retriever, get_stream_by_name, oauth_config, token_config
 
 
 def test_channel_members_extractor(token_config, components_module):
@@ -129,71 +130,50 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
 
 
 @pytest.mark.parametrize(
-    "response_status_code, api_response, config, expected_policy",
+    "stream_name",
     (
-        (
-            429,
-            [
-                # first call rate limited
-                {"headers": {"Retry-After": "1"}, "text": "rate limited", "status_code": 429},
-                # refreshed limits on second call
-                {"json": {"messages": []}, "status_code": 200},
-            ],
-            "oauth",
-            MovingWindowCallRatePolicy,
-        ),
-        (
-            429,
-            [
-                # first call rate limited
-                {"headers": {"Retry-After": "1"}, "text": "rate limited", "status_code": 429},
-                # refreshed limits on second call
-                {"json": {"messages": []}, "status_code": 200},
-            ],
-            "token",
-            UnlimitedCallRatePolicy,
-        ),
-        (
-            200,
-            [
-                # no rate limits
-                {"json": {"messages": []}, "status_code": 200},
-            ],
-            "oauth",
-            UnlimitedCallRatePolicy,
-        ),
+        "threads",
+        "channel_messages",
+        "users",
+        "channel_members",
     ),
-    ids=["rate_limited_oauth_policy", "no_rate_limits_token_policy", "no_rate_limits_policy"],
 )
-def tesadfst_threads_and_messages_api_budget(
-    response_status_code, api_response, config, expected_policy, oauth_config, token_config, requests_mock
-):
-    stream = get_stream_by_name("threads", oauth_config if config == "oauth" else token_config)
-    retriever = stream._stream_partition_generator._partition_factory._retriever
-    assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
-    if config == "oauth":
-        assert isinstance(retriever.requester._http_client._api_budget._policies[0], UnlimitedCallRatePolicy)
+def test_http_429_returns_rate_limited_action(token_config, stream_name):
+    """
+    Verify that HTTP 429 responses are mapped to RATE_LIMITED (not RETRY) for all streams.
+    RATE_LIMITED raises RateLimitBackoffException which retries indefinitely with backoff,
+    while RETRY raises DefaultBackoffException which fails permanently after limited retries.
+    This is the fix for https://github.com/airbytehq/oncall/issues/11816.
+    """
+    stream = get_stream_by_name(stream_name, token_config)
+    mocked_response = MagicMock(spec=Response, status_code=429)
+    mocked_response.ok = False
+    mocked_response.headers = {"Content-Type": "application/json"}
+    error_resolution = get_retriever(stream).requester.error_handler.interpret_response(mocked_response)
+    assert error_resolution.response_action == ResponseAction.RATE_LIMITED
 
-    messages = [{"ts": 1577866844}, {"ts": 1577877406}]
 
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.replies",
-        api_response,
-    )
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
-    )
-    requests_mock.register_uri(
-        "GET",
-        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
-    )
+def test_channel_messages_uses_standard_requester(token_config):
+    """
+    Verify that channel_messages stream uses the standard HttpRequester (not the removed
+    MessagesAndThreadsHttpRequester custom class) and inherits the base error handler
+    with RATE_LIMITED action for 429 responses.
+    """
+    stream = get_stream_by_name("channel_messages", token_config)
+    retriever = get_retriever(stream)
+    requester = retriever.requester
+    # Should be a standard HttpRequester, not a custom subclass
+    assert type(requester).__name__ == "HttpRequester"
 
-    list(record for partition in stream.generate_partitions() for record in partition.read())
 
-    assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
-    if config == "oauth":
-        assert isinstance(retriever.requester._http_client._api_budget._policies[0], expected_policy)
+def test_threads_uses_standard_requester(token_config):
+    """
+    Verify that threads stream uses the standard HttpRequester (not the removed
+    MessagesAndThreadsHttpRequester custom class) and inherits the base error handler
+    with RATE_LIMITED action for 429 responses.
+    """
+    stream = get_stream_by_name("threads", token_config)
+    retriever = get_retriever(stream)
+    requester = retriever.requester
+    # Should be a standard HttpRequester, not a custom subclass
+    assert type(requester).__name__ == "HttpRequester"
