@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       connectors-options:
-        description: "Extra flags to pass to `airbyte-ops local connector list` (e.g. --name=source-github)."
+        description: "Override: pass these flags directly to `airbyte-ops local connector list` instead of the default source/destination selection. (e.g. --name=source-github)."
         default: ""
 jobs:
   generate_matrix:
@@ -28,12 +28,29 @@ jobs:
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
 
-      # --- Connector selection (three-call pattern) ---
-      # Call 1: Sources - all support levels, Python/low-code/manifest-only languages
-      - name: List source connectors
-        id: list-sources
+      # --- Connector selection ---
+      # When connectors-options is provided, use it directly as an override.
+      # Otherwise, use the three-call pattern: sources (all support levels) +
+      # destinations (certified only), then combine.
+
+      # Override path: use connectors-options as-is
+      - name: "[override] List connectors from manual input"
+        id: list-override
+        if: github.event.inputs.connectors-options != ''
         env:
           CONNECTOR_OPTIONS: ${{ github.event.inputs.connectors-options }}
+        run: |
+          echo "generated_matrix=$( \
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              $CONNECTOR_OPTIONS \
+              --output-format=json-gh-matrix \
+          )" | tee -a $GITHUB_OUTPUT
+
+      # Default path — Call 1: Sources (all support levels)
+      - name: List source connectors
+        id: list-sources
+        if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
         run: |
           SOURCES=$(
             airbyte-ops local connector list \
@@ -41,16 +58,14 @@ jobs:
               --connector-type=source \
               --language python --language low-code --language manifest-only \
               --exclude-connectors=source-declarative-manifest \
-              $CONNECTOR_OPTIONS \
               --output-format=csv
           )
           echo "sources=$SOURCES" | tee -a $GITHUB_OUTPUT
 
-      # Call 2: Destinations - certified only, Python/low-code/manifest-only languages
+      # Default path — Call 2: Destinations (certified only)
       - name: List destination connectors
         id: list-destinations
-        env:
-          CONNECTOR_OPTIONS: ${{ github.event.inputs.connectors-options }}
+        if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
         run: |
           DESTINATIONS=$(
             airbyte-ops local connector list \
@@ -58,14 +73,14 @@ jobs:
               --connector-type=destination \
               --certified-only \
               --language python --language low-code --language manifest-only \
-              $CONNECTOR_OPTIONS \
               --output-format=csv
           )
           echo "destinations=$DESTINATIONS" | tee -a $GITHUB_OUTPUT
 
-      # Call 3: Combine both sets and output as GH Actions matrix
-      - name: Generate matrix - 25 connectors per job
-        id: generate_matrix
+      # Default path — Call 3: Combine both sets into GH Actions matrix
+      - name: Generate matrix from source + destination lists
+        id: list-default
+        if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
         run: |
           echo "generated_matrix=$( \
             airbyte-ops local connector list \
@@ -73,6 +88,15 @@ jobs:
               --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
               --output-format=json-gh-matrix \
           )" | tee -a $GITHUB_OUTPUT
+
+      # Merge: pick whichever path ran
+      - name: Set final matrix output
+        id: generate_matrix
+        env:
+          OVERRIDE_MATRIX: ${{ steps.list-override.outputs.generated_matrix }}
+          DEFAULT_MATRIX: ${{ steps.list-default.outputs.generated_matrix }}
+        run: |
+          echo "generated_matrix=${OVERRIDE_MATRIX:-$DEFAULT_MATRIX}" | tee -a $GITHUB_OUTPUT
 
   run_connectors_up_to_date:
     needs: generate_matrix
