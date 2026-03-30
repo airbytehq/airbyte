@@ -121,6 +121,7 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.3 | 2026-03-30 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Fix 429 status code mapping from RETRY to RATE_LIMITED for improved rate limit handling and observability |
 | 4.0.2 | 2026-03-23 | [75290](https://github.com/airbytehq/airbyte/pull/75290) | Update v4.0.0 upgrade deadline to 2026-04-10 |
 | 4.0.1 | 2026-03-10 | [74616](https://github.com/airbytehq/airbyte/pull/74616) | Update dependencies |
 | 4.0.0 | 2026-02-25 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |
