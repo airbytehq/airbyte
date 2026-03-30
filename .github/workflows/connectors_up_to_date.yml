@@ -10,7 +10,12 @@ on:
   workflow_dispatch:
     inputs:
       connectors-options:
-        description: "Override: pass these flags directly to `airbyte-ops local connector list` instead of the default source/destination selection. (e.g. --name=source-github)."
+        description: >-
+          Override: pass these flags directly to `airbyte-ops local connector list`
+          instead of the default source/destination selection.
+          Examples: `--name=source-github` (one connector),
+          `--connectors-filter=source-github,source-stripe` (multiple by name),
+          `--certified-only --connector-type=destination` (custom query).
         default: ""
 jobs:
   generate_matrix:
