@@ -319,15 +319,13 @@ def test_bidding_strategy_streams_do_not_include_nullable_pk_fields(stream_defin
 
     assert stream_def["name"] == stream_name
     assert stream_def["primary_key"] == expected_primary_key
-    assert "bidding_strategy.id" not in stream_def["primary_key"], (
-        f"bidding_strategy.id must not be in the primary key for {stream_name} because it is nullable"
-    )
+    assert (
+        "bidding_strategy.id" not in stream_def["primary_key"]
+    ), f"bidding_strategy.id must not be in the primary key for {stream_name} because it is nullable"
 
     # Also verify the field is indeed nullable in the schema
     schema_ref = stream_def["schema_loader"]["schema"]["$ref"]
     schema_name = schema_ref.split("/")[-1]
     schema = manifest["schemas"][schema_name]
     bidding_strategy_id_type = schema["properties"]["bidding_strategy.id"]["type"]
-    assert "null" in bidding_strategy_id_type, (
-        "bidding_strategy.id should be nullable in the schema"
-    )
+    assert "null" in bidding_strategy_id_type, "bidding_strategy.id should be nullable in the schema"
