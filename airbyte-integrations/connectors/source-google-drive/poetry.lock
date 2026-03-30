@@ -17,7 +17,7 @@ backoff = "*"
 boltons = "^25.0.0"
 cachetools = "*"
 click = "^8.1.8"
-cryptography = ">=44.0.0,<47.0.0"
+cryptography = ">=44.0.0,<45.0.0"
 dateparser = "^1.2.2"
 dpath = "^2.1.6"
 dunamai = "^1.22.0"
@@ -73,7 +73,7 @@ vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)",
 type = "git"
 url = "https://github.com/airbytehq/airbyte-python-cdk.git"
 reference = "devin/1774667708-update-nltk-cryptography"
-resolved_reference = "528b46757ebb08f2a276ceb107a03c9139ff6852"
+resolved_reference = "a1b16351d43167b2a05de612d1602e77752459fb"
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
