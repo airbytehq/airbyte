@@ -121,7 +121,7 @@ See the official [Jira API reference](https://developer.atlassian.com/cloud/jira
 
 ## Version information
 
-- **Package version:** 0.1.110
+- **Package version:** 0.1.113
 - **Connector version:** 1.1.7
-- **Generated with Connector SDK commit SHA:** 6ad04bc3fb66fc474336c37d69c79fb843ea1609
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/jira/CHANGELOG.md)
