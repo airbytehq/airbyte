@@ -719,9 +719,9 @@ def test_build_associations_retriever_uses_rate_limited_for_429():
     for response_filter in error_handler.response_filters:
         if 429 in response_filter.http_codes:
             found_429_filter = True
-            assert response_filter.action == ResponseAction.RATE_LIMITED, (
-                f"Expected RATE_LIMITED for HTTP 429 in associations retriever, got {response_filter.action}"
-            )
+            assert (
+                response_filter.action == ResponseAction.RATE_LIMITED
+            ), f"Expected RATE_LIMITED for HTTP 429 in associations retriever, got {response_filter.action}"
     assert found_429_filter, "No response filter found for HTTP 429 in associations retriever"
 
 
