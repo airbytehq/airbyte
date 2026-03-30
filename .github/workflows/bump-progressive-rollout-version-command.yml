@@ -92,19 +92,11 @@ jobs:
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
 
-      - name: Detect modified connectors, bump RC versions, and configure progressive rollout
+      - name: Detect modified connectors
+        id: detect-connectors
         env:
-          BUMP_TYPE: ${{ github.event.inputs.type }}
-          CHANGELOG_MSG: ${{ github.event.inputs.changelog }}
-          PR_TITLE: ${{ steps.job-vars.outputs.pr_title }}
           PR_NUMBER: ${{ github.event.inputs.pr }}
         run: |
-          # Resolve changelog message: user-provided or PR title fallback
-          MSG="${CHANGELOG_MSG:-$PR_TITLE}"
-          echo "Changelog message: $MSG"
-          echo "Bump type: ${BUMP_TYPE}_rc"
-
-          # List modified connectors in this PR
           CONNECTORS=$(
             airbyte-ops local connector list \
               --repo-path "$GITHUB_WORKSPACE" \
@@ -115,11 +107,29 @@ jobs:
 
           if [ -z "$CONNECTORS" ]; then
             echo "No modified connectors found in PR #$PR_NUMBER."
-            exit 0
+          else
+            echo "Modified connectors:"
+            echo "$CONNECTORS"
           fi
 
-          echo "Modified connectors:"
-          echo "$CONNECTORS"
+          # Pass the connector list to the next step via GITHUB_OUTPUT
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "connectors<<$EOF" >> $GITHUB_OUTPUT
+          echo "$CONNECTORS" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+
+      - name: Bump RC versions and configure progressive rollout
+        if: steps.detect-connectors.outputs.connectors != ''
+        env:
+          BUMP_TYPE: ${{ github.event.inputs.type }}
+          CHANGELOG_MSG: ${{ github.event.inputs.changelog }}
+          PR_TITLE: ${{ steps.job-vars.outputs.pr_title }}
+          PR_NUMBER: ${{ github.event.inputs.pr }}
+          CONNECTORS: ${{ steps.detect-connectors.outputs.connectors }}
+        run: |
+          MSG="${CHANGELOG_MSG:-$PR_TITLE}"
+          echo "Changelog message: $MSG"
+          echo "Bump type: ${BUMP_TYPE}_rc"
           echo ""
 
           # For each modified connector:
