@@ -3,6 +3,8 @@ import csv
 import gzip
 import io
 import logging
+import tempfile
+import zipfile
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -465,6 +467,59 @@ class _PrefixedStream(io.RawIOBase):
                 return chunk + (more or b"")
             return chunk
         return self._stream.read(size) or b""
+
+
+@dataclass
+class BingAdsReportZipCsvDecoder(Decoder):
+    """
+    Streaming decoder for Bing Ads report ZIP downloads.
+
+    The CDK's built-in ZipfileDecoder loads the entire HTTP response into memory
+    via `response.content`, creating multiple in-memory copies of the data.
+    With high concurrency, this causes OOM when processing large reports.
+
+    This decoder streams the response to a temporary SpooledTemporaryFile
+    (spilling to disk beyond 5 MB), then extracts and parses the CSV content
+    row-by-row, keeping memory usage bounded regardless of report size.
+    """
+
+    encoding: str = "utf-8-sig"
+    set_values_to_none: Optional[List[str]] = None
+
+    def is_stream_response(self) -> bool:
+        return True
+
+    def decode(self, response: Any) -> Generator[MutableMapping[str, Any], None, None]:
+        spool = tempfile.SpooledTemporaryFile(max_size=5 * 1024 * 1024)
+        raw = response.raw
+        try:
+            while True:
+                chunk = raw.read(64 * 1024)
+                if not chunk:
+                    break
+                spool.write(chunk)
+            spool.seek(0)
+
+            try:
+                with zipfile.ZipFile(spool) as zf:
+                    for name in zf.namelist():
+                        with zf.open(name) as member:
+                            text_stream = io.TextIOWrapper(member, encoding=self.encoding)
+                            reader = csv.DictReader(text_stream)
+                            none_values = set(self.set_values_to_none) if self.set_values_to_none else set()
+                            for row in reader:
+                                row.pop(None, None)  # Remove extra columns not in header
+                                if none_values:
+                                    for key, value in row.items():
+                                        if value in none_values:
+                                            row[key] = None
+                                yield row
+            except zipfile.BadZipFile as exc:
+                logger.error("Received an invalid zip file in response: %s", exc)
+                raise
+        finally:
+            spool.close()
+            raw.close()
 
 
 @dataclass
