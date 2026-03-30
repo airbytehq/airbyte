@@ -1,4 +1,29 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Google Ads Migration Guide
+
+## Upgrading to 5.0.0
+
+This release removes the nullable `bidding_strategy.id` field from the primary keys of the `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams.
+
+### What changed
+
+The `bidding_strategy.id` field is nullable in the Google Ads API, meaning it can return `null` values. Including a nullable field in the primary key caused sync failures for destinations that enforce non-null primary key constraints, such as the Iceberg destination.
+
+| Stream | Old primary key | New primary key |
+|---|---|---|
+| `campaign_bidding_strategy` | `campaign.id`, `bidding_strategy.id`, `segments.date` | `campaign.id`, `segments.date` |
+| `ad_group_bidding_strategy` | `ad_group.id`, `bidding_strategy.id`, `segments.date` | `ad_group.id`, `segments.date` |
+
+### Who is affected
+
+Users syncing the `campaign_bidding_strategy` or `ad_group_bidding_strategy` streams.
+
+### Action required
+
+After upgrading, refresh the source schema and reset the affected streams to ensure uninterrupted syncs.
+
+<MigrationGuide />
 
 ## Upgrading to 4.0.0
 
