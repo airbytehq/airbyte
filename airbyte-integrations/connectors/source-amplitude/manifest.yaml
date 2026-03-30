@@ -1065,9 +1065,10 @@ spec:
 # and it only makes a single request per sync (full refresh, no date slicing).
 # Other endpoints (annotations, cohorts, export) have no documented rate limits from Amplitude.
 #
-# Both endpoints share Amplitude's budget, so a single policy with a regex matcher covers both.
-# Limits use the worst-case cost (120/request from /2/users with group_by=country) to ensure
-# the shared budget is never exceeded regardless of the request mix.
+# Both endpoints share Amplitude's budget. With CDK v7.14.0+ weight-based rate limiting,
+# each matcher specifies its per-request weight (cost), and the policy limits are set to
+# Amplitude's actual budgets. The CDK deducts the matched weight from the shared budget
+# on each request, accurately tracking cost consumption across endpoints.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 5
@@ -1075,16 +1076,23 @@ concurrency_level:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    # Shared Dashboard REST API budget for /2/sessions/average and /2/users:
-    #   Hourly:  108,000 cost/hr ÷ 120 cost/request (worst case) = 900 requests/hr
-    #   Burst:   1,000 cost/5min ÷ 120 cost/request (worst case) = 8 requests/5min
+    # Shared Dashboard REST API budget using Amplitude's actual cost limits.
+    # Each matcher specifies a weight equal to the per-request cost for that endpoint.
+    # The CDK deducts the matched weight from the shared budget on each request.
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 900
+        - limit: 108000
           interval: PT1H
-        - limit: 8
+        - limit: 1000
           interval: PT5M
       matchers:
+        # /2/sessions/average: 15 days * 1 condition * 4 (User Sessions query type) = 60 cost/request
         - type: HttpRequestRegexMatcher
           method: GET
-          url_path_pattern: "/2/(sessions/average|users)"
+          url_path_pattern: "/2/sessions/average"
+          weight: 60
+        # /2/users: 30 days * 4 (group-by country) * 1 = 120 cost/request (worst case with group_by=country)
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "/2/users"
+          weight: 120
