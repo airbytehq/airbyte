@@ -7,7 +7,9 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,15 +22,18 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.debezium.connector.mongodb.MongoUtils;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class MongoDbResumeTokenHelperTest {
 
@@ -96,6 +101,44 @@ class MongoDbResumeTokenHelperTest {
   void testTimestampExtractionTimestampNotPresent() {
     final JsonNode changeEvent = Jsons.deserialize("{\"source\":{}}");
     assertThrows(IllegalStateException.class, () -> MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent));
+  }
+
+  /**
+   * Tests the new getMostRecentResumeToken method that uses Debezium's change stream pipeline
+   * (via MongoUtils.openChangeStream) instead of a custom pipeline.
+   * This method is the fix for the "101-record" pattern where incremental syncs return only
+   * metadata records due to a pipeline mismatch between initial resume token retrieval and
+   * Debezium's CDC streaming.
+   */
+  @Test
+  void testRetrievingResumeTokenWithDebeziumPipeline() {
+    final String resumeToken = "8264BEB9F3000000012B0229296E04";
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+
+    final Properties debeziumProperties = new Properties();
+    debeziumProperties.setProperty("mongodb.connection.string", "mongodb://localhost:27017/");
+    debeziumProperties.setProperty("collection.include.list", DATABASE + ".test-collection");
+    debeziumProperties.setProperty("capture.scope", "deployment");
+    debeziumProperties.setProperty("topic.prefix", "test-prefix");
+
+    try (MockedStatic<MongoUtils> mockedMongoUtils = mockStatic(MongoUtils.class)) {
+      mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+          .thenReturn(changeStreamIterable);
+
+      final BsonDocument actualResumeToken =
+          MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, debeziumProperties);
+      assertEquals(resumeTokenDocument, actualResumeToken);
+
+      // Verify Debezium's pipeline is used (not a custom pipeline)
+      mockedMongoUtils.verify(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()));
+    }
   }
 
 }

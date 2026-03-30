@@ -94,9 +94,27 @@ public class MongoDbCdcInitializer {
           .toList();
       streamsByDatabase.add(s);
     }
-    // calculate the initial resume token for all the collections discovered for the input databases.
+
+    // Build cdcStreamList early - needed for initial resume token retrieval, validation, and CDC execution.
+    // This ensures all three change stream usages share the same Debezium pipeline configuration.
+    final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(s2 -> s2.getStream().getNamespace() + "\\." + s2.getStream().getName())
+        .toList();
+
+    // Create Debezium properties for initial resume token retrieval.
+    // Uses the same pipeline as Debezium CDC streaming to ensure consistency.
+    final var tokenRetrievalPropertiesManager =
+        new MongoDbDebeziumPropertiesManager(Jsons.clone(defaultDebeziumProperties), config.getDatabaseConfig(), incrementalOnlyStreamsCatalog,
+            cdcStreamList);
+    final var tokenRetrievalOffsetManager = AirbyteFileOffsetBackingStore.initializeState(null, Optional.empty());
+    final Properties tokenRetrievalDebeziumProperties = tokenRetrievalPropertiesManager.getDebeziumProperties(tokenRetrievalOffsetManager);
+
+    // Calculate the initial resume token using Debezium's change stream pipeline.
+    // This aligns the pipeline used for the target position with the pipeline used during
+    // actual CDC streaming, preventing the "101-record" pattern caused by pipeline mismatch.
     final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
+        MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, tokenRetrievalDebeziumProperties);
 
     final String serverId = config.getDatabaseConfig().get("connection_string").asText();
     final JsonNode initialDebeziumState =
@@ -165,13 +183,8 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState.state());
     }
 
-    // Build cdcStreamList early - needed for validation and later CDC execution
-    final var cdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
-        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
-        .toList();
-
-    // Create Debezium properties for validation - using same pipeline as CDC resumption
+    // Create Debezium properties for validation - reusing the same pipeline configuration
+    // as token retrieval and CDC streaming for full consistency.
     final var validationOffsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState.state(), Optional.empty());
     final var validationPropertiesManager =
         new MongoDbDebeziumPropertiesManager(Jsons.clone(defaultDebeziumProperties), config.getDatabaseConfig(), incrementalOnlyStreamsCatalog,
@@ -182,6 +195,29 @@ public class MongoDbCdcInitializer {
         optSavedOffset
             .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, validationDebeziumProperties))
             .isPresent();
+
+    // Log diagnostic information to help identify the "101-record" pattern where
+    // incremental syncs return only metadata records and zero data records.
+    if (optSavedOffset.isPresent() && savedOffsetIsValid) {
+      try {
+        final BsonTimestamp savedTokenTimestamp =
+            io.debezium.connector.mongodb.ResumeTokens.getTimestamp(optSavedOffset.get());
+        final BsonTimestamp initialTokenTimestamp =
+            io.debezium.connector.mongodb.ResumeTokens.getTimestamp(initialResumeToken);
+        LOGGER.info("CDC resume token diagnostics: saved offset timestamp (seconds after epoch) = {}, "
+            + "initial resume token timestamp (seconds after epoch) = {}, "
+            + "gap = {} seconds",
+            savedTokenTimestamp.getTime(),
+            initialTokenTimestamp.getTime(),
+            initialTokenTimestamp.getTime() - savedTokenTimestamp.getTime());
+        if (savedTokenTimestamp.compareTo(initialTokenTimestamp) >= 0) {
+          LOGGER.info("Saved offset is at or ahead of initial resume token. "
+              + "If no new oplog events occurred since the last sync, Debezium may time out with zero data records.");
+        }
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to extract timestamps for CDC diagnostics: {}", e.getMessage());
+      }
+    }
 
     if (!savedOffsetIsValid) {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
