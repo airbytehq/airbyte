@@ -67,7 +67,7 @@ jobs:
 
           This will create a documentation PR stacked on top of PR #${PR_NUMBER}.
 
-          [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/connectordocs.md)
+          [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/connectordocs.md)
           STARTMSG
               echo "EOF"
             } >> $GITHUB_OUTPUT
@@ -105,7 +105,7 @@ jobs:
 
           This will create a documentation PR targeting the master branch.
 
-          [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/connectordocs.md)
+          [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/connectordocs.md)
           STARTMSG
               echo "EOF"
             } >> $GITHUB_OUTPUT
