@@ -53,48 +53,49 @@ The self-managed and Cloud variants have the same version number starting from v
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.9.4 | 2026-03-30 | [75602](https://github.com/airbytehq/airbyte/pull/75602) | test: dummy multi-connector change for bump-version E2E test |
 | 0.9.3 | 2026-02-04 | [72856](https://github.com/airbytehq/airbyte/pull/72856) | Upgrade CDK to 0.2.8 |
 | 0.9.2 | 2026-01-21 | [72291](https://github.com/airbytehq/airbyte/pull/72291) | Upgrade CDK to 0.2.0 |
 | 0.9.1 | 2026-01-21 | [72226](https://github.com/airbytehq/airbyte/pull/72226) | No-op version bump to test release cycle |
 | 0.9.0 | 2026-01-09 | [71264](https://github.com/airbytehq/airbyte/pull/71264) | Promoting release candidate 0.9.0-rc.2 to a main version. |
-| 0.9.0-rc.2  | 2026-01-08 | [71242](https://github.com/airbytehq/airbyte/pull/71242) | Add missing configuration bean.                                                              |
-| 0.9.0-rc.1  | 2026-01-08 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Migrate to modern dataflow CDK architecture.                                                 |
-| 0.8.6       | 2025-11-05 | [69128](https://github.com/airbytehq/airbyte/pull/69128) | Upgrade to Bulk CDK 0.1.61.                                                                  |
-| 0.8.5       | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation                                                    |
-| 0.8.4       | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684) | Pin to CDK artifact.                                                                         |
-| 0.8.3       | 2025-09-08 | [65999](https://github.com/airbytehq/airbyte/pull/65999) | Testing publishing flow.                                                                     |
-| 0.8.2       | 2025-08-12 | [64897](https://github.com/airbytehq/airbyte/pull/64897) | Testing publishing flow.                                                                     |
-| 0.8.1       | 2025-07-30 | [64117](https://github.com/airbytehq/airbyte/pull/64117) | Re-release with latest CDK for socket related fixes.                                         |
-| 0.8.0       | 2025-06-17 | [61585](https://github.com/airbytehq/airbyte/pull/61585) | Upgrade dev null to the new data channel based architecture.                                 |
-| 0.7.27      | 2025-06-13 | [61587](https://github.com/airbytehq/airbyte/pull/61587) | Test publishing logic.                                                                       |
-| 0.7.26      | 2025-05-27 | [60938](https://github.com/airbytehq/airbyte/pull/60938) | Revert to base 2.0.1, test default IPC Options                                               |
-| 0.7.25      | 2025-05-15 | [60312](https://github.com/airbytehq/airbyte/pull/60312) | Migrate to base 2.0.2.                                                                       |
-| 0.7.24      | 2025-05-15 | [60301](https://github.com/airbytehq/airbyte/pull/60301) | Add support for file-based syncs                                                             |
-| 0.7.23      | 2025-05-09 | [59766](https://github.com/airbytehq/airbyte/pull/59766) | Test publishing in new flow.                                                                 |
-| 0.7.22      | 2025-05-09 | [59759](https://github.com/airbytehq/airbyte/pull/59759) | Migrate to new flow.                                                                         |
-| 0.7.21      | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710) | CDK: bugfixes                                                                                |
-| 0.7.20      | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue               |
-| 0.7.19      | 2025-03-13 | [55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue               |
-| 0.7.18      | 2025-02-25 | [54179](https://github.com/airbytehq/airbyte/pull/54179) | Use new CDK interface; perf improvements, skip initial staging                               |
-| 0.7.17      | 2025-01-24 | [51600](https://github.com/airbytehq/airbyte/pull/51600) | Internal refactor                                                                            |
-| 0.7.16      | 2024-12-19 | [52076](https://github.com/airbytehq/airbyte/pull/52076) | Test improvements                                                                            |
-| 0.7.15      | 2024-12-19 | [49931](https://github.com/airbytehq/airbyte/pull/49931) | Non-functional CDK changes                                                                   |
-| 0.7.14      | 2024-12-20 | [49974](https://github.com/airbytehq/airbyte/pull/49974) | Non-functional CDK changes                                                                   |
-| 0.7.13      | 2024-12-18 | [49899](https://github.com/airbytehq/airbyte/pull/49899) | Use a base image: airbyte/java-connector-base:1.0.0                                          |
-| 0.7.12      | 2024-12-04 | [48794](https://github.com/airbytehq/airbyte/pull/48794) | Promoting release candidate 0.7.12-rc.2 to a main version.                                   |
-| 0.7.12-rc.2 | 2024-11-26 | [48693](https://github.com/airbytehq/airbyte/pull/48693) | Update for testing progressive rollout                                                       |
-| 0.7.12-rc.1 | 2024-11-25 | [48693](https://github.com/airbytehq/airbyte/pull/48693) | Update for testing progressive rollout                                                       |
-| 0.7.11      | 2024-11-18 | [48468](https://github.com/airbytehq/airbyte/pull/48468) | Implement File CDk                                                                           |
-| 0.7.10      | 2024-11-08 | [48429](https://github.com/airbytehq/airbyte/pull/48429) | Bugfix: correctly handle state ID field                                                      |
-| 0.7.9       | 2024-11-07 | [48417](https://github.com/airbytehq/airbyte/pull/48417) | Only pass through the state ID field, not all additional properties                          |
-| 0.7.8       | 2024-11-07 | [48416](https://github.com/airbytehq/airbyte/pull/48416) | Bugfix: global state correclty sends additional properties                                   |
-| 0.7.7       | 2024-10-17 | [46692](https://github.com/airbytehq/airbyte/pull/46692) | Internal code changes                                                                        |
-| 0.7.6       | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: pick up checkpoint safety check fix                                                  |
-| 0.7.5       | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: checkpoints in order, all checkpoints processed before shutdown                      |
-| 0.7.4       | 2024-10-08 | [46650](https://github.com/airbytehq/airbyte/pull/46650) | Internal code changes                                                                        |
-| 0.7.3       | 2024-10-01 | [46559](https://github.com/airbytehq/airbyte/pull/46559) | From load CDK: async improvements, stream incomplete, additionalProperties on state messages |
-| 0.7.2       | 2024-10-01 | [45929](https://github.com/airbytehq/airbyte/pull/45929) | Internal code changes                                                                        |
-| 0.7.1       | 2024-09-30 | [46276](https://github.com/airbytehq/airbyte/pull/46276) | Upgrade to latest bulk CDK                                                                   |
+| 0.9.0-rc.2 | 2026-01-08 | [71242](https://github.com/airbytehq/airbyte/pull/71242) | Add missing configuration bean. |
+| 0.9.0-rc.1 | 2026-01-08 | [71191](https://github.com/airbytehq/airbyte/pull/71191) | Migrate to modern dataflow CDK architecture. |
+| 0.8.6 | 2025-11-05 | [69128](https://github.com/airbytehq/airbyte/pull/69128) | Upgrade to Bulk CDK 0.1.61. |
+| 0.8.5 | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
+| 0.8.4 | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684) | Pin to CDK artifact. |
+| 0.8.3 | 2025-09-08 | [65999](https://github.com/airbytehq/airbyte/pull/65999) | Testing publishing flow. |
+| 0.8.2 | 2025-08-12 | [64897](https://github.com/airbytehq/airbyte/pull/64897) | Testing publishing flow. |
+| 0.8.1 | 2025-07-30 | [64117](https://github.com/airbytehq/airbyte/pull/64117) | Re-release with latest CDK for socket related fixes. |
+| 0.8.0 | 2025-06-17 | [61585](https://github.com/airbytehq/airbyte/pull/61585) | Upgrade dev null to the new data channel based architecture. |
+| 0.7.27 | 2025-06-13 | [61587](https://github.com/airbytehq/airbyte/pull/61587) | Test publishing logic. |
+| 0.7.26 | 2025-05-27 | [60938](https://github.com/airbytehq/airbyte/pull/60938) | Revert to base 2.0.1, test default IPC Options |
+| 0.7.25 | 2025-05-15 | [60312](https://github.com/airbytehq/airbyte/pull/60312) | Migrate to base 2.0.2. |
+| 0.7.24 | 2025-05-15 | [60301](https://github.com/airbytehq/airbyte/pull/60301) | Add support for file-based syncs |
+| 0.7.23 | 2025-05-09 | [59766](https://github.com/airbytehq/airbyte/pull/59766) | Test publishing in new flow. |
+| 0.7.22 | 2025-05-09 | [59759](https://github.com/airbytehq/airbyte/pull/59759) | Migrate to new flow. |
+| 0.7.21 | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710) | CDK: bugfixes |
+| 0.7.20 | 2025-03-21 | [55906](https://github.com/airbytehq/airbyte/pull/55906) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue |
+| 0.7.19 | 2025-03-13 | [55737](https://github.com/airbytehq/airbyte/pull/55737) | CDK: Pass DestinationRecordRaw around instead of DestinationRecordAirbyteValue |
+| 0.7.18 | 2025-02-25 | [54179](https://github.com/airbytehq/airbyte/pull/54179) | Use new CDK interface; perf improvements, skip initial staging |
+| 0.7.17 | 2025-01-24 | [51600](https://github.com/airbytehq/airbyte/pull/51600) | Internal refactor |
+| 0.7.16 | 2024-12-19 | [52076](https://github.com/airbytehq/airbyte/pull/52076) | Test improvements |
+| 0.7.15 | 2024-12-19 | [49931](https://github.com/airbytehq/airbyte/pull/49931) | Non-functional CDK changes |
+| 0.7.14 | 2024-12-20 | [49974](https://github.com/airbytehq/airbyte/pull/49974) | Non-functional CDK changes |
+| 0.7.13 | 2024-12-18 | [49899](https://github.com/airbytehq/airbyte/pull/49899) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 0.7.12 | 2024-12-04 | [48794](https://github.com/airbytehq/airbyte/pull/48794) | Promoting release candidate 0.7.12-rc.2 to a main version. |
+| 0.7.12-rc.2 | 2024-11-26 | [48693](https://github.com/airbytehq/airbyte/pull/48693) | Update for testing progressive rollout |
+| 0.7.12-rc.1 | 2024-11-25 | [48693](https://github.com/airbytehq/airbyte/pull/48693) | Update for testing progressive rollout |
+| 0.7.11 | 2024-11-18 | [48468](https://github.com/airbytehq/airbyte/pull/48468) | Implement File CDk |
+| 0.7.10 | 2024-11-08 | [48429](https://github.com/airbytehq/airbyte/pull/48429) | Bugfix: correctly handle state ID field |
+| 0.7.9 | 2024-11-07 | [48417](https://github.com/airbytehq/airbyte/pull/48417) | Only pass through the state ID field, not all additional properties |
+| 0.7.8 | 2024-11-07 | [48416](https://github.com/airbytehq/airbyte/pull/48416) | Bugfix: global state correclty sends additional properties |
+| 0.7.7 | 2024-10-17 | [46692](https://github.com/airbytehq/airbyte/pull/46692) | Internal code changes |
+| 0.7.6 | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: pick up checkpoint safety check fix |
+| 0.7.5 | 2024-10-08 | [46683](https://github.com/airbytehq/airbyte/pull/46683) | Bugfix: checkpoints in order, all checkpoints processed before shutdown |
+| 0.7.4 | 2024-10-08 | [46650](https://github.com/airbytehq/airbyte/pull/46650) | Internal code changes |
+| 0.7.3 | 2024-10-01 | [46559](https://github.com/airbytehq/airbyte/pull/46559) | From load CDK: async improvements, stream incomplete, additionalProperties on state messages |
+| 0.7.2 | 2024-10-01 | [45929](https://github.com/airbytehq/airbyte/pull/45929) | Internal code changes |
+| 0.7.1 | 2024-09-30 | [46276](https://github.com/airbytehq/airbyte/pull/46276) | Upgrade to latest bulk CDK |
 | 0.7.0       | 2024-09-20 | [45704](https://github.com/airbytehq/airbyte/pull/45704) |                                                                                              |
 | 0.6.1       | 2024-09-20 | [45715](https://github.com/airbytehq/airbyte/pull/45715) | add destination to cloud registry                                                            |
 | 0.6.0       | 2024-09-18 | [45651](https://github.com/airbytehq/airbyte/pull/45651) | merge destination-e2e(OSS) and destination-dev-null(cloud)                                   |
