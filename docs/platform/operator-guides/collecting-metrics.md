@@ -16,6 +16,12 @@ Self-Managed Enterprise customers can configure Airbyte to send telemetry data t
 
 ## Datadog Integration
 
+:::note
+
+Datadog integration is not currently supported in Airbyte Cloud.
+
+:::
+
 Airbyte uses Datadog to monitor Airbyte Cloud performance on a [number of metrics](https://docs.datadoghq.com/integrations/airbyte/#data-collected) important to your experience. This integration only works on legacy Docker deployments of Airbyte. Airbyte is working on an improved version for abctl and Kubernetes. This could become available later as an enterprise feature to help you monitor your own deployment. If you're an enterprise customer and Datadog integration is important to you, let us know.
 
 Currently, you can send metrics to Datadog using [OpenTelemetry](open-telemetry).
