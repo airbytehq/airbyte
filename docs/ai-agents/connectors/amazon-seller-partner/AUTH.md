@@ -169,7 +169,7 @@ The Amazon-Seller-Partner connector requires the following configuration variabl
 
 | Variable | Type | Required | Default | Description |
 |----------|------|----------|---------|-------------|
-| `region` | `string` | Yes | https://sellingpartnerapi-na.amazon.com | The SP-API endpoint URL based on seller region:
+| `region` | `string` | Yes | na | The SP-API endpoint URL based on seller region:
 - NA (North America: US, CA, MX, BR): https://sellingpartnerapi-na.amazon.com
 - EU (Europe/Middle East/Africa/India): https://sellingpartnerapi-eu.amazon.com
 - FE (Far East: JP, AU, SG): https://sellingpartnerapi-fe.amazon.com

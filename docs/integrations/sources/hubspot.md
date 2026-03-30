@@ -81,6 +81,8 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
 | `account_details`           | `oauth`                                                                                                      |
+| `deal_splits`               | `crm.objects.deals.read`                                                                                     |
+| `properties`                | No additional scopes required                                                                                |
 | `workflows`                 | `automation`                                                                                                 |
 
 </details>
@@ -161,6 +163,7 @@ The HubSpot source connector supports the following streams:
 - [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
 - [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
 - [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
+- [Deal Splits](https://developers.hubspot.com/docs/api/crm/deals) \(Incremental\)
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
   - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
 - [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
@@ -181,6 +184,7 @@ The HubSpot source connector supports the following streams:
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
 - [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
+- [Properties](https://developers.hubspot.com/docs/api/crm/properties) \(Full Refresh\)
 - [Contacts Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Client-Side Incremental\)
 - [Companies Property History](https://legacydocs.hubspot.com/docs/methods/companies/get-all-companies) \(Client-Side Incremental\)
 - [Deals Property History](https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals) \(Client-Side Incremental\)
@@ -257,11 +261,12 @@ Expand to see details about Hubspot connector limitations and troubleshooting.
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
 
-| Product tier                | Limits                                  |
-| :-------------------------- | :-------------------------------------- |
-| `Free & Starter`            | Burst: 100/10 seconds, Daily: 250,000   |
-| `Professional & Enterprise` | Burst: 150/10 seconds, Daily: 500,000   |
-| `API add-on (any tier)`     | Burst: 200/10 seconds, Daily: 1,000,000 |
+| Product tier     | Limits                                    |
+| :--------------- | :---------------------------------------- |
+| `Free & Starter` | Burst: 100/10 seconds, Daily: 250,000     |
+| `Professional`   | Burst: 190/10 seconds, Daily: 650,000     |
+| `Enterprise`     | Burst: 190/10 seconds, Daily: 1,000,000   |
+| `API add-on`     | Adds 1,000,000 daily requests to the tier limit |
 
 ### Custom properties sync slowly
 
@@ -269,19 +274,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 ### Troubleshooting
 
-- **Enabling streams:** Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation will only sync the other streams available.
-
-  Example of the output message when trying to read `workflows` stream with missing permissions for the `API Key`:
-
-  ```json
-  {
-    "type": "LOG",
-    "log": {
-      "level": "WARN",
-      "message": "Stream `workflows` cannot be proceed. This API Key (EXAMPLE_API_KEY) does not have proper permissions! (requires any of [automation-access])"
-    }
-  }
-  ```
+- **Enabling streams:** Some streams, such as `workflows`, require specific scopes before they can be read. If the authenticated user does not have the necessary permissions, the connector logs a warning and skips the stream.
 
 - **Hubspot object labels** In Hubspot, a label can be applied to a stream that differs from the original API name of the stream. Hubspot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the Hubspot object instead.
 
@@ -315,6 +308,12 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
   }
   ```
 
+- **401 Unauthorized Error (Private App Token)**
+
+  If you authenticate using a Private App access token and receive a 401 Unauthorized error, the connector fails immediately with a configuration error asking you to update your token. Private App tokens are static and cannot be refreshed, so retrying won't help. To resolve this, generate a new access token in your [HubSpot Private App settings](https://developers.hubspot.com/docs/api/private-apps) and update the connector configuration.
+
+  If you authenticate using OAuth, the connector automatically refreshes expired tokens and retries the request. No action is needed unless the error persists, in which case you should re-authenticate the connector.
+
 - **403 Forbidden Error**
 
   - Hubspot has **scopes** for each API call.
@@ -343,15 +342,18 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.3.3 | 2026-03-26 | [75452](https://github.com/airbytehq/airbyte/pull/75452) | Fixed HTTP 401 errors retrying indefinitely for Private App Token authentication |
+| 6.3.2 | 2026-03-17 | [74526](https://github.com/airbytehq/airbyte/pull/74526) | Update dependencies |
+| 6.3.1 | 2026-03-09 | [74410](https://github.com/airbytehq/airbyte/pull/74410) | Promoting release candidate 6.3.1-rc.1 to a main version. |
 | 6.3.1-rc.1 | 2026-03-03 | [74032](https://github.com/airbytehq/airbyte/pull/74032) | fix(source-hubspot): use v3 properties API for CRM search streams |
-| 6.3.0 | 2026-02-26 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream `account_details` |
+| 6.3.0 | 2026-03-03 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream `account_details` |
 | 6.2.2 | 2026-02-24 | [73909](https://github.com/airbytehq/airbyte/pull/73909) | Update dependencies |
 | 6.2.1 | 2026-02-17 | [73491](https://github.com/airbytehq/airbyte/pull/73491) | Update dependencies |
-| 6.2.0 | 2026-02-10 | [61704](https://github.com/airbytehq/airbyte/pull/61704) | Add new `properties` stream |
+| 6.2.0 | 2026-03-03 | [61704](https://github.com/airbytehq/airbyte/pull/61704) | Add new `properties` stream |
 | 6.1.1 | 2026-02-10 | [70486](https://github.com/airbytehq/airbyte/pull/70486) | Update dependencies |
-| 6.1.0 | 2026-02-05 | [72906](https://github.com/airbytehq/airbyte/pull/72906) | Promoting release candidate 6.1.0-rc.2 to a main version. |
+| 6.1.0 | 2026-02-06 | [72906](https://github.com/airbytehq/airbyte/pull/72906) | Promoting release candidate 6.1.0-rc.2 to a main version. |
 | 6.1.0-rc.2  | 2026-02-03 | [72799](https://github.com/airbytehq/airbyte/pull/72799)     | Bump the CDK version which fixed a bug where streams without incremental showed a cursor                                                                                                                                     |
-| 6.1.0-rc.1  | 2025-11-24 | [69782](https://github.com/airbytehq/airbyte/pull/69782) | Allow for user defined cursor field key in the configured catalog for incremental streams                                                                                                                                    |
+| 6.1.0-rc.1  | 2025-12-09 | [69782](https://github.com/airbytehq/airbyte/pull/69782) | Allow for user defined cursor field key in the configured catalog for incremental streams                                                                                                                                    |
 | 6.0.15      | 2025-11-25 | [70053](https://github.com/airbytehq/airbyte/pull/70053) | Update dependencies                                                                                                                                                                                                          |
 | 6.0.14      | 2025-11-24 | [69803](https://github.com/airbytehq/airbyte/pull/69803) | Add missing fields in Marketing Emails stream for Avro/Parquet conversions                                                                                                                                                   |
 | 6.0.13      | 2025-11-19 | [69749](https://github.com/airbytehq/airbyte/pull/69749) | Fix retrieving associations for CRMSearch streams                                                                                                                                                                            |

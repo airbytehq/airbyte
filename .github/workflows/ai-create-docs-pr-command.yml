@@ -67,7 +67,7 @@ jobs:
 
           This will create a documentation PR stacked on top of PR #${PR_NUMBER}.
 
-          [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/connectordocs.md)
+          [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/connectordocs.md)
           STARTMSG
               echo "EOF"
             } >> $GITHUB_OUTPUT
@@ -105,7 +105,7 @@ jobs:
 
           This will create a documentation PR targeting the master branch.
 
-          [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/connectordocs.md)
+          [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/connectordocs.md)
           STARTMSG
               echo "EOF"
             } >> $GITHUB_OUTPUT
@@ -143,6 +143,8 @@ jobs:
           playbook-macro: "!connectordocs"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           start-message: ${{ steps.context.outputs.start-message }}
           extra-context: ${{ steps.context.outputs.extra-context }}
           tags: |
