@@ -48,6 +48,9 @@ data:
       3.0.0:
         message: Google is deprecating v13 of the Google Ads API in January. This release upgrades the Google Ads API to the latest version (v15), which causes changes in several schemas. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
         upgradeDeadline: "2024-01-12"
+      4.0.0:
+        message: Google is deprecating v18 of the Google Ads API August 20. This release upgrades the Google Ads API to the latest version (v20), which causes changes in several schemas. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
+        upgradeDeadline: "2025-08-19"
       5.0.0:
         message: "The primary keys for the `campaign_bidding_strategy` and `ad_group_bidding_strategy` streams have been updated to remove the nullable `bidding_strategy.id` field. Users syncing these streams must refresh the source schema and reset the affected streams after upgrading."
         upgradeDeadline: "2026-04-13"
@@ -56,9 +59,6 @@ data:
             impactedScopes:
               - campaign_bidding_strategy
               - ad_group_bidding_strategy
-      4.0.0:
-        message: Google is deprecating v18 of the Google Ads API August 20. This release upgrades the Google Ads API to the latest version (v20), which causes changes in several schemas. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.
-        upgradeDeadline: "2025-08-19"
   suggestedStreams:
     streams:
       - campaigns
