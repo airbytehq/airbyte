@@ -1832,6 +1832,26 @@ spec:
       - auth_method
     predicate_value: oAuth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "r_ads_reporting"
+          - scope: "r_emailaddress"
+          - scope: "r_liteprofile"
+          - scope: "r_ads"
+          - scope: "r_basicprofile"
+          - scope: "r_organization_social"
+        consent_url: "https://www.linkedin.com/oauth/v2/authorization?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
+        access_token_url: "https://www.linkedin.com/oauth/v2/accessToken"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         properties:
