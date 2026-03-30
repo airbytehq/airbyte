@@ -426,32 +426,37 @@ class PipelineEventBookkeepingRouterTest {
     }
 
     @Test
-    fun `close with deferred EOS marks only streams that saw complete`() = runTest {
-        val r = router(numDataChannels = 2, markEndOfStreamAtEnd = true)
+    fun `close with deferred EOS marks all streams, complete flag reflects what was seen`() =
+        runTest {
+            val r = router(numDataChannels = 2, markEndOfStreamAtEnd = true)
 
-        r.handleStreamMessage(
-            DestinationRecordStreamComplete(stream1, 0L),
-        )
-
-        r.close()
-        coVerify(exactly = 0) { streamManager1.markEndOfStream(true) }
-
-        r.close()
-        coVerify(exactly = 1) { streamManager1.markEndOfStream(true) }
-        coVerify(exactly = 0) { streamManager2.markEndOfStream(true) }
-
-        coVerify {
-            batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream1.mappedDescriptor }
+            r.handleStreamMessage(
+                DestinationRecordStreamComplete(stream1, 0L),
             )
+
+            r.close()
+            coVerify(exactly = 0) { streamManager1.markEndOfStream(any()) }
+
+            r.close()
+            // stream1 saw a COMPLETE message, so markEndOfStream(true)
+            coVerify(exactly = 1) { streamManager1.markEndOfStream(true) }
+            // stream2 did NOT see a COMPLETE message, so markEndOfStream(false)
+            // This prevents markInputConsumed() from throwing TransientErrorException
+            // for streams where the source never sent a terminal status.
+            coVerify(exactly = 1) { streamManager2.markEndOfStream(false) }
+
+            coVerify {
+                batchStateUpdateQueue.publish(
+                    match { it is BatchEndOfStream && it.stream == stream1.mappedDescriptor }
+                )
+            }
+            coVerify {
+                batchStateUpdateQueue.publish(
+                    match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor }
+                )
+            }
+            coVerify { syncManager.markInputConsumed() }
         }
-        coVerify {
-            batchStateUpdateQueue.publish(
-                match { it is BatchEndOfStream && it.stream == stream2.mappedDescriptor }
-            )
-        }
-        coVerify { syncManager.markInputConsumed() }
-    }
 
     @Test
     fun `close without deferred EOS does not re-mark streams`() = runTest {

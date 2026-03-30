@@ -280,9 +280,13 @@ class PipelineEventBookkeepingRouter(
                 catalog.streams.forEach {
                     val sawComplete = sawEndOfStreamComplete.contains(it.mappedDescriptor)
                     val manager = syncManager.getStreamManager(it.mappedDescriptor)
-                    if (sawComplete) {
-                        manager.markEndOfStream(true)
-                    }
+                    // Always mark end-of-stream for all streams in SOCKET mode.
+                    // The source may not send a terminal status on any socket
+                    // (SocketInputFlow emits synthetic PipelineEndOfStream for these,
+                    // but that doesn't update sawEndOfStreamComplete). Without this,
+                    // markInputConsumed() would throw TransientErrorException for
+                    // streams missing a terminal status message.
+                    manager.markEndOfStream(sawComplete)
                     batchStateUpdateQueue.publish(
                         BatchEndOfStream(
                             it.mappedDescriptor,
