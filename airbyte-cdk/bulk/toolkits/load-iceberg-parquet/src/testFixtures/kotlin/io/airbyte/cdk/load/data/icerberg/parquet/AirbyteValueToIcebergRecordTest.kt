@@ -109,6 +109,23 @@ class AirbyteValueToIcebergRecordTest {
     }
 
     @Test
+    fun `convert handles IntegerValue for DoubleType column (whole-number float emitted as integer JSON)`() {
+        // Sources may emit whole-number float values as JSON integers (e.g. `1` instead of `1.0`).
+        // After JsonToAirbyteValue parsing, these arrive as IntegerValue. The destination should
+        // store them as Double in DOUBLE columns, not as Long.
+        val result = converter.convert(IntegerValue(1L), Types.DoubleType.get())
+        assertEquals(1.0, result)
+        assert(result is Double) { "Expected Double but got ${result?.javaClass}" }
+    }
+
+    @Test
+    fun `convert handles IntegerValue for FloatType column`() {
+        val result = converter.convert(IntegerValue(2L), Types.FloatType.get())
+        assertEquals(2.0f, result)
+        assert(result is Float) { "Expected Float but got ${result?.javaClass}" }
+    }
+
+    @Test
     fun `convert handles StringValue`() {
         val result = converter.convert(StringValue("test string"), Types.StringType.get())
         assertEquals("test string", result)

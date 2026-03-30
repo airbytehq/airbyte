@@ -61,7 +61,15 @@ class AirbyteValueToIcebergRecord {
             }
             is BooleanValue -> return airbyteValue.value
             is DateValue -> return airbyteValue.value
-            is IntegerValue -> return airbyteValue.value.toLong()
+            is IntegerValue ->
+                return when (type.typeId()) {
+                    // When an integer value lands in a DOUBLE/FLOAT column (e.g. source emits
+                    // whole-number floats as JSON integers like `1` instead of `1.0`), convert
+                    // explicitly so the value is stored as a floating-point type, not as a long.
+                    Type.TypeID.DOUBLE -> airbyteValue.value.toBigDecimal().toDouble()
+                    Type.TypeID.FLOAT -> airbyteValue.value.toBigDecimal().toFloat()
+                    else -> airbyteValue.value.toLong()
+                }
             is NullValue -> return null
             is NumberValue ->
                 return when (type.typeId()) {
