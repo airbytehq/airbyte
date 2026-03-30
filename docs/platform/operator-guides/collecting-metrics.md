@@ -16,12 +16,6 @@ Self-Managed Enterprise customers can configure Airbyte to send telemetry data t
 
 ## Datadog Integration
 
-:::note
-
-Datadog integration is not currently supported in Airbyte Cloud.
-
-:::
-
 
 Self-Managed Enterprise customers can send metrics to Datadog using [OpenTelemetry](open-telemetry). Airbyte Cloud does not currently support a Datadog integration.
 
