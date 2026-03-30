@@ -18,7 +18,7 @@ include = "source_azure_blob_storage"
 [tool.poetry.dependencies]
 python = "^3.11,<3.14"
 pytz = "^2024.1"
-airbyte-cdk = {extras = ["file-based"], git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "devin/1774667708-update-nltk-cryptography"}
+airbyte-cdk = {extras = ["file-based"], git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "devin/1774667708-update-nltk-cryptography"}  # TK-TODO: Revert to stable version pin before merge
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "azure",]
