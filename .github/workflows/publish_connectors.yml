@@ -639,7 +639,8 @@ jobs:
     name: "Notify Incident.io on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connector_registry_entries
+      - publish_connectors
+      - publish_options
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
