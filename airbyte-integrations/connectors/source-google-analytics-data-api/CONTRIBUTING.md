@@ -1,5 +1,9 @@
 # source-google-analytics-data-api: Unique Behaviors
 
+## Important
+This is **Google Analytics 4 (GA4)** (`source-google-analytics-data-api`), NOT the deprecated Universal Analytics (`source-google-analytics-v4`). All work goes here.
+
+
 ## Important: Naming Convention — GA4 vs Universal Analytics
 
 This connector is **Google Analytics 4 (GA4)** with package name `source-google-analytics-data-api`. It is very commonly confused with the legacy connector **Google Analytics (Universal Analytics)** with package name `source-google-analytics-v4`.
