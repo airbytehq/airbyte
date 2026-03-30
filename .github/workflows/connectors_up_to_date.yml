@@ -146,10 +146,11 @@ jobs:
             auto-merge
           draft: true
 
-      # --- Step 2: Run `poetry update` (Python connectors only) ---
+      # --- Step 2: Bump dependencies (CDK + external) ---
       # TK-TODO(https://github.com/airbytehq/airbyte-ops-mcp/issues/628):
-      # Replace inline poetry steps with `airbyte-ops local connector bump-external-dependencies`
-      # once the CLI command exists. For now, poetry update is handled directly below.
+      # Replace inline poetry steps with `airbyte-ops local connector bump-deps` once the CLI
+      # command exists. `bump-deps` covers both CDK and external dependency updates in one pass,
+      # matching the prior `poetry update` behavior. For now, poetry update is handled directly below.
       - name: Set up Python
         if: env.CONNECTOR_LANGUAGE == 'python'
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -166,11 +167,6 @@ jobs:
         if: env.CONNECTOR_LANGUAGE == 'python'
         working-directory: ${{ env.CONNECTOR_DIR }}
         run: poetry update --lock
-
-      # TK-TODO(https://github.com/airbytehq/airbyte-ops-mcp/issues/627):
-      # Add a step for `airbyte-ops local connector bump-cdk` once the CLI command exists.
-      # This should bump the CDK dependency independently of other updates.
-      # A workflow input (`bump-cdk`: true/false/latest) should gate this step.
 
       # --- Steps 3 & 4: Bump version + changelog entry ---
       - name: Bump connector version (patch) with changelog
