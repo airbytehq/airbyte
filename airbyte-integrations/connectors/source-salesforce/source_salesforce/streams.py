@@ -5,12 +5,10 @@
 import csv
 import ctypes
 import logging
-import time
 import urllib.parse
 from abc import ABC
 from datetime import timedelta
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Iterable,
@@ -50,7 +48,6 @@ from airbyte_cdk.sources.declarative.async_job.job_orchestrator import (
 )
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
-from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.partition_routers import AsyncJobPartitionRouter
@@ -72,7 +69,7 @@ from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStre
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce, SalesforceTokenProvider
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .rate_limiting import (
     BulkNotSupportedException,
@@ -90,45 +87,6 @@ csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
 _JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
-_TOKEN_REFRESH_INTERVAL_SECONDS = 1800  # Refresh Salesforce access token every 30 minutes (well before the default 2-hour session timeout)
-
-if TYPE_CHECKING:
-    from .api import Salesforce as SalesforceApi
-
-
-class SalesforceTokenProvider(TokenProvider):
-    """Token provider that proactively refreshes the Salesforce access token.
-
-    The default InterpolatedStringTokenProvider captures the token as a static
-    string at initialization time and never refreshes it. For long-running Bulk
-    API syncs that exceed the Salesforce session timeout (default 2 hours), the
-    stale token causes INVALID_SESSION_ID errors.
-
-    This provider wraps the Salesforce API object and calls login() to obtain a
-    fresh token before the session is likely to expire.
-    """
-
-    def __init__(self, sf_api: "SalesforceApi") -> None:
-        self._sf_api = sf_api
-        self._last_refresh_time: float = time.monotonic()
-
-    def get_token(self) -> str:
-        elapsed = time.monotonic() - self._last_refresh_time
-        if elapsed >= _TOKEN_REFRESH_INTERVAL_SECONDS:
-            logger.info("Refreshing Salesforce OAuth token (%.0fs since last refresh)", elapsed)
-            self._sf_api.login()
-            self._last_refresh_time = time.monotonic()
-        return self._sf_api.access_token
-
-    def force_refresh(self) -> None:
-        """Force an immediate token refresh.
-
-        Called by SalesforceErrorHandler when an INVALID_SESSION_ID response is
-        detected, so that subsequent requests use a valid access token.
-        """
-        logger.info("Forcing Salesforce OAuth token refresh due to INVALID_SESSION_ID")
-        self._sf_api.login()
-        self._last_refresh_time = time.monotonic()
 
 
 class SalesforceStream(HttpStream, ABC):

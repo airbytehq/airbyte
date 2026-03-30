@@ -23,7 +23,7 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 
 if TYPE_CHECKING:
-    from source_salesforce.streams import SalesforceTokenProvider
+    from source_salesforce.api import SalesforceTokenProvider
 
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
