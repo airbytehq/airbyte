@@ -24,12 +24,12 @@ class TestOrdersLimitReducingErrorHandler:
     def test_orders_stream_500_error_handling(self, requests_mock):
         # Mock the events endpoint to prevent NoMockAddress error
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/events.json?filter=Order&verb=destroy",
+            "https://test-shop.myshopify.com/admin/api/2025-10/events.json?filter=Order&verb=destroy",
             [{"status_code": 200, "json": {"events": []}}],
         )
         # Simulate initial URL with 500 errors, then success with pagination
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&status=any",
             [
                 {"status_code": 500},  # Initial request fails
                 {"status_code": 500},  # Retry with 250 fails again
@@ -37,39 +37,39 @@ class TestOrdersLimitReducingErrorHandler:
                     "status_code": 200,
                     "json": ORDERS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1>; rel="next"'
                     },
                 },
             ],
         )
         # Response for reduced limit
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&status=any",
             [
                 {
                     "status_code": 200,
                     "json": ORDERS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&page_info=page1>; rel="next"'
                     },
                 }
             ],
         )
         # Paginated responses
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1",
             [
                 {
                     "status_code": 200,
                     "json": ORDERS_PAGE_2,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page2>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page2>; rel="next"'
                     },
                 }
             ],
         )
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page2",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page2",
             [{"status_code": 200, "json": ORDERS_PAGE_3, "headers": {}}],  # No next page
         )
 
@@ -95,39 +95,39 @@ class TestOrderRefundsLimitReducingErrorHandler:
     def test_order_refunds_stream_500_error_handling(self, requests_mock):
         # Mock the events endpoint to prevent NoMockAddress error
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/events.json?filter=Order&verb=destroy",
+            "https://test-shop.myshopify.com/admin/api/2025-10/events.json?filter=Order&verb=destroy",
             [{"status_code": 200, "json": {"events": []}}],
         )
         # Simulate initial URL with 500 error, then success with pagination
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&status=any",
             [
                 {"status_code": 500},  # Initial request fails
                 {
                     "status_code": 200,
                     "json": ORDERS_WITH_REFUNDS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1>; rel="next"'
                     },
                 },
             ],
         )
         # Response for reduced limit
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&status=any",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&status=any",
             [
                 {
                     "status_code": 200,
                     "json": ORDERS_WITH_REFUNDS_PAGE_1,
                     "headers": {
-                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=125&page_info=page1>; rel="next"'
+                        "Link": '<https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=125&page_info=page1>; rel="next"'
                     },
                 }
             ],
         )
         # Paginated response
         requests_mock.get(
-            "https://test-shop.myshopify.com/admin/api/2025-01/orders.json?limit=250&page_info=page1",
+            "https://test-shop.myshopify.com/admin/api/2025-10/orders.json?limit=250&page_info=page1",
             [{"status_code": 200, "json": ORDERS_WITH_REFUNDS_PAGE_2, "headers": {}}],  # No next page
         )
 

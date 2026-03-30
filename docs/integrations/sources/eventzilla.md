@@ -24,6 +24,7 @@ The Airbyte connector for Eventzilla enables seamless integration between Eventz
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.45 | 2026-03-24 | [75038](https://github.com/airbytehq/airbyte/pull/75038) | Update dependencies |
 | 0.0.44 | 2026-02-24 | [73904](https://github.com/airbytehq/airbyte/pull/73904) | Update dependencies |
 | 0.0.43 | 2026-02-17 | [73480](https://github.com/airbytehq/airbyte/pull/73480) | Update dependencies |
 | 0.0.42 | 2026-02-10 | [73013](https://github.com/airbytehq/airbyte/pull/73013) | Update dependencies |

@@ -68,8 +68,7 @@ connector = ZohoCrmConnector(
     auth_config=ZohoCrmAuthConfig(
         client_id="<OAuth 2.0 Client ID from Zoho Developer Console>",
         client_secret="<OAuth 2.0 Client Secret from Zoho Developer Console>",
-        refresh_token="<OAuth 2.0 Refresh Token (does not expire)>",
-        access_token="<OAuth 2.0 Access Token (auto-refreshed)>"
+        refresh_token="<OAuth 2.0 Refresh Token (does not expire)>"
     )
 )
 
@@ -135,7 +134,7 @@ See the official [Zoho-Crm API reference](https://www.zoho.com/crm/developer/doc
 
 ## Version information
 
-- **Package version:** 0.1.0
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** cd5fc5a29e9673aaaf8e744def8471502c809f5d
+- **Package version:** 0.1.6
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zoho-crm/CHANGELOG.md)
