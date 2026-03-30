@@ -12,6 +12,8 @@ on:
 
 run-name: "Auto AI Review for PR #${{ github.event.pull_request.number }}"
 
+permissions: {}
+
 jobs:
   dispatch-ai-review:
     if: |
