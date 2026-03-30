@@ -324,6 +324,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.13 | 2026-03-26 | [75521](https://github.com/airbytehq/airbyte/pull/75521) | Added native Google Docs Markdown export support via new `google_doc_export_format` config option |
 | 0.5.12 | 2026-03-17 | [74923](https://github.com/airbytehq/airbyte/pull/74923) | Update dependencies |
 | 0.5.11 | 2026-03-03 | [73119](https://github.com/airbytehq/airbyte/pull/73119) | Update dependencies |
 | 0.5.10 | 2026-02-03 | [72377](https://github.com/airbytehq/airbyte/pull/72377) | Update dependencies |

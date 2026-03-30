@@ -25,7 +25,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_google_drive.utils import get_folder_id
 
 from .exceptions import ErrorDownloadingFile, ErrorFetchingMetadata
-from .spec import SourceGoogleDriveSpec
+from .spec import GoogleDocExportFormat, SourceGoogleDriveSpec
 
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
@@ -36,6 +36,7 @@ GOOGLE_DRAWING_MIME_TYPE = "application/vnd.google-apps.drawing"
 EXPORTABLE_DOCUMENTS_MIME_TYPES = [GOOGLE_DOC_MIME_TYPE, GOOGLE_PRESENTATION_MIME_TYPE, GOOGLE_DRAWING_MIME_TYPE]
 
 EXPORT_MEDIA_MIME_TYPE_DOC = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+EXPORT_MEDIA_MIME_TYPE_MARKDOWN = "text/markdown"
 EXPORT_MEDIA_MIME_TYPE_SPREADSHEET = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 EXPORT_MEDIA_MIME_TYPE_PRESENTATION = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 EXPORT_MEDIA_MIME_TYPE_PDF = "application/pdf"
@@ -232,13 +233,16 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Returns the mime type to export Google App documents as.
         """
         if self.use_file_transfer():
+            if original_mime_type == GOOGLE_DOC_MIME_TYPE and self.config.google_doc_export_format == GoogleDocExportFormat.MARKDOWN:
+                return EXPORT_MEDIA_MIME_TYPE_MARKDOWN
             return DOWNLOADABLE_DOCUMENTS_MIME_TYPES[original_mime_type][EXPORT_MEDIA_MIME_TYPE_KEY]
 
         if original_mime_type.startswith(GOOGLE_DOC_MIME_TYPE):
-            # Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
-            return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            if self.config.google_doc_export_format == GoogleDocExportFormat.MARKDOWN:
+                return EXPORT_MEDIA_MIME_TYPE_MARKDOWN
+            return EXPORT_MEDIA_MIME_TYPE_DOC
         else:
-            return "application/pdf"
+            return EXPORT_MEDIA_MIME_TYPE_PDF
 
     def file_size(self, file: GoogleDriveRemoteFile) -> int:
         """
@@ -289,7 +293,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             if self._is_exportable_document(file.original_mime_type):
                 request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
 
-                file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
+                if (
+                    file.original_mime_type == GOOGLE_DOC_MIME_TYPE
+                    and self.config.google_doc_export_format == GoogleDocExportFormat.MARKDOWN
+                ):
+                    file_extension = ".md"
+                else:
+                    file_extension = DOWNLOADABLE_DOCUMENTS_MIME_TYPES[file.original_mime_type][DOCUMENT_FILE_EXTENSION_KEY]
                 local_file_path += file_extension
                 file_relative_path += file_extension
                 file_name += file_extension
