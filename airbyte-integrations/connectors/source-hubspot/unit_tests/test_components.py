@@ -710,9 +710,9 @@ def test_build_associations_retriever_uses_rate_limited_for_429(config, componen
     # Find the response filter for 429
     rate_limit_filters = [f for f in response_filters if 429 in f.http_codes]
     assert len(rate_limit_filters) == 1, "Expected exactly one response filter for HTTP 429"
-    assert rate_limit_filters[0].action == ResponseAction.RATE_LIMITED, (
-        f"Expected 429 response filter to use RATE_LIMITED, got {rate_limit_filters[0].action}"
-    )
+    assert (
+        rate_limit_filters[0].action == ResponseAction.RATE_LIMITED
+    ), f"Expected 429 response filter to use RATE_LIMITED, got {rate_limit_filters[0].action}"
 
 
 @pytest.mark.parametrize(
