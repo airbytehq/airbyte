@@ -695,6 +695,26 @@ def test_crm_search_pagination_strategy(
     assert actual_next_page_token == expected_next_page_token
 
 
+def test_build_associations_retriever_uses_rate_limited_for_429(config, components_module):
+    """Verify that build_associations_retriever maps 429 to RATE_LIMITED, not RETRY."""
+    from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+
+    retriever = components_module.build_associations_retriever(
+        parent_entity=InterpolatedString.create("deals", parameters={}),
+        associations_list=["companies"],
+        config=config,
+    )
+    error_handler = retriever.requester.error_handler
+    response_filters = error_handler.response_filters
+
+    # Find the response filter for 429
+    rate_limit_filters = [f for f in response_filters if 429 in f.http_codes]
+    assert len(rate_limit_filters) == 1, "Expected exactly one response filter for HTTP 429"
+    assert rate_limit_filters[0].action == ResponseAction.RATE_LIMITED, (
+        f"Expected 429 response filter to use RATE_LIMITED, got {rate_limit_filters[0].action}"
+    )
+
+
 @pytest.mark.parametrize(
     "credentials_title, status_code, expected_action, expected_failure_type, expected_error_message",
     [
@@ -717,10 +737,10 @@ def test_crm_search_pagination_strategy(
         pytest.param(
             "Private App Credentials",
             429,
-            ResponseAction.RETRY,
+            ResponseAction.RATE_LIMITED,
             None,
             None,
-            id="pat_429_retries_normally",
+            id="pat_429_rate_limited",
         ),
         pytest.param(
             "Private App Credentials",
@@ -748,7 +768,7 @@ def test_hubspot_error_handler_401_by_auth_type(
         backoff_strategies=[],
         response_filters=[
             HttpResponseFilter(
-                action="RETRY",
+                action="RATE_LIMITED",
                 http_codes={429},
                 error_message="Rate limited.",
                 config=config,
