@@ -342,6 +342,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.3.4 | 2026-03-30 | [75595](https://github.com/airbytehq/airbyte/pull/75595) | Fixed HTTP 429 responses mapped to RETRY instead of RATE_LIMITED, enabling correct rate-limit handling |
 | 6.3.3 | 2026-03-26 | [75452](https://github.com/airbytehq/airbyte/pull/75452) | Fixed HTTP 401 errors retrying indefinitely for Private App Token authentication |
 | 6.3.2 | 2026-03-17 | [74526](https://github.com/airbytehq/airbyte/pull/74526) | Update dependencies |
 | 6.3.1 | 2026-03-09 | [74410](https://github.com/airbytehq/airbyte/pull/74410) | Promoting release candidate 6.3.1-rc.1 to a main version. |
