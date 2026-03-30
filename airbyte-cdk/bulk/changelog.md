@@ -1,8 +1,3 @@
-## WIP changes for Postgres (version number TBD)
-
-* Field replaced by EmittedField
-* CDC Position objects now implement PartiallyOrdered rather than Comparable
-
 # Bulk CDK
 
 The Bulk CDK is Airbyte's Kotlin-based CDK for developing connectors optimized for speed using protobuf encoding for data transfer. It uses Micronaut for dependency injection.
