@@ -37,12 +37,6 @@ definitions:
         - 503
         - 504
 
-  base_record_selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: []
-
   add_account_name_transformation:
     type: AddFields
     fields:
@@ -261,7 +255,7 @@ definitions:
     name: availabilities
     primary_key:
     - - id
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -392,7 +386,7 @@ definitions:
     name: timesheet_detail_report
     primary_key:
     - - timesheetId
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -442,7 +436,7 @@ definitions:
     name: schedule_detail_report
     primary_key:
     - - rosterId
-    - - account_name
+    - - account_id
     retriever:
       type: SimpleRetriever
       requester:
@@ -990,6 +984,10 @@ definitions:
           type:
           - "null"
           - string
+        account_id:
+          type:
+          - "null"
+          - string
         account_name:
           type:
           - "null"
@@ -1459,6 +1457,10 @@ definitions:
           type:
           - "null"
           - string
+        account_id:
+          type:
+          - "null"
+          - string
         account_name:
           type:
           - "null"
@@ -1558,6 +1560,10 @@ definitions:
           - "null"
           - string
         rosterRateCardId:
+          type:
+          - "null"
+          - string
+        account_id:
           type:
           - "null"
           - string

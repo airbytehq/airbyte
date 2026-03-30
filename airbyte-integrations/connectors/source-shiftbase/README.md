@@ -1,67 +1,30 @@
 # Shiftbase Source
 
-This is the repository for the Shiftbase source connector, written in Python.
+This is the repository for the Shiftbase source connector, built using the [manifest-only declarative framework](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview).
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/shiftbase).
 
 ## Streams
 
 The Shiftbase connector supports the following data streams:
 
-### Ingested Streams
-
 | Stream Name | Sync Mode | Description |
 | :--- | :--- | :--- |
 | `departments` | Full Refresh | Internal departments within the Shiftbase account. |
 | `employees` | Full Refresh | List of employees. **Note:** The `name` field has been removed to minimize PII. |
-| `absentees` | Incremental | Records of employee absences and leave. |
-| `employee_time_distribution` | Incremental | Distribution of worked and planned hours per employee. |
-| `availabilities` | Incremental | Employee availability slots and preferences. |
+| `absentees` | Full Refresh, Incremental | Records of employee absences and leave. |
+| `employee_time_distribution` | Full Refresh, Incremental | Distribution of worked and planned hours per employee. |
+| `availabilities` | Full Refresh, Incremental | Employee availability slots and preferences. |
 | `shifts` | Full Refresh | Scheduled work shifts and roster details. |
 | `users` | Full Refresh | User account details. **Note:** This stream is **flattened** and excludes all **PII** (names, emails, phones, addresses, etc.). |
-
----
+| `employees_report` | Full Refresh | Employees report data. |
+| `timesheet_detail_report` | Full Refresh, Incremental | Detailed timesheet report data. |
+| `schedule_detail_report` | Full Refresh, Incremental | Detailed schedule report data. |
 
 ## Local development
 
 ### Prerequisites
 
-* Python (`^3.9`)
-* Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
-
-
-
-### Installing the connector
-
-From this connector directory, run:
-```bash
-poetry install --with dev
-```
-
-
-### Create credentials
-
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/shiftbase)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `src/source_shiftbase/spec.yaml` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
-
-
-### Locally running the connector
-
-```
-poetry run source-shiftbase spec
-poetry run source-shiftbase check --config secrets/config.json
-poetry run source-shiftbase discover --config secrets/config.json
-poetry run source-shiftbase read --config secrets/config.json --catalog sample_files/configured_catalog.json
-```
-
-### Running tests
-
-To run tests locally, from the connector directory run:
-
-```
-poetry run pytest tests
-```
+This connector is manifest-only and does not require Python dependencies. The connector is defined entirely in `manifest.yaml`.
 
 ### Building the docker image
 
@@ -72,7 +35,6 @@ airbyte-ci connectors --name=source-shiftbase build
 ```
 
 An image will be available on your host with the tag `airbyte/source-shiftbase:dev`.
-
 
 ### Running as a docker container
 
@@ -95,26 +57,12 @@ airbyte-ci connectors --name=source-shiftbase test
 ### Customizing acceptance Tests
 
 Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
-If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-
-### Dependency Management
-
-All of your dependencies should be managed via Poetry. 
-To add a new dependency, run:
-
-```bash
-poetry add <package-name>
-```
-
-Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ## Publishing a new version of the connector
 
-You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-shiftbase test`
-2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
-    - bump the `dockerImageTag` value in in `metadata.yaml`
-    - bump the `version` value in `pyproject.toml`
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
+    - bump the `dockerImageTag` value in `metadata.yaml`
 3. Make sure the `metadata.yaml` content is up to date.
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/shiftbase.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
