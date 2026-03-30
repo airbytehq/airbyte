@@ -46,10 +46,9 @@ jobs:
         id: job-vars
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.inputs.pr }}
         shell: bash
         run: |
-          PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
           echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
@@ -86,81 +85,29 @@ jobs:
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
-
-      - name: Install airbyte-ops CLI
-        run: uv tool install airbyte-internal-ops
-
-      - name: Detect modified connectors, bump RC versions, and configure progressive rollout
-        env:
-          BUMP_TYPE: ${{ github.event.inputs.type }}
-          CHANGELOG_MSG: ${{ github.event.inputs.changelog }}
-          PR_TITLE: ${{ steps.job-vars.outputs.pr_title }}
-          PR_NUMBER: ${{ github.event.inputs.pr }}
+      - name: Log changelog source
         run: |
-          # Resolve changelog message: user-provided or PR title fallback
-          MSG="${CHANGELOG_MSG:-$PR_TITLE}"
-          echo "Changelog message: $MSG"
-          echo "Bump type: ${BUMP_TYPE}_rc"
-
-          # List modified connectors in this PR
-          CONNECTORS=$(
-            airbyte-ops local connector list \
-              --repo-path "$GITHUB_WORKSPACE" \
-              --modified-only \
-              --pr "$PR_NUMBER" \
-              --output-format lines
-          )
-
-          if [ -z "$CONNECTORS" ]; then
-            echo "No modified connectors found in PR #$PR_NUMBER."
-            exit 0
+          if [ -n "${{ github.event.inputs.changelog }}" ]; then
+            echo "Using user-provided changelog: ${{ github.event.inputs.changelog }}"
+          else
+            echo "Using PR title as changelog: ${{ steps.job-vars.outputs.pr_title }}"
           fi
 
-          echo "Modified connectors:"
-          echo "$CONNECTORS"
-          echo ""
-
-          # For each modified connector:
-          # 1. Record the current (stable) version for pinning
-          # 2. Bump version with RC suffix and update changelog
-          # 3. Configure progressive rollout metadata
-          echo "$CONNECTORS" | while IFS= read -r connector; do
-            [ -z "$connector" ] && continue
-            echo "--- Processing $connector for progressive rollout ---"
-
-            # 1. Record current stable version (used as pin version)
-            CURRENT_VERSION=$(
-              airbyte-ops local connector get-version \
-                --name "$connector" \
-                --repo-path "$GITHUB_WORKSPACE"
-            )
-            echo "  Current version: $CURRENT_VERSION"
-
-            # 2. Bump version with RC suffix (e.g., patch -> patch_rc)
-            airbyte-ops local connector bump-version \
-              --name "$connector" \
-              --repo-path "$GITHUB_WORKSPACE" \
-              --bump-type "${BUMP_TYPE}_rc" \
-              --changelog-message "$MSG" \
-              --pr-number "$PR_NUMBER"
-
-            # 3. Read back the new RC version
-            RC_VERSION=$(
-              airbyte-ops local connector get-version \
-                --name "$connector" \
-                --repo-path "$GITHUB_WORKSPACE"
-            )
-            echo "  RC version: $RC_VERSION"
-
-            # 4. Configure progressive rollout (pin cloud/oss to stable, enable rollout flag)
-            airbyte-ops local connector setup-progressive-rollout \
-              --name "$connector" \
-              --repo-path "$GITHUB_WORKSPACE" \
-              --rc-version "$RC_VERSION" \
-              --pin-version "$CURRENT_VERSION"
-          done
+      - name: Run airbyte-ci connectors --modified bump-version with --rc flag
+        uses: ./.github/actions/run-airbyte-ci
+        continue-on-error: true
+        with:
+          context: "manual"
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
+          subcommand: |
+            connectors --modified bump-version \
+              ${{ github.event.inputs.type }} \
+              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.job-vars.outputs.pr_title }}" \
+              --pr-number ${{ github.event.inputs.pr }} \
+              --rc
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
