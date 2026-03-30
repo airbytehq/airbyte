@@ -15,6 +15,16 @@ on:
       comment-id:
         description: "Comment ID"
         required: false
+  workflow_call:
+    inputs:
+      pr:
+        description: "PR number"
+        required: true
+        type: string
+      comment-id:
+        description: "Comment ID"
+        required: false
+        type: string
 
 run-name: "PR AI Review for PR #${{ inputs.pr }}"
 
