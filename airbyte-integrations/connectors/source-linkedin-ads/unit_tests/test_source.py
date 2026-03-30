@@ -133,12 +133,10 @@ class TestAllStreams:
         filter_429 = next(f for f in response_filters if 429 in f.get("http_codes", []))
         filter_5xx = next(f for f in response_filters if 500 in f.get("http_codes", []))
 
-        assert filter_429["action"] == "RATE_LIMITED", (
-            f"HTTP 429 must use RATE_LIMITED action for indefinite retry, got {filter_429['action']}"
-        )
-        assert filter_5xx["action"] == "RETRY", (
-            f"HTTP 500/503 should use RETRY action, got {filter_5xx['action']}"
-        )
+        assert (
+            filter_429["action"] == "RATE_LIMITED"
+        ), f"HTTP 429 must use RATE_LIMITED action for indefinite retry, got {filter_429['action']}"
+        assert filter_5xx["action"] == "RETRY", f"HTTP 500/503 should use RETRY action, got {filter_5xx['action']}"
 
     def test_custom_streams(self, requests_mock):
         config = {"ad_analytics_reports": [{"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"}], **TEST_CONFIG}
