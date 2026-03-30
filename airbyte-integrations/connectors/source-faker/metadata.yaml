@@ -5,7 +5,7 @@ data:
   allowedHosts:
     hosts: []
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0.post12.dev23757385016@sha256:bb3123fa349dd1e5ce8ed74f0957e806b32082f78e13d5a207b1a53f862e67f0
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
