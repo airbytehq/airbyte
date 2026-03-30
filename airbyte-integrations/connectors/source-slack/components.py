@@ -23,7 +23,7 @@ from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
-LOGGER = logging.getLogger("airbyte_logger")
+LOGGER = logging.getLogger("airbyte")
 
 
 class JoinChannelsStream(HttpStream):
