@@ -81,6 +81,19 @@ jobs:
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
 
+      # --- Step 1b: Recompile registry for this connector ---
+      # After deleting the release_candidate/ blob, recompile the
+      # registry JSON indexes so the RC entry is removed.
+      - name: "Recompile registry for connector"
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: >
+          airbyte-ops registry store compile
+          --store "${REGISTRY_STORE}"
+          --connector-name "${CONNECTOR_NAME}"
+
       # --- Step 2 (promote only): Version bump without changelog ---
       # bump-version --bump-type promote strips -rc.N suffix, sets
       # enableProgressiveRollout to false, and bumps the version.
