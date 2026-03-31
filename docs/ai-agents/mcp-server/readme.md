@@ -25,6 +25,8 @@ For example:
 
 Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
 
+When you connect a service through the MCP server, the Agent Engine can copy key data from that connector into a [context store](../platform/context-store). The context store is Airbyte-managed object storage that enables fast search across your connected data. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
+
 For the complete list of connectors and their supported entities, see [Agent connectors](../connectors).
 
 ## How authentication works
