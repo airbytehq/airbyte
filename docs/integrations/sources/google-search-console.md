@@ -244,6 +244,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.10.28 | 2026-03-31 | [75699](https://github.com/airbytehq/airbyte/pull/75699) | Update dependencies |
 | 1.10.27 | 2026-03-30 | [75426](https://github.com/airbytehq/airbyte/pull/75426) | Guard numeric metric fields against complex types to prevent serialization failures and deadlocks |
 | 1.10.26 | 2026-03-24 | [74935](https://github.com/airbytehq/airbyte/pull/74935) | Update dependencies |
 | 1.10.25 | 2026-03-10 | [74685](https://github.com/airbytehq/airbyte/pull/74685) | Update dependencies |
