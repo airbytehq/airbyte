@@ -26,68 +26,46 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
       # ---------- Find candidate PRs ----------
-      - name: Find PRs with 'auto-merge' label
+      - name: Find force-merge PRs (bypass-ci-checks label)
+        id: force-prs
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-        run: >
-          gh pr list
-          --repo airbytehq/airbyte
-          --label "auto-merge"
-          --state open
-          --base master
-          --json number,title,labels
-          --limit 100
-          | tee /tmp/auto-merge.json
+        run: |
+          gh pr list \
+            --repo airbytehq/airbyte \
+            --label "auto-merge/bypass-ci-checks" \
+            --state open \
+            --base master \
+            --json number,title \
+            --limit 100 > /tmp/force.json
+          count=$(jq length /tmp/force.json)
+          echo "force-matrix=$(cat /tmp/force.json)" | tee -a $GITHUB_OUTPUT
+          echo "force-count=$count" | tee -a $GITHUB_OUTPUT
 
-      - name: Find PRs with 'auto-merge/bypass-ci-checks' label
+      - name: Find normal-merge PRs (auto-merge label, excluding force-merge)
+        id: normal-prs
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-        run: >
-          gh pr list
-          --repo airbytehq/airbyte
-          --label "auto-merge/bypass-ci-checks"
-          --state open
-          --base master
-          --json number,title,labels
-          --limit 100
-          | tee /tmp/bypass-ci.json
-
-      # ---------- Build matrices ----------
-      - name: Build normal-merge and force-merge matrices
-        id: build-matrices
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const autoMerge = JSON.parse(fs.readFileSync('/tmp/auto-merge.json', 'utf8'));
-            const bypassCi = JSON.parse(fs.readFileSync('/tmp/bypass-ci.json', 'utf8'));
-
-            // Force-merge: PRs with bypass-ci label
-            const forceNumbers = new Set(bypassCi.map(pr => pr.number));
-            const forceMatrix = bypassCi.map(pr => ({
-              number: pr.number,
-              title: pr.title,
-            }));
-
-            // Normal-merge: PRs with auto-merge label but NOT in force-merge set
-            const normalMatrix = autoMerge
-              .filter(pr => !forceNumbers.has(pr.number))
-              .map(pr => ({ number: pr.number, title: pr.title }));
-
-            core.info(`Normal-merge candidates (${normalMatrix.length}):`);
-            for (const pr of normalMatrix) core.info(`  #${pr.number}: ${pr.title}`);
-            core.info(`Force-merge candidates (${forceMatrix.length}):`);
-            for (const pr of forceMatrix) core.info(`  #${pr.number}: ${pr.title}`);
-
-            core.setOutput('normal-matrix', JSON.stringify(normalMatrix));
-            core.setOutput('normal-count', String(normalMatrix.length));
-            core.setOutput('force-matrix', JSON.stringify(forceMatrix));
-            core.setOutput('force-count', String(forceMatrix.length));
+        run: |
+          gh pr list \
+            --repo airbytehq/airbyte \
+            --label "auto-merge" \
+            --state open \
+            --base master \
+            --json number,title \
+            --limit 100 > /tmp/auto-merge.json
+          # Exclude PRs already in the force-merge set
+          jq -c --argjson force '${{ steps.force-prs.outputs.force-matrix }}' \
+            '[.[] | select(.number as $n | $force | map(.number) | index($n) | not)]' \
+            /tmp/auto-merge.json > /tmp/normal.json
+          count=$(jq length /tmp/normal.json)
+          echo "normal-matrix=$(cat /tmp/normal.json)" | tee -a $GITHUB_OUTPUT
+          echo "normal-count=$count" | tee -a $GITHUB_OUTPUT
 
       # ---------- Fetch required checks ----------
       - name: Fetch required checks for master branch
         id: required-checks
-        if: fromJSON(steps.build-matrices.outputs.normal-count) > 0
+        if: fromJSON(steps.normal-prs.outputs.normal-count) > 0
         uses: actions/github-script@v7
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
@@ -107,10 +85,10 @@ jobs:
             core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
             core.setOutput('checks', JSON.stringify(checks));
     outputs:
-      normal-matrix: ${{ steps.build-matrices.outputs.normal-matrix }}
-      normal-count: ${{ steps.build-matrices.outputs.normal-count }}
-      force-matrix: ${{ steps.build-matrices.outputs.force-matrix }}
-      force-count: ${{ steps.build-matrices.outputs.force-count }}
+      normal-matrix: ${{ steps.normal-prs.outputs.normal-matrix }}
+      normal-count: ${{ steps.normal-prs.outputs.normal-count }}
+      force-matrix: ${{ steps.force-prs.outputs.force-matrix }}
+      force-count: ${{ steps.force-prs.outputs.force-count }}
       required-checks: ${{ steps.required-checks.outputs.checks }}
 
   # ---------- Job 2: Normal merge (verify CI first) ----------
