@@ -48,6 +48,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request | Subject                                                   |
 |:--------| :--------- | :----------- |:----------------------------------------------------------|
+| 0.1.45 | 2026-03-31 | [65056](https://github.com/airbytehq/airbyte/pull/65056) | Update dependencies |
 | 0.1.44 | 2025-03-29 | [56606](https://github.com/airbytehq/airbyte/pull/56606) | Update dependencies |
 | 0.1.43 | 2025-03-22 | [56098](https://github.com/airbytehq/airbyte/pull/56098) | Update dependencies |
 | 0.1.42 | 2025-03-08 | [55394](https://github.com/airbytehq/airbyte/pull/55394) | Update dependencies |
