@@ -36,7 +36,7 @@ data:
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi
-  supportLevel: certified
+  supportLevel: community
   tags:
     - language:python
     - cdk:python
