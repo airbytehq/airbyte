@@ -60,6 +60,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.19 | 2026-03-31 | [60710](https://github.com/airbytehq/airbyte/pull/60710) | Update dependencies |
 | 0.2.18 | 2025-05-10 | [59863](https://github.com/airbytehq/airbyte/pull/59863) | Update dependencies |
 | 0.2.17 | 2025-05-03 | [59357](https://github.com/airbytehq/airbyte/pull/59357) | Update dependencies |
 | 0.2.16 | 2025-04-26 | [58683](https://github.com/airbytehq/airbyte/pull/58683) | Update dependencies |
