@@ -303,7 +303,6 @@ class DefaultUnsplittableJdbcCursorIncrementalPartition(
                 cursorCheckpoint = cursorUpperBound,
             )
 
-
     override val nonResumableQuerySpec: SelectQuerySpec
         get() = SelectQuerySpec(SelectColumns(stream.fields), from, where)
 
