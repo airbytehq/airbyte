@@ -46,9 +46,10 @@ jobs:
         id: job-vars
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.inputs.pr }}
         shell: bash
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
           echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
@@ -85,6 +86,44 @@ jobs:
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      - name: Detect modified connectors
+        id: detect-connectors
+        env:
+          PR_NUMBER: ${{ github.event.inputs.pr }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CONNECTORS=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --modified-only \
+              --pr "$PR_NUMBER" \
+              --gh-token "$GH_TOKEN" \
+              --output-format lines
+          )
+
+          if [ -z "$CONNECTORS" ]; then
+            echo "No modified connectors found in PR #$PR_NUMBER."
+          else
+            echo "Modified connectors:"
+            echo "$CONNECTORS"
+          fi
+
+          # Pass the connector list to the next step via GITHUB_OUTPUT.
+          # Only set the multiline output when CONNECTORS is non-empty so that
+          # the downstream `if:` reliably evaluates to false for empty lists.
+          if [ -n "$CONNECTORS" ]; then
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo "connectors<<$EOF" >> $GITHUB_OUTPUT
+            echo "$CONNECTORS" >> $GITHUB_OUTPUT
+            echo "$EOF" >> $GITHUB_OUTPUT
+          fi
+
       - name: Log changelog source
         run: |
           if [ -n "${{ github.event.inputs.changelog }}" ]; then
@@ -93,21 +132,29 @@ jobs:
             echo "Using PR title as changelog: ${{ steps.job-vars.outputs.pr_title }}"
           fi
 
-      - name: Run airbyte-ci connectors --modified bump-version with --rc flag
-        uses: ./.github/actions/run-airbyte-ci
-        continue-on-error: true
-        with:
-          context: "manual"
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-          git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          subcommand: |
-            connectors --modified bump-version \
-              ${{ github.event.inputs.type }} \
-              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.job-vars.outputs.pr_title }}" \
-              --pr-number ${{ github.event.inputs.pr }} \
-              --rc
+      - name: Bump versions for modified connectors (RC)
+        if: steps.detect-connectors.outputs.connectors != ''
+        env:
+          CHANGELOG_MSG: ${{ github.event.inputs.changelog }}
+          PR_TITLE: ${{ steps.job-vars.outputs.pr_title }}
+          PR_NUMBER: ${{ github.event.inputs.pr }}
+          CONNECTORS: ${{ steps.detect-connectors.outputs.connectors }}
+        run: |
+          MSG="${CHANGELOG_MSG:-$PR_TITLE}"
+          echo "Changelog message: $MSG"
+          echo "Bump type: rc"
+          echo ""
+
+          echo "$CONNECTORS" | while IFS= read -r connector; do
+            [ -z "$connector" ] && continue
+            echo "--- Bumping version for $connector ---"
+            airbyte-ops local connector bump-version \
+              --name "$connector" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --bump-type rc \
+              --changelog-message "$MSG" \
+              --pr-number "$PR_NUMBER"
+          done
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
