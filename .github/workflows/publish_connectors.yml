@@ -393,7 +393,9 @@ jobs:
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
             --output-dir ./registry-artifacts \
-            --with-validate
+            --with-validate \
+            --with-sbom \
+            --with-dependency-dump
 
       - name: Upload Registry CI Artifacts
         if: always()
