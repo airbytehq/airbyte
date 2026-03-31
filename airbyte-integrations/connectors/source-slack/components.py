@@ -149,6 +149,20 @@ class ChannelsRetriever(SimpleRetriever):
             yield stream_data
 
 
+@dataclass
+class ThreadsPartitionRouter(SubstreamPartitionRouter):
+    """
+    Filters out partitions for parent messages that have no replies (reply_count == 0 or absent).
+    This avoids unnecessary conversations.replies API calls for messages without threads.
+    """
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for stream_slice in super().stream_slices():
+            reply_count = stream_slice.extra_fields.get("reply_count", 0)
+            if reply_count and int(reply_count) > 0:
+                yield stream_slice
+
+
 class ThreadsStateMigration(StateMigration):
     """
     The logic for incrementally syncing threads is not very obvious, so buckle up.

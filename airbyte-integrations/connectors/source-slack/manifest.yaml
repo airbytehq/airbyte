@@ -324,7 +324,8 @@ definitions:
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_declarative_manifest.components.ThreadsPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
@@ -336,6 +337,8 @@ definitions:
             incremental_dependency: true
             parent_key: ts
             partition_field: float_ts
+            extra_fields:
+              - ["reply_count"]
             request_option:
               type: RequestOption
               field_name: "ts"
