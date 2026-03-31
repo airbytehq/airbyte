@@ -280,7 +280,7 @@ class DefaultUnsplittableJdbcCursorIncrementalPartition(
     val cursorLowerBound: JsonNode,
     val isLowerBoundIncluded: Boolean,
     val explicitCursorUpperBound: JsonNode?,
-    ) :
+) :
     JdbcCursorPartition<DefaultJdbcStreamState>,
     DefaultJdbcUnsplittablePartition(selectQueryGenerator, streamState) {
 

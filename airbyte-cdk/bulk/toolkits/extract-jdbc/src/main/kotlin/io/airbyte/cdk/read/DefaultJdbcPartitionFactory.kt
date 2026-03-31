@@ -16,7 +16,6 @@ import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.util.Jsons
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -126,7 +125,7 @@ class DefaultJdbcPartitionFactory(
                     cursorLowerBound = cursorCheckpoint,
                     isLowerBoundIncluded = true,
                     explicitCursorUpperBound = streamState.cursorUpperBound,
-                    )
+                )
             }
         }
     }
@@ -222,11 +221,11 @@ class DefaultJdbcPartitionFactory(
             is DefaultJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
             else -> listOf(unsplitPartition)
-            /*is DefaultJdbcCursorIncrementalPartition ->
-//                unsplitPartition.split(splitPartitionBoundaries)
-                listOf(unsplitPartition)
-            is DefaultJdbcUnsplittableSnapshotPartition -> listOf(unsplitPartition)
-            is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)*/
+        /*is DefaultJdbcCursorIncrementalPartition ->
+        //                unsplitPartition.split(splitPartitionBoundaries)
+                        listOf(unsplitPartition)
+                    is DefaultJdbcUnsplittableSnapshotPartition -> listOf(unsplitPartition)
+                    is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)*/
         }
     }
 
@@ -268,7 +267,7 @@ class DefaultJdbcPartitionFactory(
         }
     }
 
-//    private val log = KotlinLogging.logger {}
+    //    private val log = KotlinLogging.logger {}
 
     /*private fun DefaultJdbcCursorIncrementalPartition.split(
         splitPointValues: List<DefaultJdbcStreamStateValue>

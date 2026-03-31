@@ -28,7 +28,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class JdbcPartitionReaderTest {
@@ -78,7 +77,7 @@ class JdbcPartitionReaderTest {
         factory.assertFailures()
         // Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
         Assertions.assertTrue(result is DefaultUnsplittableJdbcCursorIncrementalPartition)
-//        val partition = result as DefaultJdbcCursorIncrementalPartition
+        //        val partition = result as DefaultJdbcCursorIncrementalPartition
         val partition = result as DefaultUnsplittableJdbcCursorIncrementalPartition
         partition.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition.streamState.fetchSize = 2
@@ -155,14 +154,15 @@ class JdbcPartitionReaderTest {
             )
         val bootstrap = stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound))
         val streamState = DefaultJdbcStreamState(sharedState, bootstrap)
-        val partition = DefaultJdbcCursorIncrementalPartition(
-            TestFixtures.MockSelectQueryGenerator,
-            streamState,
-            ts,
-            cursorLowerBound = LocalDateCodec.encode(cursorLowerBound),
-            isLowerBoundIncluded = true,
-            cursorUpperBound = null,
-        )
+        val partition =
+            DefaultJdbcCursorIncrementalPartition(
+                TestFixtures.MockSelectQueryGenerator,
+                streamState,
+                ts,
+                cursorLowerBound = LocalDateCodec.encode(cursorLowerBound),
+                isLowerBoundIncluded = true,
+                cursorUpperBound = null,
+            )
         partition.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition.streamState.fetchSize = 2
         partition.streamState.updateLimitState { it.up } // so we don't hit the limit
@@ -248,14 +248,15 @@ class JdbcPartitionReaderTest {
             )
         val bootstrap = stream.bootstrap(opaqueStateValue(cursor = cursorLowerBound))
         val streamState = DefaultJdbcStreamState(sharedState, bootstrap)
-        val partition = DefaultJdbcCursorIncrementalPartition(
-            TestFixtures.MockSelectQueryGenerator,
-            streamState,
-            ts,
-            cursorLowerBound = LocalDateCodec.encode(cursorLowerBound),
-            isLowerBoundIncluded = true,
-            cursorUpperBound = null,
-        )
+        val partition =
+            DefaultJdbcCursorIncrementalPartition(
+                TestFixtures.MockSelectQueryGenerator,
+                streamState,
+                ts,
+                cursorLowerBound = LocalDateCodec.encode(cursorLowerBound),
+                isLowerBoundIncluded = true,
+                cursorUpperBound = null,
+            )
         partition.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition.streamState.fetchSize = 2
         partition.streamState.updateLimitState { it.up } // so we don't hit the limit
