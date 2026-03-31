@@ -26,11 +26,11 @@ permissions:
   pull-requests: write
 
 # ---------------------------------------------------------------------------
-# Job 1: Registry cleanup (runs for both promote and rollback)
+# Job 1: RC Registry cleanup (runs for both promote and rollback)
 # ---------------------------------------------------------------------------
 jobs:
-  registry_cleanup:
-    name: "Registry cleanup (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
+  rc_registry_cleanup:
+    name: "RC Registry cleanup (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
     runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
@@ -105,7 +105,7 @@ jobs:
   # ---------------------------------------------------------------------------
   promote_pr:
     name: "Create and merge promote PR"
-    needs: registry_cleanup
+    needs: rc_registry_cleanup
     if: >-
       github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'promote'
       || github.event_name == 'repository_dispatch' && github.event.client_payload.action == 'promote'
