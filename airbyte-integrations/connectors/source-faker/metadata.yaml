@@ -9,16 +9,16 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 7.0.4
+  dockerImageTag: 7.1.0-rc.1
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   externalDocumentationUrls:
-    - title: Python Faker Library Documentation
-      url: https://faker.readthedocs.io/en/master/
-      type: api_reference
-    - title: Faker Changelog
-      url: https://github.com/joke2k/faker/blob/master/CHANGELOG.md
-      type: api_release_history
+  - title: Python Faker Library Documentation
+    url: https://faker.readthedocs.io/en/master/
+    type: api_reference
+  - title: Faker Changelog
+    url: https://github.com/joke2k/faker/blob/master/CHANGELOG.md
+    type: api_release_history
   githubIssueLabel: source-faker
   icon: icon.svg
   license: ELv2
@@ -31,57 +31,58 @@ data:
   releaseStage: beta
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       4.0.0:
         message: This is a breaking change message
-        upgradeDeadline: "2023-07-19"
+        upgradeDeadline: '2023-07-19'
       5.0.0:
-        message: ID and products.year fields are changing to be integers instead of floats.
-        upgradeDeadline: "2023-08-31"
+        message: ID and products.year fields are changing to be integers instead of
+          floats.
+        upgradeDeadline: '2023-08-31'
       6.0.0:
         message: Declare 'id' columns as primary keys.
-        upgradeDeadline: "2024-04-01"
+        upgradeDeadline: '2024-04-01'
       7.0.0:
         message: This is a test breaking change to validate breaking change infrastructure.
-        upgradeDeadline: "2026-03-19"
-        deadlineAction: "disable"
+        upgradeDeadline: '2026-03-19'
+        deadlineAction: disable
         scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              - users
-              - products
-              - purchases
+        - scopeType: stream
+          impactedScopes:
+          - users
+          - products
+          - purchases
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-faker
   resourceRequirements:
     jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          cpu_limit: "4.0"
-          cpu_request: "1.0"
+    - jobType: sync
+      resourceRequirements:
+        cpu_limit: '4.0'
+        cpu_request: '1.0'
   suggestedStreams:
     streams:
-      - users
-      - products
-      - purchases
+    - users
+    - products
+    - purchases
   supportLevel: community
   tags:
-    - language:python
-    - cdk:python
+  - language:python
+  - cdk:python
   connectorTestSuitesOptions:
-    - suite: liveTests
-      testConnections:
-        - name: faker_config_dev_null
-          id: 73abc3a9-3fea-4e7c-b58d-2c8236464a95
-    - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-FAKER_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+  - suite: liveTests
+    testConnections:
+    - name: faker_config_dev_null
+      id: 73abc3a9-3fea-4e7c-b58d-2c8236464a95
+  - suite: unitTests
+  - suite: acceptanceTests
+    testSecrets:
+    - name: SECRET_SOURCE-FAKER_CREDS
+      fileName: config.json
+      secretStore:
+        type: GSM
+        alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: '1.0'
