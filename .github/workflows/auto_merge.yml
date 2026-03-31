@@ -7,9 +7,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  run_auto_merge:
-    name: Run auto-merge
+  # ---------- Job 1: Discover candidate PRs ----------
+  list-candidates:
+    name: List eligible PRs
     runs-on: ubuntu-24.04
+    outputs:
+      normal-matrix: ${{ steps.build-matrices.outputs.normal-matrix }}
+      normal-count: ${{ steps.build-matrices.outputs.normal-count }}
+      force-matrix: ${{ steps.build-matrices.outputs.force-matrix }}
+      force-count: ${{ steps.build-matrices.outputs.force-count }}
+      required-checks: ${{ steps.required-checks.outputs.checks }}
     steps:
       # ---------- Authentication ----------
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
@@ -23,7 +30,6 @@ jobs:
 
       # ---------- Find candidate PRs ----------
       - name: Find PRs with 'auto-merge' label
-        id: find-auto-merge
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: >
@@ -37,7 +43,6 @@ jobs:
           | tee /tmp/auto-merge.json
 
       - name: Find PRs with 'auto-merge/bypass-ci-checks' label
-        id: find-bypass-ci
         env:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: >
@@ -50,22 +55,43 @@ jobs:
           --limit 100
           | tee /tmp/bypass-ci.json
 
-      - name: Combine and deduplicate candidate PRs
-        id: find-candidates
-        run: |
-          jq -c -s '[.[][] | {number, title, labels: [.labels[].name]}] | unique_by(.number)' \
-            /tmp/auto-merge.json /tmp/bypass-ci.json > /tmp/candidates.json
-          count=$(jq length /tmp/candidates.json)
-          echo "count=$count" | tee -a $GITHUB_OUTPUT
-          echo "candidates=$(cat /tmp/candidates.json)" | tee -a $GITHUB_OUTPUT
-          echo "Found $count candidate PR(s)"
-          jq -r '.[] | "  #\(.number): \(.title) [\(.labels | join(", "))]"' /tmp/candidates.json
+      # ---------- Build matrices ----------
+      - name: Build normal-merge and force-merge matrices
+        id: build-matrices
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const autoMerge = JSON.parse(fs.readFileSync('/tmp/auto-merge.json', 'utf8'));
+            const bypassCi = JSON.parse(fs.readFileSync('/tmp/bypass-ci.json', 'utf8'));
+
+            // Force-merge: PRs with bypass-ci label
+            const forceNumbers = new Set(bypassCi.map(pr => pr.number));
+            const forceMatrix = bypassCi.map(pr => ({
+              number: pr.number,
+              title: pr.title,
+            }));
+
+            // Normal-merge: PRs with auto-merge label but NOT in force-merge set
+            const normalMatrix = autoMerge
+              .filter(pr => !forceNumbers.has(pr.number))
+              .map(pr => ({ number: pr.number, title: pr.title }));
+
+            core.info(`Normal-merge candidates (${normalMatrix.length}):`);
+            for (const pr of normalMatrix) core.info(`  #${pr.number}: ${pr.title}`);
+            core.info(`Force-merge candidates (${forceMatrix.length}):`);
+            for (const pr of forceMatrix) core.info(`  #${pr.number}: ${pr.title}`);
+
+            core.setOutput('normal-matrix', JSON.stringify(normalMatrix));
+            core.setOutput('normal-count', String(normalMatrix.length));
+            core.setOutput('force-matrix', JSON.stringify(forceMatrix));
+            core.setOutput('force-count', String(forceMatrix.length));
 
       # ---------- Fetch required checks ----------
       - name: Fetch required checks for master branch
         id: required-checks
-        if: fromJSON(steps.find-candidates.outputs.count) > 0
-        uses: actions/github-script@v8
+        if: fromJSON(steps.build-matrices.outputs.normal-count) > 0
+        uses: actions/github-script@v7
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           script: |
@@ -84,9 +110,137 @@ jobs:
             core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
             core.setOutput('checks', JSON.stringify(checks));
 
-      # ---------- Authenticate admin bot (deferred until candidates exist) ----------
+  # ---------- Job 2: Normal merge (verify CI first) ----------
+  normal-merge:
+    name: "Merge #${{ matrix.pr.number }}"
+    needs: list-candidates
+    if: fromJSON(needs.list-candidates.outputs.normal-count) > 0
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.list-candidates.outputs.normal-matrix) }}
+    env:
+      PR_NUMBER: ${{ matrix.pr.number }}
+      PR_TITLE: ${{ matrix.pr.title }}
+    steps:
+      # ---------- Authentication ----------
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-hoard-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      # ---------- Validation ----------
+      - name: Check PR is still open
+        id: check-open
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          state=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state --jq '.state')
+          echo "state=$state" | tee -a $GITHUB_OUTPUT
+
+      - name: Validate connector-only file paths
+        if: steps.check-open.outputs.state == 'OPEN'
+        id: validate-paths
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -e
+          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
+          valid=true
+          while IFS= read -r file; do
+            case "$file" in
+              airbyte-integrations/connectors/*) ;;
+              docs/integrations/sources/*) ;;
+              docs/integrations/destinations/*) ;;
+              docs/ai-agents/connectors/*) ;;
+              docs/developers/pyairbyte/*) ;;
+              docusaurus/src/data/*) ;;
+              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
+            esac
+          done < /tmp/changed-files.txt
+          echo "valid=$valid" | tee -a $GITHUB_OUTPUT
+
+      - name: Verify required status checks pass
+        if: steps.check-open.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        id: verify-checks
+        uses: actions/github-script@v7
+        env:
+          REQUIRED_CHECKS_JSON: ${{ needs.list-candidates.outputs.required-checks }}
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const prNum = Number(process.env.PR_NUMBER);
+            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
+            });
+            const sha = pr.head.sha;
+
+            const statuses = await github.paginate(
+              github.rest.repos.listCommitStatusesForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
+            );
+            const successStatuses = new Set(
+              statuses.filter(s => s.state === 'success').map(s => s.context)
+            );
+
+            const checkRuns = await github.paginate(
+              github.rest.checks.listForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
+              (response) => response.data
+            );
+            const successChecks = new Set(
+              checkRuns
+                .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
+                .map(cr => cr.name)
+            );
+
+            const allPassing = new Set([...successStatuses, ...successChecks]);
+            const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+
+            if (missing.length > 0) {
+              core.info(`Missing checks: ${missing.join(', ')}`);
+              core.setOutput('ready', 'false');
+            } else {
+              core.info('All required checks passing');
+              core.setOutput('ready', 'true');
+            }
+
+      # ---------- Eligibility gate ----------
+      - name: Determine merge eligibility
+        id: eligible
+        run: >
+          echo "result=${{
+            steps.check-open.outputs.state == 'OPEN'
+            && steps.validate-paths.outputs.valid == 'true'
+            && steps.verify-checks.outputs.ready == 'true'
+          }}" | tee -a $GITHUB_OUTPUT
+
+      # ---------- Prepare PR for merge ----------
+      - name: Check if PR is a draft
+        if: steps.eligible.outputs.result == 'true'
+        id: check-draft
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          is_draft=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json isDraft --jq '.isDraft')
+          echo "is_draft=$is_draft" | tee -a $GITHUB_OUTPUT
+
+      - name: Mark draft PR as ready for review
+        if: steps.eligible.outputs.result == 'true' && steps.check-draft.outputs.is_draft == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
+
+      # ---------- Approve and merge ----------
       - name: Authenticate as 'octavia-bot-admin' GitHub App
-        if: fromJSON(steps.find-candidates.outputs.count) > 0
+        if: steps.eligible.outputs.result == 'true'
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-admin-token
         with:
@@ -95,197 +249,153 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
 
-      # ---------- Validate and process PRs ----------
-      - name: Validate and merge eligible PRs
-        if: fromJSON(steps.find-candidates.outputs.count) > 0
-        uses: actions/github-script@v8
+      - name: Approve PR with admin bot
+        if: steps.eligible.outputs.result == 'true'
         env:
-          ADMIN_TOKEN: ${{ steps.get-admin-token.outputs.token }}
-          CANDIDATES_JSON: ${{ steps.find-candidates.outputs.candidates }}
-          REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
-          DRY_RUN: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true' }}
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "$PR_NUMBER"
+          --repo airbytehq/airbyte
+          --approve
+          --body "Auto-approved by auto-merge workflow."
+
+      - name: Squash merge PR
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
+              echo "::notice::Merged PR #$PR_NUMBER: $PR_TITLE"
+              exit 0
+            fi
+            echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
+            sleep 60
+          done
+          echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
+          exit 1
+
+      - name: Dry-run notice
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
+        run: echo "::notice::DRY RUN — would merge PR #$PR_NUMBER"
+
+  # ---------- Job 3: Force merge (bypass CI checks) ----------
+  force-merge:
+    name: "Force-merge #${{ matrix.pr.number }}"
+    needs: list-candidates
+    if: fromJSON(needs.list-candidates.outputs.force-count) > 0
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.list-candidates.outputs.force-matrix) }}
+    env:
+      PR_NUMBER: ${{ matrix.pr.number }}
+      PR_TITLE: ${{ matrix.pr.title }}
+    steps:
+      # ---------- Authentication ----------
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-hoard-token
         with:
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          script: |
-            const { getOctokit } = require('@actions/github');
-            const adminGithub = getOctokit(process.env.ADMIN_TOKEN);
-            const dryRun = process.env.DRY_RUN === 'true';
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
-            if (dryRun) {
-              core.info('Running in DRY RUN mode — no PRs will be merged.');
-            } else {
-              core.info('Running in PRODUCTION mode — eligible PRs will be merged.');
-            }
+      # ---------- Validation ----------
+      - name: Check PR is still open
+        id: check-open
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          state=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state --jq '.state')
+          echo "state=$state" | tee -a $GITHUB_OUTPUT
 
-            const candidates = JSON.parse(process.env.CANDIDATES_JSON);
-            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+      - name: Validate connector-only file paths
+        if: steps.check-open.outputs.state == 'OPEN'
+        id: validate-paths
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -e
+          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
+          valid=true
+          while IFS= read -r file; do
+            case "$file" in
+              airbyte-integrations/connectors/*) ;;
+              docs/integrations/sources/*) ;;
+              docs/integrations/destinations/*) ;;
+              docs/ai-agents/connectors/*) ;;
+              docs/developers/pyairbyte/*) ;;
+              docusaurus/src/data/*) ;;
+              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
+            esac
+          done < /tmp/changed-files.txt
+          echo "valid=$valid" | tee -a $GITHUB_OUTPUT
 
-            const CONNECTOR_PATH_PREFIXES = [
-              'airbyte-integrations/connectors',
-              'docs/integrations/sources',
-              'docs/integrations/destinations',
-              'docs/ai-agents/connectors',
-              'docs/developers/pyairbyte',
-              'docusaurus/src/data',
-            ];
-            const AUTO_MERGE_LABEL = 'auto-merge';
-            const BYPASS_CI_LABEL = 'auto-merge/bypass-ci-checks';
+      # ---------- Eligibility gate ----------
+      - name: Determine merge eligibility
+        id: eligible
+        run: >
+          echo "result=${{
+            steps.check-open.outputs.state == 'OPEN'
+            && steps.validate-paths.outputs.valid == 'true'
+          }}" | tee -a $GITHUB_OUTPUT
 
-            const merged = [];
-            const skipped = [];
+      # ---------- Prepare PR for merge ----------
+      - name: Check if PR is a draft
+        if: steps.eligible.outputs.result == 'true'
+        id: check-draft
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          is_draft=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json isDraft --jq '.isDraft')
+          echo "is_draft=$is_draft" | tee -a $GITHUB_OUTPUT
 
-            for (const candidate of candidates) {
-              const prNum = candidate.number;
-              core.info(`\nProcessing PR #${prNum}: ${candidate.title}`);
+      - name: Mark draft PR as ready for review
+        if: steps.eligible.outputs.result == 'true' && steps.check-draft.outputs.is_draft == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
 
-              // --- Fetch full PR details ---
-              const { data: pr } = await github.rest.pulls.get({
-                owner: 'airbytehq',
-                repo: 'airbyte',
-                pull_number: prNum,
-              });
+      # ---------- Approve and merge ----------
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: steps.eligible.outputs.result == 'true'
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
 
-              // --- Validate: only modifies connector paths ---
-              const files = await github.paginate(github.rest.pulls.listFiles, {
-                owner: 'airbytehq',
-                repo: 'airbyte',
-                pull_number: prNum,
-                per_page: 100,
-              });
-              const nonConnectorFiles = files.filter(
-                f => !CONNECTOR_PATH_PREFIXES.some(prefix => f.filename.startsWith(prefix))
-              );
-              if (nonConnectorFiles.length > 0) {
-                const examples = nonConnectorFiles.map(f => f.filename).slice(0, 5).join(', ');
-                const reason = `modifies non-connector files: ${examples}`;
-                core.info(`  SKIP: ${reason}`);
-                skipped.push({ number: prNum, title: candidate.title, reason });
-                continue;
-              }
+      - name: Approve PR with admin bot
+        if: steps.eligible.outputs.result == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "$PR_NUMBER"
+          --repo airbytehq/airbyte
+          --approve
+          --body "Auto-approved by auto-merge workflow (bypass-ci)."
 
-              // --- Determine merge strategy based on labels ---
-              const hasAutoMerge = candidate.labels.includes(AUTO_MERGE_LABEL);
-              const hasBypassCi = candidate.labels.includes(BYPASS_CI_LABEL);
+      - name: Force squash merge PR
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
+              echo "::notice::Force-merged PR #$PR_NUMBER: $PR_TITLE"
+              exit 0
+            fi
+            echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
+            sleep 60
+          done
+          echo "::error::Failed to force-merge PR #$PR_NUMBER after 3 attempts"
+          exit 1
 
-              // --- For auto-merge label (without bypass): verify required checks pass ---
-              if (hasAutoMerge && !hasBypassCi) {
-                const sha = pr.head.sha;
-
-                const statuses = await github.paginate(
-                  github.rest.repos.listCommitStatusesForRef,
-                  { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
-                );
-                const successStatuses = new Set(
-                  statuses.filter(s => s.state === 'success').map(s => s.context)
-                );
-
-                const checkRuns = await github.paginate(
-                  github.rest.checks.listForRef,
-                  { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
-                  (response) => response.data
-                );
-                const successChecks = new Set(
-                  checkRuns
-                    .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
-                    .map(cr => cr.name)
-                );
-
-                const allPassing = new Set([...successStatuses, ...successChecks]);
-                const missing = [...requiredChecks].filter(c => !allPassing.has(c));
-                if (missing.length > 0) {
-                  const reason = `required checks not passing: ${missing.join(', ')}`;
-                  core.info(`  SKIP: ${reason}`);
-                  skipped.push({ number: prNum, title: candidate.title, reason });
-                  continue;
-                }
-              }
-
-              // --- PR is eligible for merge ---
-              if (dryRun) {
-                core.info(`  DRY RUN: would approve and merge PR #${prNum}`);
-                merged.push({ number: prNum, title: candidate.title, url: pr.html_url });
-                continue;
-              }
-
-              // --- Handle draft PRs ---
-              if (pr.draft) {
-                core.info(`  Marking draft PR #${prNum} as ready for review`);
-                await github.graphql(`
-                  mutation($prId: ID!) {
-                    markPullRequestReadyForReview(input: {pullRequestId: $prId}) {
-                      pullRequest { isDraft }
-                    }
-                  }
-                `, { prId: pr.node_id });
-              }
-
-              // --- Approve with admin bot ---
-              core.info(`  Approving PR #${prNum} with admin bot`);
-              try {
-                await adminGithub.rest.pulls.createReview({
-                  owner: 'airbytehq',
-                  repo: 'airbyte',
-                  pull_number: prNum,
-                  event: 'APPROVE',
-                  body: 'Auto-approved by auto-merge workflow.',
-                });
-              } catch (err) {
-                core.warning(`  Failed to approve PR #${prNum}: ${err.message}`);
-              }
-
-              // --- Merge with retries ---
-              const maxRetries = 3;
-              const retryWaitMs = 60000;
-              let mergedOk = false;
-              for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                  await github.rest.pulls.merge({
-                    owner: 'airbytehq',
-                    repo: 'airbyte',
-                    pull_number: prNum,
-                    merge_method: 'squash',
-                  });
-                  core.info(`  Merged PR #${prNum}`);
-                  mergedOk = true;
-                  break;
-                } catch (err) {
-                  core.warning(`  Merge attempt ${attempt}/${maxRetries} failed: ${err.message}`);
-                  if (attempt < maxRetries) {
-                    core.info(`  Retrying in 60 seconds...`);
-                    await new Promise(r => setTimeout(r, retryWaitMs));
-                  }
-                }
-              }
-
-              if (mergedOk) {
-                merged.push({ number: prNum, title: candidate.title, url: pr.html_url });
-              } else {
-                skipped.push({ number: prNum, title: candidate.title, reason: 'merge failed after retries' });
-              }
-            }
-
-            // --- Job summary ---
-            core.summary.addHeading('Auto-merged PRs', 1);
-            core.summary.addRaw(`Summary generated at ${new Date().toISOString()}\n\n`);
-
-            if (dryRun) {
-              core.summary.addRaw('> **DRY RUN** — no PRs were actually merged.\n\n');
-            }
-
-            if (merged.length > 0) {
-              core.summary.addHeading(dryRun ? 'Would merge' : 'Merged', 2);
-              for (const pr of merged) {
-                core.summary.addRaw(`- [#${pr.number} — ${pr.title}](${pr.url})\n`);
-              }
-            } else {
-              core.summary.addRaw('**No PRs were auto-merged.**\n');
-            }
-
-            if (skipped.length > 0) {
-              core.summary.addHeading('Skipped', 2);
-              for (const pr of skipped) {
-                core.summary.addRaw(`- #${pr.number} — ${pr.title}: ${pr.reason}\n`);
-              }
-            }
-
-            await core.summary.write();
+      - name: Dry-run notice
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
+        run: echo "::notice::DRY RUN — would force-merge PR #$PR_NUMBER"
