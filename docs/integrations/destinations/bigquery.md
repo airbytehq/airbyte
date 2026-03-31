@@ -7,10 +7,6 @@ This page guides you through setting up the BigQuery destination connector.
 
 ## Prerequisites
 
-- For Airbyte Open Source users using the
-  [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector,
-  [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to
-  version `v0.40.0-alpha` or newer and upgrade your BigQuery connector to version `1.1.14` or newer
 - [A Google Cloud project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console)
 - [A BigQuery dataset](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset)
   to sync data to.
@@ -18,14 +14,17 @@ This page guides you through setting up the BigQuery destination connector.
   **Note:** Queries written in BigQuery can only reference datasets in the same physical location.
   If you plan on combining the data that Airbyte syncs with data from other datasets in your
   queries, create the datasets in the same location on Google Cloud. For more information, read
-  [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
+  [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro).
 
-- (Required for Airbyte Cloud; Optional for Airbyte Open Source) A Google Cloud
+- A Google Cloud
   [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the
   [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and
   [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and
   the
   [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+  This is required for Airbyte Cloud. For Airbyte Open Source, you can use
+  [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials)
+  instead.
 
 ## Setup guide
 
@@ -86,28 +85,14 @@ You cannot change the location later.
 Be sure to copy all contents in the Account Key JSON file including the brackets.
 :::
 
-11. For **Transformation Query Run Type (Optional)**, select **interactive** to have
-    [BigQuery run interactive query jobs](https://cloud.google.com/bigquery/docs/running-queries#queries)
-    or **batch** to have
-    [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).
-
-:::note
-Interactive queries are executed as soon as possible and count towards daily concurrent
-quotas and limits, while batch queries are executed as soon as idle resources are available in
-the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours,
-BigQuery changes the job priority to interactive. Batch queries don't count towards your
-concurrent rate limit, making it easier to start many queries at once.
-:::
-
-11. For **Google BigQuery Client Chunk Size (Optional)**, use the default value of 15 MiB. Later, if
-    you see networking or memory management problems with the sync (specifically on the
-    destination), try decreasing the chunk size. In that case, the sync will be slower but more
-    likely to succeed.
+10. For **CDC deletion mode**, select **Hard delete** to propagate source deletions to the
+    destination, or **Soft delete** to leave a tombstone record in the destination. Defaults to
+    hard deletes.
 
 ## Supported sync modes
 
 The BigQuery destination connector supports the following
-[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+[sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
 | Sync mode | Supported? |
 | :--- | :--- |
@@ -212,8 +197,6 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
     headers on requests to `bigquery.googleapis.com`.
   - Verify the service account key has not been rotated or revoked since the connection was
     configured.
-  - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
-    smaller value (for example, 5 MiB).
   - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
     possible contributing factor.
 
