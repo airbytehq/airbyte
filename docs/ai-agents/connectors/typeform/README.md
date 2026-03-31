@@ -109,7 +109,7 @@ See the official [Typeform API reference](https://developer.typeform.com/).
 
 ## Version information
 
-- **Package version:** 0.1.3
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 5718dee300be8dbcbdece58f9474cf54625872e7
+- **Package version:** 0.1.8
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/typeform/CHANGELOG.md)

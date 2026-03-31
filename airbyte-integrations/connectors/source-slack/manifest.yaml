@@ -508,7 +508,30 @@ spec:
       - option_title
     predicate_value: Default OAuth2.0 authorization
     oauth_config_specification:
-#      oauth_user_input_from_connector_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://slack.com/oauth/v2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}"
+        access_token_url: "https://slack.com/api/oauth.v2.access"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        scopes:
+          - scope: "channels:history"
+          - scope: "channels:join"
+          - scope: "channels:read"
+          - scope: "groups:read"
+          - scope: "groups:history"
+          - scope: "users:read"
+          - scope: "im:history"
+          - scope: "mpim:history"
+          - scope: "im:read"
+          - scope: "mpim:read"
+        scopes_join_strategy: comma
+        extract_output:
+          - access_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
