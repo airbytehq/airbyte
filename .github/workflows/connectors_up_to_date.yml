@@ -13,7 +13,7 @@ on:
         description: >-
           Override: pass these flags directly to `airbyte-ops local connector list`
           instead of the default source/destination selection.
-          Examples: `--connector-name=source-github` (one connector),
+          Examples: `--connectors-filter=source-github` (one connector),
           `--connectors-filter=source-github,source-stripe` (multiple by name),
           `--certified-only --connector-type=destination` (custom query).
         default: ""
