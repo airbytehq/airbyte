@@ -95,7 +95,7 @@ jobs:
           --bump-type promote
           --no-changelog
 
-      # TODO(rollback): Decide what git changes rollback needs.
+      # TK-TODO(rollback): Decide what git changes rollback needs.
       # bump-version promote won't run for rollback.  Options:
       #   a) Leave metadata as-is (RC version stays in master)
       #   b) Revert to prior GA version
