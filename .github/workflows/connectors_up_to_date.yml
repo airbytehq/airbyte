@@ -234,6 +234,15 @@ jobs:
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr ready "$PR_NUMBER"
 
+      # Apply bot approval so the PR satisfies required review checks.
+      - name: Apply bot approval
+        if: steps.create-pr.outputs.pull-request-number
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved by connectors up-to-date workflow."
+
       # --- Step 6: Set auto-merge label + enable native auto-merge ---
       - name: Enable auto-merge on PR
         if: steps.create-pr.outputs.pull-request-number
