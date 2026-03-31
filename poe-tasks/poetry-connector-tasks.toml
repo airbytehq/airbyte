@@ -110,24 +110,37 @@ help = "Check if connector is using non-production CDK references (git/local ref
 cmd = "${POE_GIT_DIR}/poe-tasks/detect-python-cdk.py"
 help = "Get complete CDK dependency information as JSON from pyproject.toml file."
 
-[tool.poe.tasks.use-cdk-latest]
+[tool.poe.tasks._use-cdk-with-ref]
 shell = '''
 set -eu
 EXTRAS=$(poe -qq detect-cdk-extras)
-DEP_STR="airbyte-cdk${EXTRAS}@latest"
+if [ -n "$EXTRAS" ]; then
+  # For version references like "airbyte-cdk@1.2.3", insert extras before @
+  if [[ "$CDK_REF" == *"@"* ]]; then
+    BASE_REF="${CDK_REF%@*}"
+    VERSION_PART="${CDK_REF#*@}"
+    DEP_STR="${BASE_REF}${EXTRAS}@${VERSION_PART}"
+  else
+    # For git URLs and local paths, append extras at the end
+    DEP_STR="${CDK_REF}${EXTRAS}"
+  fi
+else
+  DEP_STR="${CDK_REF}"
+fi
 echo Running: poetry add \"${DEP_STR}\"
 poetry add "${DEP_STR}"
 '''
+args = [
+  { name = "CDK_REF", positional = true, help = "CDK reference (version, git URL, or local path)" },
+]
+help = "Internal task to add CDK with extras-aware dependency string."
+
+[tool.poe.tasks.use-cdk-latest]
+cmd = "poe _use-cdk-with-ref airbyte-cdk@latest"
 help = "Pin to the latest version of the CDK."
 
 [tool.poe.tasks.use-cdk-version]
-shell = '''
-set -eu
-EXTRAS=$(poe -qq detect-cdk-extras)
-DEP_STR="airbyte-cdk${EXTRAS}@${VERSION}"
-echo Running: poetry add \"${DEP_STR}\"
-poetry add "${DEP_STR}"
-'''
+cmd = "poe _use-cdk-with-ref airbyte-cdk@${VERSION}"
 args = [
   { name = "VERSION", positional = true, default = "latest" },
 ]
@@ -139,21 +152,12 @@ set -eu
 echo "Detecting active CDK branch..."
 REPO_ROOT=$(git rev-parse --show-toplevel)
 ACTIVE_CDK_BRANCH=$(git -C "$REPO_ROOT/../airbyte-python-cdk" rev-parse --abbrev-ref HEAD)
-EXTRAS=$(poe -qq detect-cdk-extras)
-DEP_STR="git+https://github.com/airbytehq/airbyte-python-cdk.git@${ACTIVE_CDK_BRANCH}${EXTRAS}"
-echo Running: poetry add \"${DEP_STR}\"
-poetry add "${DEP_STR}"
+poe _use-cdk-with-ref "git+https://github.com/airbytehq/airbyte-python-cdk.git@${ACTIVE_CDK_BRANCH}"
 '''
 help = "Pin to the branch of the CDK that is currently checked out locally."
 
 [tool.poe.tasks.use-cdk-branch]
-shell = '''
-set -eu
-EXTRAS=$(poe -qq detect-cdk-extras)
-DEP_STR="git+https://github.com/airbytehq/airbyte-python-cdk.git@${BRANCH}${EXTRAS}"
-echo Running: poetry add \"${DEP_STR}\"
-poetry add "${DEP_STR}"
-'''
+cmd = "poe _use-cdk-with-ref git+https://github.com/airbytehq/airbyte-python-cdk.git@${BRANCH}"
 args = [
   { name = "BRANCH", positional = true, default = "main" },
 ]
@@ -164,10 +168,7 @@ shell = '''
 set -eu
 REPO_ROOT=$(git rev-parse --show-toplevel)
 CDK_ROOT=${REPO_ROOT}/../airbyte-python-cdk
-EXTRAS=$(poe -qq detect-cdk-extras)
-DEP_STR="${CDK_ROOT}${EXTRAS}"
-echo Running: poetry add \"${DEP_STR}\"
-poetry add "${DEP_STR}"
+poe _use-cdk-with-ref "${CDK_ROOT}"
 '''
 help = "Pin to your local working copy of the CDK, in editable mode. (Expects that the CDK and airbyte repo are sibling directories.)"
 
