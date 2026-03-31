@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.bigQueryCall
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import java.math.BigInteger
 import java.util.concurrent.ConcurrentHashMap
@@ -43,8 +44,8 @@ class BigqueryDirectLoadDatabaseInitialStatusGatherer(
         return map
     }
 
-    private fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
-        val table = bigquery.getTable(tableName.toTableId())
+    private suspend fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
+        val table = bigQueryCall { bigquery.getTable(tableName.toTableId()) }
         return table?.let { DirectLoadTableStatus(isEmpty = table.numRows == BigInteger.ZERO) }
     }
 }

@@ -15,19 +15,20 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.FinalTableIni
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.RawTableInitialStatus
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingDatabaseInitialStatus
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.bigQueryCall
 
 class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQuery) :
     DatabaseInitialStatusGatherer<TypingDedupingDatabaseInitialStatus> {
-    private fun getInitialRawTableState(
+    private suspend fun getInitialRawTableState(
         rawTableName: TableName,
         suffix: String
     ): RawTableInitialStatus? {
-        bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix))
+        bigQueryCall { bq.getTable(TableId.of(rawTableName.namespace, rawTableName.name + suffix)) }
         // Table doesn't exist. There are no unprocessed records, and no timestamp.
         ?: return null
 
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
-        val unloadedRecordTimestamp =
+        val unloadedRecordTimestamp = bigQueryCall {
             bq.query(
                     QueryJobConfiguration.of(
                         """
@@ -41,6 +42,7 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
                 .iterator()
                 .next()
                 .first()
+        }
         // If this value is null, then there are no records with null loaded_at.
         // If it's not null, then we can return immediately - we've found some unprocessed records
         // and their timestamp.
@@ -51,7 +53,7 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
             )
         }
 
-        val loadedRecordTimestamp =
+        val loadedRecordTimestamp = bigQueryCall {
             bq.query(
                     QueryJobConfiguration.of(
                         """
@@ -64,6 +66,7 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
                 .iterator()
                 .next()
                 .first()
+        }
         // We know (from the previous query) that all records have been processed by T+D already.
         // So we just need to get the timestamp of the most recent record.
         return if (loadedRecordTimestamp.isNull) {
