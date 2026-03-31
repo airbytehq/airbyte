@@ -161,9 +161,9 @@ jobs:
       # verifyDefaultVersionActivity is waiting for.
       - name: Mark PR ready for review
         if: steps.create-pr.outputs.pull-request-number
-        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
 
       - name: Force-merge cleanup PR
         if: steps.create-pr.outputs.pull-request-number
