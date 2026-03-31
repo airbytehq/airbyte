@@ -6,17 +6,14 @@ on:
     - cron: "0 */2 * * *"
   workflow_dispatch:
 
+# All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+permissions: {}
+
 jobs:
   # ---------- Job 1: Discover candidate PRs ----------
   list-candidates:
     name: List eligible PRs
     runs-on: ubuntu-24.04
-    outputs:
-      normal-matrix: ${{ steps.build-matrices.outputs.normal-matrix }}
-      normal-count: ${{ steps.build-matrices.outputs.normal-count }}
-      force-matrix: ${{ steps.build-matrices.outputs.force-matrix }}
-      force-count: ${{ steps.build-matrices.outputs.force-count }}
-      required-checks: ${{ steps.required-checks.outputs.checks }}
     steps:
       # ---------- Authentication ----------
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
@@ -109,6 +106,12 @@ jobs:
             }
             core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
             core.setOutput('checks', JSON.stringify(checks));
+    outputs:
+      normal-matrix: ${{ steps.build-matrices.outputs.normal-matrix }}
+      normal-count: ${{ steps.build-matrices.outputs.normal-count }}
+      force-matrix: ${{ steps.build-matrices.outputs.force-matrix }}
+      force-count: ${{ steps.build-matrices.outputs.force-count }}
+      required-checks: ${{ steps.required-checks.outputs.checks }}
 
   # ---------- Job 2: Normal merge (verify CI first) ----------
   normal-merge:
