@@ -22,27 +22,44 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
       # ---------- Find candidate PRs ----------
-      - name: Find auto-merge candidate PRs
+      - name: Find PRs with 'auto-merge' label
+        id: find-auto-merge
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: >
+          gh pr list
+          --repo airbytehq/airbyte
+          --label "auto-merge"
+          --state open
+          --base master
+          --json number,title,labels
+          --limit 100
+          | tee /tmp/auto-merge.json
+
+      - name: Find PRs with 'auto-merge/bypass-ci-checks' label
+        id: find-bypass-ci
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: >
+          gh pr list
+          --repo airbytehq/airbyte
+          --label "auto-merge/bypass-ci-checks"
+          --state open
+          --base master
+          --json number,title,labels
+          --limit 100
+          | tee /tmp/bypass-ci.json
+
+      - name: Combine and deduplicate candidate PRs
         id: find-candidates
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ steps.get-hoard-token.outputs.token }}
-          script: |
-            const { data } = await github.rest.search.issuesAndPullRequests({
-              q: 'repo:airbytehq/airbyte is:pr label:auto-merge,auto-merge/bypass-ci-checks base:master state:open',
-              per_page: 100,
-            });
-            const candidates = data.items.map(issue => ({
-              number: issue.number,
-              title: issue.title,
-              labels: issue.labels.map(l => l.name),
-            }));
-            core.info(`Found ${candidates.length} candidate PRs`);
-            for (const pr of candidates) {
-              core.info(`  #${pr.number}: ${pr.title} [${pr.labels.join(', ')}]`);
-            }
-            core.setOutput('candidates', JSON.stringify(candidates));
-            core.setOutput('count', String(candidates.length));
+        run: |
+          jq -c -s '[.[][] | {number, title, labels: [.labels[].name]}] | unique_by(.number)' \
+            /tmp/auto-merge.json /tmp/bypass-ci.json > /tmp/candidates.json
+          count=$(jq length /tmp/candidates.json)
+          echo "count=$count" | tee -a $GITHUB_OUTPUT
+          echo "candidates=$(cat /tmp/candidates.json)" | tee -a $GITHUB_OUTPUT
+          echo "Found $count candidate PR(s)"
+          jq -r '.[] | "  #\(.number): \(.title) [\(.labels | join(", "))]"' /tmp/candidates.json
 
       # ---------- Fetch required checks ----------
       - name: Fetch required checks for master branch
