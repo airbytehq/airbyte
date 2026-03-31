@@ -27,7 +27,7 @@ def authenticator(token_config):
         (
             "2020-01-01T00:00:00Z",
             "2020-01-02T00:00:00Z",
-            [{"ts": 1577866844}, {"ts": 1577877406}],
+            [{"ts": 1577866844, "reply_count": 1}, {"ts": 1577877406, "reply_count": 1}],
             {},
             [
                 {
@@ -95,12 +95,12 @@ def test_get_updated_state(requests_mock, authenticator, token_config, current_s
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [{"json": {"messages": [{"ts": 1507866847}]}}, {"json": {"messages": []}}],
+        [{"json": {"messages": [{"ts": 1507866847, "reply_count": 1}]}}, {"json": {"messages": []}}],
     )
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": [{"ts": 1507866847}]}}, {"json": {"messages": []}}],
+        [{"json": {"messages": [{"ts": 1507866847, "reply_count": 1}]}}, {"json": {"messages": []}}],
     )
     requests_mock.register_uri(
         "GET",
@@ -142,12 +142,12 @@ def test_threads_parse_response(requests_mock, authenticator, token_config):
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [{"json": {"messages": [{"ts": 1507866847}]}}, {"json": {"messages": []}}],
+        [{"json": {"messages": [{"ts": 1507866847, "reply_count": 1}]}}, {"json": {"messages": []}}],
     )
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": [{"ts": 1507866847}]}}, {"json": {"messages": []}}],
+        [{"json": {"messages": [{"ts": 1507866847, "reply_count": 1}]}}, {"json": {"messages": []}}],
     )
 
     requests_mock.register_uri(
@@ -237,12 +237,12 @@ def test_backoff(requests_mock, token_config, authenticator, headers, expected_r
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
-        [{"json": {"messages": [{"ts": 1507866847}]}}, {"json": {"messages": []}}],
+        [{"json": {"messages": [{"ts": 1507866847, "reply_count": 1}]}}, {"json": {"messages": []}}],
     )
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
-        [{"json": {"messages": [{"ts": 1507866847}]}}, {"json": {"messages": []}}],
+        [{"json": {"messages": [{"ts": 1507866847, "reply_count": 1}]}}, {"json": {"messages": []}}],
     )
 
     catalog = ConfiguredAirbyteCatalogSerializer.load(

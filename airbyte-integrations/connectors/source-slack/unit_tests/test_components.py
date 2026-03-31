@@ -159,9 +159,7 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
         ),
     ],
 )
-def test_threads_partition_router_skips_messages_without_replies(
-    token_config, extra_fields_list, expected_count, components_module
-):
+def test_threads_partition_router_skips_messages_without_replies(token_config, extra_fields_list, expected_count, components_module):
     """
     Verify that `ThreadsPartitionRouter` filters out stream slices where `reply_count` is 0 or absent,
     avoiding unnecessary `conversations.replies` API calls.
