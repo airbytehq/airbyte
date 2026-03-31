@@ -176,6 +176,17 @@ jobs:
           draft: true
 
       # --- Step 2: Bump dependencies (CDK + external) ---
+      # bump-deps runs `poetry update --lock` internally, so Poetry must be available.
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
+        with:
+          version: 1.8.5
+
       - name: Bump dependencies
         run: |
           airbyte-ops local connector bump-deps \
