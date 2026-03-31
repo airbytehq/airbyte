@@ -54,7 +54,12 @@ class JdbcPartitionsCreatorTest {
                                     SelectColumnMaxValue(ts),
                                     From(stream().name, stream().namespace),
                                 ),
-                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            expectedParameters =
+                                SelectQuerier.Parameters(
+                                    queryTimeoutSeconds =
+                                        JdbcPartitionsCreator
+                                            .CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS,
+                                ),
                             mutableMapOf(
                                 "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
                             )
@@ -355,7 +360,12 @@ class JdbcPartitionsCreatorTest {
                                     SelectColumnMaxValue(ts),
                                     From(stream().name, stream().namespace),
                                 ),
-                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            expectedParameters =
+                                SelectQuerier.Parameters(
+                                    queryTimeoutSeconds =
+                                        JdbcPartitionsCreator
+                                            .CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS,
+                                ),
                             mutableMapOf(
                                 "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
                             )
@@ -511,7 +521,12 @@ class JdbcPartitionsCreatorTest {
                                     SelectColumnMaxValue(ts),
                                     From(stream().name, stream().namespace),
                                 ),
-                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            expectedParameters =
+                                SelectQuerier.Parameters(
+                                    queryTimeoutSeconds =
+                                        JdbcPartitionsCreator
+                                            .CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS,
+                                ),
                             // single row with null value, simulating MAX() on empty table
                             // when fieldValue is null, encode() returns NullCodec.encode(null)
                             // which is a NullNode
@@ -571,7 +586,12 @@ class JdbcPartitionsCreatorTest {
                                     SelectColumnMaxValue(ts),
                                     From(stream().name, stream().namespace),
                                 ),
-                            expectedParameters = SelectQuerier.Parameters(fetchSize = null),
+                            expectedParameters =
+                                SelectQuerier.Parameters(
+                                    queryTimeoutSeconds =
+                                        JdbcPartitionsCreator
+                                            .CURSOR_UPPER_BOUND_QUERY_TIMEOUT_SECONDS,
+                                ),
                             mutableMapOf("max" to FieldValueEncoder(null, LocalDateCodec))
                         ),
                         // No second MAX query should happen — if it does, the test fails
