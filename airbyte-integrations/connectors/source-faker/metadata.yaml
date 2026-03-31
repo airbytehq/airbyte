@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 7.0.4
+  dockerImageTag: 7.1.0-rc.1
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   externalDocumentationUrls:
@@ -26,18 +26,22 @@ data:
   registryOverrides:
     cloud:
       enabled: true
+      dockerImageTag: 7.0.4
     oss:
       enabled: true
+      dockerImageTag: 7.0.4
   releaseStage: beta
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       4.0.0:
         message: This is a breaking change message
         upgradeDeadline: "2023-07-19"
       5.0.0:
-        message: ID and products.year fields are changing to be integers instead of floats.
+        message:
+          ID and products.year fields are changing to be integers instead of
+          floats.
         upgradeDeadline: "2023-08-31"
       6.0.0:
         message: Declare 'id' columns as primary keys.
@@ -45,7 +49,7 @@ data:
       7.0.0:
         message: This is a test breaking change to validate breaking change infrastructure.
         upgradeDeadline: "2026-03-19"
-        deadlineAction: "disable"
+        deadlineAction: disable
         scopedImpact:
           - scopeType: stream
             impactedScopes:
