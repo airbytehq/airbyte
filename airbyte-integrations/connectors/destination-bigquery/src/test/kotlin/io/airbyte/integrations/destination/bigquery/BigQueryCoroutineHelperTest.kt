@@ -34,7 +34,9 @@ class BigQueryCoroutineHelperTest {
         val bqException = BigQueryException(0, "wrapped", cause)
 
         val thrown =
-            assertThrows<CancellationException> { runBlocking { bigQueryCall { throw bqException } } }
+            assertThrows<CancellationException> {
+                runBlocking { bigQueryCall { throw bqException } }
+            }
 
         assertEquals("BigQuery operation cancelled due to coroutine cancellation.", thrown.message)
         assertInstanceOf(BigQueryException::class.java, thrown.cause)
@@ -68,7 +70,9 @@ class BigQueryCoroutineHelperTest {
         val runtimeException = RuntimeException("something else")
 
         val thrown =
-            assertThrows<RuntimeException> { runBlocking { bigQueryCall { throw runtimeException } } }
+            assertThrows<RuntimeException> {
+                runBlocking { bigQueryCall { throw runtimeException } }
+            }
 
         assertEquals("something else", thrown.message)
     }

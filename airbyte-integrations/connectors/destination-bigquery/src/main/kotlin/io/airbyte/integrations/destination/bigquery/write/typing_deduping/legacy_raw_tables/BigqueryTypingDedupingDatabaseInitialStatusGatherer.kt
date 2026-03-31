@@ -28,22 +28,21 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
         ?: return null
 
         val rawTableIdQuoted = """`${rawTableName.namespace}`.`${rawTableName.name}$suffix`"""
-        val unloadedRecordTimestamp =
-            bigQueryCall {
-                    bq.query(
-                            QueryJobConfiguration.of(
-                                """
+        val unloadedRecordTimestamp = bigQueryCall {
+            bq.query(
+                    QueryJobConfiguration.of(
+                        """
                             SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
                             FROM $rawTableIdQuoted
                             WHERE _airbyte_loaded_at IS NULL
                             """.trimIndent()
-                            )
-                        )
-                        .iterateAll()
-                        .iterator()
-                        .next()
-                        .first()
-                }
+                    )
+                )
+                .iterateAll()
+                .iterator()
+                .next()
+                .first()
+        }
         // If this value is null, then there are no records with null loaded_at.
         // If it's not null, then we can return immediately - we've found some unprocessed records
         // and their timestamp.
@@ -54,21 +53,20 @@ class BigqueryTypingDedupingDatabaseInitialStatusGatherer(private val bq: BigQue
             )
         }
 
-        val loadedRecordTimestamp =
-            bigQueryCall {
-                    bq.query(
-                            QueryJobConfiguration.of(
-                                """
+        val loadedRecordTimestamp = bigQueryCall {
+            bq.query(
+                    QueryJobConfiguration.of(
+                        """
                     SELECT MAX(_airbyte_extracted_at)
                     FROM $rawTableIdQuoted
                     """.trimIndent()
-                            )
-                        )
-                        .iterateAll()
-                        .iterator()
-                        .next()
-                        .first()
-                }
+                    )
+                )
+                .iterateAll()
+                .iterator()
+                .next()
+                .first()
+        }
         // We know (from the previous query) that all records have been processed by T+D already.
         // So we just need to get the timestamp of the most recent record.
         return if (loadedRecordTimestamp.isNull) {
