@@ -5,37 +5,268 @@ on:
     # Every 2 hours on the hour.
     - cron: "0 */2 * * *"
   workflow_dispatch:
+
 jobs:
   run_auto_merge:
     name: Run auto-merge
     runs-on: ubuntu-24.04
     steps:
-      - name: Authenticate as GitHub App
+      # ---------- Authentication ----------
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
-        id: get-app-token
+        id: get-hoard-token
         with:
           owner: "airbytehq"
           repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
-      - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-admin-token
         with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      # ---------- Find candidate PRs ----------
+      - name: Find auto-merge candidate PRs
+        id: find-candidates
+        uses: actions/github-script@v8
         with:
-          version: 1.8.5
-      - name: Run auto merge
-        shell: bash
-        working-directory: airbyte-ci/connectors/auto_merge
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const { data } = await github.rest.search.issuesAndPullRequests({
+              q: 'repo:airbytehq/airbyte is:pr label:auto-merge,auto-merge/bypass-ci-checks base:master state:open',
+              per_page: 100,
+            });
+            const candidates = data.items.map(issue => ({
+              number: issue.number,
+              title: issue.title,
+              labels: issue.labels.map(l => l.name),
+            }));
+            core.info(`Found ${candidates.length} candidate PRs`);
+            for (const pr of candidates) {
+              core.info(`  #${pr.number}: ${pr.title} [${pr.labels.join(', ')}]`);
+            }
+            core.setOutput('candidates', JSON.stringify(candidates));
+            core.setOutput('count', String(candidates.length));
+
+      # ---------- Fetch required checks ----------
+      - name: Fetch required checks for master branch
+        id: required-checks
+        if: fromJSON(steps.find-candidates.outputs.count) > 0
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const { data: rules } = await github.request(
+              'GET /repos/{owner}/{repo}/rules/branches/{branch}',
+              { owner: 'airbytehq', repo: 'airbyte', branch: 'master' }
+            );
+            const checks = [];
+            for (const rule of rules) {
+              if (rule.type === 'required_status_checks') {
+                for (const check of (rule.parameters?.required_status_checks || [])) {
+                  checks.push(check.context);
+                }
+              }
+            }
+            core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
+            core.setOutput('checks', JSON.stringify(checks));
+
+      # ---------- Validate and process PRs ----------
+      - name: Validate and merge eligible PRs
+        if: fromJSON(steps.find-candidates.outputs.count) > 0
+        uses: actions/github-script@v8
         env:
-          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          AUTO_MERGE_PRODUCTION: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE }}
-        run: |
-          poetry install
-          poetry run auto-merge
+          ADMIN_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+          CANDIDATES_JSON: ${{ steps.find-candidates.outputs.candidates }}
+          REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
+          DRY_RUN: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true' }}
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const { getOctokit } = require('@actions/github');
+            const adminGithub = getOctokit(process.env.ADMIN_TOKEN);
+            const dryRun = process.env.DRY_RUN === 'true';
+
+            if (dryRun) {
+              core.info('Running in DRY RUN mode — no PRs will be merged.');
+            } else {
+              core.info('Running in PRODUCTION mode — eligible PRs will be merged.');
+            }
+
+            const candidates = JSON.parse(process.env.CANDIDATES_JSON);
+            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+
+            const CONNECTOR_PATH_PREFIXES = [
+              'airbyte-integrations/connectors',
+              'docs/integrations/sources',
+              'docs/integrations/destinations',
+              'docs/ai-agents/connectors',
+              'docs/developers/pyairbyte',
+              'docusaurus/src/data',
+            ];
+            const AUTO_MERGE_LABEL = 'auto-merge';
+            const BYPASS_CI_LABEL = 'auto-merge/bypass-ci-checks';
+
+            const merged = [];
+            const skipped = [];
+
+            for (const candidate of candidates) {
+              const prNum = candidate.number;
+              core.info(`\nProcessing PR #${prNum}: ${candidate.title}`);
+
+              // --- Fetch full PR details ---
+              const { data: pr } = await github.rest.pulls.get({
+                owner: 'airbytehq',
+                repo: 'airbyte',
+                pull_number: prNum,
+              });
+
+              // --- Validate: only modifies connector paths ---
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner: 'airbytehq',
+                repo: 'airbyte',
+                pull_number: prNum,
+                per_page: 100,
+              });
+              const nonConnectorFiles = files.filter(
+                f => !CONNECTOR_PATH_PREFIXES.some(prefix => f.filename.startsWith(prefix))
+              );
+              if (nonConnectorFiles.length > 0) {
+                const examples = nonConnectorFiles.map(f => f.filename).slice(0, 5).join(', ');
+                const reason = `modifies non-connector files: ${examples}`;
+                core.info(`  SKIP: ${reason}`);
+                skipped.push({ number: prNum, title: candidate.title, reason });
+                continue;
+              }
+
+              // --- Determine merge strategy based on labels ---
+              const hasAutoMerge = candidate.labels.includes(AUTO_MERGE_LABEL);
+              const hasBypassCi = candidate.labels.includes(BYPASS_CI_LABEL);
+
+              // --- For auto-merge label (without bypass): verify required checks pass ---
+              if (hasAutoMerge && !hasBypassCi) {
+                const sha = pr.head.sha;
+
+                const statuses = await github.paginate(
+                  github.rest.repos.listCommitStatusesForRef,
+                  { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
+                );
+                const successStatuses = new Set(
+                  statuses.filter(s => s.state === 'success').map(s => s.context)
+                );
+
+                const checkRuns = await github.paginate(
+                  github.rest.checks.listForRef,
+                  { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
+                  (response) => response.data
+                );
+                const successChecks = new Set(
+                  checkRuns
+                    .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
+                    .map(cr => cr.name)
+                );
+
+                const allPassing = new Set([...successStatuses, ...successChecks]);
+                const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+                if (missing.length > 0) {
+                  const reason = `required checks not passing: ${missing.join(', ')}`;
+                  core.info(`  SKIP: ${reason}`);
+                  skipped.push({ number: prNum, title: candidate.title, reason });
+                  continue;
+                }
+              }
+
+              // --- PR is eligible for merge ---
+              if (dryRun) {
+                core.info(`  DRY RUN: would approve and merge PR #${prNum}`);
+                merged.push({ number: prNum, title: candidate.title, url: pr.html_url });
+                continue;
+              }
+
+              // --- Handle draft PRs ---
+              if (pr.draft) {
+                core.info(`  Marking draft PR #${prNum} as ready for review`);
+                await github.graphql(`
+                  mutation($prId: ID!) {
+                    markPullRequestReadyForReview(input: {pullRequestId: $prId}) {
+                      pullRequest { isDraft }
+                    }
+                  }
+                `, { prId: pr.node_id });
+              }
+
+              // --- Approve with admin bot ---
+              core.info(`  Approving PR #${prNum} with admin bot`);
+              try {
+                await adminGithub.rest.pulls.createReview({
+                  owner: 'airbytehq',
+                  repo: 'airbyte',
+                  pull_number: prNum,
+                  event: 'APPROVE',
+                  body: 'Auto-approved by auto-merge workflow.',
+                });
+              } catch (err) {
+                core.warning(`  Failed to approve PR #${prNum}: ${err.message}`);
+              }
+
+              // --- Merge with retries ---
+              const maxRetries = 3;
+              const retryWaitMs = 60000;
+              let mergedOk = false;
+              for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                  await github.rest.pulls.merge({
+                    owner: 'airbytehq',
+                    repo: 'airbyte',
+                    pull_number: prNum,
+                    merge_method: 'squash',
+                  });
+                  core.info(`  Merged PR #${prNum}`);
+                  mergedOk = true;
+                  break;
+                } catch (err) {
+                  core.warning(`  Merge attempt ${attempt}/${maxRetries} failed: ${err.message}`);
+                  if (attempt < maxRetries) {
+                    core.info(`  Retrying in 60 seconds...`);
+                    await new Promise(r => setTimeout(r, retryWaitMs));
+                  }
+                }
+              }
+
+              if (mergedOk) {
+                merged.push({ number: prNum, title: candidate.title, url: pr.html_url });
+              } else {
+                skipped.push({ number: prNum, title: candidate.title, reason: 'merge failed after retries' });
+              }
+            }
+
+            // --- Job summary ---
+            core.summary.addHeading('Auto-merged PRs', 1);
+            core.summary.addRaw(`Summary generated at ${new Date().toISOString()}\n\n`);
+
+            if (dryRun) {
+              core.summary.addRaw('> **DRY RUN** — no PRs were actually merged.\n\n');
+            }
+
+            if (merged.length > 0) {
+              core.summary.addHeading(dryRun ? 'Would merge' : 'Merged', 2);
+              for (const pr of merged) {
+                core.summary.addRaw(`- [#${pr.number} — ${pr.title}](${pr.url})\n`);
+              }
+            } else {
+              core.summary.addRaw('**No PRs were auto-merged.**\n');
+            }
+
+            if (skipped.length > 0) {
+              core.summary.addHeading('Skipped', 2);
+              for (const pr of skipped) {
+                core.summary.addRaw(`- #${pr.number} — ${pr.title}: ${pr.reason}\n`);
+              }
+            }
+
+            await core.summary.write();
