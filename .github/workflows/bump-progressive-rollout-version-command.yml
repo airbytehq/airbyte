@@ -152,7 +152,7 @@ jobs:
             > **Next steps:**
             > 1. Merge this PR to publish the RC version
             > 2. Monitor the progressive rollout in production
-            > 3. When ready to promote, use the `finalize_rc_rollout` workflow with `action=promote`
+            > 3. When ready to promote, use the `finalize_progressive_rollout` workflow with `action=promote`
             > 4. If issues arise, use `action=rollback` instead
 
       - name: Append success comment (no-op)
