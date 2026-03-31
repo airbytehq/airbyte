@@ -188,29 +188,48 @@ jobs:
 
       # --- Step 2: Bump dependencies (CDK + external) ---
       - name: Bump dependencies
+        id: bump-deps
         run: |
-          airbyte-ops local connector bump-deps \
-            --name "$CONNECTOR_NAME" \
-            --repo-path "$GITHUB_WORKSPACE"
+          BUMP_DEPS_OUTPUT=$(
+            airbyte-ops local connector bump-deps \
+              --name "$CONNECTOR_NAME" \
+              --repo-path "$GITHUB_WORKSPACE"
+          )
+          echo "$BUMP_DEPS_OUTPUT"
+          DEPS_UPDATED=$(echo "$BUMP_DEPS_OUTPUT" | jq -r '.updated')
+          echo "updated=$DEPS_UPDATED" | tee -a $GITHUB_OUTPUT
 
       # --- Step 3: Update base image ---
       - name: Update base image in metadata.yaml
+        id: bump-base-image
         run: |
-          airbyte-ops local connector bump-base-image \
-            --name "$CONNECTOR_NAME" \
-            --repo-path "$GITHUB_WORKSPACE"
+          BUMP_IMAGE_OUTPUT=$(
+            airbyte-ops local connector bump-base-image \
+              --name "$CONNECTOR_NAME" \
+              --repo-path "$GITHUB_WORKSPACE"
+          )
+          echo "$BUMP_IMAGE_OUTPUT"
+          IMAGE_UPDATED=$(echo "$BUMP_IMAGE_OUTPUT" | jq -r '.updated')
+          echo "updated=$IMAGE_UPDATED" | tee -a $GITHUB_OUTPUT
 
       # --- Step 4: Check for changes ---
+      # Use structured output from CLI commands instead of git diff to avoid
+      # false positives from Poetry lock file reformatting across versions.
       - name: Check for changes
         id: check-changes
+        env:
+          DEPS_UPDATED: ${{ steps.bump-deps.outputs.updated }}
+          IMAGE_UPDATED: ${{ steps.bump-base-image.outputs.updated }}
         run: |
-          if git diff --quiet; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "No changes detected for $CONNECTOR_NAME"
-          else
+          echo "bump-deps updated: $DEPS_UPDATED"
+          echo "bump-base-image updated: $IMAGE_UPDATED"
+          if [ "$DEPS_UPDATED" = "true" ] || [ "$IMAGE_UPDATED" = "true" ]; then
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Changes detected for $CONNECTOR_NAME"
             git diff --stat
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected for $CONNECTOR_NAME (CLI reports no updates)"
           fi
 
       # --- Step 5: Create or update PR ---
@@ -308,10 +327,14 @@ jobs:
           PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
           HAS_CHANGES: ${{ steps.check-changes.outputs.has_changes }}
+          DEPS_UPDATED: ${{ steps.bump-deps.outputs.updated }}
+          IMAGE_UPDATED: ${{ steps.bump-base-image.outputs.updated }}
         run: |
           if [ "$HAS_CHANGES" = "true" ] && [ -n "$PR_URL" ]; then
             echo "### ✅ \`$CONNECTOR_NAME\` — PR created" >> $GITHUB_STEP_SUMMARY
             echo "- **PR:** [#${PR_NUMBER}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
+            [ "$DEPS_UPDATED" = "true" ] && echo "- Dependencies updated" >> $GITHUB_STEP_SUMMARY
+            [ "$IMAGE_UPDATED" = "true" ] && echo "- Base image updated" >> $GITHUB_STEP_SUMMARY
           elif [ "$HAS_CHANGES" = "true" ]; then
             echo "### ❌ \`$CONNECTOR_NAME\` — changes detected but PR creation failed" >> $GITHUB_STEP_SUMMARY
           else
