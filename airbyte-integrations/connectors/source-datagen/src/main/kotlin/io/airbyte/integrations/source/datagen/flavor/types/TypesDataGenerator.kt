@@ -60,19 +60,19 @@ class TypesDataGenerator() : DataGenerator {
     private val localDateCodec = DateFieldType.jsonEncoder as LocalDateCodec
     private val offsetTimeCodec = TimeWithTimeZoneFieldType.jsonEncoder as OffsetTimeCodec
     private val localTimeCodec = TimeWithoutTimeZoneFieldType.jsonEncoder as LocalTimeCodec
-    private val offsetDateTimeCodec = TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
-    private val localDateTimeCodec = TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
+    private val offsetDateTimeCodec =
+        TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
+    private val localDateTimeCodec =
+        TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
     private val jsonStringCodec = JsonFieldType.jsonEncoder as JsonStringCodec
 
     override fun generateData(currentID: Long, modulo: Int, offset: Int): NativeRecordPayload {
         val incrementedID = (currentID * modulo + offset)
         val recordData: NativeRecordPayload = mutableMapOf()
 
-        recordData[TypesFlavor.FieldNames.ID] =
-            FieldValueEncoder(incrementedID.toInt(), intCodec)
+        recordData[TypesFlavor.FieldNames.ID] = FieldValueEncoder(incrementedID.toInt(), intCodec)
 
-        recordData[TypesFlavor.FieldNames.STRING] =
-            FieldValueEncoder(stringData, textCodec)
+        recordData[TypesFlavor.FieldNames.STRING] = FieldValueEncoder(stringData, textCodec)
 
         recordData[TypesFlavor.FieldNames.BOOLEAN] =
             FieldValueEncoder(Random.nextBoolean(), booleanCodec)
@@ -86,8 +86,7 @@ class TypesDataGenerator() : DataGenerator {
         recordData[TypesFlavor.FieldNames.BIG_DECIMAL] =
             FieldValueEncoder(bigDecimal, bigDecimalCodec)
 
-        recordData[TypesFlavor.FieldNames.DATE] =
-            FieldValueEncoder(date, localDateCodec)
+        recordData[TypesFlavor.FieldNames.DATE] = FieldValueEncoder(date, localDateCodec)
 
         recordData[TypesFlavor.FieldNames.TIME_WITH_TIME_ZONE] =
             FieldValueEncoder(timeWithTimeZone, offsetTimeCodec)
@@ -101,8 +100,7 @@ class TypesDataGenerator() : DataGenerator {
         recordData[TypesFlavor.FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE] =
             FieldValueEncoder(timestampWithoutTimeZone, localDateTimeCodec)
 
-        recordData[TypesFlavor.FieldNames.JSON] =
-            FieldValueEncoder(json, jsonStringCodec)
+        recordData[TypesFlavor.FieldNames.JSON] = FieldValueEncoder(json, jsonStringCodec)
 
         return recordData
     }

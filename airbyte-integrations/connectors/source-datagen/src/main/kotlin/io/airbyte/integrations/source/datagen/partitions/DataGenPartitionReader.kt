@@ -67,8 +67,9 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
     override suspend fun run() {
         log.info { "Starting data generation for partition $partitionId in stream ${stream.name}" }
 
-        val outputRoute = outputMessageRouter.recordAcceptors[stream.id]
-            ?: throw IllegalStateException("No record acceptor found for stream ${stream.id}")
+        val outputRoute =
+            outputMessageRouter.recordAcceptors[stream.id]
+                ?: throw IllegalStateException("No record acceptor found for stream ${stream.id}")
 
         val configuration = sharedState.configuration
         val sourceDataGenerator = configuration.flavor.dataGenerator

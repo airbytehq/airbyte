@@ -24,20 +24,21 @@ class WideFlavor(columnCount: Int) : Flavor {
     companion object {
         private const val TABLE_NAME = "wide"
 
-        val COLUMN_TYPES: List<Pair<String, FieldType>> = listOf(
-            "integer" to IntegerFieldType,
-            "string" to StringFieldType,
-            "boolean" to BooleanFieldType,
-            "number" to NumberFieldType,
-            "big_integer" to BigIntegerFieldType,
-            "big_decimal" to BigDecimalFieldType,
-            "date" to DateFieldType,
-            "time_with_tz" to TimeWithTimeZoneFieldType,
-            "time_without_tz" to TimeWithoutTimeZoneFieldType,
-            "timestamp_with_tz" to TimestampWithTimeZoneFieldType,
-            "timestamp_without_tz" to TimestampWithoutTimeZoneFieldType,
-            "json" to JsonFieldType,
-        )
+        val COLUMN_TYPES: List<Pair<String, FieldType>> =
+            listOf(
+                "integer" to IntegerFieldType,
+                "string" to StringFieldType,
+                "boolean" to BooleanFieldType,
+                "number" to NumberFieldType,
+                "big_integer" to BigIntegerFieldType,
+                "big_decimal" to BigDecimalFieldType,
+                "date" to DateFieldType,
+                "time_with_tz" to TimeWithTimeZoneFieldType,
+                "time_without_tz" to TimeWithoutTimeZoneFieldType,
+                "timestamp_with_tz" to TimestampWithTimeZoneFieldType,
+                "timestamp_without_tz" to TimestampWithoutTimeZoneFieldType,
+                "json" to JsonFieldType,
+            )
     }
 
     private val generatedFields: List<Field> = buildList {

@@ -82,7 +82,9 @@ data object Types : FlavorSpec
 data class Wide(
     @JsonProperty("column_count")
     @JsonSchemaTitle("Column Count")
-    @JsonSchemaDescription("Number of columns to generate (including the id column). Min 1. Max 1000.")
+    @JsonSchemaDescription(
+        "Number of columns to generate (including the id column). Min 1. Max 1000."
+    )
     @JsonSchemaInject(json = """{"default":50,"minimum":1,"maximum":1000}""")
     val columnCount: Int = 50
 ) : FlavorSpec

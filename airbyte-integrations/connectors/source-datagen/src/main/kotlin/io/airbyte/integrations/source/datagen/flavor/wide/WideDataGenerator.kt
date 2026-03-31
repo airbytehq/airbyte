@@ -61,8 +61,10 @@ class WideDataGenerator(private val fields: List<Field>) : DataGenerator {
     private val localDateCodec = DateFieldType.jsonEncoder as LocalDateCodec
     private val offsetTimeCodec = TimeWithTimeZoneFieldType.jsonEncoder as OffsetTimeCodec
     private val localTimeCodec = TimeWithoutTimeZoneFieldType.jsonEncoder as LocalTimeCodec
-    private val offsetDateTimeCodec = TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
-    private val localDateTimeCodec = TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
+    private val offsetDateTimeCodec =
+        TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
+    private val localDateTimeCodec =
+        TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
     private val jsonStringCodec = JsonFieldType.jsonEncoder as JsonStringCodec
 
     override fun generateData(currentID: Long, modulo: Int, offset: Int): NativeRecordPayload {
@@ -87,8 +89,10 @@ class WideDataGenerator(private val fields: List<Field>) : DataGenerator {
             DateFieldType -> FieldValueEncoder(date, localDateCodec)
             TimeWithTimeZoneFieldType -> FieldValueEncoder(timeWithTimeZone, offsetTimeCodec)
             TimeWithoutTimeZoneFieldType -> FieldValueEncoder(timeWithoutTimeZone, localTimeCodec)
-            TimestampWithTimeZoneFieldType -> FieldValueEncoder(timestampWithTimeZone, offsetDateTimeCodec)
-            TimestampWithoutTimeZoneFieldType -> FieldValueEncoder(timestampWithoutTimeZone, localDateTimeCodec)
+            TimestampWithTimeZoneFieldType ->
+                FieldValueEncoder(timestampWithTimeZone, offsetDateTimeCodec)
+            TimestampWithoutTimeZoneFieldType ->
+                FieldValueEncoder(timestampWithoutTimeZone, localDateTimeCodec)
             JsonFieldType -> FieldValueEncoder(json, jsonStringCodec)
             else -> throw IllegalArgumentException("Unsupported field type: $fieldType")
         }
