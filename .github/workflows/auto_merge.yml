@@ -21,15 +21,6 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
-      - name: Authenticate as 'octavia-bot-admin' GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
-        id: get-admin-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
-
       # ---------- Find candidate PRs ----------
       - name: Find auto-merge candidate PRs
         id: find-candidates
@@ -75,6 +66,17 @@ jobs:
             }
             core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
             core.setOutput('checks', JSON.stringify(checks));
+
+      # ---------- Authenticate admin bot (deferred until candidates exist) ----------
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: fromJSON(steps.find-candidates.outputs.count) > 0
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
 
       # ---------- Validate and process PRs ----------
       - name: Validate and merge eligible PRs
