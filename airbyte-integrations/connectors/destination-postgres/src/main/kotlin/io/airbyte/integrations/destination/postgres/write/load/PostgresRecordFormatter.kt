@@ -21,8 +21,8 @@ internal val RAW_META_COLUMNS =
     )
 
 /**
- * Strips null bytes (\u0000) from strings. PostgreSQL does not allow null bytes in text
- * fields, and they cause COPY failures with "unsupported Unicode escape sequence".
+ * Strips null bytes (\u0000) from strings. PostgreSQL does not allow null bytes in text fields, and
+ * they cause COPY failures with "unsupported Unicode escape sequence".
  */
 internal fun String.stripNullBytes(): String =
     if (contains('\u0000')) replace("\u0000", "") else this

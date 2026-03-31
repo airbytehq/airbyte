@@ -58,8 +58,7 @@ internal class PostgresInsertBufferTest {
         buffer.accumulate(mapOf("col1" to StringValue("value")))
         assertNotNull(buffer.csvFilePath)
 
-        coEvery { postgresClient.copyFromCsv(any(), any()) } throws
-            RuntimeException("COPY failed")
+        coEvery { postgresClient.copyFromCsv(any(), any()) } throws RuntimeException("COPY failed")
 
         // Verify exception is thrown
         assertThrows<RuntimeException> { runBlocking { buffer.flush() } }
