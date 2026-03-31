@@ -36,7 +36,7 @@ data:
   ab_internal:
     sl: 300
     ql: 300
-  supportLevel: certified
+  supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
