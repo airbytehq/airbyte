@@ -58,6 +58,6 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           REGISTRY_STORE: "coral:prod"
         run: >
-          airbyte-ops registry rc cleanup
+          airbyte-ops registry progressive-rollout cleanup
           --name "${CONNECTOR_NAME}"
           --store "${REGISTRY_STORE}"
