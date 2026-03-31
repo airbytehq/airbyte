@@ -10,8 +10,13 @@ on:
   workflow_dispatch:
     inputs:
       connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--language=python --language=low-code --language=manifest-only"
+        description: >-
+          Override: pass these flags directly to `airbyte-ops local connector list`
+          instead of the default source/destination selection.
+          Examples: `--connectors-filter=source-github` (one connector),
+          `--connectors-filter=source-github,source-stripe` (multiple by name),
+          `--certified-only --connector-type=destination` (custom query).
+        default: ""
 jobs:
   generate_matrix:
     name: Generate matrix
@@ -21,29 +26,91 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-      - name: Run airbyte-ci connectors list [SCHEDULED TRIGGER]
-        if: github.event_name == 'schedule'
-        id: airbyte-ci-connectors-list-scheduled
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "master"
-          subcommand: 'connectors --language=python --language=low-code --language=manifest-only  --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
-      - name: Run airbyte-ci connectors list [MANUAL TRIGGER]
-        if: github.event_name == 'workflow_dispatch'
-        id: airbyte-ci-connectors-list-workflow-dispatch
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "master"
-          subcommand: 'connectors ${{ github.event.inputs.connectors-options }} --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
-      # We generate a dynamic matrix from the list of selected connectors.
-      # A matrix is required in this situation because the number of connectors is large and running them all in a single job would exceed the maximum job time limit of 6 hours.
-      # We use 25 connectors per job, with hopes they can finish within the 1 hours duration of the GitHub App's
-      # token.
-      - name: Generate matrix - 25 connectors per job
-        id: generate_matrix
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      # --- Connector selection ---
+      # When connectors-options is provided, use it directly as an override.
+      # Otherwise, use the three-call pattern: sources (all support levels) +
+      # destinations (certified only), then combine.
+
+      # Override path: use connectors-options as-is
+      - name: "[override] List connectors from manual input"
+        id: list-override
+        if: github.event.inputs.connectors-options != ''
+        env:
+          CONNECTOR_OPTIONS: ${{ github.event.inputs.connectors-options }}
         run: |
-          matrix=$(jq -c -r '{include: [.[] | "--name=" + .] | to_entries | group_by(.key / 25 | floor) | map(map(.value) | {"connector_names": join(" ")})}' selected_connectors.json)
-          echo "generated_matrix=$matrix" >> $GITHUB_OUTPUT
+          MATRIX=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              $CONNECTOR_OPTIONS \
+              --output-format=json-gh-matrix
+          )
+          echo "generated_matrix=$MATRIX" | tee -a $GITHUB_OUTPUT
+
+      # Default path — Call 1: Sources (all support levels)
+      - name: List source connectors
+        id: list-sources
+        if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
+        run: |
+          SOURCES=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --connector-type=source \
+              --language python --language low-code --language manifest-only \
+              --exclude-connectors=source-declarative-manifest \
+              --output-format=csv
+          )
+          echo "Sources: $SOURCES"
+          echo "sources=$SOURCES" | tee -a $GITHUB_OUTPUT
+
+      # Default path — Call 2: Destinations (certified only)
+      - name: List destination connectors
+        id: list-destinations
+        if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
+        run: |
+          DESTINATIONS=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --connector-type=destination \
+              --certified-only \
+              --language python --language low-code --language manifest-only \
+              --output-format=csv
+          )
+          echo "Destinations: $DESTINATIONS"
+          echo "destinations=$DESTINATIONS" | tee -a $GITHUB_OUTPUT
+
+      # Default path — Call 3: Combine both sets into GH Actions matrix
+      - name: Generate matrix from source + destination lists
+        id: list-default
+        if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
+        run: |
+          MATRIX=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
+              --output-format=json-gh-matrix
+          )
+          echo "generated_matrix=$MATRIX" | tee -a $GITHUB_OUTPUT
+
+      # Merge: pick whichever path ran, and validate non-empty
+      - name: Set final matrix output
+        id: generate_matrix
+        env:
+          OVERRIDE_MATRIX: ${{ steps.list-override.outputs.generated_matrix }}
+          DEFAULT_MATRIX: ${{ steps.list-default.outputs.generated_matrix }}
+        run: |
+          FINAL_MATRIX="${OVERRIDE_MATRIX:-$DEFAULT_MATRIX}"
+          if [ -z "$FINAL_MATRIX" ]; then
+            echo "::error::Matrix generation produced empty output. Check CLI commands above for errors."
+            exit 1
+          fi
+          echo "generated_matrix=$FINAL_MATRIX" | tee -a $GITHUB_OUTPUT
 
   run_connectors_up_to_date:
     needs: generate_matrix
@@ -51,12 +118,24 @@ jobs:
     runs-on: connector-up-to-date-medium
     continue-on-error: true
     strategy:
-      matrix: ${{fromJson(needs.generate_matrix.outputs.generated_matrix)}}
+      matrix: ${{ fromJson(needs.generate_matrix.outputs.generated_matrix) }}
     permissions:
       pull-requests: write
+      contents: write
+    env:
+      CONNECTOR_NAME: ${{ matrix.connector }}
+      CONNECTOR_DIR: ${{ matrix.connector_dir }}
+      CONNECTOR_LANGUAGE: ${{ matrix.connector_language }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
@@ -65,19 +144,134 @@ jobs:
           repositories: ${{ inputs.repo || github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
-      # Token is good for 1 hour
-      - name: Run airbyte-ci connectors up-to-date [WORKFLOW]
-        id: airbyte-ci-connectors-up-to-date-workflow-dispatch
-        uses: ./.github/actions/run-airbyte-ci
+
+      - name: Get GitHub App User ID
+        id: get-user-id
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: echo "user-id=$(gh api "/users/${{ steps.get-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git author
+        run: |
+          git config --global user.name '${{ steps.get-app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Docker login
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
-          context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --concurrency=10 ${{ matrix.connector_names}} up-to-date  --create-prs --auto-merge"
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      # --- Step 1: Set up Python + Poetry ---
+      # bump-deps runs `poetry update --lock` internally, so Poetry must be available.
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
+        with:
+          version: 2.3.3
+
+      # --- Step 2: Bump dependencies (CDK + external) ---
+      - name: Bump dependencies
+        run: |
+          airbyte-ops local connector bump-deps \
+            --name "$CONNECTOR_NAME" \
+            --repo-path "$GITHUB_WORKSPACE"
+
+      # --- Step 3: Update base image ---
+      - name: Update base image in metadata.yaml
+        run: |
+          airbyte-ops local connector bump-base-image \
+            --name "$CONNECTOR_NAME" \
+            --repo-path "$GITHUB_WORKSPACE"
+
+      # --- Step 4: Check for changes ---
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected for $CONNECTOR_NAME"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected for $CONNECTOR_NAME"
+          fi
+
+      # --- Step 5: Create or update PR ---
+      # peter-evans/create-pull-request detects working-tree changes, commits them,
+      # and creates (or updates) a draft PR. We submit it as a draft so we can push
+      # a follow-up changelog commit before marking it ready for review.
+      - name: Create or update PR
+        id: create-pr
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
+          branch: "connectors-up-to-date/${{ env.CONNECTOR_NAME }}"
+          delete-branch: true
+          title: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
+          body: |
+            Updates dependencies for `${{ env.CONNECTOR_NAME }}`.
+
+            🤖 Generated by [automated workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: |
+            area/connectors
+            auto-merge
+          draft: true
+
+      # --- Step 6: Bump version + changelog (needs PR number) ---
+      # This runs after PR creation so we can reference the PR number in the changelog.
+      # The changes are pushed as a follow-up commit to the PR branch.
+      - name: Bump connector version (patch) with changelog
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: |
+          airbyte-ops local connector bump-version \
+            --name "$CONNECTOR_NAME" \
+            --repo-path "$GITHUB_WORKSPACE" \
+            --bump-type patch \
+            --changelog-message "Update dependencies" \
+            --pr-number "$PR_NUMBER"
+
+      # --- Step 7: Push changelog commit to the PR branch ---
+      - name: Push changelog commit to PR branch
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          git fetch --depth=1 origin "$PR_BRANCH"
+          git checkout "$PR_BRANCH"
+          git add "$CONNECTOR_DIR"
+          git commit -m "chore($CONNECTOR_NAME): bump version and update changelog"
+          git push origin "$PR_BRANCH"
+
+      # --- Step 8: Mark PR ready for review ---
+      - name: Mark PR as ready for review
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr ready "$PR_NUMBER"
+
+      # --- Step 9: Apply bot approval ---
+      - name: Apply bot approval
+        if: steps.check-changes.outputs.has_changes == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved by connectors up-to-date workflow."
+
+      # --- Step 10: Enable auto-merge ---
+      - name: Enable auto-merge on PR
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr merge "$PR_NUMBER" --squash --auto

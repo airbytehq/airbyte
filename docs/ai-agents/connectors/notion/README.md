@@ -50,10 +50,10 @@ In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_notion import NotionConnector
-from airbyte_agent_notion.models import NotionAuthConfig
+from airbyte_agent_notion.models import NotionAccessTokenAuthConfig
 
 connector = NotionConnector(
-    auth_config=NotionAuthConfig(
+    auth_config=NotionAccessTokenAuthConfig(
         token="<Notion internal integration token (starts with ntn_ or secret_)>"
     )
 )
@@ -114,7 +114,7 @@ See the official [Notion API reference](https://developers.notion.com/reference/
 
 ## Version information
 
-- **Package version:** 0.1.22
-- **Connector version:** 0.1.5
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
+- **Package version:** 0.1.23
+- **Connector version:** 0.1.6
+- **Generated with Connector SDK commit SHA:** dd2ed97fb6ead6bc3014adf1eaddb9b8b9fb4001
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/notion/CHANGELOG.md)

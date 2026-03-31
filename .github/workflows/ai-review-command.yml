@@ -15,6 +15,16 @@ on:
       comment-id:
         description: "Comment ID"
         required: false
+  workflow_call:
+    inputs:
+      pr:
+        description: "PR number"
+        required: true
+        type: string
+      comment-id:
+        description: "Comment ID"
+        required: false
+        type: string
 
 run-name: "PR AI Review for PR #${{ inputs.pr }}"
 
@@ -103,7 +113,7 @@ jobs:
             **AI PR Review** starting...
 
             Reviewing PR for connector safety and quality.
-            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/pr_ai_review.md)
+            [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/pr_ai_review.md)
           tags: |
             ai-oncall
             pr-review

@@ -254,6 +254,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `parent` | `object \| any` |  |
 | `archived` | `boolean \| null` |  |
 | `in_trash` | `boolean \| null` |  |
+| `is_archived` | `boolean \| null` |  |
 | `is_locked` | `boolean \| null` |  |
 | `properties` | `object \| null` |  |
 | `url` | `string \| null` |  |
@@ -323,6 +324,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `parent` | `object \| any` |  |
 | `archived` | `boolean \| null` |  |
 | `in_trash` | `boolean \| null` |  |
+| `is_archived` | `boolean \| null` |  |
 | `is_locked` | `boolean \| null` |  |
 | `properties` | `object \| null` |  |
 | `url` | `string \| null` |  |
@@ -489,6 +491,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `public_url` | `string \| null` |  |
 | `archived` | `boolean \| null` |  |
 | `in_trash` | `boolean \| null` |  |
+| `is_archived` | `boolean \| null` |  |
 | `is_inline` | `boolean \| null` |  |
 | `is_locked` | `boolean \| null` |  |
 | `request_id` | `string \| null` |  |
@@ -572,6 +575,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `public_url` | `string \| null` |  |
 | `archived` | `boolean \| null` |  |
 | `in_trash` | `boolean \| null` |  |
+| `is_archived` | `boolean \| null` |  |
 | `is_inline` | `boolean \| null` |  |
 | `is_locked` | `boolean \| null` |  |
 | `request_id` | `string \| null` |  |
