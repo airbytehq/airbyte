@@ -51,7 +51,11 @@ jobs:
               $CONNECTOR_OPTIONS \
               --output-format=json-gh-matrix
           )
-          echo "generated_matrix=$MATRIX" | tee -a $GITHUB_OUTPUT
+          echo "Matrix: $MATRIX"
+          # Use heredoc delimiter for multiline JSON
+          echo "generated_matrix<<MATRIX_EOF" >> $GITHUB_OUTPUT
+          echo "$MATRIX" >> $GITHUB_OUTPUT
+          echo "MATRIX_EOF" >> $GITHUB_OUTPUT
 
       # Default path — Call 1: Sources (all support levels)
       - name: List source connectors
@@ -96,7 +100,11 @@ jobs:
               --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
               --output-format=json-gh-matrix
           )
-          echo "generated_matrix=$MATRIX" | tee -a $GITHUB_OUTPUT
+          echo "Matrix: $MATRIX"
+          # Use heredoc delimiter for multiline JSON
+          echo "generated_matrix<<MATRIX_EOF" >> $GITHUB_OUTPUT
+          echo "$MATRIX" >> $GITHUB_OUTPUT
+          echo "MATRIX_EOF" >> $GITHUB_OUTPUT
 
       # Merge: pick whichever path ran, and validate non-empty
       - name: Set final matrix output
@@ -110,7 +118,11 @@ jobs:
             echo "::error::Matrix generation produced empty output. Check CLI commands above for errors."
             exit 1
           fi
-          echo "generated_matrix=$FINAL_MATRIX" | tee -a $GITHUB_OUTPUT
+          echo "Final matrix: $FINAL_MATRIX"
+          # Use heredoc delimiter for multiline JSON
+          echo "generated_matrix<<MATRIX_EOF" >> $GITHUB_OUTPUT
+          echo "$FINAL_MATRIX" >> $GITHUB_OUTPUT
+          echo "MATRIX_EOF" >> $GITHUB_OUTPUT
 
   run_connectors_up_to_date:
     needs: generate_matrix
