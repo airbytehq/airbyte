@@ -33,8 +33,7 @@ internal class PostgresInsertBufferTest {
     fun `flush propagates exception when COPY fails`() {
         val tableName = TableName("test_ns", "test_table")
         val columns = listOf("col1")
-        val buffer =
-            PostgresInsertBuffer(tableName, columns, postgresClient, postgresConfiguration)
+        val buffer = PostgresInsertBuffer(tableName, columns, postgresClient, postgresConfiguration)
 
         // Accumulate a record so csvFilePath is set
         buffer.accumulate(mapOf("col1" to StringValue("value")))
@@ -52,8 +51,7 @@ internal class PostgresInsertBufferTest {
     fun `flush cleans up resources even when exception is thrown`() {
         val tableName = TableName("test_ns", "test_table")
         val columns = listOf("col1")
-        val buffer =
-            PostgresInsertBuffer(tableName, columns, postgresClient, postgresConfiguration)
+        val buffer = PostgresInsertBuffer(tableName, columns, postgresClient, postgresConfiguration)
 
         buffer.accumulate(mapOf("col1" to StringValue("value")))
         assertNotNull(buffer.csvFilePath)
