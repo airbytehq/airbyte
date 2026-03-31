@@ -215,7 +215,7 @@ The Salesforce connector supports retrieving deleted records from the Salesforce
 Salesforce allows extracting data using either the [BULK API](https://developer.salesforce.com/docs/atlas.en-us.236.0.api_asynch.meta/api_asynch/asynch_api_intro.htm) or [REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm). To achieve fast performance, Salesforce recommends using the BULK API for extracting larger amounts of data (more than 2,000 records). For this reason, the Salesforce connector uses the BULK API by default to extract any Salesforce objects, unless any of the following conditions are met:
 
 - The Salesforce object has columns which are unsupported by the BULK API, like columns with a `base64` or `complexvalue` type
-- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. This includes the following objects:
+- The Salesforce object is not supported by BULK API. In this case we sync the objects via the REST API which will occasionally cost more of your API quota. Commonly encountered examples include the following objects, but this is not an exhaustive list:
   - AcceptedEventRelation
   - Attachment
   - CaseStatus
@@ -274,11 +274,11 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.7.19 | 2026-03-30 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
+| 2.7.19 | 2026-03-31 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
 | 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | fix(source-salesforce): skip time-based slicing for full_refresh syncs (AI-Triage PR) |
-| 2.7.17 | 2026-02-10 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
+| 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
-| 2.7.16-rc.1 | 2025-10-27 | [66136](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning|
+| 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
 | 2.7.15      | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|
 | 2.7.14      | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
 | 2.7.13      | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
@@ -295,7 +295,6 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 | 2.7.2       | 2025-03-24 | [55898](https://github.com/airbytehq/airbyte/pull/55898) | Fix input state serialization issues |
 | 2.7.1       | 2025-03-22 | [51921](https://github.com/airbytehq/airbyte/pull/51921) | Update dependencies |
 | 2.7.0       | 2025-03-20 | [55186](https://github.com/airbytehq/airbyte/pull/55186) | Update manifest for adapting changes with AsyncRetriever |
-| 2.6.5       | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
 | 2.6.5       | 2025-02-20 | [54178](https://github.com/airbytehq/airbyte/pull/54178) | Promoting release candidate 2.6.5-rc.1 to a main version. |
 | 2.6.5-rc.1  | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0                                                                                                                                                   |
 | 2.6.4       | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
