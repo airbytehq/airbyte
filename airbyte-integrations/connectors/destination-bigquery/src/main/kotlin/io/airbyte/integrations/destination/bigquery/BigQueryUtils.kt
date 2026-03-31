@@ -81,10 +81,17 @@ object BigQueryUtils {
                 LOGGER.info("Partitioned table created successfully: {}", tableId)
             }
         } catch (e: BigQueryException) {
+            if (e.cause is InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw RuntimeException(INTERRUPTED_ERROR_MESSAGE, e)
+            }
             LOGGER.error("Partitioned table was not created: {}", tableId, e)
             throw e
         }
     }
+
+    const val INTERRUPTED_ERROR_MESSAGE =
+        "BigQuery operation was interrupted. This is typically a transient error caused by the sync being cancelled due to a timeout or upstream failure."
 
     /** @return a default schema name based on the config. */
     @JvmStatic

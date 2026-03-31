@@ -75,7 +75,6 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         }
     }
 
-    @Throws(InterruptedException::class)
     override fun execute(sql: Sql) {
         val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION")
         if (transactions.isEmpty()) {
@@ -90,16 +89,29 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
          * doesn't do a good job of inferring the query location. Pass it in explicitly.
          */
         var job =
-            bq.create(
-                JobInfo.of(
-                    JobId.newBuilder().setLocation(datasetLocation).build(),
-                    QueryJobConfiguration.of(statement)
+            try {
+                bq.create(
+                    JobInfo.of(
+                        JobId.newBuilder().setLocation(datasetLocation).build(),
+                        QueryJobConfiguration.of(statement)
+                    )
                 )
-            )
+            } catch (e: BigQueryException) {
+                if (e.cause is InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    throw RuntimeException(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, e)
+                }
+                throw e
+            }
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
-        while (JobStatus.State.DONE != job.status.state) {
-            Thread.sleep(1000L)
-            job = job.reload()
+        try {
+            while (JobStatus.State.DONE != job.status.state) {
+                Thread.sleep(1000L)
+                job = job.reload()
+            }
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw RuntimeException(BigQueryUtils.INTERRUPTED_ERROR_MESSAGE, e)
         }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
