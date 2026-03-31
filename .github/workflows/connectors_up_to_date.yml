@@ -210,6 +210,7 @@ jobs:
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Changes detected for $CONNECTOR_NAME"
+            git diff --stat
           fi
 
       # --- Step 5: Create or update PR ---
@@ -299,3 +300,20 @@ jobs:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved by connectors up-to-date workflow."
+
+      # --- Step 11: Write job summary ---
+      - name: Write step summary
+        if: always()
+        env:
+          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+          HAS_CHANGES: ${{ steps.check-changes.outputs.has_changes }}
+        run: |
+          if [ "$HAS_CHANGES" = "true" ] && [ -n "$PR_URL" ]; then
+            echo "### ✅ \`$CONNECTOR_NAME\` — PR created" >> $GITHUB_STEP_SUMMARY
+            echo "- **PR:** [#${PR_NUMBER}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
+          elif [ "$HAS_CHANGES" = "true" ]; then
+            echo "### ❌ \`$CONNECTOR_NAME\` — changes detected but PR creation failed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⏭️ \`$CONNECTOR_NAME\` — no changes (no-op)" >> $GITHUB_STEP_SUMMARY
+          fi
