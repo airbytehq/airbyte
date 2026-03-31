@@ -174,6 +174,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                              | Subject                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.42 | 2026-03-31 | [60585](https://github.com/airbytehq/airbyte/pull/60585) | Update dependencies |
 | 0.1.41 | 2025-05-10 | [59772](https://github.com/airbytehq/airbyte/pull/59772) | Update dependencies |
 | 0.1.40 | 2025-05-03 | [59333](https://github.com/airbytehq/airbyte/pull/59333) | Update dependencies |
 | 0.1.39 | 2025-04-26 | [58722](https://github.com/airbytehq/airbyte/pull/58722) | Update dependencies |
