@@ -312,6 +312,8 @@ jobs:
           if [ "$HAS_CHANGES" = "true" ] && [ -n "$PR_URL" ]; then
             echo "### ✅ \`$CONNECTOR_NAME\` — PR created" >> $GITHUB_STEP_SUMMARY
             echo "- **PR:** [#${PR_NUMBER}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
+          elif [ "$HAS_CHANGES" = "true" ]; then
+            echo "### ❌ \`$CONNECTOR_NAME\` — changes detected but PR creation failed" >> $GITHUB_STEP_SUMMARY
           else
             echo "### ⏭️ \`$CONNECTOR_NAME\` — no changes (no-op)" >> $GITHUB_STEP_SUMMARY
           fi
