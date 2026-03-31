@@ -63,7 +63,9 @@ class PostgresInsertBuffer(
                     "Finished insert of $recordCount row(s) into ${tableName.namespace}.${tableName.name}"
                 }
             } catch (e: Exception) {
-                logger.error(e) { "COPY to PostgreSQL failed for ${tableName.namespace}.${tableName.name}: ${e.message}" }
+                logger.error(e) {
+                    "COPY to PostgreSQL failed for ${tableName.namespace}.${tableName.name}: ${e.message}"
+                }
                 throw SystemErrorException(
                     "COPY to PostgreSQL failed for table ${tableName.namespace}.${tableName.name}. ${e.message}",
                     e
