@@ -225,7 +225,8 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                     "io.airbyte.cdk.integrations.source.relationaldb.state.FailedRecordIteratorException: java.lang.RuntimeException: " +
                         "java.lang.RuntimeException: org.postgresql.util.PSQLException: ERROR: materialized view \"rental_by_category\" has not been populated\n" +
                         "  Hint: Use the REFRESH MATERIALIZED VIEW command.",
-                referenceLinks = listOf("https://github.com/airbytehq/airbyte-internal-issues/issues/16128"),
+                referenceLinks =
+                    listOf("https://github.com/airbytehq/airbyte-internal-issues/issues/16128"),
             ),
         )
     }
