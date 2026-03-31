@@ -189,7 +189,7 @@ jobs:
 
       # --- Notifications ---
       - name: Notify Slack on promote success
-        if: success() && env.ACTION == 'promote'
+        if: success() && env.ACTION == 'promote' && steps.create-pr.outputs.pull-request-number
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
