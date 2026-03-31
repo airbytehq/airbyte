@@ -19,7 +19,7 @@ from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookB
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from source_facebook_marketing.streams.common import retry_pattern
 
-from ..utils import DateInterval, validate_start_date
+from ..utils import DateInterval
 
 
 logger = logging.getLogger("airbyte")
@@ -434,13 +434,7 @@ class InsightAsyncJob(AsyncJob):
         jobs.
         """
         since = AirbyteDateTime.from_datetime(datetime.combine(self._interval.start - timedelta(days=28 + 1), datetime.min.time()))
-        since = validate_start_date(since)
         until = self._interval.end
-        # After retention-period clamping, `since` may have been pushed forward
-        # past `until`. Clamp so that `since <= until` to satisfy the FB API
-        # constraint: "since must be less than or equal to until in time_range".
-        if since.date() > until:
-            since = AirbyteDateTime.from_datetime(datetime.combine(until, datetime.min.time()))
         params = {
             "fields": [pk_name],
             "level": level,
