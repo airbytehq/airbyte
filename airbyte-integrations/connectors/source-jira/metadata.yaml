@@ -6,11 +6,11 @@ data:
     hosts:
       - ${domain}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0.post7.dev23659658197@sha256:5d5ff52e47c4a84f758e4036a14ef826ca04024fde5c8997163bb6c1bcae1e0c
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0.post13.dev23823332086@sha256:dc8f1d054d9b0ee5ed6afe1b6732151ddd4dfa58ee32ca39c608ee2dd50dadf5
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 4.3.18
+  dockerImageTag: 4.3.19
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   externalDocumentationUrls:
