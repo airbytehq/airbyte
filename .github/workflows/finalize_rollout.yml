@@ -104,7 +104,7 @@ jobs:
   # Job 2: Create and merge cleanup PR (promote only)
   # ---------------------------------------------------------------------------
   promote-pr:
-    name: "Create and merge promote PR"
+    name: "Create and Merge Promotion PR"
     needs: rc-registry-cleanup
     if: >-
       github.event.inputs.action == 'promote'
