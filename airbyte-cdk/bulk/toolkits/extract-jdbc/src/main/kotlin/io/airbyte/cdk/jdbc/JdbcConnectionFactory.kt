@@ -23,7 +23,7 @@ private val log = KotlinLogging.logger {}
  * SSH tunnel session is shared by many connections.
  */
 @Singleton
-class JdbcConnectionFactory(
+open class JdbcConnectionFactory(
     val config: JdbcSourceConfiguration,
 ) : Supplier<Connection> {
 

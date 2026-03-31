@@ -5,7 +5,7 @@
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.cdk.discover.OffsetDateTimeFieldType
 import io.airbyte.cdk.discover.StringFieldType
@@ -41,7 +41,7 @@ class DebeziumPropertiesBuilderTest {
 
     @Test
     fun testWithStreams() {
-        fun stream(namespace: String, name: String, vararg fields: Field): Stream =
+        fun stream(namespace: String, name: String, vararg fields: EmittedField): Stream =
             Stream(
                 id =
                     StreamIdentifier.from(
@@ -54,13 +54,18 @@ class DebeziumPropertiesBuilderTest {
             )
         val streams: List<Stream> =
             listOf(
-                stream("schema1", "table1", Field("k", IntFieldType), Field("v", StringFieldType)),
+                stream(
+                    "schema1",
+                    "table1",
+                    EmittedField("k", IntFieldType),
+                    EmittedField("v", StringFieldType)
+                ),
                 stream(
                     "schema2",
                     "table2",
-                    Field("id", IntFieldType),
-                    Field("ts", OffsetDateTimeFieldType),
-                    Field("msg", StringFieldType)
+                    EmittedField("id", IntFieldType),
+                    EmittedField("ts", OffsetDateTimeFieldType),
+                    EmittedField("msg", StringFieldType)
                 ),
             )
         val actual: Map<String, String> =
