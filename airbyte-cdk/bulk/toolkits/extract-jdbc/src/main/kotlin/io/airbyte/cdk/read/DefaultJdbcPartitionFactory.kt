@@ -221,11 +221,6 @@ class DefaultJdbcPartitionFactory(
             is DefaultJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
             else -> listOf(unsplitPartition)
-        /*is DefaultJdbcCursorIncrementalPartition ->
-        //                unsplitPartition.split(splitPartitionBoundaries)
-                        listOf(unsplitPartition)
-                    is DefaultJdbcUnsplittableSnapshotPartition -> listOf(unsplitPartition)
-                    is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)*/
         }
     }
 
@@ -266,27 +261,4 @@ class DefaultJdbcPartitionFactory(
             )
         }
     }
-
-    //    private val log = KotlinLogging.logger {}
-
-    /*private fun DefaultJdbcCursorIncrementalPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
-    ): List<DefaultJdbcCursorIncrementalPartition> {
-        val inners: List<JsonNode> = splitPointValues.mapNotNull {
-            log.info { "*** $it" }
-            it.cursorPair(stream)?.second
-        }
-        val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners
-        val ubs: List<JsonNode> = inners + listOf(cursorUpperBound)
-        return lbs.zip(ubs).mapIndexed { idx: Int, (lowerBound, upperBound) ->
-            DefaultJdbcCursorIncrementalPartition(
-                selectQueryGenerator,
-                streamState,
-                cursor,
-                lowerBound,
-                isLowerBoundIncluded = idx == 0,
-                upperBound,
-            )
-        }
-    }*/
 }
