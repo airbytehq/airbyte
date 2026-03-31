@@ -112,11 +112,7 @@ class DefaultDestinationCatalogFactory {
 
         // Detect streams that collide after namespace mapping (e.g. different source
         // namespaces mapped to the same destination namespace).
-        val duplicates =
-            mappedDescriptorsList
-                .groupingBy { it }
-                .eachCount()
-                .filter { it.value > 1 }
+        val duplicates = mappedDescriptorsList.groupingBy { it }.eachCount().filter { it.value > 1 }
         if (duplicates.isNotEmpty()) {
             val collisionDetails =
                 duplicates.keys.joinToString("; ") { desc ->
