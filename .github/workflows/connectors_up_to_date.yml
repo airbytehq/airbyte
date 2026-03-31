@@ -13,7 +13,7 @@ on:
         description: >-
           Override: pass these flags directly to `airbyte-ops local connector list`
           instead of the default source/destination selection.
-          Examples: `--name=source-github` (one connector),
+          Examples: `--connectors-filter=source-github` (one connector),
           `--connectors-filter=source-github,source-stripe` (multiple by name),
           `--certified-only --connector-type=destination` (custom query).
         default: ""
@@ -45,12 +45,13 @@ jobs:
         env:
           CONNECTOR_OPTIONS: ${{ github.event.inputs.connectors-options }}
         run: |
-          echo "generated_matrix=$( \
+          MATRIX=$(
             airbyte-ops local connector list \
               --repo-path "$GITHUB_WORKSPACE" \
               $CONNECTOR_OPTIONS \
-              --output-format=json-gh-matrix \
-          )" | tee -a $GITHUB_OUTPUT
+              --output-format=json-gh-matrix
+          )
+          echo "generated_matrix=$MATRIX" | tee -a $GITHUB_OUTPUT
 
       # Default path — Call 1: Sources (all support levels)
       - name: List source connectors
@@ -65,6 +66,7 @@ jobs:
               --exclude-connectors=source-declarative-manifest \
               --output-format=csv
           )
+          echo "Sources: $SOURCES"
           echo "sources=$SOURCES" | tee -a $GITHUB_OUTPUT
 
       # Default path — Call 2: Destinations (certified only)
@@ -80,6 +82,7 @@ jobs:
               --language python --language low-code --language manifest-only \
               --output-format=csv
           )
+          echo "Destinations: $DESTINATIONS"
           echo "destinations=$DESTINATIONS" | tee -a $GITHUB_OUTPUT
 
       # Default path — Call 3: Combine both sets into GH Actions matrix
@@ -87,21 +90,27 @@ jobs:
         id: list-default
         if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
         run: |
-          echo "generated_matrix=$( \
+          MATRIX=$(
             airbyte-ops local connector list \
               --repo-path "$GITHUB_WORKSPACE" \
               --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
-              --output-format=json-gh-matrix \
-          )" | tee -a $GITHUB_OUTPUT
+              --output-format=json-gh-matrix
+          )
+          echo "generated_matrix=$MATRIX" | tee -a $GITHUB_OUTPUT
 
-      # Merge: pick whichever path ran
+      # Merge: pick whichever path ran, and validate non-empty
       - name: Set final matrix output
         id: generate_matrix
         env:
           OVERRIDE_MATRIX: ${{ steps.list-override.outputs.generated_matrix }}
           DEFAULT_MATRIX: ${{ steps.list-default.outputs.generated_matrix }}
         run: |
-          echo "generated_matrix=${OVERRIDE_MATRIX:-$DEFAULT_MATRIX}" | tee -a $GITHUB_OUTPUT
+          FINAL_MATRIX="${OVERRIDE_MATRIX:-$DEFAULT_MATRIX}"
+          if [ -z "$FINAL_MATRIX" ]; then
+            echo "::error::Matrix generation produced empty output. Check CLI commands above for errors."
+            exit 1
+          fi
+          echo "generated_matrix=$FINAL_MATRIX" | tee -a $GITHUB_OUTPUT
 
   run_connectors_up_to_date:
     needs: generate_matrix
