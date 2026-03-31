@@ -107,8 +107,10 @@ jobs:
     name: "Create and merge promote PR"
     needs: rc_registry_cleanup
     if: >-
-      github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'promote'
-      || github.event_name == 'repository_dispatch' && github.event.client_payload.action == 'promote'
+      (github.event_name == 'workflow_dispatch'
+      || github.event_name == 'repository_dispatch') &&
+      (github.event.client_payload.action == 'promote'
+      || github.event.inputs.action == 'promote')
     runs-on: ubuntu-24.04
     env:
       CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
