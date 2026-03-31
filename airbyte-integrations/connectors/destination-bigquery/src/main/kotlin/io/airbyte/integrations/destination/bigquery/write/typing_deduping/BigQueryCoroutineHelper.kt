@@ -28,16 +28,16 @@ suspend fun <T> bigQueryCall(block: () -> T): T =
             if (e.cause is InterruptedException) {
                 Thread.currentThread().interrupt()
                 throw CancellationException(
-                    "BigQuery operation cancelled due to coroutine cancellation.",
-                    e,
-                )
+                        "BigQuery operation cancelled due to coroutine cancellation.",
+                    )
+                    .apply { initCause(e) }
             }
             throw e
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
             throw CancellationException(
-                "BigQuery operation cancelled due to coroutine cancellation.",
-                e,
-            )
+                    "BigQuery operation cancelled due to coroutine cancellation.",
+                )
+                .apply { initCause(e) }
         }
     }
