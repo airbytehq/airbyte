@@ -35,6 +35,21 @@ The MCP server uses a two-layer authentication model: one layer to authenticate 
 
 When your AI client first connects to the MCP server, it initiates an [OAuth 2.0](https://oauth.net/2/) authorization flow with Airbyte:
 
+```mermaid
+sequenceDiagram
+    participant Client as AI Client
+    participant Browser as Browser
+    participant Airbyte as Airbyte Agent Engine
+
+    Client->>Airbyte: Connect to MCP server
+    Airbyte-->>Client: Authentication required
+    Client->>Browser: Open Airbyte login page
+    Browser->>Airbyte: User logs in and grants access
+    Airbyte-->>Browser: Redirect with OAuth token
+    Browser-->>Client: OAuth token delivered
+    Client->>Airbyte: Authenticated MCP requests
+```
+
 1. Your client detects that the MCP server at `https://mcp.airbyte.ai/mcp` requires authentication.
 2. Your client opens a browser window to the Airbyte login page.
 3. You log in with your [Agent Engine](https://app.airbyte.ai) account (or create one).
@@ -47,6 +62,27 @@ This token authorizes the MCP server to act on your behalf within the Agent Engi
 ### Layer 2: Authenticating with third-party services
 
 After you authenticate with the MCP server, you still need to connect each third-party service individually. When you ask your agent to connect a service (for example, "Connect my Salesforce account"), a second credential flow begins:
+
+```mermaid
+sequenceDiagram
+    participant User as You
+    participant Agent as AI Agent
+    participant MCP as MCP Server
+    participant Browser as Browser
+    participant Service as Third-Party Service
+
+    User->>Agent: "Connect my Salesforce account"
+    Agent->>MCP: Initiate credential flow
+    MCP-->>Agent: Credential URL
+    Agent-->>User: Visit this URL
+    User->>Browser: Open credential URL
+    Browser->>Service: OAuth consent or credential form
+    Note over Service: User authorizes access
+    Service-->>MCP: Credentials delivered
+    Note over MCP: Connector created
+    MCP-->>Agent: Connector ready
+    Agent-->>User: "Salesforce is connected"
+```
 
 1. The agent calls the MCP server to initiate a credential flow for the requested service.
 2. The MCP server returns a secure URL for you to visit in your browser.
