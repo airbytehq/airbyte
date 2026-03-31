@@ -338,8 +338,8 @@ jobs:
           if [ "$HAS_CHANGES" = "true" ] && [ -n "$PR_URL" ]; then
             echo "### ✅ \`$CONNECTOR_NAME\` — PR created" >> $GITHUB_STEP_SUMMARY
             echo "- **PR:** [#${PR_NUMBER}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
-            [ "$DEPS_UPDATED" = "true" ] && echo "- Dependencies updated: $OUTDATED_PKGS" >> $GITHUB_STEP_SUMMARY
-            [ "$IMAGE_UPDATED" = "true" ] && echo "- Base image updated" >> $GITHUB_STEP_SUMMARY
+            [ "$DEPS_UPDATED" = "true" ] && echo "- Dependencies updated: $OUTDATED_PKGS" >> $GITHUB_STEP_SUMMARY || true
+            [ "$IMAGE_UPDATED" = "true" ] && echo "- Base image updated" >> $GITHUB_STEP_SUMMARY || true
           elif [ "$HAS_CHANGES" = "true" ]; then
             echo "### ❌ \`$CONNECTOR_NAME\` — changes detected but PR creation failed" >> $GITHUB_STEP_SUMMARY
           else
