@@ -21,7 +21,7 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 65de8962-48c9-11ee-be56-0242ac120002
-  dockerImageTag: 0.0.57
+  dockerImageTag: 0.0.58
   dockerRepository: airbyte/destination-milvus
   githubIssueLabel: destination-milvus
   icon: milvus.svg
@@ -36,7 +36,7 @@ data:
   ab_internal:
     sl: 300
     ql: 300
-  supportLevel: certified
+  supportLevel: community
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
