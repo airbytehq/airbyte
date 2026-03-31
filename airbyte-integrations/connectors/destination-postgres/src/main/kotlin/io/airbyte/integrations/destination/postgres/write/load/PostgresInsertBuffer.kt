@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.write.load
 
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
@@ -62,7 +63,11 @@ class PostgresInsertBuffer(
                     "Finished insert of $recordCount row(s) into ${tableName.namespace}.${tableName.name}"
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Unable to flush accumulated data." }
+                logger.error(e) { "COPY to PostgreSQL failed for ${tableName.namespace}.${tableName.name}: ${e.message}" }
+                throw SystemErrorException(
+                    "COPY to PostgreSQL failed for table ${tableName.namespace}.${tableName.name}. ${e.message}",
+                    e
+                )
             } finally {
                 filePath.deleteIfExists()
                 csvPrinter?.close()
