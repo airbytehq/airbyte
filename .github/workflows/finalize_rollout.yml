@@ -179,6 +179,8 @@ jobs:
       - name: Notify Slack on failure
         if: failure()
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
         with:
           payload: |
             {
@@ -186,5 +188,3 @@ jobs:
               "username": "Connectors CI/CD Bot",
               "text": "🚨 Finalize rollout workflow failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
