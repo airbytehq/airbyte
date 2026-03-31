@@ -213,5 +213,20 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 referenceLinks = listOf("https://github.com/airbytehq/airbyte/issues/41614"),
             ),
         )
+
+        add(
+            ConnectorErrorProfile(
+                errorClass = "Postgres Unpopulated Materialized View",
+                regexMatchingPattern = "(?i).*materialized view.*has not been populated.*",
+                failureType = FailureType.CONFIG,
+                externalMessage =
+                    "Materialized view has not been populated. Refresh the materialized view in your PostgreSQL database, or deselect the stream from your Airbyte connection.",
+                sampleInternalMessage =
+                    "io.airbyte.cdk.integrations.source.relationaldb.state.FailedRecordIteratorException: java.lang.RuntimeException: " +
+                        "java.lang.RuntimeException: org.postgresql.util.PSQLException: ERROR: materialized view \"rental_by_category\" has not been populated\n" +
+                        "  Hint: Use the REFRESH MATERIALIZED VIEW command.",
+                referenceLinks = listOf("https://github.com/airbytehq/airbyte-internal-issues/issues/16128"),
+            ),
+        )
     }
 }
