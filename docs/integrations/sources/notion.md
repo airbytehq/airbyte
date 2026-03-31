@@ -5,6 +5,7 @@ This page contains the setup guide and reference information for the Notion sour
 ## Prerequisites
 
 - Access to a [Notion](https://notion.so/login) workspace
+- You must be a workspace owner to create a Notion integration
 
 ## Setup guide
 
@@ -35,8 +36,8 @@ You must be the owner of the Notion workspace to create a new integration associ
 3. In the navbar, select [**Capabilities**](https://developers.notion.com/reference/capabilities). Check the following capabilities based on your use case:
 
 - [**Read content**](https://developers.notion.com/reference/capabilities#content-capabilities): required for all connections.
-- [**Read comments**](https://developers.notion.com/reference/capabilities#comment-capabilities): required if you wish to sync the `Comments` stream
-- [**Read user information**](https://developers.notion.com/reference/capabilities#user-capabilities) (either with or without emails): required if you wish to sync the `Users` stream
+- [**Read comments**](https://developers.notion.com/reference/capabilities#comment-capabilities): required if you want to sync the Comments stream.
+- [**Read user information**](https://developers.notion.com/reference/capabilities#user-capabilities) (with or without emails): required if you want to sync the Users stream.
 
 ### Step 2: Share pages and acquire authorization credentials
 
@@ -98,19 +99,19 @@ The Notion source connector supports the following [sync modes](https://docs.air
 | Pages        |                ✓                |                   ✓                   |
 | Users        |                ✓                |                                       |
 
-## Supported Streams
+## Supported streams
 
 The Notion source connector supports the following streams:
 
 - [Blocks](https://developers.notion.com/reference/retrieve-a-block): Retrieves content blocks for all synced pages, including recursively nested child blocks up to 30 levels deep. Block types `child_page`, `child_database`, and `ai_block` are excluded.
-- [Comments](https://developers.notion.com/reference/list-comments): Retrieves comments on all synced pages.
-- [Data Sources](https://developers.notion.com/reference/data-source): Retrieves data source objects, which represent the structured tables that contain pages and properties. This stream replaces the former `Databases` stream as of v4.0.0. For details on migrating, see the [Notion migration guide](notion-migrations.md).
+- [Comments](https://developers.notion.com/reference/list-comments): Retrieves comments on all synced pages. Requires the **Read comments** integration capability.
+- [Data Sources](https://developers.notion.com/reference/data-source): Retrieves data source objects. In the Notion API `2025-09-03`, a data source represents a structured table that contains pages and properties — previously called a "database." This stream replaces the former `Databases` stream as of v4.0.0. For details on migrating, see the [Notion migration guide](notion-migrations.md).
 - [Pages](https://developers.notion.com/reference/retrieve-a-page): Retrieves page objects from all shared pages.
-- [Users](https://developers.notion.com/reference/get-users): Retrieves user objects from the workspace.
+- [Users](https://developers.notion.com/reference/get-users): Retrieves user objects from the workspace. Requires the **Read user information** integration capability.
 
 ## Performance considerations
 
-The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The Notion API enforces a rate limit of approximately three requests per second per integration. When the connector receives an HTTP 429 response, it respects the `Retry-After` header and retries the request automatically. Rate-limited requests do not count toward the maximum retry limit, so syncs continue indefinitely until the rate limit clears. For more details, see Notion's [request limits](https://developers.notion.com/reference/request-limits) documentation.
 
 The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages with deeply nested content can generate a large number of API requests, which may slow down syncs for workspaces with complex page structures.
 
@@ -121,6 +122,7 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.3 | 2026-03-30 | [75603](https://github.com/airbytehq/airbyte/pull/75603) | Fix 429 status code mapping from RETRY to RATE_LIMITED for improved rate limit handling and observability |
 | 4.0.2 | 2026-03-23 | [75290](https://github.com/airbytehq/airbyte/pull/75290) | Update v4.0.0 upgrade deadline to 2026-04-10 |
 | 4.0.1 | 2026-03-10 | [74616](https://github.com/airbytehq/airbyte/pull/74616) | Update dependencies |
 | 4.0.0 | 2026-02-25 | [74017](https://github.com/airbytehq/airbyte/pull/74017) | Migrate to Notion API version 2025-09-03: replace `databases` stream with `data_sources`, update page parent references, and add new schema fields |
