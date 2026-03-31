@@ -185,7 +185,7 @@ jobs:
       - name: Install and configure Poetry
         uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
         with:
-          version: 1.8.5
+          version: 2.3.3
 
       - name: Bump dependencies
         run: |
