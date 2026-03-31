@@ -477,9 +477,7 @@ class DefaultJdbcPartitionFactoryTest {
         val nextResult =
             factory.create(stream.bootstrap(opaqueStateValue(cursor = cursorValue.plusDays(1))))
         factory.assertFailures()
-        //        Assertions.assertTrue(nextResult is DefaultJdbcCursorIncrementalPartition)
         Assertions.assertTrue(nextResult is DefaultUnsplittableJdbcCursorIncrementalPartition)
-        //        val nextPartition = nextResult as DefaultJdbcCursorIncrementalPartition
         val nextPartition = nextResult as DefaultUnsplittableJdbcCursorIncrementalPartition
         sanityCheck(stream, factory, nextPartition)
         Assertions.assertTrue(nextPartition.isLowerBoundIncluded)

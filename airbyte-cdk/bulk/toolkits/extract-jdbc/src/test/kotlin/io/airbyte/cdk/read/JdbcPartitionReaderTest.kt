@@ -77,7 +77,6 @@ class JdbcPartitionReaderTest {
         factory.assertFailures()
         // Assertions.assertTrue(result is DefaultJdbcCursorIncrementalPartition)
         Assertions.assertTrue(result is DefaultUnsplittableJdbcCursorIncrementalPartition)
-        //        val partition = result as DefaultJdbcCursorIncrementalPartition
         val partition = result as DefaultUnsplittableJdbcCursorIncrementalPartition
         partition.streamState.cursorUpperBound = LocalDateCodec.encode(cursorUpperBound)
         partition.streamState.fetchSize = 2
