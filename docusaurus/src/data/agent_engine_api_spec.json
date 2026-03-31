@@ -3511,7 +3511,14 @@
       },
       "CheckStatus": {
         "type": "string",
-        "enum": ["pending", "running", "cancelled", "failed", "succeeded"],
+        "enum": [
+          "pending",
+          "running",
+          "cancelled",
+          "failed",
+          "succeeded",
+          "inconclusive"
+        ],
         "title": "CheckStatus"
       },
       "ConnectionSpecification": {
