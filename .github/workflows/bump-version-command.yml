@@ -1,6 +1,30 @@
 name: Bump versions for connectors in a PR
 
 on:
+  workflow_call:
+    inputs:
+      pr:
+        description: "Pull request number. This PR will be referenced in the changelog line."
+        type: number
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        type: string
+        required: false
+      type:
+        description: "The type of bump to perform. One of 'major', 'minor', or 'patch'."
+        type: string
+        required: false
+        default: "patch"
+      changelog:
+        description: "Optional. The comment to add to the changelog. If not provided, the PR title will be used."
+        type: string
+        required: false
+        default: ""
+    secrets:
+      GH_PAT_APPROVINGTON_OCTAVIA:
+        required: true
+
   workflow_dispatch:
     inputs:
       pr:
@@ -32,9 +56,9 @@ on:
         description: "Ref (Ignored)"
         required: false
 
-run-name: "Bump connector versions in PR: #${{ github.event.inputs.pr }}"
+run-name: "Bump connector versions in PR: #${{ inputs.pr }}"
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
+  group: ${{ github.workflow }}-${{ inputs.pr }}
   # Cancel any previous runs on the same branch if they are still in progress
   cancel-in-progress: true
 
@@ -47,7 +71,7 @@ jobs:
         id: job-vars
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.inputs.pr }}
+          PR_NUMBER: ${{ inputs.pr }}
         shell: bash
         run: |
           PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
@@ -76,8 +100,8 @@ jobs:
         id: first-comment-action
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          issue-number: ${{ github.event.inputs.pr }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
           body: |
 
             > Bump Version job started... [Check job output.][1]
@@ -93,7 +117,7 @@ jobs:
       - name: Detect modified connectors
         id: detect-connectors
         env:
-          PR_NUMBER: ${{ github.event.inputs.pr }}
+          PR_NUMBER: ${{ inputs.pr }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CONNECTORS=$(
@@ -125,10 +149,10 @@ jobs:
       - name: Bump versions for modified connectors
         if: steps.detect-connectors.outputs.connectors != ''
         env:
-          BUMP_TYPE: ${{ github.event.inputs.type }}
-          CHANGELOG_MSG: ${{ github.event.inputs.changelog }}
+          BUMP_TYPE: ${{ inputs.type }}
+          CHANGELOG_MSG: ${{ inputs.changelog }}
           PR_TITLE: ${{ steps.job-vars.outputs.pr_title }}
-          PR_NUMBER: ${{ github.event.inputs.pr }}
+          PR_NUMBER: ${{ inputs.pr }}
           CONNECTORS: ${{ steps.detect-connectors.outputs.connectors }}
         run: |
           MSG="${CHANGELOG_MSG:-$PR_TITLE}"
@@ -163,7 +187,7 @@ jobs:
         id: commit-step
         if: steps.git-diff.outputs.changes == 'true'
         env:
-          BUMP_TYPE: ${{ github.event.inputs.type }}
+          BUMP_TYPE: ${{ inputs.type }}
         run: |
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
