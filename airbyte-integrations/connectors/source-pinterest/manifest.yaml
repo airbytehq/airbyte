@@ -52,11 +52,6 @@ definitions:
         class_name: source_declarative_manifest.components.PinterestAnalyticsBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
-        action: FAIL
-        error_message_contains: "is too long"
-        error_message: "Account ID exceeds maximum allowed length. Verify the account_id value in your source configuration."
-        failure_type: config_error
-      - type: HttpResponseFilter
         action: RETRY
         http_codes: [400]
 
