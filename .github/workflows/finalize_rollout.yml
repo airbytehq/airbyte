@@ -174,10 +174,11 @@ jobs:
             auto-merge/bypass-ci-checks
           draft: true
 
-      # After create-pull-request restores the base branch, bump-version
-      # promote runs again on the working tree (which still has the RC
-      # version — exactly what promote expects).  This time it writes
-      # the changelog entry with the PR number.
+      # After create-pull-request restores the base branch, the working
+      # tree is back on the default branch (RC version in metadata.yaml).
+      # --changelog-only calculates the promote target version but only
+      # writes the changelog entry — no metadata.yaml or pyproject.toml
+      # changes, so we don't double-bump.
       - name: "Add changelog entry"
         if: steps.create-pr.outputs.pull-request-number
         shell: bash
@@ -186,6 +187,7 @@ jobs:
           --name "${CONNECTOR_NAME}"
           --repo-path "${{ github.workspace }}"
           --bump-type promote
+          --changelog-only
           --changelog-message "Promoted release candidate to GA"
           --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
 
