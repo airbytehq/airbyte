@@ -116,8 +116,8 @@ jobs:
             echo "::error::Missing required argument: playbook (e.g. issue_triage)"
             exit 1
           fi
-          if ! [[ "$playbook_name" =~ ^[a-z0-9_]+$ ]]; then
-            echo "::error::Invalid playbook name: must match [a-z0-9_]+"
+          if ! [[ "$playbook_name" =~ ^[a-z0-9_-]+$ ]]; then
+            echo "::error::Invalid playbook name: must match [a-z0-9_-]+"
             exit 1
           fi
 
@@ -134,6 +134,67 @@ jobs:
           echo "  Playbook: ${playbook_name}"
           echo "  Issue: ${issue_number}"
           echo "  Dev macro: ${dev_macro}"
+
+      - name: Validate dev playbook exists
+        id: validate
+        env:
+          DEVIN_API_KEY: ${{ secrets.DEVIN_AI_API_KEY }}
+          DEVIN_ORG_ID: ${{ vars.DEVIN_AI_ORG_ID }}
+          DEV_MACRO: ${{ steps.resolve.outputs.dev_macro }}
+          PLAYBOOK_NAME: ${{ steps.resolve.outputs.playbook_name }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          echo "Checking if dev playbook with macro '${DEV_MACRO}' exists..."
+
+          response=$(curl -s -w "\n%{http_code}" \
+            -H "Authorization: Bearer ${DEVIN_API_KEY}" \
+            "https://api.devin.ai/v3/organizations/${DEVIN_ORG_ID}/playbooks?first=500")
+
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | sed '$d')
+
+          if [[ "$http_code" != "200" ]]; then
+            echo "::error::Failed to query Devin API for playbooks (HTTP $http_code)"
+            exit 1
+          fi
+
+          match=$(echo "$body" | jq -r --arg macro "$DEV_MACRO" \
+            '.items[] | select(.macro == $macro) | .playbook_id' | head -1)
+
+          if [[ -z "$match" ]]; then
+            # List available dev macros for this PR to help debug
+            available=$(echo "$body" | jq -r --arg suffix "__dev-${PR_NUMBER}" \
+              '[.items[] | select(.macro | endswith($suffix)) | .macro] | join(", ")' 2>/dev/null || echo "")
+
+            error_msg="Dev playbook with macro '${DEV_MACRO}' not found."
+            error_msg+=" Make sure /deploy-dev has been run on ai-skills PR #${PR_NUMBER} first,"
+            error_msg+=" and that the playbook name '${PLAYBOOK_NAME}' matches the filename in devin/playbooks/ (without .md)."
+            if [[ -n "$available" && "$available" != "" ]]; then
+              error_msg+=" Available dev macros for PR #${PR_NUMBER}: ${available}"
+            fi
+
+            echo "::error::${error_msg}"
+            exit 1
+          fi
+
+          echo "Found dev playbook: ${match}"
+          echo "playbook_id=${match}" >> $GITHUB_OUTPUT
+
+      - name: Post error comment
+        if: failure() && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ steps.resolve.outputs.issue_number }}
+          body: |
+            > **❌ AI Dev Playbook Failed**
+            >
+            > Dev playbook with macro `${{ steps.resolve.outputs.dev_macro }}` was not found.
+            > Make sure `/deploy-dev` has been run on [ai-skills PR #${{ steps.resolve.outputs.pr_number }}](https://github.com/airbytehq/ai-skills/pull/${{ steps.resolve.outputs.pr_number }}) first, and that the playbook name matches the filename in `devin/playbooks/` (without `.md`).
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
 
       - name: Post start comment
         if: inputs.comment-id != ''
