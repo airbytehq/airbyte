@@ -12,7 +12,7 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - 🛠️ Quick Fixes
   - `/format-fix` - Fixes most formatting issues.
   - `/bump-version` - Bumps connector versions, scraping `changelog` description from the PR title.
-    - Bump types: `patch` (default), `minor`, `major`, `patch_rc`, `minor_rc`, `major_rc`, `rc`, `promote`.
+    - Bump types: `patch` (default), `minor`, `major`, `major_rc`, `rc`, `promote`.
     - The `rc` type is a smart default: applies `minor_rc` if stable, or bumps the RC number if already RC.
     - The `promote` type strips the RC suffix to finalize a release.
     - Example: `/bump-version type=rc` or `/bump-version type=minor`
