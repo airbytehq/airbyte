@@ -99,6 +99,7 @@ The connector makes an additional API call per sync to fetch the list of form ID
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.7 | 2026-03-31 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Update CDK to 7.15.0 |
 | 1.4.7-rc.1 | 2026-03-26 | [75506](https://github.com/airbytehq/airbyte/pull/75506) | Upgrade CDK version to 7.13.0 |
 | 1.4.6 | 2026-03-03 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |
 | 1.4.5 | 2026-01-22 | [72261](https://github.com/airbytehq/airbyte/pull/72261) | Update CDK version from 7.0.1 to 7.6.5 |
