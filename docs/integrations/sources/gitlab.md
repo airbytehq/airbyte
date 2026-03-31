@@ -135,7 +135,7 @@ The connector silently skips any group, project, or resource that returns an HTT
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 4.4.23-rc.4 | 2026-03-31 | [75538](https://github.com/airbytehq/airbyte/pull/75538) | Re-enable HTTPAPIBudget with concurrency 10 for rate limit protection during progressive rollout |
+| 4.4.23-rc.4 | 2026-03-31 | [75915](https://github.com/airbytehq/airbyte/pull/75915) | Re-enable HTTPAPIBudget with concurrency 10 for rate limit protection during progressive rollout |
 | 4.4.23-rc.3 | 2026-03-27 | [75537](https://github.com/airbytehq/airbyte/pull/75537) | Increase default concurrency from 8 to 10 for progressive rollout tuning |
 | 4.4.23-rc.2 | 2026-03-25 | [75480](https://github.com/airbytehq/airbyte/pull/75480) | Comment out HTTPAPIBudget to isolate concurrency tuning during progressive rollout |
 | 4.4.23-rc.1 | 2026-03-09 | [70858](https://github.com/airbytehq/airbyte/pull/70858) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
