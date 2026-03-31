@@ -198,7 +198,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "✅ Successfully promoted `${{ env.CONNECTOR_NAME }}` — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "↗️ Successfully promoted `${{ env.CONNECTOR_NAME }}` — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
       - name: Notify Slack on rollback success
