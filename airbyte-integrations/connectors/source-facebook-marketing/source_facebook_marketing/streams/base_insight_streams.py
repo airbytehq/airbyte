@@ -9,7 +9,6 @@ from functools import cache, cached_property
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 from zoneinfo import ZoneInfo
 
-import backoff
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -226,23 +225,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         if "account_id" not in record:
             record["account_id"] = account_id
 
-    @backoff.on_exception(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5, jitter=None)
-    def _fetch_insight_records(self, job: AsyncJob, account_id: str) -> List[Mapping[str, Any]]:
-        """Fetch all records from an insight job, retrying on FacebookBadObjectError.
-
-        Records are buffered so that a retry does not produce duplicates in the
-        parent generator.
-        """
-        records: List[Mapping[str, Any]] = []
-        for obj in job.get_result():
-            data = obj.export_all_data()
-            if self._response_data_is_valid(data):
-                self._add_account_id(data, account_id)
-                data = self._transform_breakdown(data)
-                data = self._transform_objective_results(data)
-                records.append(data)
-        return records
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -255,7 +237,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         account_id = stream_slice["account_id"]
 
         try:
-            yield from self._fetch_insight_records(job=job, account_id=account_id)
+            for obj in job.get_result():
+                data = obj.export_all_data()
+                if self._response_data_is_valid(data):
+                    self._add_account_id(data, account_id)
+                    data = self._transform_breakdown(data)
+                    data = self._transform_objective_results(data)
+                    yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 internal_message=str(e),

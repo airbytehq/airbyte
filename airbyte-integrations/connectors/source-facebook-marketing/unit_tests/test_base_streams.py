@@ -131,8 +131,8 @@ def incremental_class_instance(api):
     return ConcreteFBMarketingIncrementalStream(api=api, account_ids=["123", "456", "789"], start_date=None, end_date=None)
 
 
-class TestFBMarketingStreamFetchRecordsRetry:
-    """Tests for _fetch_records retry logic on FacebookBadObjectError."""
+class TestFBMarketingStreamBadObjectError:
+    """Tests for FacebookBadObjectError handling in read_records."""
 
     def _make_stream(self, api, mocker, list_objects_side_effect):
         """Create a SomeTestStream with mocked list_objects."""
@@ -141,113 +141,29 @@ class TestFBMarketingStreamFetchRecordsRetry:
         mocker.patch.object(stream, "list_objects", side_effect=list_objects_side_effect)
         return stream
 
-    def test_fetch_records_succeeds_on_first_try(self, api, mocker):
-        """Records are returned when list_objects succeeds on the first call."""
+    def test_read_records_succeeds(self, api, mocker):
+        """Records are yielded lazily when list_objects succeeds."""
         records = [{"id": "1", "name": "rec1"}, {"id": "2", "name": "rec2"}]
         stream = self._make_stream(api, mocker, list_objects_side_effect=[records])
 
-        result = stream._fetch_records(params={}, account_id="123")
+        result = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_slice={"account_id": "123", "stream_state": {}},
+            )
+        )
 
         assert len(result) == 2
         assert result[0]["id"] == "1"
         assert result[1]["id"] == "2"
-        # account_id should be added
         assert all(r["account_id"] == "123" for r in result)
 
-    def test_fetch_records_retries_on_bad_object_error(self, api, mocker):
-        """_fetch_records retries and succeeds after a FacebookBadObjectError."""
-        records = [{"id": "1", "name": "rec1"}]
+    def test_read_records_raises_traced_exception_on_bad_object_error(self, api, mocker):
+        """read_records wraps FacebookBadObjectError in AirbyteTracedException with transient_error."""
         stream = self._make_stream(
             api,
             mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data to set object data"),
-                records,
-            ],
-        )
-
-        result = stream._fetch_records(params={}, account_id="123")
-
-        assert len(result) == 1
-        assert result[0]["id"] == "1"
-        assert stream.list_objects.call_count == 2
-
-    def test_fetch_records_retries_multiple_times(self, api, mocker):
-        """_fetch_records retries up to max_tries (5) before giving up."""
-        records = [{"id": "1"}]
-        stream = self._make_stream(
-            api,
-            mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                records,
-            ],
-        )
-
-        result = stream._fetch_records(params={}, account_id="123")
-
-        assert len(result) == 1
-        assert stream.list_objects.call_count == 4
-
-    def test_fetch_records_raises_after_max_retries(self, api, mocker):
-        """_fetch_records raises FacebookBadObjectError after exhausting retries."""
-        stream = self._make_stream(
-            api,
-            mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-            ],
-        )
-
-        with pytest.raises(FacebookBadObjectError):
-            stream._fetch_records(params={}, account_id="123")
-
-        assert stream.list_objects.call_count == 5
-
-    def test_fetch_records_no_duplicates_on_retry(self, api, mocker):
-        """When a retry occurs, previously buffered records are discarded — no duplicates."""
-        call_count = 0
-
-        def list_objects_with_mid_failure(params, account_id):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                # Yield one record then raise mid-iteration
-                yield {"id": "1", "name": "partial"}
-                raise FacebookBadObjectError("Bad data mid-iteration")
-            else:
-                yield {"id": "1", "name": "complete1"}
-                yield {"id": "2", "name": "complete2"}
-
-        mocker.patch.multiple(FBMarketingStream, __abstractmethods__=set())
-        stream = SomeTestStream(api=api, account_ids=["123"])
-        mocker.patch.object(stream, "list_objects", side_effect=list_objects_with_mid_failure)
-
-        result = stream._fetch_records(params={}, account_id="123")
-
-        # Should only have records from the successful retry, no duplicates
-        assert len(result) == 2
-        assert result[0]["name"] == "complete1"
-        assert result[1]["name"] == "complete2"
-
-    def test_read_records_raises_traced_exception_after_retries_exhausted(self, api, mocker):
-        """read_records wraps exhausted retries in AirbyteTracedException with transient_error."""
-        stream = self._make_stream(
-            api,
-            mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-            ],
+            list_objects_side_effect=FacebookBadObjectError("Bad data"),
         )
 
         with pytest.raises(AirbyteTracedException) as exc_info:
@@ -259,33 +175,12 @@ class TestFBMarketingStreamFetchRecordsRetry:
             )
 
         assert exc_info.value.failure_type == FailureType.transient_error
+        assert exc_info.value.internal_message == "Bad data"
         assert "inconsistent object data" in exc_info.value.message.lower()
 
-    def test_read_records_succeeds_after_transient_bad_object_error(self, api, mocker):
-        """read_records returns records when _fetch_records succeeds after a retry."""
-        records = [{"id": "1", "name": "rec1"}]
-        stream = self._make_stream(
-            api,
-            mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                records,
-            ],
-        )
 
-        result = list(
-            stream.read_records(
-                sync_mode=SyncMode.full_refresh,
-                stream_slice={"account_id": "123", "stream_state": {}},
-            )
-        )
-
-        assert len(result) == 1
-        assert result[0]["id"] == "1"
-
-
-class TestFBMarketingReversedStreamFetchRecordsRetry:
-    """Tests for _fetch_reversed_records retry logic on FacebookBadObjectError."""
+class TestFBMarketingReversedStreamBadObjectError:
+    """Tests for FacebookBadObjectError handling in reversed stream read_records."""
 
     def _make_fb_object(self, data: dict) -> MagicMock:
         """Create a mock Facebook object that behaves like AbstractObject."""
@@ -301,65 +196,28 @@ class TestFBMarketingReversedStreamFetchRecordsRetry:
         mocker.patch.object(stream, "list_objects", side_effect=list_objects_side_effect)
         return stream
 
-    def test_fetch_reversed_records_succeeds_on_first_try(self, api, mocker):
-        """Records are returned when list_objects succeeds on the first call."""
-        fb_obj = self._make_fb_object({"id": "1", "updated_time": "2024-01-01"})
+    def test_reversed_read_records_succeeds(self, api, mocker):
+        """Records are yielded and cursor is updated on success."""
+        fb_obj = self._make_fb_object({"id": "1", "updated_time": "2024-01-15"})
         stream = self._make_stream(api, mocker, list_objects_side_effect=[[fb_obj]])
 
-        records, max_cursor = stream._fetch_reversed_records(params={}, account_id="123")
-
-        assert len(records) == 1
-        assert records[0]["id"] == "1"
-        assert max_cursor == "2024-01-01"
-
-    def test_fetch_reversed_records_retries_on_bad_object_error(self, api, mocker):
-        """_fetch_reversed_records retries and succeeds after a FacebookBadObjectError."""
-        fb_obj = self._make_fb_object({"id": "1", "updated_time": "2024-01-01"})
-        stream = self._make_stream(
-            api,
-            mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                [fb_obj],
-            ],
+        result = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_slice={"account_id": "123", "stream_state": {}},
+            )
         )
 
-        records, max_cursor = stream._fetch_reversed_records(params={}, account_id="123")
+        assert len(result) == 1
+        assert result[0]["id"] == "1"
+        assert stream._cursor_values["123"] == "2024-01-15"
 
-        assert len(records) == 1
-        assert stream.list_objects.call_count == 2
-
-    def test_fetch_reversed_records_raises_after_max_retries(self, api, mocker):
-        """_fetch_reversed_records raises FacebookBadObjectError after exhausting retries."""
+    def test_reversed_read_records_raises_traced_exception_on_bad_object_error(self, api, mocker):
+        """read_records wraps FacebookBadObjectError in AirbyteTracedException with transient_error."""
         stream = self._make_stream(
             api,
             mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-            ],
-        )
-
-        with pytest.raises(FacebookBadObjectError):
-            stream._fetch_reversed_records(params={}, account_id="123")
-
-        assert stream.list_objects.call_count == 5
-
-    def test_reversed_read_records_raises_traced_exception_after_retries_exhausted(self, api, mocker):
-        """read_records wraps exhausted retries in AirbyteTracedException with transient_error."""
-        stream = self._make_stream(
-            api,
-            mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-            ],
+            list_objects_side_effect=FacebookBadObjectError("Bad data"),
         )
 
         with pytest.raises(AirbyteTracedException) as exc_info:
@@ -372,54 +230,12 @@ class TestFBMarketingReversedStreamFetchRecordsRetry:
 
         assert exc_info.value.failure_type == FailureType.transient_error
 
-    def test_reversed_read_records_succeeds_after_retry(self, api, mocker):
-        """read_records returns records when _fetch_reversed_records succeeds after a retry."""
-        fb_obj = self._make_fb_object({"id": "1", "updated_time": "2024-01-01"})
-        stream = self._make_stream(
-            api,
-            mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                [fb_obj],
-            ],
-        )
-
-        result = list(
-            stream.read_records(
-                sync_mode=SyncMode.full_refresh,
-                stream_slice={"account_id": "123", "stream_state": {}},
-            )
-        )
-
-        assert len(result) == 1
-        assert result[0]["id"] == "1"
-
-    def test_reversed_read_records_updates_cursor_on_success(self, api, mocker):
-        """Cursor state is updated only after a successful fetch."""
-        fb_obj = self._make_fb_object({"id": "1", "updated_time": "2024-01-15"})
-        stream = self._make_stream(api, mocker, list_objects_side_effect=[[fb_obj]])
-
-        list(
-            stream.read_records(
-                sync_mode=SyncMode.full_refresh,
-                stream_slice={"account_id": "123", "stream_state": {}},
-            )
-        )
-
-        assert stream._cursor_values["123"] == "2024-01-15"
-
     def test_reversed_read_records_does_not_update_cursor_on_failure(self, api, mocker):
-        """Cursor state is NOT updated when all retries are exhausted."""
+        """Cursor state is NOT updated when FacebookBadObjectError occurs."""
         stream = self._make_stream(
             api,
             mocker,
-            list_objects_side_effect=[
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-                FacebookBadObjectError("Bad data"),
-            ],
+            list_objects_side_effect=FacebookBadObjectError("Bad data"),
         )
 
         with pytest.raises(AirbyteTracedException):

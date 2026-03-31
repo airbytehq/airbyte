@@ -1643,8 +1643,8 @@ class TestCalendarAlignedPeriods:
         assert intervals == expected
 
 
-class TestFetchInsightRecordsRetry:
-    """Tests for _fetch_insight_records retry logic on FacebookBadObjectError."""
+class TestInsightStreamBadObjectError:
+    """Tests for FacebookBadObjectError handling in insight stream read_records."""
 
     def _make_stream(self, api, some_config):
         return AdsInsights(
@@ -1655,50 +1655,30 @@ class TestFetchInsightRecordsRetry:
             insights_lookback_window=28,
         )
 
-    def test_fetch_insight_records_success(self, mocker, api, some_config):
-        """_fetch_insight_records returns buffered records on success."""
+    def test_read_records_succeeds(self, mocker, api, some_config):
+        """read_records yields records lazily on success."""
         job = mocker.Mock(spec=InsightAsyncJob)
         rec = mocker.Mock()
         rec.export_all_data.return_value = {"date_start": "2010-01-01"}
         job.get_result.return_value = [rec, rec]
+        job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
 
         stream = self._make_stream(api, some_config)
-        records = stream._fetch_insight_records(job=job, account_id=some_config["account_ids"][0])
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={
+                    "insight_job": job,
+                    "account_id": some_config["account_ids"][0],
+                },
+            )
+        )
 
         assert len(records) == 2
         assert job.get_result.call_count == 1
 
-    def test_fetch_insight_records_retries_on_bad_object_error(self, mocker, api, some_config):
-        """_fetch_insight_records retries after FacebookBadObjectError and succeeds."""
-        job = mocker.Mock(spec=InsightAsyncJob)
-        rec = mocker.Mock()
-        rec.export_all_data.return_value = {"date_start": "2010-01-01"}
-
-        job.get_result.side_effect = [
-            FacebookBadObjectError("Bad data to set object data"),
-            [rec, rec, rec],
-        ]
-
-        stream = self._make_stream(api, some_config)
-        records = stream._fetch_insight_records(job=job, account_id=some_config["account_ids"][0])
-
-        assert len(records) == 3
-        assert job.get_result.call_count == 2
-
-    def test_fetch_insight_records_raises_after_max_retries(self, mocker, api, some_config):
-        """_fetch_insight_records raises FacebookBadObjectError after exhausting retries."""
-        job = mocker.Mock(spec=InsightAsyncJob)
-        job.get_result.side_effect = FacebookBadObjectError("Bad data")
-
-        stream = self._make_stream(api, some_config)
-
-        with pytest.raises(FacebookBadObjectError):
-            stream._fetch_insight_records(job=job, account_id=some_config["account_ids"][0])
-
-        assert job.get_result.call_count == 5
-
-    def test_read_records_raises_traced_exception_after_retry_exhaustion(self, mocker, api, some_config):
-        """read_records raises AirbyteTracedException(transient_error) when retries are exhausted."""
+    def test_read_records_raises_traced_exception_on_bad_object_error(self, mocker, api, some_config):
+        """read_records raises AirbyteTracedException(transient_error) on FacebookBadObjectError."""
         job = mocker.Mock(spec=InsightAsyncJob)
         job.get_result.side_effect = FacebookBadObjectError("Bad data")
         job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
@@ -1717,50 +1697,4 @@ class TestFetchInsightRecordsRetry:
             )
 
         assert exc_info.value.failure_type == FailureType.transient_error
-
-    def test_read_records_succeeds_after_retry(self, mocker, api, some_config):
-        """read_records yields records after a successful retry."""
-        job = mocker.Mock(spec=InsightAsyncJob)
-        rec = mocker.Mock()
-        rec.export_all_data.return_value = {"date_start": "2010-01-01"}
-        job.get_result.side_effect = [
-            FacebookBadObjectError("Bad data"),
-            [rec],
-        ]
-        job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
-
-        stream = self._make_stream(api, some_config)
-        records = list(
-            stream.read_records(
-                sync_mode=SyncMode.incremental,
-                stream_slice={
-                    "insight_job": job,
-                    "account_id": some_config["account_ids"][0],
-                },
-            )
-        )
-
-        assert len(records) == 1
-        assert job.get_result.call_count == 2
-
-    def test_fetch_insight_records_no_duplicates_on_mid_iteration_failure(self, mocker, api, some_config):
-        """Records from a failed iteration are discarded; only the successful retry's records are returned."""
-        job = mocker.Mock(spec=InsightAsyncJob)
-
-        rec_good = mocker.Mock()
-        rec_good.export_all_data.return_value = {"date_start": "2010-01-01"}
-
-        def failing_iterator():
-            yield rec_good
-            raise FacebookBadObjectError("Bad data mid-iteration")
-
-        job.get_result.side_effect = [
-            failing_iterator(),
-            [rec_good, rec_good],
-        ]
-
-        stream = self._make_stream(api, some_config)
-        records = stream._fetch_insight_records(job=job, account_id=some_config["account_ids"][0])
-
-        assert len(records) == 2
-        assert job.get_result.call_count == 2
+        assert exc_info.value.internal_message == "Bad data"
