@@ -26,6 +26,8 @@ on:
         description: "Ref (Ignored)"
         required: false
 
+permissions: {}
+
 run-name: "Bump connector version for progressive rollout in PR: #${{ github.event.inputs.pr }}"
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
@@ -37,7 +39,7 @@ jobs:
     # Delegate to the bump-version workflow with type=rc.
     uses: ./.github/workflows/bump-version-command.yml
     with:
-      pr: ${{ github.event.inputs.pr && fromJSON(github.event.inputs.pr) || 0 }}
+      pr: ${{ github.event.inputs.pr }}
       comment-id: ${{ github.event.inputs.comment-id }}
       type: "rc"
       changelog: ${{ github.event.inputs.changelog }}

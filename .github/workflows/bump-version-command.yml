@@ -5,7 +5,7 @@ on:
     inputs:
       pr:
         description: "Pull request number. This PR will be referenced in the changelog line."
-        type: number
+        type: string
         required: false
       comment-id:
         description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
@@ -55,6 +55,11 @@ on:
       gitref:
         description: "Ref (Ignored)"
         required: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 run-name: "Bump connector versions in PR: #${{ inputs.pr }}"
 concurrency:
