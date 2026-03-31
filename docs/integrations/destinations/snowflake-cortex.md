@@ -1,30 +1,30 @@
 # Snowflake Cortex Destination
 
-## Overview
+This page guides you through setting up [Snowflake](https://www.snowflake.com/en/) as a vector destination using Snowflake Cortex.
 
-This page guides you through the process of setting up the [Snowflake](https://www.snowflake.com/en/) as a vector destination.
+The Snowflake Cortex destination loads data in three stages:
 
-There are three parts to this:
-* Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-* Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported. Coming soon: Hugging Face's `e5-base-v2`).
-* Snowflake Connection - where to store the vectors. This configures a vector store using Snowflake tables having the `VECTOR` data type.
+- **Processing** - Splits individual records into chunks that fit the context window. You configure which fields to use as context and which are supplementary metadata.
+- **Embedding** - Converts text into a vector representation using a pre-trained model. Supported embedding providers: OpenAI, Cohere, Azure OpenAI, OpenAI-compatible, and Fake (for testing).
+- **Snowflake connection** - Stores the vectors in Snowflake tables using the `VECTOR` data type.
 
 ## Prerequisites
 
-To use the Snowflake Cortex destination, you'll need:
+To use the Snowflake Cortex destination, you need:
 
-- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
+- An account with API access for your chosen embedding provider (OpenAI, Cohere, Azure OpenAI, or an OpenAI-compatible service)
 - A Snowflake account with support for vector type columns
 
-You'll need the following information to configure the destination:
+You need the following information to configure the destination:
 
-- **Embedding service API Key** - The API key for your OpenAI or Cohere account
-- **Snowflake Account** - The account name for your Snowflake account
-- **Snowflake User** - The user name for your Snowflake account
+- **Embedding service API key** - The API key for your embedding provider
+- **Snowflake Account** - The account name for your Snowflake account (the identifier before `.snowflakecomputing.com`)
+- **Snowflake User** - The username for your Snowflake account
 - **Snowflake Password** - The password for your Snowflake account
 - **Snowflake Database** - The database name in Snowflake to load data into
 - **Snowflake Warehouse** - The warehouse name in Snowflake to use
-- **Snowflake Role** - The role name in Snowflake to use.
+- **Snowflake Role** - The role to use for accessing Snowflake
+- **Default Schema** - The schema name to use
 
 ## Supported sync modes
 
@@ -50,7 +50,7 @@ All other fields are ignored.
 
 ### Processing
 
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry.  Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
+Each record is split into text fields and metadata fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Metadata fields can only be used for filtering (not retrieval) and must be of type string, number, or boolean. All other values are ignored. There is a 40 KB limit on the total size of the metadata saved for each entry. Options for configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
 
 When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
 
@@ -62,20 +62,22 @@ The stream name gets added as a metadata field `_ab_stream` to each document. If
 
 The connector can use one of the following embedding methods:
 
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+1. **OpenAI** - Uses the [OpenAI API](https://platform.openai.com/docs/api-reference/embeddings) to produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration is constrained by the [OpenAI rate limits](https://platform.openai.com/docs/guides/rate-limits/overview).
+2. **Cohere** - Uses the [Cohere API](https://docs.cohere.com/reference/embed) to produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+3. **Azure OpenAI** - Uses an Azure-hosted OpenAI deployment for embeddings.
+4. **OpenAI-compatible** - Uses any API that implements the OpenAI embeddings interface.
 
-2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+For testing purposes, you can use the Fake embeddings integration, which generates random embeddings suitable for testing a data pipeline without incurring embedding costs.
 
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+### Indexing and data storage
 
-### Indexing/Data Storage 
+Before running the Snowflake Cortex destination, make sure you have created a database and a warehouse in your Snowflake account. All streams are stored in a table with the same name as the stream. The table is created if it doesn't exist. Each table has the following columns:
 
-To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure you have set a database, and a data wareshouse before running the Snowflake Cortex destination. All streams will be indexed/stored into a table with the same name. The table will be created if it doesn't exist. The table will have the following columns: 
-- document_id (string) - the unique identifier of the document, creating from appending the primary keys in the stream schema
-- chunk_id (string) - the unique identifier of the chunk, created by appending the chunk number to the document_id
-- metadata (variant) - the metadata of the document, stored as key-value pairs
-- page_content (string) - the text content of the chunk
-- embedding (vector) - the embedding of the chunk, stored as a list of floats
+- `document_id` (string) - The unique identifier of the document, created from the primary keys in the stream schema
+- `chunk_id` (string) - The unique identifier of the chunk, created by appending the chunk number to the document_id
+- `metadata` (variant) - The metadata of the document, stored as key-value pairs
+- `page_content` (string) - The text content of the chunk
+- `embedding` (vector) - The embedding of the chunk, stored as a list of floats
 
 ## Namespace support
 
