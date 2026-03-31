@@ -434,11 +434,10 @@ class InsightAsyncJob(AsyncJob):
         jobs.
         """
         since = AirbyteDateTime.from_datetime(datetime.combine(self._interval.start - timedelta(days=28 + 1), datetime.min.time()))
-        until = self._interval.end
         params = {
             "fields": [pk_name],
             "level": level,
-            "time_range": {"since": since.strftime("%Y-%m-%d"), "until": until.strftime("%Y-%m-%d")},
+            "time_range": {"since": since.strftime("%Y-%m-%d"), "until": self._interval.end.strftime("%Y-%m-%d")},
         }
 
         last_status: Optional[str] = None
