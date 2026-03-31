@@ -146,16 +146,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -172,16 +163,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -279,16 +261,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -305,16 +278,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -327,7 +291,7 @@ class JdbcPartitionsCreatorTest {
                         )
                     ),
             )
-        val expectedFetchSize = 674 // adjust this as needed based on inputs
+        val expectedFetchSize = 681 // adjust this as needed based on inputs
         val factory = sharedState.factory()
         val initialPartition =
             factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()
