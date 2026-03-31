@@ -117,7 +117,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `title` | `string` |  |
+| `description` | `string \| any` |  |
+| `state` | `object \| any` |  |
+| `priority` | `number \| any` |  |
+| `assignee` | `object \| any` |  |
+| `team` | `object \| any` |  |
+| `project` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -179,7 +188,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `issue` | `object` |  |
+| `issue.id` | `string` |  |
+| `issue.title` | `string` |  |
+| `issue.description` | `string \| any` |  |
+| `issue.state` | `object \| any` |  |
+| `issue.priority` | `number \| any` |  |
+| `issue.assignee` | `object \| any` |  |
+| `issue.project` | `object \| any` |  |
+| `issue.createdAt` | `string` |  |
+| `issue.updatedAt` | `string` |  |
 
 
 </details>
@@ -247,7 +266,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `issue` | `object` |  |
+| `issue.id` | `string` |  |
+| `issue.title` | `string` |  |
+| `issue.description` | `string \| any` |  |
+| `issue.state` | `object \| any` |  |
+| `issue.priority` | `number \| any` |  |
+| `issue.assignee` | `object \| any` |  |
+| `issue.project` | `object \| any` |  |
+| `issue.createdAt` | `string` |  |
+| `issue.updatedAt` | `string` |  |
 
 
 </details>
@@ -516,7 +545,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `description` | `string \| any` |  |
+| `state` | `string \| any` |  |
+| `startDate` | `string \| any` |  |
+| `targetDate` | `string \| any` |  |
+| `lead` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -757,7 +794,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `key` | `string` |  |
+| `description` | `string \| any` |  |
+| `timezone` | `string \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -938,8 +981,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `email` | `string` |  |
+| `displayName` | `string \| any` |  |
+| `active` | `boolean` |  |
+| `admin` | `boolean` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hasNextPage` | `boolean` |  |
+| `endCursor` | `string \| null` |  |
 
 </details>
 
@@ -985,7 +1042,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `email` | `string` |  |
+| `displayName` | `string \| any` |  |
+| `active` | `boolean` |  |
+| `admin` | `boolean` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -1132,8 +1196,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `body` | `string` |  |
+| `user` | `object \| any` |  |
+| `issue` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hasNextPage` | `boolean` |  |
+| `endCursor` | `string \| null` |  |
 
 </details>
 
@@ -1179,7 +1255,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `body` | `string` |  |
+| `user` | `object \| any` |  |
+| `issue` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -1229,7 +1310,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `comment` | `object` |  |
+| `comment.id` | `string` |  |
+| `comment.body` | `string` |  |
+| `comment.user` | `object \| any` |  |
+| `comment.issue` | `object \| any` |  |
+| `comment.createdAt` | `string` |  |
+| `comment.updatedAt` | `string` |  |
 
 
 </details>
@@ -1279,7 +1367,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `comment` | `object` |  |
+| `comment.id` | `string` |  |
+| `comment.body` | `string` |  |
+| `comment.user` | `object \| any` |  |
+| `comment.issue` | `object \| any` |  |
+| `comment.createdAt` | `string` |  |
+| `comment.updatedAt` | `string` |  |
 
 
 </details>
