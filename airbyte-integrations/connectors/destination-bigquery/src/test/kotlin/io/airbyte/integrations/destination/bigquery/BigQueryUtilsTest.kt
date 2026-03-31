@@ -73,9 +73,7 @@ class BigQueryUtilsTest {
     fun `InterruptedException wrapped in BigQueryException from getTable is caught and rethrown with message`() {
         val interruptedException = InterruptedException("thread was interrupted")
         val bigQueryException = BigQueryException(0, "interrupted", interruptedException)
-        val bq: BigQuery = mockk {
-            every { getTable(any<TableId>()) } throws bigQueryException
-        }
+        val bq: BigQuery = mockk { every { getTable(any<TableId>()) } throws bigQueryException }
 
         val thrown =
             assertThrows<RuntimeException> {
@@ -115,9 +113,7 @@ class BigQueryUtilsTest {
     @Test
     fun `non-interrupt BigQueryException from getTable is rethrown as-is`() {
         val bigQueryException = BigQueryException(500, "server error")
-        val bq: BigQuery = mockk {
-            every { getTable(any<TableId>()) } throws bigQueryException
-        }
+        val bq: BigQuery = mockk { every { getTable(any<TableId>()) } throws bigQueryException }
 
         val thrown =
             assertThrows<BigQueryException> {

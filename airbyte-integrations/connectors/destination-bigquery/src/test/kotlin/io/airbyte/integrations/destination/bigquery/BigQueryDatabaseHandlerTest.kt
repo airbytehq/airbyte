@@ -67,9 +67,7 @@ class BigQueryDatabaseHandlerTest {
                     every { state } returns JobStatus.State.RUNNING
                 }
         }
-        val bq: BigQuery = mockk {
-            every { create(any(JobInfo::class), *anyVararg()) } returns job
-        }
+        val bq: BigQuery = mockk { every { create(any(JobInfo::class), *anyVararg()) } returns job }
         val handler = BigQueryDatabaseHandler(bq, "location")
 
         // Interrupt the current thread before execute() enters the polling loop.
