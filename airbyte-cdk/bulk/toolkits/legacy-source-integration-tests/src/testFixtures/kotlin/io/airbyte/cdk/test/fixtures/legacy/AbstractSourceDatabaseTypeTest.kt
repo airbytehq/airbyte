@@ -116,13 +116,13 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
     @Throws(Exception::class)
     open fun testDataContent() {
         // Class used to make easier the error reporting
-        class MissedRecords( // Stream that is missing any value
+        data class MissedRecords( // Stream that is missing any value
             var streamName:
                 String?, // Which are the values that has not being gathered from the source
             var missedValues: List<String?>
         )
 
-        class UnexpectedRecord(val streamName: String, val unexpectedValue: String?)
+        data class UnexpectedRecord(val streamName: String, val unexpectedValue: String?)
 
         val catalog = configuredCatalog
         val allMessages = runRead(catalog)
@@ -136,8 +136,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         val testByName: MutableMap<String, TestDataHolder> = HashMap()
 
         // If there is no expected value in the test set we don't include it in the list to be
-        // asserted
-        // (even if the table contains records)
+        // asserted (even if the table contains records)
         testDataHolders.forEach(
             Consumer { testDataHolder: TestDataHolder ->
                 if (!testDataHolder.expectedValues.isEmpty()) {
@@ -145,7 +144,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
                         testDataHolder.expectedValues
                     testByName[testDataHolder.nameWithTestPrefix] = testDataHolder
                 } else {
-                    LOGGER.warn("Missing expected values for type: " + testDataHolder.sourceType)
+                    LOGGER.warn { "Missing expected values for type: ${testDataHolder.sourceType}" }
                 }
             }
         )
@@ -201,7 +200,6 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         for (errors in errorsByStream.values) {
             errorStrings.add(StringUtils.join(errors, "\n"))
         }
-
         Assertions.assertTrue(errorsByStream.isEmpty(), StringUtils.join(errorStrings, "\n"))
     }
 
@@ -232,7 +230,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         for (test in testDataHolders) {
             database!!.query<Any?> { ctx: DSLContext ->
                 ctx.fetch(test.createSqlQuery)
-                LOGGER.info("Table {} is created.", test.nameWithTestPrefix)
+                LOGGER.info { "Table ${test.nameSpace}.${test.nameWithTestPrefix} is created." }
                 null
             }
         }
@@ -243,11 +241,9 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         for (test in testDataHolders) {
             database!!.query<Any?> { ctx: DSLContext ->
                 test.insertSqlQueries.forEach(Consumer { sql: String -> ctx.fetch(sql) })
-                LOGGER.info(
-                    "Inserted {} rows in Ttable {}",
-                    test.insertSqlQueries.size,
-                    test.nameWithTestPrefix
-                )
+                LOGGER.info {
+                    "Inserted ${test.insertSqlQueries.size} rows in table ${test.nameWithTestPrefix}"
+                }
                 null
             }
         }
@@ -343,7 +339,7 @@ abstract class AbstractSourceDatabaseTypeTest : AbstractSourceConnectorTest() {
         }
 
     protected fun printMarkdownTestTable() {
-        LOGGER.info(markdownTestTable)
+        LOGGER.info { markdownTestTable }
     }
 
     @Throws(SQLException::class)

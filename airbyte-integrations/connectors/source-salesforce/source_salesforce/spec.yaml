@@ -123,6 +123,19 @@ advanced_auth:
     - auth_type
   predicate_value: Client
   oauth_config_specification:
+    oauth_connector_input_specification:
+      consent_url: "https://{% if is_sandbox %}test{% else %}login{% endif %}.salesforce.com/services/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}"
+      access_token_url: "https://{% if is_sandbox %}test{% else %}login{% endif %}.salesforce.com/services/oauth2/token"
+      access_token_headers:
+        Content-Type: "application/x-www-form-urlencoded"
+      access_token_params:
+        grant_type: "authorization_code"
+        code: "{{ auth_code_value }}"
+        client_id: "{{ client_id_value }}"
+        client_secret: "{{ client_secret_value }}"
+        redirect_uri: "{{ redirect_uri_value }}"
+      extract_output:
+        - refresh_token
     oauth_user_input_from_connector_config_specification:
       type: object
       additionalProperties: false
