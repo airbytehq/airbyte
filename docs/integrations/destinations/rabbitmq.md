@@ -53,6 +53,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date             | Pull Request                                              | Subject                                         |
 |:--------| :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.44 | 2026-03-31 | [63791](https://github.com/airbytehq/airbyte/pull/63791) | Update dependencies |
 | 0.1.43 | 2025-05-24 | [60586](https://github.com/airbytehq/airbyte/pull/60586) | Update dependencies |
 | 0.1.42 | 2025-05-10 | [59812](https://github.com/airbytehq/airbyte/pull/59812) | Update dependencies |
 | 0.1.41 | 2025-05-03 | [58696](https://github.com/airbytehq/airbyte/pull/58696) | Update dependencies |
