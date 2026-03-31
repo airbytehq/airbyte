@@ -119,14 +119,14 @@ class DefaultJdbcPartitionFactory(
                 null
             } else {
                 // Incremental ongoing.
-                DefaultJdbcCursorIncrementalPartition(
+                DefaultUnsplittableJdbcCursorIncrementalPartition(
                     selectQueryGenerator,
                     streamState,
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
                     isLowerBoundIncluded = true,
-                    cursorUpperBound = streamState.cursorUpperBound,
-                )
+                    explicitCursorUpperBound = streamState.cursorUpperBound,
+                    )
             }
         }
     }
@@ -221,11 +221,12 @@ class DefaultJdbcPartitionFactory(
                 unsplitPartition.split(splitPartitionBoundaries)
             is DefaultJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
-            is DefaultJdbcCursorIncrementalPartition ->
+            else -> listOf(unsplitPartition)
+            /*is DefaultJdbcCursorIncrementalPartition ->
 //                unsplitPartition.split(splitPartitionBoundaries)
                 listOf(unsplitPartition)
             is DefaultJdbcUnsplittableSnapshotPartition -> listOf(unsplitPartition)
-            is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)
+            is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)*/
         }
     }
 
@@ -267,9 +268,9 @@ class DefaultJdbcPartitionFactory(
         }
     }
 
-    private val log = KotlinLogging.logger {}
+//    private val log = KotlinLogging.logger {}
 
-    private fun DefaultJdbcCursorIncrementalPartition.split(
+    /*private fun DefaultJdbcCursorIncrementalPartition.split(
         splitPointValues: List<DefaultJdbcStreamStateValue>
     ): List<DefaultJdbcCursorIncrementalPartition> {
         val inners: List<JsonNode> = splitPointValues.mapNotNull {
@@ -288,5 +289,5 @@ class DefaultJdbcPartitionFactory(
                 upperBound,
             )
         }
-    }
+    }*/
 }

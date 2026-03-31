@@ -10,6 +10,61 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.util.Jsons
 
+/** Builds a WHERE clause from lower/upper bounds on checkpoint columns. */
+fun buildWhereClause(
+    checkpointColumns: List<Field>,
+    lowerBound: List<JsonNode>?,
+    upperBound: List<JsonNode>?,
+    isLowerBoundIncluded: Boolean,
+): WhereNode {
+    val zippedLowerBound: List<Pair<Field, JsonNode>> =
+        lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
+    val lowerBoundDisj: List<WhereClauseNode> =
+        zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
+            val lastLeaf: WhereClauseLeafNode =
+                if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
+                    GreaterOrEqual(gtCol, gtValue)
+                } else {
+                    Greater(gtCol, gtValue)
+                }
+            And(
+                zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                    Equal(eqCol, eqValue)
+                } + listOf(lastLeaf),
+            )
+        }
+    val zippedUpperBound: List<Pair<Field, JsonNode>> =
+        upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
+    val upperBoundDisj: List<WhereClauseNode> =
+        zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
+            val lastLeaf: WhereClauseLeafNode =
+                if (idx < zippedUpperBound.size - 1) {
+                    Lesser(leqCol, leqValue)
+                } else {
+                    LesserOrEqual(leqCol, leqValue)
+                }
+            And(
+                zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                    Equal(eqCol, eqValue)
+                } + listOf(lastLeaf),
+            )
+        }
+    if (lowerBoundDisj.isEmpty() && upperBoundDisj.isEmpty()) {
+        return NoWhere
+    }
+    val clauses = mutableListOf<WhereClauseNode>()
+    if (lowerBoundDisj.isNotEmpty()) {
+        clauses.add(Or(lowerBoundDisj))
+    }
+    if (upperBoundDisj.isNotEmpty()) {
+        clauses.add(Or(upperBoundDisj))
+    }
+    return when (clauses.size) {
+        1 -> Where(clauses.first())
+        else -> Where(And(clauses))
+    }
+}
+
 /** Base class for default implementations of [JdbcPartition]. */
 sealed class DefaultJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
@@ -28,7 +83,7 @@ sealed class DefaultJdbcUnsplittablePartition(
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
 
-    val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(stream.fields), from)
+    open val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(stream.fields), from)
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
@@ -117,58 +172,7 @@ sealed class DefaultJdbcSplittablePartition(
     }
 
     val where: WhereNode
-        get() {
-            val zippedLowerBound: List<Pair<Field, JsonNode>> =
-                lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
-            val lowerBoundDisj: List<WhereClauseNode> =
-                zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
-                    val lastLeaf: WhereClauseLeafNode =
-                        if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
-                            GreaterOrEqual(gtCol, gtValue)
-                        } else {
-                            Greater(gtCol, gtValue)
-                        }
-                    And(
-                        zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
-                            Equal(eqCol, eqValue)
-                        } + listOf(lastLeaf),
-                    )
-                }
-            val zippedUpperBound: List<Pair<Field, JsonNode>> =
-                upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
-            val upperBoundDisj: List<WhereClauseNode> =
-                zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
-                    val lastLeaf: WhereClauseLeafNode =
-                        if (idx < zippedUpperBound.size - 1) {
-                            Lesser(leqCol, leqValue)
-                        } else {
-                            LesserOrEqual(leqCol, leqValue)
-                        }
-                    And(
-                        zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
-                            Equal(eqCol, eqValue)
-                        } + listOf(lastLeaf),
-                    )
-                }
-            // Don't create WHERE clauses when there are no bounds
-            if (lowerBoundDisj.isEmpty() && upperBoundDisj.isEmpty()) {
-                return NoWhere
-            }
-
-            // Build WHERE clause components only for non-empty bounds
-            val clauses = mutableListOf<WhereClauseNode>()
-            if (lowerBoundDisj.isNotEmpty()) {
-                clauses.add(Or(lowerBoundDisj))
-            }
-            if (upperBoundDisj.isNotEmpty()) {
-                clauses.add(Or(upperBoundDisj))
-            }
-
-            return when (clauses.size) {
-                1 -> Where(clauses.first())
-                else -> Where(And(clauses))
-            }
-        }
+        get() = buildWhereClause(checkpointColumns, lowerBound, upperBound, isLowerBoundIncluded)
 
     open val isLowerBoundIncluded: Boolean = false
 }
@@ -267,6 +271,56 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
             cursor,
             cursorUpperBound,
         )
+}
+
+class DefaultUnsplittableJdbcCursorIncrementalPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: DefaultJdbcStreamState,
+    val cursor: Field,
+    val cursorLowerBound: JsonNode,
+    val isLowerBoundIncluded: Boolean,
+    val explicitCursorUpperBound: JsonNode?,
+    ) :
+    JdbcCursorPartition<DefaultJdbcStreamState>,
+    DefaultJdbcUnsplittablePartition(selectQueryGenerator, streamState) {
+
+    val cursorUpperBound: JsonNode
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
+
+    override val cursorUpperBoundQuery: SelectQuery
+        get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
+
+    val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+
+    val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
+    val upperBound: List<JsonNode>
+        get() = listOf(cursorUpperBound)
+
+    override val completeState: OpaqueStateValue
+        get() =
+            DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                cursor,
+                cursorCheckpoint = cursorUpperBound,
+            )
+
+    override val nonResumableQuerySpec: SelectQuerySpec
+        get() = SelectQuerySpec(SelectColumns(stream.fields), from, where)
+
+    val checkpointColumns: List<Field> = listOf(cursor)
+    val where: WhereNode
+        get() = buildWhereClause(checkpointColumns, lowerBound, upperBound, isLowerBoundIncluded)
+
+    override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
+        val sampleSize: Int = streamState.sharedState.maxSampleSize
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumns(stream.fields + checkpointColumns),
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
+                NoWhere, // WHERE is already in FromSample, don't duplicate in outer query
+                OrderBy(checkpointColumns),
+            )
+        return selectQueryGenerator.generate(querySpec.optimize())
+    }
 }
 
 /**
