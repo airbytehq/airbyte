@@ -392,7 +392,7 @@ jobs:
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
-            --output-dir ./registry-artifacts \
+            --output-dir ./registry-artifacts/${{ matrix.connector }} \
             --with-validate \
             --with-sbom \
             --with-dependency-dump
@@ -402,7 +402,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
-          path: ./registry-artifacts/
+          path: ./registry-artifacts/${{ matrix.connector }}/
           retention-days: 7
 
       - name: Publish Registry Artifacts
@@ -418,7 +418,7 @@ jobs:
             registry connector-version artifacts publish \
             --name "${{ matrix.connector }}" \
             --version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
-            --artifacts-dir ./registry-artifacts \
+            --artifacts-dir ./registry-artifacts/${{ matrix.connector }} \
             --store "${REGISTRY_STORE}" \
             --with-validate
 
