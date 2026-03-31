@@ -174,7 +174,33 @@ jobs:
             --squash \
             --admin
 
-      # --- Failure notification ---
+      # --- Notifications ---
+      - name: Notify Slack on promote success
+        if: success() && env.ACTION == 'promote'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "✅ Successfully promoted `${{ env.CONNECTOR_NAME }}` — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+      - name: Notify Slack on rollback success
+        if: success() && env.ACTION == 'rollback'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "↩️ Successfully rolled back RC for `${{ env.CONNECTOR_NAME }}` — GCS marker deleted:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
       - name: Notify Slack on failure
         if: failure()
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
