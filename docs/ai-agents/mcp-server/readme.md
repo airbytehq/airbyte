@@ -11,6 +11,57 @@ The Airbyte Agent Engine MCP server connects your AI agent to your data through 
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
+## What connectors do
+
+Each connector is a type-safe integration that gives your AI agent direct access to a third-party platform's API. Connectors let your agent list, search, retrieve, and in some cases create or update records in the connected service. Every connector exposes a set of **entities** (such as contacts, deals, issues, or invoices) and **actions** (such as list, get, search, create, or update) that the agent can call.
+
+For example:
+
+- A **CRM connector** like Salesforce or HubSpot lets your agent query contacts, companies, deals, and tickets.
+- A **billing connector** like Stripe lets your agent look up customers, invoices, charges, and subscriptions.
+- A **communication connector** like Slack lets your agent read channel messages and threads, and send or update messages.
+- A **revenue intelligence connector** like Gong lets your agent retrieve call recordings, transcripts, and activity statistics.
+- A **project management connector** like Jira or Linear lets your agent search issues, projects, and comments.
+
+Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
+
+For the complete list of connectors and their supported entities, see [Agent connectors](../connectors).
+
+## How authentication works
+
+The MCP server uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agent Engine, and a second layer to authenticate with each third-party service you connect.
+
+### Layer 1: Authenticating with the MCP server
+
+When your AI client first connects to the MCP server, it initiates an [OAuth 2.0](https://oauth.net/2/) authorization flow with Airbyte:
+
+1. Your client detects that the MCP server at `https://mcp.airbyte.ai/mcp` requires authentication.
+2. Your client opens a browser window to the Airbyte login page.
+3. You log in with your [Agent Engine](https://app.airbyte.ai) account (or create one).
+4. You grant the MCP server access to your Airbyte account.
+5. The browser redirects back to your client with an OAuth token.
+6. Your client stores the token and uses it for all subsequent MCP requests.
+
+This token authorizes the MCP server to act on your behalf within the Agent Engine. The token is scoped to your Airbyte account and organization, so the MCP server can only access connectors and data that belong to you. If the token expires, your client automatically triggers a new OAuth flow.
+
+### Layer 2: Authenticating with third-party services
+
+After you authenticate with the MCP server, you still need to connect each third-party service individually. When you ask your agent to connect a service (for example, "Connect my Salesforce account"), a second credential flow begins:
+
+1. The agent calls the MCP server to initiate a credential flow for the requested service.
+2. The MCP server returns a secure URL for you to visit in your browser.
+3. You open the URL and authenticate directly with the third-party service. Depending on the connector, this is either:
+   - An **OAuth consent screen** where you authorize Airbyte to access your account (used by services like Salesforce, HubSpot, GitHub, Google, and Slack), or
+   - A **credential form** where you enter an API key or access token (used by services like Stripe, Gong, and Linear).
+4. After you complete the flow, Airbyte securely stores your credentials and creates a connector.
+5. The agent confirms the connector is ready and you can begin querying data.
+
+:::note
+Your third-party credentials are always entered in the browser, never in the agent chat. Airbyte stores credentials securely on the server side and the MCP server never exposes them to the AI agent.
+:::
+
+Once a connector is created, the agent uses it for all subsequent queries to that service. You don't need to re-authenticate unless your credentials expire or are revoked by the third-party service.
+
 ## Requirements
 
 Before you begin, make sure you have the following:
@@ -199,11 +250,12 @@ The agent uses field selection to return only the data you need, which reduces t
 
 ## Troubleshooting
 
-### Authentication fails
+### MCP server authentication fails
 
 - Make sure you have an active account at [app.airbyte.ai](https://app.airbyte.ai).
 - Try logging out of your agent's MCP integration and reconnecting to trigger a fresh OAuth flow.
 - If you joined a new Airbyte organization, authenticate again to refresh your access.
+- If your client reports a token error, remove and re-add the MCP server to clear stored tokens.
 
 ### Agent can't find the MCP server
 
