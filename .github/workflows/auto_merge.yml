@@ -1,4 +1,7 @@
 name: Auto merge connector PRs Cron
+# Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
+# Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
+# Manage at: https://github.com/organizations/airbytehq/settings/variables/actions
 
 on:
   schedule:
