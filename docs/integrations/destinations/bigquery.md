@@ -250,7 +250,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.19-rc.1 | 2026-03-31 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Improve error message for InterruptedException during BigQuery operations |
+| 3.0.19-rc.1 | 2026-03-31 | [75911](https://github.com/airbytehq/airbyte/pull/75911) | Improve error message for InterruptedException during BigQuery operations |
 | 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |
 | 3.0.17-rc.1 | 2026-01-26 | [72296](https://github.com/airbytehq/airbyte/pull/72296) | Upgrade CDK to 0.2.0 |
