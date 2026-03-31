@@ -7,6 +7,7 @@ import pytest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
@@ -183,7 +184,7 @@ def test_threads_partition_router_skips_messages_without_replies(token_config, e
         )
 
     with patch.object(
-        type(router).__mro__[1],
+        SubstreamPartitionRouter,
         "stream_slices",
         return_value=iter(parent_slices),
     ):
