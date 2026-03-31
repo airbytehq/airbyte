@@ -198,7 +198,7 @@ jobs:
           echo "$BUMP_DEPS_OUTPUT"
           DEPS_UPDATED=$(echo "$BUMP_DEPS_OUTPUT" | jq -r '.updated')
           echo "updated=$DEPS_UPDATED" | tee -a $GITHUB_OUTPUT
-          OUTDATED_PKGS=$(echo "$BUMP_DEPS_OUTPUT" | jq -r '.outdated_packages | join(", ")')
+          OUTDATED_PKGS=$(echo "$BUMP_DEPS_OUTPUT" | jq -r '(.outdated_packages // []) | join(", ")')
           echo "outdated_packages=$OUTDATED_PKGS" | tee -a $GITHUB_OUTPUT
 
       # --- Step 3: Update base image ---
