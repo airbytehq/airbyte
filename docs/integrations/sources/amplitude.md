@@ -1,10 +1,16 @@
 # Amplitude
 
-This page guides you through setting up the Amplitude source connector to sync data for the [Amplitude API](https://www.docs.developers.amplitude.com/analytics/apis/http-v2-api/).
+This page guides you through setting up the Amplitude source connector. This connector syncs data from several [Amplitude Analytics APIs](https://amplitude.com/docs/apis/analytics), including the Dashboard REST API, Export API, Chart Annotations API, and Behavioral Cohorts API.
 
-## Prerequisite
+## Prerequisites
 
-To set up the Amplitude source connector, you'll need your Amplitude [`API Key` and `Secret Key`](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information).
+To set up the Amplitude source connector, you need an Amplitude API key and secret key. To find these credentials:
+
+1. In the Amplitude Analytics web app, select **Organization Settings** in the upper navigation.
+2. Select **Projects**, then select your target project.
+3. Copy the **API Key** and **Secret Key**.
+
+For more information, see [Manage your API keys and secret keys](https://amplitude.com/docs/admin/account-management/manage-your-api-keys-and-secret-keys) in the Amplitude documentation.
 
 ## Set up the Amplitude source connector
 
@@ -12,22 +18,26 @@ To set up the Amplitude source connector, you'll need your Amplitude [`API Key` 
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Amplitude** from the Source type dropdown.
 4. Enter a name for your source.
-5. For **API Key** and **Secret Key**, enter the Amplitude [API key and secret key](https://help.amplitude.com/hc/en-us/articles/360058073772-Create-and-manage-organizations-and-projects#view-and-edit-your-project-information).
-6. For **Replication Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-7. Click **Set up source**.
+5. For **API Key** and **Secret Key**, enter your Amplitude API key and secret key.
+6. For **Replication Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Data added on and after this date is replicated. If this field is blank, Airbyte replicates all data.
+7. Optionally, configure the following fields:
+   - **Data Region**: Select **EU Residency Server** if your Amplitude project is hosted in the EU data center. Defaults to **Standard Server**.
+   - **Request Time Range**: The time interval in hours for each Events stream request. Reduce this value if event exports time out due to large data volumes. Defaults to 24 hours. See [Amplitude's Export API considerations](https://amplitude.com/docs/apis/analytics/export#considerations) for details.
+   - **Active Users Group by Country**: When enabled, the Active Users stream groups results by country. Disable this if you encounter errors fetching the Active Users stream. Enabled by default.
+8. Click **Set up source**.
 
-## Supported Streams
+## Supported streams
 
 The Amplitude source connector supports the following streams:
 
-- [Active Users Counts](https://www.docs.developers.amplitude.com/analytics/apis/dashboard-rest-api/#get-active-and-new-user-counts) \(Incremental sync\)
-- [Annotations](https://www.docs.developers.amplitude.com/analytics/apis/chart-annotations-api/#get-all-chart-annotations)
-- [Average Session Length](https://www.docs.developers.amplitude.com/analytics/apis/dashboard-rest-api/#get-average-session-length) \(Incremental sync\)
-- [Cohorts](https://www.docs.developers.amplitude.com/analytics/apis/behavioral-cohorts-api/#get-all-cohorts-response)
-- [Events](https://www.docs.developers.amplitude.com/analytics/apis/export-api/#response-schema) \(Incremental sync\)
+- [Active Users Counts](https://amplitude.com/docs/apis/analytics/dashboard-rest#get-active-and-new-user-counts) (Incremental sync)
+- [Annotations](https://amplitude.com/docs/apis/analytics/chart-annotations#get-all-chart-annotations)
+- [Average Session Length](https://amplitude.com/docs/apis/analytics/dashboard-rest#get-average-session-length) (Incremental sync)
+- [Cohorts](https://amplitude.com/docs/apis/analytics/behavioral-cohorts#get-all-cohorts)
+- [Events](https://amplitude.com/docs/apis/analytics/export#response-schema) (Incremental sync)
 - [Events List](https://amplitude.com/docs/apis/analytics/dashboard-rest#get-events-list)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
+If there are more endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 <!-- env:oss -->
 
@@ -38,18 +48,13 @@ The Amplitude source connector supports the following [sync modes](https://docs.
 - Full Refresh
 - Incremental
 
-## Connector-specific features
-
-There are two data region servers supported by Airbyte:
-
-- Standard Server
-- EU Residency Server
-
-The `Standard Server` will be the default option until you change it in the Optional fields.
-
 ## Performance considerations
 
-The Amplitude connector ideally should gracefully handle Amplitude API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues/new/choose) if you see any rate limit issues that are not automatically retried successfully.
+The connector automatically handles Amplitude's [API rate limits](https://amplitude.com/docs/apis/analytics/dashboard-rest#rate-limits). The Dashboard REST API enforces cost-based rate limits with a budget of 108,000 cost per hour and 1,000 cost per 5-minute burst window, plus a maximum of 5 concurrent requests. The connector tracks per-request costs and throttles automatically to stay within these limits.
+
+The Export API (used by the Events stream) doesn't have documented rate limits, but large exports can time out. If you experience timeouts, reduce the **Request Time Range** in the connector configuration.
+
+If you encounter rate limit issues that are not automatically retried, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Changelog
 
@@ -59,7 +64,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0.7.30 | 2026-03-31 | [75406](https://github.com/airbytehq/airbyte/pull/75406) | Upgrade CDK to v7.14.0 and use weight-based rate limiting for Dashboard REST API streams |
-| 0.7.29 | 2026-03-02 | [70841](https://github.com/airbytehq/airbyte/pull/70841) | feat(source-amplitude): Add HTTPAPIBudget and concurrency_level (AI-Triage PR) |
+| 0.7.29 | 2026-03-03 | [70841](https://github.com/airbytehq/airbyte/pull/70841) | Add HTTPAPIBudget and concurrency_level |
 | 0.7.28 | 2026-01-20 | [71912](https://github.com/airbytehq/airbyte/pull/71912) | Update dependencies |
 | 0.7.27 | 2026-01-14 | [71434](https://github.com/airbytehq/airbyte/pull/71434) | Update dependencies |
 | 0.7.26 | 2025-12-18 | [70795](https://github.com/airbytehq/airbyte/pull/70795) | Update dependencies |
