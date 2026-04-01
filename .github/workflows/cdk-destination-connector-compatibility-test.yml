@@ -17,7 +17,7 @@ jobs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true # Needed for when airbyte-enterprise calls this workflow
 
@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
 
