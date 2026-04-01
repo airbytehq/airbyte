@@ -7,9 +7,9 @@ from unittest.mock import MagicMock, patch
 import paramiko
 import pytest
 from paramiko.ssh_exception import SSHException
+from source_sftp_bulk.client import SFTPClient, _parse_private_key
 
 from airbyte_cdk import AirbyteTracedException
-from source_sftp_bulk.client import SFTPClient, _parse_private_key
 
 
 def test_client_exception():
@@ -60,10 +60,12 @@ def test_parse_private_key_auto_detects_key_type(failing_classes, succeeding_cla
 
 def test_parse_private_key_unrecognized_format_raises_config_error():
     """All key classes fail => AirbyteTracedException with config_error."""
-    with patch.object(paramiko.RSAKey, "from_private_key", side_effect=paramiko.SSHException("fail")), \
-         patch.object(paramiko.Ed25519Key, "from_private_key", side_effect=paramiko.SSHException("fail")), \
-         patch.object(paramiko.ECDSAKey, "from_private_key", side_effect=paramiko.SSHException("fail")), \
-         patch.object(paramiko.DSSKey, "from_private_key", side_effect=paramiko.SSHException("fail")):
+    with (
+        patch.object(paramiko.RSAKey, "from_private_key", side_effect=paramiko.SSHException("fail")),
+        patch.object(paramiko.Ed25519Key, "from_private_key", side_effect=paramiko.SSHException("fail")),
+        patch.object(paramiko.ECDSAKey, "from_private_key", side_effect=paramiko.SSHException("fail")),
+        patch.object(paramiko.DSSKey, "from_private_key", side_effect=paramiko.SSHException("fail")),
+    ):
         with pytest.raises(AirbyteTracedException, match="Failed to parse private key"):
             _parse_private_key("invalid-key-content")
 
@@ -71,8 +73,10 @@ def test_parse_private_key_unrecognized_format_raises_config_error():
 def test_parse_private_key_catches_value_error():
     """ValueError from a key class is caught and the next class is tried."""
     mock_key = MagicMock(spec=paramiko.Ed25519Key)
-    with patch.object(paramiko.RSAKey, "from_private_key", side_effect=ValueError("bad data")), \
-         patch.object(paramiko.Ed25519Key, "from_private_key", return_value=mock_key):
+    with (
+        patch.object(paramiko.RSAKey, "from_private_key", side_effect=ValueError("bad data")),
+        patch.object(paramiko.Ed25519Key, "from_private_key", return_value=mock_key),
+    ):
         result = _parse_private_key("fake-key-content")
         assert result is mock_key
 
@@ -80,9 +84,11 @@ def test_parse_private_key_catches_value_error():
 def test_client_with_private_key_calls_parse():
     """SFTPClient passes private_key through _parse_private_key."""
     mock_key = MagicMock(spec=paramiko.RSAKey)
-    with patch("source_sftp_bulk.client._parse_private_key", return_value=mock_key) as mock_parse, \
-         patch.object(paramiko, "Transport", MagicMock()), \
-         patch.object(paramiko, "SFTPClient", MagicMock()):
+    with (
+        patch("source_sftp_bulk.client._parse_private_key", return_value=mock_key) as mock_parse,
+        patch.object(paramiko, "Transport", MagicMock()),
+        patch.object(paramiko, "SFTPClient", MagicMock()),
+    ):
         client = SFTPClient(
             host="localhost",
             username="username",
@@ -95,9 +101,11 @@ def test_client_with_private_key_calls_parse():
 
 def test_client_without_private_key_skips_parse():
     """SFTPClient with no private_key does not call _parse_private_key."""
-    with patch("source_sftp_bulk.client._parse_private_key") as mock_parse, \
-         patch.object(paramiko, "Transport", MagicMock()), \
-         patch.object(paramiko, "SFTPClient", MagicMock()):
+    with (
+        patch("source_sftp_bulk.client._parse_private_key") as mock_parse,
+        patch.object(paramiko, "Transport", MagicMock()),
+        patch.object(paramiko, "SFTPClient", MagicMock()),
+    ):
         client = SFTPClient(
             host="localhost",
             username="username",

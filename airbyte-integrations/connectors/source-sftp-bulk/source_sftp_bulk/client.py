@@ -13,6 +13,7 @@ from paramiko.ssh_exception import AuthenticationException
 
 from airbyte_cdk import AirbyteTracedException, FailureType
 
+
 _KEY_CLASSES = [
     paramiko.RSAKey,
     paramiko.Ed25519Key,
