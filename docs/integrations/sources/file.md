@@ -106,6 +106,31 @@ This is the globally unique name of the storage account that the desired blob si
 - `SAS Token`: [Find more information here](https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 - `Shared Key`: [Find more information here](https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-shared-key).
 </FieldAnchor>
+
+#### Google Drive
+
+To replicate a file stored in Google Drive, select **HTTPS** as the Storage Provider and use the following URL format:
+
+```text
+https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]
+```
+
+Replace `[DRIVE_FILE_ID]` with the file's unique identifier. You can find this ID in the file's Share URL, which follows this pattern:
+
+```text
+https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing
+```
+
+For example, if the Share URL of your file is `https://drive.google.com/file/d/1BbCFos-eTKlWNnbbHHLgR9SwAcLalK0l/view?usp=sharing`, the `DRIVE_FILE_ID` is `1BbCFos-eTKlWNnbbHHLgR9SwAcLalK0l` and the URL to enter in the connector is:
+
+```text
+https://drive.google.com/uc?export=download&id=1BbCFos-eTKlWNnbbHHLgR9SwAcLalK0l
+```
+
+:::note
+The file must be publicly accessible or shared with "Anyone with the link" for this connector to access it.
+:::
+
 <FieldAnchor field="provider[SSH],provider[SCP],provider[SFTP]">
 
 #### SSH: Secure Shell / SCP: Secure Copy Protocol / SFTP: Secure File Transfer Protocol
@@ -152,7 +177,7 @@ Please set these to an existing absolute path on your machine. Colons in the pat
 1. For **URL**, enter the _URL path_ of the file to be replicated.
 
 :::note
-When connecting to a file located in **Google Drive**, please note that you need to utilize the Download URL format: `example: https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]`. `[DRIVE_FILE_ID]` should be replaced with the unique string found in the Share URL specific to Google Drive. You can find the Share URL by visiting `example: https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing`.
+When connecting to a file stored in **Google Drive**, use the download URL format: `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]`. Replace `[DRIVE_FILE_ID]` with the unique identifier from the file's Share URL. For more details and an example, see the [Google Drive](#google-drive) section above.
 
 When connecting to a file using **Azure Blob Storage**, please note that we account for the base URL. Therefore, you should only need to include the path to your specific file (eg `container/file.csv`).
 :::
