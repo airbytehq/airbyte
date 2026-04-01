@@ -251,7 +251,7 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
-              echo "::notice::Merged PR #$PR_NUMBER: $PR_TITLE"
+              echo "::notice::Merged PR ${PR_NUMBER}: ${PR_TITLE}"
               exit 0
             fi
             echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
@@ -262,7 +262,7 @@ jobs:
 
       - name: Dry-run notice
         if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
-        run: echo "::notice::DRY RUN -- would merge PR #$PR_NUMBER"
+        run: echo "::notice::DRY RUN -- would merge PR ${PR_NUMBER}"
 
   # ---------- Job 3: Force merge (bypass CI checks) ----------
   force-merge:
@@ -372,7 +372,7 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
-              echo "::notice::Force-merged PR #$PR_NUMBER: $PR_TITLE"
+              echo "::notice::Force-merged PR ${PR_NUMBER}: ${PR_TITLE}"
               exit 0
             fi
             echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
@@ -383,4 +383,4 @@ jobs:
 
       - name: Dry-run notice
         if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
-        run: echo "::notice::DRY RUN -- would force-merge PR #$PR_NUMBER"
+        run: echo "::notice::DRY RUN -- would force-merge PR ${PR_NUMBER}"
