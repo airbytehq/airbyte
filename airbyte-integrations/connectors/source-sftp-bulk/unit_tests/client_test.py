@@ -1,7 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
-import io
 from unittest.mock import MagicMock, patch
 
 import paramiko
