@@ -172,7 +172,7 @@ jobs:
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Install Poe
         if: matrix.connector
@@ -254,7 +254,7 @@ jobs:
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Install system dependencies
         if: matrix.connector
@@ -369,7 +369,7 @@ jobs:
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Install system dependencies
         if: matrix.connector
@@ -430,7 +430,7 @@ jobs:
           fetch-depth: 0
       - name: Install uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Install Poe
         if: matrix.connector
@@ -488,7 +488,7 @@ jobs:
 
       - name: Install uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       # Java deps (needed for JVM connector Docker image builds via Gradle)
       # TODO: Consider making this conditional on connector language to skip for non-JVM connectors.
