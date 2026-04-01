@@ -142,15 +142,6 @@ jobs:
       - name: Set today's date
         run: echo "TODAY=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
 
-      - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
-
-      - name: Install airbyte-ops CLI
-        run: uv tool install airbyte-internal-ops
-
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
         uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
@@ -160,24 +151,30 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
 
+      # Checkout with the App token so git push authenticates as the
+      # GitHub App. Pushes made with GITHUB_TOKEN do not trigger
+      # pull_request workflows; pushes made with a GitHub App token do.
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+
       - name: Get GitHub App User ID
         id: get-user-id
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: echo "user-id=$(gh api "/users/${{ steps.get-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
 
-      # Re-checkout with the App token so git push authenticates as the
-      # GitHub App. Pushes made with GITHUB_TOKEN do not trigger
-      # pull_request workflows; pushes made with a GitHub App token do.
-      - name: Re-checkout with App token
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-        with:
-          token: ${{ steps.get-app-token.outputs.token }}
-
       - name: Configure git author
         run: |
           git config --global user.name '${{ steps.get-app-token.outputs.app-slug }}[bot]'
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
 
       - name: Docker login
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
