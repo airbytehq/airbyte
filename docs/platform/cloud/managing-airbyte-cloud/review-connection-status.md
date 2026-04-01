@@ -75,7 +75,6 @@ The stream status allows you to monitor an individual stream's latest status. Co
 | ![Queued](./assets/connection_not_yet_synced.png)               | **Queued**               | The stream hasn't synced yet, and is going to sync in the current ongoing sync                                                           |
 | ![Queued for next sync](./assets/connection_not_yet_synced.png) | **Queued for next sync** | The stream hasn't synced yet, and is going to sync in the next scheduled sync                                                            |
 | ![Error](./assets/connection_incomplete.png)                    | **Error**                | The connection didn't succeed on its most recent sync, but Airbyte expects it to recover on the next one                                                 |
-
 | ![Action Required](./assets/connection_action_required.png)     | **Action Required**      | A breaking change related to the source or destination requires attention to resolve                                                               |
 
 :::note
