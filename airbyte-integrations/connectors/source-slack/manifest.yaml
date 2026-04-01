@@ -292,7 +292,7 @@ definitions:
         $ref: "#/definitions/channel_messages_stream/retriever/record_selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ not config.get('threads_ignore_no_replies', false) or record.reply_count > 0 }}"
+          condition: "{{ not config.get('threads_ignore_no_replies', false) or (record.reply_count or 0) > 0 }}"
 
   threads_stream:
     $ref: "#/definitions/stream_base"

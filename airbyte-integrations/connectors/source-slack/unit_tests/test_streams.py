@@ -272,16 +272,16 @@ def test_threads_stream_skips_messages_without_replies_when_enabled(requests_moc
     token_config["channel_filter"] = []
     token_config["threads_ignore_no_replies"] = True
 
-    # Channel 1: one message with replies, one without
+    # Channel 1: one message with replies, one with reply_count=0, one with reply_count=None
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
         [
-            {"json": {"messages": [{"ts": 1577866844, "reply_count": 3}, {"ts": 1577877406, "reply_count": 0}]}},
+            {"json": {"messages": [{"ts": 1577866844, "reply_count": 3}, {"ts": 1577877406, "reply_count": 0}, {"ts": 1577888888, "reply_count": None}]}},
             {"json": {"messages": []}},
         ],
     )
-    # Channel 2: one message with missing reply_count (should be filtered)
+    # Channel 2: one message with missing reply_count key entirely (should be filtered)
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
@@ -295,6 +295,7 @@ def test_threads_stream_skips_messages_without_replies_when_enabled(requests_moc
     slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
 
     # Only the message with reply_count=3 should produce a partition
+    # reply_count=0, reply_count=None, and missing reply_count should all be filtered out
     assert len(slices) == 1
     assert slices[0]["float_ts"] == 1577866844
     assert slices[0]["parent_slice"]["channel"] == "airbyte-for-beginners"
@@ -304,20 +305,21 @@ def test_threads_stream_includes_all_messages_by_default(requests_mock, token_co
     """
     Verify that when threads_ignore_no_replies is not set (default=False),
     all messages are passed through as partitions, preserving current behavior.
+    This includes messages with reply_count=None (null from API).
     """
     token_config["channel_filter"] = []
     # Do NOT set threads_ignore_no_replies — should default to False
 
-    # Channel 1: one message with replies, one without
+    # Channel 1: messages with various reply_count values including None
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
         [
-            {"json": {"messages": [{"ts": 1577866844, "reply_count": 3}, {"ts": 1577877406, "reply_count": 0}]}},
+            {"json": {"messages": [{"ts": 1577866844, "reply_count": 3}, {"ts": 1577877406, "reply_count": 0}, {"ts": 1577888888, "reply_count": None}]}},
             {"json": {"messages": []}},
         ],
     )
-    # Channel 2: one message with missing reply_count
+    # Channel 2: one message with missing reply_count key
     requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
@@ -330,8 +332,8 @@ def test_threads_stream_includes_all_messages_by_default(requests_mock, token_co
     stream = get_stream_by_name("threads", token_config)
     slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
 
-    # All 3 messages should produce partitions (no filtering when disabled)
-    assert len(slices) == 3
+    # All 4 messages should produce partitions (no filtering when disabled)
+    assert len(slices) == 4
 
 
 def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
