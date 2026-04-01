@@ -7,7 +7,7 @@ N.B: This guide currently only applies to Python CDK connectors.
 
 ## Prerequisite
 
-[Install the airbyte-ci tool](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)
+Ensure you have the [Airbyte CDK](https://pypi.org/project/airbyte-cdk/) installed.
 
 ## Definition of a successful migration
 
@@ -36,7 +36,7 @@ In other word, using the image digest (sha256), we have the guarantee that a bui
 
 ### What if my connector needs specific system dependencies?
 
-Declaring the base image in the metadata.yaml file makes the Dockerfile obselete and the connector will be built using our internal build process declared [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/connectors/build_image/steps/python_connectors.py#L55).
+Declaring the base image in the metadata.yaml file makes the Dockerfile obsolete and the connector will be built using our internal build process.
 If your connector has specific system dependencies, or has to set environment variables, we have a pre/post build hook framework for that.
 
 You can customize our build process by adding a `build_customization.py` module to your connector.
@@ -65,14 +65,4 @@ async def post_connector_install(connector_container: Container) -> Container:
 
 ### Listing migrated / non migrated connectors:
 
-To list all migrated certified connectors you can ran:
-
-```bash
-airbyte-ci connectors --support-level=certified --metadata-query="data.connectorBuildOptions.baseImage is not None" list
-```
-
-To list all non migrated certified connectors you can ran:
-
-```bash
-airbyte-ci connectors --metadata-query="data.supportLevel == 'certified' and 'connectorBuildOptions' not in data.keys()" list
-```
+You can check connector metadata files to see which connectors have migrated to the base image by looking for the `data.connectorBuildOptions.baseImage` key in their `metadata.yaml` files.
