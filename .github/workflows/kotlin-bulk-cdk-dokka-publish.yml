@@ -38,7 +38,7 @@ jobs:
         # Push triggers will require the checked-out code.
         id: detect-changes
         if: github.event_name != 'workflow_dispatch'
-        uses: dorny/paths-filter@v3.0.2
+        uses: dorny/paths-filter@v4.0.1
         with:
           filters: |
             bulk-cdk:
