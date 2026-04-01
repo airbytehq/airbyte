@@ -221,8 +221,8 @@ To enable a test suite, add the suite name to the `connectorTestSuitesOptions` l
             alias: airbyte-connector-testing-secret-store
 ```
 
-#####  Default paths and conventions
- 
+##### Default paths and conventions
+
 The CI pipeline will automatically locate specific test types based on established conventions and will automatically store secret files (when needed) in the established secrets directory - which should be already excluded from accidental git commits.
 
 **Python connectors**
