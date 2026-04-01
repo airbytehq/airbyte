@@ -100,6 +100,8 @@ In addition to user-created tags, Airbyte can automatically apply system-generat
 
 When you enable [on-demand capacity](/platform/cloud/managing-airbyte-cloud/manage-data-workers#on-demand-capacity) for a connection, Airbyte automatically applies a "Burst" tag. This tag has an orange gradient background with a star icon and is visually distinct from user-created tags.
 
+![Burst tag](images/burst-tag.png)
+
 - The Burst tag appears automatically when you enable "Use on-demand capacity" in a connection's Settings.
 - The Burst tag is removed automatically when you disable on-demand capacity.
 - You can filter the Connections page by the Burst tag to see all on-demand connections.
