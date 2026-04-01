@@ -71,7 +71,7 @@ We require you to install and configure the following Kubernetes tooling:
 
 We also require you to create a Kubernetes namespace for your Airbyte deployment:
 
-```
+```bash
 kubectl create namespace airbyte
 ```
 
@@ -886,7 +886,7 @@ You may choose to use your own service account instead of the Airbyte default, `
 
 To do this, add the following to your `values.yaml`:
 
-```
+```yaml
 serviceAccount:
   name:
 ```

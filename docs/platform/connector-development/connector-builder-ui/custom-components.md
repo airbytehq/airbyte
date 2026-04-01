@@ -99,7 +99,6 @@ If you're deploying Airbyte using public Helm charts without abctl, follow the s
       --version 2.x.x                # Helm chart version to use
     ```
 
-
 :::caution
 Monitor your deployment for any security or performance issues. Remember that this feature allows execution of arbitrary code in your Airbyte environment.
 :::

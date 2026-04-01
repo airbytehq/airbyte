@@ -194,7 +194,6 @@ To set up single sign on for Airbyte Self-Managed Enterprise, complete the follo
 - [Update Airbyte's values.yaml file](#sme-update-values)
 - [Redeploy Airbyte](#sme-deploy)
 
-
 ### Create application {#sme-entra-id-app}
 
 To start, you create a new Entra ID application for Airbyte.

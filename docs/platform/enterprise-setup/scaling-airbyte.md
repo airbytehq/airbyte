@@ -10,15 +10,16 @@ Once you've completed the initial installation of Airbyte Self-Managed Enterpris
 
 The primary driver of increased resource usage in Airbyte is the number of concurrent syncs running at any given time. Each concurrent sync requires at least 3 additional connector pods to be running at once (`orchestrator`, `read`, `write`). For example, 10 concurrent syncs require 30 additional pods in your namespace. Connector pods last only for the duration of a sync, and will be appended by the ID of the ongoing job.
 
-If your deployment of Airbyte is intended to run many concurrent syncs at once (e.g. an overnight backfill), you are likely to require an increased number of instances to run all syncs. 
+If your deployment of Airbyte is intended to run many concurrent syncs at once (e.g. an overnight backfill), you are likely to require an increased number of instances to run all syncs.
 
 ### Connector CPU & Memory Settings
 
 Some connectors are memory and CPU intensive, while others are not. Using an infrastructure monitoring tool, we recommend measuring the following at all times:
-* Requested CPU %
-* CPU Usage %
-* Requested Memory %
-* Memory Usage %
+
+- Requested CPU %
+- CPU Usage %
+- Requested Memory %
+- Memory Usage %
 
 If your nodes are under high CPU or Memory usage, we recommend scaling up your Airbyte deployment to a larger number of nodes, or reducing the maximum resource usage by any given connector pod. If high _requested_ CPU or memory usage is blocking new pods from being scheduled, while _used_ CPU or memory is low, you may modify connector pod provisioning defaults in your `values.yaml` file:
 
@@ -142,7 +143,7 @@ For business-critical applications of Airbyte, you may want to configure a Disas
 
 We recommend turning off `DEBUG` logs for any non-testing use of Self-Managed Airbyte. Failing to do while running at-scale syncs may result in the `server` pod being overloaded, preventing most of the deployment for operating as normal.
 
-## Schema Discovery Timeouts 
+## Schema Discovery Timeouts
 
 While configuring a database source connector with hundreds to thousands of tables, each with many columns, the one-time `discover` mechanism - by which we discover the topology of your source - may run for a long time and exceed Airbyte's timeout duration. Should this be the case, you may increase Airbyte's timeout limit as follows:
 

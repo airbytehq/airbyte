@@ -17,10 +17,9 @@ If you're a Self-Managed Enterprise customer, skip this guide. Instead, follow t
 Airbyte is built to be deployed into a Kubernetes cluster.
 You can use a Cloud Provider, such as, AWS, GCP, Azure, or onto a single node, such as an EC2 VM, or even locally on your computer.
 
-We highly recommend deploying Airbyte using Helm and the documented Helm chart values. 
+We highly recommend deploying Airbyte using Helm and the documented Helm chart values.
 
 Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
-
 
 The [Infrastructure](infrastructure/aws) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
 
@@ -64,10 +63,10 @@ kubectl create namespace airbyte
 
 ### 3. Create a values.yaml override file
 
-To configure your installation of Airbyte, you will need to override specific parts of the Helm Chart. To do this you should create a new file called `values.yaml` somewhere that is accessible during the installation process. 
+To configure your installation of Airbyte, you will need to override specific parts of the Helm Chart. To do this you should create a new file called `values.yaml` somewhere that is accessible during the installation process.
 The documentation has been created to "build up" a values.yaml, so there is no need to copy the whole of the Chart values.yaml. You only need to provide the specific overrides.
 
-Each [Integration](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file may look like the following: 
+Each [Integration](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file may look like the following:
 
 ```yaml title="values.yaml"
 global:
@@ -83,8 +82,9 @@ Each of these integrations will require you to create a secret upfront. For inst
 Each of these integrations can be configured to suit your specific needs and is described in the [Integration](#integrations) section. Each of these integrations has its own section where you'll find an explanation for why it's useful to configure the integration. There, you'll also find details about how to configure the integration.
 
 Before you can configure this stuff in a cloud provider, you need to set up your policies:
-* [AWS Policies](./infrastructure/aws.md#policies)
-* [GCP Policies](./infrastructure/gcp.md#policies)
+
+- [AWS Policies](./infrastructure/aws.md#policies)
+- [GCP Policies](./infrastructure/gcp.md#policies)
 
 After your policies are set up, here's a list of customizations.
 
@@ -157,5 +157,5 @@ You can now access the UI in your browser at: http://127.0.0.1:8080.
 If you'd like to set up a more permanent ingress checkout our ingress customization. For a deployment to a local machine we recommend using [nginx](./integrations/ingress.md) as an easy-to-setup option.
 
 :::note
-As part of maintaining your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
+As part of maintaining your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details.
 :::

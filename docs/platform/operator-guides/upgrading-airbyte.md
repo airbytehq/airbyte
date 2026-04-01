@@ -7,10 +7,10 @@ import TabItem from '@theme/TabItem';
 
 # Upgrading Airbyte
 
-Upgrades require temporarily turning off Airbyte. During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 
+Upgrades require temporarily turning off Airbyte. During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded:
 
    1. If you're not using a connector, Airbyte upgrades it to the latest version.
-   
+
    2. If you're using a connector, Airbyte does not upgrade it, to avoid disrupting your work. If you want to upgrade a specific connector, do so from the settings page.
 
 Refer to [Managing Connector Updates](/platform/managing-airbyte/connector-updates) for more details about keeping connectors updated.

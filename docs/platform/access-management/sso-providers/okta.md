@@ -200,10 +200,10 @@ Create the application with the following parameters:
 
 Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 
-* Okta domain ([How to find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
-* App Integration Name
-* Client ID
-* Client Secret
+- Okta domain ([How to find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
+- App Integration Name
+- Client ID
+- Client Secret
 
 (Optional) To allow users to access Airbyte directly from their Okta dashboard, configure IdP-Initiated Login. In the **General** tab of your Airbyte application, scroll to **Login initiated by** and configure the following settings:
 
@@ -225,7 +225,6 @@ To set up single sign using generic OIDC for Airbyte Self-Managed Enterprise, co
 - [Add a policy for Airbyte](#sme-policy)
 - [Update Airbyte's values.yaml file](#sme-values)
 - [Redeploy Airbyte](#sme-deploy)
-
 
 ### Create an Okta app for Airbyte {#sme-create-okta-app}
 

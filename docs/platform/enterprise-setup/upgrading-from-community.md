@@ -14,7 +14,7 @@ These instructions are for you if:
 - You are currently deploying Airbyte on Kubernetes.
 - You are comfortable with an in-place upgrade. This guide does not dual-write to a new Airbyte deployment.
 
-### Step 1: Update Airbyte Open Source
+## Step 1: Update Airbyte Open Source
 
 You must first update to the latest Open Source Community release. We assume you are running the following steps from the root of the `airbytehq/airbyte-platform` cloned repo.
 
@@ -25,11 +25,11 @@ You must first update to the latest Open Source Community release. We assume you
 helm upgrade [RELEASE_NAME] airbyte/airbyte
 ```
 
-### Step 2: Configure Self-Managed Enterprise
+## Step 2: Configure Self-Managed Enterprise
 
 Update your `values.yaml` file as explained in the [Self-Managed Enterprise implementation guide](./implementation-guide.md). Avoid making any changes to your external database or log storage configuration at this time.
 
-### Step 3: Deploy Self-Managed Enterprise
+## Step 3: Deploy Self-Managed Enterprise
 
 1. You can now run the following command to upgrade your instance to Self-Managed Enterprise. If you previously included additional `values` files on your existing deployment, be sure to add these here as well:
 
