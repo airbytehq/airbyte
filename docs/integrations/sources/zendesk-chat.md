@@ -84,6 +84,7 @@ The Zendesk Chat API enforces a rate limit of [200 requests per minute](https://
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.8 | 2026-03-31 | [75858](https://github.com/airbytehq/airbyte/pull/75858) | Update dependencies |
 | 1.3.7 | 2026-03-17 | [74324](https://github.com/airbytehq/airbyte/pull/74324) | Migrate to scopes object array format |
 | 1.3.6 | 2026-03-17 | [75116](https://github.com/airbytehq/airbyte/pull/75116) | Update dependencies |
 | 1.3.5 | 2026-03-10 | [74671](https://github.com/airbytehq/airbyte/pull/74671) | Update dependencies |
