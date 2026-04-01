@@ -263,6 +263,42 @@ def test_backoff(requests_mock, token_config, authenticator, headers, expected_r
     assert len(output.records) == expected_result
 
 
+def test_threads_stream_skips_messages_without_replies(requests_mock, token_config):
+    """
+    Verify that the threads stream only creates partitions for parent messages
+    with reply_count > 0 via the channel_messages_with_replies_stream RecordFilter.
+    Messages with reply_count=0 or missing reply_count should be filtered out.
+    """
+    token_config["channel_filter"] = []
+
+    # Channel 1: one message with replies, one without
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [
+            {"json": {"messages": [{"ts": 1577866844, "reply_count": 3}, {"ts": 1577877406, "reply_count": 0}]}},
+            {"json": {"messages": []}},
+        ],
+    )
+    # Channel 2: one message with missing reply_count (should be filtered)
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [
+            {"json": {"messages": [{"ts": 1577866844}]}},
+            {"json": {"messages": []}},
+        ],
+    )
+
+    stream = get_stream_by_name("threads", token_config)
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
+
+    # Only the message with reply_count=3 should produce a partition
+    assert len(slices) == 1
+    assert slices[0]["float_ts"] == 1577866844
+    assert slices[0]["parent_slice"]["channel"] == "airbyte-for-beginners"
+
+
 def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
     """
     The test uses the `conversations_list` fixture(autouse=true) as API mocker.

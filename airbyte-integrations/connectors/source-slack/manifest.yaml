@@ -284,6 +284,16 @@ definitions:
       schema:
         $ref: "#/schemas/channel_messages"
 
+  channel_messages_with_replies_stream:
+    $ref: "#/definitions/channel_messages_stream"
+    retriever:
+      $ref: "#/definitions/channel_messages_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/channel_messages_stream/retriever/record_selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.reply_count > 0 }}"
+
   threads_stream:
     $ref: "#/definitions/stream_base"
     $parameters:
@@ -324,12 +334,11 @@ definitions:
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        type: CustomPartitionRouter
-        class_name: "source_declarative_manifest.components.ThreadsPartitionRouter"
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/definitions/channel_messages_stream"
+              $ref: "#/definitions/channel_messages_with_replies_stream"
             # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
             # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
             # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
@@ -337,8 +346,6 @@ definitions:
             incremental_dependency: true
             parent_key: ts
             partition_field: float_ts
-            extra_fields:
-              - ["reply_count"]
             request_option:
               type: RequestOption
               field_name: "ts"
