@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
@@ -116,13 +116,13 @@ sealed class FeedBootstrap<T : Feed>(
 
         override fun accept(
             recordData: NativeRecordPayload,
-            changes: Map<Field, FieldValueChange>?
+            changes: Map<EmittedField, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toJson())
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
-                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
+                    changes.map { (field: EmittedField, fieldValueChange: FieldValueChange) ->
                         AirbyteRecordMessageMetaChange()
                             .withField(field.id)
                             .withChange(fieldValueChange.protocolChange())
@@ -230,7 +230,7 @@ sealed class FeedBootstrap<T : Feed>(
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
         override fun accept(
             recordData: NativeRecordPayload,
-            changes: Map<Field, FieldValueChange>?
+            changes: Map<EmittedField, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(
@@ -240,7 +240,7 @@ sealed class FeedBootstrap<T : Feed>(
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
                 val c =
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
-                changes.forEach { (field: Field, fieldValueChange: FieldValueChange) ->
+                changes.forEach { (field: EmittedField, fieldValueChange: FieldValueChange) ->
                     c.clear()
                         .setField(field.id)
                         .setChange(fieldValueChange.protobufChange())
@@ -493,7 +493,7 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?)
+    fun accept(recordData: NativeRecordPayload, changes: Map<EmittedField, FieldValueChange>?)
     fun close()
 }
 

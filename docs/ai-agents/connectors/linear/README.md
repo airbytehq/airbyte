@@ -24,6 +24,9 @@ The Linear connector is optimized to handle prompts like these.
 - Assign a recent issue to a teammate
 - Unassign the current assignee from a recent issue
 - Reassign a recent issue from one teammate to another
+- Create a new issue in the 'Backend Improvements' project
+- Add a recent issue to a specific project
+- Move an issue to a different project
 - Analyze the workload distribution across my development team
 - What are the top priority issues in our current sprint?
 - Identify the most active projects in our organization right now
@@ -121,7 +124,7 @@ See the official [Linear API reference](https://linear.app/developers/graphql).
 
 ## Version information
 
-- **Package version:** 0.19.117
-- **Connector version:** 0.1.11
-- **Generated with Connector SDK commit SHA:** bbb4625615c5a514170db99dfb0a413153726447
+- **Package version:** 0.19.122
+- **Connector version:** 0.1.14
+- **Generated with Connector SDK commit SHA:** 4a9d86940cf9c8e65c0668776b4d8f4e129753ec
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/linear/CHANGELOG.md)

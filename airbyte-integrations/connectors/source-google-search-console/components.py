@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional
 
@@ -9,6 +10,9 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+
+
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -130,6 +134,35 @@ class CustomReportExtractDimensionsFromKeys(RecordTransformation):
             record[dimension] = record["keys"].pop(0)
 
         record.pop("keys")
+
+
+@dataclass
+class SanitizeNumericFields(RecordTransformation):
+    """
+    Ensures numeric metric fields are JSON-serializable by guarding against non-standard
+    Python numeric types (e.g., complex) that can cause serialization failures and deadlocks
+    in the concurrent read pipeline.
+
+    See: https://github.com/airbytehq/airbyte/issues/74883
+    """
+
+    NUMERIC_FIELDS = ("clicks", "impressions", "ctr", "position")
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        for field_name in self.NUMERIC_FIELDS:
+            value = record.get(field_name)
+            if value is not None and isinstance(value, complex):
+                logger.warning(
+                    "Complex value encountered for field '%s'. Using real component only.",
+                    field_name,
+                )
+                record[field_name] = value.real
 
 
 @dataclass

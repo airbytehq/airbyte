@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.14.0@sha256:5b95dd9e71defeece4a1efb27688b15e482f18c82c745498611846466b72403e
   connectorSubtype: api
   connectorType: source
   definitionId: 9023923c-002f-4131-9554-3ebdf56540a4
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-granola
   documentationUrl: https://docs.airbyte.com/integrations/sources/granola
   githubIssueLabel: source-granola
