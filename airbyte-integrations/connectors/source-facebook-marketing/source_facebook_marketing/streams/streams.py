@@ -14,9 +14,9 @@ from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
