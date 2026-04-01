@@ -2299,7 +2299,7 @@ spec:
         consent_url: "https://app.hubspot.com/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}&{{optional_scopes_param}}"
         access_token_url: "https://api.hubapi.com/oauth/v1/token"
         access_token_headers:
-          Content-Type: "application/json"
+          Content-Type: "application/x-www-form-urlencoded"
         access_token_params:
           client_id: "{{ client_id_value }}"
           client_secret: "{{ client_secret_value }}"
