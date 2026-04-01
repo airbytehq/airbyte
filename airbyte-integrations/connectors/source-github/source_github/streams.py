@@ -190,11 +190,11 @@ class GithubStreamABC(HttpStream, ABC):
 
             self.logger.warning(error_msg)
         except GitHubAPILimitException as e:
-            internal_message = (
-                f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
-            )
-            message = "Rate Limits for all provided tokens are reached. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/github#limitations--troubleshooting"
-            raise AirbyteTracedException(internal_message=internal_message, message=message, failure_type=FailureType.config_error) from e
+            internal_message = f"Stream: `{self.name}`, slice: `{stream_slice}`. {e}"
+            message = "Rate limit exceeded for all configured GitHub API tokens."
+            raise AirbyteTracedException(
+                internal_message=internal_message, message=message, failure_type=FailureType.transient_error
+            ) from e
 
 
 class GithubStream(GithubStreamABC):

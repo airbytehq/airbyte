@@ -242,7 +242,7 @@ class SourceGithub(AbstractSource):
         # This parameter is deprecated and in future will be used sane default, page_size: 10
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
-        max_waiting_time = config.get("max_waiting_time", 10) * 60
+        max_waiting_time = config.get("max_waiting_time", 120) * 60
         organization_args = {
             "authenticator": authenticator,
             "organizations": organizations,
