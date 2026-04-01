@@ -3,6 +3,7 @@
 #
 
 import logging
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import cache
@@ -178,6 +179,13 @@ class FBMarketingStream(Stream, ABC):
                 state[account_id] = account_state
         return state
 
+    # Retry parameters for FacebookBadObjectError during record iteration.
+    # Uses exponential backoff: 5s, 10s, 20s, 40s before the final attempt.
+    # Note: because read_records is a generator, duplicate records may be
+    # emitted when a retry re-reads from the beginning of the result set.
+    _bad_object_max_retries = 5
+    _bad_object_backoff_factor = 5
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -189,24 +197,37 @@ class FBMarketingStream(Stream, ABC):
         account_id = stream_slice["account_id"]
         account_state = stream_slice.get("stream_state", {})
 
-        try:
-            for record in self.list_objects(
-                params=self.request_params(stream_state=account_state),
-                account_id=account_id,
-            ):
-                if isinstance(record, AbstractObject):
-                    record = record.export_all_data()  # convert FB object to dict
-                self.fix_date_time(record)
-                self.add_account_id(record, account_id)
-                yield record
-        except FacebookBadObjectError as e:
-            raise AirbyteTracedException(
-                message="Facebook API returned inconsistent object data.",
-                internal_message=str(e),
-                failure_type=FailureType.transient_error,
-            ) from e
-        except FacebookRequestError as exc:
-            raise traced_exception(exc)
+        for attempt in range(self._bad_object_max_retries):
+            try:
+                for record in self.list_objects(
+                    params=self.request_params(stream_state=account_state),
+                    account_id=account_id,
+                ):
+                    if isinstance(record, AbstractObject):
+                        record = record.export_all_data()  # convert FB object to dict
+                    self.fix_date_time(record)
+                    self.add_account_id(record, account_id)
+                    yield record
+                return  # completed successfully
+            except FacebookBadObjectError as e:
+                if attempt < self._bad_object_max_retries - 1:
+                    wait_time = self._bad_object_backoff_factor * (2**attempt)
+                    logger.warning(
+                        "FacebookBadObjectError on attempt %d/%d, retrying in %ds (duplicate records may be emitted): %s",
+                        attempt + 1,
+                        self._bad_object_max_retries,
+                        wait_time,
+                        e,
+                    )
+                    time.sleep(wait_time)
+                else:
+                    raise AirbyteTracedException(
+                        message="Facebook API returned inconsistent object data.",
+                        internal_message=str(e),
+                        failure_type=FailureType.transient_error,
+                    ) from e
+            except FacebookRequestError as exc:
+                raise traced_exception(exc)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         if stream_state:
@@ -397,31 +418,44 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         account_id = stream_slice["account_id"]
         account_state = stream_slice.get("stream_state")
 
-        try:
-            records_iter = self.list_objects(
-                params=self.request_params(stream_state=account_state),
-                account_id=account_id,
-            )
-            account_cursor = self._cursor_values.get(account_id)
-            max_cursor_value = None
+        for attempt in range(self._bad_object_max_retries):
+            try:
+                records_iter = self.list_objects(
+                    params=self.request_params(stream_state=account_state),
+                    account_id=account_id,
+                )
+                account_cursor = self._cursor_values.get(account_id)
+                max_cursor_value = None
 
-            for record in records_iter:
-                record_cursor_value = record[self.cursor_field]
-                if account_cursor and record_cursor_value < account_cursor:
-                    break
+                for record in records_iter:
+                    record_cursor_value = record[self.cursor_field]
+                    if account_cursor and record_cursor_value < account_cursor:
+                        break
 
-                max_cursor_value = max(max_cursor_value, record_cursor_value) if max_cursor_value else record_cursor_value
-                record = record.export_all_data()
-                self.fix_date_time(record)
-                self.add_account_id(record, account_id)
-                yield record
+                    max_cursor_value = max(max_cursor_value, record_cursor_value) if max_cursor_value else record_cursor_value
+                    record = record.export_all_data()
+                    self.fix_date_time(record)
+                    self.add_account_id(record, account_id)
+                    yield record
 
-            self._cursor_values[account_id] = max_cursor_value
-        except FacebookBadObjectError as e:
-            raise AirbyteTracedException(
-                message="Facebook API returned inconsistent object data.",
-                internal_message=str(e),
-                failure_type=FailureType.transient_error,
-            ) from e
-        except FacebookRequestError as exc:
-            raise traced_exception(exc)
+                self._cursor_values[account_id] = max_cursor_value
+                return  # completed successfully
+            except FacebookBadObjectError as e:
+                if attempt < self._bad_object_max_retries - 1:
+                    wait_time = self._bad_object_backoff_factor * (2**attempt)
+                    logger.warning(
+                        "FacebookBadObjectError on attempt %d/%d, retrying in %ds (duplicate records may be emitted): %s",
+                        attempt + 1,
+                        self._bad_object_max_retries,
+                        wait_time,
+                        e,
+                    )
+                    time.sleep(wait_time)
+                else:
+                    raise AirbyteTracedException(
+                        message="Facebook API returned inconsistent object data.",
+                        internal_message=str(e),
+                        failure_type=FailureType.transient_error,
+                    ) from e
+            except FacebookRequestError as exc:
+                raise traced_exception(exc)

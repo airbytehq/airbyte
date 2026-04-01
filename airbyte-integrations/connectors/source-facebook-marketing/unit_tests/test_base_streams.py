@@ -132,7 +132,7 @@ def incremental_class_instance(api):
 
 
 class TestFBMarketingStreamBadObjectError:
-    """Tests for FacebookBadObjectError handling in read_records."""
+    """Tests for FacebookBadObjectError handling with retry in read_records."""
 
     def _make_stream(self, api, mocker, list_objects_side_effect):
         """Create a SomeTestStream with mocked list_objects."""
@@ -158,12 +158,43 @@ class TestFBMarketingStreamBadObjectError:
         assert result[1]["id"] == "2"
         assert all(r["account_id"] == "123" for r in result)
 
-    def test_read_records_raises_traced_exception_on_bad_object_error(self, api, mocker):
-        """read_records wraps FacebookBadObjectError in AirbyteTracedException with transient_error."""
+    def test_read_records_retries_on_bad_object_error(self, api, mocker):
+        """read_records retries after FacebookBadObjectError and succeeds."""
+        mocker.patch("source_facebook_marketing.streams.base_streams.time.sleep")
+        records = [{"id": "1", "name": "rec1"}]
         stream = self._make_stream(
             api,
             mocker,
-            list_objects_side_effect=FacebookBadObjectError("Bad data"),
+            list_objects_side_effect=[
+                FacebookBadObjectError("Bad data"),
+                records,
+            ],
+        )
+
+        result = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_slice={"account_id": "123", "stream_state": {}},
+            )
+        )
+
+        assert len(result) == 1
+        assert result[0]["id"] == "1"
+        assert stream.list_objects.call_count == 2
+
+    def test_read_records_raises_traced_exception_after_max_retries(self, api, mocker):
+        """read_records wraps FacebookBadObjectError in AirbyteTracedException after exhausting retries."""
+        mocker.patch("source_facebook_marketing.streams.base_streams.time.sleep")
+        stream = self._make_stream(
+            api,
+            mocker,
+            list_objects_side_effect=[
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+            ],
         )
 
         with pytest.raises(AirbyteTracedException) as exc_info:
@@ -177,10 +208,11 @@ class TestFBMarketingStreamBadObjectError:
         assert exc_info.value.failure_type == FailureType.transient_error
         assert exc_info.value.internal_message == "Bad data"
         assert "inconsistent object data" in exc_info.value.message.lower()
+        assert stream.list_objects.call_count == 5
 
 
 class TestFBMarketingReversedStreamBadObjectError:
-    """Tests for FacebookBadObjectError handling in reversed stream read_records."""
+    """Tests for FacebookBadObjectError handling with retry in reversed stream read_records."""
 
     def _make_fb_object(self, data: dict) -> MagicMock:
         """Create a mock Facebook object that behaves like AbstractObject."""
@@ -212,12 +244,44 @@ class TestFBMarketingReversedStreamBadObjectError:
         assert result[0]["id"] == "1"
         assert stream._cursor_values["123"] == "2024-01-15"
 
-    def test_reversed_read_records_raises_traced_exception_on_bad_object_error(self, api, mocker):
-        """read_records wraps FacebookBadObjectError in AirbyteTracedException with transient_error."""
+    def test_reversed_read_records_retries_on_bad_object_error(self, api, mocker):
+        """read_records retries after FacebookBadObjectError and succeeds."""
+        mocker.patch("source_facebook_marketing.streams.base_streams.time.sleep")
+        fb_obj = self._make_fb_object({"id": "1", "updated_time": "2024-01-15"})
         stream = self._make_stream(
             api,
             mocker,
-            list_objects_side_effect=FacebookBadObjectError("Bad data"),
+            list_objects_side_effect=[
+                FacebookBadObjectError("Bad data"),
+                [fb_obj],
+            ],
+        )
+
+        result = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_slice={"account_id": "123", "stream_state": {}},
+            )
+        )
+
+        assert len(result) == 1
+        assert result[0]["id"] == "1"
+        assert stream.list_objects.call_count == 2
+        assert stream._cursor_values["123"] == "2024-01-15"
+
+    def test_reversed_read_records_raises_traced_exception_after_max_retries(self, api, mocker):
+        """read_records wraps FacebookBadObjectError in AirbyteTracedException after exhausting retries."""
+        mocker.patch("source_facebook_marketing.streams.base_streams.time.sleep")
+        stream = self._make_stream(
+            api,
+            mocker,
+            list_objects_side_effect=[
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+            ],
         )
 
         with pytest.raises(AirbyteTracedException) as exc_info:
@@ -229,13 +293,21 @@ class TestFBMarketingReversedStreamBadObjectError:
             )
 
         assert exc_info.value.failure_type == FailureType.transient_error
+        assert stream.list_objects.call_count == 5
 
     def test_reversed_read_records_does_not_update_cursor_on_failure(self, api, mocker):
-        """Cursor state is NOT updated when FacebookBadObjectError occurs."""
+        """Cursor state is NOT updated when all retries are exhausted."""
+        mocker.patch("source_facebook_marketing.streams.base_streams.time.sleep")
         stream = self._make_stream(
             api,
             mocker,
-            list_objects_side_effect=FacebookBadObjectError("Bad data"),
+            list_objects_side_effect=[
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+                FacebookBadObjectError("Bad data"),
+            ],
         )
 
         with pytest.raises(AirbyteTracedException):

@@ -493,9 +493,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert (
-            len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
-        ), "should be 37 slices because we ignore slices which are within insights_lookback_period"
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, (
+            "should be 37 slices because we ignore slices which are within insights_lookback_period"
+        )
         assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
         assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + timedelta(days=1)
 
@@ -1047,9 +1047,9 @@ class TestBaseInsightsStream:
 
         # Check for missing breakdowns
         missing_breakdowns = [b for b in valid_breakdowns if b not in breakdowns_properties]
-        assert (
-            not missing_breakdowns
-        ), f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+        assert not missing_breakdowns, (
+            f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+        )
 
 
 class TestCalendarAlignedPeriods:
@@ -1644,7 +1644,7 @@ class TestCalendarAlignedPeriods:
 
 
 class TestInsightStreamBadObjectError:
-    """Tests for FacebookBadObjectError handling in insight stream read_records."""
+    """Tests for FacebookBadObjectError handling with retry in insight stream read_records."""
 
     def _make_stream(self, api, some_config):
         return AdsInsights(
@@ -1677,8 +1677,35 @@ class TestInsightStreamBadObjectError:
         assert len(records) == 2
         assert job.get_result.call_count == 1
 
-    def test_read_records_raises_traced_exception_on_bad_object_error(self, mocker, api, some_config):
-        """read_records raises AirbyteTracedException(transient_error) on FacebookBadObjectError."""
+    def test_read_records_retries_on_bad_object_error(self, mocker, api, some_config):
+        """read_records retries after FacebookBadObjectError and succeeds."""
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.time.sleep")
+        job = mocker.Mock(spec=InsightAsyncJob)
+        rec = mocker.Mock()
+        rec.export_all_data.return_value = {"date_start": "2010-01-01"}
+        job.get_result.side_effect = [
+            FacebookBadObjectError("Bad data"),
+            [rec, rec],
+        ]
+        job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
+
+        stream = self._make_stream(api, some_config)
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.incremental,
+                stream_slice={
+                    "insight_job": job,
+                    "account_id": some_config["account_ids"][0],
+                },
+            )
+        )
+
+        assert len(records) == 2
+        assert job.get_result.call_count == 2
+
+    def test_read_records_raises_traced_exception_after_max_retries(self, mocker, api, some_config):
+        """read_records raises AirbyteTracedException(transient_error) after exhausting retries."""
+        mocker.patch("source_facebook_marketing.streams.base_insight_streams.time.sleep")
         job = mocker.Mock(spec=InsightAsyncJob)
         job.get_result.side_effect = FacebookBadObjectError("Bad data")
         job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
@@ -1698,3 +1725,4 @@ class TestInsightStreamBadObjectError:
 
         assert exc_info.value.failure_type == FailureType.transient_error
         assert exc_info.value.internal_message == "Bad data"
+        assert job.get_result.call_count == 5
