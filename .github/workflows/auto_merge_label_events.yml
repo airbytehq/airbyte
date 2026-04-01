@@ -1,27 +1,25 @@
-name: "Auto-merge: promote draft on label"
+name: "Auto-merge: label events"
 
-# When an auto-merge label is added to a draft PR, promote it to ready
-# for review. This complements the enforce-draft-pr-status workflow:
-# if a PR is converted to draft before its auto-merge label is applied,
-# this workflow will promote it back to ready once the label arrives.
+# When the last auto-merge label is removed from a PR, disable GitHub's
+# native auto-merge so the PR no longer merges automatically.
 
 on:
   pull_request_target:
     types:
-      - labeled
+      - unlabeled
 
 jobs:
-  promote-draft:
-    name: Mark PR as Ready for Review
+  disable-auto-merge:
+    name: Disable native auto-merge
     if: >
-      github.event.pull_request.draft == true
+      github.event.action == 'unlabeled'
       && (
         github.event.label.name == 'auto-merge'
         || github.event.label.name == 'auto-merge/bypass-ci-checks'
       )
-    permissions:
-      contents: read
-      pull-requests: write
+      && !contains(github.event.pull_request.labels.*.name, 'auto-merge')
+      && !contains(github.event.pull_request.labels.*.name, 'auto-merge/bypass-ci-checks')
+    permissions: {}
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as GitHub App
@@ -33,8 +31,11 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Mark PR as ready for review
+      - name: Disable native auto-merge
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: gh pr ready "$PR_NUMBER" --repo "${{ github.repository }}"
+        run: >
+          gh pr merge "$PR_NUMBER"
+          --repo "${{ github.repository }}"
+          --disable-auto
