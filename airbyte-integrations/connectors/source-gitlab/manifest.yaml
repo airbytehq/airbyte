@@ -946,7 +946,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  default_concurrency: "{{ config.get('num_workers', 8) }}"
   max_concurrency: 25
 
 streams:
