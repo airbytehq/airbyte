@@ -3,8 +3,10 @@
 #
 
 from datetime import timedelta
+from unittest.mock import MagicMock, patch
 
 import pytest
+from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
@@ -18,8 +20,10 @@ from source_facebook_marketing.streams import (
     AdsInsightsRegion,
 )
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
-from source_facebook_marketing.streams.streams import fetch_thumbnail_data_url
+from source_facebook_marketing.streams.streams import AdCreativesFromAds, fetch_thumbnail_data_url
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
@@ -172,3 +176,60 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
     streams = source.streams(config)
     ads_insights_stream = [stream for stream in streams if "ads_insights" == stream.name][0]
     assert ads_insights_stream.request_params()["action_breakdowns"] == expected_action_breakdowns
+
+
+@pytest.mark.parametrize(
+    "exception,expected_result",
+    [
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=500,
+                http_headers={},
+                body='{"error": {"message": "An unknown error occurred", "code": 1}}',
+            ),
+            None,
+            id="facebook_request_error_returns_none",
+        ),
+        pytest.param(
+            TypeError("some type error"),
+            None,
+            id="type_error_returns_none",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Rate limit exceeded for Facebook API.",
+                failure_type=FailureType.transient_error,
+            ),
+            None,
+            id="airbyte_traced_exception_returns_none",
+        ),
+    ],
+)
+def test_fetch_creative_details_handles_exceptions(api, some_config, exception, expected_result):
+    """Test that _fetch_creative_details gracefully handles FacebookRequestError, TypeError, and AirbyteTracedException."""
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+
+    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
+        mock_creative_instance = MagicMock()
+        mock_creative_cls.return_value = mock_creative_instance
+        mock_creative_instance.api_get.side_effect = exception
+
+        result = stream._fetch_creative_details("12345")
+        assert result is expected_result
+
+
+def test_fetch_creative_details_returns_data_on_success(api, some_config):
+    """Test that _fetch_creative_details returns creative data on successful API call."""
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+    expected_data = {"id": "12345", "name": "Test Creative", "body": "Test body"}
+
+    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
+        mock_creative_instance = MagicMock()
+        mock_creative_cls.return_value = mock_creative_instance
+        mock_creative_instance.api_get.return_value = mock_creative_instance
+        mock_creative_instance.export_all_data.return_value = expected_data
+
+        result = stream._fetch_creative_details("12345")
+        assert result == expected_data
