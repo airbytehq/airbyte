@@ -60,17 +60,12 @@ class PostgresSourceDebeziumOperations(
     private val config: PostgresSourceConfiguration,
     private val connectionFactory: PostgresSourceJdbcConnectionFactory,
     private val replicationSlotManager: ReplicationSlotManager,
-    startupState: StartupState?,
+    private val startupState: StartupState?,
 ) :
     CdcPartitionsCreatorDebeziumOperations<PostgresSourceCdcPosition>,
     CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition> {
 
     private val log = KotlinLogging.logger {}
-    private val startup: StartupState =
-        checkNotNull(startupState) {
-            "StartupState bean is required for CDC but was not instantiated"
-        }
-
     private val cdcConfig: CdcIncrementalConfiguration by lazy { config.cdc!! }
 
     companion object {
@@ -156,6 +151,10 @@ class PostgresSourceDebeziumOperations(
     }
 
     override fun generateColdStartOffset(): DebeziumOffset {
+        val startup: StartupState =
+            checkNotNull(this.startupState) {
+                "StartupState bean is required for CDC but was not instantiated"
+            }
         val key =
             Jsons.arrayNode()
                 .add(config.database)
