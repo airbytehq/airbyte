@@ -292,7 +292,7 @@ definitions:
         $ref: "#/definitions/channel_messages_stream/retriever/record_selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ record.reply_count > 0 }}"
+          condition: "{{ not config.get('threads_ignore_no_replies', false) or record.reply_count > 0 }}"
 
   threads_stream:
     $ref: "#/definitions/stream_base"
@@ -442,6 +442,11 @@ spec:
         examples:
           - channel_one
           - channel_two
+      threads_ignore_no_replies:
+        type: boolean
+        default: false
+        title: Ignore messages with no replies in threads stream
+        description: When enabled, the threads stream will skip messages that have no replies (reply_count=0), reducing the number of API calls. By default this is disabled to preserve current behavior.
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate into Slack
