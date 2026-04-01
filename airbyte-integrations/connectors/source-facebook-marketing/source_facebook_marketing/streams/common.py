@@ -10,6 +10,7 @@ from datetime import timedelta
 from typing import Any
 
 import backoff
+import requests.exceptions
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
@@ -57,6 +58,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def reduce_request_record_limit(details):
         _, exc, _ = sys.exc_info()
+        if not isinstance(exc, FacebookRequestError):
+            return
         # the list of error patterns to track,
         # in order to reduce the request page size and retry
         error_patterns = [
@@ -88,8 +91,16 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         details.get("args")[0].request_record_limit_is_reduced = False
 
     def give_up(details):
-        if isinstance(details["exception"], FacebookRequestError):
-            raise traced_exception(details["exception"])
+        exc = details["exception"]
+        if isinstance(exc, FacebookRequestError):
+            raise traced_exception(exc)
+        if isinstance(exc, requests.exceptions.ConnectionError):
+            raise AirbyteTracedException(
+                message="Connection to Facebook API interrupted during data transfer. This is typically a transient network issue.",
+                internal_message=str(exc),
+                failure_type=FailureType.transient_error,
+                exception=exc,
+            )
 
     def is_transient_cannot_include_error(exc: FacebookRequestError) -> bool:
         """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
