@@ -305,13 +305,16 @@ jobs:
         run: gh pr ready "$PR_NUMBER"
 
       # --- Step 9: Push changelog commit to the PR branch ---
+      # bump-version modifies files in both the connector dir and the
+      # docs changelog (docs/integrations/…), so we stage everything.
       - name: Push changelog commit to PR branch
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
           PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
-          git add "$CONNECTOR_DIR"
+          git add "$CONNECTOR_DIR" docs/
+          git diff --cached --stat
           git commit -m "deps($CONNECTOR_NAME): bump version and update changelog"
           git push origin "$PR_BRANCH"
 
