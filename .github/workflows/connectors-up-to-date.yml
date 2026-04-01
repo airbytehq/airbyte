@@ -166,16 +166,18 @@ jobs:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: echo "user-id=$(gh api "/users/${{ steps.get-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
 
-      - name: Configure git author and push credentials
-        env:
-          APP_TOKEN: ${{ steps.get-app-token.outputs.token }}
+      # Re-checkout with the App token so git push authenticates as the
+      # GitHub App. Pushes made with GITHUB_TOKEN do not trigger
+      # pull_request workflows; pushes made with a GitHub App token do.
+      - name: Re-checkout with App token
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+
+      - name: Configure git author
         run: |
           git config --global user.name '${{ steps.get-app-token.outputs.app-slug }}[bot]'
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
-          # Replace the default GITHUB_TOKEN remote credential with the App token.
-          # Pushes made with GITHUB_TOKEN do not trigger pull_request workflows;
-          # pushes made with a GitHub App token do.
-          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${{ github.repository }}.git"
 
       - name: Docker login
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
