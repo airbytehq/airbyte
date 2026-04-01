@@ -48,7 +48,7 @@ jobs:
       # forks if the user installs the app into their fork. Until we document this as a clear
       # path, we will have to keep using the PAT.
       - name: Checkout Airbyte
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ steps.job-vars.outputs.repo }}
           ref: ${{ steps.job-vars.outputs.branch }}
