@@ -153,7 +153,7 @@ class PostgresSourceDebeziumOperations(
     override fun generateColdStartOffset(): DebeziumOffset {
         val state: StartupState =
             checkNotNull(startupState) {
-                "StartupState bean is required for CDC cold-start but was not instantiated"
+                "StartupState bean is required for CDC but was not instantiated"
             }
         val key =
             Jsons.arrayNode()
