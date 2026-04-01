@@ -281,9 +281,10 @@ jobs:
           PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
-          git checkout -- .
+          git stash --include-untracked
           git fetch --depth=1 origin "$PR_BRANCH"
           git checkout "$PR_BRANCH"
+          git stash pop
           git add "$CONNECTOR_DIR"
           git commit -m "chore($CONNECTOR_NAME): bump version and update changelog"
           git push origin "$PR_BRANCH"
