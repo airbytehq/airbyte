@@ -280,6 +280,10 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
+| 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |
+| 2.9.26 | 2026-02-25 | [73632](https://github.com/airbytehq/airbyte/pull/73632) | fix(source-google-analytics-data-api): use GA4 today keyword for timezone-correct end dates (AI-Triage PR) |
+| 2.9.25 | 2026-02-24 | [73750](https://github.com/airbytehq/airbyte/pull/73750) | Update dependencies |
 | 2.9.24 | 2026-02-17 | [73404](https://github.com/airbytehq/airbyte/pull/73404) | Update dependencies |
 | 2.9.23 | 2026-02-10 | [73067](https://github.com/airbytehq/airbyte/pull/73067) | Update dependencies |
 | 2.9.22 | 2026-02-03 | [72590](https://github.com/airbytehq/airbyte/pull/72590) | Update dependencies |

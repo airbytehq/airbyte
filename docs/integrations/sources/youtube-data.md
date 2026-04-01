@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [YouTube Da
 
 </HideInUI>
 
-The YouTube Data API v3 provides access to YouTube data, such as videos, playlists, channels, comments, and simple stats. This connector is a simpler version of the YouTube connector. If you need more detailed reports from your channel, use the [YouTube Analytics Connector](https://docs.airbyte.com/integrations/sources/youtube-analytics).
+This connector uses the [YouTube Data API v3](https://developers.google.com/youtube/v3) to sync data about your YouTube channels, including video details, channel metadata, and comments. For more detailed analytics and reporting data, use the [YouTube Analytics connector](https://docs.airbyte.com/integrations/sources/youtube-analytics).
 
 ## Prerequisites
 
@@ -120,6 +120,9 @@ The YouTube Data API source connector supports the following sync modes:
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.51 | 2026-03-17 | [74392](https://github.com/airbytehq/airbyte/pull/74392) | Migrate to scopes object array format |
+| 0.0.50 | 2026-03-17 | [74698](https://github.com/airbytehq/airbyte/pull/74698) | Update dependencies |
+| 0.0.49 | 2026-03-03 | [73914](https://github.com/airbytehq/airbyte/pull/73914) | Update dependencies |
 | 0.0.48 | 2026-02-17 | [73507](https://github.com/airbytehq/airbyte/pull/73507) | Update dependencies |
 | 0.0.47 | 2026-02-10 | [73175](https://github.com/airbytehq/airbyte/pull/73175) | Update dependencies |
 | 0.0.46 | 2026-01-27 | [72066](https://github.com/airbytehq/airbyte/pull/72066) | Update dependencies |

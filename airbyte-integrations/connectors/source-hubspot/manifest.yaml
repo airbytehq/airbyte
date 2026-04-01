@@ -1,4 +1,4 @@
-version: 6.51.0
+version: 6.52.0
 
 type: DeclarativeSource
 
@@ -40,7 +40,8 @@ definitions:
       $ref: "#/definitions/base_error_handler"
 
   base_error_handler:
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -48,7 +49,7 @@ definitions:
       - type: ExponentialBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
-        action: RETRY
+        action: RATE_LIMITED
         http_codes:
           - 429
         error_message: >-
@@ -61,7 +62,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -91,7 +92,8 @@ definitions:
   error_handler_ignore_403:
     # Same as the base error handler, but ignores 403 errors
     # to avoid failing the sync when fetching dynamic streams.
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -99,7 +101,7 @@ definitions:
       - type: ExponentialBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
-        action: RETRY
+        action: RATE_LIMITED
         http_codes:
           - 429
         error_message: >-
@@ -112,7 +114,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -1440,14 +1442,13 @@ definitions:
             type: SimpleRetriever
             requester:
               $ref: "#/definitions/base_requester"
-              path: "/properties/v2/{{ parameters['entity'] }}/properties"
-            decoder:
-              type: JsonDecoder
+              path: "/crm/v3/properties/{{ parameters['entity'] }}"
             record_selector:
               type: RecordSelector
               extractor:
                 type: DpathExtractor
-                field_path: []
+                field_path:
+                  - results
         request_body_json:
           limit: 200
           sorts:
@@ -1942,6 +1943,31 @@ definitions:
       schema:
         $ref: "#/schemas/properties"
 
+  account_details_stream:
+    $ref: "#/definitions/stream_without_pagination"
+    name: account_details
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /account-info/v3/details
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/account_details"
+    $parameters:
+      name: account_details
+      path: /account-info/v3/details
+      required_scopes: oauth
+
 streams:
   - "#/definitions/campaigns_stream"
   - "#/definitions/companies_stream"
@@ -1976,6 +2002,7 @@ streams:
   - "#/definitions/tickets_stream"
   - "#/definitions/workflows_stream"
   - "#/definitions/properties_stream"
+  - "#/definitions/account_details_stream"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2331,6 +2358,52 @@ concurrency_level:
   max_concurrency: 40
 
 schemas:
+  account_details:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      accountType:
+        type:
+          - "string"
+          - "null"
+      additionalCurrencies:
+        type:
+          - "array"
+          - "null"
+        items:
+          type:
+            - "string"
+            - "null"
+      companyCurrency:
+        type:
+          - "string"
+          - "null"
+      dataHostingLocation:
+        type:
+          - "string"
+          - "null"
+      portalId:
+        type:
+          - "number"
+          - "null"
+      timeZone:
+        type:
+          - "string"
+          - "null"
+      uiDomain:
+        type:
+          - "string"
+          - "null"
+      utcOffset:
+        type:
+          - "string"
+          - "null"
+      utcOffsetMilliseconds:
+        type:
+          - "number"
+          - "null"
+
   contact_lists:
     $schema: http://json-schema.org/draft-07/schema#
     type:

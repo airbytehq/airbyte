@@ -176,7 +176,7 @@ jobs:
 
       - name: Start AI documentation recommendation session
         if: steps.validate.outputs.valid == 'true' && steps.pr-files.outputs.has_connector_changes == 'true'
-        uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
+        uses: aaronsteers/devin-action@main
         with:
           comment-id: ${{ inputs.comment-id }}
           issue-number: ${{ inputs.pr }}
@@ -184,6 +184,8 @@ jobs:
           github-token: ${{ steps.get-app-token.outputs.token }}
           playbook-macro: "!connectordocs_pr_review"
           prompt-text: "The pull request to review is ${{ inputs.pr }}."
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           start-message: "AI Docs Review session starting... Analyzing connector changes and preparing documentation recommendations."
           tags: |
             area/documentation
