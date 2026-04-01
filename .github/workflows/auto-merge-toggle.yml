@@ -5,7 +5,7 @@
 #    labels so the scheduled auto_merge.yml cron no longer re-processes
 #    the PR.
 
-name: "Auto-merge: native auto-merge events"
+name: "Auto-Merge Toggle"
 on:
   pull_request_target:
     types: [auto_merge_enabled, auto_merge_disabled]

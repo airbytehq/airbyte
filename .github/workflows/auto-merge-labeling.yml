@@ -1,4 +1,4 @@
-name: "Auto-merge: label events"
+name: "Auto-Merge Labeling"
 
 # When the last auto-merge label is removed from a PR, disable GitHub's
 # native auto-merge so the PR no longer merges automatically.
