@@ -147,7 +147,7 @@ jobs:
           fetch-depth: 1
 
       # Java deps
-      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         if: matrix.connector
         with:
           distribution: zulu
@@ -156,7 +156,7 @@ jobs:
 
       # The default behaviour is read-only on PR branches and read/write on master.
       # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
-      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
           gradle-version: "8.14"
@@ -339,14 +339,14 @@ jobs:
           fetch-depth: 1
 
       # Java deps
-      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         if: matrix.connector
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
           cache-read-only: false
@@ -492,14 +492,14 @@ jobs:
 
       # Java deps (needed for JVM connector Docker image builds via Gradle)
       # TODO: Consider making this conditional on connector language to skip for non-JVM connectors.
-      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         if: matrix.connector
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
         if: matrix.connector
         with:
           gradle-version: "8.14"
@@ -598,7 +598,7 @@ jobs:
         if: >
           always() && !cancelled() &&
           steps.get-app-token.outcome == 'success'
-        uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23 # v2.0.0
+        uses: LouisBrunner/checks-action@dfcbcf801bff1ea7f1414824fc28f2cd697b35da # v3.0.0
         with:
           name: "Connector CI Checks Summary" # << Name of the 'Required' check
           sha: ${{ needs.generate-matrix.outputs.commit-sha }}
