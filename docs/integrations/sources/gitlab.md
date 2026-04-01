@@ -50,7 +50,7 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group IDs, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Workers** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Workers** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 10. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
 **Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector retrieves a list of all groups accessible to the configured token and ingests as normal.
@@ -109,12 +109,13 @@ This connector uses GitLab API v4. It works with both GitLab.com and self-hosted
 
 ### Rate limits
 
-GitLab.com enforces per-endpoint rate limits on its REST API. The following defaults apply to [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
+GitLab.com enforces per-endpoint rate limits on its REST API. The following defaults apply to the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
 
 | Endpoint | Rate limit |
 | :--- | :--- |
 | `GET /groups` | 200 requests/min |
 | `GET /groups/:id` | 400 requests/min |
+| `GET /groups/:id/descendant_groups` | 200 requests/min |
 | `GET /projects/:id` | 400 requests/min |
 | `GET /groups/:id/members/all` | 200 requests/min |
 | `GET /projects/:id/members/all` | 200 requests/min |
@@ -135,6 +136,7 @@ The connector silently skips any group, project, or resource that returns an HTT
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.23-rc.4 | 2026-03-31 | [75915](https://github.com/airbytehq/airbyte/pull/75915) | Re-enable HTTPAPIBudget with concurrency 10 for rate limit protection during progressive rollout |
 | 4.4.23-rc.3 | 2026-03-27 | [75537](https://github.com/airbytehq/airbyte/pull/75537) | Increase default concurrency from 8 to 10 for progressive rollout tuning |
 | 4.4.23-rc.2 | 2026-03-25 | [75480](https://github.com/airbytehq/airbyte/pull/75480) | Comment out HTTPAPIBudget to isolate concurrency tuning during progressive rollout |
 | 4.4.23-rc.1 | 2026-03-09 | [70858](https://github.com/airbytehq/airbyte/pull/70858) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
