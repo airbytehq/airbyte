@@ -31,7 +31,7 @@ jobs:
         with:
           add_markdown: |
             > [!IMPORTANT]
-            > **Auto-merge enabled.**
+            > ⚡ **Auto-merge enabled.**
             > 
             > _This PR is set to merge automatically when all requirements are met._
 
