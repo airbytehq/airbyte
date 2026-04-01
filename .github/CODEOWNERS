@@ -38,9 +38,46 @@
 /airbyte-integrations/connectors/source-*/ @airbytehq/dbsources
 
 # -----------------------------------------------------------------------------
-# DESTINATION CONNECTORS
+# DESTINATION CONNECTORS (certified and/or JDK-based only)
 # -----------------------------------------------------------------------------
-/airbyte-integrations/connectors/destination-*/ @airbytehq/move-destinations
+# Only certified or JDK-based destination connectors are owned by
+# @airbytehq/move-destinations. Community/non-JDK connectors are excluded
+# to avoid unnecessary review requests (e.g. dependabot bumps).
+/airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-bigquery/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-clickhouse/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-csv/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-customer-io/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-databricks/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-dev-null/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-dynamodb/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-elasticsearch/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-elasticsearch-strict-encrypt/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-gcs/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-gcs-data-lake/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-hubspot/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-kafka/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-local-json/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-mongodb/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-mongodb-strict-encrypt/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-motherduck/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-mssql/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-mysql/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-mysql-strict-encrypt/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-oracle/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-oracle-strict-encrypt/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-pinecone/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-postgres/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-pubsub/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-redis/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-redshift/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-s3/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-s3-data-lake/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-singlestore/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-snowflake/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-starburst-galaxy/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-teradata/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-yellowbrick/ @airbytehq/move-destinations
 
 # Destination documentation
 /docs/integrations/destinations/ @airbytehq/move-destinations
