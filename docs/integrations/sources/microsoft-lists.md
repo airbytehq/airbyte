@@ -91,7 +91,7 @@ https://graph.microsoft.com/.default
 | **Tenant ID** | The Directory (tenant) ID from Step 4. |
 | **Domain** | Your SharePoint domain, such as `contoso.sharepoint.com`. |
 
-3. Click **Set up source**.
+1. Click **Set up source**.
 
 <HideInUI>
 
