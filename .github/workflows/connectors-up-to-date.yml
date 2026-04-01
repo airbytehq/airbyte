@@ -248,7 +248,7 @@ jobs:
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           author: "${{ steps.get-app-token.outputs.app-slug }}[bot] <${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com>"
-          commit-message: "deps(${{ env.CONNECTOR_NAME }}): update dependencies [skip ci]"
+          commit-message: "deps(${{ env.CONNECTOR_NAME }}): update dependencies"
           branch: "up-to-date/${{ env.CONNECTOR_NAME }}"
           delete-branch: true
           title: "deps(${{ env.CONNECTOR_NAME }}): 🐙 update dependencies [${{ env.TODAY }}]"
