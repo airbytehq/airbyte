@@ -4,6 +4,11 @@
 # 2. Disabled: updates the PR description notice and removes auto-merge
 #    labels so the scheduled auto_merge.yml cron no longer re-processes
 #    the PR.
+#
+# Note: Adding an `auto-merge*` label no longer auto-promotes draft PRs.
+# The connectors_up_to_date pipeline handles draft promotion and auto-merge
+# enablement directly. Draft PRs must be explicitly marked "Ready for review"
+# before native auto-merge and label-based automation will take effect.
 
 name: "Auto-Merge Toggle"
 
