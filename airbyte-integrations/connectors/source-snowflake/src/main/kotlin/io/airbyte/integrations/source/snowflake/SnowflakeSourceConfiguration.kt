@@ -13,6 +13,8 @@ import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
 
 private val log = KotlinLogging.logger {}
 
@@ -37,6 +39,9 @@ data class SnowflakeSourceConfiguration(
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
+    val startDate: String? = null,
+    val endDate: String? = null,
+    val fullRefreshTemporalColumn: String? = null,
 ) : JdbcSourceConfiguration {
     override val global = false
     override val maxSnapshotReadDuration: Duration? =
@@ -125,6 +130,24 @@ class SnowflakeSourceConfigurationFactory :
         }
         val incrementalConfiguration: IncrementalConfiguration =
             UserDefinedCursorIncrementalConfiguration
+
+        // Validate and parse optional date range bounds
+        fun parseDate(field: String, value: String?): LocalDate? {
+            if (value == null) return null
+            return try {
+                LocalDate.parse(value)
+            } catch (e: DateTimeParseException) {
+                throw ConfigErrorException("$field must be in YYYY-MM-DD format, got: $value")
+            }
+        }
+        val parsedStartDate = parseDate("start_date", pojo.startDate)
+        val parsedEndDate = parseDate("end_date", pojo.endDate)
+        if (parsedStartDate != null && parsedEndDate != null && parsedStartDate > parsedEndDate) {
+            throw ConfigErrorException(
+                "start_date ($parsedStartDate) must not be after end_date ($parsedEndDate)"
+            )
+        }
+
         return SnowflakeSourceConfiguration(
             realHost = realHost,
             jdbcUrlFmt = jdbcUrlFmt,
@@ -135,6 +158,9 @@ class SnowflakeSourceConfigurationFactory :
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            startDate = pojo.startDate,
+            endDate = pojo.endDate,
+            fullRefreshTemporalColumn = pojo.fullRefreshTemporalColumn,
         )
     }
 
