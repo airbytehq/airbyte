@@ -1,7 +1,9 @@
 name: Stale Issue action
 on:
+  workflow_dispatch:
   schedule:
-    - cron: "0 9 * * *"
+    - cron: "0 1 * * *"
+      timezone: "America/Los_Angeles"
 
 jobs:
   close-issues:
