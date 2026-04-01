@@ -285,14 +285,6 @@ jobs:
               ;;
           esac
 
-      # We're intentionally not using the `google-github-actions/auth` action.
-      # The upload-additional-connector-metadata step runs a script which handles auth
-      # manually, because we're writing files to multiple buckets using different
-      # credentials for each bucket.
-      - name: Install gcloud
-        # v2.1.5
-        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
-
       - name: Publish to Python Registry
         id: publish-python-registry
         if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
@@ -307,24 +299,6 @@ jobs:
         if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
         run: |
           echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
-
-      - name: Upload Python Dependencies to GCS
-        id: upload-python-dependencies-master
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
-        run: |
-          ./poe-tasks/upload-python-dependencies.sh \
-            --name ${{ matrix.connector }} \
-            --bucket prod-airbyte-cloud-connector-metadata-service \
-            --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
-
-      - name: "[DRY-RUN] Skip Upload Python Dependencies to GCS"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping Python Dependencies upload for ${{ matrix.connector }}"
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
@@ -373,16 +347,6 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Upload additional connector metadata (spec cache + SBOM)
-        id: upload-additional-connector-metadata
-        if: needs.publish_options.outputs.dry-run != 'true'
-        shell: bash
-        run: ./poe-tasks/upload-additional-connector-metadata.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
-        env:
-          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
-
       # --- Registry artifact generation and publishing ---
 
       - name: Enable progressive rollout for RC builds
@@ -428,15 +392,17 @@ jobs:
             registry connector-version artifacts generate \
             --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             --docker-image "${DOCKER_IMAGE}" \
-            --output-dir ./registry-artifacts \
-            --with-validate
+            --output-dir ./registry-artifacts/${{ matrix.connector }} \
+            --with-validate \
+            --with-sbom \
+            --with-dependency-dump
 
       - name: Upload Registry CI Artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: registry-artifacts-${{ matrix.connector }}-${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
-          path: ./registry-artifacts/
+          path: ./registry-artifacts/${{ matrix.connector }}/
           retention-days: 7
 
       - name: Publish Registry Artifacts
@@ -452,7 +418,7 @@ jobs:
             registry connector-version artifacts publish \
             --name "${{ matrix.connector }}" \
             --version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
-            --artifacts-dir ./registry-artifacts \
+            --artifacts-dir ./registry-artifacts/${{ matrix.connector }} \
             --store "${REGISTRY_STORE}" \
             --with-validate
 
@@ -477,7 +443,7 @@ jobs:
         run: |
           echo "Creating RC metadata marker for ${{ matrix.connector }}"
           airbyte-ops \
-            registry rc create \
+            registry progressive-rollout create \
             --name "${{ matrix.connector }}" \
             --store "${REGISTRY_STORE}"
 
@@ -495,11 +461,13 @@ jobs:
             RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
           fi
 
-          # Determine release type label
+          # Determine release type label and emoji
           if [[ "$SEMVER_SUFFIX" == "none" || -z "$SEMVER_SUFFIX" ]]; then
             RELEASE_TYPE="GA"
+            EMOJI="🟢"
           else
-            RELEASE_TYPE="Pre-release (${SEMVER_SUFFIX})"
+            RELEASE_TYPE="Pre-release"
+            EMOJI="🔵"
           fi
 
           # Build URLs for hyperlinks
@@ -514,6 +482,7 @@ jobs:
           fi
 
           echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "emoji=$EMOJI" >> $GITHUB_OUTPUT
           echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
           echo "dockerhub-url=$DOCKERHUB_URL" >> $GITHUB_OUTPUT
           echo "cloud-registry-url=$CLOUD_REGISTRY_URL" >> $GITHUB_OUTPUT
@@ -528,7 +497,7 @@ jobs:
             {
               "channel": "#connector-publish-updates",
               "username": "Connectors CI/CD Bot",
-              "text": "✅ *${{ steps.success-context.outputs.release-type }} Publish SUCCESS:*\nConnector: <${{ steps.success-context.outputs.dockerhub-url }}|airbyte/${{ matrix.connector }}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}>\nRegistry: <${{ steps.success-context.outputs.cloud-registry-url }}|cloud.json> · <${{ steps.success-context.outputs.oss-registry-url }}|oss.json>\n<${{ steps.success-context.outputs.run-url }}|View workflow run>${{ steps.success-context.outputs.pr-text }}"
+              "text": "${{ steps.success-context.outputs.emoji }} *${{ steps.success-context.outputs.release-type }} Publish SUCCESS:*\nConnector: <${{ steps.success-context.outputs.dockerhub-url }}|airbyte/${{ matrix.connector }}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}>\nReference: <${{ steps.success-context.outputs.cloud-registry-url }}|cloud.json> · <${{ steps.success-context.outputs.oss-registry-url }}|oss.json> · <${{ steps.success-context.outputs.run-url }}|CI Logs>${{ steps.success-context.outputs.pr-text }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}

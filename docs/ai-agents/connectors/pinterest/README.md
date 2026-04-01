@@ -122,7 +122,7 @@ See the official [Pinterest API reference](https://developers.pinterest.com/docs
 
 ## Version information
 
-- **Package version:** 0.1.4
-- **Connector version:** 0.1.1
-- **Generated with Connector SDK commit SHA:** 6ad04bc3fb66fc474336c37d69c79fb843ea1609
+- **Package version:** 0.1.8
+- **Connector version:** 0.1.2
+- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/pinterest/CHANGELOG.md)
