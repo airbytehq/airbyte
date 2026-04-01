@@ -63,6 +63,6 @@ async def post_connector_install(connector_container: Container) -> Container:
     return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
 ```
 
-### Listing migrated / non migrated connectors:
+### Listing migrated / non migrated connectors
 
 You can check connector metadata files to see which connectors have migrated to the base image by looking for the `data.connectorBuildOptions.baseImage` key in their `metadata.yaml` files.
