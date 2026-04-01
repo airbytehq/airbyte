@@ -49,7 +49,7 @@ More information on HubSpot authentication methods can be found
 
 These instructions are only relevant if you are using a **Private App** for authentication. You can ignore this if you are authenticating via OAuth.
 
-To set up a Private App, you must manually configure scopes to ensure Airbyte can sync all available data. Each scope relates to a specific stream or streams. Please refer to [Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
+To set up a Private App, you must manually configure scopes to ensure Airbyte can sync all available data. Each scope relates to a specific stream or streams. Refer to [HubSpot's documentation on scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) for instructions.
 
 <details>
   <summary>Expand to review scopes</summary>
@@ -158,40 +158,40 @@ There are two types of incremental sync:
 
 The HubSpot source connector supports the following streams:
 
-- [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data) \(Client-Side Incremental\)
+- [Campaigns](https://developers.hubspot.com/docs/api/marketing/campaigns) \(Client-Side Incremental\)
 - [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
 - [Contact Lists](https://developers.hubspot.com/docs/reference/api/crm/lists#post-%2Fcrm%2Fv3%2Flists%2Fsearch) \(Incremental\)
-- [Contacts](https://developers.hubspot.com/docs/methods/contacts/get_contacts) \(Incremental\)
-- [Deal Pipelines](https://developers.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type) \(Client-Side Incremental\)
+- [Contacts](https://developers.hubspot.com/docs/api/crm/contacts) \(Incremental\)
+- [Deal Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Deal Splits](https://developers.hubspot.com/docs/api/crm/deals) \(Incremental\)
 - [Deals](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
   - Records that have been deleted (archived) and stored in HubSpot's recycle bin will only be kept for 90 days, see [response from HubSpot Team](https://community.hubspot.com/t5/APIs-Integrations/Archived-deals-deleted-or-different/m-p/714157)
 - [Deals Archived](https://developers.hubspot.com/docs/api/crm/deals) \(including Contact associations\) \(Incremental\)
-- [Email Events](https://developers.hubspot.com/docs/methods/email/get_events) \(Incremental\)
-- [Email Subscriptions](https://developers.hubspot.com/docs/methods/email/get_subscriptions)
-- [Engagements](https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements) \(Incremental\)
+- [Email Events](https://developers.hubspot.com/docs/api/marketing/email-events) \(Incremental\)
+- [Email Subscriptions](https://developers.hubspot.com/docs/api/marketing/subscriptions)
+- [Engagements](https://developers.hubspot.com/docs/api/crm/engagements) \(Incremental\)
 - [Engagements Calls](https://developers.hubspot.com/docs/api/crm/calls) \(Incremental\)
 - [Engagements Emails](https://developers.hubspot.com/docs/api/crm/email) \(Incremental\)
 - [Engagements Meetings](https://developers.hubspot.com/docs/api/crm/meetings) \(Incremental\)
 - [Engagements Notes](https://developers.hubspot.com/docs/api/crm/notes) \(Incremental\)
 - [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
 - [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
-- [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
+- [Form Submissions](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
 - [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
-- [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
-- [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
+- [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
+- [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
 - [Properties](https://developers.hubspot.com/docs/api/crm/properties) \(Full Refresh\)
-- [Contacts Property History](https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts) \(Client-Side Incremental\)
-- [Companies Property History](https://legacydocs.hubspot.com/docs/methods/companies/get-all-companies) \(Client-Side Incremental\)
-- [Deals Property History](https://legacydocs.hubspot.com/docs/methods/deals/get-all-deals) \(Client-Side Incremental\)
-- [Subscription Changes](https://developers.hubspot.com/docs/methods/email/get_subscriptions_timeline) \(Incremental\)
+- [Contacts Property History](https://developers.hubspot.com/docs/api/crm/contacts) \(Client-Side Incremental\)
+- [Companies Property History](https://developers.hubspot.com/docs/api/crm/companies) \(Client-Side Incremental\)
+- [Deals Property History](https://developers.hubspot.com/docs/api/crm/deals) \(Client-Side Incremental\)
+- [Subscription Changes](https://developers.hubspot.com/docs/api/marketing/subscriptions) \(Incremental\)
 - [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 - [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
-- [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
+- [Workflows](https://developers.hubspot.com/docs/api/automation/workflows) \(Client-Side Incremental\)
 - [ContactsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [CompaniesWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [DealsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
@@ -259,14 +259,14 @@ Expand to see details about Hubspot connector limitations and troubleshooting.
 
 ### Rate limiting
 
-The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
+The connector is restricted by normal HubSpot [rate limits](https://developers.hubspot.com/docs/developer-tooling/platform/usage-guidelines). The burst limit applies per app, and the daily limit is shared across all apps within the same HubSpot account.
 
-| Product tier     | Limits                                    |
-| :--------------- | :---------------------------------------- |
-| `Free & Starter` | Burst: 100/10 seconds, Daily: 250,000     |
-| `Professional`   | Burst: 190/10 seconds, Daily: 650,000     |
-| `Enterprise`     | Burst: 190/10 seconds, Daily: 1,000,000   |
-| `API add-on`     | Adds 1,000,000 daily requests to the tier limit |
+| Product tier               | Burst (per 10 seconds) | Daily (per account)           |
+| :------------------------- | :--------------------- | :---------------------------- |
+| Free & Starter             | 100                    | 250,000                       |
+| Professional               | 190                    | 625,000                       |
+| Enterprise                 | 190                    | 1,000,000                     |
+| API Limit Increase add-on  | 250                    | +1,000,000 per add-on (max 2) |
 
 ### Custom properties sync slowly
 
@@ -342,6 +342,8 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.3.5 | 2026-03-31 | [75665](https://github.com/airbytehq/airbyte/pull/75665) | Update dependencies |
+| 6.3.4 | 2026-03-30 | [75595](https://github.com/airbytehq/airbyte/pull/75595) | Fixed HTTP 429 responses mapped to RETRY instead of RATE_LIMITED, enabling correct rate-limit handling |
 | 6.3.3 | 2026-03-26 | [75452](https://github.com/airbytehq/airbyte/pull/75452) | Fixed HTTP 401 errors retrying indefinitely for Private App Token authentication |
 | 6.3.2 | 2026-03-17 | [74526](https://github.com/airbytehq/airbyte/pull/74526) | Update dependencies |
 | 6.3.1 | 2026-03-09 | [74410](https://github.com/airbytehq/airbyte/pull/74410) | Promoting release candidate 6.3.1-rc.1 to a main version. |
