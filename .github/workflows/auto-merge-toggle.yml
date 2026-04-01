@@ -1,3 +1,4 @@
+# Auto-merge lifecycle test -- this PR validates the workflow triggers.
 # Responds to GitHub's native auto-merge being enabled or disabled on a PR:
 #
 # 1. Enabled: adds a notice to the PR description.
