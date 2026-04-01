@@ -38,7 +38,7 @@ This helps you understand your workspace's contribution to overall organization 
 
 An infrequent instance of maximum usage probably isn't a problem. If you're regularly hitting your data worker limit, you have four options.
 
-- Accept that Airbyte may queue your connections. Queued syncs run in the order they were triggered. If a connection already has a queued sync and its next scheduled run arrives, the newer run replaces the older queued one so the most recent data syncs when capacity frees up.
+- Accept that Airbyte may queue your connections. If a connection already has a queued sync and its next scheduled run arrives, the newer run replaces the older queued one so the most recent data syncs when capacity frees up.
 
 - Reschedule some connections so they run at different times of the day, week, or month.
 

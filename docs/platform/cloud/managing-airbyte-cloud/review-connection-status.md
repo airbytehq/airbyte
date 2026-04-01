@@ -56,7 +56,7 @@ To view the connection status:
 
 On capacity-based Cloud plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
 
-Queued jobs run in the order they were triggered. A queued job is cancelled when:
+A queued job is cancelled when:
 
 - The connection is updated, cancelled, deleted, or reset.
 - The next scheduled sync for that connection arrives. The newer sync replaces the queued one so the most recent data syncs when capacity frees up.
