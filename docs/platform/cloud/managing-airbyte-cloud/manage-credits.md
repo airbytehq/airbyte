@@ -99,7 +99,7 @@ On-demand credit consumption appears in your billing alongside other credit usag
 
 By default, all customers automatically review upcoming invoice notifications 3 and 7 days before the invoice is finalized. All billing notifications are sent to the billing email on file.
 
-You can also enroll in billing notifications for your organization. Airbyte highly recommends enrolling in billing notifications to ensure you stay up-to-date on your upcoming invoices. If you use on-demand capacity, consider setting up billing alerts to monitor premium credit consumption. For more information about managing capacity, see [Monitor data worker usage](./manage-data-workers.md).
+You can also enroll in billing notifications for your organization. Airbyte highly recommends enrolling in billing notifications to ensure you stay up-to-date on your upcoming invoices.
 
 Airbyte can notify you when:
 
