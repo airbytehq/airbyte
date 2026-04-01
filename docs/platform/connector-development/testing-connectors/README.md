@@ -8,7 +8,7 @@ Multiple tests suites compose the Airbyte connector testing pyramid
 - Unit Tests: Connector-specific tests written by the connector developer which don’t require access to the source/destination.
 - Integration Tests: Connector-specific tests written by the connector developer which _may_ require access to the source/destination.
 - [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/): Connector-agnostic tests that verify that a connector adheres to the [Airbyte protocol](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol). Credentials to a source/destination sandbox account are **required**.
-- Regression Tests (deprecated): Connector-agnostic tests that verified the behavior of a connector between versions. Previously available for API source connectors.s.
+- Regression Tests (deprecated): Connector-agnostic tests that verified the behavior of a connector between versions. Previously available for API source connectors.
 
 
 ## 🤖 CI
