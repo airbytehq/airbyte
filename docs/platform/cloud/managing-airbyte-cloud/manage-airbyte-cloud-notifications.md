@@ -26,6 +26,11 @@ You configure notifications for each workspace separately. Once you do, Airbyte 
 | **Sync Disabled - Repeated Failures**   | &#10003; | &#10003;     | Airbyte has turned off a connection due to repeated failures. It has failed 30 times consecutively and has not been successful in the last 7 days.     |
 | **Warning - Upgrade Required**          | &#10003; |              | A new connector version is available, but you need to manually upgrade.                                                                                |
 | **Sync Disabled - Upgrade Required**    | &#10003; |              | Airbyte turned off one or more connections automatically because you missed the deadline to upgrade the connector.                                     |
+| **Queued syncs**                        | &#10003; |              | A sync from any of your connections is queued due to capacity limits. Off by default. See [Monitor data worker usage](./manage-data-workers.md).      |
+
+:::note
+"Queued syncs" notifications default to off because capacity enforcement queuing is expected behavior for most organizations. Enable this notification if you want awareness when syncs are waiting for capacity.
+:::
 
 ### Enabling schema update notifications
 
@@ -189,6 +194,38 @@ Webhook doesn't contain payload and only works for Slack notifications.
   <summary>Sync Disabled - Upgrade Required</summary>
 
 Webhook doesn't contain payload and only works for Slack notifications.
+
+</details>
+<details>
+  <summary>Queued syncs</summary>
+
+```json
+{
+    "data": {
+        "workspace": {
+            "id":"b510e39b-e9e2-4833-9a3a-963e51d35fb4",
+            "name":"Workspace1",
+            "url":"https://link/to/ws"
+        },
+        "connection":{
+            "id":"64d901a1-2520-4d91-93c8-9df438668ff0",
+            "name":"Connection",
+            "url":"https://link/to/connection"
+        },
+        "source":{
+            "id":"c0655b08-1511-4e72-b7da-24c5d54de532",
+            "name":"Source",
+            "url":"https://link/to/source"
+        },
+        "destination":{
+            "id":"5621c38f-8048-4abb-85ca-b34ff8d9a298",
+            "name":"Destination",
+            "url":"https://link/to/destination"
+        },
+        "jobId":9988
+    }
+}
+```
 
 </details>
 

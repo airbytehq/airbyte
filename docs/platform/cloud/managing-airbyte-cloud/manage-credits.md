@@ -89,11 +89,17 @@ In the Invoices section, you can review any past invoices. All invoices have an 
 
 You can view more details about an individual invoice by clicking **View Invoice**.
 
+## On-demand capacity credits
+
+If your organization uses [on-demand capacity](./manage-data-workers.md#on-demand-capacity), syncs that run when committed data worker capacity is exhausted consume organization credits at a premium rate. The premium rate is determined by your contract. Contact your Airbyte representative or [talk to sales](https://airbyte.com/company/talk-to-sales) for details.
+
+On-demand credit consumption appears in your billing alongside other credit usage. If your organization runs out of credits, on-demand syncs are queued like standard syncs. Queuing does not incur any charges. Credits are only consumed when a sync runs using on-demand capacity.
+
 ## Billing notifications
 
 By default, all customers automatically review upcoming invoice notifications 3 and 7 days before the invoice is finalized. All billing notifications are sent to the billing email on file.
 
-You can also enroll in billing notifications for your organization. Airbyte highly recommends enrolling in billing notifications to ensure you stay up-to-date on your upcoming invoices.
+You can also enroll in billing notifications for your organization. Airbyte highly recommends enrolling in billing notifications to ensure you stay up-to-date on your upcoming invoices. If you use on-demand capacity, consider setting up billing alerts to monitor premium credit consumption. For more information about managing capacity, see [Monitor data worker usage](./manage-data-workers.md).
 
 Airbyte can notify you when:
 

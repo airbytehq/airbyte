@@ -63,6 +63,7 @@ You can configure the following settings:
 | [Destination Namespace](../../using-airbyte/core-concepts/namespaces)               | Determines where the replicated data is written to in the destination          |
 | [Destination Stream Prefix](../../using-airbyte/configuring-schema)                   | (Optional) Adds a prefix to each table name in the destination                  |
 | [Detect and propagate schema changes](../../using-airbyte/schema-change-management) | Set how Airbyte handles schema changes in the source                           |
+| Use on-demand capacity (Cloud only)                                                  | When enabled, syncs always run even if committed capacity is exhausted, by consuming credits at a premium rate. See [Monitor data worker usage](./manage-data-workers.md). |
 
 ## Stream Settings
 
