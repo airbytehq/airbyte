@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "The full name of the repository (owner/name).",
+      "type": "string"
+    },
+    "id": {
+      "description": "The database ID of the discussion.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "The Node ID of the discussion.",
+      "type": ["null", "string"]
+    },
+    "number": {
+      "description": "The number identifying this discussion within the repository.",
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "description": "The title of the discussion.",
+      "type": ["null", "string"]
+    },
+    "body": {
+      "description": "The body content of the discussion in Markdown.",
+      "type": ["null", "string"]
+    },
+    "body_html": {
+      "description": "The body content of the discussion rendered as HTML.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The URL of the discussion.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when the discussion was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the discussion was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "closed_at": {
+      "description": "The date and time when the discussion was closed.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "closed": {
+      "description": "Whether the discussion is closed.",
+      "type": ["null", "boolean"]
+    },
+    "locked": {
+      "description": "Whether the discussion is locked.",
+      "type": ["null", "boolean"]
+    },
+    "state_reason": {
+      "description": "The reason for the discussion's state.",
+      "type": ["null", "string"]
+    },
+    "upvote_count": {
+      "description": "The number of upvotes on the discussion.",
+      "type": ["null", "integer"]
+    },
+    "comments_count": {
+      "description": "The total number of comments on the discussion.",
+      "type": ["null", "integer"]
+    },
+    "user": {
+      "description": "The author of the discussion.",
+      "$ref": "shared/user_graphql.json"
+    },
+    "answer_chosen_at": {
+      "description": "The date and time when the answer was chosen.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "answer_chosen_by": {
+      "description": "The user who chose the answer.",
+      "$ref": "shared/user_graphql.json"
+    },
+    "answer": {
+      "description": "The comment chosen as the discussion's answer, if any.",
+      "type": ["null", "object"],
+      "properties": {
+        "node_id": {
+          "description": "The Node ID of the answer comment.",
+          "type": ["null", "string"]
+        },
+        "body": {
+          "description": "The body content of the answer.",
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "description": "The date and time when the answer was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "user": {
+          "description": "The author of the answer.",
+          "$ref": "shared/user_graphql.json"
+        }
+      }
+    },
+    "category": {
+      "description": "The category of the discussion.",
+      "type": ["null", "object"],
+      "properties": {
+        "node_id": {
+          "description": "The Node ID of the category.",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "The name of the category.",
+          "type": ["null", "string"]
+        },
+        "slug": {
+          "description": "The slug of the category.",
+          "type": ["null", "string"]
+        },
+        "emoji": {
+          "description": "The emoji representing the category.",
+          "type": ["null", "string"]
+        },
+        "description": {
+          "description": "The description of the category.",
+          "type": ["null", "string"]
+        },
+        "is_answerable": {
+          "description": "Whether discussions in this category support choosing an answer.",
+          "type": ["null", "boolean"]
+        },
+        "created_at": {
+          "description": "The date and time when the category was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "labels": {
+      "description": "Labels associated with the discussion.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "node_id": {
+            "description": "The Node ID of the label.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "The name of the label.",
+            "type": ["null", "string"]
+          },
+          "color": {
+            "description": "The color of the label.",
+            "type": ["null", "string"]
+          },
+          "description": {
+            "description": "The description of the label.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "reactions": {
+      "description": "Reaction counts on the discussion.",
+      "$ref": "shared/reactions.json"
+    }
+  }
+}

@@ -38,6 +38,8 @@ from .errors_handlers import (
 from .graphql import (
     CursorStorage,
     QueryReactions,
+    get_query_discussion_comments,
+    get_query_discussions,
     get_query_issue_reactions,
     get_query_projectsV2,
     get_query_pull_requests,
@@ -1133,6 +1135,179 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
         query = get_query_projectsV2(
             owner=organization, name=name, first=self.page_size, after=next_page_token, direction=self.is_sorted.upper()
         )
+        return {"query": query}
+
+
+class Discussions(SemiIncrementalMixin, GitHubGraphQLStream):
+    """
+    API docs: https://docs.github.com/en/graphql/reference/objects#discussion
+    """
+
+    is_sorted = "asc"
+
+    GRAPHQL_REACTION_TO_REST = {
+        "THUMBS_UP": "plus_one",
+        "THUMBS_DOWN": "minus_one",
+        "LAUGH": "laugh",
+        "HOORAY": "hooray",
+        "CONFUSED": "confused",
+        "HEART": "heart",
+        "ROCKET": "rocket",
+        "EYES": "eyes",
+    }
+
+    def _get_reactions(self, record: Mapping) -> Optional[Mapping]:
+        reaction_groups = record.pop("reaction_groups", None)
+        if reaction_groups is None:
+            return None
+        reactions = {rest_key: 0 for rest_key in self.GRAPHQL_REACTION_TO_REST.values()}
+        total = 0
+        for group in reaction_groups:
+            content = group.get("content")
+            count = group.get("reactors", {}).get("totalCount", 0)
+            rest_key = self.GRAPHQL_REACTION_TO_REST.get(content)
+            if rest_key:
+                reactions[rest_key] = count
+                total += count
+        reactions["total_count"] = total
+        return reactions
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            nodes = repository["discussions"]["nodes"]
+            for record in nodes:
+                record["repository"] = self._get_repository_name(repository)
+                record["comments_count"] = record.pop("comments_connection", {}).get("totalCount", 0)
+                record["reactions"] = self._get_reactions(record)
+                labels_data = record.pop("labels", None)
+                record["labels"] = labels_data.get("nodes", []) if labels_data else []
+                user = record.get("user")
+                if user:
+                    user["type"] = "User"
+                answer = record.get("answer")
+                if answer:
+                    answer_user = answer.get("user")
+                    if answer_user:
+                        answer_user["type"] = "User"
+                answer_chosen_by = record.get("answer_chosen_by")
+                if answer_chosen_by:
+                    answer_chosen_by["type"] = "User"
+                yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            page_info = repository["discussions"]["pageInfo"]
+            if page_info["hasNextPage"]:
+                return {"after": page_info["endCursor"]}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        if next_page_token:
+            next_page_token = next_page_token["after"]
+        query = get_query_discussions(
+            owner=organization, name=name, first=self.page_size, after=next_page_token, direction=self.is_sorted.upper()
+        )
+        return {"query": query}
+
+
+class DiscussionComments(SemiIncrementalMixin, GitHubGraphQLStream):
+    """
+    API docs: https://docs.github.com/en/graphql/reference/objects#discussioncomment
+    """
+
+    cursor_field = "created_at"
+
+    GRAPHQL_REACTION_TO_REST = {
+        "THUMBS_UP": "plus_one",
+        "THUMBS_DOWN": "minus_one",
+        "LAUGH": "laugh",
+        "HOORAY": "hooray",
+        "CONFUSED": "confused",
+        "HEART": "heart",
+        "ROCKET": "rocket",
+        "EYES": "eyes",
+    }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.discussions_page_cursor = {}
+        self.comments_cursor = {}
+
+    def _get_reactions(self, record: Mapping) -> Optional[Mapping]:
+        reaction_groups = record.pop("reaction_groups", None)
+        if reaction_groups is None:
+            return None
+        reactions = {rest_key: 0 for rest_key in self.GRAPHQL_REACTION_TO_REST.values()}
+        total = 0
+        for group in reaction_groups:
+            content = group.get("content")
+            count = group.get("reactors", {}).get("totalCount", 0)
+            rest_key = self.GRAPHQL_REACTION_TO_REST.get(content)
+            if rest_key:
+                reactions[rest_key] = count
+                total += count
+        reactions["total_count"] = total
+        return reactions
+
+    def _get_comments_from_discussion(self, discussion, repository_name):
+        for comment in discussion["comments"]["nodes"]:
+            comment["repository"] = repository_name
+            comment["discussion_number"] = discussion["number"]
+            comment["discussion_url"] = discussion["url"]
+            comment["reactions"] = self._get_reactions(comment)
+            user = comment.get("user")
+            if user:
+                user["type"] = "User"
+            yield comment
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_repository_name(repository)
+            if "discussions" in repository:
+                for discussion in repository["discussions"]["nodes"]:
+                    yield from self._get_comments_from_discussion(discussion, repository_name)
+            elif "discussion" in repository:
+                discussion = repository["discussion"]
+                yield from self._get_comments_from_discussion(discussion, repository_name)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_repository_name(repository)
+            comments_cursor = self.comments_cursor.setdefault(repository_name, {})
+            if "discussions" in repository:
+                if repository["discussions"]["pageInfo"]["hasNextPage"]:
+                    self.discussions_page_cursor[repository_name] = repository["discussions"]["pageInfo"]["endCursor"]
+                for discussion in repository["discussions"]["nodes"]:
+                    if discussion["comments"]["pageInfo"]["hasNextPage"]:
+                        comments_cursor[discussion["number"]] = discussion["comments"]["pageInfo"]["endCursor"]
+            elif "discussion" in repository:
+                if repository["discussion"]["comments"]["pageInfo"]["hasNextPage"]:
+                    comments_cursor[repository["discussion"]["number"]] = repository["discussion"]["comments"]["pageInfo"]["endCursor"]
+            if comments_cursor:
+                number, after = comments_cursor.popitem()
+                return {"after": after, "number": number}
+            if repository_name in self.discussions_page_cursor:
+                return {"after": self.discussions_page_cursor.pop(repository_name)}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        if not next_page_token:
+            next_page_token = {"after": None}
+        query = get_query_discussion_comments(owner=organization, name=name, first=self.page_size, **next_page_token)
         return {"query": query}
 
 
