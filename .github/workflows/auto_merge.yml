@@ -1,6 +1,7 @@
 name: Auto merge connector PRs Cron
 # Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
 # Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
+# In dry-run mode, PRs are still approved and promoted from draft, but merges are skipped.
 # Manage at: https://github.com/organizations/airbytehq/settings/variables/actions
 
 on:
@@ -261,7 +262,7 @@ jobs:
 
       - name: Dry-run notice
         if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
-        run: echo "::notice::DRY RUN — would merge PR #$PR_NUMBER"
+        run: echo "::notice::DRY RUN -- would merge PR #$PR_NUMBER"
 
   # ---------- Job 3: Force merge (bypass CI checks) ----------
   force-merge:
@@ -382,4 +383,4 @@ jobs:
 
       - name: Dry-run notice
         if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
-        run: echo "::notice::DRY RUN — would force-merge PR #$PR_NUMBER"
+        run: echo "::notice::DRY RUN -- would force-merge PR #$PR_NUMBER"
