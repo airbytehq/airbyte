@@ -73,7 +73,6 @@ stringData:
 
 </TabItem>
 
-
 </Tabs>
 
 ## Values

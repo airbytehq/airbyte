@@ -12,7 +12,6 @@ Once you [have a license key](https://airbyte.com/company/talk-to-sales), you ca
 
 Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
-
 ## Prerequisites
 
 ### Infrastructure Prerequisites
@@ -547,7 +546,6 @@ Set appropriate backend timeout values for the Airbyte server ingress. Timeout v
 <details>
 <summary>Option 1: use Airbyte's Helm chart ingress configuration</summary>
 
-
 You can configure ingress directly in your `values.yaml` file. Airbyte automatically creates and manages the ingress resource for you.
 
 ```yaml
@@ -741,12 +739,12 @@ In order to customize your deployment, you need to create an additional `values.
 
 After specifying your own configuration, run the following command:
 
-    ```bash
-    helm upgrade airbyte airbyte/airbyte \
-      --namespace airbyte \           # Target Kubernetes namespace
-      --values ./values.yaml \       # Custom configuration values
-      --version 2.x.x                # Helm chart version to use
-    ```
+```bash
+helm upgrade airbyte airbyte/airbyte \
+  --namespace airbyte \           # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.x.x                # Helm chart version to use
+```
 
 ### Configure a custom image registry
 
