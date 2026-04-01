@@ -13,6 +13,8 @@ import io.micronaut.context.condition.ConditionContext
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -37,7 +39,12 @@ class CdcConditionTest {
             realHost = "localhost",
             realPort = 5432,
             sshTunnel = null,
-            sshConnectionOptions = io.airbyte.cdk.ssh.SshConnectionOptions(),
+            sshConnectionOptions =
+                io.airbyte.cdk.ssh.SshConnectionOptions(
+                    sessionHeartbeatInterval = 1.seconds,
+                    globalHeartbeatInterval = 2.seconds,
+                    idleTimeout = 0.milliseconds,
+                ),
             jdbcUrlFmt = "jdbc:postgresql://%s:%d/test",
             jdbcProperties = mapOf("user" to "test"),
             database = "test",
