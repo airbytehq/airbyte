@@ -172,10 +172,14 @@ jobs:
         run: |
           git config --global user.name '${{ steps.get-app-token.outputs.app-slug }}[bot]'
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
-          # Replace the default GITHUB_TOKEN remote credential with the App token.
-          # Pushes made with GITHUB_TOKEN do not trigger pull_request workflows;
-          # pushes made with a GitHub App token do.
-          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${{ github.repository }}.git"
+          # Replace the GITHUB_TOKEN push credential with the App token.
+          # actions/checkout persists credentials via http.extraheader in the
+          # local git config, which takes precedence over the remote URL.
+          # We must override that header so `git push` authenticates as the
+          # App — pushes made with GITHUB_TOKEN do not trigger pull_request
+          # workflows, but pushes made with a GitHub App token do.
+          AUTH=$(echo -n "x-access-token:${APP_TOKEN}" | base64)
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ${AUTH}"
 
       - name: Docker login
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
