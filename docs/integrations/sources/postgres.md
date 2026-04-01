@@ -190,7 +190,7 @@ In your Postgres source, change the update method to `Read Changes using Change 
 
 ## Postgres Replication Methods
 
-The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
+The Postgres source offers three methods of replicating updates to your destination: CDC, Xmin, and Standard (with a user-defined cursor). CDC and Xmin are the **most reliable methods** of updating your data.
 
 <FieldAnchor field="replication_method[CDC]">
 
@@ -209,7 +209,7 @@ If your goal is to maintain a snapshot of your table in the destination but the 
 
 ### Xmin
 
-Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
+Xmin replication is a cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column, available in all Postgres databases, is used to track inserts and updates to your source data.
 
 This is a good solution if:
 
@@ -217,6 +217,19 @@ This is a good solution if:
 - You want to replace a previously configured full-refresh sync.
 - Your database doesn't incur heavy writes that would lead to transaction ID wraparound.
 - You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication.
+</FieldAnchor>
+
+<FieldAnchor field="replication_method[Standard]">
+
+### Standard
+
+Standard replication requires a user-defined cursor column to track new and updated rows. When configuring a connection, you select a column (such as `updated_at` or an auto-incrementing ID) as the cursor. Airbyte uses this cursor to identify rows that have been added or modified since the last sync.
+
+This method does not detect deletions. Use it when:
+
+- Your table has a reliable cursor column that is updated on every row change.
+- CDC is not available or practical for your deployment.
+- You do not need to capture deletes.
 </FieldAnchor>
 
 ## Connecting with SSL or SSH Tunneling
@@ -295,7 +308,7 @@ To see connector limitations, or troubleshoot your Postgres connector, see more 
 
 ## Data type mapping
 
-According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.org/docs/current/datatype.html), Postgres data types are mapped to the following data types when synchronizing data.
 
 | Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
 | ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -357,7 +370,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |------------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.0-rc.1 | 2026-04-01 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release candidate for rewritten connector on the bulk CDK                                                                                                         |
+| 3.8.0-rc.1 | 2026-03-31 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release candidate for rewritten connector on the bulk CDK                                                                                                         |
 | 3.7.2      | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                    |
 | 3.7.1      | 2026-01-27 | [72396](https://github.com/airbytehq/airbyte/pull/72396) | This version causes issues discovering streams for some users. Do not use.                                                                                                |
 | 3.7.0      | 2025-08-12 | [57511](https://github.com/airbytehq/airbyte/pull/57511) | Add configurations for Azure authentication to Azure Postgres servers.                                                                                                    |
