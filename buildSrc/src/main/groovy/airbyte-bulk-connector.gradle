@@ -203,8 +203,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 outputs.upToDateWhen { false }
             }
 
-            // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
-            // airbyte-ci only wants to run a task with exactly that name.
+            // For historical reasons, this task is called integrationTestJava.
             // There's intentionally no equivalent to run integrationTestNonDocker + integrationTestLegacy.
             // It's an actual Test task (rather than just depending on two sub-tasks integrationTestDocker + integrationTestLegacy)
             // so that gradle args (e.g. `--tests`) work as expected.
