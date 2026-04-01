@@ -153,7 +153,7 @@ Incremental streams fall into three categories based on how they read data from 
 
 ### Start date limitations
 
-Setting a very distant `start_date` for large repositories may result in errors from GitHub instead of records. If this happens, set a more recent `start_date`.
+Setting a distant `start_date` for large repositories may result in errors from GitHub instead of records. If this happens, set a more recent `start_date`.
 
 The **Start date** option does not apply to the following streams because the GitHub API does not support date-based filtering for them:
 
@@ -202,7 +202,7 @@ The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per
 
 #### Permissions and scopes
 
-If you use OAuth, the OAuth2.0 application requests the following [scopes](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. If you use a [personal access token](https://github.com/settings/tokens), select the scopes manually.
+If you use OAuth, the OAuth 2.0 application requests the following [scopes](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. If you use a [personal access token](https://github.com/settings/tokens), select the scopes manually.
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, you may need additional scopes:
 
