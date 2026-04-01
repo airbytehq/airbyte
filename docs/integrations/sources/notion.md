@@ -84,7 +84,7 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 - **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after setting up your public integration.
 <!-- /env:oss -->
 
-6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
+6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. During incremental syncs, only data generated after this date is replicated. If left blank, the start date defaults to two years before the current date.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
