@@ -122,6 +122,7 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.4 | 2026-03-31 | [75747](https://github.com/airbytehq/airbyte/pull/75747) | Update dependencies |
 | 4.0.3 | 2026-03-30 | [75603](https://github.com/airbytehq/airbyte/pull/75603) | Fix 429 status code mapping from RETRY to RATE_LIMITED for improved rate limit handling and observability |
 | 4.0.2 | 2026-03-23 | [75290](https://github.com/airbytehq/airbyte/pull/75290) | Update v4.0.0 upgrade deadline to 2026-04-10 |
 | 4.0.1 | 2026-03-10 | [74616](https://github.com/airbytehq/airbyte/pull/74616) | Update dependencies |
