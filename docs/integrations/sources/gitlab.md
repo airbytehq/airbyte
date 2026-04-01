@@ -10,7 +10,7 @@ This page contains the setup guide and reference information for the GitLab sour
 
 **For Airbyte Cloud:**
 
-- Personal Access Token (see [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
+- Personal Access Token (see [personal access token](https://docs.gitlab.com/user/profile/personal_access_tokens/))
 - OAuth
 <!-- /env:cloud -->
 
@@ -18,7 +18,7 @@ This page contains the setup guide and reference information for the GitLab sour
 
 **For Airbyte Open Source:**
 
-- Personal Access Token (see [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html))
+- Personal Access Token (see [personal access token](https://docs.gitlab.com/user/profile/personal_access_tokens/))
 <!-- /env:oss -->
 
 ## Setup guide
@@ -31,7 +31,7 @@ Create a [GitLab Account](https://gitlab.com) or set up a local instance of GitL
 
 **Airbyte Open Source additional setup steps**
 
-Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your token should have the `read_api` scope, which grants read access to the API, including all groups and projects, the container registry, and the package registry.
+Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/user/profile/personal_access_tokens/). Your token should have the `read_api` scope, which grants read access to the API, including all groups and projects, the container registry, and the package registry.
 
 <!-- /env:oss -->
 
@@ -50,7 +50,7 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group IDs, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Workers** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Workers** (Optional) - The number of concurrent threads used for syncing. Accepts values from 2 to 25. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
 **Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector retrieves a list of all groups accessible to the configured token and ingests as normal.
@@ -77,35 +77,39 @@ The GitLab source connector supports the following [sync modes](https://docs.air
 
 This connector outputs the following streams:
 
-- [Branches](https://docs.gitlab.com/ee/api/branches.html)
-- [Commits](https://docs.gitlab.com/ee/api/commits.html) (Incremental)
-- [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
-- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) (GitLab Ultimate only)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) (GitLab Ultimate only)
-- [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
-- [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
-- [Group Members](https://docs.gitlab.com/ee/api/members.html)
-- [Group Milestones](https://docs.gitlab.com/ee/api/group_milestones.html)
-- [Groups](https://docs.gitlab.com/ee/api/groups.html)
-- [Issues](https://docs.gitlab.com/ee/api/issues.html) (Incremental)
-- [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
-- [Merge Request Commits](https://docs.gitlab.com/ee/api/merge_requests.html)
-- [Merge Requests](https://docs.gitlab.com/ee/api/merge_requests.html) (Incremental)
-- [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) (Incremental)
-- [Pipelines Extended](https://docs.gitlab.com/ee/api/pipelines.html)
-- [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-- [Project Members](https://docs.gitlab.com/ee/api/members.html)
-- [Project Milestones](https://docs.gitlab.com/ee/api/milestones.html)
-- [Projects](https://docs.gitlab.com/ee/api/projects.html)
-- [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
-- [Tags](https://docs.gitlab.com/ee/api/tags.html)
-- [Users](https://docs.gitlab.com/ee/api/users.html)
+- [Branches](https://docs.gitlab.com/api/branches/)
+- [Commits](https://docs.gitlab.com/api/commits/) (Incremental)
+- [Deployments](https://docs.gitlab.com/api/deployments/)
+- [Epic Issues](https://docs.gitlab.com/api/epic_issues/) (GitLab Premium and Ultimate)
+- [Epics](https://docs.gitlab.com/api/epics/) (GitLab Premium and Ultimate)
+- [Group Issue Boards](https://docs.gitlab.com/api/group_boards/)
+- [Group Labels](https://docs.gitlab.com/api/group_labels/)
+- [Group Members](https://docs.gitlab.com/api/members/)
+- [Group Milestones](https://docs.gitlab.com/api/group_milestones/)
+- [Groups](https://docs.gitlab.com/api/groups/)
+- [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
+- [Jobs](https://docs.gitlab.com/api/jobs/)
+- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/)
+- [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
+- [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
+- [Pipelines Extended](https://docs.gitlab.com/api/pipelines/)
+- [Project Labels](https://docs.gitlab.com/api/labels/)
+- [Project Members](https://docs.gitlab.com/api/members/)
+- [Project Milestones](https://docs.gitlab.com/api/milestones/)
+- [Projects](https://docs.gitlab.com/api/projects/)
+- [Releases](https://docs.gitlab.com/api/releases/)
+- [Tags](https://docs.gitlab.com/api/tags/)
+- [Users](https://docs.gitlab.com/api/users/)
 
 ## Limitations
 
 ### API version
 
 This connector uses GitLab API v4. It works with both GitLab.com and self-hosted GitLab instances.
+
+### Epics API deprecation
+
+GitLab [deprecated the Epics REST API](https://docs.gitlab.com/api/epics/) in GitLab 17.0 and plans to remove it in API v5. The Epics and Epic Issues streams continue to work, but may require migration to the Work Items API in a future connector version.
 
 ### Rate limits
 
