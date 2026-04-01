@@ -60,6 +60,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `state` | `object \| any` |  |
 | `priority` | `number \| any` |  |
 | `assignee` | `object \| any` |  |
+| `team` | `object \| any` |  |
+| `project` | `object \| any` |  |
 | `createdAt` | `string` |  |
 | `updatedAt` | `string` |  |
 
@@ -115,7 +117,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `title` | `string` |  |
+| `description` | `string \| any` |  |
+| `state` | `object \| any` |  |
+| `priority` | `number \| any` |  |
+| `assignee` | `object \| any` |  |
+| `team` | `object \| any` |  |
+| `project` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -132,7 +143,8 @@ await linear.issues.create(
     title="<str>",
     description="<str>",
     state_id="<str>",
-    priority=0
+    priority=0,
+    project_id="<str>"
 )
 ```
 
@@ -150,7 +162,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "title": "<str>",
         "description": "<str>",
         "stateId": "<str>",
-        "priority": 0
+        "priority": 0,
+        "projectId": "<str>"
     }
 }'
 ```
@@ -165,6 +178,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `description` | `string` | No | The description of the issue (supports markdown) |
 | `stateId` | `string` | No | The ID of the workflow state for the issue |
 | `priority` | `integer` | No | The priority of the issue (0=No priority, 1=Urgent, 2=High, 3=Medium, 4=Low) |
+| `projectId` | `string` | No | The ID of the project to add the issue to. Get project IDs from the projects list. |
 
 
 <details>
@@ -174,7 +188,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `issue` | `object` |  |
+| `issue.id` | `string` |  |
+| `issue.title` | `string` |  |
+| `issue.description` | `string \| any` |  |
+| `issue.state` | `object \| any` |  |
+| `issue.priority` | `number \| any` |  |
+| `issue.assignee` | `object \| any` |  |
+| `issue.project` | `object \| any` |  |
+| `issue.createdAt` | `string` |  |
+| `issue.updatedAt` | `string` |  |
 
 
 </details>
@@ -195,7 +219,8 @@ await linear.issues.update(
     description="<str>",
     state_id="<str>",
     priority=0,
-    assignee_id="<str>"
+    assignee_id="<str>",
+    project_id="<str>"
 )
 ```
 
@@ -214,7 +239,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
         "description": "<str>",
         "stateId": "<str>",
         "priority": 0,
-        "assigneeId": "<str>"
+        "assigneeId": "<str>",
+        "projectId": "<str>"
     }
 }'
 ```
@@ -230,6 +256,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `stateId` | `string` | No | The ID of the new workflow state for the issue |
 | `priority` | `integer` | No | The new priority of the issue (0=No priority, 1=Urgent, 2=High, 3=Medium, 4=Low) |
 | `assigneeId` | `string` | No | The ID of the user to assign to this issue. Get user IDs from the users list. |
+| `projectId` | `string` | No | The ID of the project to add this issue to. Get project IDs from the projects list. |
 
 
 <details>
@@ -239,7 +266,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `issue` | `object` |  |
+| `issue.id` | `string` |  |
+| `issue.title` | `string` |  |
+| `issue.description` | `string \| any` |  |
+| `issue.state` | `object \| any` |  |
+| `issue.priority` | `number \| any` |  |
+| `issue.assignee` | `object \| any` |  |
+| `issue.project` | `object \| any` |  |
+| `issue.createdAt` | `string` |  |
+| `issue.updatedAt` | `string` |  |
 
 
 </details>
@@ -508,7 +545,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `description` | `string \| any` |  |
+| `state` | `string \| any` |  |
+| `startDate` | `string \| any` |  |
+| `targetDate` | `string \| any` |  |
+| `lead` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -749,7 +794,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `key` | `string` |  |
+| `description` | `string \| any` |  |
+| `timezone` | `string \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -930,8 +981,22 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `email` | `string` |  |
+| `displayName` | `string \| any` |  |
+| `active` | `boolean` |  |
+| `admin` | `boolean` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hasNextPage` | `boolean` |  |
+| `endCursor` | `string \| null` |  |
 
 </details>
 
@@ -977,7 +1042,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `name` | `string` |  |
+| `email` | `string` |  |
+| `displayName` | `string \| any` |  |
+| `active` | `boolean` |  |
+| `admin` | `boolean` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -1124,8 +1196,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `body` | `string` |  |
+| `user` | `object \| any` |  |
+| `issue` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `hasNextPage` | `boolean` |  |
+| `endCursor` | `string \| null` |  |
 
 </details>
 
@@ -1171,7 +1255,12 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `id` | `string` |  |
+| `body` | `string` |  |
+| `user` | `object \| any` |  |
+| `issue` | `object \| any` |  |
+| `createdAt` | `string` |  |
+| `updatedAt` | `string` |  |
 
 
 </details>
@@ -1221,7 +1310,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `comment` | `object` |  |
+| `comment.id` | `string` |  |
+| `comment.body` | `string` |  |
+| `comment.user` | `object \| any` |  |
+| `comment.issue` | `object \| any` |  |
+| `comment.createdAt` | `string` |  |
+| `comment.updatedAt` | `string` |  |
 
 
 </details>
@@ -1271,7 +1367,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Field Name | Type | Description |
 |------------|------|-------------|
-| `data` | `object` |  |
+| `success` | `boolean` |  |
+| `comment` | `object` |  |
+| `comment.id` | `string` |  |
+| `comment.body` | `string` |  |
+| `comment.user` | `object \| any` |  |
+| `comment.issue` | `object \| any` |  |
+| `comment.createdAt` | `string` |  |
+| `comment.updatedAt` | `string` |  |
 
 
 </details>
