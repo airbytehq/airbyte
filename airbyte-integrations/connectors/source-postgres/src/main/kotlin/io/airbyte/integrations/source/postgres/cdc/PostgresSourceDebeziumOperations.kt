@@ -46,7 +46,6 @@ import io.debezium.connector.postgresql.PostgresConnector
 import io.debezium.connector.postgresql.connection.Lsn
 import io.debezium.time.Conversions
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.time.Instant
@@ -57,18 +56,17 @@ import kotlin.collections.component2
 import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
-@Requires(condition = CdcCondition::class)
 class PostgresSourceDebeziumOperations(
     private val config: PostgresSourceConfiguration,
     private val connectionFactory: PostgresSourceJdbcConnectionFactory,
     private val replicationSlotManager: ReplicationSlotManager,
-    startupState: StartupState,
+    startupState: StartupState?,
 ) :
     CdcPartitionsCreatorDebeziumOperations<PostgresSourceCdcPosition>,
     CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition> {
 
     private val log = KotlinLogging.logger {}
-    private val startup: StartupState = startupState
+    private val startup: StartupState? = startupState
     private val cdcConfig: CdcIncrementalConfiguration by lazy { config.cdc!! }
 
     companion object {
@@ -154,6 +152,10 @@ class PostgresSourceDebeziumOperations(
     }
 
     override fun generateColdStartOffset(): DebeziumOffset {
+        val startup: StartupState =
+            checkNotNull(this.startup) {
+                "StartupState bean is required for CDC but was not instantiated"
+            }
         val key =
             Jsons.arrayNode()
                 .add(config.database)
