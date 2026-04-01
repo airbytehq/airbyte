@@ -281,6 +281,7 @@ jobs:
           PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
+          git checkout -- .
           git fetch --depth=1 origin "$PR_BRANCH"
           git checkout "$PR_BRANCH"
           git add "$CONNECTOR_DIR"
