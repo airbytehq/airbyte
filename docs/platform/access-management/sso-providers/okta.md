@@ -3,9 +3,6 @@ sidebar_label: Okta
 products: oss-enterprise, cloud
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 # Set up single sign on using Okta
 
 This guide shows you how to set up Okta and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP).
@@ -229,10 +226,6 @@ To set up single sign using generic OIDC for Airbyte Self-Managed Enterprise, co
 - [Update Airbyte's values.yaml file](#sme-values)
 - [Redeploy Airbyte](#sme-deploy)
 
-:::note
-You can only use generic OIDC after you migrate to Helm chart V2.
-<!-- [Helm chart V2](../../enterprise-setup/chart-v2-enterprise). -->
-:::
 
 ### Create an Okta app for Airbyte {#sme-create-okta-app}
 
@@ -370,6 +363,6 @@ helm upgrade -i \
 --namespace airbyte \
 --values ./values.yaml \
 airbyte \
-airbyte-v2/airbyte \
+airbyte/airbyte \
 --version 2.x.x
 ```

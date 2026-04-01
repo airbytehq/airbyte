@@ -2,9 +2,6 @@
 products: oss-enterprise
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Scaling Airbyte After Installation
 
 Once you've completed the initial installation of Airbyte Self-Managed Enterprise, the next crucial step is scaling your setup as needed to ensure optimal performance and reliability as your data integration needs grow. This guide walks you through best practices and strategies for scaling Airbyte in an enterprise environment.
@@ -45,50 +42,18 @@ If your Airbyte deployment is under-provisioned, you may notice occasional 'stuc
 
 To help rightsize Airbyte deployments and reduce the likelihood of stuck syncs, there are configurable limits to the number of syncs that can be run at once:
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-worker:
-  extraEnv: ## We recommend setting both environment variables with a single, shared value.
-    - name: MAX_SYNC_WORKERS
-      value: ## e.g. 5
-    - name: MAX_CHECK_WORKERS
-      value: ## e.g. 5
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
 ```yaml title="values.yaml"
 worker:
   maxSyncWorkers: ## e.g. 5
   maxCheckWorkers: ## e.g. 5
 ```
 
-</TabItem>
-</Tabs>
-
 If you intend to run many syncs at the same time, you may also want to increase the number of worker replicas that run in your Airbyte instance:
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
 ```yaml title="values.yaml"
 worker:
   replicaCount: ## e.g. 2
 ```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
-```yaml title="values.yaml"
-worker:
-  replicaCount: ## e.g. 2
-```
-
-</TabItem>
-</Tabs>
 
 ## Multiple Node Groups
 
@@ -96,60 +61,6 @@ To reduce the blast radius of an underprovisioned Airbyte deployment, place 'sta
 
 <details>
 <summary>Configure Airbyte Self-Managed Enterprise to run in two node groups</summary>
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-airbyte-bootloader:
-  nodeSelector:
-    type: static
-
-server:
-  nodeSelector:
-    type: static
-
-keycloak:
-  nodeSelector:
-    type: static
-
-keycloak-setup:
-  nodeSelector:
-    type: static
-
-temporal:
-  nodeSelector:
-    type: static
-
-worker:
-  nodeSelector:
-    type: jobs
-
-workload-launcher:
-  nodeSelector:
-    type: static
-  ## Pods spun up by the workload launcher will run in the 'jobs' node group.
-  extraEnv:
-    - name: JOB_KUBE_NODE_SELECTORS
-      value: type=jobs
-    - name: SPEC_JOB_KUBE_NODE_SELECTORS
-      value: type=jobs
-    - name: CHECK_JOB_KUBE_NODE_SELECTORS
-      value: type=jobs
-    - name: DISCOVER_JOB_KUBE_NODE_SELECTORS
-      value: type=jobs
-
-orchestrator:
-  nodeSelector:
-    type: jobs
-  
-workload-api-server:
-  nodeSelector:
-    type: jobs
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -201,9 +112,6 @@ workloadApiServer:
     type: jobs
 ```
 
-</TabItem>
-</Tabs>
-
 </details>
 
 ## High Availability
@@ -212,9 +120,6 @@ You may wish to implement high availability (HA) to minimize downtime and ensure
 
 We particularly recommend having multiple instances of `worker` and `server` pods:
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
 ```yaml title="values.yaml"
 worker:
   replicaCount: 2
@@ -222,20 +127,6 @@ worker:
 server:
   replicaCount: 2
 ```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
-```yaml title="values.yaml"
-worker:
-  replicaCount: 2
-
-server:
-  replicaCount: 2
-```
-
-</TabItem>
-</Tabs>
 
 Furthermore, you may want to implement a primary-replica setup for the database (e.g., PostgreSQL) used by Airbyte. The primary database handles write operations, while replicas handle read operations, ensuring data availability even if the primary fails.
 
@@ -255,21 +146,6 @@ We recommend turning off `DEBUG` logs for any non-testing use of Self-Managed Ai
 
 While configuring a database source connector with hundreds to thousands of tables, each with many columns, the one-time `discover` mechanism - by which we discover the topology of your source - may run for a long time and exceed Airbyte's timeout duration. Should this be the case, you may increase Airbyte's timeout limit as follows:
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-server:
-  extraEnv:
-    - name: HTTP_IDLE_TIMEOUT
-      value: 20m
-    - name: READ_TIMEOUT
-      value: 30m
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
 ```yaml title="values.yaml"
 server:
   httpIdleTimeout: 20m
@@ -277,6 +153,3 @@ server:
     - name: READ_TIMEOUT
       value: 30m
 ```
-
-</TabItem>
-</Tabs>
