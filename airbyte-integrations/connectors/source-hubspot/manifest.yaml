@@ -2309,6 +2309,7 @@ spec:
         scopes:
           - scope: "crm.schemas.contacts.read"
           - scope: "crm.objects.contacts.read"
+          - scope: "oauth"
         optional_scopes:
           - scope: "content"
           - scope: "automation"
@@ -2330,7 +2331,6 @@ spec:
           - scope: "crm.schemas.custom.read"
           - scope: "crm.schemas.deals.read"
           - scope: "crm.objects.leads.read"
-          - scope: "oauth"
         extract_output:
           - refresh_token
       complete_oauth_output_specification:
