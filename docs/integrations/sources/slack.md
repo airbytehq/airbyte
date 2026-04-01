@@ -8,10 +8,10 @@ This page contains the setup guide and reference information for the [Slack](htt
 
 ## Prerequisites
 
-Before you begin, have the following ready: 
+Before you begin, have the following ready:
 
-- Administrator access to an active Slack Workspace
-- Slack App OAuth (preferred) or API Key
+- Administrator access to an active Slack workspace
+- A Slack App with OAuth credentials (preferred) or a legacy Slack API token
 
 ## Setup guide
 
@@ -20,7 +20,7 @@ Before you begin, have the following ready:
 The following instructions guide you through creating a Slack app. Airbyte can only replicate messages from channels that the app has been added to.
 
 :::info
-If you are using a legacy Slack API Key, you can skip this section.
+If you are using a legacy Slack API token, you can skip this section.
 :::
 
 :::warning
@@ -29,35 +29,37 @@ If you are using a legacy Slack API Key, you can skip this section.
 If you authenticate using a **legacy Slack API token**, this OAuth-specific limit does **not** apply.
 :::
 
-To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions. 
+To create a Slack app, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token), or follow these instructions:
 
-1. Go to your [Apps](https://api.slack.com/apps)
-2. Click **Create New App**. Select **From Scratch**.
-3. Choose a name for your app and select the name of your Slack workspace. Click **Create App**. 
+1. Go to [Your Apps](https://api.slack.com/apps).
+2. Click **Create New App**, then select **From Scratch**.
+3. Choose a name for your app, select your Slack workspace, and click **Create App**.
 4. In the navigation menu, select **OAuth & Permissions**.
-5. Navigate to **Scopes**. In **Bot Token Scopes**, select the following scopes: 
+5. Scroll to **Scopes** and add the following **Bot Token Scopes**:
 
-```
- channels:history
- channels:join
- channels:read
- files:read
- groups:read
- links:read
- reactions:read
- remote_files:read
- team:read
- usergroups:read
- users:read
- users.profile:read
-```
+   | Scope | Required for |
+   | :--- | :--- |
+   | `channels:history` | Channel Messages, Threads |
+   | `channels:join` | Automatically joining public channels |
+   | `channels:read` | Channels |
+   | `groups:read` | Private channels (Channels stream) |
+   | `groups:history` | Private channel messages and threads |
+   | `im:history` | Direct message history |
+   | `im:read` | Direct message channel listing |
+   | `mpim:history` | Group direct message history |
+   | `mpim:read` | Group direct message channel listing |
+   | `users:read` | Users |
 
-6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using the API token for authentication.
-7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**. 
-8. Search for your newly created app. (If you are using the desktop version of Slack, you may need to restart Slack for it to pick up the new App). Add the App to all channels you want to sync data from.
+   :::tip
+   If you plan to sync data beyond what the connector streams cover, you can also add `files:read`, `reactions:read`, `team:read`, `usergroups:read`, and `users.profile:read`. These are not required by the connector but may be useful for future streams or custom integrations.
+   :::
+
+6. At the top of the **OAuth & Permissions** page, click **Install to Workspace**. This generates a Bot User OAuth Token. Copy this token if you are using API token authentication.
+7. Go to your Slack workspace. For any public channel, open **Channel details**, click **More**, then select **Add apps**.
+8. Search for and add your app. If you are using the Slack desktop app, you may need to restart it to detect the new app. Add the app to every channel you want to sync.
 
 :::note
-If you are using an API key to authenticate to Slack, a refresh token is not required, as acccess tokens never expire. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
+If you are using a legacy Slack API token, a refresh token is not required because these tokens do not expire. For more information, see [Token rotation](https://api.slack.com/authentication/rotation).
 :::
 
 ### Step 2: Set up the Slack connector in Airbyte
@@ -71,21 +73,21 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 3. Find and click **Slack**.
 4. Click **Authenticate your Slack account**. Log in and authorize Airbyte to access your Slack account.
 <FieldAnchor field="join_channels">
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+5. Toggle **Join all channels** if you want the bot to automatically join all public channels. If disabled, you must manually add the bot to each channel you want to sync.
 </FieldAnchor>
 <FieldAnchor field="start_date">
-6. **Start Date**: Any data before this date will not be extracted.
+6. **Start Date**: Any data before this date will not be replicated.
 </FieldAnchor>
 <FieldAnchor field="lookback_window">
-7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
+7. **Threads Lookback window (Days)**: The number of days to look back for thread replies.
+</FieldAnchor>
+<FieldAnchor field="channel_filter">
+8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) to limit which channels are synced. If empty, all channels are synced.
 </FieldAnchor>
 <FieldAnchor field="include_private_channels">
-8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
+9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is enabled.
 </FieldAnchor>
-<FieldAnchor field="include_private_channels">
-9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
-</FieldAnchor>
-10. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
+10. Click **Set up source**. The app you created in Step 1 must be added to the channels you want to sync.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -96,12 +98,12 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 2. Click **New source**.
 3. Find and click **Slack**.
 4. Click **Sign in via Slack (OAuth)**. Enter the Access Token, Client ID, and Client Secret. Alternatively, enter the API Token from Step 1.
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
-6. **Start Date**: Any data before this date will not be extracted.
-7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
-8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
-9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
-10. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
+5. Toggle **Join all channels** if you want the bot to automatically join all public channels. If disabled, you must manually add the bot to each channel you want to sync.
+6. **Start Date**: Any data before this date will not be replicated.
+7. **Threads Lookback window (Days)**: The number of days to look back for thread replies.
+8. (Optional) **Channel filter**: A list of channel names (without the leading `#`) to limit which channels are synced. If empty, all channels are synced.
+9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is enabled.
+10. Click **Set up source**. The app you created in Step 1 must be added to the channels you want to sync.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -116,23 +118,23 @@ The Slack source connector supports the following [sync modes](https://docs.airb
 | Incremental Sync  | Yes        |
 | Namespaces        | No         |
 
-## Supported Streams
+## Supported streams
 
-For most of the streams, the Slack source connector uses the [Conversations API](https://api.slack.com/docs/conversations-api) under the hood.
+The Slack source connector uses the [Conversations API](https://api.slack.com/docs/conversations-api) under the hood.
 
-- [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
-- [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public and private channels that the Slack App is a member of.
+- [Channels (Conversations)](https://api.slack.com/methods/conversations.list)
+- [Channel Members (Conversation Members)](https://api.slack.com/methods/conversations.members)
+- [Channel Messages (Conversation History)](https://api.slack.com/methods/conversations.history) — Replicates messages from non-archived public and private channels that the app is a member of.
 - [Users](https://api.slack.com/methods/users.list)
-- [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
+- [Threads (Conversation Replies)](https://api.slack.com/methods/conversations.replies)
 
 ## Performance considerations
 
 The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits).
 
-We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration setings.
+To improve performance, sync only the channels you need by specifying the **Channel filter** in the connector configuration.
 
-If you expect to sync a large amount of data (like historical data) you can try to increase the number of workers, default is 1. This could cause to being rate limited by Slack, so you should monitor the logs for rate limit errors.
+If you are syncing a large amount of data, such as historical messages, you can increase the **Number of concurrent workers** setting (default is 2). Higher values increase parallelism but also increase the risk of hitting Slack rate limits. Monitor sync logs for rate limit errors.
 
 ## Data type map
 
@@ -156,7 +158,7 @@ Expand to see details about Slack connector limitations and troubleshooting.
 
 Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
-###### Rate Limits for Channel Messages and Threads streams: 
+###### Rate limits for Channel Messages and Threads streams
 
 **OAuth authentication:** For apps authenticated via OAuth, the connector enforces a stricter budget on:
 - [`conversations.replies`](https://api.slack.com/methods/conversations.replies)
