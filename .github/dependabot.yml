@@ -28,7 +28,7 @@ updates:
       prefix: "chore(deps): "
     open-pull-requests-limit: 10
 
-  # GitHub Actions - keep action versions up to date (e.g. Node.js runtime deprecations)
+  # GitHub Actions - keep action versions up to date
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
