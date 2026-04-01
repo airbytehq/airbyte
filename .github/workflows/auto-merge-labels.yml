@@ -35,7 +35,18 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
+      - name: Check if native auto-merge is enabled
+        id: check-auto-merge
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          AUTO_MERGE=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json autoMergeRequest --jq '.autoMergeRequest')
+          echo "enabled=$( [ "$AUTO_MERGE" != "null" ] && [ -n "$AUTO_MERGE" ] && echo true || echo false )" \
+            | tee -a "$GITHUB_OUTPUT"
+
       - name: Disable native auto-merge
+        if: steps.check-auto-merge.outputs.enabled == 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
