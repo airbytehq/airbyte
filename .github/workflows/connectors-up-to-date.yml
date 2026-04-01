@@ -139,6 +139,9 @@ jobs:
       CONNECTOR_DIR: ${{ matrix.connector_dir }}
       CONNECTOR_LANGUAGE: ${{ matrix.connector_language }}
     steps:
+      - name: Set today's date
+        run: echo "TODAY=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
+
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
@@ -244,10 +247,10 @@ jobs:
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          commit-message: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
+          commit-message: "deps(${{ env.CONNECTOR_NAME }}): update dependencies"
           branch: "up-to-date/${{ env.CONNECTOR_NAME }}"
           delete-branch: true
-          title: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
+          title: "deps(${{ env.CONNECTOR_NAME }}): 🐙 update dependencies [${{ env.TODAY }}]"
           body: |
             Updates dependencies for `${{ env.CONNECTOR_NAME }}`.
 
@@ -286,7 +289,17 @@ jobs:
             --changelog-message "Update dependencies" \
             --pr-number "$PR_NUMBER"
 
-      # --- Step 8: Push changelog commit to the PR branch ---
+      # --- Step 8: Mark PR ready for review ---
+      # Mark ready BEFORE pushing the changelog commit so that the push
+      # triggers pull_request/synchronize CI workflows (drafts skip most CI).
+      - name: Mark PR as ready for review
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: gh pr ready "$PR_NUMBER"
+
+      # --- Step 9: Push changelog commit to the PR branch ---
       - name: Push changelog commit to PR branch
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
@@ -294,16 +307,8 @@ jobs:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
           git add "$CONNECTOR_DIR"
-          git commit -m "chore($CONNECTOR_NAME): bump version and update changelog"
+          git commit -m "deps($CONNECTOR_NAME): bump version and update changelog"
           git push origin "$PR_BRANCH"
-
-      # --- Step 9: Mark PR ready for review ---
-      - name: Mark PR as ready for review
-        if: steps.check-changes.outputs.has_changes == 'true'
-        env:
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-          PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
-        run: gh pr ready "$PR_NUMBER"
 
       # --- Step 10: Enable auto-merge ---
       - name: Enable auto-merge on PR
