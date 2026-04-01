@@ -586,7 +586,7 @@ jobs:
       # be available, so the following steps will be a no-op.
 
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         if: always() && !cancelled()
         continue-on-error: true

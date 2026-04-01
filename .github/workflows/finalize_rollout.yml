@@ -122,7 +122,7 @@ jobs:
     steps:
       # Authenticate as OCTAVIA_BOT so PRs trigger downstream CI.
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -221,7 +221,7 @@ jobs:
       # and needs admin privileges to bypass branch protection.
       - name: Authenticate as GitHub App (Admin)
         if: steps.create-pr.outputs.pull-request-number
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-admin-token
         with:
           owner: "airbytehq"
