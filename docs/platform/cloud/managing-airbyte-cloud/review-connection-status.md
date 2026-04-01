@@ -78,7 +78,7 @@ The stream status allows you to monitor an individual stream's latest status. Co
 | ![Action Required](./assets/connection_action_required.png)     | **Action Required**      | A breaking change related to the source or destination requires attention to resolve                                                               |
 
 :::note
-Stream-level "Queued" status means the stream is waiting to sync within an active connection sync. This is different from a connection-level "Queued" status, which means the entire sync job is waiting for data worker capacity. For more information about capacity-based queuing, see [Monitor data worker usage](./manage-data-workers.md).
+Stream-level "Queued" status means the stream is waiting to sync within an active connection sync. This is different from a connection-level "Queued" status, which means the entire sync job is waiting for data worker capacity. When a connection is queued for data worker capacity, its individual streams display as **Pending** (not Queued). For more information about capacity-based queuing, see [Monitor data worker usage](./manage-data-workers.md).
 :::
 
 Once the sync is complete, each stream displays the time since Airbyte loaded the last record to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record loaded.

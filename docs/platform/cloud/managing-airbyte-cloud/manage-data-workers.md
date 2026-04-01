@@ -26,7 +26,7 @@ Hover on a day to see more details about it.
 
 ## Workspace-level data worker usage
 
-In addition to the organization-level chart, workspace editors can view data worker usage for their workspace.
+On capacity-based plans with data worker entitlements, the workspace Usage page shows data worker usage instead of credit usage. Workspace editors can view data worker usage for their workspace.
 
 1. Click **Workspace Settings** > **Usage**.
 
@@ -84,10 +84,12 @@ If your organization runs out of credits, syncs are queued even if on-demand cap
 
 3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable connection to use credits to always run syncs on demand. Syncs for this connection will never be queued, and only consume credits if no capacity is available."
 
+You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup.
+
 When you enable on-demand capacity on a connection, Airbyte automatically applies a "Burst" tag with an orange gradient background and a star icon. You can filter connections by the Burst tag to see all on-demand connections at a glance. If you disable on-demand capacity, Airbyte removes the Burst tag automatically. For more information about tags, see [Tagging connections](/platform/using-airbyte/tagging).
 
 ### Identify queued connections
 
-When your committed capacity is fully utilized, connections waiting for capacity display an orange hourglass icon and a "Queued" status. You can filter the Connections page by "Queued" status to find all queued connections. A dismissable yellow banner also appears at the top of the Connections page: "Maximum capacity currently reached, additional jobs will be queued until capacity is available."
+When your committed capacity is fully utilized, connections waiting for capacity display an orange hourglass icon and a "Queued" status. You can filter the Connections page by "Queued" status to find all queued connections. If your organization has on-demand capacity in its contract, a dismissable yellow banner also appears at the top of the Connections page: "Maximum capacity currently reached, additional jobs will be queued until capacity is available."
 
 For more information about connection statuses, see [Connection status](./review-connection-status.md).

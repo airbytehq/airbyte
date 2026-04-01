@@ -12,7 +12,7 @@ A **connection** is the relationship between a source connector and a destinatio
 
 - What data Airbyte should replicate
 - How Airbyte should read and write data
-- When Airbyte should initiate a data sync. On capacity-based Cloud plans, syncs may be queued if data worker capacity is fully utilized. See [Monitor data worker usage](/platform/cloud/managing-airbyte-cloud/manage-data-workers) for details.
+- When Airbyte should initiate a data sync
 - Where Airbyte should write replicated data
 - How Airbyte should handle schema drift
 
