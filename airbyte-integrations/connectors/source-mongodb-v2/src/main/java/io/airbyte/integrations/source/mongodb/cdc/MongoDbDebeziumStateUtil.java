@@ -15,8 +15,8 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingSt
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
