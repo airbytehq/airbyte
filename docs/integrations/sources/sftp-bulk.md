@@ -20,7 +20,15 @@ The SFTP Bulk connector offers several features that are not available in the st
 
 ## Setup guide
 
-### Set up SFTP Bulk
+## Set up SFTP Bulk
+
+### For Airbyte Cloud:
+
+Use the authentication steps below to prepare your SFTP credentials for Airbyte Cloud.
+
+### For Airbyte Open Source:
+
+Use the authentication steps below to prepare your SFTP credentials for Airbyte Open Source.
 
 #### Step 1: Set up SFTP authentication
 
@@ -59,9 +67,9 @@ ssh <username>@<server_ip_address>
 For more information on SSH key pair authentication, please refer to the
 [official documentation](https://www.ssh.com/academy/ssh/keygen).
 
-### Set up the SFTP Bulk connector in Airbyte
+## Set up the SFTP Bulk connector in Airbyte
 
-### For Airbyte Cloud
+### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -70,7 +78,7 @@ For more information on SSH key pair authentication, please refer to the
 5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
-8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the SSH Key Authentication Setup section below for detailed instructions.
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**).
 9. In the section titled `The list of streams to sync`, enter a **Stream Name**. This is the name of the stream that is created in your destination. Add additional streams by clicking **Add**.
 10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
@@ -91,8 +99,6 @@ For more information on SSH key pair authentication, please refer to the
     An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point.
 
 14. Click **Set up source** to complete setup. A test runs to verify the configuration.
-
-#### SSH Key Authentication Setup
 
 If your SFTP server uses SSH key-based authentication, you'll need to provide your private key file (`.pem` or similar format) during setup. Follow these steps to create and upload it correctly:
 
@@ -121,12 +127,27 @@ Once uploaded, Airbyte uses this file to authenticate securely with your SFTP se
 The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
 :::
 
-### For Airbyte Open Source
+### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
 4. Enter a name for the SFTP Bulk connector.
+
+## Supported sync modes
+
+The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+| Feature                        | Support | Notes |
+|:-------------------------------|:-------:|:------|
+| Full Refresh - Overwrite       |    ✅    |       |
+| Full Refresh - Append Sync     |    ✅    |       |
+| Incremental - Append           |    ✅    |       |
+| Incremental - Append + Deduped |    ❌    |       |
+
+## Supported Streams
+
+This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format.
 
 ## Delivery Method
 
@@ -150,21 +171,6 @@ You can specify a **Glob** pattern to select which files should be synced from t
 
 If your files are in a subfolder, include the folder in your glob pattern, like `my_folder/my_prefix_*.csv`. Use `**` to match files recursively in subdirectories, like `**/*.csv`.
 
-## Supported sync modes
-
-The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
-
-| Feature                        | Support | Notes |
-|:-------------------------------|:-------:|:------|
-| Full Refresh - Overwrite       |    ✅    |       |
-| Full Refresh - Append Sync     |    ✅    |       |
-| Incremental - Append           |    ✅    |       |
-| Incremental - Append + Deduped |    ❌    |       |
-
-## Supported Streams
-
-This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format.
-
 ## File Size Limitations
 
 When using the SFTP Bulk connector with the **Copy Raw Files** delivery method, individual files are subject to a maximum size limit of 1.5 GB (1,500,000,000 bytes) per file. This limitation applies to the raw file transfer process where files are copied without parsing their contents.
@@ -184,6 +190,7 @@ For more information about delivery methods and their limitations, see the [Deli
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.10.0 | 2026-01-12 | [71309](https://github.com/airbytehq/airbyte/pull/71309) | Include option to add passphrase on private_key authentication |
 | 1.9.0 | 2026-01-08 | [71225](https://github.com/airbytehq/airbyte/pull/71225) | Promoting release candidate 1.9.0-rc.2 to a main version. |
 | 1.9.0-rc.2 | 2026-01-05 | [71038](https://github.com/airbytehq/airbyte/pull/71038) | Fix directory could match globs logic                    |
 | 1.9.0-rc.1 | 2025-12-09 | [69167](https://github.com/airbytehq/airbyte/pull/69167) | Fix OOM on check, update airbyte-cdk version                                                                                                                           |
