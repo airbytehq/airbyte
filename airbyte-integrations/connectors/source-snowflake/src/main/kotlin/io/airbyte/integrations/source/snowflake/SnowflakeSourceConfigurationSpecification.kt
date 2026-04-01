@@ -148,6 +148,38 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     var checkPrivileges: Boolean? = true
 
+    @JsonProperty("start_date")
+    @JsonSchemaTitle("Start Date")
+    @JsonPropertyDescription(
+        "Only sync records where the cursor field (incremental) or the full_refresh_temporal_column " +
+            "(full-refresh) is on or after this date (YYYY-MM-DD).",
+    )
+    @JsonSchemaInject(
+        json = """{"order":11,"pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}${'$'}","examples":["2024-01-01"]}"""
+    )
+    var startDate: String? = null
+
+    @JsonProperty("end_date")
+    @JsonSchemaTitle("End Date")
+    @JsonPropertyDescription(
+        "Only sync records where the cursor field (incremental) or the full_refresh_temporal_column " +
+            "(full-refresh) is on or before this date (YYYY-MM-DD).",
+    )
+    @JsonSchemaInject(
+        json = """{"order":12,"pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}${'$'}","examples":["2024-12-31"]}"""
+    )
+    var endDate: String? = null
+
+    @JsonProperty("full_refresh_temporal_column")
+    @JsonSchemaTitle("Full Refresh Temporal Column")
+    @JsonPropertyDescription(
+        "Column used to filter full-refresh syncs by start_date and/or end_date. " +
+            "Must be a DATE or TIMESTAMP column present in every synced table. " +
+            "Has no effect when both start_date and end_date are unset.",
+    )
+    @JsonSchemaInject(json = """{"order":13}""")
+    var fullRefreshTemporalColumn: String? = null
+
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 
     @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
