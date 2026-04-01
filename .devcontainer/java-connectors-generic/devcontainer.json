@@ -42,7 +42,7 @@
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
 
   // Install dependencies and warm up Gradle
-  "postCreateCommand": "pip install airbyte-cdk[dev] && ./gradlew --version",
+  "postCreateCommand": "uv tool install airbyte-cdk && ./gradlew --version",
 
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`

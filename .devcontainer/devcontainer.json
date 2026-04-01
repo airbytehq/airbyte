@@ -56,7 +56,7 @@
   },
   // Mark the root directory as 'safe' for git.
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
-  "postCreateCommand": "pip install airbyte-cdk[dev]",
+  "postCreateCommand": "uv tool install airbyte-cdk",
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`
     "POETRY_VIRTUALENVS_IN_PROJECT": "true"

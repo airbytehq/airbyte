@@ -50,7 +50,7 @@
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
 
   // Install the Airbyte CDK:
-  "postCreateCommand": "pip install airbyte-cdk[dev]",
+  "postCreateCommand": "uv tool install airbyte-cdk",
 
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`
