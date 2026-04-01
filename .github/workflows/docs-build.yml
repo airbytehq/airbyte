@@ -120,7 +120,7 @@ jobs:
 
       # If successful, post a check status with the Preview URL as its "details" link
       - name: Post Custom Check with Preview URL (${{ steps.deploy-vercel.outputs.preview-url }})
-        uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23 # v2.0.0
+        uses: LouisBrunner/checks-action@dfcbcf801bff1ea7f1414824fc28f2cd697b35da # v3.0.0
         with:
           name: "Vercel Preview Deployed" # << Name of the check
           status: completed
