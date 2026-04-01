@@ -61,6 +61,37 @@
                 "airbyte_secret": true
               }
             }
+          },
+          {
+            "type": "object",
+            "title": "GitHub App",
+            "required": ["app_id", "installation_id", "private_key"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "GitHub App Credentials",
+                "order": 0
+              },
+              "app_id": {
+                "type": "string",
+                "title": "App ID",
+                "description": "The numeric App ID of your GitHub App (found in the app's General settings).",
+                "pattern": "^[0-9]+$"
+              },
+              "installation_id": {
+                "type": "string",
+                "title": "Installation ID",
+                "description": "The numeric Installation ID of the GitHub App installed in your organization/account (found in the URL after installing the app).",
+                "pattern": "^[0-9]+$"
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "The private key (PEM format) of your GitHub App. Installation tokens are automatically refreshed during long-running syncs.",
+                "airbyte_secret": true,
+                "multiline": true
+              }
+            }
           }
         ]
       },

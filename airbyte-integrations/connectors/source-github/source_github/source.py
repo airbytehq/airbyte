@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter, generate_github_app_token
 
 from . import constants
 from .streams import (
@@ -127,12 +127,40 @@ class SourceGithub(AbstractSource):
             return constants.ACCESS_TOKEN_TITLE, credentials["access_token"]
         if "personal_access_token" in credentials:
             return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
+        if "private_key" in credentials:
+            for field in ("app_id", "installation_id"):
+                if field not in credentials:
+                    raise AirbyteTracedException(
+                        message=f"GitHub App auth requires '{field}'. Please check your credentials configuration.",
+                        failure_type=FailureType.config_error,
+                    )
+            api_url = config.get("api_url", "https://api.github.com")
+            token, _ = generate_github_app_token(
+                app_id=credentials["app_id"],
+                private_key=credentials["private_key"],
+                installation_id=credentials["installation_id"],
+                api_url=api_url,
+            )
+            return "GitHub App", token
         raise Exception("Invalid config format")
 
     def _get_authenticator(self, config: Mapping[str, Any]):
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
-        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens)
+        api_url = config.get("api_url", "https://api.github.com")
+
+        # Pass GitHub App credentials so the authenticator can refresh tokens
+        github_app_config = None
+        credentials = config.get("credentials", {})
+        if "private_key" in credentials:
+            github_app_config = {
+                "app_id": credentials["app_id"],
+                "private_key": credentials["private_key"],
+                "installation_id": credentials["installation_id"],
+                "api_url": api_url,
+            }
+
+        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens, api_url=api_url, github_app_config=github_app_config)
 
     def _validate_and_transform_config(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self._ensure_default_values(config)

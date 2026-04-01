@@ -23,6 +23,7 @@ This page contains the setup guide and reference information for the [GitHub](ht
 **For Airbyte Open Source:**
 
 - Personal Access Token (see [Permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
+- GitHub App (see [GitHub App permissions](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes))
 <!-- /env:oss -->
 
 ## Setup guide
@@ -56,7 +57,9 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
   <!-- /env:cloud -->
   <!-- env:oss -->
 
-- **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+- **For Airbyte Open Source:** Authenticate with **Personal Access Token** or **GitHub App**.
+  - **Personal Access Token:** Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
+  - **GitHub App:** Enter your App ID, Installation ID, and private key (PEM format). The connector generates a short-lived installation access token at sync time and automatically refreshes it during long-running syncs.
 <!-- /env:oss -->
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
@@ -216,6 +219,21 @@ Your token should have at least the `repo` scope. Depending on which streams you
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 
+**GitHub App permissions:** If you use GitHub App authentication, the app must be installed on the target organization or account and granted the following [repository permissions](https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps):
+
+| Permission | Access | Required for |
+|---|---|---|
+| Contents | Read | Repositories, branches, commits, tags |
+| Issues | Read | Issues, issue events, issue milestones, issue comments, issue reactions |
+| Pull requests | Read | Pull requests, pull request comments, reviews, review comments |
+| Metadata | Read | Required by default for all GitHub Apps |
+| Members | Read | Collaborators, teams, team members |
+| Organization administration | Read | Organizations |
+| Projects | Read | Projects (v2) |
+| Webhooks | Read | Repository webhook events |
+
+Not all permissions are required — only grant what is needed for the streams you plan to sync.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
@@ -229,6 +247,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.0 | 2026-03-18 | [75188](https://github.com/airbytehq/airbyte/issues/75188) | Add GitHub App authentication support (app_id, installation_id, private_key) |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
 | 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
