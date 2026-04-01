@@ -199,7 +199,7 @@ Webhook doesn't contain payload and only works for Slack notifications.
 <details>
   <summary>Queued syncs</summary>
 
-Queued syncs notifications are email-only. Webhook payloads are not supported for this event type.
+Queued syncs notifications support both email and webhook. No example payload is available at this time.
 
 </details>
 

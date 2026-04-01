@@ -90,6 +90,6 @@ When you enable on-demand capacity on a connection, Airbyte automatically applie
 
 ### Identify queued connections
 
-When your committed capacity is fully utilized, connections waiting for capacity display an orange hourglass icon and a "Queued" status. You can filter the Connections page by "Queued" status to find all queued connections. If your organization has on-demand capacity in its contract, a dismissable yellow banner also appears at the top of the Connections page: "Maximum capacity currently reached, additional jobs will be queued until capacity is available."
+When your committed capacity is fully utilized, connections waiting for capacity display an orange hourglass icon and a "Queued" status. You can filter the Connections page by "Queued" status to find all queued connections. A dismissable yellow banner also appears at the top of the Connections page: "Maximum capacity currently reached, additional jobs will be queued until capacity is available."
 
 For more information about connection statuses, see [Connection status](./review-connection-status.md).
