@@ -5663,14 +5663,18 @@ schemas:
           - "null"
           - array
         items:
-          type: string
+          type:
+            - "null"
+            - string
       secondaryTeamIds:
         description: The user's additional teams.
         type:
           - "null"
           - array
         items:
-          type: string
+          type: 
+            - "null"
+            - string
       sendWelcomeEmail:
         description:
           Whether a welcome email was sent to the user.
