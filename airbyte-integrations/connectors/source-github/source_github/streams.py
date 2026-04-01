@@ -138,7 +138,7 @@ class GithubStreamABC(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if not hasattr(e, "_exception") and not hasattr(e._exception, "response"):
+            if not hasattr(e, "_exception") or not hasattr(e._exception, "response") or e._exception.response is None:
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
@@ -1813,7 +1813,7 @@ class ContributorActivity(GithubStream):
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
         # HTTP Client wraps BackoffException into MessageRepresentationAirbyteTracedErrors
         except MessageRepresentationAirbyteTracedErrors as e:
-            if hasattr(e, "_exception") and hasattr(e._exception, "response"):
+            if hasattr(e, "_exception") and hasattr(e._exception, "response") and e._exception.response is not None:
                 if e._exception.response.status_code == requests.codes.ACCEPTED:
                     yield AirbyteMessage(
                         type=MessageType.LOG,
