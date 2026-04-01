@@ -21,7 +21,7 @@ jobs:
     steps:
       # ---------- Authentication ----------
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-hoard-token
         with:
           owner: "airbytehq"
@@ -111,7 +111,7 @@ jobs:
     steps:
       # ---------- Authentication ----------
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-hoard-token
         with:
           owner: "airbytehq"
@@ -226,7 +226,7 @@ jobs:
       # ---------- Approve and merge ----------
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.eligible.outputs.result == 'true'
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-admin-token
         with:
           owner: "airbytehq"
@@ -280,7 +280,7 @@ jobs:
     steps:
       # ---------- Authentication ----------
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-hoard-token
         with:
           owner: "airbytehq"
@@ -347,7 +347,7 @@ jobs:
       # ---------- Approve and merge ----------
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.eligible.outputs.result == 'true'
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-admin-token
         with:
           owner: "airbytehq"

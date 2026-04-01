@@ -48,7 +48,7 @@ jobs:
         run: rm -rf agent-connectors-source
 
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"

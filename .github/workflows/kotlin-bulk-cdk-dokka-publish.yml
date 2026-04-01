@@ -152,7 +152,7 @@ jobs:
 
       - name: Authenticate as GitHub App
         if: github.event_name == 'pull_request'
-        uses: actions/create-github-app-token@v2.0.6
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
