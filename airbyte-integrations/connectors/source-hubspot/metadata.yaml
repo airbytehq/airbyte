@@ -6,7 +6,7 @@ data:
     hosts:
       - api.hubapi.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0.post13.dev23806774478@sha256:3454e270979f4e239c538cc9200cc872d54815f60752d997d419ed51434ff7bf
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0.post14.dev23855054325@sha256:c5a8b47710dc0f56270ccb4f127bb604df2574f1f5f4b82f909355dee560b23c
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
