@@ -151,7 +151,7 @@ class PostgresSourceDebeziumOperations(
     }
 
     override fun generateColdStartOffset(): DebeziumOffset {
-        val state: StartupState =
+        val startup: StartupState =
             checkNotNull(startupState) {
                 "StartupState bean is required for CDC but was not instantiated"
             }
@@ -162,17 +162,17 @@ class PostgresSourceDebeziumOperations(
         val value =
             Jsons.objectNode()
                 .putNull("transaction_id")
-                .put(LSN, state.lsn)
-                .put(LSN_PROC, state.lsn)
+                .put(LSN, startup.lsn)
+                .put(LSN_PROC, startup.lsn)
                 // Postgres commits get their own LSNs, just like row-level changes. There is no way
                 // of fetching the LSN of the latest commit, only the latest LSN overall. By putting
                 // the max LSN into this field, we are telling Debezium that we've already seen and
                 // processed all transactions before this LSN, which is true, as our snapshot will
                 // include all transactions committed before this LSN. We will start streaming from
                 // the next transaction greater than this LSN.
-                .put(LSN_COMMIT, state.lsn)
-                .put("txId", state.txId)
-                .put("ts_usec", Conversions.toEpochMicros(state.time))
+                .put(LSN_COMMIT, startup.lsn)
+                .put("txId", startup.txId)
+                .put("ts_usec", Conversions.toEpochMicros(startup.time))
         val wrapped = mapOf<JsonNode, JsonNode>(key to value)
         log.info { "Initial Debezium state constructed: $wrapped" }
         return DebeziumOffset(wrapped)
