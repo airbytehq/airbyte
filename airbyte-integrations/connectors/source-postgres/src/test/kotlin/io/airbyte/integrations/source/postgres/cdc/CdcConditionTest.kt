@@ -21,9 +21,7 @@ class CdcConditionTest {
 
     private val condition = CdcCondition()
 
-    private fun mockConditionContext(
-        config: PostgresSourceConfiguration
-    ): ConditionContext<*> {
+    private fun mockConditionContext(config: PostgresSourceConfiguration): ConditionContext<*> {
         val beanContext = mockk<ApplicationContext>()
         every { beanContext.getBean(PostgresSourceConfiguration::class.java) } returns config
         val conditionContext = mockk<ConditionContext<*>>()
@@ -32,7 +30,8 @@ class CdcConditionTest {
     }
 
     private fun makeConfig(
-        incrementalConfiguration: io.airbyte.integrations.source.postgres.config.IncrementalConfiguration
+        incrementalConfiguration:
+            io.airbyte.integrations.source.postgres.config.IncrementalConfiguration
     ): PostgresSourceConfiguration =
         PostgresSourceConfiguration(
             realHost = "localhost",
@@ -56,7 +55,9 @@ class CdcConditionTest {
                 CdcIncrementalConfiguration(
                     initialLoadTimeout = Duration.ofHours(8),
                     invalidCdcCursorPositionBehavior =
-                        io.airbyte.integrations.source.postgres.config.InvalidCdcCursorPositionBehavior.FAIL_SYNC,
+                        io.airbyte.integrations.source.postgres.config
+                            .InvalidCdcCursorPositionBehavior
+                            .FAIL_SYNC,
                     shutdownTimeout = Duration.ofSeconds(60),
                     replicationSlot = "airbyte_slot",
                     publication = "airbyte_publication",
