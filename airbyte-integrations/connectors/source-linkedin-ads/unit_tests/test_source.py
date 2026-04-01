@@ -13,7 +13,7 @@ from airbyte_protocol_dataclasses.models import Status as ConnectionStatus
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.types import Record, StreamSlice
 from unit_tests.utils import run_read
@@ -106,7 +106,7 @@ class TestAllStreams:
             "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
         )
         stream._stream_partition_generator._partition_factory._retriever.requester.exit_on_rate_limit = True
-        with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+        with pytest.raises(AirbyteTracedException):
             list(run_read(stream))
 
     def test_manifest_maps_429_to_rate_limited(self):

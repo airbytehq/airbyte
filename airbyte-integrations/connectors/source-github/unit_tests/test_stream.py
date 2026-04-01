@@ -54,7 +54,7 @@ from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 
 from .utils import ProjectsResponsesAPI, read_incremental
@@ -71,8 +71,8 @@ def test_internal_server_error_retry(time_mock, requests_mock):
 
     time_mock.reset_mock()
     requests_mock.get("https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions", status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
-    # http client raises MessageRepresentationAirbyteTracedErrors when BaseBackoffException occurs
-    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    # http client raises AirbyteTracedException when BaseBackoffException occurs
+    with pytest.raises(AirbyteTracedException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
 
     sleep_delays = [delay[0][0] for delay in time_mock.call_args_list]
@@ -322,7 +322,7 @@ def test_stream_repositories_401(time_mock, caplog, requests_mock):
         json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
     )
 
-    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    with pytest.raises(AirbyteTracedException):
         assert list(read_full_refresh(stream)) == []
 
     assert requests_mock.call_count == 6
@@ -1613,7 +1613,7 @@ def test_stream_projects_v2_graphql_retry(time_mock, rate_limit_mock_response, r
 
     backoff_strategy = GithubStreamABCBackoffStrategy(stream)
 
-    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(AirbyteTracedException):
         read_incremental(stream, stream_state={})
     assert requests_mock.call_count == stream.max_retries + 1
 
