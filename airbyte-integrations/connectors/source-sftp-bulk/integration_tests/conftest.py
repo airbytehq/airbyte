@@ -14,6 +14,10 @@ from typing import Any, Mapping, Tuple
 import docker
 import paramiko
 import pytest
+from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1
+from cryptography.hazmat.primitives.asymmetric.ec import generate_private_key as ec_generate
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
 
 from airbyte_cdk import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
@@ -22,17 +26,17 @@ from .utils import get_docker_ip, load_config
 
 logger = logging.getLogger("airbyte")
 
-PRIVATE_KEY = str()
+RSA_PRIVATE_KEY = str()
+ED25519_PRIVATE_KEY = str()
+ECDSA_PRIVATE_KEY = str()
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 
 # HELPERS
-def generate_ssh_keys() -> Tuple[str, str]:
-    key = paramiko.RSAKey.generate(2048)
-    privateString = StringIO()
-    key.write_private_key(privateString)
-
-    return privateString.getvalue(), "ssh-rsa " + key.get_base64()
+def _write_private_key(key: paramiko.PKey) -> str:
+    buf = StringIO()
+    key.write_private_key(buf)
+    return buf.getvalue()
 
 
 @pytest.fixture(scope="session")
@@ -77,12 +81,26 @@ def connector_setup_fixture(docker_client) -> None:
     shutil.copytree(f"{dir_path}/files", TMP_FOLDER)
     prepare_test_files(TMP_FOLDER)
     os.makedirs(ssh_path)
-    private_key, public_key = generate_ssh_keys()
-    global PRIVATE_KEY
-    PRIVATE_KEY = private_key
-    pub_key_path = ssh_path + "/id_rsa.pub"
-    with open(pub_key_path, "w") as f:
-        f.write(public_key)
+
+    global RSA_PRIVATE_KEY, ED25519_PRIVATE_KEY, ECDSA_PRIVATE_KEY
+
+    rsa_key = paramiko.RSAKey.generate(2048)
+    RSA_PRIVATE_KEY = _write_private_key(rsa_key)
+    with open(ssh_path + "/id_rsa.pub", "w") as f:
+        f.write("ssh-rsa " + rsa_key.get_base64())
+
+    _ed25519_raw = Ed25519PrivateKey.generate()
+    ED25519_PRIVATE_KEY = _ed25519_raw.private_bytes(Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()).decode()
+    _ed25519_pub = paramiko.Ed25519Key.from_private_key(StringIO(ED25519_PRIVATE_KEY))
+    with open(ssh_path + "/id_ed25519.pub", "w") as f:
+        f.write("ssh-ed25519 " + _ed25519_pub.get_base64())
+
+    _ecdsa_raw = ec_generate(SECP256R1())
+    ECDSA_PRIVATE_KEY = _ecdsa_raw.private_bytes(Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()).decode()
+    _ecdsa_pub = paramiko.ECDSAKey.from_private_key(StringIO(ECDSA_PRIVATE_KEY))
+    with open(ssh_path + "/id_ecdsa.pub", "w") as f:
+        f.write("ecdsa-sha2-nistp256 " + _ecdsa_pub.get_base64())
+
     config = load_config("config_password.json")
     container = docker_client.containers.run(
         "atmoz/sftp",
@@ -91,7 +109,7 @@ def connector_setup_fixture(docker_client) -> None:
         ports={22: ("0.0.0.0", config["port"])},
         volumes={
             f"{TMP_FOLDER}": {"bind": "/home/foo/files", "mode": "rw"},
-            f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
+            f"{ssh_path}": {"bind": "/home/foo/.ssh/keys", "mode": "ro"},
         },
         detach=True,
     )
@@ -145,13 +163,36 @@ def config_fixture_not_mirroring_paths_with_duplicates(docker_client) -> Mapping
     yield config
 
 
-@pytest.fixture(name="config_private_key", scope="session")
-def config_fixture_private_key(docker_client) -> Mapping[str, Any]:
+@pytest.fixture(name="config_private_key_rsa", scope="session")
+def config_fixture_private_key_rsa(docker_client) -> Mapping[str, Any]:
     config = load_config("config_private_key.json") | {
-        "credentials": {"auth_type": "private_key", "private_key": PRIVATE_KEY},
+        "credentials": {"auth_type": "private_key", "private_key": RSA_PRIVATE_KEY},
     }
     config["host"] = get_docker_ip()
     yield config
+
+
+@pytest.fixture(name="config_private_key_ed25519", scope="session")
+def config_fixture_private_key_ed25519(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_private_key.json") | {
+        "credentials": {"auth_type": "private_key", "private_key": ED25519_PRIVATE_KEY},
+    }
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_private_key_ecdsa", scope="session")
+def config_fixture_private_key_ecdsa(docker_client) -> Mapping[str, Any]:
+    config = load_config("config_private_key.json") | {
+        "credentials": {"auth_type": "private_key", "private_key": ECDSA_PRIVATE_KEY},
+    }
+    config["host"] = get_docker_ip()
+    yield config
+
+
+@pytest.fixture(name="config_private_key", scope="session")
+def config_fixture_private_key(config_private_key_rsa) -> Mapping[str, Any]:
+    yield config_private_key_rsa
 
 
 @pytest.fixture(name="config_private_key_csv", scope="session")

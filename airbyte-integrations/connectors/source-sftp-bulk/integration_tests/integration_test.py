@@ -45,8 +45,24 @@ def test_check_invalid_config(configured_catalog: ConfiguredAirbyteCatalog, conf
     assert exc_info.value.failure_type.value == FailureType.config_error.value
 
 
-def test_check_valid_config_private_key(configured_catalog: ConfiguredAirbyteCatalog, config_private_key: Mapping[str, Any]):
-    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key, state=None).check(logger, config_private_key)
+def test_check_valid_config_private_key_rsa(configured_catalog: ConfiguredAirbyteCatalog, config_private_key_rsa: Mapping[str, Any]):
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key_rsa, state=None).check(logger, config_private_key_rsa)
+    assert outcome.status == Status.SUCCEEDED
+
+
+def test_check_valid_config_private_key_ed25519(
+    configured_catalog: ConfiguredAirbyteCatalog, config_private_key_ed25519: Mapping[str, Any]
+):
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key_ed25519, state=None).check(
+        logger, config_private_key_ed25519
+    )
+    assert outcome.status == Status.SUCCEEDED
+
+
+def test_check_valid_config_private_key_ecdsa(configured_catalog: ConfiguredAirbyteCatalog, config_private_key_ecdsa: Mapping[str, Any]):
+    outcome = SourceSFTPBulk(catalog=configured_catalog, config=config_private_key_ecdsa, state=None).check(
+        logger, config_private_key_ecdsa
+    )
     assert outcome.status == Status.SUCCEEDED
 
 
