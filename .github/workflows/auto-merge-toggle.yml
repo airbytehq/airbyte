@@ -6,6 +6,9 @@
 #    the PR.
 
 name: "Auto-Merge Toggle"
+
+permissions: {}
+
 on:
   pull_request_target:
     types: [auto_merge_enabled, auto_merge_disabled]

@@ -3,6 +3,8 @@ name: "Auto-Merge Label Removal"
 # When the last auto-merge label is removed from a PR, disable GitHub's
 # native auto-merge so the PR no longer merges automatically.
 
+permissions: {}
+
 on:
   pull_request_target:
     types:
