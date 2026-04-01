@@ -177,7 +177,7 @@ jobs:
         run: uv tool install airbyte-internal-ops
 
       - name: Docker login
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -249,7 +249,7 @@ jobs:
       - name: Create or update PR
         id: create-pr
         if: steps.check-changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           commit-message: "deps(${{ env.CONNECTOR_NAME }}): update dependencies"
