@@ -277,7 +277,15 @@ def test_threads_stream_skips_messages_without_replies_when_enabled(requests_moc
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
         [
-            {"json": {"messages": [{"ts": 1577866844, "reply_count": 3}, {"ts": 1577877406, "reply_count": 0}, {"ts": 1577888888, "reply_count": None}]}},
+            {
+                "json": {
+                    "messages": [
+                        {"ts": 1577866844, "reply_count": 3},
+                        {"ts": 1577877406, "reply_count": 0},
+                        {"ts": 1577888888, "reply_count": None},
+                    ]
+                }
+            },
             {"json": {"messages": []}},
         ],
     )
@@ -315,7 +323,15 @@ def test_threads_stream_includes_all_messages_by_default(requests_mock, token_co
         "GET",
         "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
         [
-            {"json": {"messages": [{"ts": 1577866844, "reply_count": 3}, {"ts": 1577877406, "reply_count": 0}, {"ts": 1577888888, "reply_count": None}]}},
+            {
+                "json": {
+                    "messages": [
+                        {"ts": 1577866844, "reply_count": 3},
+                        {"ts": 1577877406, "reply_count": 0},
+                        {"ts": 1577888888, "reply_count": None},
+                    ]
+                }
+            },
             {"json": {"messages": []}},
         ],
     )
