@@ -245,7 +245,7 @@ jobs:
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           commit-message: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
-          branch: "connectors-up-to-date/${{ env.CONNECTOR_NAME }}"
+          branch: "up-to-date/${{ env.CONNECTOR_NAME }}"
           delete-branch: true
           title: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
           body: |
