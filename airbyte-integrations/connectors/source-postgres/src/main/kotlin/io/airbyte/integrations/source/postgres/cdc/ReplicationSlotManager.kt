@@ -12,12 +12,10 @@ import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguratio
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.debezium.connector.postgresql.connection.Lsn
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.sql.SQLException
 
 @Singleton
-@Requires(condition = CdcCondition::class)
 class ReplicationSlotManager(
     val config: PostgresSourceConfiguration,
     val connectionFactory: PostgresSourceJdbcConnectionFactory

@@ -46,7 +46,6 @@ import io.debezium.connector.postgresql.PostgresConnector
 import io.debezium.connector.postgresql.connection.Lsn
 import io.debezium.time.Conversions
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.time.Instant
@@ -57,7 +56,6 @@ import kotlin.collections.component2
 import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
-@Requires(condition = CdcCondition::class)
 class PostgresSourceDebeziumOperations(
     private val config: PostgresSourceConfiguration,
     private val connectionFactory: PostgresSourceJdbcConnectionFactory,

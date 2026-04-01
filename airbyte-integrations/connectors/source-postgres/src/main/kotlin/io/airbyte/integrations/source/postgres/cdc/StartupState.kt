@@ -7,22 +7,21 @@ package io.airbyte.integrations.source.postgres.cdc
 import io.airbyte.cdk.read.querySingleValue
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.debezium.connector.postgresql.connection.Lsn
-import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.time.Instant
 
 @Singleton
-@Requires(condition = CdcCondition::class)
-class StartupState(connectionFactory: PostgresSourceJdbcConnectionFactory) {
-    val txId: Long
-    val lsn: Long
-    val time: Instant
+class StartupState(private val connectionFactory: PostgresSourceJdbcConnectionFactory) {
 
-    init {
-        val (txId, lsn, time) =
-            querySingleValue(
-                connectionFactory,
-                """
+    /**
+     * Lazily queries the current WAL position and transaction state. The query is deferred until
+     * first access so that non-CDC connections never execute WAL-level SQL that requires
+     * wal_level = logical.
+     */
+    private val data: Triple<Long, Long, Instant> by lazy {
+        querySingleValue(
+            connectionFactory,
+            """
                 SELECT
                     CASE WHEN pg_is_in_recovery()
                         THEN txid_snapshot_xmin(txid_current_snapshot())
@@ -33,17 +32,24 @@ class StartupState(connectionFactory: PostgresSourceJdbcConnectionFactory) {
                         ELSE pg_current_wal_lsn()
                     END AS lsn,
                     CURRENT_TIMESTAMP AS time
-            """.trimIndent(),
-                withResultSet = { rs ->
-                    Triple(
-                        rs.getLong("txid"),
-                        Lsn.valueOf(rs.getString("lsn")).asLong(),
-                        rs.getTimestamp("time").toInstant(),
-                    )
-                }
-            )
-        this.txId = txId
-        this.lsn = lsn
-        this.time = time
+            """
+                .trimIndent(),
+            withResultSet = { rs ->
+                Triple(
+                    rs.getLong("txid"),
+                    Lsn.valueOf(rs.getString("lsn")).asLong(),
+                    rs.getTimestamp("time").toInstant(),
+                )
+            }
+        )
     }
+
+    val txId: Long
+        get() = data.first
+
+    val lsn: Long
+        get() = data.second
+
+    val time: Instant
+        get() = data.third
 }
