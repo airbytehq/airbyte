@@ -259,9 +259,21 @@ jobs:
             auto-merge
           draft: true
 
-      # --- Step 6: Bump version + changelog (needs PR number) ---
+      # --- Step 6: Check out PR branch ---
+      # peter-evans/create-pull-request commits dependency changes to the PR branch
+      # but leaves the working tree dirty on master. We must reset and switch to the
+      # PR branch before running the version bump (which needs the PR number).
+      - name: Check out PR branch
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
+        run: |
+          git checkout -- .
+          git fetch --depth=1 origin "$PR_BRANCH"
+          git checkout "$PR_BRANCH"
+
+      # --- Step 7: Bump version + changelog (needs PR number) ---
       # This runs after PR creation so we can reference the PR number in the changelog.
-      # The changes are pushed as a follow-up commit to the PR branch.
       - name: Bump connector version (patch) with changelog
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
@@ -274,20 +286,18 @@ jobs:
             --changelog-message "Update dependencies" \
             --pr-number "$PR_NUMBER"
 
-      # --- Step 7: Push changelog commit to the PR branch ---
+      # --- Step 8: Push changelog commit to the PR branch ---
       - name: Push changelog commit to PR branch
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
           PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
         run: |
-          git fetch --depth=1 origin "$PR_BRANCH"
-          git checkout "$PR_BRANCH"
           git add "$CONNECTOR_DIR"
           git commit -m "chore($CONNECTOR_NAME): bump version and update changelog"
           git push origin "$PR_BRANCH"
 
-      # --- Step 8: Mark PR ready for review ---
+      # --- Step 9: Mark PR ready for review ---
       - name: Mark PR as ready for review
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
@@ -295,7 +305,7 @@ jobs:
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr ready "$PR_NUMBER"
 
-      # --- Step 9: Enable auto-merge ---
+      # --- Step 10: Enable auto-merge ---
       - name: Enable auto-merge on PR
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
@@ -303,7 +313,7 @@ jobs:
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr merge "$PR_NUMBER" --squash --auto
 
-      # --- Step 10: Apply bot approval ---
+      # --- Step 11: Apply bot approval ---
       # Use a different bot identity (admin) to approve, because the hoard bot
       # that created the PR cannot approve its own PRs.
       - name: Authenticate as 'octavia-bot-admin' GitHub App
@@ -324,7 +334,7 @@ jobs:
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved by connectors up-to-date workflow."
 
-      # --- Step 11: Write job summary ---
+      # --- Step 12: Write job summary ---
       - name: Write step summary
         if: always()
         env:
