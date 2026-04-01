@@ -13,6 +13,8 @@ on:
 jobs:
   disable-auto-merge:
     name: Disable native auto-merge
+    # Runs when either auto-merge label is removed and the other is not
+    # still present on the PR.
     if: >
       github.event.action == 'unlabeled'
       && (
