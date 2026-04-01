@@ -47,6 +47,9 @@ Each purchase record includes: `id`, `user_id`, `product_id`, `created_at`, `upd
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 7.1.0 | 2026-03-31 | [75941](https://github.com/airbytehq/airbyte/pull/75941) | Promoted release candidate to GA |
+| 7.1.0-rc.2 | 2026-03-31 | [75926](https://github.com/airbytehq/airbyte/pull/75926) | Bump source-faker to RC2 for progressive rollout e2e test |
+| 7.1.0-rc.1 | 2026-03-31 | [75908](https://github.com/airbytehq/airbyte/pull/75908) | test: progressive rollout e2e test on source-faker |
 | 7.0.4 | 2026-03-31 | [75657](https://github.com/airbytehq/airbyte/pull/75657) | Patch version bump (test publish) |
 | 7.0.3 | 2026-03-20 | [75256](https://github.com/airbytehq/airbyte/pull/75256) | Re-release to verify yank/un-yank behavior in ops CLI registry pipeline |
 | 7.0.2 | 2026-03-19 | [75232](https://github.com/airbytehq/airbyte/pull/75232) | Patch version bump (ops CLI registry post-launch test) |
