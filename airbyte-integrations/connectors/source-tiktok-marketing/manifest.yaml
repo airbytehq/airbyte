@@ -278,7 +278,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_REACH_FREQUENCY"]}|string if config.get("include_deleted", False) else {"buying_types": ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_REACH_FREQUENCY"]}|string }}'
       record_selector:
         $ref: "#/definitions/record_selector"
       paginator:

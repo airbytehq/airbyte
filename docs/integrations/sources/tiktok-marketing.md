@@ -155,6 +155,7 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.6 | 2026-04-02 | [](https://github.com/airbytehq/airbyte/pull/) | Add support for TopView and Reach & Frequency campaigns by including all buying types in campaigns stream |
 | 5.0.5 | 2026-03-31 | [75063](https://github.com/airbytehq/airbyte/pull/75063) | Update dependencies |
 | 5.0.4 | 2026-03-23 | [74376](https://github.com/airbytehq/airbyte/pull/74376) | Handle TikTok API error 60001 (service maintenance) as retryable instead of fatal; ignore error 40002 (resource not accessible or does not exist) |
 | 5.0.3 | 2026-03-12 | [74762](https://github.com/airbytehq/airbyte/pull/74762) | Promoting release candidate 5.0.3-rc.1 to a main version. |
