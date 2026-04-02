@@ -17,10 +17,10 @@ fun buildWhereClause(
     upperBound: List<JsonNode>?,
     isLowerBoundIncluded: Boolean,
 ): WhereNode {
-    val zippedLowerBound: List<Pair<Field, JsonNode>> =
+    val zippedLowerBound: List<Pair<EmittedField, JsonNode>> =
         lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
     val lowerBoundDisj: List<WhereClauseNode> =
-        zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
+        zippedLowerBound.mapIndexed { idx: Int, (gtCol: EmittedField, gtValue: JsonNode) ->
             val lastLeaf: WhereClauseLeafNode =
                 if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
                     GreaterOrEqual(gtCol, gtValue)
@@ -28,15 +28,16 @@ fun buildWhereClause(
                     Greater(gtCol, gtValue)
                 }
             And(
-                zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                zippedLowerBound.take(idx).map { (eqCol: EmittedField, eqValue: JsonNode) ->
                     Equal(eqCol, eqValue)
                 } + listOf(lastLeaf),
             )
         }
-    val zippedUpperBound: List<Pair<Field, JsonNode>> =
+    val zippedUpperBound: List<Pair<EmittedField, JsonNode>> =
         upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
     val upperBoundDisj: List<WhereClauseNode> =
-        zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
+        zippedUpperBound.mapIndexed { idx: Int, (leqCol: EmittedField, leqValue: JsonNode)
+            ->
             val lastLeaf: WhereClauseLeafNode =
                 if (idx < zippedUpperBound.size - 1) {
                     Lesser(leqCol, leqValue)
@@ -44,14 +45,17 @@ fun buildWhereClause(
                     LesserOrEqual(leqCol, leqValue)
                 }
             And(
-                zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                zippedUpperBound.take(idx).map { (eqCol: EmittedField, eqValue: JsonNode) ->
                     Equal(eqCol, eqValue)
                 } + listOf(lastLeaf),
             )
         }
+    // Don't create WHERE clauses when there are no bounds
     if (lowerBoundDisj.isEmpty() && upperBoundDisj.isEmpty()) {
         return NoWhere
     }
+
+    // Build WHERE clause components only for non-empty bounds
     val clauses = mutableListOf<WhereClauseNode>()
     if (lowerBoundDisj.isNotEmpty()) {
         clauses.add(Or(lowerBoundDisj))
@@ -59,6 +63,7 @@ fun buildWhereClause(
     if (upperBoundDisj.isNotEmpty()) {
         clauses.add(Or(upperBoundDisj))
     }
+
     return when (clauses.size) {
         1 -> Where(clauses.first())
         else -> Where(And(clauses))
