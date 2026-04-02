@@ -18,7 +18,7 @@ import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -304,7 +304,7 @@ class MsSqlSourceOperations :
      */
     fun String.quoted(): String = "[${this.replace("]", "]]")}]"
 
-    fun Field.sql(): String =
+    fun DataField.sql(): String =
         if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
 
     fun FromNode.sql(): String =
