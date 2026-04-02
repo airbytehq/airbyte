@@ -37,7 +37,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
 4. In the navigation menu, select **OAuth & Permissions**.
 5. Navigate to **Scopes**. In **Bot Token Scopes**, select the following scopes: 
 
-```
+```text
  channels:history
  channels:join
  channels:read
@@ -48,7 +48,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
 
    If you also plan to sync data unrelated to conversations, such as files or user groups, add these optional scopes:
 
-```
+```text
  files:read
  links:read
  reactions:read
