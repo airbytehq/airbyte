@@ -22,7 +22,6 @@ from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
