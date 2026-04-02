@@ -17,9 +17,9 @@ from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
-from source_facebook_marketing.utils import INSIGHTS_RETENTION_PERIOD_DAYS, DateInterval, validate_start_date
+from source_facebook_marketing.utils import DateInterval
 
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 class DummyAPILimit:
@@ -453,9 +453,7 @@ class TestInsightAsyncJob:
         small_jobs = job._split_by_edge_class(next_edge_class)
 
         # ----- Assert the params passed to get_insights --------------------------
-        expected_since = validate_start_date(
-            AirbyteDateTime.from_datetime(datetime.combine(job._interval.start - timedelta(days=29), datetime.min.time()))
-        ).strftime("%Y-%m-%d")
+        expected_since = (job._interval.start - timedelta(days=29)).strftime("%Y-%m-%d")
 
         expected_params = {
             "fields": [id_field],
