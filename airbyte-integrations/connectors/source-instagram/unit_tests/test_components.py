@@ -71,9 +71,9 @@ def test_instagram_media_children_transformation_skips_failed_child(components_m
         for index, child in enumerate(original_children_data):
             if child["id"] == path:
                 if index == failing_index:
-                    raise Exception("HTTP error occurred: 400 - Bad request")
+                    raise AirbyteTracedException(message="HTTP error occurred: 400 - Bad request")
                 return copy.deepcopy(expected_children_transformed_data[index])
-        raise Exception(f"Unexpected child ID: {path}")
+        raise AirbyteTracedException(message=f"Unexpected child ID: {path}")
 
     mocker.patch.object(components_module, "get_http_response", side_effect=mock_get_http_response)
 
@@ -93,7 +93,11 @@ def test_instagram_media_children_transformation_all_children_fail(components_mo
     fresh_record = {
         "children": {"data": [{"id": "7608776690540"}, {"id": "2896800415362"}, {"id": "9559889460059"}, {"id": "7359925580923"}]}
     }
-    mocker.patch.object(components_module, "get_http_response", side_effect=Exception("HTTP error occurred: 500 - Internal server error"))
+    mocker.patch.object(
+        components_module,
+        "get_http_response",
+        side_effect=AirbyteTracedException(message="HTTP error occurred: 500 - Internal server error"),
+    )
 
     record_transformation = components_module.InstagramMediaChildrenTransformation()
     result = record_transformation.transform(fresh_record, config)
@@ -106,7 +110,9 @@ def test_instagram_media_children_transformation_logs_warning_on_failure(compone
     failing_child_id = "7608776690540"
     parent_record = {"id": "parent_media_456", "children": {"data": [{"id": failing_child_id}]}}
 
-    mocker.patch.object(components_module, "get_http_response", side_effect=Exception("HTTP error occurred: 403 - Permission denied"))
+    mocker.patch.object(
+        components_module, "get_http_response", side_effect=AirbyteTracedException(message="HTTP error occurred: 403 - Permission denied")
+    )
 
     record_transformation = components_module.InstagramMediaChildrenTransformation()
     with caplog.at_level(logging.WARNING):
