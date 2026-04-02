@@ -1,6 +1,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import pytest
+import requests
+import requests_mock as rm
+
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @pytest.mark.parametrize(
@@ -960,11 +964,6 @@ def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
 
 
 # --- BingAdsReportDownloadRequester tests ---
-
-import requests
-import requests_mock as rm
-
-from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
