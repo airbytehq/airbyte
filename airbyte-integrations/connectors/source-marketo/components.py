@@ -66,6 +66,15 @@ def clean_string(string: str) -> str:
     return "".join("_" + c.lower() if c.isupper() else c for c in string if c != " ").strip("_")
 
 
+# Register clean_string as a Jinja filter so it can be used in manifest.yaml
+# for DynamicDeclarativeStream activity stream naming, preserving exact parity
+# with the original Python implementation's naming convention.
+from airbyte_cdk.sources.declarative.interpolation.jinja import _ENVIRONMENT  # noqa: E402
+
+
+_ENVIRONMENT.filters["clean_string"] = clean_string
+
+
 def format_value(value: Any, schema: Mapping[str, Any]) -> Any:
     """Coerce a raw CSV string value to the type declared in *schema*."""
     if not isinstance(schema["type"], list):

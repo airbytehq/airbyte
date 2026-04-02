@@ -461,7 +461,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - name
-          value: "activities_{{ components_values['name'] | lower | replace(' ', '_') }}"
+          value: "activities_{{ components_values['name'] | clean_string }}"
         - type: ComponentMappingDefinition
           field_path:
             - schema_loader

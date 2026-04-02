@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
-  dockerImageTag: 2.0.0
+  dockerImageTag: 1.7.0
   dockerRepository: airbyte/source-marketo
   documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
   githubIssueLabel: source-marketo
@@ -28,29 +28,6 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  releases:
-    breakingChanges:
-      2.0.0:
-        message: >
-          This release migrates the Leads and Activities bulk export streams to the
-          low-code framework. Six activity stream names change due to the new naming
-          convention: activities_add_to_list (was activities_addto_list),
-          activities_push_lead_to_marketo (was activities_push_leadto_marketo),
-          activities_remove_from_list (was activities_removefrom_list),
-          activities_change_status_in_progression (was activities_change_statusin_progression),
-          activities_add_to_opportunity (was activities_addto_opportunity),
-          activities_remove_from_opportunity (was activities_removefrom_opportunity).
-          After upgrading, refresh your schema and reset the affected activity streams.
-        upgradeDeadline: "2026-04-16"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              - activities_addto_list
-              - activities_push_leadto_marketo
-              - activities_removefrom_list
-              - activities_change_statusin_progression
-              - activities_addto_opportunity
-              - activities_removefrom_opportunity
   supportLevel: community
   tags:
     - language:python
