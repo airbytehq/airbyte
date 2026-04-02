@@ -155,6 +155,7 @@ class MarketoBulkExportCreationRequester:
     create_requester: HttpRequester
     enqueue_requester: HttpRequester
     include_fields_from_describe: Union[InterpolatedString, str, bool] = False
+    activity_type_id: Optional[Union[InterpolatedString, str]] = None
 
     _cached_fields: Optional[List[str]] = field(init=False, repr=False, default=None)
 
@@ -162,6 +163,19 @@ class MarketoBulkExportCreationRequester:
         self._parameters = parameters
         if isinstance(self.include_fields_from_describe, (str, InterpolatedString)):
             self.include_fields_from_describe = str(self.include_fields_from_describe).lower() == "true"
+        # Resolve activity_type_id from string/interpolated to int.
+        # This is injected by the DynamicDeclarativeStream's ComponentsResolver
+        # for each activity type so each stream filters its own type.
+        self._resolved_activity_type_id: Optional[int] = None
+        if isinstance(self.activity_type_id, (str, InterpolatedString)):
+            val = str(self.activity_type_id)
+            if val and val != "placeholder_activity_type_id":
+                try:
+                    self._resolved_activity_type_id = int(val)
+                except (ValueError, TypeError):
+                    pass
+        elif isinstance(self.activity_type_id, int):
+            self._resolved_activity_type_id = self.activity_type_id
 
     # -- Requester interface (only send_request is called by AsyncHttpJobRepository) --
 
@@ -248,11 +262,10 @@ class MarketoBulkExportCreationRequester:
                     "endAt": end_time,
                 }
 
-        # Activity type filter (set by DynamicDeclarativeStream partition)
-        if stream_slice and stream_slice.partition:
-            activity_type_id = stream_slice.partition.get("activity_type_id")
-            if activity_type_id:
-                filter_params["activityTypeIds"] = [int(activity_type_id)]
+        # Activity type filter — injected by the ComponentsResolver for
+        # each DynamicDeclarativeStream activity stream.
+        if self._resolved_activity_type_id is not None:
+            filter_params["activityTypeIds"] = [self._resolved_activity_type_id]
 
         if filter_params:
             body["filter"] = filter_params
@@ -320,21 +333,28 @@ class MarketoCsvDecoder:
         self._parameters = parameters
 
     def is_stream_response(self) -> bool:
-        return False
+        return True
 
     def decode(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
         response.encoding = "utf-8"
         # Stream response line-by-line instead of loading the entire CSV
         # into memory via response.text (bulk exports can be very large).
-        lines = response.iter_lines(decode_unicode=True)
+        # Use delimiter="\n" to prevent str.splitlines() from splitting on
+        # Unicode line separators (\u2028, \u2029) that may appear in CJK
+        # text fields, causing CSV column misalignment.
+        # See: https://github.com/airbytehq/airbyte/pull/3327
+        lines = response.iter_lines(decode_unicode=True, delimiter="\n")
 
         # Read the header row
         header_line = next(lines, None)
         if header_line is None:
             return
 
-        # Strip null bytes from header
-        header_line = header_line.replace("\x00", "")
+        # Strip null bytes and trailing \r (from \r\n line endings when
+        # using \n as the explicit delimiter)
+        header_line = header_line.rstrip("\r").replace("\x00", "")
+        if not header_line:
+            return
         header_reader = csv.reader(io.StringIO(header_line))
         headers = next(header_reader)
         num_columns = len(headers)
@@ -342,8 +362,8 @@ class MarketoCsvDecoder:
         for line in lines:
             if not line:
                 continue
-            # Strip null bytes
-            line = line.replace("\x00", "")
+            # Strip trailing \r and null bytes
+            line = line.rstrip("\r").replace("\x00", "")
             row_reader = csv.reader(io.StringIO(line))
             values = next(row_reader, None)
             if values is None:

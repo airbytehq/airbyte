@@ -134,7 +134,7 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 1.7.0 | 2026-03-25 | [75475](https://github.com/airbytehq/airbyte/pull/75475) | Migrate Leads and Activities bulk export streams to low-code with custom components using AsyncRetriever |
+| 2.0.0 | 2026-04-02 | [75475](https://github.com/airbytehq/airbyte/pull/75475) | Migrate Leads and Activities bulk export streams to low-code with custom components using AsyncRetriever. Six activity stream names change (see migration guide). |
 | 1.6.1 | 2026-03-25 | [74088](https://github.com/airbytehq/airbyte/pull/74088) | Fix CSV column misalignment when syncing leads containing CJK characters |
 | 1.6.0 | 2026-03-19 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |
 | 1.5.0 | 2026-03-18 | [74136](https://github.com/airbytehq/airbyte/pull/74136) | Add dynamic schema discovery for custom fields on Leads stream; add tags and costs to Programs schema; add workspace to Segmentations schema |

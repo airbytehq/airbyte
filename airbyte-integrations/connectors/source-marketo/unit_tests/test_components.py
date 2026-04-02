@@ -96,7 +96,8 @@ def _make_streaming_response(text: str) -> Mock:
     """Create a mock response that supports iter_lines (streaming)."""
     response = Mock()
     response.encoding = None
-    response.iter_lines = Mock(return_value=iter(text.splitlines()))
+    # Simulate delimiter="\n" by splitting on \n only (not other line separators)
+    response.iter_lines = Mock(return_value=iter(text.split("\n")))
     return response
 
 
@@ -118,7 +119,7 @@ class TestMarketoCsvDecoder:
         assert records == [{"Name": "John", "Email": "john@test.com"}]
 
     def test_is_stream_response(self):
-        assert self.decoder.is_stream_response() is False
+        assert self.decoder.is_stream_response() is True
 
     def test_decode_empty_response(self):
         response = _make_streaming_response("")
@@ -148,11 +149,32 @@ class TestMarketoCsvDecoder:
         records = list(self.decoder.decode(response))
         assert records == [{"Name": "\u5f20\u4e09", "Email": "zhang@test.com"}]
 
-    def test_decode_uses_streaming(self):
-        """Verify decode calls iter_lines instead of loading response.text."""
+    def test_decode_uses_streaming_with_newline_delimiter(self):
+        """Verify decode calls iter_lines with delimiter='\n' to prevent CJK line separator issues."""
         response = _make_streaming_response("Name\nJohn")
         list(self.decoder.decode(response))
-        response.iter_lines.assert_called_once_with(decode_unicode=True)
+        response.iter_lines.assert_called_once_with(decode_unicode=True, delimiter="\n")
+
+    def test_decode_handles_crlf_line_endings(self):
+        """Verify \r\n line endings are handled when using \n as delimiter."""
+        response = Mock()
+        response.encoding = None
+        # Simulate what iter_lines(delimiter="\n") returns for \r\n content
+        response.iter_lines = Mock(return_value=iter(["Name,Email\r", "John,john@test.com\r"]))
+        records = list(self.decoder.decode(response))
+        assert records == [{"Name": "John", "Email": "john@test.com"}]
+
+    def test_decode_unicode_line_separator_not_split(self):
+        """Verify Unicode line separator \u2028 inside a field does not cause row splitting."""
+        # With delimiter="\n", iter_lines won't split on \u2028
+        response = Mock()
+        response.encoding = None
+        # Simulate a field containing \u2028 — it should stay within the same row
+        response.iter_lines = Mock(return_value=iter(["Name,Description", 'John,"Line1\u2028Line2"']))
+        records = list(self.decoder.decode(response))
+        assert len(records) == 1
+        assert records[0]["Name"] == "John"
+        assert "\u2028" in records[0]["Description"]
 
 
 class TestMarketoRecordTransformation:
@@ -272,6 +294,18 @@ class TestMarketoActivitySchemaLoader:
 
 
 class TestMarketoBulkExportCreationRequester:
+    def _make_requester(self, **kwargs):
+        config = {"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"}
+        defaults = {
+            "config": config,
+            "parameters": {},
+            "create_requester": MagicMock(),
+            "enqueue_requester": MagicMock(),
+            "include_fields_from_describe": False,
+        }
+        defaults.update(kwargs)
+        return MarketoBulkExportCreationRequester(**defaults)
+
     def test_quota_error_raises(self):
         response_json = {"errors": [{"code": "1029", "message": "Export daily quota 500MB exceeded"}]}
         with pytest.raises(AirbyteTracedException) as exc_info:
@@ -283,33 +317,165 @@ class TestMarketoBulkExportCreationRequester:
         MarketoBulkExportCreationRequester._check_quota_error(response_json, json.dumps(response_json))
 
     def test_build_create_body_basic(self):
-        config = {"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"}
-        requester = MarketoBulkExportCreationRequester(
-            config=config,
-            parameters={},
-            create_requester=MagicMock(),
-            enqueue_requester=MagicMock(),
-            include_fields_from_describe=False,
-        )
+        requester = self._make_requester()
         stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
         body = requester._build_create_body(stream_slice)
         assert body["format"] == "CSV"
         assert "filter" in body
         assert body["filter"]["createdAt"]["startAt"] == "2024-01-01T00:00:00Z"
 
-    def test_build_create_body_with_activity_type(self):
-        config = {"domain_url": "https://test.mktorest.com", "client_id": "id", "client_secret": "secret"}
-        requester = MarketoBulkExportCreationRequester(
-            config=config,
-            parameters={},
-            create_requester=MagicMock(),
-            enqueue_requester=MagicMock(),
-        )
-        stream_slice = StreamSlice(
-            partition={"activity_type_id": "6"}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"}
-        )
+    def test_build_create_body_with_activity_type_id_field(self):
+        """Verify activity_type_id field on requester is used for filtering."""
+        requester = self._make_requester(activity_type_id="6")
+        stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
         body = requester._build_create_body(stream_slice)
         assert body["filter"]["activityTypeIds"] == [6]
+
+    def test_build_create_body_without_activity_type_id(self):
+        """Without activity_type_id, no activityTypeIds filter should be present."""
+        requester = self._make_requester()
+        stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
+        body = requester._build_create_body(stream_slice)
+        assert "activityTypeIds" not in body.get("filter", {})
+
+    def test_build_create_body_placeholder_activity_type_id_ignored(self):
+        """Placeholder activity_type_id should be ignored (not resolved to int)."""
+        requester = self._make_requester(activity_type_id="placeholder_activity_type_id")
+        stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"})
+        body = requester._build_create_body(stream_slice)
+        assert "activityTypeIds" not in body.get("filter", {})
+
+    # -- send_request orchestration tests --
+
+    def test_send_request_happy_path(self):
+        """Full create+enqueue flow: create returns exportId, enqueue is called with it."""
+        create_response = Mock()
+        create_response.json.return_value = {
+            "result": [{"exportId": "abc123", "status": "Created"}],
+            "success": True,
+        }
+        create_response.text = '{"result": [{"exportId": "abc123", "status": "Created"}]}'
+
+        mock_create = MagicMock()
+        mock_create.send_request.return_value = create_response
+        mock_enqueue = MagicMock()
+
+        requester = self._make_requester(
+            create_requester=mock_create,
+            enqueue_requester=mock_enqueue,
+        )
+        stream_slice = StreamSlice(
+            partition={},
+            cursor_slice={"start_time": "2024-01-01T00:00:00Z", "end_time": "2024-01-31T00:00:00Z"},
+        )
+        result = requester.send_request(stream_slice=stream_slice)
+
+        assert result is create_response
+        mock_create.send_request.assert_called_once()
+        mock_enqueue.send_request.assert_called_once()
+        enqueue_call = mock_enqueue.send_request.call_args
+        enqueue_slice = enqueue_call.kwargs.get("stream_slice")
+        assert enqueue_slice.extra_fields["export_id"] == "abc123"
+
+    def test_send_request_no_result_skips_enqueue(self):
+        """When create response has no 'result', enqueue should not be called."""
+        create_response = Mock()
+        create_response.json.return_value = {"success": True}
+        create_response.text = '{"success": true}'
+        mock_create = MagicMock()
+        mock_create.send_request.return_value = create_response
+        mock_enqueue = MagicMock()
+
+        requester = self._make_requester(
+            create_requester=mock_create,
+            enqueue_requester=mock_enqueue,
+        )
+        result = requester.send_request(stream_slice=StreamSlice(partition={}, cursor_slice={}))
+        assert result is create_response
+        mock_enqueue.send_request.assert_not_called()
+
+    def test_send_request_returns_none_when_create_fails(self):
+        """When create returns None, send_request returns None and enqueue is skipped."""
+        mock_create = MagicMock()
+        mock_create.send_request.return_value = None
+        mock_enqueue = MagicMock()
+
+        requester = self._make_requester(
+            create_requester=mock_create,
+            enqueue_requester=mock_enqueue,
+        )
+        result = requester.send_request(stream_slice=StreamSlice(partition={}, cursor_slice={}))
+        assert result is None
+        mock_enqueue.send_request.assert_not_called()
+
+    def test_send_request_unexpected_status_skips_enqueue(self):
+        """When create response has unexpected status, enqueue should not be called."""
+        create_response = Mock()
+        create_response.json.return_value = {
+            "result": [{"exportId": "abc123", "status": "Failed"}],
+            "success": True,
+        }
+        create_response.text = '{"result": [{"exportId": "abc123", "status": "Failed"}]}'
+        mock_create = MagicMock()
+        mock_create.send_request.return_value = create_response
+        mock_enqueue = MagicMock()
+
+        requester = self._make_requester(
+            create_requester=mock_create,
+            enqueue_requester=mock_enqueue,
+        )
+        result = requester.send_request(stream_slice=StreamSlice(partition={}, cursor_slice={}))
+        assert result is create_response
+        mock_enqueue.send_request.assert_not_called()
+
+    # -- _get_export_fields tests --
+
+    @patch("components.requests.get")
+    def test_get_export_fields_success_and_caching(self, mock_get):
+        """Verify describe fields are fetched and cached."""
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            "result": [
+                {"rest": {"name": "firstName"}, "dataType": "string"},
+                {"rest": {"name": "lastName"}, "dataType": "string"},
+            ]
+        }
+        mock_response.raise_for_status = Mock()
+        mock_get.return_value = mock_response
+
+        mock_auth = MagicMock()
+        mock_auth.get_authenticator.return_value.get_auth_header.return_value = {"Authorization": "Bearer test"}
+        requester = self._make_requester(
+            create_requester=mock_auth,
+            include_fields_from_describe=True,
+        )
+
+        fields = requester._get_export_fields()
+        assert fields == ["firstName", "lastName"]
+
+        # Second call should use cache (no additional HTTP call)
+        fields2 = requester._get_export_fields()
+        assert fields2 == ["firstName", "lastName"]
+        assert mock_get.call_count == 1  # Only one HTTP call
+
+    @patch("components.requests.get")
+    def test_get_export_fields_http_error_returns_none(self, mock_get):
+        """Verify graceful fallback on HTTP error."""
+        mock_get.side_effect = requests.RequestException("Connection failed")
+        mock_auth = MagicMock()
+        mock_auth.get_authenticator.return_value.get_auth_header.return_value = {}
+        requester = self._make_requester(
+            create_requester=mock_auth,
+            include_fields_from_describe=True,
+        )
+        fields = requester._get_export_fields()
+        assert fields is None
+
+    def test_get_export_fields_disabled_returns_none(self):
+        """When include_fields_from_describe is False, returns None without HTTP call."""
+        requester = self._make_requester(include_fields_from_describe=False)
+        fields = requester._get_export_fields()
+        assert fields is None
 
 
 class TestMarketoLeadsSchemaLoader:

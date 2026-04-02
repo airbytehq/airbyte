@@ -257,6 +257,7 @@ definitions:
           - "Completed"
         failed:
           - "Cancelled"
+          - "Canceled"
           - "Failed"
         timeout: []
       status_extractor:
@@ -351,6 +352,7 @@ definitions:
           - "Completed"
         failed:
           - "Cancelled"
+          - "Canceled"
           - "Failed"
         timeout: []
       status_extractor:
@@ -368,6 +370,7 @@ definitions:
       creation_requester:
         type: CustomRequester
         class_name: components.MarketoBulkExportCreationRequester
+        activity_type_id: "placeholder_activity_type_id"
         create_requester:
           type: HttpRequester
           url_base: "{{ config['domain_url'].rstrip('/') }}/"
@@ -458,17 +461,25 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - name
-          # NOTE: Marketo activity type names are in "Title Case With Spaces"
-          # format (e.g. "Send Email", "Visit Web Page").  The Jinja
-          # ``| lower | replace`` filters produce the same result as
-          # ``clean_string()`` for these space-separated names.  If
-          # Marketo ever returns camelCase names, this would diverge.
           value: "activities_{{ components_values['name'] | lower | replace(' ', '_') }}"
         - type: ComponentMappingDefinition
           field_path:
             - schema_loader
             - activity_attributes
           value: "{{ components_values.get('attributes', []) | tojson }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - transformations
+            - "0"
+            - schema_loader
+            - activity_attributes
+          value: "{{ components_values.get('attributes', []) | tojson }}"
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - creation_requester
+            - activity_type_id
+          value: "{{ components_values['id'] }}"
 
 check:
   type: CheckStream
