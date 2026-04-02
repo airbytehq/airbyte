@@ -400,7 +400,6 @@ spec:
     required:
       - start_date
       - lookback_window
-      - join_channels
     additionalProperties: true
     properties:
       start_date:
@@ -421,11 +420,16 @@ spec:
         minimum: 0
         default: 0
         maximum: 365
-      join_channels:
+      join_all_non_archived_channels:
         type: boolean
-        default: true
-        title: Join all channels
-        description: Whether to join all channels or to sync data only from channels the bot is already in.  If false, you''ll need to manually add the bot to all the channels from which you''d like to sync messages.
+        default: false
+        title: Join all non-archived channels
+        description: Whether to auto-join all non-archived (active) channels. If false, the bot will only sync data from channels it has already been manually added to.
+      join_all_archived_channels:
+        type: boolean
+        default: false
+        title: Join all archived channels
+        description: Whether to auto-join all archived channels. If false, the bot will only sync data from archived channels it has already been manually added to.
       include_private_channels:
         type: boolean
         default: false
@@ -599,6 +603,31 @@ spec:
                   path: ["credentials", "option_title"]
                   value: "API Token Credentials"
               condition: "{{ config.get('api_token', False) }}"
+        - type: ConfigMigration
+          description: |
+            Replaces the single 'join_channels' field with two separate fields:
+            'join_all_non_archived_channels' and 'join_all_archived_channels'.
+            OLD: {"join_channels": true/false}
+            NEW: {"join_all_non_archived_channels": true/false, "join_all_archived_channels": true/false}
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["join_all_non_archived_channels"]
+                  value: "{{ config['join_channels'] }}"
+                  value_type: boolean
+              condition: "{{ config.get('join_channels') is not none }}"
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["join_all_archived_channels"]
+                  value: "{{ config['join_channels'] }}"
+                  value_type: boolean
+              condition: "{{ config.get('join_channels') is not none }}"
+            - type: ConfigRemoveFields
+              field_pointers:
+                - ["join_channels"]
+              condition: "{{ config.get('join_channels') is not none }}"
 
 concurrency_level:
   type: ConcurrencyLevel

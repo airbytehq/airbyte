@@ -8,6 +8,7 @@
   },
   "start_date": "2021-07-22T20:00:00Z",
   "lookback_window": 2,
-  "join_channels": true,
+  "join_all_non_archived_channels": true,
+  "join_all_archived_channels": false,
   "channel_filter": []
 }

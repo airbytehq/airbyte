@@ -67,7 +67,8 @@ def base_config() -> MutableMapping:
             "start_date": "2021-07-22T20:00:00Z",
             "end_date": "2021-07-23T20:00:00Z",
             "lookback_window": 1,
-            "join_channels": True,
+            "join_all_non_archived_channels": True,
+            "join_all_archived_channels": False,
             "channel_filter": ["airbyte-for-beginners", "good-reads"],
         }
     )
