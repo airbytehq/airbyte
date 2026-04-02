@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
-  dockerImageTag: 0.2.25
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-secoda
   githubIssueLabel: source-secoda
   icon: secoda.svg
@@ -45,6 +45,6 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.48.10@sha256:09947fb38d07e515f9901a12f22cc44f1512f6148703341de80403c0e0c1b8c3
   externalDocumentationUrls:
     - title: Secoda API documentation
-      url: https://docs.secoda.co/secoda-api
+      url: https://docs.secoda.co/api
       type: api_reference
 metadataSpecVersion: "1.0"
