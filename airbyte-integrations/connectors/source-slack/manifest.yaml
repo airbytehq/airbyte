@@ -422,7 +422,7 @@ spec:
         maximum: 365
       join_all_non_archived_channels:
         type: boolean
-        default: false
+        default: true
         title: Join all non-archived channels
         description: Whether to auto-join all non-archived (active) channels. If false, the bot will only sync data from channels it has already been manually added to.
       join_all_archived_channels:
