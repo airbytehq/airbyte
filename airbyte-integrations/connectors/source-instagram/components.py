@@ -30,6 +30,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 GRAPH_URL = "https://graph.facebook.com/v23.0"
+logger = logging.getLogger("airbyte.HttpClient.MediaInsights")
 
 
 def get_http_response(name: str, path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
@@ -161,7 +162,6 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
         fields = "id,ig_id,media_type,media_url,owner,permalink,shortcode,thumbnail_url,timestamp,username"
         if children:
             children_ids = [child.get("id") for child in children.get("data")]
-            logger = logging.getLogger("airbyte.HttpClient.MediaInsights")
             for children_id in children_ids:
                 try:
                     media_data = get_http_response(f"MediaInsights.{children_id}", children_id, {"fields": fields}, config=config)
