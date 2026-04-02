@@ -14,7 +14,9 @@ from .config_builder import ConfigBuilder
 
 
 BUYING_TYPES_FILTER = '{"buying_types": ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_REACH_FREQUENCY"]}'
-INCLUDE_DELETED_FILTER = '{"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_REACH_FREQUENCY"]}'
+INCLUDE_DELETED_FILTER = (
+    '{"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_REACH_FREQUENCY"]}'
+)
 
 CAMPAIGNS_RESPONSE = {
     "code": 0,
