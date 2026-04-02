@@ -93,18 +93,9 @@ internal class S3DataLakeTableSchemaMapperTest {
     fun `toColumnType maps types correctly`() {
         assertEquals("BOOL", mapper.toColumnType(FieldType(BooleanType, nullable = false)).type)
         assertEquals("DATE", mapper.toColumnType(FieldType(DateType, nullable = false)).type)
-        assertEquals(
-            "INT64",
-            mapper.toColumnType(FieldType(IntegerType, nullable = false)).type
-        )
-        assertEquals(
-            "FLOAT64",
-            mapper.toColumnType(FieldType(NumberType, nullable = false)).type
-        )
-        assertEquals(
-            "STRING",
-            mapper.toColumnType(FieldType(StringType, nullable = false)).type
-        )
+        assertEquals("INT64", mapper.toColumnType(FieldType(IntegerType, nullable = false)).type)
+        assertEquals("FLOAT64", mapper.toColumnType(FieldType(NumberType, nullable = false)).type)
+        assertEquals("STRING", mapper.toColumnType(FieldType(StringType, nullable = false)).type)
         assertEquals(
             "TIMESTAMP",
             mapper.toColumnType(FieldType(TimestampTypeWithTimezone, nullable = false)).type
