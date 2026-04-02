@@ -85,7 +85,9 @@ def test_instagram_media_children_transformation_skips_failed_child(components_m
 def test_instagram_media_children_transformation_all_children_fail(components_module, config, mocker):
     """When all carousel children fail, the transform should return an empty children array."""
     # Use fresh data since the module-level children_record is mutated in-place by the earlier happy-path test
-    fresh_record = {"children": {"data": [{"id": "7608776690540"}, {"id": "2896800415362"}, {"id": "9559889460059"}, {"id": "7359925580923"}]}}
+    fresh_record = {
+        "children": {"data": [{"id": "7608776690540"}, {"id": "2896800415362"}, {"id": "9559889460059"}, {"id": "7359925580923"}]}
+    }
     mocker.patch.object(components_module, "get_http_response", side_effect=Exception("HTTP error occurred: 500 - Internal server error"))
 
     record_transformation = components_module.InstagramMediaChildrenTransformation()
