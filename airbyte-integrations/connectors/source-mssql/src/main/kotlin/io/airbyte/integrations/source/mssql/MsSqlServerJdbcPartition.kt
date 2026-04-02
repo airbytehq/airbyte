@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.BinaryNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.OffsetDateTimeCodec
@@ -293,7 +292,8 @@ sealed class MsSqlServerJdbcResumablePartition(
             val zippedUpperBound: List<Pair<EmittedField, JsonNode>> =
                 upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val upperBoundDisj: List<WhereClauseNode> =
-                zippedUpperBound.mapIndexed { idx: Int, (leqCol: EmittedField, leqValue: JsonNode) ->
+                zippedUpperBound.mapIndexed { idx: Int, (leqCol: EmittedField, leqValue: JsonNode)
+                    ->
                     val lastLeaf: WhereClauseLeafNode =
                         if (idx < zippedUpperBound.size - 1) {
                             Lesser(leqCol, leqValue)
@@ -346,7 +346,8 @@ class MsSqlServerJdbcRfrSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -372,7 +373,8 @@ class MsSqlServerJdbcCdcRfrSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -393,7 +395,8 @@ class MsSqlServerJdbcCdcSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -483,7 +486,8 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
         )
 }
@@ -529,7 +533,8 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
         )
 }

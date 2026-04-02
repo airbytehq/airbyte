@@ -298,7 +298,8 @@ class MsSqlServerJdbcPartitionFactory(
             if (sv.pkName != null) {
                 // Still in snapshot phase (PK read)
                 val cursorChosenFromCatalog: EmittedField =
-                    stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
+                    stream.configuredCursor as? EmittedField
+                        ?: throw ConfigErrorException("no cursor")
 
                 // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
                 if (isView(stream) || orderedColumns == null) {
@@ -385,7 +386,10 @@ class MsSqlServerJdbcPartitionFactory(
         )
     }
 
-    private fun extractPkLowerBound(pkValue: JsonNode?, orderedColumnForSync: EmittedField): JsonNode {
+    private fun extractPkLowerBound(
+        pkValue: JsonNode?,
+        orderedColumnForSync: EmittedField
+    ): JsonNode {
         return when {
             pkValue == null || pkValue.isNull -> Jsons.nullNode()
             pkValue.isTextual -> stateValueToJsonNode(orderedColumnForSync, pkValue.asText())

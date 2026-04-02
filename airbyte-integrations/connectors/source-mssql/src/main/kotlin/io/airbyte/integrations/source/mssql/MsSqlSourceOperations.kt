@@ -353,7 +353,8 @@ class MsSqlSourceOperations :
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + from.bindings() + limit.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
+        where.bindings() + from.bindings() + limit.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
