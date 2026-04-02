@@ -31,8 +31,8 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import get_url_to_mock, init_stream, read_incremental, setup_response
 
