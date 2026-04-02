@@ -70,6 +70,8 @@ jobs:
             bump-version
             force-merge
             format-fix
+            good-bot
+            bad-bot
             poe
             publish-connectors-prerelease
             publish-java-cdk
