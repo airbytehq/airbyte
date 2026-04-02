@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
@@ -19,7 +20,7 @@ import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeConfigura
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
-import org.apache.iceberg.UpdateSchema
+import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,7 +45,36 @@ class S3DataLakeStreamLoader(
         } else {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
-    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
+    private val incomingSchema =
+        icebergUtil.toIcebergSchema(stream = stream).let { transformSchemaWithMappedNames(it) }
+
+    private fun transformSchemaWithMappedNames(schema: Schema): Schema {
+        val mappedFields =
+            schema.asStruct().fields().map { field ->
+                val originalName = field.name()
+                if (Meta.COLUMN_NAMES.contains(originalName)) {
+                    return@map field
+                }
+
+                val mappedName =
+                    stream.tableSchema.columnSchema.inputToFinalColumnNames[originalName]
+                        ?: originalName
+
+                if (mappedName != originalName) {
+                    Types.NestedField.of(
+                        field.fieldId(),
+                        field.isOptional,
+                        mappedName,
+                        field.type(),
+                        field.doc()
+                    )
+                } else {
+                    field
+                }
+            }
+
+        return Schema(mappedFields, schema.identifierFieldIds())
+    }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
