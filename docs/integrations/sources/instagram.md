@@ -135,7 +135,7 @@ For accounts in UTC+ timezones, the Instagram API returns `end_time` values at t
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.24 | 2026-04-02 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Improved error handling for Instagram rate limit responses with descriptive error messages |
+| 4.2.24 | 2026-04-02 | [76027](https://github.com/airbytehq/airbyte/pull/76027) | Improved error handling for Instagram rate limit responses with descriptive error messages |
 | 4.2.23 | 2026-03-24 | [75344](https://github.com/airbytehq/airbyte/pull/75344) | Update dependencies |
 | 4.2.22 | 2026-03-19 | [75206](https://github.com/airbytehq/airbyte/pull/75206) | Handle Instagram API 'since param is not valid' error gracefully for user_insights stream |
 | 4.2.21 | 2026-03-12 | [74800](https://github.com/airbytehq/airbyte/pull/74800) | Add lookback window and filter future-dated records in user_insights to prevent cursor from advancing past current UTC |
