@@ -12,11 +12,8 @@ from unit_tests.conftest import get_source, get_stream_by_name
 CMD = "check"
 TEST_CONFIG_LEGACY_PATH = f"{os.path.dirname(__file__)}/configs/legacy_config.json"
 TEST_CONFIG_ACTUAL_PATH = f"{os.path.dirname(__file__)}/configs/actual_config.json"
-TEST_CONFIG_LEGACY_JOIN_CHANNELS_PATH = f"{os.path.dirname(__file__)}/configs/legacy_join_channels_config.json"
-
 SOURCE_INPUT_ARGS_LEGACY = [CMD, "--config", TEST_CONFIG_LEGACY_PATH]
 SOURCE_INPUT_ARGS_ACTUAL = [CMD, "--config", TEST_CONFIG_ACTUAL_PATH]
-SOURCE_INPUT_ARGS_LEGACY_JOIN_CHANNELS = [CMD, "--config", TEST_CONFIG_LEGACY_JOIN_CHANNELS_PATH]
 
 
 def load_config(config_path: str = TEST_CONFIG_LEGACY_PATH) -> Mapping[str, Any]:
@@ -34,20 +31,6 @@ def test_config_migration(requests_mock):
     state = StateBuilder().build()
     source = get_source(config=load_config(), state=state)
     output = _run_command(source=source, args=SOURCE_INPUT_ARGS_LEGACY)
-    assert len([log for log in output.logs if log.log.message == "Check succeeded"]) == 1
-
-
-def test_join_channels_config_migration(requests_mock):
-    """Test that legacy join_channels config is migrated to the two new fields."""
-    requests_mock.get(
-        "https://slack.com/api/users.list?limit=1000",
-        json={"users": [{"id": 1}]},
-        status_code=200,
-    )
-
-    state = StateBuilder().build()
-    source = get_source(config=load_config(TEST_CONFIG_LEGACY_JOIN_CHANNELS_PATH), state=state)
-    output = _run_command(source=source, args=SOURCE_INPUT_ARGS_LEGACY_JOIN_CHANNELS)
     assert len([log for log in output.logs if log.log.message == "Check succeeded"]) == 1
 
 

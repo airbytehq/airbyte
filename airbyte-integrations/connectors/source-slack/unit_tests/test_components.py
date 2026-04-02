@@ -52,23 +52,18 @@ def get_channels_retriever_instance(token_config, components_module):
 
 
 @pytest.mark.parametrize(
-    "join_non_archived,join_archived,record,expected",
+    "join_channels,record,expected",
     [
-        pytest.param(True, False, {"is_member": False, "is_archived": False}, True, id="non_archived_channel_join_enabled"),
-        pytest.param(True, False, {"is_member": True, "is_archived": False}, False, id="already_member_skip"),
-        pytest.param(True, False, {"is_member": False, "is_archived": True}, False, id="archived_channel_join_disabled"),
-        pytest.param(False, True, {"is_member": False, "is_archived": True}, True, id="archived_channel_join_enabled"),
-        pytest.param(False, True, {"is_member": False, "is_archived": False}, False, id="non_archived_channel_join_disabled"),
-        pytest.param(True, True, {"is_member": False, "is_archived": False}, True, id="both_enabled_non_archived"),
-        pytest.param(True, True, {"is_member": False, "is_archived": True}, True, id="both_enabled_archived"),
-        pytest.param(False, False, {"is_member": False, "is_archived": False}, False, id="both_disabled_non_archived"),
-        pytest.param(False, False, {"is_member": False, "is_archived": True}, False, id="both_disabled_archived"),
-        pytest.param(True, False, {"is_member": True, "is_archived": True}, False, id="already_member_archived"),
-        pytest.param(True, False, {"is_member": False}, True, id="missing_is_archived_defaults_non_archived"),
+        pytest.param(True, {"is_member": False, "is_archived": False}, True, id="join_enabled_non_member_non_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": False}, False, id="join_enabled_already_member"),
+        pytest.param(True, {"is_member": False, "is_archived": True}, False, id="join_enabled_archived_channel_rejected"),
+        pytest.param(False, {"is_member": False, "is_archived": False}, False, id="join_disabled"),
+        pytest.param(True, {"is_member": False}, True, id="join_enabled_missing_is_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": True}, False, id="archived_and_already_member"),
     ],
 )
-def test_should_join_to_channel(token_config, components_module, join_non_archived, join_archived, record, expected):
-    config = {**token_config, "join_all_non_archived_channels": join_non_archived, "join_all_archived_channels": join_archived}
+def test_should_join_to_channel(token_config, components_module, join_channels, record, expected):
+    config = {**token_config, "join_channels": join_channels}
     retriever = get_channels_retriever_instance(config, components_module)
     assert retriever.should_join_to_channel(config, record) is expected
 
