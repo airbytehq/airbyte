@@ -31,7 +31,10 @@ internal class S3DataLakeTableSchemaMapperTest {
         assertEquals("mycolumn", mapper.toColumnName("MyColumn"))
         assertEquals("my_column_name", mapper.toColumnName("My Column Name"))
         assertEquals("column_1", mapper.toColumnName("Column-1"))
-        assertEquals("column_with_special__chars", mapper.toColumnName("column_with_special!@chars"))
+        assertEquals(
+            "column_with_special__chars",
+            mapper.toColumnName("column_with_special!@chars")
+        )
     }
 
     @Test
@@ -90,9 +93,18 @@ internal class S3DataLakeTableSchemaMapperTest {
     fun `toColumnType maps types correctly`() {
         assertEquals("BOOL", mapper.toColumnType(FieldType(BooleanType, nullable = false)).typeName)
         assertEquals("DATE", mapper.toColumnType(FieldType(DateType, nullable = false)).typeName)
-        assertEquals("INT64", mapper.toColumnType(FieldType(IntegerType, nullable = false)).typeName)
-        assertEquals("FLOAT64", mapper.toColumnType(FieldType(NumberType, nullable = false)).typeName)
-        assertEquals("STRING", mapper.toColumnType(FieldType(StringType, nullable = false)).typeName)
+        assertEquals(
+            "INT64",
+            mapper.toColumnType(FieldType(IntegerType, nullable = false)).typeName
+        )
+        assertEquals(
+            "FLOAT64",
+            mapper.toColumnType(FieldType(NumberType, nullable = false)).typeName
+        )
+        assertEquals(
+            "STRING",
+            mapper.toColumnType(FieldType(StringType, nullable = false)).typeName
+        )
         assertEquals(
             "TIMESTAMP",
             mapper.toColumnType(FieldType(TimestampTypeWithTimezone, nullable = false)).typeName

@@ -19,13 +19,12 @@ import jakarta.inject.Singleton
  * - Only alphanumeric characters (a-z, 0-9) and underscores (_)
  * - All lowercase
  *
- * This mapper uses [Transformations.toAlphanumericAndUnderscore] and lowercases the result
- * to ensure all names meet these requirements.
+ * This mapper uses [Transformations.toAlphanumericAndUnderscore] and lowercases the result to
+ * ensure all names meet these requirements.
  */
 @Singleton
-class S3DataLakeTableSchemaMapper(
-    private val tempTableNameGenerator: TempTableNameGenerator
-) : TableSchemaMapper {
+class S3DataLakeTableSchemaMapper(private val tempTableNameGenerator: TempTableNameGenerator) :
+    TableSchemaMapper {
 
     override fun toFinalTableName(desc: DestinationStream.Descriptor): TableName {
         val namespace =
