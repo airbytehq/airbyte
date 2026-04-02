@@ -432,9 +432,7 @@ def test_threads_stream_no_replies_api_calls_skipped_when_enabled(requests_mock,
     assert len(output.records) == 2
 
     # Verify conversations.replies was called exactly once (only for reply_count=3 message)
-    replies_calls = [
-        req for req in requests_mock.request_history if "conversations.replies" in req.url
-    ]
+    replies_calls = [req for req in requests_mock.request_history if "conversations.replies" in req.url]
     assert len(replies_calls) == 1
     assert "channel=airbyte-for-beginners" in replies_calls[0].url
     assert "ts=1577866844.000000" in replies_calls[0].url
