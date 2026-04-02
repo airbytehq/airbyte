@@ -1840,6 +1840,7 @@ spec:
           - scope: "r_ads"
           - scope: "r_basicprofile"
           - scope: "r_organization_social"
+          - scope: "r_leadgenforms"
         consent_url: "https://www.linkedin.com/oauth/v2/authorization?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
         access_token_url: "https://www.linkedin.com/oauth/v2/accessToken"
         access_token_headers:
