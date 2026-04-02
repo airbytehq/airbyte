@@ -193,7 +193,7 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.2.0 | 2026-04-02 | [76052](https://github.com/airbytehq/airbyte/pull/76052) | Replace 'Join all channels' with separate 'Join all non-archived channels' and 'Join all archived channels' fields |
+| 3.1.16 | 2026-04-02 | [76052](https://github.com/airbytehq/airbyte/pull/76052) | Skip joining archived channels that are rejected by the Slack API |
 | 3.1.15 | 2026-03-31 | [75905](https://github.com/airbytehq/airbyte/pull/75905) | Add configurable option to skip conversations.replies API calls for messages with no replies, reducing unnecessary API usage |
 | 3.1.14 | 2026-03-27 | [75197](https://github.com/airbytehq/airbyte/pull/75197) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 3.1.13 | 2026-03-24 | [75329](https://github.com/airbytehq/airbyte/pull/75329) | Update dependencies |
