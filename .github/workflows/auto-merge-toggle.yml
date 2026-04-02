@@ -1,0 +1,94 @@
+# Responds to GitHub's native auto-merge being enabled or disabled on a PR:
+#
+# 1. Enabled: adds a notice to the PR description.
+# 2. Disabled: updates the PR description notice and removes auto-merge
+#    labels so the scheduled auto_merge.yml cron no longer re-processes
+#    the PR.
+#
+# Note: Adding an `auto-merge*` label no longer auto-promotes draft PRs.
+# The connectors_up_to_date pipeline handles draft promotion and auto-merge
+# enablement directly. Draft PRs must be explicitly marked "Ready for review"
+# before native auto-merge and label-based automation will take effect.
+
+name: "Auto-Merge Toggle"
+
+permissions: {}
+
+on:
+  pull_request_target:
+    types: [auto_merge_enabled, auto_merge_disabled]
+
+jobs:
+  # ---------- Update PR description notice ----------
+  update-description:
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add Auto-Merge Notice
+        if: github.event.action == 'auto_merge_enabled'
+        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
+        with:
+          add_markdown: |
+            > [!IMPORTANT]
+            > ⚡ **Auto-merge enabled.**
+            > 
+            > _This PR is set to merge automatically when all requirements are met._
+
+      - name: Remove Auto-Merge Notice
+        if: github.event.action == 'auto_merge_disabled'
+        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
+        with:
+          add_markdown: |
+            > [!NOTE]
+            > **Auto-merge may have been disabled. Please check the PR status to confirm.**
+
+  # ---------- Remove auto-merge labels when native auto-merge is disabled ----------
+  remove-labels:
+    name: Remove auto-merge labels
+    if: >
+      github.event.action == 'auto_merge_disabled'
+      && (
+        contains(github.event.pull_request.labels.*.name, 'auto-merge')
+        || contains(github.event.pull_request.labels.*.name, 'auto-merge/bypass-ci-checks')
+      )
+    permissions: {}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      - name: Remove auto-merge label
+        if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >
+          gh pr edit "$PR_NUMBER"
+          --repo "${{ github.repository }}"
+          --remove-label "auto-merge"
+
+      - name: Remove bypass-ci-checks label
+        if: contains(github.event.pull_request.labels.*.name, 'auto-merge/bypass-ci-checks')
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >
+          gh pr edit "$PR_NUMBER"
+          --repo "${{ github.repository }}"
+          --remove-label "auto-merge/bypass-ci-checks"
+
+      - name: Post notice comment
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: >
+          gh pr comment "$PR_NUMBER"
+          --repo "${{ github.repository }}"
+          --body "Auto-merge labels removed because native auto-merge was disabled on this PR. Re-add the label to re-enable."
