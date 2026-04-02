@@ -6,5 +6,5 @@ package io.airbyte.cdk.read.cdc
 
 /** Stateless connector-specific Debezium operations. */
 @Deprecated("Implement the two interfaces separately")
-interface DebeziumOperations<T : Comparable<T>> :
+interface DebeziumOperations<T : PartiallyOrdered<T>> :
     CdcPartitionsCreatorDebeziumOperations<T>, CdcPartitionReaderDebeziumOperations<T>

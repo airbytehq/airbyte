@@ -24,6 +24,8 @@ Docs : https://humanitix.stoplight.io/docs/humanitix-public-api/e508a657c1467-hu
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.46 | 2026-03-31 | [75653](https://github.com/airbytehq/airbyte/pull/75653) | Update dependencies |
+| 0.0.45 | 2026-03-17 | [74522](https://github.com/airbytehq/airbyte/pull/74522) | Update dependencies |
 | 0.0.44 | 2026-02-24 | [73090](https://github.com/airbytehq/airbyte/pull/73090) | Update dependencies |
 | 0.0.43 | 2026-02-03 | [72752](https://github.com/airbytehq/airbyte/pull/72752) | Update dependencies |
 | 0.0.42 | 2026-01-20 | [71914](https://github.com/airbytehq/airbyte/pull/71914) | Update dependencies |

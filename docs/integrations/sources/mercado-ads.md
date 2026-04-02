@@ -40,6 +40,8 @@ Get ad analytics from all Mercado Ads placements
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.27 | 2026-03-31 | [75834](https://github.com/airbytehq/airbyte/pull/75834) | Update dependencies |
+| 0.0.26 | 2026-03-24 | [74582](https://github.com/airbytehq/airbyte/pull/74582) | Update dependencies |
 | 0.0.25 | 2026-02-24 | [73811](https://github.com/airbytehq/airbyte/pull/73811) | Update dependencies |
 | 0.0.24 | 2026-02-17 | [73382](https://github.com/airbytehq/airbyte/pull/73382) | Update dependencies |
 | 0.0.23 | 2026-02-10 | [73186](https://github.com/airbytehq/airbyte/pull/73186) | Update dependencies |
