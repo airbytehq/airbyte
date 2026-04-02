@@ -1,0 +1,31 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test_stream",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "lat": {
+              "type": "number"
+            },
+            "lon": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "source-biggeo"
+version = "0.1.0"
+description = "Source implementation for BigGeo."
+authors = ["BigGeo Team"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.14"
+airbyte-cdk = "^7.3.4"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+ruff = "^0.3.2"
+black = "^23.7.0"
+mypy = "^1.5.1"
+faker = "24.4.0"
+coverage = "^7.5.3"
+requests-mock = "^1.11.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
+
+[tool.poetry.scripts]
+source-biggeo = "source_biggeo.run:run"
