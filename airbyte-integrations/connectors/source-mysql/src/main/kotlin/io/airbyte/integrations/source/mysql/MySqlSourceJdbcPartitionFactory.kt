@@ -648,17 +648,17 @@ class MySqlSourceJdbcPartitionFactory(
             "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$".toRegex()
         // If all sample values match GUID pattern, we calculate boundaries over GUID character set
         val isGuidPk =
-            // Prevent the comparison of 0 == 0 which can happen when no samples contain a pk_val.
-            opaqueStateValues.isNotEmpty() &&
-            opaqueStateValues.count {
-                it["pk_val"] != null &&
-                    it["pk_val"].isTextual &&
-                    guidPattern.matches(it["pk_val"].asText())
-            } == opaqueStateValues.count() &&
-                    // Lower bound can be empty if it's the first partition.
-                    (effectiveLowerBound.isEmpty() || guidPattern.matches(effectiveLowerBound)) &&
-                    // Fixes issues when the largest value is a sentinel/marker and it's not a GUID.
-                    guidPattern.matches(upperBound)
+        // Prevent the comparison of 0 == 0 which can happen when no samples contain a pk_val.
+        opaqueStateValues.isNotEmpty() &&
+                opaqueStateValues.count {
+                    it["pk_val"] != null &&
+                        it["pk_val"].isTextual &&
+                        guidPattern.matches(it["pk_val"].asText())
+                } == opaqueStateValues.count() &&
+                // Lower bound can be empty if it's the first partition.
+                (effectiveLowerBound.isEmpty() || guidPattern.matches(effectiveLowerBound)) &&
+                // Fixes issues when the largest value is a sentinel/marker and it's not a GUID.
+                guidPattern.matches(upperBound)
 
         val queryPlan: List<String> =
             when (isGuidPk) {
