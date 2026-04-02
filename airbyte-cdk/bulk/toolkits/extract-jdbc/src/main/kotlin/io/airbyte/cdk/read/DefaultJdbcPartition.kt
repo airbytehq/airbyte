@@ -5,9 +5,9 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 
 /** Builds a WHERE clause from lower/upper bounds on checkpoint columns. */
@@ -117,7 +117,7 @@ class DefaultJdbcUnsplittableSnapshotPartition(
 class DefaultJdbcUnsplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    val cursor: Field,
+    val cursor: EmittedField,
 ) :
     DefaultJdbcUnsplittablePartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<DefaultJdbcStreamState> {
@@ -139,7 +139,7 @@ class DefaultJdbcUnsplittableSnapshotWithCursorPartition(
 sealed class DefaultJdbcSplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    val checkpointColumns: List<Field>,
+    val checkpointColumns: List<EmittedField>,
 ) :
     DefaultJdbcPartition(selectQueryGenerator, streamState),
     JdbcSplittablePartition<DefaultJdbcStreamState> {
@@ -186,7 +186,7 @@ sealed class DefaultJdbcSplittablePartition(
 class DefaultJdbcSplittableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : DefaultJdbcSplittablePartition(selectQueryGenerator, streamState, primaryKey) {
@@ -202,10 +202,11 @@ class DefaultJdbcSplittableSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -215,8 +216,8 @@ class DefaultJdbcSplittableSnapshotPartition(
 sealed class DefaultJdbcCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    checkpointColumns: List<Field>,
-    val cursor: Field,
+    checkpointColumns: List<EmittedField>,
+    val cursor: EmittedField,
     private val explicitCursorUpperBound: JsonNode?,
 ) :
     DefaultJdbcSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
@@ -238,10 +239,10 @@ sealed class DefaultJdbcCursorPartition(
 class DefaultJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
-    cursor: Field,
+    cursor: EmittedField,
     cursorUpperBound: JsonNode?,
 ) :
     DefaultJdbcCursorPartition(
@@ -269,10 +270,11 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             cursorUpperBound,
         )
@@ -335,7 +337,7 @@ class DefaultUnsplittableJdbcCursorIncrementalPartition(
 class DefaultJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    cursor: Field,
+    cursor: EmittedField,
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
@@ -359,9 +361,9 @@ class DefaultJdbcCursorIncrementalPartition(
                 cursorCheckpoint = cursorUpperBound,
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
-            cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
+            cursorCheckpoint = lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode(),
         )
 }

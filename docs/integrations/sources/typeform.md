@@ -106,6 +106,7 @@ The Forms, Responses, and Webhooks streams make separate API calls for each form
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.7 | 2026-04-02 | [76030](https://github.com/airbytehq/airbyte/pull/76030) | Promoted release candidate to GA |
 | 1.4.7-rc.2 | 2026-03-31 | [75898](https://github.com/airbytehq/airbyte/pull/75898) | Update CDK to 7.15.0 |
 | 1.4.7-rc.1 | 2026-03-26 | [75506](https://github.com/airbytehq/airbyte/pull/75506) | Upgrade CDK version to 7.13.0 |
 | 1.4.6 | 2026-03-03 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |
