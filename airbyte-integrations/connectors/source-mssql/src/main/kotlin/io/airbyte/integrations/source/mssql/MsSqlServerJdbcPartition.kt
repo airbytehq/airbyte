@@ -436,7 +436,6 @@ sealed class MsSqlServerJdbcCursorPartition(
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
-//                from,
                 NoWhere,
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())

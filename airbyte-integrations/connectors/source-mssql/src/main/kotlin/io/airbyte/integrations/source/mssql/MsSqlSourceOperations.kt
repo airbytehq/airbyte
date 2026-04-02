@@ -324,8 +324,8 @@ class MsSqlSourceOperations :
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
 
-                    val ww = where?.sql() ?: ""
-                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $ww ORDER BY NEWID()) AS randomly_sampled"
+                    val maybeWhere = where?.sql() ?: ""
+                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
                 }
             }
         }
