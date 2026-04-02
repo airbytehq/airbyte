@@ -12,7 +12,6 @@ from unit_tests.conftest import get_source, get_stream_by_name
 CMD = "check"
 TEST_CONFIG_LEGACY_PATH = f"{os.path.dirname(__file__)}/configs/legacy_config.json"
 TEST_CONFIG_ACTUAL_PATH = f"{os.path.dirname(__file__)}/configs/actual_config.json"
-
 SOURCE_INPUT_ARGS_LEGACY = [CMD, "--config", TEST_CONFIG_LEGACY_PATH]
 SOURCE_INPUT_ARGS_ACTUAL = [CMD, "--config", TEST_CONFIG_ACTUAL_PATH]
 
