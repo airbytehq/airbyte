@@ -84,9 +84,7 @@ def test_instagram_media_children_transformation_skips_failed_child(components_m
 
 def test_instagram_media_children_transformation_all_children_fail(components_module, config, mocker):
     """When all carousel children fail, the transform should return an empty children array."""
-    mocker.patch.object(
-        components_module, "get_http_response", side_effect=Exception("HTTP error occurred: 500 - Internal server error")
-    )
+    mocker.patch.object(components_module, "get_http_response", side_effect=Exception("HTTP error occurred: 500 - Internal server error"))
 
     record_transformation = components_module.InstagramMediaChildrenTransformation()
     result = record_transformation.transform(copy.deepcopy(children_record), config)
@@ -99,9 +97,7 @@ def test_instagram_media_children_transformation_logs_warning_on_failure(compone
     failing_child_id = children_record["children"]["data"][0]["id"]
     parent_record = {"id": "parent_media_456", "children": {"data": [{"id": failing_child_id}]}}
 
-    mocker.patch.object(
-        components_module, "get_http_response", side_effect=Exception("HTTP error occurred: 403 - Permission denied")
-    )
+    mocker.patch.object(components_module, "get_http_response", side_effect=Exception("HTTP error occurred: 403 - Permission denied"))
 
     record_transformation = components_module.InstagramMediaChildrenTransformation()
     with caplog.at_level(logging.WARNING):
