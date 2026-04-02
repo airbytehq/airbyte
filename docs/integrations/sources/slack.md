@@ -42,6 +42,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  channels:join
  channels:read
  files:read
+ groups:history
  groups:read
  links:read
  reactions:read
@@ -57,7 +58,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
 8. Search for your newly created app. (If you are using the desktop version of Slack, you may need to restart Slack for it to pick up the new App). Add the App to all channels you want to sync data from.
 
 :::note
-If you are using an API key to authenticate to Slack, a refresh token is not required, as acccess tokens never expire. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
+If you are using an API key to authenticate to Slack, a refresh token is not required, as access tokens never expire. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 :::
 
 ### Step 2: Set up the Slack connector in Airbyte
@@ -79,8 +80,8 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 <FieldAnchor field="lookback_window">
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
 </FieldAnchor>
-<FieldAnchor field="include_private_channels">
-8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
+<FieldAnchor field="channel_filter">
+8. (Optional) **Channel filter** Enter the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
 </FieldAnchor>
 <FieldAnchor field="include_private_channels">
 9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
@@ -134,9 +135,9 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits).
 
-We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration setings.
+We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration settings.
 
-If you expect to sync a large amount of data (like historical data) you can try to increase the number of workers, default is 1. This could cause to being rate limited by Slack, so you should monitor the logs for rate limit errors.
+If you expect to sync a large amount of data (like historical data) you can try to increase the number of workers, default is 2. This could cause to being rate limited by Slack, so you should monitor the logs for rate limit errors.
 
 ## Data type map
 
@@ -193,7 +194,7 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.15 | 2026-03-31 | [75905](https://github.com/airbytehq/airbyte/pull/75905) | Add configurable option to skip conversations.replies API calls for messages with no replies, reducing unnecessary API usage |
+| 3.1.15 | 2026-04-02 | [75905](https://github.com/airbytehq/airbyte/pull/75905) | Add configurable option to skip conversations.replies API calls for messages with no replies, reducing unnecessary API usage |
 | 3.1.14 | 2026-03-27 | [75197](https://github.com/airbytehq/airbyte/pull/75197) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 3.1.13 | 2026-03-24 | [75329](https://github.com/airbytehq/airbyte/pull/75329) | Update dependencies |
 | 3.1.12 | 2026-03-10 | [74598](https://github.com/airbytehq/airbyte/pull/74598) | Update dependencies |
