@@ -957,3 +957,136 @@ def test_decoder_logs_error_and_yields_empty_on_bad_data(components_module):
     response = _make_response(b"\x1f\x8b not valid gzip at all")
     rows = list(components_module.BingAdsGzipCsvDecoder().decode(response))
     assert rows == [{}]
+
+
+# --- BingAdsReportDownloadRequester tests ---
+
+import requests
+import requests_mock as rm
+
+from airbyte_cdk.sources.declarative.types import StreamSlice
+
+
+POLL_URL = "https://reporting.api.bingads.microsoft.com/Reporting/v13/GenerateReport/Poll"
+FRESH_SAS_URL = "https://blobstorage.blob.core.windows.net/report?sv=2024&sig=fresh_token"
+STALE_SAS_URL = "https://blobstorage.blob.core.windows.net/report?sv=2024&sig=stale_token"
+
+
+def _make_stream_slice(report_request_id="REQ-123", account_id="ACC-1", parent_customer_id="CUST-1"):
+    return StreamSlice(
+        partition={"account_id": account_id},
+        cursor_slice={},
+        extra_fields={
+            "creation_response": {"ReportRequestId": report_request_id},
+            "ParentCustomerId": parent_customer_id,
+            "download_target": STALE_SAS_URL,
+        },
+    )
+
+
+def _build_requester(components_module, config=None, authenticator=None):
+    """Build a BingAdsReportDownloadRequester with minimal required fields."""
+    cfg = config or {"developer_token": "fake_dev_token"}
+    return components_module.BingAdsReportDownloadRequester(
+        name="test_download_requester",
+        url_base="{{download_target}}",
+        config=cfg,
+        parameters={},
+        report_poll_authenticator=authenticator,
+    )
+
+
+class _FakeAuthenticator:
+    """Minimal stub that satisfies the get_auth_header interface."""
+
+    def get_auth_header(self):
+        return {"Authorization": "Bearer fake_access_token"}
+
+
+@pytest.mark.parametrize(
+    "poll_response_json,expected_url",
+    [
+        pytest.param(
+            {"ReportRequestStatus": {"Status": "Success", "ReportDownloadUrl": FRESH_SAS_URL}},
+            FRESH_SAS_URL,
+            id="successful_repoll_returns_fresh_url",
+        ),
+        pytest.param(
+            {"ReportRequestStatus": {"Status": "Success"}},
+            None,
+            id="repoll_without_download_url_returns_none",
+        ),
+        pytest.param(
+            {},
+            None,
+            id="empty_repoll_response_returns_none",
+        ),
+    ],
+)
+def test_get_fresh_download_url(poll_response_json, expected_url, components_module):
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(POLL_URL, json=poll_response_json, status_code=200)
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result == expected_url
+
+    if expected_url:
+        sent_request = m.last_request
+        assert sent_request.json() == {"ReportRequestId": "REQ-123"}
+        assert sent_request.headers["Authorization"] == "Bearer fake_access_token"
+        assert sent_request.headers["DeveloperToken"] == "fake_dev_token"
+        assert sent_request.headers["CustomerAccountId"] == "ACC-1"
+        assert sent_request.headers["CustomerId"] == "CUST-1"
+
+
+def test_get_fresh_download_url_falls_back_on_http_error(components_module):
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(POLL_URL, status_code=500)
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result is None
+
+
+def test_get_fresh_download_url_falls_back_on_connection_error(components_module):
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(POLL_URL, exc=requests.ConnectionError("network failure"))
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result is None
+
+
+def test_get_fresh_download_url_returns_none_without_report_request_id(components_module):
+    requester = _build_requester(components_module)
+    stream_slice = StreamSlice(
+        partition={"account_id": "ACC-1"},
+        cursor_slice={},
+        extra_fields={"creation_response": {}, "ParentCustomerId": "CUST-1"},
+    )
+
+    result = requester._get_fresh_download_url(stream_slice)
+    assert result is None
+
+
+def test_get_fresh_download_url_works_without_authenticator(components_module):
+    requester = _build_requester(components_module, authenticator=None)
+    stream_slice = _make_stream_slice()
+
+    with rm.Mocker() as m:
+        m.post(
+            POLL_URL,
+            json={"ReportRequestStatus": {"Status": "Success", "ReportDownloadUrl": FRESH_SAS_URL}},
+            status_code=200,
+        )
+        result = requester._get_fresh_download_url(stream_slice)
+
+    assert result == FRESH_SAS_URL
+    assert "Authorization" not in m.last_request.headers

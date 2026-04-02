@@ -2531,9 +2531,11 @@ definitions:
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
       type: CustomDecoder
       class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
