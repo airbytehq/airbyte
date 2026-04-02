@@ -297,7 +297,7 @@ The Facebook Marketing source connector supports the following [sync modes](http
 **Notes on Streams:**
 
 :::info Custom Audiences
-The `rule` field in the `Custom Audiences` stream may not be synced for all records due to limitations with the Facebook Marketing API. Syncing this field may also cause your sync to return the error message `Please reduce the amount of data`. See our Troubleshooting section for more information.
+The `rule` field in the `Custom Audiences` stream is automatically excluded from API requests to avoid `Please reduce the amount of data` errors. The field remains in the stream schema, but its value is `null` for all records. In versions before 5.2.3, this exclusion didn't work correctly and the field could cause sync failures. See the Troubleshooting section for more information.
 :::
 
 :::info Ad Creatives From Ads
@@ -405,6 +405,12 @@ Starting January 12, 2026, Meta removed support for the 7-day view-through (`7d_
 - The `1d_view` attribution window remains supported and continues returning data where applicable.
 - Click-through attribution windows (`1d_click`, `7d_click`, `28d_click`) are not affected by this change.
 
+### Insights data older than 37 months
+
+The Facebook Insights API enforces a 37-month data retention period. Queries with a `since` date older than 37 months from the current date return a `400 Bad Request` error. The connector automatically clamps the start date of Insights sync intervals to respect this boundary. If your configured **Start Date** is older than 37 months, the connector adjusts it forward to the earliest allowed date and logs a warning.
+
+In versions before 5.2.3, certain internal operations that split large asynchronous jobs into smaller date ranges could produce intervals that started before the 37-month boundary, causing the sync to fail with Facebook API error `#100`. Version 5.2.3 fixes this by validating date ranges centrally before any downstream processing.
+
 ### Missing purchases or purchase value metrics
 
 You may notice that Purchases or purchase value fields in the Ads Insights stream appear incomplete or under-reported for certain date ranges. This issue has been observed across multiple platforms, including direct Facebook API calls. It's not specific to Airbyte, but linked to intermittent upstream API behavior.
@@ -446,7 +452,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.3 | 2026-03-24 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
+| 5.2.3 | 2026-04-02 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
 | 5.2.2 | 2026-03-17 | [75130](https://github.com/airbytehq/airbyte/pull/75130) | Extend upgrade deadline for version 5.0.0 breaking changes to 2026-04-10 |
 | 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
 | 5.2.0 | 2026-03-09 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
