@@ -13,9 +13,9 @@ from airbyte_protocol_dataclasses.models import Status as ConnectionStatus
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.types import Record, StreamSlice
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.utils import run_read
 
 from .conftest import find_stream, get_source, load_json_file
