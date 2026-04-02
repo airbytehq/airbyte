@@ -304,6 +304,15 @@ In particular, when using AWS Glue, the connector will:
 - Lowercase all stream [table names and namespaces](https://docs.aws.amazon.com/glue/latest/webapi/API_Table.html)
 - Change any non-alphanumeric character in a table name/namespace to an [underscore](https://docs.aws.amazon.com/glue/latest/dg/define-database.html) for compatibility with Athena
 
+Additionally, when the **Lowercase column names** toggle is enabled in the destination configuration (applies to all catalog types):
+
+- All column names will be lowercased
+- Non-alphanumeric characters in column names will be replaced with underscores
+
+:::caution Enabling column lowercasing on existing syncs
+If you enable the **Lowercase column names** toggle on an existing connection, column names will change (e.g. `projectId` becomes `projectid`). Perform a [full refresh](../../platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) on affected streams after enabling this option to ensure schema consistency.
+:::
+
 ## Deduplication
 
 This connector uses a merge-on-read strategy to support deduplication.

@@ -6,15 +6,23 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Property
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.Meta
@@ -22,7 +30,9 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.integrations.destination.s3_data_lake.catalog.GlueTableIdGenerator
+import io.airbyte.integrations.destination.s3_data_lake.schema.GlueTableSchemaMapper
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
@@ -63,7 +73,7 @@ abstract class S3DataLakeWriteTest(
 class GlueWriteTest :
     S3DataLakeWriteTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        tableIdGenerator = GlueTableIdGenerator(null),
+        tableIdGenerator = GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.getConfig(spec),
@@ -187,7 +197,7 @@ class GlueWriteTest :
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        tableIdGenerator = GlueTableIdGenerator(null),
+        tableIdGenerator = GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.getConfig(spec),
@@ -373,7 +383,7 @@ class PolarisWriteTest :
 class GlueWriteTestProtoSocket :
     S3DataLakeWriteTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        tableIdGenerator = GlueTableIdGenerator(null),
+        tableIdGenerator = GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.getConfig(spec),
@@ -392,5 +402,177 @@ class GlueWriteTestProtoSocket :
     @Test
     override fun testContainerTypes() {
         super.testContainerTypes()
+    }
+}
+
+private fun withLowercaseColumnNames(configContents: String): String {
+    val mapper = ObjectMapper()
+    val node = mapper.readTree(configContents) as ObjectNode
+    node.put("lowercase_column_names", true)
+    return mapper.writeValueAsString(node)
+}
+
+class GlueWriteTestWithLowercaseColumns :
+    S3DataLakeWriteTest(
+        configContents =
+            withLowercaseColumnNames(Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH)),
+        tableIdGenerator =
+            GlueTableIdGenerator(
+                GlueTableSchemaMapper(null, DefaultTempTableNameGenerator(), lowercaseColumnNames = true)
+            ),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
+    ) {
+
+    @Test
+    override fun testFunkyCharactersDedup() {
+        assumeTrue(verifyDataWriting)
+
+        val importType =
+            Dedupe(
+                primaryKey = listOf(listOf("RecordId")),
+                cursor = listOf("updatedAt"),
+            )
+        val schema =
+            ObjectType(
+                properties =
+                    linkedMapOf(
+                        "RecordId" to intType,
+                        "updatedAt" to FieldType(io.airbyte.cdk.load.data.TimestampTypeWithTimezone, nullable = true),
+                        "userName" to stringType,
+                    )
+            )
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_stream",
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = makeTableSchema(schema, importType),
+            )
+        runSync(
+            updatedConfig,
+            stream,
+            listOf(
+                InputRecord(
+                    stream,
+                    """{"RecordId": 1, "updatedAt": "2000-01-01T00:00:00Z", "userName": "Alice1"}""",
+                    emittedAtMs = 1000,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId,
+                ),
+                InputRecord(
+                    stream,
+                    """{"RecordId": 1, "updatedAt": "2001-01-01T00:00:00Z", "userName": "Alice2"}""",
+                    emittedAtMs = 2000,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId,
+                ),
+            )
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 2000,
+                    generationId = 42,
+                    data =
+                        mapOf(
+                            "record_id" to 1,
+                            "updated_at" to
+                                TimestampWithTimezoneValue("2001-01-01T00:00:00Z"),
+                            "user_name" to "Alice2",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("record_id")),
+            cursor = listOf("updated_at"),
+        )
+    }
+
+    @Test
+    override fun testFunkyCharacters() {
+        assumeTrue(verifyDataWriting)
+
+        val schema =
+            linkedMapOf(
+                "id" to intType,
+                "fieldWithCamelCase" to stringType,
+                "field_with_underscore" to stringType,
+                "FIELD_WITH_ALL_CAPS" to stringType,
+                "field_with_spécial_character" to stringType,
+                "field_name_with_operator+1" to stringType,
+                "field_name_with_numbers_123" to stringType,
+                "1field_with_a_leading_number" to stringType,
+                "order" to stringType,
+                "ProperCase" to stringType,
+                "Foo.Bar" to stringType,
+            )
+
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_lowercase_columns",
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = makeTableSchema(ObjectType(schema), Append),
+            )
+
+        val record =
+            InputRecord(
+                stream,
+                ObjectValue(
+                    schema
+                        .mapValuesTo(linkedMapOf<String, AirbyteValue>()) { StringValue("foo\nbar") }
+                        .also { it["id"] = IntegerValue(42) }
+                ),
+                emittedAtMs = 1234,
+                meta = null,
+                serialized = "",
+                checkpointId = checkpointKeyForMedium()?.checkpointId,
+            )
+
+        runSync(updatedConfig, DestinationCatalog(listOf(stream)), listOf(record))
+
+        val expectedData =
+            linkedMapOf<String, Any>(
+                "id" to 42,
+                "field_with_camel_case" to "foo\nbar",
+                "field_with_underscore" to "foo\nbar",
+                "field_with_all_caps" to "foo\nbar",
+                "field_with_special_character" to "foo\nbar",
+                "field_name_with_operator_1" to "foo\nbar",
+                "field_name_with_numbers_123" to "foo\nbar",
+                "1field_with_a_leading_number" to "foo\nbar",
+                "order" to "foo\nbar",
+                "proper_case" to "foo\nbar",
+                "foo_bar" to "foo\nbar",
+            )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1234,
+                    generationId = 0,
+                    data = expectedData,
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                )
+            ),
+            stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
     }
 }
