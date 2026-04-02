@@ -7,7 +7,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from airbyte_cdk.test.state_builder import StateBuilder
 
 from ..conftest import get_source
 from .advetiser_slices import mock_advertisers_slices
@@ -39,8 +38,6 @@ CAMPAIGNS_RESPONSE = {
         "page_info": {"total_number": 1, "page": 1, "page_size": 1000, "total_page": 1},
     },
 }
-
-EMPTY_LIST_RESPONSE = {"code": 0, "message": "ok", "data": {"list": [], "page_info": {"total_number": 0, "page": 1, "page_size": 1000, "total_page": 1}}}
 
 
 class TestCampaignsStream(TestCase):
