@@ -173,7 +173,7 @@ class MarketoBulkExportCreationRequester:
                 try:
                     self._resolved_activity_type_id = int(val)
                 except (ValueError, TypeError):
-                    pass
+                    logger.warning("Could not parse activity_type_id=%r as int; filtering will be skipped for this stream", val)
         elif isinstance(self.activity_type_id, int):
             self._resolved_activity_type_id = self.activity_type_id
 
