@@ -2654,24 +2654,24 @@ concurrency_level:
   max_concurrency: 7
 
 # Rate limits: https://help.getharvest.com/api-v2/introduction/overview/general/
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 100
-          interval: PT15M
-      matchers:
-        - method: GET
-          url_path_pattern: "^/reports/"
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 100
-          interval: PT15S
-      matchers: []
-  ratelimit_reset_header: "Retry-After"
-  status_codes_for_ratelimit_hit:
-    - 429
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 100
+#           interval: PT15M
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "^/reports/"
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 100
+#           interval: PT15S
+#       matchers: []
+#   ratelimit_reset_header: "Retry-After"
+#   status_codes_for_ratelimit_hit:
+#     - 429
 
 streams:
   - $ref: "#/definitions/streams/clients"

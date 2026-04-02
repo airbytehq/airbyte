@@ -24,22 +24,22 @@ _API_TOKEN = "test_token_abc123"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
-class TestAPIBudgetAndConcurrency(TestCase):
+class TestConcurrencyLevel(TestCase):
     """
-    Tests for the HTTPAPIBudget and concurrency_level configuration.
+    Tests for the concurrency_level configuration.
 
     These tests verify:
-    - The connector loads and syncs correctly with api_budget and concurrency_level configured
+    - The connector loads and syncs correctly with concurrency_level configured
     - The num_workers config parameter is accepted and used
-    - Rate limit handling still works with the api_budget in place
+    - Rate limit handling (429 retry) works correctly
     """
 
     @HttpMocker()
-    def test_sync_with_api_budget_and_concurrency(self, http_mocker: HttpMocker):
+    def test_sync_with_concurrency(self, http_mocker: HttpMocker):
         """
-        Test that the connector syncs correctly with api_budget and concurrency_level configured.
+        Test that the connector syncs correctly with concurrency_level configured.
 
-        Given: A manifest with HTTPAPIBudget and ConcurrencyLevel configured
+        Given: A manifest with ConcurrencyLevel configured
         When: Running a full refresh sync
         Then: The connector should complete successfully and return records
         """
@@ -129,41 +129,6 @@ class TestAPIBudgetAndConcurrency(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == 201
 
-    def test_manifest_api_budget_structure(self):
-        """
-        Test that the manifest contains a properly structured HTTPAPIBudget.
-
-        Given: The connector manifest with api_budget configured
-        When: Loading and parsing the manifest
-        Then: The api_budget should have the correct structure with two rate limit policies:
-              - Reports API: 100 requests per 15 minutes
-              - General API: 100 requests per 15 seconds
-        """
-        manifest_path = Path(__file__).parent.parent.parent / "manifest.yaml"
-        manifest = yaml.safe_load(manifest_path.read_text())
-
-        assert "api_budget" in manifest, "api_budget should be defined in the manifest"
-        api_budget = manifest["api_budget"]
-        assert api_budget["type"] == "HTTPAPIBudget"
-        assert len(api_budget["policies"]) == 2
-
-        # Reports policy: 100 requests per 15 minutes
-        reports_policy = api_budget["policies"][0]
-        assert reports_policy["type"] == "MovingWindowCallRatePolicy"
-        assert reports_policy["rates"][0]["limit"] == 100
-        assert reports_policy["rates"][0]["interval"] == "PT15M"
-        assert reports_policy["matchers"][0]["url_path_pattern"] == "^/reports/"
-
-        # General policy: 100 requests per 15 seconds
-        general_policy = api_budget["policies"][1]
-        assert general_policy["type"] == "MovingWindowCallRatePolicy"
-        assert general_policy["rates"][0]["limit"] == 100
-        assert general_policy["rates"][0]["interval"] == "PT15S"
-        assert general_policy["matchers"] == []
-
-        assert api_budget["ratelimit_reset_header"] == "Retry-After"
-        assert api_budget["status_codes_for_ratelimit_hit"] == [429]
-
     def test_manifest_concurrency_level_structure(self):
         """
         Test that the manifest contains a properly structured ConcurrencyLevel.
@@ -182,11 +147,9 @@ class TestAPIBudgetAndConcurrency(TestCase):
         assert "config.get('num_workers', 2)" in concurrency["default_concurrency"]
 
     @HttpMocker()
-    def test_rate_limit_429_with_api_budget(self, http_mocker: HttpMocker):
+    def test_rate_limit_429_retry(self, http_mocker: HttpMocker):
         """
-        Test that 429 rate limit responses are still handled correctly with api_budget configured.
-
-        The api_budget has status_codes_for_ratelimit_hit: [429] configured.
+        Test that 429 rate limit responses are handled correctly.
 
         Given: An API that returns 429 followed by a successful response
         When: Running a sync
