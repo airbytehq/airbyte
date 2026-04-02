@@ -1,27 +1,108 @@
 # Basecamp
 
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Basecamp](https://basecamp.com/) source connector.
+
+</HideInUI>
+
+## Prerequisites
+
+- A Basecamp account with access to at least one project
+- A registered OAuth application on the [37signals Launchpad](https://launchpad.37signals.com/integrations)
+- Your Basecamp Account ID
+
+## Setup guide
+
+### Step 1: Register an OAuth application
+
+1. Go to [37signals Launchpad](https://launchpad.37signals.com/integrations) and sign in with your Basecamp credentials.
+2. Register a new application. You will receive a **Client ID** and **Client Secret**.
+3. Provide a **Redirect URI** during registration. If you don't have one ready, you can use a placeholder like `http://localhost`.
+
+### Step 2: Obtain a refresh token
+
+This connector authenticates using OAuth 2.0 with a refresh token. To obtain one, you must complete the OAuth authorization flow:
+
+1. Direct a browser to the following URL, replacing the placeholders with your Client ID and Redirect URI:
+
+   ```text
+   https://launchpad.37signals.com/authorization/new?type=web_server&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI
+   ```
+
+2. Authorize the application when prompted. Basecamp redirects you to your Redirect URI with a `code` parameter.
+3. Exchange the authorization code for tokens by making a POST request:
+
+   ```text
+   POST https://launchpad.37signals.com/authorization/token
+   ```
+
+   Include `type=web_server`, your `client_id`, `redirect_uri`, `client_secret`, and the `code` from the previous step.
+
+4. The response contains an `access_token` and a `refresh_token`. Copy the **refresh_token** for use in the connector configuration.
+
+Alternatively, the [`basecampy3`](https://github.com/phistrom/basecampy3) Python library provides a CLI tool that automates this flow.
+
+### Step 3: Find your Account ID
+
+1. After obtaining your access token, make a GET request to `https://launchpad.37signals.com/authorization.json` with the `Authorization: Bearer YOUR_ACCESS_TOKEN` header.
+2. In the response, find the account with `"product": "bc3"`. The `id` field is your **Account ID**.
+
+Alternatively, your Account ID is the number in your Basecamp URL: `https://3.basecamp.com/YOUR_ACCOUNT_ID/...`.
+
+### Step 4: Configure the connector in Airbyte
+
+1. Enter your **Account ID**.
+2. Set a **Start date** for incremental streams. Records updated before this date are not synced.
+3. Enter the **Client ID** and **Client Secret** from your OAuth application.
+4. Enter the **Refresh token** obtained in Step 2.
+
+## Supported sync modes
+
+The Basecamp source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- Full Refresh
+- Incremental
+
+## Supported streams
+
+| Stream | Primary Key | Sync Modes | Description |
+|---|---|---|---|
+| [projects](https://github.com/basecamp/bc3-api/blob/master/sections/projects.md) | `id` | Full Refresh | Lists all active projects in the account. |
+| [schedules](https://github.com/basecamp/bc3-api/blob/master/sections/schedules.md) | `id` | Full Refresh | Schedule tools attached to each project. Child of `projects`. |
+| [schedule_entries](https://github.com/basecamp/bc3-api/blob/master/sections/schedule_entries.md) | `id` | Full Refresh | Individual entries within each schedule. Child of `schedules`. |
+| [todos](https://github.com/basecamp/bc3-api/blob/master/sections/todos.md) | `id` | Full Refresh, Incremental | To-do items across all projects. Uses `updated_at` as the cursor field. |
+| [messages](https://github.com/basecamp/bc3-api/blob/master/sections/messages.md) | `id` | Full Refresh, Incremental | Message board posts across all projects. Uses `updated_at` as the cursor field. |
+
+### Stream relationships
+
+The `schedules` stream is a child of `projects`, and `schedule_entries` is a child of `schedules`. During a sync, the connector first fetches all projects, then retrieves schedules for each project, and finally fetches entries for each schedule.
+
+## Limitations and troubleshooting
+
+### Rate limiting
+
+The Basecamp API enforces a rate limit of 50 requests per 10-second window per IP address. The API returns a `429 Too Many Requests` response with a `Retry-After` header when this limit is exceeded.
+
+### Token expiration
+
+Basecamp access tokens expire after two weeks. The connector uses the refresh token to obtain new access tokens automatically. If the refresh token itself becomes invalid, you need to re-authorize the application by repeating the OAuth flow.
+
+### Connector maturity
+
+This connector is in **Alpha** status and has **Community** support. It is a manifest-only (low-code) connector built with the Connector Builder.
+
+<HideInUI>
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `account_id` | `number` | Your Basecamp Account ID.  |  |
-| `start_date` | `string` | Start date — used in incremental syncs. No records before that start date will be synced.  |  |
-| `client_id` | `string` | OAuth app Client ID. Go to [37Signals Launchpad](https://launchpad.37signals.com/integrations) to make a new OAuth app.  |  |
-| `client_secret` | `string` | Client secret.  |  |
-| `client_refresh_token_2` | `string` | Refresh token.  |  |
-
-To obtain a refresh token, you'd need to register an [oauth application](https://launchpad.37signals.com/integrations) and then go through the OAuth flow. [`Basecampy`](https://github.com/phistrom/basecampy3) provides a CLI tool to do just that.
-
-## Streams
-
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| `projects` | `id` | DefaultPaginator | ✅ |  ❌  |
-| `schedules` | `id` | DefaultPaginator | ✅ |  ❌  |
-| `schedule_entries` | `id` | DefaultPaginator | ✅ |  ❌  |
-| `todos` | `id` | DefaultPaginator | ✅ |  ✅  |
-| `messages` | `id` | DefaultPaginator | ✅ |  ✅  |
-
+| `account_id` | `number` | Your Basecamp Account ID. Find it in your Basecamp URL or via the authorization endpoint. | |
+| `start_date` | `string` | Start date for incremental syncs in `YYYY-MM-DDTHH:MM:SSZ` format. Records updated before this date are not synced. | |
+| `client_id` | `string` | OAuth Client ID from your [37signals Launchpad](https://launchpad.37signals.com/integrations) application. | |
+| `client_secret` | `string` | OAuth Client Secret from your 37signals Launchpad application. | |
+| `client_refresh_token_2` | `string` | OAuth refresh token obtained through the authorization flow. | |
 
 ## Changelog
 
@@ -30,7 +111,7 @@ To obtain a refresh token, you'd need to register an [oauth application](https:/
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.0.35 | 2026-03-31 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
+| 0.0.35 | 2026-04-01 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
 | 0.0.34 | 2026-03-31 | [75892](https://github.com/airbytehq/airbyte/pull/75892) | Update dependencies |
 | 0.0.33 | 2026-03-17 | [75000](https://github.com/airbytehq/airbyte/pull/75000) | Update dependencies |
 | 0.0.32 | 2026-02-24 | [73800](https://github.com/airbytehq/airbyte/pull/73800) | Update dependencies |
@@ -67,3 +148,5 @@ To obtain a refresh token, you'd need to register an [oauth application](https:/
 | 0.0.1 | 2024-08-12 | | Initial release by natikgadzhi via Connector Builder |
 
 </details>
+
+</HideInUI>
