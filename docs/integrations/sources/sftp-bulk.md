@@ -61,7 +61,7 @@ For more information on SSH key pair authentication, refer to the [official SSH 
 
 ### Step 2: Set up the SFTP Bulk connector in Airbyte
 
-#### For Airbyte Cloud:
+#### For Airbyte Cloud
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
@@ -92,7 +92,7 @@ For more information on SSH key pair authentication, refer to the [official SSH 
 
 14. Click **Set up source** to complete setup. A connection test runs to verify the configuration.
 
-#### For Airbyte Open Source:
+#### For Airbyte Open Source
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
