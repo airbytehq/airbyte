@@ -156,7 +156,7 @@ jobs:
 
       # The default behaviour is read-only on PR branches and read/write on master.
       # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
-      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+      - uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
         if: matrix.connector
         with:
           gradle-version: "8.14"
@@ -346,7 +346,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+      - uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
         if: matrix.connector
         with:
           cache-read-only: false
@@ -499,7 +499,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5.0.2
+      - uses: gradle/actions/setup-gradle@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
         if: matrix.connector
         with:
           gradle-version: "8.14"
