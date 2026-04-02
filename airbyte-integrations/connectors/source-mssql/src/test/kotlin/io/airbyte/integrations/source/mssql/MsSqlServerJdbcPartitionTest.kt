@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mssql
 
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,7 +20,7 @@ class MsSqlServerJdbcPartitionTest {
     @Test
     fun `test stateValueToJsonNode converts NUMBER to BigDecimal`() {
         // This prevents precision loss and type mismatch issues
-        val field = Field("numericId", BigDecimalFieldType)
+        val field = EmittedField("numericId", BigDecimalFieldType)
 
         // Convert state value "13" using NUMBER type
         val result = stateValueToJsonNode(field, "13")
@@ -34,7 +34,7 @@ class MsSqlServerJdbcPartitionTest {
     @Test
     fun `test stateValueToJsonNode handles large NUMERIC values without precision loss`() {
         // Test that large NUMERIC values don't lose precision when converted
-        val field = Field("largeNumericId", BigDecimalFieldType)
+        val field = EmittedField("largeNumericId", BigDecimalFieldType)
         val largeValue = "12345678901234567890"
 
         val result = stateValueToJsonNode(field, largeValue)
@@ -46,7 +46,7 @@ class MsSqlServerJdbcPartitionTest {
     @Test
     fun `test stateValueToJsonNode handles decimal NUMERIC values`() {
         // Test that decimal NUMERIC values are preserved correctly
-        val field = Field("decimalValue", BigDecimalFieldType)
+        val field = EmittedField("decimalValue", BigDecimalFieldType)
         val decimalValue = "123.456"
 
         val result = stateValueToJsonNode(field, decimalValue)
@@ -58,7 +58,7 @@ class MsSqlServerJdbcPartitionTest {
     @Test
     fun `test stateValueToJsonNode handles INTEGER values`() {
         // Test that INTEGER types work correctly
-        val field = Field("integerId", IntFieldType)
+        val field = EmittedField("integerId", IntFieldType)
 
         val result = stateValueToJsonNode(field, "42")
 
@@ -69,7 +69,7 @@ class MsSqlServerJdbcPartitionTest {
     @Test
     fun `test stateValueToJsonNode handles empty string for NUMBER`() {
         // Test that empty string returns null node
-        val field = Field("numericId", BigDecimalFieldType)
+        val field = EmittedField("numericId", BigDecimalFieldType)
 
         val result = stateValueToJsonNode(field, "")
 
@@ -80,7 +80,7 @@ class MsSqlServerJdbcPartitionTest {
     @Test
     fun `test stateValueToJsonNode handles null for NUMBER`() {
         // Test that null string returns null node
-        val field = Field("numericId", BigDecimalFieldType)
+        val field = EmittedField("numericId", BigDecimalFieldType)
 
         val result = stateValueToJsonNode(field, null)
 
@@ -92,7 +92,7 @@ class MsSqlServerJdbcPartitionTest {
     fun `test stateValueToJsonNode handles string null for NUMBER`() {
         // Test that the string "null" (not null value) returns null node
         // This can happen when JSON serialization converts null to string "null"
-        val field = Field("numericId", BigDecimalFieldType)
+        val field = EmittedField("numericId", BigDecimalFieldType)
 
         val result = stateValueToJsonNode(field, "null")
 
@@ -103,7 +103,7 @@ class MsSqlServerJdbcPartitionTest {
     @Test
     fun `test stateValueToJsonNode handles string null for INTEGER`() {
         // Test that the string "null" (not null value) returns null node for INTEGER
-        val field = Field("integerId", IntFieldType)
+        val field = EmittedField("integerId", IntFieldType)
 
         val result = stateValueToJsonNode(field, "null")
 
