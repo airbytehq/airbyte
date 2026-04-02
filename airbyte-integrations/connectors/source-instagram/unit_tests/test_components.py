@@ -86,7 +86,7 @@ def test_instagram_insights_transformation(components_module, config):
         pytest.param(
             {
                 "error": {
-                    "message": "Too many calls to this account.",
+                    "message": "too many calls to this account.",
                     "type": "OAuthException",
                     "code": 32,
                     "fbtrace_id": "def456",
@@ -111,6 +111,27 @@ def test_get_http_response_raises_on_rate_limit(components_module, requests_mock
         components_module.get_http_response("test_stream", "test_media_id", {"fields": "id"}, config=config)
 
     assert "Rate limit exceeded for Instagram Graph API." in str(exc_info.value)
+
+
+def test_get_http_response_non_rate_limit_400_fails_immediately(components_module, requests_mock, config):
+    """Non-rate-limit HTTP 400 errors should fail immediately without retrying."""
+    graph_url = components_module.GRAPH_URL
+    requests_mock.register_uri(
+        "GET",
+        f"{graph_url}/test_media_id?fields=id",
+        status_code=400,
+        json={
+            "error": {
+                "message": "Invalid parameter",
+                "type": "OAuthException",
+                "code": 100,
+                "fbtrace_id": "test123",
+            }
+        },
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        components_module.get_http_response("test_stream", "test_media_id", {"fields": "id"}, config=config)
 
 
 def test_get_http_response_success(components_module, requests_mock, config):

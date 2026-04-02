@@ -44,22 +44,22 @@ def get_http_response(name: str, path: str, request_params: Dict, config: Config
     rate_limit_filter = HttpResponseFilter(
         config={},
         parameters={},
-        action=ResponseAction.RETRY,
+        action=ResponseAction.RATE_LIMITED,
         predicate="{{ 'error' in response and response.get('error', {}).get('code') == 4 }}",
         error_message="Rate limit exceeded for Instagram Graph API.",
     )
     instagram_rate_limit_filter = HttpResponseFilter(
         config={},
         parameters={},
-        action=ResponseAction.RETRY,
+        action=ResponseAction.RATE_LIMITED,
         predicate="{{ 'error' in response and response.get('error', {}).get('code') == 80002 }}",
         error_message="Rate limit exceeded for Instagram Graph API.",
     )
     too_many_calls_filter = HttpResponseFilter(
         config={},
         parameters={},
-        action=ResponseAction.RETRY,
-        error_message_contains="Too many calls",
+        action=ResponseAction.RATE_LIMITED,
+        error_message_contains="too many calls",
         error_message="Rate limit exceeded for Instagram Graph API.",
     )
     error_handler = DefaultErrorHandler(
