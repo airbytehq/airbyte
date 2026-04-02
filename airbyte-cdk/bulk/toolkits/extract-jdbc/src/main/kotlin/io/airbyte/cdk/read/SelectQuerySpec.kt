@@ -67,8 +67,9 @@ data class FromSample(
 
 fun FromNode.optimize(): FromNode =
     when (this) {
+        NoFrom -> this
+        is From -> this
         is FromSample -> where?.let { this.copy(where = where.optimize()) } ?: this
-        else -> this
     }
 
 sealed interface WhereNode
