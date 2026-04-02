@@ -74,13 +74,13 @@ This connector uses the [Instagram Graph API](https://developers.facebook.com/do
 
 The following streams are available:
 
-- [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user) — Profile information for each connected Instagram Business or Creator account.
-- [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) — Daily account-level metrics such as `follower_count`, `reach`, and `online_followers`. This is the only incremental stream; it uses the `date` field as its cursor.
-- [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) — Demographic breakdowns of followers by city, country, and age/gender.
-- [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media) — All media objects (photos, videos, reels, carousel albums) published by each account. For carousel albums, the connector fetches detailed information for each child media item.
-- [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights) — Per-media engagement metrics. The specific metrics requested vary by media type (Reels, Video, Carousel Album, or Image).
-- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/) — Currently published stories. The Instagram API only returns stories that are live at the time of the sync; expired stories are not available.
-- [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights) — Engagement metrics for currently published stories.
+- [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user)—Profile information for each connected Instagram Business or Creator account.
+- [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Daily account-level metrics such as `follower_count`, `reach`, and `online_followers`. This is the only incremental stream; it uses the `date` field as its cursor.
+- [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Demographic breakdowns of followers by city, country, and age/gender.
+- [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)—All media objects (photos, videos, reels, carousel albums) published by each account. For carousel albums, the connector fetches detailed information for each child media item.
+- [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Per-media engagement metrics. The specific metrics requested vary by media type (Reels, Video, Carousel Album, or Image).
+- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)—Currently published stories. The Instagram API only returns stories that are live at the time of the sync; expired stories are not available.
+- [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Engagement metrics for currently published stories.
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
