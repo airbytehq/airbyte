@@ -82,8 +82,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-14. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-15. Click `Set up source`.
+14. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -107,8 +106,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-12. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use waiting time between requests to avoid fatal statuses in report based streams.
-13. Click `Set up source`.
+12. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -248,29 +246,9 @@ Requesting reports via Amazon Seller Partner API can lead to failed syncs with e
 
 One of the reasons why users face this issue is that report requests were made too often.
 
-**Solution 1:**
+**Solution:**
 
-To overcome it you can force use sleeping between requests to avoid fatal statuses while requesting reports.
-
-Steps:
-1. Go to the Set Up page of the connector.
-2. Open optional section.
-3. Enable `Wait between requests to avoid fatal statuses in reports` toggle.
-
-Disadvantages of this approach is that syncs with waiting between requests are much slower than without it. So it is better to create a separate connection only for stream that usually fails with "Failed to retrieve the report..." error. This will help you to avoid affecting streams that worked as expected.
-
-:::note
-
-For now the waiting logic only work for the following streams:
-- GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
-- GET_AFN_INVENTORY_DATA
-- GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
-
-:::
-
-**Solution 2:**
-
-Create a separate connection for streams which usually fail with error above "Failed to retrieve the report..." and disable sync of these streams in the first connection with streams which don't fail because of the error. Adjust the sync time of these two connection to do not overlap. It's recommended to have a time break between syncs in the connections.
+Create a separate connection for streams which usually fail with error above "Failed to retrieve the report..." and disable sync of these streams in the first connection with streams which don't fail because of the error. Adjust the sync time of these two connections to not overlap. It's recommended to have a time break between syncs in the connections.
 
 ### Rate Limit issue for Report Streams
 
@@ -328,6 +306,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.7.1 | 2026-04-02 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
 | 5.7.0 | 2026-03-23 | [74740](https://github.com/airbytehq/airbyte/pull/74740) | Add configurable `asinGranularity` for GET_SALES_AND_TRAFFIC_REPORT streams, enabling CHILD and SKU level data with populated childAsin and sku values |
 | 5.6.1 | 2026-03-17 | [74538](https://github.com/airbytehq/airbyte/pull/74538) | Update dependencies |
 | 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
