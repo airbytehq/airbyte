@@ -395,4 +395,81 @@ class MySqlSourceJdbcPartitionFactoryTest {
             (jdbcPartition as MySqlSourceJdbcCursorIncrementalPartition).cursorLowerBound
         )
     }
+
+    // Simulates a table where most PKs are GUID but upper bound is a sentinel marker
+    @Test
+    fun testUpperBoundWithSentinelValue() {
+
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": "550e8400-e29b-41d4-a716-446655440000"}"""),
+                Jsons.readTree("""{"pk_val": "660e8400-e29b-41d4-a716-446655440000"}"""),
+            )
+
+        // Should fall back to unicodeInterpolatedStrings
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                opaqueStateValues,
+                "00000000-0000-0000-0000-000000000000",
+                "TTTSep24Jnls04",
+            )
+
+        assertEquals(opaqueStateValues.size + 1, result.size)
+    }
+
+    // Simulates a table where the lower bound is not a GUID
+    @Test
+    fun testLowerBoundNonGuid() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": "550e8400-e29b-41d4-a716-446655440000"}"""),
+                Jsons.readTree("""{"pk_val": "660e8400-e29b-41d4-a716-446655440000"}"""),
+            )
+
+        // Should fall back to unicodeInterpolatedStrings
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                opaqueStateValues,
+                "NOT-A-GUID",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            )
+
+        assertEquals(opaqueStateValues.size + 1, result.size)
+    }
+
+    // Simulates a table where there are no PK values in the samples
+    @Test
+    fun testEmptyStateValues() {
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                emptyList(),
+                "00000000-0000-0000-0000-000000000000",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            )
+
+        assertEquals(1, result.size)
+    }
+
+    // Simulates a table where both lower and upper bound are GUIDs
+    @Test
+    fun testBothBoundsAreGuid() {
+        val opaqueStateValues =
+            listOf(
+                Jsons.readTree("""{"pk_val": "550e8400-e29b-41d4-a716-446655440000"}"""),
+                Jsons.readTree("""{"pk_val": "660e8400-e29b-41d4-a716-446655440000"}"""),
+            )
+
+        val result =
+            mySqlSourceJdbcPartitionFactory.internalCalculateBoundaries(
+                opaqueStateValues,
+                "00000000-0000-0000-0000-000000000000",
+                "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            )
+
+        assertEquals(opaqueStateValues.size + 1, result.size)
+        // All boundary keys should be valid GUIDs
+        result.keys.forEach { key ->
+            assertEquals(36, key.length, "Boundary '$key' should be GUID length")
+        }
+    }
 }
