@@ -91,35 +91,35 @@ internal class S3DataLakeTableSchemaMapperTest {
 
     @Test
     fun `toColumnType maps types correctly`() {
-        assertEquals("BOOL", mapper.toColumnType(FieldType(BooleanType, nullable = false)).typeName)
-        assertEquals("DATE", mapper.toColumnType(FieldType(DateType, nullable = false)).typeName)
+        assertEquals("BOOL", mapper.toColumnType(FieldType(BooleanType, nullable = false)).type)
+        assertEquals("DATE", mapper.toColumnType(FieldType(DateType, nullable = false)).type)
         assertEquals(
             "INT64",
-            mapper.toColumnType(FieldType(IntegerType, nullable = false)).typeName
+            mapper.toColumnType(FieldType(IntegerType, nullable = false)).type
         )
         assertEquals(
             "FLOAT64",
-            mapper.toColumnType(FieldType(NumberType, nullable = false)).typeName
+            mapper.toColumnType(FieldType(NumberType, nullable = false)).type
         )
         assertEquals(
             "STRING",
-            mapper.toColumnType(FieldType(StringType, nullable = false)).typeName
+            mapper.toColumnType(FieldType(StringType, nullable = false)).type
         )
         assertEquals(
             "TIMESTAMP",
-            mapper.toColumnType(FieldType(TimestampTypeWithTimezone, nullable = false)).typeName
+            mapper.toColumnType(FieldType(TimestampTypeWithTimezone, nullable = false)).type
         )
         assertEquals(
             "TIMESTAMP",
-            mapper.toColumnType(FieldType(TimestampTypeWithoutTimezone, nullable = false)).typeName
+            mapper.toColumnType(FieldType(TimestampTypeWithoutTimezone, nullable = false)).type
         )
         assertEquals(
             "STRING",
-            mapper.toColumnType(FieldType(TimeTypeWithTimezone, nullable = false)).typeName
+            mapper.toColumnType(FieldType(TimeTypeWithTimezone, nullable = false)).type
         )
         assertEquals(
             "STRING",
-            mapper.toColumnType(FieldType(TimeTypeWithoutTimezone, nullable = false)).typeName
+            mapper.toColumnType(FieldType(TimeTypeWithoutTimezone, nullable = false)).type
         )
     }
 
