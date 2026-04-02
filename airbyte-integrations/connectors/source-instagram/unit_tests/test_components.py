@@ -1,6 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import json
 from typing import Dict
+
+import pytest
+
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .records import (
     breakdowns_record,
@@ -51,3 +57,88 @@ def test_break_down_results_transformation(components_module):
 def test_instagram_insights_transformation(components_module, config):
     record_transformation = components_module.InstagramInsightsTransformation().transform(insights_record)
     assert record_transformation == insights_record_transformed
+
+
+@pytest.mark.parametrize(
+    "error_response",
+    [
+        pytest.param(
+            {
+                "error": {
+                    "message": "(#80002) There have been too many calls to this Instagram account.",
+                    "type": "OAuthException",
+                    "code": 80002,
+                    "fbtrace_id": "abc123",
+                }
+            },
+            id="instagram_rate_limit_error_code_80002",
+        ),
+        pytest.param(
+            {
+                "error": {
+                    "message": "Application request limit reached.",
+                    "type": "OAuthException",
+                    "code": 4,
+                    "fbtrace_id": "xyz789",
+                }
+            },
+            id="application_rate_limit_error_code_4",
+        ),
+        pytest.param(
+            {
+                "error": {
+                    "message": "Too many calls to this account.",
+                    "type": "OAuthException",
+                    "code": 32,
+                    "fbtrace_id": "def456",
+                }
+            },
+            id="too_many_calls_error_message",
+        ),
+    ],
+)
+def test_get_http_response_raises_on_rate_limit(components_module, requests_mock, config, error_response):
+    """Rate limit responses (HTTP 400 with known rate limit indicators) should
+    retry and then raise with a descriptive error message preserving rate limit context."""
+    graph_url = components_module.GRAPH_URL
+    requests_mock.register_uri(
+        "GET",
+        f"{graph_url}/test_media_id?fields=id",
+        status_code=400,
+        json=error_response,
+    )
+
+    with pytest.raises((AirbyteTracedException, BaseBackoffException)) as exc_info:
+        components_module.get_http_response("test_stream", "test_media_id", {"fields": "id"}, config=config)
+
+    assert "Rate limit exceeded for Instagram Graph API." in str(exc_info.value)
+
+
+def test_get_http_response_success(components_module, requests_mock, config):
+    """Successful responses should return the JSON body without raising."""
+    graph_url = components_module.GRAPH_URL
+    expected_data = {"id": "12345", "media_type": "IMAGE"}
+    requests_mock.register_uri(
+        "GET",
+        f"{graph_url}/test_media_id?fields=id",
+        status_code=200,
+        json=expected_data,
+    )
+
+    result = components_module.get_http_response("test_stream", "test_media_id", {"fields": "id"}, config=config)
+    assert result == expected_data
+
+
+def test_get_http_response_raises_specific_exception_on_server_error(components_module, requests_mock, config):
+    """Server errors should propagate as typed exceptions (not generic `Exception`),
+    preserving the original error context for proper Airbyte error classification."""
+    graph_url = components_module.GRAPH_URL
+    requests_mock.register_uri(
+        "GET",
+        f"{graph_url}/test_media_id?fields=id",
+        status_code=500,
+        json={"error": {"message": "Internal server error"}},
+    )
+
+    with pytest.raises((AirbyteTracedException, BaseBackoffException)):
+        components_module.get_http_response("test_stream", "test_media_id", {"fields": "id"}, config=config)
