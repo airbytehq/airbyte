@@ -12,7 +12,7 @@ import io.airbyte.cdk.util.Jsons
 
 /** Builds a WHERE clause from lower/upper bounds on checkpoint columns. */
 fun buildWhereClause(
-    checkpointColumns: List<Field>,
+    checkpointColumns: List<EmittedField>,
     lowerBound: List<JsonNode>?,
     upperBound: List<JsonNode>?,
     isLowerBoundIncluded: Boolean,
@@ -283,7 +283,7 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
 class DefaultUnsplittableJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    val cursor: Field,
+    val cursor: EmittedField,
     val cursorLowerBound: JsonNode,
     val isLowerBoundIncluded: Boolean,
     val explicitCursorUpperBound: JsonNode?,
@@ -313,7 +313,7 @@ class DefaultUnsplittableJdbcCursorIncrementalPartition(
     override val nonResumableQuerySpec: SelectQuerySpec
         get() = SelectQuerySpec(SelectColumns(stream.fields), from, where)
 
-    val checkpointColumns: List<Field> = listOf(cursor)
+    val checkpointColumns: List<EmittedField> = listOf(cursor)
     val where: WhereNode
         get() = buildWhereClause(checkpointColumns, lowerBound, upperBound, isLowerBoundIncluded)
 
