@@ -22,12 +22,15 @@ from airbyte_cdk.sources.declarative.requesters.http_requester import HttpClient
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 GRAPH_URL = "https://graph.facebook.com/v23.0"
+logger = logging.getLogger("airbyte.HttpClient.MediaInsights")
 
 
 def get_http_response(name: str, path: str, request_params: Dict, config: Config) -> Optional[MutableMapping[str, Any]]:
@@ -160,7 +163,11 @@ class InstagramMediaChildrenTransformation(RecordTransformation):
         if children:
             children_ids = [child.get("id") for child in children.get("data")]
             for children_id in children_ids:
-                media_data = get_http_response(f"MediaInsights.{children_id}", children_id, {"fields": fields}, config=config)
+                try:
+                    media_data = get_http_response(f"MediaInsights.{children_id}", children_id, {"fields": fields}, config=config)
+                except (AirbyteTracedException, BaseBackoffException) as e:  # CDK exceptions from HttpClient after retries exhausted
+                    logger.warning(f"Skipping carousel child media {children_id} for parent media {record.get('id', 'unknown')}: {e}")
+                    continue
                 media_data = InstagramClearUrlTransformation().transform(media_data)
                 if media_data.get("timestamp"):
                     dt = datetime.strptime(media_data["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
