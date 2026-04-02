@@ -27,8 +27,8 @@ application {
 
 dependencies {
 
-    implementation 'org.apache.kafka:kafka-clients:2.8.0'
-    implementation 'org.apache.kafka:connect-json:2.8.0'
+    implementation 'org.apache.kafka:kafka-clients:4.1.0'
+    implementation 'org.apache.kafka:connect-json:4.1.0'
 
     integrationTestJavaImplementation 'org.testcontainers:kafka:1.19.0'
 }
