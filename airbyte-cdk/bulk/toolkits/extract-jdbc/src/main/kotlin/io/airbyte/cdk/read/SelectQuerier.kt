@@ -208,7 +208,7 @@ private val throwNoResultsIllegalState = {
     throw IllegalStateException("Query unexpectedly produced no results")
 }
 private val throwMultipleResultsIllegalState = {
-    throw IllegalStateException("Query unexpectedly produced no results")
+    throw IllegalStateException("Query unexpectedly produced multiple results")
 }
 
 /**
