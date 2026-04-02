@@ -70,7 +70,7 @@ For more information on SSH key pair authentication, please refer to the
 5. Choose a [delivery method](../../platform/using-airbyte/delivery-methods) for your data.
 6. Enter the **Host Address**.
 7. Enter your **Username**
-8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the SSH Key Authentication Setup section below for detailed instructions.
+8. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If using Private Key authentication, see the [SSH Key Authentication Setup](#ssh-key-authentication-setup) section below for detailed instructions.
 9. In the section titled `The list of streams to sync`, enter a **Stream Name**. This is the name of the stream that is created in your destination. Add additional streams by clicking **Add**.
 10. For each stream, select in the dropdown menu the **File Type** you wish to sync. Depending on the format chosen, you'll see a set of options specific to the file type. You can read more about specifics to each file type below.
 11. (Optional) Provide a **Start Date** using the provided datepicker, or by entering the date in the format `YYYY-MM-DDTHH:mm:ss.SSSSSSZ`. Incremental syncs will only sync files modified/added after this date.
@@ -91,6 +91,13 @@ For more information on SSH key pair authentication, please refer to the
     An input of `/logs/2022` replicates only data contained within the specified folder, ignoring the `/files` and `/logs/2021` folders. Leaving this field blank replicates all applicable files in the remote server's designated entry point.
 
 14. Click **Set up source** to complete setup. A test runs to verify the configuration.
+
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
+4. Enter a name for the SFTP Bulk connector.
 
 #### SSH Key Authentication Setup
 
@@ -120,13 +127,6 @@ Once uploaded, Airbyte uses this file to authenticate securely with your SFTP se
 :::note
 The file must be in PEM format, a plain text file containing your private key between the BEGIN and END lines. Do not paste the key directly into the field; Airbyte requires a file upload.
 :::
-
-### For Airbyte Open Source:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
-4. Enter a name for the SFTP Bulk connector.
 
 ## Delivery Method
 
