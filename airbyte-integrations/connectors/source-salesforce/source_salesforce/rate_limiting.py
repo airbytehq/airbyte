@@ -2,18 +2,28 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
+
 import logging
 import re
 import sys
-from typing import Any, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Union
 
 import backoff
 import requests
 from requests import codes, exceptions  # type: ignore[import]
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import (
+    ErrorHandler,
+    ErrorResolution,
+    ResponseAction,
+)
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+
+
+if TYPE_CHECKING:
+    from source_salesforce.api import SalesforceTokenProvider
 
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
@@ -59,9 +69,15 @@ class BulkNotSupportedException(Exception):
 
 
 class SalesforceErrorHandler(ErrorHandler):
-    def __init__(self, stream_name: str = "<unknown stream>", sobject_options: Optional[Mapping[str, Any]] = None) -> None:
+    def __init__(
+        self,
+        stream_name: str = "<unknown stream>",
+        sobject_options: Optional[Mapping[str, Any]] = None,
+        token_provider: Optional[SalesforceTokenProvider] = None,
+    ) -> None:
         self._stream_name = stream_name
         self._sobject_options: Mapping[str, Any] = sobject_options or {}
+        self._token_provider = token_provider
 
     @property
     def max_retries(self) -> Optional[int]:
@@ -86,6 +102,17 @@ class SalesforceErrorHandler(ErrorHandler):
                     raise BulkNotSupportedException(f"Query job with id: `{response.json().get('id')}` failed")
                 return ErrorResolution(ResponseAction.IGNORE, None, None)
 
+            if response.status_code == 401:
+                error_code, _ = self._extract_error_code_and_message(response)
+                if error_code == "INVALID_SESSION_ID":
+                    if self._token_provider is not None:
+                        self._token_provider.force_refresh()
+                    return ErrorResolution(
+                        ResponseAction.RETRY,
+                        FailureType.transient_error,
+                        "Salesforce session expired or invalid. Token has been refreshed.",
+                    )
+
             if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
                 return ErrorResolution(
                     ResponseAction.RETRY,
@@ -98,12 +125,17 @@ class SalesforceErrorHandler(ErrorHandler):
                 return ErrorResolution(
                     ResponseAction.FAIL,
                     FailureType.config_error,
-                    _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
-                    if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
-                    else f"An error occurred: {response.content.decode()}",
+                    (
+                        _AUTHENTICATION_ERROR_MESSAGE_MAPPING.get(error_message)
+                        if error_message in _AUTHENTICATION_ERROR_MESSAGE_MAPPING
+                        else f"An error occurred: {response.content.decode()}"
+                    ),
                 )
 
-            if self._is_bulk_job_creation(response) and response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+            if self._is_bulk_job_creation(response) and response.status_code in [
+                codes.FORBIDDEN,
+                codes.BAD_REQUEST,
+            ]:
                 return self._handle_bulk_job_creation_endpoint_specific_errors(response, error_code, error_message)
 
             if response.status_code == codes.too_many_requests or (
@@ -135,7 +167,8 @@ class SalesforceErrorHandler(ErrorHandler):
     @staticmethod
     def _is_bulk_job_status_check(response: requests.Response) -> bool:
         """Regular string ensures format used only for job status: /services/data/vXX.X/jobs/query/<queryJobId>,
-        see https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/query_get_one_job.htm"""
+        see https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/query_get_one_job.htm
+        """
         return response.request.method == "GET" and bool(re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(response.url))
 
     @staticmethod
@@ -197,7 +230,9 @@ class SalesforceErrorHandler(ErrorHandler):
         return ErrorResolution(ResponseAction.FAIL, FailureType.system_error, error_message)
 
     @staticmethod
-    def _extract_error_code_and_message(response: requests.Response) -> tuple[Optional[str], str]:
+    def _extract_error_code_and_message(
+        response: requests.Response,
+    ) -> tuple[Optional[str], str]:
         try:
             error_data = response.json()[0]
             return error_data.get("errorCode"), error_data.get("message", "")

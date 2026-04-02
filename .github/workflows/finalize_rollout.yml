@@ -1,4 +1,11 @@
-name: Finalize connector rollout
+name: Finalize Progressive Rollout
+# Dispatched by the platform's Temporal connector-rollout worker
+# (PromoteOrRollbackActivityImpl) after a promote/rollback decision.
+# After this workflow completes, verifyDefaultVersionActivity polls
+# for up to 3 hours for the GA version to become default, then
+# finalizeRolloutActivity unpins actors.
+#
+# See: airbyte-platform-internal/.../connector-rollout-worker/
 
 on:
   repository_dispatch:
@@ -11,28 +18,111 @@ on:
       action:
         description: "Action to perform"
         required: true
+        type: choice
         options: ["promote", "rollback"]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# ---------------------------------------------------------------------------
+# Job 1: Registry cleanup (runs for both promote and rollback)
+# ---------------------------------------------------------------------------
 jobs:
-  finalize_rollout:
-    name: Finalize connector rollout for ${{ github.event.inputs.connector_name }}
-    runs-on: connector-publish-large
+  rc-registry-cleanup:
+    name: "Registry cleanup (${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }})"
+    runs-on: ubuntu-24.04
     env:
       ACTION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.action || github.event.client_payload.action }}
+      CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
     steps:
-      - name: Check action value
+      - name: Validate action
         run: |
           if [[ "${ACTION}" != "promote" && "${ACTION}" != "rollback" ]]; then
-            echo "Invalid action: ${ACTION}"
+            echo "::error::Invalid action: '${ACTION}'. Must be 'promote' or 'rollback'."
             exit 1
           fi
         shell: bash
-      - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
-      # Authenticate as the GitHub App to ensure CI can run.  This is necessary because
-      # commits created with the built-in GitHub token will not trigger workflows.
+      # The cleanup CLI reads metadata.yaml from the local repo to
+      # resolve the connector's dockerRepository.
+      - name: Checkout Airbyte repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      # Deletes the release_candidate/ metadata marker from GCS.
+      # The versioned blob (e.g. 1.2.3-rc.1/) is preserved as audit trail.
+      - name: "Delete RC metadata marker"
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: >
+          airbyte-ops registry progressive-rollout cleanup
+          --name "${CONNECTOR_NAME}"
+          --store "${REGISTRY_STORE}"
+
+      # Recompile the registry JSON indexes so the RC entry is removed.
+      - name: "Recompile registry for connector"
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: >
+          airbyte-ops registry store compile
+          --store "${REGISTRY_STORE}"
+          --connector-name "${CONNECTOR_NAME}"
+
+      # --- Notifications ---
+      - name: Notify Slack on rollback success
+        if: success() && env.ACTION == 'rollback'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "↩️ Successfully rolled back RC for `${{ env.CONNECTOR_NAME }}` — GCS marker deleted:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "🚨 Registry cleanup failed for `${{ env.CONNECTOR_NAME }}` (${{ env.ACTION }}):\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Create and merge cleanup PR (promote only)
+  # ---------------------------------------------------------------------------
+  create-promotion-pr:
+    name: "Create and Merge Promotion PR"
+    needs: rc-registry-cleanup
+    if: >-
+      github.event.inputs.action == 'promote'
+      || github.event.client_payload.action == 'promote'
+    runs-on: ubuntu-24.04
+    env:
+      CONNECTOR_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.connector_name || github.event.client_payload.connector_name }}
+    steps:
+      # Authenticate as OCTAVIA_BOT so PRs trigger downstream CI.
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -40,37 +130,148 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
-      - name: Promote ${{ github.event.inputs.connector_name }} release candidate
-        id: promote-release-candidate
-        if: ${{ env.ACTION == 'promote' }}
-        uses: ./.github/actions/run-airbyte-ci
+      - name: Configure git identity
+        run: |
+          git config --global user.name "Octavia Squidington III"
+          git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+
+      - name: Checkout Airbyte repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --promote-release-candidate"
-      - name: Rollback ${{ github.event.inputs.connector_name }} release candidate
-        id: rollback-release-candidate
-        if: ${{ env.ACTION == 'rollback' }}
-        uses: ./.github/actions/run-airbyte-ci
+          token: ${{ steps.get-app-token.outputs.token }}
+          fetch-depth: 1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      # bump-version --bump-type promote strips -rc.N suffix, sets
+      # enableProgressiveRollout to false, and bumps the version.
+      # --no-changelog because we don't have a PR number yet.
+      - name: "Version bump and cleanup"
+        shell: bash
+        run: >
+          airbyte-ops local connector bump-version
+          --name "${CONNECTOR_NAME}"
+          --repo-path "${{ github.workspace }}"
+          --bump-type promote
+          --no-changelog
+
+      # Commits cleanup changes (version bump + progressive rollout
+      # flag removal) and opens a draft PR.  This gives us a PR
+      # number for the changelog entry.
+      - name: Create cleanup PR
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --rollback-release-candidate"
+          token: ${{ steps.get-app-token.outputs.token }}
+          commit-message: "chore: finalize promote for ${{ env.CONNECTOR_NAME }}"
+          branch: "finalize-rollout/promote/${{ env.CONNECTOR_NAME }}"
+          base: ${{ github.event.repository.default_branch }}
+          delete-branch: true
+          title: "chore: finalize promote for ${{ env.CONNECTOR_NAME }}"
+          body: |
+            Automated cleanup after connector rollout **promote** for `${{ env.CONNECTOR_NAME }}`.
+
+            Generated by [`finalize_rollout` workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: |
+            area/connectors
+            auto-merge/bypass-ci-checks
+          draft: true
+
+      # Switch to the PR branch so changelog add reads the bumped
+      # GA version from metadata.yaml (not the RC version on master).
+      - name: "Checkout PR branch"
+        if: steps.create-pr.outputs.pull-request-number
+        run: git fetch origin "finalize-rollout/promote/${CONNECTOR_NAME}" && git checkout "finalize-rollout/promote/${CONNECTOR_NAME}"
+
+      # changelog add reads the current version from metadata.yaml
+      # (already bumped to GA by the promote step above) and writes
+      # a changelog entry — no version files are modified.
+      - name: "Add changelog entry"
+        if: steps.create-pr.outputs.pull-request-number
+        shell: bash
+        run: >
+          airbyte-ops local connector changelog add
+          --connector-name "${CONNECTOR_NAME}"
+          --repo-path "${{ github.workspace }}"
+          --message "Promoted release candidate to GA"
+          --pr-number "${{ steps.create-pr.outputs.pull-request-number }}"
+
+      # Commit and push the changelog entry to the existing PR branch.
+      - name: "Push changelog to PR"
+        if: steps.create-pr.outputs.pull-request-number
+        run: |
+          git add docs/
+          git commit -m "chore: add changelog for ${CONNECTOR_NAME}"
+          git push origin "finalize-rollout/promote/${CONNECTOR_NAME}"
+
+      # The merge triggers the publish pipeline that
+      # verifyDefaultVersionActivity is waiting for.
+      - name: Mark PR ready for review
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: gh pr ready "${{ steps.create-pr.outputs.pull-request-number }}"
+
+      # Use a different bot identity (admin) to approve and merge,
+      # because the bot that created the PR cannot approve its own PRs
+      # and needs admin privileges to bypass branch protection.
+      - name: Authenticate as GitHub App (Admin)
+        if: steps.create-pr.outputs.pull-request-number
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      - name: Approve cleanup PR
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "${{ steps.create-pr.outputs.pull-request-number }}"
+          --repo "${{ github.repository }}"
+          --approve
+          --body "Auto-approved by finalize_rollout workflow."
+
+      - name: Force-merge cleanup PR
+        if: steps.create-pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: |
+          gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" \
+            --repo "${{ github.repository }}" \
+            --squash \
+            --admin
+
+      # --- Notifications ---
+      - name: Notify Slack on promote success
+        if: success() && steps.create-pr.outputs.pull-request-number
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "↗️ Successfully promoted `${{ env.CONNECTOR_NAME }}` — cleanup PR merged:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-failures",
+              "username": "Connectors CI/CD Bot",
+              "text": "🚨 Promote PR failed for `${{ env.CONNECTOR_NAME }}`:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
