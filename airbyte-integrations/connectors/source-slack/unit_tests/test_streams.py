@@ -352,6 +352,94 @@ def test_threads_stream_includes_all_messages_by_default(requests_mock, token_co
     assert len(slices) == 4
 
 
+def test_threads_stream_no_replies_api_calls_skipped_when_enabled(requests_mock, token_config):
+    """
+    End-to-end test: when threads_ignore_no_replies=True, verify that conversations.replies
+    is only called for messages with reply_count > 0 (not for reply_count=0, None, or absent).
+    Uses requests_mock.request_history to confirm API call reduction.
+    """
+    token_config["channel_filter"] = []
+    token_config["threads_ignore_no_replies"] = True
+
+    # Channel 1: one message with replies (reply_count=3), one without (reply_count=0)
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [
+            {
+                "json": {
+                    "messages": [
+                        {"ts": "1577866844.000000", "reply_count": 3},
+                        {"ts": "1577877406.000000", "reply_count": 0},
+                    ]
+                }
+            },
+            {"json": {"messages": []}},
+        ],
+    )
+    # Channel 2: one message with reply_count=None (should be filtered)
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [
+            {"json": {"messages": [{"ts": "1577866844.000000", "reply_count": None}]}},
+            {"json": {"messages": []}},
+        ],
+    )
+    # Only the message with reply_count=3 should trigger a conversations.replies call
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.replies?channel=airbyte-for-beginners&limit=1000&ts=1577866844.000000",
+        json={
+            "messages": [
+                {
+                    "type": "message",
+                    "ts": "1577866844.000000",
+                    "thread_ts": "1577866844.000000",
+                    "reply_count": 3,
+                    "text": "parent",
+                },
+                {
+                    "type": "message",
+                    "ts": "1577866845.000000",
+                    "thread_ts": "1577866844.000000",
+                    "text": "reply",
+                },
+            ]
+        },
+    )
+
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "threads",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh", "incremental"],
+                    },
+                    "sync_mode": "incremental",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().with_stream_state("threads", {}).build()
+    source_slack = get_source(token_config, "threads", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+
+    # Verify records were returned from the one valid thread
+    assert len(output.records) == 2
+
+    # Verify conversations.replies was called exactly once (only for reply_count=3 message)
+    replies_calls = [
+        req for req in requests_mock.request_history if "conversations.replies" in req.url
+    ]
+    assert len(replies_calls) == 1
+    assert "channel=airbyte-for-beginners" in replies_calls[0].url
+    assert "ts=1577866844.000000" in replies_calls[0].url
+
+
 def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
     """
     The test uses the `conversations_list` fixture(autouse=true) as API mocker.

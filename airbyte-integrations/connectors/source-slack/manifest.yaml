@@ -446,7 +446,7 @@ spec:
         type: boolean
         default: false
         title: Ignore messages with no replies in threads stream
-        description: When enabled, the threads stream will skip messages that have no replies (reply_count=0), reducing the number of API calls. Disabled by default to make Threads stream contain unthreaded messages in its records.
+        description: When enabled, the threads stream will skip messages that have no replies (reply_count is 0, null, or absent), reducing the number of API calls. Disabled by default to make Threads stream contain unthreaded messages in its records.
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate into Slack
