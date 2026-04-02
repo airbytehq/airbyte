@@ -13,7 +13,7 @@ from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
@@ -143,10 +143,10 @@ class AdCreativesFromAds(FBMarketingStream):
             logger.warning(f"Failed to fetch creative {creative_id}: {e}")
             return None
         except AirbyteTracedException as e:
-            if e.failure_type == FailureType.config_error:
-                raise
-            logger.warning(f"Failed to fetch creative {creative_id}: {e}")
-            return None
+            if isinstance(e._exception, FacebookRequestError) and e._exception.http_status() == 500:
+                logger.warning(f"Failed to fetch creative {creative_id}: {e}")
+                return None
+            raise
 
     def read_records(
         self,
