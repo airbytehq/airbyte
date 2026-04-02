@@ -132,7 +132,7 @@ See the official [Slack API reference](https://api.slack.com/methods).
 
 ## Version information
 
-- **Package version:** 0.1.84
+- **Package version:** 0.1.86
 - **Connector version:** 0.1.16
-- **Generated with Connector SDK commit SHA:** bbb4625615c5a514170db99dfb0a413153726447
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/slack/CHANGELOG.md)
