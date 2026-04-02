@@ -46,13 +46,15 @@ definitions:
         headers.link.next.url == headers.link.self.url) }}
 
   error_handler:
-    type: CompositeErrorHandler
-    error_handlers:
-      - type: DefaultErrorHandler
-        backoff_strategies:
-          - type: WaitUntilTimeFromHeader
-            header: X-Rate-Limit-Reset
-            min_wait: "60"
+    type: DefaultErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: WaitUntilTimeFromHeader
+        header: X-Rate-Limit-Reset
+        min_wait: "60"
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 60
 
   groups_stream:
     $parameters:
@@ -1039,20 +1041,22 @@ streams:
         authenticator:
           $ref: "#/definitions/selective_authenticator"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitUntilTimeFromHeader
-                  header: X-Rate-Limit-Reset
-                  min_wait: "60"
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: "{{ response.errorCode == 'E0000001' }}"
-                  http_codes:
-                    - 400
-                  error_message: "{{ response.errorSummary }}"
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+            - type: WaitUntilTimeFromHeader
+              header: X-Rate-Limit-Reset
+              min_wait: "60"
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 60
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ response.errorCode == 'E0000001' }}"
+              http_codes:
+                - 400
+              error_message: "{{ response.errorSummary }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
