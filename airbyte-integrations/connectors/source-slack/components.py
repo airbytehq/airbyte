@@ -1,47 +1,29 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
-from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from datetime import timedelta
 from functools import partial
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import requests
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import (
-    NoAuth,
-)
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import (
-    InterpolatedString,
-)
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-)
-from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
-from airbyte_cdk.sources.streams.call_rate import (
-    APIBudget,
-    HttpRequestMatcher,
-    LimiterMixin,
-    MovingWindowCallRatePolicy,
-    Rate,
-    UnlimitedCallRatePolicy,
-)
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.types import Config, EmptyString, StreamState
+from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
-LOGGER = logging.getLogger("airbyte_logger")
+LOGGER = logging.getLogger("airbyte")
 
 
 class JoinChannelsStream(HttpStream):
@@ -149,6 +131,141 @@ class ChannelsRetriever(SimpleRetriever):
             yield stream_data
 
 
+@dataclass
+class RateLimitLoggingBackoffStrategy(BackoffStrategy):
+    """
+    Custom backoff strategy that wraps WaitTimeFromHeader behavior and logs
+    Slack rate-limit response headers on every 429 response. This helps
+    diagnose whether the connection is on Tier 3 (Marketplace, 50+ req/min)
+    or the lower non-Marketplace rate (1 req/min).
+
+    Emits RATE_LIMIT_DEBUG log lines with Retry-After values, the API method
+    that was rate-limited, and all X-Rate-Limit-* headers from Slack's response.
+    """
+
+    header: Union[InterpolatedString, str]
+    parameters: InitVar[Mapping[str, Any]]
+    config: Config
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self.header = InterpolatedString.create(self.header, parameters=parameters)
+
+    @staticmethod
+    def _get_numeric_value_from_header(response: requests.Response, header_name: str) -> Optional[float]:
+        header_value = response.headers.get(header_name)
+        if header_value is None:
+            return None
+        try:
+            return float(header_value)
+        except ValueError:
+            return None
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        header_value = None
+        if isinstance(response_or_exception, requests.Response):
+            header = self.header.eval(config=self.config)
+            header_value = self._get_numeric_value_from_header(response_or_exception, header)
+
+            # Log all rate-limit-related headers for diagnostics
+            if response_or_exception.status_code == 429:
+                retry_after = response_or_exception.headers.get("Retry-After", "NOT_SET")
+                rate_limit_headers = {
+                    k: v
+                    for k, v in response_or_exception.headers.items()
+                    if k.lower().startswith("retry-after") or k.lower().startswith("x-rate-limit")
+                }
+                url = ""
+                if response_or_exception.request:
+                    url = str(response_or_exception.request.url or "")
+                    if "?" in url:
+                        url = url.split("?")[0]
+                LOGGER.info(
+                    "RATE_LIMIT_DEBUG: 429 received | Retry-After=%s | backoff_time=%s | attempt=%d | url=%s | all_rate_headers=%s",
+                    retry_after,
+                    header_value,
+                    attempt_count,
+                    url,
+                    rate_limit_headers,
+                )
+        return header_value
+
+
+@dataclass
+class ThreadsLoggingPartitionRouter(SubstreamPartitionRouter):
+    """
+    Thin wrapper around SubstreamPartitionRouter that logs reply_count stats
+    from parent messages. Emits a summary every 1000 parent records so we can
+    confirm the threads stream behavior without affecting normal performance.
+
+    Log format: THREADS_DEBUG: channel=<id> | total_messages=N | with_replies=N | without_replies=N | max_reply_count=N
+    """
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        total = 0
+        with_replies = 0
+        without_replies = 0
+        max_reply_count = 0
+        current_channel = ""
+
+        for stream_slice in super().stream_slices():
+            parent_slice = stream_slice.partition.get("parent_slice", {})
+            channel = parent_slice.get("channel", "unknown")
+
+            # When channel changes, flush the summary for the previous channel
+            if channel != current_channel and total > 0:
+                LOGGER.info(
+                    "THREADS_DEBUG: channel=%s | total_messages=%d | with_replies=%d | without_replies=%d | max_reply_count=%d",
+                    current_channel,
+                    total,
+                    with_replies,
+                    without_replies,
+                    max_reply_count,
+                )
+                total = 0
+                with_replies = 0
+                without_replies = 0
+                max_reply_count = 0
+            current_channel = channel
+
+            # Count reply_count from the extra_fields if present, otherwise
+            # we can't tell — but the slice itself was created from a parent record
+            reply_count = stream_slice.extra_fields.get("reply_count", 0) if stream_slice.extra_fields else 0
+            total += 1
+            if reply_count and int(reply_count) >= 1:
+                with_replies += 1
+                max_reply_count = max(max_reply_count, int(reply_count))
+            else:
+                without_replies += 1
+
+            # Periodic log every 1000 messages to avoid flooding
+            if total % 1000 == 0:
+                LOGGER.info(
+                    "THREADS_DEBUG: channel=%s | progress=%d messages | with_replies=%d | without_replies=%d | max_reply_count=%d",
+                    current_channel,
+                    total,
+                    with_replies,
+                    without_replies,
+                    max_reply_count,
+                )
+
+            yield stream_slice
+
+        # Final flush for the last channel
+        if total > 0:
+            LOGGER.info(
+                "THREADS_DEBUG: channel=%s | total_messages=%d | with_replies=%d | without_replies=%d | max_reply_count=%d",
+                current_channel,
+                total,
+                with_replies,
+                without_replies,
+                max_reply_count,
+            )
+
+
 class ThreadsStateMigration(StateMigration):
     """
     The logic for incrementally syncing threads is not very obvious, so buckle up.
@@ -190,83 +307,3 @@ class ThreadsStateMigration(StateMigration):
         stream_state["parent_state"] = {"channel_messages": final_state}
 
         return stream_state
-
-
-MESSAGES_AND_THREADS_RATE = Rate(limit=1, interval=timedelta(seconds=60))
-
-
-class MessagesAndThreadsApiBudget(APIBudget, LimiterMixin):
-    """
-    Switches to MovingWindowCallRatePolicy 1 request per minute if rate limits were exceeded.
-    """
-
-    def update_from_response(self, request: Any, response: Any) -> None:
-        current_policy = self.get_matching_policy(request)
-        if response.status_code == 429 and isinstance(current_policy, UnlimitedCallRatePolicy):
-            matchers = current_policy._matchers
-            self._policies = [
-                MovingWindowCallRatePolicy(
-                    matchers=matchers,
-                    rates=[MESSAGES_AND_THREADS_RATE],
-                )
-            ]
-
-
-@dataclass
-class MessagesAndThreadsHttpRequester(HttpRequester):
-    """
-    Redefines Custom API Budget to handle rate limits.
-    """
-
-    url_match: str = None
-    # redefine this here to set up in InterpolatedRequestOptionsProvider in __post_init__
-    request_parameters: Dict[str, Any] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._url = InterpolatedString.create(self.url if self.url else EmptyString, parameters=parameters)
-        # deprecated
-        self._url_base = InterpolatedString.create(self.url_base if self.url_base else EmptyString, parameters=parameters)
-        # deprecated
-        self._path = InterpolatedString.create(self.path if self.path else EmptyString, parameters=parameters)
-        if self.request_options_provider is None:
-            self._request_options_provider = InterpolatedRequestOptionsProvider(
-                config=self.config,
-                parameters=parameters,
-                request_parameters=self.request_parameters,
-            )
-        elif isinstance(self.request_options_provider, dict):
-            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
-        else:
-            self._request_options_provider = self.request_options_provider
-        self._authenticator = self.authenticator or NoAuth(parameters=parameters)
-        self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
-        self.error_handler = self.error_handler
-        self._parameters = parameters
-
-        if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
-            backoff_strategies = self.error_handler.backoff_strategies  # type: ignore
-        else:
-            backoff_strategies = None
-
-        api_budget = (
-            MessagesAndThreadsApiBudget(
-                policies=[
-                    UnlimitedCallRatePolicy(
-                        matchers=[HttpRequestMatcher(url=self.url_match)],
-                    )
-                ]
-            )
-            if self.config.get("credentials", {}).get("option_title") == "Default OAuth2.0 authorization"
-            else None
-        )
-        self._http_client = HttpClient(
-            name=self.name,
-            logger=self.logger,
-            error_handler=self.error_handler,
-            api_budget=api_budget,
-            authenticator=self._authenticator,
-            use_cache=self.use_cache,
-            backoff_strategy=backoff_strategies,
-            disable_retries=self.disable_retries,
-            message_repository=self.message_repository,
-        )

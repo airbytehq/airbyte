@@ -51,12 +51,19 @@ definitions:
     request_body_json: {}
     error_handler:
       type: DefaultErrorHandler
+      backoff_strategies:
+        - type: "CustomBackoffStrategy"
+          class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
+          header: "retry-after"
+        - type: "CustomBackoffStrategy"
+          class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
+          header: "Retry-After"
       response_filters:
         - error_message_contains: "invalid_auth"
           action: FAIL
           error_message: Authentication has failed, please update your credentials.
         - http_codes: [429]
-          action: RETRY
+          action: RATE_LIMITED
           error_message: Failed to perform a request due to rate limits.
         - http_codes: [500, 503]
           action: RETRY
@@ -92,12 +99,19 @@ definitions:
         $ref: "#/definitions/requester"
         error_handler:
           type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
+              header: "retry-after"
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
+              header: "Retry-After"
           response_filters:
             - error_message_contains: "invalid_auth"
               action: FAIL
               error_message: Authentication has failed, please update your credentials.
             - http_codes: [429]
-              action: RETRY
+              action: RATE_LIMITED
               error_message: Failed to perform a request due to rate limits.
             - http_codes: [403, 400]
               action: FAIL
@@ -137,9 +151,11 @@ definitions:
           type: DefaultErrorHandler
           max_retries: 10
           backoff_strategies:
-            - type: "WaitTimeFromHeader"
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
               header: "retry-after"
-            - type: "WaitTimeFromHeader"
+            - type: "CustomBackoffStrategy"
+              class_name: "source_declarative_manifest.components.RateLimitLoggingBackoffStrategy"
               header: "Retry-After"
         request_parameters:
           types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
@@ -206,25 +222,9 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        type: CustomRequester
-        class_name: "source_declarative_manifest.components.MessagesAndThreadsHttpRequester"
-        url_match: "https://slack.com/api/conversations.history?.+"
-        url_base: https://slack.com/api/
-        path: "{{ parameters['path'] }}"
-        http_method: GET
+        $ref: "#/definitions/requester"
         request_parameters:
           inclusive: "True"
-        request_headers: {}
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
-        error_handler:
-          type: DefaultErrorHandler
-          backoff_strategies:
-            - type: "WaitTimeFromHeader"
-              header: "retry-after"
-            - type: "WaitTimeFromHeader"
-              header: "Retry-After"
         use_cache: true
       record_selector:
         $ref: "#/definitions/selector"
@@ -299,32 +299,16 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        type: CustomRequester
-        class_name: "source_declarative_manifest.components.MessagesAndThreadsHttpRequester"
-        url_match: "https://slack.com/api/conversations.replies?.+"
-        url_base: https://slack.com/api/
-        path: "{{ parameters['path'] }}"
-        http_method: GET
+        $ref: "#/definitions/requester"
         request_parameters:
           channel: "{{ stream_partition['parent_slice']['channel'] }}"
-        request_headers: {}
-        authenticator:
-          $ref: "#/definitions/authenticator"
-        request_body_json: {}
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 20
-          backoff_strategies:
-            - type: "WaitTimeFromHeader"
-              header: "retry-after"
-            - type: "WaitTimeFromHeader"
-              header: "Retry-After"
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        type: SubstreamPartitionRouter
+        type: CustomPartitionRouter
+        class_name: "source_declarative_manifest.components.ThreadsLoggingPartitionRouter"
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
@@ -336,6 +320,9 @@ definitions:
             incremental_dependency: true
             parent_key: ts
             partition_field: float_ts
+            # Pass reply_count for diagnostic logging only (not used for filtering)
+            extra_fields:
+              - ["reply_count"]
             request_option:
               type: RequestOption
               field_name: "ts"
