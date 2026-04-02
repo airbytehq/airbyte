@@ -1,5 +1,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 import requests
 import requests_mock as rm
@@ -1089,3 +1091,52 @@ def test_get_fresh_download_url_works_without_authenticator(components_module):
 
     assert result == FRESH_SAS_URL
     assert "Authorization" not in m.last_request.headers
+
+
+# --- send_request() integration tests ---
+
+
+def test_send_request_forwards_fresh_url(components_module):
+    """send_request() should replace download_target with the fresh URL from re-poll."""
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with patch.object(requester, "_get_fresh_download_url", return_value=FRESH_SAS_URL):
+        with patch(
+            "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester.send_request",
+            return_value=MagicMock(),
+        ) as mock_super_send:
+            requester.send_request(stream_slice=stream_slice)
+
+    forwarded_slice = mock_super_send.call_args.kwargs["stream_slice"]
+    assert forwarded_slice.extra_fields["download_target"] == FRESH_SAS_URL
+
+
+def test_send_request_keeps_original_url_when_repoll_returns_none(components_module):
+    """send_request() should forward the original stream_slice when re-poll returns None."""
+    requester = _build_requester(components_module, authenticator=_FakeAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    with patch.object(requester, "_get_fresh_download_url", return_value=None):
+        with patch(
+            "airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester.send_request",
+            return_value=MagicMock(),
+        ) as mock_super_send:
+            requester.send_request(stream_slice=stream_slice)
+
+    forwarded_slice = mock_super_send.call_args.kwargs["stream_slice"]
+    assert forwarded_slice.extra_fields["download_target"] == STALE_SAS_URL
+
+
+def test_get_fresh_download_url_falls_back_on_auth_error(components_module):
+    """Auth failures inside _get_fresh_download_url should fall back, not bubble up."""
+
+    class _RaisingAuthenticator:
+        def get_auth_header(self):
+            raise RuntimeError("token refresh exploded")
+
+    requester = _build_requester(components_module, authenticator=_RaisingAuthenticator())
+    stream_slice = _make_stream_slice()
+
+    result = requester._get_fresh_download_url(stream_slice)
+    assert result is None

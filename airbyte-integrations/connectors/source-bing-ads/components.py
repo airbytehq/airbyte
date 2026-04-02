@@ -643,15 +643,16 @@ class BingAdsReportDownloadRequester(HttpRequester):
             "CustomerAccountId": str(account_id),
         }
 
-        if self.report_poll_authenticator:
-            auth_header = self.report_poll_authenticator.get_auth_header()
-            headers.update(auth_header)
-
         try:
+            if self.report_poll_authenticator:
+                auth_header = self.report_poll_authenticator.get_auth_header()
+                headers.update(auth_header)
+
             response = requests.post(
                 BING_ADS_REPORTING_POLL_URL,
                 headers=headers,
                 json={"ReportRequestId": str(report_request_id)},
+                timeout=30,
             )
             response.raise_for_status()
             data = response.json()
@@ -661,7 +662,7 @@ class BingAdsReportDownloadRequester(HttpRequester):
                 return fresh_url
             logger.warning("Re-poll did not return a ReportDownloadUrl for report request %s", report_request_id)
             return None
-        except requests.RequestException:
+        except Exception:
             logger.warning(
                 "Re-poll failed for report request %s; falling back to existing download URL",
                 report_request_id,
