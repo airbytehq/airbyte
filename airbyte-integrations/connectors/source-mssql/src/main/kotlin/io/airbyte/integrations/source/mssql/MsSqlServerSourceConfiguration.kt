@@ -205,8 +205,39 @@ constructor(
 
         // Parse JDBC URL parameters
         val jdbcProperties = mutableMapOf<String, String>()
-        jdbcProperties["user"] = pojo.username
-        jdbcProperties["password"] = pojo.password
+
+        // Determine authentication method.
+        // If the new "authentication" block is present in JSON, use it.
+        // Otherwise, fall back to top-level username/password for backward compatibility.
+        val authSpec: AuthenticationSpecification? = pojo.authenticationJson
+        if (authSpec != null) {
+            when (authSpec) {
+                is SqlPasswordAuthentication -> {
+                    jdbcProperties["user"] = authSpec.username
+                    jdbcProperties["password"] = authSpec.password
+                }
+                is ActiveDirectoryServicePrincipalAuthentication -> {
+                    jdbcProperties["user"] = authSpec.clientId
+                    jdbcProperties["password"] = authSpec.clientSecret
+                    jdbcProperties["authentication"] = "ActiveDirectoryServicePrincipal"
+                    jdbcProperties["tenantId"] = authSpec.tenantId
+                }
+            }
+        } else {
+            // Backward compatibility: use top-level username/password fields
+            val username =
+                pojo.username
+                    ?: throw ConfigErrorException(
+                        "Username is required when no authentication block is provided."
+                    )
+            val password =
+                pojo.password
+                    ?: throw ConfigErrorException(
+                        "Password is required when no authentication block is provided."
+                    )
+            jdbcProperties["user"] = username
+            jdbcProperties["password"] = password
+        }
 
         // Parse URL parameters from jdbcUrlParams
         val pattern = "^([^=]+)=(.*)$".toRegex()
