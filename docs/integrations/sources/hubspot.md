@@ -80,6 +80,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `property_history`          | `crm.objects.contacts.read`                                                                                  |
 | `subscription_changes`      | `content`                                                                                                    |
 | `tickets`                   | `tickets`                                                                                                    |
+| `users`                     | `crm.objects.users.read`, `settings.users.read`                                                              |
 | `account_details`           | `oauth`                                                                                                      |
 | `deal_splits`               | `crm.objects.deals.read`                                                                                     |
 | `properties`                | No additional scopes required                                                                                |
@@ -183,6 +184,7 @@ The HubSpot source connector supports the following streams:
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
 - [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
 - [Owners Archived](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental)
+- [Users](https://developers.hubspot.com/docs/api-reference/settings-user-provisioning-v3/users/get-settings-v3-users-) \(Full-Refresh\)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
 - [Properties](https://developers.hubspot.com/docs/api/crm/properties) \(Full Refresh\)
 - [Contacts Property History](https://developers.hubspot.com/docs/api/crm/contacts) \(Client-Side Incremental\)
@@ -204,7 +206,7 @@ The HubSpot source connector supports the following streams:
 - [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [Account Details](https://developers.hubspot.com/docs/reference/api/settings/account-information-api#get-%2Faccount-info%2Fv3%2Fdetails) \(Full Refresh\)
+- [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -342,6 +344,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.4.0 | 2026-04-01 | [70920](https://github.com/airbytehq/airbyte/pull/70920) | Add new stream Users |
 | 6.3.5 | 2026-03-31 | [75665](https://github.com/airbytehq/airbyte/pull/75665) | Update dependencies |
 | 6.3.4 | 2026-03-30 | [75595](https://github.com/airbytehq/airbyte/pull/75595) | Fixed HTTP 429 responses mapped to RETRY instead of RATE_LIMITED, enabling correct rate-limit handling |
 | 6.3.3 | 2026-03-26 | [75452](https://github.com/airbytehq/airbyte/pull/75452) | Fixed HTTP 401 errors retrying indefinitely for Private App Token authentication |
