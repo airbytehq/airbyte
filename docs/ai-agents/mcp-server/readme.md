@@ -35,7 +35,7 @@ Before you begin, make sure you have the following:
 
 - **An Agent Engine account.** Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
 
-- **An AI agent that supports MCP.** For example, Claude Desktop, Claude Code, Cursor, or Codex.
+- **An AI agent that supports MCP.** For example, Claude Desktop, Claude Code, Cursor, Codex, or ChatGPT.
 
 - **Credentials for the connectors you want to use.** Each service requires its own authentication. For example, you need a Linear API key to connect Linear, or Salesforce OAuth credentials to connect Salesforce.
 
@@ -136,6 +136,43 @@ Add the MCP server to your Codex command line tool.
 4. Launch Codex with `codex`.
 
 5. Begin using the MCP server.
+
+</TabItem>
+<TabItem value="chatgpt" label="ChatGPT">
+
+ChatGPT supports remote MCP servers through its Developer Mode feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It is not available on Free plans.
+
+:::note Business and Enterprise plans
+On Business plans, apps are enabled by default. Workspace owners can restrict them from **Workspace Settings** > **Apps**.
+
+On Enterprise and Education plans, apps are disabled by default. A workspace admin must go to **Workspace Settings** > **Apps** > **Directory**, find the app, and click **Enable** before workspace members can use it.
+:::
+
+1. Open [ChatGPT](https://chatgpt.com) on the web.
+
+2. Go to **Settings** > **Apps** > **Advanced settings**.
+
+3. Toggle **Developer mode** to **ON**.
+
+4. Click **Create app** next to "Advanced settings". This button only appears when Developer Mode is enabled.
+
+5. Enter the server details:
+
+    - **Name**: `Airbyte Agent Engine`
+    - **Server URL**: `https://mcp.airbyte.ai/mcp`
+    - **Authentication**: Select **OAuth**
+
+6. Click **Save**. The app appears under **Drafts** in your Apps settings.
+
+7. Open a new conversation. Click the **+** menu in the composer and select **Developer mode**.
+
+8. Select the Airbyte Agent Engine app from the list.
+
+9. ChatGPT discovers the available tools automatically. When ChatGPT connects, it triggers an OAuth flow. Log in with your [Agent Engine](https://app.airbyte.ai) account and grant access.
+
+10. Return to ChatGPT and begin using the MCP server.
+
+For more information, see the [OpenAI Developer Mode documentation](https://platform.openai.com/docs/guides/developer-mode).
 
 </TabItem>
 <TabItem value="other" label="Other clients">
