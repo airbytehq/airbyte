@@ -85,7 +85,10 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 <FieldAnchor field="include_private_channels">
 9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
 </FieldAnchor>
-10. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
+<FieldAnchor field="threads_ignore_no_replies">
+10. (Optional) **Ignore messages with no replies in threads stream** Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default to make the Threads stream contain unthreaded messages in its records.
+</FieldAnchor>
+11. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -101,7 +104,8 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
 8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
 9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
-10. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
+10. (Optional) **Ignore messages with no replies in threads stream** Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default to make the Threads stream contain unthreaded messages in its records.
+11. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -170,6 +174,12 @@ These two streams are effectively limited to **one request per minute**. Conside
 
 - Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
+#### Threads stream performance
+
+If your Threads stream syncs are slow, consider enabling the **Ignore messages with no replies in threads stream** (`threads_ignore_no_replies`) option. By default, the Threads stream calls the `conversations.replies` API for every message, including those with no replies. In many workspaces, the majority of messages have no replies, so these API calls are wasted and consume rate-limit budget.
+
+- **Set to `true`** when you want to optimize sync performance and only need thread replies for messages that actually have threaded conversations. This can reduce API calls by up to 89% depending on your workspace.
+- **Keep as `false` (default)** when you need the Threads stream to include records for all messages, including unthreaded ones. This preserves the current behavior where every message appears in the Threads stream output.
 
 </details>
 
