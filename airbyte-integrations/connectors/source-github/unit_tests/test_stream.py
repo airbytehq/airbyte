@@ -54,8 +54,8 @@ from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import ProjectsResponsesAPI, read_incremental
 
