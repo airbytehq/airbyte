@@ -179,7 +179,7 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
 
 
 @pytest.mark.parametrize(
-    "exception,expected_result",
+    "exception,should_raise",
     [
         pytest.param(
             FacebookRequestError(
@@ -189,12 +189,12 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
                 http_headers={},
                 body='{"error": {"message": "An unknown error occurred", "code": 1}}',
             ),
-            None,
+            False,
             id="facebook_request_error_returns_none",
         ),
         pytest.param(
             TypeError("some type error"),
-            None,
+            False,
             id="type_error_returns_none",
         ),
         pytest.param(
@@ -209,27 +209,9 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
                     body='{"error": {"message": "An unknown error occurred", "code": 1}}',
                 ),
             ),
-            None,
-            id="airbyte_traced_exception_with_500_returns_none",
+            False,
+            id="airbyte_traced_exception_with_http_500_returns_none",
         ),
-    ],
-)
-def test_fetch_creative_details_handles_exceptions(api, some_config, exception, expected_result):
-    """Test that _fetch_creative_details gracefully handles FacebookRequestError, TypeError, and AirbyteTracedException wrapping HTTP 500."""
-    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
-
-    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
-        mock_creative_instance = MagicMock()
-        mock_creative_cls.return_value = mock_creative_instance
-        mock_creative_instance.api_get.side_effect = exception
-
-        result = stream._fetch_creative_details("12345")
-        assert result is expected_result
-
-
-@pytest.mark.parametrize(
-    "exception",
-    [
         pytest.param(
             AirbyteTracedException(
                 message="The access token for this connection is invalid or corrupted.",
@@ -243,7 +225,8 @@ def test_fetch_creative_details_handles_exceptions(api, some_config, exception, 
                     body='{"error": {"message": "Invalid OAuth access token", "code": 190}}',
                 ),
             ),
-            id="config_error_with_non_500_status",
+            True,
+            id="airbyte_traced_exception_with_http_400_raises",
         ),
         pytest.param(
             AirbyteTracedException(
@@ -257,19 +240,36 @@ def test_fetch_creative_details_handles_exceptions(api, some_config, exception, 
                     body='{"error": {"message": "Rate limit exceeded", "code": 4}}',
                 ),
             ),
-            id="transient_error_with_non_500_status",
+            True,
+            id="airbyte_traced_exception_with_http_429_raises",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Service temporarily unavailable.",
+                failure_type=FailureType.transient_error,
+                exception=FacebookRequestError(
+                    message="Call was not successful",
+                    request_context={"method": "GET"},
+                    http_status=503,
+                    http_headers={},
+                    body='{"error": {"message": "Service temporarily unavailable", "code": 2}}',
+                ),
+            ),
+            True,
+            id="airbyte_traced_exception_with_http_503_raises",
         ),
         pytest.param(
             AirbyteTracedException(
                 message="Rate limit exceeded for Facebook API.",
                 failure_type=FailureType.transient_error,
             ),
-            id="airbyte_traced_exception_without_wrapped_fb_error",
+            True,
+            id="airbyte_traced_exception_without_wrapped_fb_error_raises",
         ),
     ],
 )
-def test_fetch_creative_details_raises_non_500_airbyte_traced_exception(api, some_config, exception):
-    """Test that _fetch_creative_details re-raises AirbyteTracedException when the wrapped exception is not HTTP 500."""
+def test_fetch_creative_details_handles_exceptions(api, some_config, exception, should_raise):
+    """Test that _fetch_creative_details handles exceptions based on HTTP status: 500 returns None, all others raise."""
     stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
 
     with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
@@ -277,8 +277,12 @@ def test_fetch_creative_details_raises_non_500_airbyte_traced_exception(api, som
         mock_creative_cls.return_value = mock_creative_instance
         mock_creative_instance.api_get.side_effect = exception
 
-        with pytest.raises(AirbyteTracedException):
-            stream._fetch_creative_details("12345")
+        if should_raise:
+            with pytest.raises(AirbyteTracedException):
+                stream._fetch_creative_details("12345")
+        else:
+            result = stream._fetch_creative_details("12345")
+            assert result is None
 
 
 def test_fetch_creative_details_returns_data_on_success(api, some_config):
