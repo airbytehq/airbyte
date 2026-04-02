@@ -234,14 +234,14 @@ spec:
                     type: string
                     order: 1
       wait_to_avoid_fatal_errors:
-        title: Wait between requests to avoid fatal statuses in reports
+        title: "[Deprecated] Wait between requests to avoid fatal statuses in reports"
         type: boolean
-        description: For report based streams with known amount of requests per time
-          period, this option will use waiting time between requests to avoid fatal
-          statuses in reports. See <a href="https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting"
-          target="_blank">Troubleshooting</a> section for more details
+        description: "Deprecated - this option is no longer functional and will be
+          removed in a future version. Rate limiting is now handled automatically
+          by the connector."
         default: false
         order: 13
+        airbyte_hidden: true
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
