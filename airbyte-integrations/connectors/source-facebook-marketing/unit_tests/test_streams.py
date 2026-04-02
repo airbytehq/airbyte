@@ -203,12 +203,20 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
                 failure_type=FailureType.transient_error,
             ),
             None,
-            id="airbyte_traced_exception_returns_none",
+            id="airbyte_traced_transient_error_returns_none",
+        ),
+        pytest.param(
+            AirbyteTracedException(
+                message="Error code 1: An unknown error occurred.",
+                failure_type=FailureType.system_error,
+            ),
+            None,
+            id="airbyte_traced_system_error_returns_none",
         ),
     ],
 )
 def test_fetch_creative_details_handles_exceptions(api, some_config, exception, expected_result):
-    """Test that _fetch_creative_details gracefully handles FacebookRequestError, TypeError, and AirbyteTracedException."""
+    """Test that _fetch_creative_details gracefully handles FacebookRequestError, TypeError, and non-config AirbyteTracedException."""
     stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
 
     with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
@@ -218,6 +226,24 @@ def test_fetch_creative_details_handles_exceptions(api, some_config, exception, 
 
         result = stream._fetch_creative_details("12345")
         assert result is expected_result
+
+
+def test_fetch_creative_details_raises_config_error(api, some_config):
+    """Test that _fetch_creative_details re-raises AirbyteTracedException with config_error failure type."""
+    stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+    config_exception = AirbyteTracedException(
+        internal_message="Invalid OAuth access token",
+        message="The access token for this connection is invalid or corrupted.",
+        failure_type=FailureType.config_error,
+    )
+
+    with patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_creative_cls:
+        mock_creative_instance = MagicMock()
+        mock_creative_cls.return_value = mock_creative_instance
+        mock_creative_instance.api_get.side_effect = config_exception
+
+        with pytest.raises(AirbyteTracedException, match="Invalid OAuth access token"):
+            stream._fetch_creative_details("12345")
 
 
 def test_fetch_creative_details_returns_data_on_success(api, some_config):
