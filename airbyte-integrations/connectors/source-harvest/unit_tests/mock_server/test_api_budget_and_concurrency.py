@@ -143,8 +143,8 @@ class TestConcurrencyLevel(TestCase):
         assert "concurrency_level" in manifest, "concurrency_level should be defined in the manifest"
         concurrency = manifest["concurrency_level"]
         assert concurrency["type"] == "ConcurrencyLevel"
-        assert concurrency["max_concurrency"] == 7
-        assert "config.get('num_workers', 2)" in concurrency["default_concurrency"]
+        assert concurrency["max_concurrency"] == 10
+        assert "config.get('num_workers', 4)" in concurrency["default_concurrency"]
 
     @HttpMocker()
     def test_rate_limit_429_retry(self, http_mocker: HttpMocker):
@@ -215,6 +215,6 @@ class TestConcurrencyLevel(TestCase):
         assert "num_workers" in properties, "num_workers should be in the connector spec"
         num_workers_spec = properties["num_workers"]
         assert num_workers_spec["type"] == "integer"
-        assert num_workers_spec["default"] == 2
+        assert num_workers_spec["default"] == 4
         assert num_workers_spec["minimum"] == 2
-        assert num_workers_spec["maximum"] == 7
+        assert num_workers_spec["maximum"] == 10
