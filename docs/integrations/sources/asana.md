@@ -56,7 +56,6 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 
 - [Attachments](https://developers.asana.com/reference/attachments)
 - [Custom fields](https://developers.asana.com/reference/custom-fields)
-- [Events](https://developers.asana.com/reference/events)
 - [Organization Exports](https://developers.asana.com/reference/organization-exports)
 - [Portfolio Items](https://developers.asana.com/reference/getitemsforportfolio)
 - [Portfolio Memberships](https://developers.asana.com/reference/portfolio-memberships)
@@ -111,6 +110,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 2.0.0 | 2026-03-20 | [](https://github.com/airbytehq/airbyte/pull/) | Remove `events` stream and eliminate N+1 substream design for `sections`, `stories`, `attachments`, and `portfolios` streams to fix sync failures and heartbeat starvation in large workspaces |
 | 1.5.1 | 2025-12-09 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to properly define array items type |
 | 1.5.0 | 2025-05-02 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
 | 1.4.0 | 2025-04-25 | [58594](https://github.com/airbytehq/airbyte/pull/58594) | Adds `actual_time_minute` field to the `task` stream |
