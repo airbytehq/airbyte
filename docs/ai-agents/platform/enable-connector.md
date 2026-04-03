@@ -78,4 +78,4 @@ To create a connector for your organization, create a source template.
 
 ## Next steps
 
-After enabling connectors, set up [authentication](authenticate) to let users connect their accounts.
+After adding connectors, set up [authentication](authenticate) to let users connect their accounts.
