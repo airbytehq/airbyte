@@ -1069,6 +1069,7 @@ Implementing Airbyte this way has several advantages.
 - **Security**: Private custom image registries keep images in your network, reducing the risk of external threats.
 - **Access control**: You have more control over who can access and modify images.
 - **Compliance**: By keeping images in a controlled environment, it's easier to prove compliance with regulatory requirements for data storage and handling.
+- **SSL Certificates**: If your organization requires custom SSL certificates for internal CAs or self-signed certificates, see the [Adding Custom SSL Certificates guide](../deploying-airbyte/integrations/custom-ssl-certificates.md).
 
 [Custom Docker connectors](../operator-guides/using-custom-connectors/) in your workspace that specify an image using a fully qualified domain name (for example, `example.com/airbyte/your-custom-source`) ignore your configured custom image registry and pull images from the domain specified by that connector.
 
