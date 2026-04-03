@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import asyncio
 import logging
 import time
 from dataclasses import dataclass
@@ -184,3 +185,92 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         else:
             self.update_token()
         return False
+
+
+# ---------------------------------------------------------------------------
+# POC: Async-safe rate limiter (Recommendation 2)
+#
+# This class mirrors MultipleTokenAuthenticatorWithRateLimiter exactly, but
+# replaces the blocking time.sleep() with asyncio.sleep() so that the calling
+# coroutine yields control back to the event loop while waiting for the rate
+# limit window to reset.
+#
+# Usage (in an async context):
+#   authenticator = AsyncMultipleTokenAuthenticatorWithRateLimiter(tokens=[...])
+#   await authenticator.async_attach(request)
+#
+# NOTE: Full adoption requires the Airbyte CDK HttpClient to expose an async
+# send_request coroutine (tracked in airbytehq/airbyte-python-cdk). Until then,
+# check_all_tokens() still runs synchronously (I/O is fast relative to sleep).
+# ---------------------------------------------------------------------------
+class AsyncMultipleTokenAuthenticatorWithRateLimiter(MultipleTokenAuthenticatorWithRateLimiter):
+    """
+    Async-capable variant of MultipleTokenAuthenticatorWithRateLimiter.
+
+    Replaces the blocking time.sleep() with asyncio.sleep() so that the event
+    loop is not held hostage while waiting for a rate-limit window to reset.
+    Backward-compatible: the synchronous __call__ still works but will log a
+    deprecation warning encouraging callers to use async_attach() instead.
+    """
+
+    def __call__(self, request):
+        """
+        Synchronous fallback — kept for backward compatibility.
+        Logs a warning to encourage migration to async_attach().
+        """
+        self._logger.warning(
+            "AsyncMultipleTokenAuthenticatorWithRateLimiter.__call__() is synchronous. "
+            "Use 'await authenticator.async_attach(request)' in async contexts to avoid blocking."
+        )
+        return super().__call__(request)
+
+    async def async_process_token(self, current_token: Token, count_attr: str, reset_attr: str) -> bool:
+        """
+        Async version of process_token.
+
+        Returns True if a token with remaining quota was found and the counter
+        was decremented.  Returns False and either switches to the next token or
+        awaits (non-blockingly) until the earliest reset time.
+        """
+        if getattr(current_token, count_attr) > 0:
+            setattr(current_token, count_attr, getattr(current_token, count_attr) - 1)
+            return True
+        elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
+            min_time_to_wait = min(
+                (getattr(x, reset_attr) - ab_datetime_now()).total_seconds()
+                for x in self._tokens.values()
+            )
+            if min_time_to_wait < self.max_time:
+                wait_secs = max(min_time_to_wait, 0)
+                self._logger.info(
+                    f"All GitHub tokens exhausted ({count_attr}). "
+                    f"Yielding for {wait_secs:.1f}s until rate limit resets (non-blocking)."
+                )
+                await asyncio.sleep(wait_secs)  # ← yields control; does NOT block the worker thread
+                self.check_all_tokens()
+            else:
+                raise GitHubAPILimitException(
+                    f"Rate limits for all tokens ({count_attr}) were reached and "
+                    f"reset time ({min_time_to_wait:.0f}s) exceeds max_time ({self.max_time}s)."
+                )
+        else:
+            self.update_token()
+        return False
+
+    async def async_attach(self, request) -> Any:
+        """
+        Async replacement for __call__().
+        Attaches the Authorization header to *request* after ensuring a token
+        with remaining quota is selected (awaiting non-blockingly if needed).
+        """
+        while True:
+            current_token = self._tokens[self.current_active_token]
+            if "graphql" in request.path_url:
+                if await self.async_process_token(current_token, "count_graphql", "reset_at_graphql"):
+                    break
+            else:
+                if await self.async_process_token(current_token, "count_rest", "reset_at_rest"):
+                    break
+
+        request.headers.update(self.get_auth_header())
+        return request
