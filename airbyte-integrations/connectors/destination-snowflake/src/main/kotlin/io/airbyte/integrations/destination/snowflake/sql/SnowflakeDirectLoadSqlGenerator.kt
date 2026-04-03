@@ -321,8 +321,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val stageName = fullyQualifiedStageName(tableName, true)
         return """
             PUT 'file://$tempFilePath' '@$stageName'
-            AUTO_COMPRESS = FALSE
-            SOURCE_COMPRESSION = GZIP
+            AUTO_COMPRESS = TRUE
             OVERWRITE = TRUE
         """
             .trimIndent()
@@ -343,7 +342,7 @@ class SnowflakeDirectLoadSqlGenerator(
             |FROM '@$stageName'
             |FILE_FORMAT = (
             |    TYPE = 'CSV'
-            |    COMPRESSION = GZIP
+            |    COMPRESSION = AUTO
             |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'

@@ -491,9 +491,13 @@ internal class SnowflakeAirbyteClientTest {
 
         every { dataSource.connection } returns mockConnection
 
+        // Verifies delegation to sqlGenerator and proper connection cleanup.
+        // In production, the buffer appends .gz because AUTO_COMPRESS renames the staged file.
+        val filename = "test.csv.gz"
+        val columnNames = listOf("col1", "col2")
         runBlocking {
-            client.copyFromStage(tableName, "test.csv.gz", listOf())
-            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, "test.csv.gz", listOf()) }
+            client.copyFromStage(tableName, filename, columnNames)
+            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, filename, columnNames) }
             verify(exactly = 1) { mockConnection.close() }
         }
     }
