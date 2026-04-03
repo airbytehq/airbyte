@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet.io
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.mockk.every
@@ -23,6 +24,7 @@ import org.apache.iceberg.io.OutputFile
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class IcebergTableWriterFactoryTest {
 
@@ -240,5 +242,59 @@ internal class IcebergTableWriterFactoryTest {
             )
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
+    }
+
+    @Test
+    fun testCreateWriterDedupeWithEmptyIdentifierFieldsThrowsConfigError() {
+        // Schema with DoubleType primary key — Iceberg disallows Double as identifier field,
+        // so identifierFieldIds will be empty even though a PK is configured.
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.DoubleType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+            )
+        // No identifier field IDs — simulates the case where all PKs are Double/Float
+        val tableSchema = Schema(columns, emptySet<Int>())
+        val tableProperties = mapOf<String, String>()
+        val outputFile: OutputFile = mockk { every { location() } returns "location" }
+        val encryptionKeyMetadata: EncryptionKeyMetadata = mockk {
+            every { buffer() } returns ByteBuffer.allocate(8)
+        }
+        val encryptedOutputFile: EncryptedOutputFile = mockk {
+            every { encryptingOutputFile() } returns outputFile
+            every { keyMetadata() } returns encryptionKeyMetadata
+        }
+        val encryptionManager: EncryptionManager = mockk {
+            every { encrypt(any<OutputFile>()) } returns encryptedOutputFile
+        }
+        val fileIo: FileIO = mockk { every { newOutputFile(any()) } returns outputFile }
+        val locationProvider: LocationProvider = mockk {
+            every { newDataLocation(any()) } returns "location"
+            every { newDataLocation(any(), any(), any()) } returns "location"
+        }
+        val tableSpec: PartitionSpec = mockk {
+            every { fields() } returns emptyList()
+            every { isUnpartitioned } returns true
+        }
+        val table: Table = mockk {
+            every { encryption() } returns encryptionManager
+            every { io() } returns fileIo
+            every { locationProvider() } returns locationProvider
+            every { properties() } returns tableProperties
+            every { schema() } returns tableSchema
+            every { spec() } returns tableSpec
+        }
+
+        val factory = IcebergTableWriterFactory()
+        val exception =
+            assertThrows<ConfigErrorException> {
+                factory.create(
+                    table = table,
+                    generationId = generationIdSuffix,
+                    importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("id")),
+                    tableSchema,
+                )
+            }
+        assert(exception.message!!.contains("Deduplication requires primary key columns"))
     }
 }
