@@ -112,6 +112,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.1 | 2026-03-24 | [66825](https://github.com/airbytehq/airbyte/pull/66825) | Update dependencies |
 | 2.1.0 | 2026-02-09 | [72949](https://github.com/airbytehq/airbyte/pull/72949) | Use QueryProperties with JsonSchemaPropertySelector to limit API field requests to user-selected fields; add configurable page_size for post and post_insights streams |
 | 2.0.4 | 2026-01-29 | [72253](https://github.com/airbytehq/airbyte/pull/72253) | Remove product_catalogs from fields request parameter |
 | 2.0.3 | 2025-12-01 | [70248](https://github.com/airbytehq/airbyte/pull/70248) | Use correct pagination parameter name (`limit` instead of `page_size`) |
