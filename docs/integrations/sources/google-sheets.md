@@ -18,9 +18,9 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 <!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source:**
-- A GCP project
-- Enable the Google Sheets API in your GCP project
-- Service Account Key with access to the Spreadsheet you want to replicate
+  - A GCP project
+  - Enable the Google Sheets API in your GCP project
+  - Service Account Key with access to the Spreadsheet you want to replicate
 <!-- /env:oss -->
 
 ## Setup guide
@@ -44,7 +44,7 @@ We highly recommend using OAuth, as it significantly simplifies the setup proces
 We recommend using Service Account Key Authentication. Follow the steps below to create a service account, generate a key, and enable the Google Sheets API.
 
 :::note
-If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/spreadsheets.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
+If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/spreadsheets.readonly` and `https://www.googleapis.com/auth/drive.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
 :::
 
 ### Set up the service account key
@@ -266,10 +266,6 @@ Airbyte only supports replicating [Grid](https://developers.google.com/sheets/ap
 
 ## Data type map
 
-Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
-
-Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
-
 | Integration Type | Airbyte Type | Notes |
 |:-----------------|:-------------|:------|
 | any type         | `string`     |       |
@@ -309,7 +305,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |------------|------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.12.23 | 2026-03-30 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add `oauth_connector_input_specification` with granular scopes |
+| 0.12.23 | 2026-04-02 | [75578](https://github.com/airbytehq/airbyte/pull/75578) | Add `oauth_connector_input_specification` with granular scopes |
 | 0.12.22 | 2026-03-17 | [74660](https://github.com/airbytehq/airbyte/pull/74660) | Update dependencies |
 | 0.12.21 | 2026-02-24 | [73968](https://github.com/airbytehq/airbyte/pull/73968) | Update dependencies |
 | 0.12.20 | 2026-02-10 | [73078](https://github.com/airbytehq/airbyte/pull/73078) | Update dependencies |
