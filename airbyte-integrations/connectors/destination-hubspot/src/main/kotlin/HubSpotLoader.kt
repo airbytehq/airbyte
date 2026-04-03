@@ -34,6 +34,7 @@ class HubSpotState(
     val requestBody: ObjectNode = Jsons.objectNode()
     val batch: ArrayNode = requestBody.putArray("inputs")
     val decoder: JsonDecoder = JsonDecoder()
+    val records: MutableList<DestinationRecordRaw> = mutableListOf()
 
     fun accumulate(record: DestinationRecordRaw) {
         if (isFull()) {
@@ -53,12 +54,16 @@ class HubSpotState(
                 data.properties().forEach { (key, value) -> properties.replace(key, value) }
             }
         batch.add(input)
+        records.add(record)
     }
 
     fun isFull(): Boolean = batch.size() >= 100
 
     fun flush(): List<DestinationRecordRaw>? {
-        logger.info { "Flushing data" }
+        if (batch.isEmpty) {
+            return null
+        }
+        logger.info { "Flushing ${batch.size()} records" }
         val response: Response =
             httpClient.send(
                 Request(
@@ -77,6 +82,14 @@ class HubSpotState(
             return when (response.statusCode) {
                 200 -> null
                 207 -> null // FIXME generate dlq record with error from hubspot
+                409 -> {
+                    val responseBody = response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()
+                    logger.warn {
+                        "HubSpot batch upsert returned 409 Conflict, " +
+                            "routing ${records.size} record(s) to DLQ: $responseBody"
+                    }
+                    records.toList()
+                }
                 else ->
                     throw IllegalStateException(
                         "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
