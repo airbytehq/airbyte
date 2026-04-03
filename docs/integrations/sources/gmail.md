@@ -1,30 +1,131 @@
 # Gmail
-Gmail is the email service provided by Google.
 
-## Configuration
+<HideInUI>
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `client_id` | `string` | OAuth Client ID.  |  |
-| `client_secret` | `string` | OAuth Client Secret.  |  |
-| `client_refresh_token` | `string` | Refresh token.  |  |
-| `include_spam_and_trash` | `boolean` | Include Spam &amp; Trash. Include drafts/messages from SPAM and TRASH in the results. Defaults to false. | false |
+This page contains the setup guide and reference information for the [Gmail](https://developers.google.com/gmail/api) source connector.
 
-Note that this connector uses the Google API OAuth2.0 for authentication. To get started, follow the steps [here](https://developers.google.com/gmail/api/auth/web-server#create_a_client_id_and_client_secret) to retrieve `client_id` and `client_secret`. See [here](https://developers.google.com/identity/protocols/oauth2/web-server) for more detailed guide on the OAuth flow to retrieve the `client_refresh_token`.
+</HideInUI>
 
-**Also note that the scope required here is `https://www.googleapis.com/auth/gmail.readonly`**
+Gmail is Google's email service. This connector reads data from a single Gmail account using the [Gmail API](https://developers.google.com/gmail/api/reference/rest).
 
-## Streams
+## Prerequisites
+
+- A Google Account with Gmail enabled
+<!-- env:oss -->
+- For Airbyte Open Source: A Google Cloud project with the Gmail API enabled, and OAuth 2.0 credentials (Client ID, Client Secret, and Refresh Token)
+<!-- /env:oss -->
+
+## Setup guide
+
+<!-- env:cloud -->
+
+### For Airbyte Cloud
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources**, then click **+ New source**.
+3. Search for and select **Gmail**.
+4. Click **Authenticate via Google (OAuth)**, then click **Sign in with Google** and complete the authentication flow.
+
+<FieldAnchor field="include_spam_and_trash">
+
+1. (Optional) Enable **Include Spam & Trash** to include messages and drafts from your Spam and Trash folders. This is disabled by default.
+
+</FieldAnchor>
+
+1. Click **Set up source** and wait for the tests to complete.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+### For Airbyte Open Source
+
+To use this connector with Airbyte Open Source, you need OAuth 2.0 credentials from a Google Cloud project.
+
+#### Create OAuth credentials
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project or select an existing one.
+3. Go to **APIs & Services > Library**, search for **Gmail API**, and enable it.
+4. Go to **APIs & Services > Credentials** and click **+ Create Credentials > OAuth client ID**.
+5. If prompted, configure the OAuth consent screen. Add `https://www.googleapis.com/auth/gmail.readonly` as a scope.
+6. Select **Web application** as the app type.
+7. Note the **Client ID** and **Client Secret**.
+8. Obtain a **Refresh Token** by following [Google's OAuth 2.0 guide for web server applications](https://developers.google.com/identity/protocols/oauth2/web-server). The required scope is `https://www.googleapis.com/auth/gmail.readonly`.
+
+#### Set up the connector
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click **Sources**, then click **+ New source**.
+3. Search for and select **Gmail**.
+
+<FieldAnchor field="credentials">
+
+1. Choose your authentication method:
+   - **Authenticate via Google (OAuth)**: Enter your **Client ID**, **Client Secret**, and **Refresh Token**.
+   - **Enter credentials manually**: Enter the same credentials directly.
+
+</FieldAnchor>
+
+<FieldAnchor field="include_spam_and_trash">
+
+1. (Optional) Enable **Include Spam & Trash** to include messages and drafts from your Spam and Trash folders. This is disabled by default.
+
+</FieldAnchor>
+
+1. Click **Set up source** and wait for the tests to complete.
+
+<!-- /env:oss -->
+
+<HideInUI>
+
+## Supported sync modes
+
+The Gmail source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+
+## Supported streams
+
+The Gmail source connector supports the following streams:
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| profile |  | No pagination | ✅ |  ❌  |
-| drafts | id | DefaultPaginator | ✅ |  ❌  |
-| labels | id | No pagination | ✅ |  ❌  |
-| labels_details | id | No pagination | ✅ |  ❌  |
-| messages | id | DefaultPaginator | ✅ |  ❌  |
-| messages_details | id | No pagination | ✅ |  ❌  |
-| threads | id | DefaultPaginator | ✅ |  ❌  |
-| threads_details | id | No pagination | ✅ |  ❌  |
+| ----------- | ----------- | ---------- | ------------------- | -------------------- |
+| [profile](https://developers.google.com/gmail/api/reference/rest/v1/users/getProfile) | | No pagination | ✅ | ❌ |
+| [drafts](https://developers.google.com/gmail/api/reference/rest/v1/users.drafts/list) | id | DefaultPaginator | ✅ | ❌ |
+| [labels](https://developers.google.com/gmail/api/reference/rest/v1/users.labels/list) | id | No pagination | ✅ | ❌ |
+| [labels_details](https://developers.google.com/gmail/api/reference/rest/v1/users.labels/get) | id | No pagination | ✅ | ❌ |
+| [messages](https://developers.google.com/gmail/api/reference/rest/v1/users.messages/list) | id | DefaultPaginator | ✅ | ❌ |
+| [messages_details](https://developers.google.com/gmail/api/reference/rest/v1/users.messages/get) | id | No pagination | ✅ | ❌ |
+| [threads](https://developers.google.com/gmail/api/reference/rest/v1/users.threads/list) | id | DefaultPaginator | ✅ | ❌ |
+| [threads_details](https://developers.google.com/gmail/api/reference/rest/v1/users.threads/get) | id | No pagination | ✅ | ❌ |
+
+### Stream details
+
+- **profile**: Returns the authenticated user's Gmail profile, including their email address, total message count, and total thread count.
+- **drafts**: Lists all drafts in the account. Each record contains the draft ID and a reference to its underlying message.
+- **labels**: Lists all labels in the account, including both system labels and user-created labels.
+- **labels_details**: Returns detailed information about each label, including message and thread counts. This is a substream of `labels`.
+- **messages**: Lists all message IDs and thread IDs in the account. Use this with `messages_details` to get full message content.
+- **messages_details**: Returns the full content of each message, including headers, body, labels, and attachments metadata. This is a substream of `messages`.
+- **threads**: Lists all thread IDs in the account. Use this with `threads_details` to get full thread content.
+- **threads_details**: Returns the full content of each thread, including all messages in the thread. This is a substream of `threads`.
+
+:::note
+The `messages_details` and `threads_details` streams make one API request per message or thread. For accounts with large volumes of email, these streams may take a long time to sync and consume significant API quota.
+:::
+
+## Performance considerations
+
+The Gmail API enforces [usage limits](https://developers.google.com/gmail/api/reference/quota):
+
+- **Per-project rate limit**: 1,200,000 quota units per minute
+- **Per-user rate limit**: 15,000 quota units per user per minute
+
+Each API method consumes a different number of quota units. For example, `messages.list` costs 5 units per request, while `messages.get` costs 5 units per request. If you encounter rate limit errors, consider syncing less frequently or reducing the number of enabled streams.
+
+</HideInUI>
 
 ## Changelog
 
