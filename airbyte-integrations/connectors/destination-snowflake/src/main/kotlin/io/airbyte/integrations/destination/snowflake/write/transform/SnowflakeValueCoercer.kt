@@ -82,17 +82,11 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
         return when (val abValue = value.abValue) {
             is NumberValue -> {
                 if (abValue.value in FLOAT_RANGE) {
-                    val targetValue = BigDecimal.valueOf(abValue.value.toDouble())
-                    // This is done because BigDecimal is stupid and if we don't use compareTo, we
-                    // end up with 0 != 0.0
-                    if (targetValue.compareTo(abValue.value) == 0) {
-                        ValidationResult.Valid
-                    } else {
-                        ValidationResult.ShouldTruncate(
-                            NumberValue(targetValue),
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
-                    }
+                    // Snowflake FLOAT is IEEE 754 double precision. Values that exceed
+                    // double precision will be truncated server-side. We skip the
+                    // client-side precision check to avoid the expensive
+                    // BigDecimal → double → BigDecimal → compareTo chain on every record.
+                    ValidationResult.Valid
                 } else {
                     ValidationResult.ShouldNullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION

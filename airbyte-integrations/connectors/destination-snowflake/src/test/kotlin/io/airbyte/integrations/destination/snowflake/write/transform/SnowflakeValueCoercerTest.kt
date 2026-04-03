@@ -670,9 +670,10 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testFloatWithExcessivePrecisionTruncated() {
-        // Test that a large value with many digits gets truncated to fit within range
-        // Example: 1740710103515266826 (19 digits) should be truncated to fit
+    fun testFloatWithExcessivePrecisionPassesThrough() {
+        // A value with more precision than double can represent is still valid —
+        // Snowflake FLOAT truncates to double precision server-side, so we skip
+        // the client-side precision check and pass the value through as-is.
         val highPrecisionValue = NumberValue(BigDecimal("1740710103515266826"))
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -684,18 +685,7 @@ internal class SnowflakeValueCoercerTest {
             )
 
         val result = coercer.validate(airbyteValue)
-
-        // Should be truncated, not nullified
-        assertEquals(ValidationResult.ShouldTruncate::class, result::class)
-        assertEquals(
-            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION,
-            (result as ValidationResult.ShouldTruncate).reason
-        )
-
-        // The truncated value should be within range
-        val truncatedValue = result.truncatedValue as NumberValue
-        // note that we've lost some precision
-        assertEquals(BigDecimal.valueOf(1.7407101035152668E18), truncatedValue.value)
+        assertEquals(ValidationResult.Valid, result)
     }
 
     @Test
