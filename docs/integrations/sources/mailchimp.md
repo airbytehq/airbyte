@@ -1,6 +1,6 @@
 # Mailchimp
 
-This page guides you through setting up the [Mailchimp](https://mailchimp.com/) source connector.
+This page guides you through setting up the [Mailchimp](https://mailchimp.com/) source connector. Mailchimp is an email marketing platform. This connector reads data from the [Mailchimp Marketing API](https://mailchimp.com/developer/marketing/).
 
 ## Prerequisites
 
@@ -8,7 +8,7 @@ This page guides you through setting up the [Mailchimp](https://mailchimp.com/) 
 
 #### For Airbyte Cloud
 
-- Access to a valid Mailchimp account. If you are not an Owner/Admin of the account, you must be [granted Admin access](https://mailchimp.com/help/manage-user-levels-in-your-account/#Grant_account_access) by the account's Owner/Admin.
+- A Mailchimp account with Owner, Admin, or Manager [permissions](https://mailchimp.com/help/manage-user-levels-in-your-account/).
 
 <!-- /env:cloud -->
 
@@ -16,7 +16,8 @@ This page guides you through setting up the [Mailchimp](https://mailchimp.com/) 
 
 #### For Airbyte Open Source
 
-- A valid Mailchimp **API Key** (recommended) or OAuth credentials: **Client ID**, **Client Secret** and **Access Token**
+- A Mailchimp account with Owner, Admin, or Manager [permissions](https://mailchimp.com/help/manage-user-levels-in-your-account/).
+- A Mailchimp **API key** or OAuth credentials (**Client ID**, **Client Secret**, and **Access Token**).
 
 <!-- /env:oss -->
 
@@ -26,10 +27,13 @@ This page guides you through setting up the [Mailchimp](https://mailchimp.com/) 
 
 ### Airbyte Open Source: Generate a Mailchimp API key
 
-1. Navigate to the API Keys section of your Mailchimp account.
-2. Click **Create New Key**, and give the key a name to help you identify it. You won't be able to see or copy the key once you finish generating it, so be sure to copy the key and store it in a secure location.
+1. Navigate to the [API Keys](https://admin.mailchimp.com/account/api/) section of your Mailchimp account.
+2. Click **Create A Key** and give the key a descriptive name.
+3. Copy the key immediately and store it in a secure location. You can't view the full key after you leave this page.
 
-For more information on Mailchimp API Keys, please refer to the [official Mailchimp docs](https://mailchimp.com/help/about-api-keys/#api+key+security). If you want to use OAuth authentication with Airbyte Open Source, please follow the steps laid out [here](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/) to obtain your OAuth **Client ID**, **Client Secret** and **Access Token**.
+The API key has the format `prefix-datacenter`, for example `abc123def456-us6`. The connector uses the suffix after the hyphen to route requests to the correct Mailchimp data center.
+
+For more information, refer to [About API keys](https://mailchimp.com/help/about-api-keys/). To use OAuth authentication instead, follow the [OAuth 2 guide](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/) to obtain your **Client ID**, **Client Secret**, and **Access Token**.
 
 <!-- /env:oss -->
 
@@ -61,7 +65,7 @@ For more information on Mailchimp API Keys, please refer to the [official Mailch
 
 ## Supported streams
 
-The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
+The Mailchimp source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode). Streams marked as Incremental use server-side filtering to sync only records created or modified since the last sync.
 
 | Stream                                                                                                             | Full Refresh | Incremental |
 | :----------------------------------------------------------------------------------------------------------------- | :----------- | :---------- |
@@ -70,7 +74,7 @@ The Mailchimp source connector supports the following streams and [sync modes](h
 | [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)        | ✓            | ✓           |
 | [Interests](https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/)                   | ✓            |             |
 | [Interest Categories](https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/) | ✓            |             |
-| [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)                                         | ✓            | ✓           |
+| [Lists](https://mailchimp.com/developer/marketing/api/lists/)                                                       | ✓            | ✓           |
 | [List Members](https://mailchimp.com/developer/marketing/api/list-members/list-members-info/)                      | ✓            | ✓           |
 | [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)                            | ✓            | ✓           |
 | [Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)                             | ✓            | ✓           |
@@ -109,7 +113,7 @@ Expand to see details about Mailchimp connector limitations and troubleshooting
 
 ### Connector limitations
 
-[Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
+Mailchimp does not enforce a per-request rate limit, but it does enforce a maximum of [10 simultaneous connections](https://mailchimp.com/developer/guides/marketing-api-conventions/) to its API per account. This means you cannot run more than 10 concurrent syncs from Mailchimp using credentials from the same account. If you exceed this limit, connections may be dropped or time out.
 
 </details>
 
