@@ -1,27 +1,39 @@
 # Mixpanel
 
-This page contains the setup guide and reference information for the Mixpanel source connector.
+This page contains the setup guide and reference information for the [Mixpanel](https://mixpanel.com/) source connector.
 
 ## Prerequisites
 
-To set up the Mixpanel source connector, you'll need a Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) and it's [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id), the [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel), and the Project region (`US` or `EU`).
+To set up the Mixpanel source connector, you need:
+
+- A Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) with access to your project. You need the service account **username** and **secret**.
+- Your [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id), found in your Mixpanel project settings.
+- Your [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel), found in your Mixpanel project settings.
+- Your project's data residency region (`US` or `EU`).
+
+:::note
+The connector also supports [Project Secret](https://developer.mixpanel.com/reference/project-secret) authentication, but Mixpanel has deprecated this method with an end-of-life date of **March 3, 2027**. Use Service Account authentication for new configurations.
+:::
 
 ## Set up the Mixpanel connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Mixpanel** from the Source type dropdown.
-4. Enter the name for the Mixpanel connector.
-5. For **Authentication**, select **Service Account** from the dropdown and enter the [Mixpanel Service Account secret](https://developer.mixpanel.com/reference/service-accounts).
-6. For **Project ID**, enter the [Mixpanel Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id).
-7. For **Attribution Window**, enter the number of days for the length of the attribution window.
-8. For **Project Timezone**, enter the [timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel) for your Mixpanel project.
-9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If left blank, the connector will replicate data from up to one year ago by default.
-10. For **End Date**, enter the date in YYYY-MM-DD format.
-11. For **Region**, enter the [region](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU) for your Mixpanel project.
-12. For **Date slicing window**, enter the number of days to slice through data. If you encounter RAM usage issues due to a huge amount of data in each window, try using a lower value for this parameter.
-13. For **Export Lookback Window**, enter the number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This ensures no data is missed due to event recording delays. Default is 0 seconds. 
-14. Click **Set up source**.
+3. On the Set up the source page, select **Mixpanel** from the **Source type** dropdown.
+4. Enter a name for the Mixpanel connector.
+5. For **Authentication**, select **Service Account** from the dropdown and enter your service account **Username** and **Secret**.
+6. For **Project ID**, enter your [Mixpanel Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id).
+7. For **Attribution Window**, enter the number of days for the attribution window. The default is 5 days.
+8. For **Project Timezone**, enter the [timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel) for your Mixpanel project. The default is `US/Pacific`.
+9. For **Select Properties By Default**, leave enabled to capture new properties on events and Engage records automatically. Disable to ignore new properties.
+10. For **Start Date**, enter the date in `YYYY-MM-DD` format. Data on and after this date is replicated. If left blank, the connector replicates data from up to one year ago by default.
+11. For **End Date**, optionally enter a date in `YYYY-MM-DD` format. Data after this date is not replicated. Leave blank to always sync to the most recent date.
+12. For **Region**, select the [region](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU) for your Mixpanel project (`US` or `EU`).
+13. For **Date slicing window**, enter the number of days per request window. The default is 30 days. Reduce this value if you encounter memory issues due to large volumes of data per window.
+14. For **Page Size**, enter the number of records to fetch per request for the Engage stream. The default is 1000.
+15. For **Export Lookback Window**, enter the number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This helps avoid missed data due to delays in event recording. The default is 0 seconds.
+16. For **Number of concurrent workers**, enter the number of worker threads for the sync. The default is 3. Higher values may improve performance but are constrained by your Mixpanel plan's [rate limits](https://developer.mixpanel.com/reference/rate-limits).
+17. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -32,25 +44,34 @@ The Mixpanel source connector supports the following [sync modes](https://docs.a
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-Note: Incremental sync returns duplicated \(old records\) for the state date due to API filter limitation, which is granular to the whole day only.
+:::note
+Incremental syncs may return duplicate records for the state date because the Mixpanel API filters are granular to the whole day only.
+:::
 
-### Supported Streams
+### Supported streams
 
-- [Export](https://developer.mixpanel.com/reference/raw-event-export) \(Incremental\)
-- [Engage](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
-- [Funnels](https://developer.mixpanel.com/reference/funnels-query) \(Incremental\)
-- [Revenue](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
-- [Annotations](https://developer.mixpanel.com/reference/overview-1) \(Full table\)
-- [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
-- [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
+| Stream | Sync mode | Primary key |
+|---|---|---|
+| [Export](https://developer.mixpanel.com/reference/raw-event-export) | Incremental | User-defined (see below) |
+| [Engage](https://developer.mixpanel.com/reference/engage-query) | Incremental | `distinct_id` |
+| [Funnels](https://developer.mixpanel.com/reference/funnels-query) | Incremental | `funnel_id`, `date` |
+| [Revenue](https://developer.mixpanel.com/reference/engage-query) | Incremental | `date` |
+| [Annotations](https://developer.mixpanel.com/reference/list-all-annotations-for-project) | Full Refresh | `id` |
+| [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) | Incremental | `id` |
+| [Cohort Members](https://developer.mixpanel.com/reference/engage-query) | Incremental | `distinct_id`, `cohort_id` |
 
-### Primary key selection for Export stream
+### Primary key for the Export stream
 
-Mixpanel recommends using `[insert_id, event_time, event_name, distinct_id]` as the primary key. However, note that some rows might lack an `insert_id` for certain users. Ensure you select a primary key that aligns with your data.
+The Export stream has no default primary key. Mixpanel recommends using `insert_id`, `time`, `event`, and `distinct_id` together as the primary key. Some rows may lack an `insert_id`, so verify that your chosen key combination uniquely identifies your data.
 
 ## Performance considerations
 
-Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per hour**\).
+Mixpanel enforces separate rate limits for different API endpoints:
+
+- **Query API** (Cohorts, Engage, Funnels, Revenue, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
+- **Raw Data Export API** (Export): 100 concurrent queries, 60 queries per hour, 3 queries per second.
+
+Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent workers** settings to tune performance within your plan's limits.
 
 ## CHANGELOG
 
@@ -59,7 +80,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.2 | 2026-04-02 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 3.6.2 | 2026-04-03 | [76039](https://github.com/airbytehq/airbyte/pull/76039) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
 | 3.6.1 | 2025-08-02 | [64298](https://github.com/airbytehq/airbyte/pull/64298) | Update dependencies |
 | 3.6.0 | 2025-07-30 | [64122](https://github.com/airbytehq/airbyte/pull/64122) | Promoting release candidate 3.6.0-rc.4 to a main version. |
 | 3.6.0-rc.4 | 2025-07-17 | [63351](https://github.com/airbytehq/airbyte/pull/63351) | Reduce default number of concurrent workers |
