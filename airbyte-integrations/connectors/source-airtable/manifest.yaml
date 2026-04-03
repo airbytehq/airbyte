@@ -677,6 +677,22 @@ spec:
       - auth_method
     predicate_value: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "data.records:read"
+          - scope: "data.recordComments:read"
+          - scope: "schema.bases:read"
+        consent_url: "https://airtable.com/oauth2/v1/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}&code_challenge={{ state_value | codechallengeS256 }}&code_challenge_method=S256"
+        access_token_url: "https://airtable.com/oauth2/v1/token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+        access_token_params:
+          code_verifier: "{{ state_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - token_expiry_date
       complete_oauth_output_specification:
         type: object
         properties:

@@ -144,6 +144,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.25 | 2026-04-03 | [76068](https://github.com/airbytehq/airbyte/pull/76068) | Add `oauth_connector_input_specification` with granular scopes |
 | 4.6.24 | 2026-03-10 | [74540](https://github.com/airbytehq/airbyte/pull/74540) | Update dependencies |
 | 4.6.23 | 2026-02-24 | [73755](https://github.com/airbytehq/airbyte/pull/73755) | Update dependencies |
 | 4.6.22 | 2026-02-17 | [73390](https://github.com/airbytehq/airbyte/pull/73390) | Update dependencies |
