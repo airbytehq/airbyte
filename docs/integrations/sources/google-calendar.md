@@ -6,9 +6,10 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `credentials` | `object` | Authentication. Credentials for connecting to the Google Calendar API. |  |
-| `credentials.client_id` | `string` | Client ID. Enter your Google application's Client ID. |  |
-| `credentials.client_secret` | `string` | Client Secret. Enter your Google application's Client Secret. |  |
-| `credentials.client_refresh_token_2` | `string` | Refresh Token. Enter your Google application's refresh token. |  |
+| `credentials.client_id` | `string` | Client ID. Enter your Google application's Client ID. See Google's documentation for more information. |  |
+| `credentials.client_secret` | `string` | Client Secret. Enter your Google application's Client Secret. See Google's documentation for more information. |  |
+| `credentials.client_refresh_token_2` | `string` | Refresh Token. Enter your Google application's refresh token. See Google's documentation for more information. |  |
+| `credentials.service_account_info` | `string` | Service Account Information. The JSON key of the service account to use for authorization. |  |
 | `calendarid` | `string` | Calendar Id. |  |
 
 ## Streams

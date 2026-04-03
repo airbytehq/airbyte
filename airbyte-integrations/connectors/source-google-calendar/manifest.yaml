@@ -156,17 +156,42 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
+  jwt_authenticator:
+    type: JwtAuthenticator
+    secret_key: "{{ json_loads(config['credentials']['service_account_info'])['private_key'] }}"
+    algorithm: "RS256"
+    token_duration: 3600
+    jwt_payload:
+      aud: "{{ json_loads(config['credentials']['service_account_info'])['token_uri'] }}"
+      iss: "{{ json_loads(config['credentials']['service_account_info'])['client_email'] }}"
+    additional_jwt_payload:
+      scope: "https://www.googleapis.com/auth/calendar.readonly"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["client_refresh_token_2"] }}'
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      $ref: "#/definitions/jwt_authenticator"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/calendar/v3/
-    authenticator:
-      type: OAuthAuthenticator
-      client_id: "{{ config[\"credentials\"][\"client_id\"] }}"
-      grant_type: refresh_token
-      client_secret: "{{ config[\"credentials\"][\"client_secret\"] }}"
-      refresh_token: "{{ config[\"credentials\"][\"client_refresh_token_2\"] }}"
-      refresh_request_body: {}
-      token_refresh_endpoint: https://oauth2.googleapis.com/token
+    authenticator: "#/definitions/authenticator"
 
 streams:
   - $ref: "#/definitions/streams/colors"
@@ -187,6 +212,8 @@ spec:
       credentials:
         type: object
         title: Authentication
+        description: >-
+          Credentials for connecting to the Google Calendar API
         order: 0
         oneOf:
           - title: Authenticate via Google (OAuth)
@@ -215,6 +242,22 @@ spec:
                 type: string
                 description: "Enter your Google application's refresh token. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
                 airbyte_secret: true
+          - title: Service Account Key Authentication
+            type: object
+            required:
+              - auth_type
+              - service_account_info
+            properties:
+              auth_type:
+                type: string
+                const: Service
+              service_account_info:
+                type: string
+                title: Service Account Information.
+                description: 'The JSON key of the service account to use for authorization. Read more <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">here</a>.'
+                airbyte_secret: true
+                examples:
+                  - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
       calendarid:
         type: string
         order: 1
