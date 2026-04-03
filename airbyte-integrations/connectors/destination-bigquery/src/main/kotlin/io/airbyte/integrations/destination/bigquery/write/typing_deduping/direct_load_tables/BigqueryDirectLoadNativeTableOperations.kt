@@ -241,10 +241,16 @@ class BigqueryDirectLoadNativeTableOperations(
 
         val originalTableId = "`$projectId`.`${tableName.namespace}`.`${tableName.name}`"
         val tempTableId = "`$projectId`.`${tempTableName.namespace}`.`${tempTableName.name}`"
-        val columnList =
-            (columnsToRetain + columnsToChange.map { it.name }).joinToString(",") { "`$it`" }
-        val valueList =
-            (columnsToRetain.map { "`$it`" } +
+
+        // Filter out Airbyte meta columns from columnsToRetain - we'll handle them explicitly
+        val userColumnsToRetain =
+            columnsToRetain.filter { !Meta.COLUMN_NAMES.containsIgnoreCase(it) }
+
+        // Build the column list and value list for user columns
+        val userColumnList =
+            (userColumnsToRetain + columnsToChange.map { it.name }).joinToString(",") { "`$it`" }
+        val userValueList =
+            (userColumnsToRetain.map { "`$it`" } +
                     columnsToChange.map {
                         getColumnCastStatement(
                             columnName = it.name,
@@ -253,15 +259,60 @@ class BigqueryDirectLoadNativeTableOperations(
                         )
                     })
                 .joinToString(",")
+
+        // Check which Airbyte meta columns exist in the original table
+        val hasRawId =
+            columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_RAW_ID, ignoreCase = true) }
+        val hasExtractedAt =
+            columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_EXTRACTED_AT, ignoreCase = true) }
+        val hasMeta = columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_META, ignoreCase = true) }
+        val hasGenerationId =
+            columnsToRetain.any { it.equals(Meta.COLUMN_NAME_AB_GENERATION_ID, ignoreCase = true) }
+
+        // Build meta column lists - use existing values if available, otherwise generate defaults
+        val metaColumnList =
+            listOf(
+                    Meta.COLUMN_NAME_AB_RAW_ID,
+                    Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                    Meta.COLUMN_NAME_AB_META,
+                    Meta.COLUMN_NAME_AB_GENERATION_ID,
+                )
+                .joinToString(",") { "`$it`" }
+
+        val metaValueList =
+            listOf(
+                    if (hasRawId) "`${Meta.COLUMN_NAME_AB_RAW_ID}`" else "GENERATE_UUID()",
+                    if (hasExtractedAt) "`${Meta.COLUMN_NAME_AB_EXTRACTED_AT}`"
+                    else "CURRENT_TIMESTAMP()",
+                    if (hasMeta) "`${Meta.COLUMN_NAME_AB_META}`"
+                    else "JSON'{\"sync_id\": 0, \"changes\": []}'",
+                    if (hasGenerationId) "`${Meta.COLUMN_NAME_AB_GENERATION_ID}`" else "0",
+                )
+                .joinToString(",")
+
+        // Combine user columns and meta columns
+        val fullColumnList =
+            if (userColumnList.isNotEmpty()) {
+                "$metaColumnList,$userColumnList"
+            } else {
+                metaColumnList
+            }
+        val fullValueList =
+            if (userValueList.isNotEmpty()) {
+                "$metaValueList,$userValueList"
+            } else {
+                metaValueList
+            }
+
         // note: we don't care about columnsToDrop (because they don't exist in the tempTable)
         // and we don't care about columnsToAdd (because they'll just default to null)
         val insertToTempTable =
             Sql.of(
                 """
                 INSERT INTO $tempTableId
-                ($columnList)
+                ($fullColumnList)
                 SELECT
-                $valueList
+                $fullValueList
                 FROM $originalTableId
                 """.trimIndent(),
             )
