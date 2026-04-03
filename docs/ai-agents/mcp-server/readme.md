@@ -339,6 +339,18 @@ Once a connector is created, the agent uses it for all subsequent queries to tha
 - Make sure you visited the credential URL the agent provided and completed the form in the browser.
 - If the flow timed out, ask the agent to start a new credential flow.
 
+### ChatGPT doesn't show the "Create app" button
+
+- Verify that Developer Mode is toggled on in **Settings** > **Apps** > **Advanced settings**.
+- Make sure your ChatGPT plan supports Developer Mode. It requires Pro, Plus, Business, Enterprise, or Education. Free plans don't have access.
+- After enabling Developer Mode, go back to the main **Apps** screen. The **Create app** button appears next to "Advanced settings."
+
+### ChatGPT can't connect to the MCP server
+
+- Confirm the server URL is exactly `https://mcp.airbyte.ai/mcp` with no trailing slash or extra path.
+- If the OAuth flow doesn't complete, try deleting the app in **Settings** > **Apps** and creating it again.
+- On Enterprise or Education plans, a workspace admin must enable the app before members can use it. Check with your admin if you see a permissions error.
+
 ### Queries return unexpected results
 
 - Ask the agent to describe the available entities before querying, so it picks the right one.
