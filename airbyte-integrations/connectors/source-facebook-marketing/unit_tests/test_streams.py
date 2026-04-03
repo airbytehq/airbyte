@@ -364,9 +364,10 @@ def test_ad_account_list_objects_handles_airbyte_traced_exception(api, some_conf
     stream = AdAccount(api=api, account_ids=some_config["account_ids"])
     account_id = some_config["account_ids"][0]
 
-    with patch.object(stream, "fields", return_value=["owner", "funding_source_details", "id"]), \
-         patch("source_facebook_marketing.streams.streams.FBAdAccount") as mock_fb_account:
-
+    with (
+        patch.object(stream, "fields", return_value=["owner", "funding_source_details", "id"]),
+        patch("source_facebook_marketing.streams.streams.FBAdAccount") as mock_fb_account,
+    ):
         mock_account_instance = MagicMock()
         mock_fb_account.return_value = mock_account_instance
         # First call raises the exception; second call (after field removal) succeeds
