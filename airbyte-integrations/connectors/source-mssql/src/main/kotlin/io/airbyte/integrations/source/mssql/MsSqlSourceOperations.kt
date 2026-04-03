@@ -49,6 +49,7 @@ private val log = KotlinLogging.logger {}
 class MsSqlSourceOperations :
     JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator, JdbcAirbyteStreamFactory {
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType {
+        log.info { "*** ${c.name} ${c.type} $c" }
         when (val type = c.type) {
             is SystemType -> {
                 val retVal = leafType(type)
@@ -61,6 +62,7 @@ class MsSqlSourceOperations :
     }
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
+        log.info { "*** type: $type" }
         val retVal =
             MsSqlServerSqlType.fromName(type.typeName)?.jdbcType
                 ?: when (type.jdbcType) {
