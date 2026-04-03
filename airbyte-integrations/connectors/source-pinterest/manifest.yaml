@@ -4963,6 +4963,7 @@ spec:
         type: string
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
+        maxLength: 18
         examples: ["1234567890"]
       num_threads:
         type: integer
