@@ -85,7 +85,10 @@ class AsanaHttpRequester(HttpRequester):
     def _get_stream_schema(self) -> MutableMapping[str, Any]:
         manifest_path = Path("/source_declarative_manifest/manifest.yaml")
         if not manifest_path.exists():
-            manifest_path = Path(__file__).parent / "manifest.yaml"
+            source_file = globals().get("__file__")
+            if source_file is None:
+                return {}
+            manifest_path = Path(source_file).parent / "manifest.yaml"
         if not manifest_path.exists():
             return {}
         manifest = safe_load(manifest_path.read_text())
