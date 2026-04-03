@@ -677,6 +677,17 @@ spec:
       - auth_method
     predicate_value: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "data.records:read"
+          - scope: "schema.bases:read"
+        consent_url: "https://airtable.com/oauth2/v1/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
+        access_token_url: "https://airtable.com/oauth2/v1/token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        extract_output:
+          - access_token
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         properties:
