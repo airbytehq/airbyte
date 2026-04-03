@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direc
 
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.CopyJobConfiguration
+import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -17,6 +18,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTabl
 class BigqueryDirectLoadSqlTableOperations(
     private val defaultOperations: DefaultDirectLoadTableSqlOperations,
     private val bq: BigQuery,
+    private val jobProjectId: String,
 ) : DirectLoadTableSqlOperations by defaultOperations {
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", "kotlin coroutines")
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
@@ -28,9 +30,11 @@ class BigqueryDirectLoadSqlTableOperations(
         // So we'll use a Copy job instead.
         // (this is more efficient than just `insert into tgt select * from src`)
         val sourceTableId = sourceTableName.toTableId()
+        val jobId = JobId.newBuilder().setProject(jobProjectId).setRandomJob().build()
         val job =
             bq.create(
                 JobInfo.of(
+                    jobId,
                     CopyJobConfiguration.newBuilder(
                             targetTableName.toTableId(),
                             sourceTableId,

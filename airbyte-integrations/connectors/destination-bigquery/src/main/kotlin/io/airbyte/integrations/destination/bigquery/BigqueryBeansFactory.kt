@@ -103,7 +103,8 @@ class BigqueryBeansFactory {
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
     ): DestinationWriter {
-        val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
+        val destinationHandler =
+            BigQueryDatabaseHandler(bigquery, config.datasetLocation.region, config.jobProjectId)
         if (config.legacyRawTablesOnly) {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
@@ -131,6 +132,7 @@ class BigqueryBeansFactory {
                         destinationHandler,
                     ),
                     bigquery,
+                    config.jobProjectId,
                 )
             // force smart cast
             @Suppress("UNCHECKED_CAST")

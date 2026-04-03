@@ -12,6 +12,7 @@ import jakarta.inject.Singleton
 
 data class BigqueryConfiguration(
     val projectId: String,
+    val jobProjectId: String,
     val datasetLocation: BigqueryRegion,
     val datasetId: String,
     val loadingMethod: LoadingMethodConfiguration,
@@ -53,6 +54,8 @@ class BigqueryConfigurationFactory :
             }
         return BigqueryConfiguration(
             projectId = pojo.projectId,
+            jobProjectId =
+                if (pojo.jobProjectId.isNullOrBlank()) pojo.projectId else pojo.jobProjectId!!,
             pojo.datasetLocation,
             datasetId = pojo.datasetId,
             loadingMethodConfig,
