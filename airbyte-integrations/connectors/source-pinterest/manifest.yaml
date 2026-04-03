@@ -53,7 +53,11 @@ definitions:
     response_filters:
       - type: HttpResponseFilter
         action: RETRY
+        predicate: "{{ response.get('message', '') is string and 'Retry after' in response.get('message', '') }}"
+      - type: HttpResponseFilter
+        action: FAIL
         http_codes: [400]
+        error_message: "Pinterest API error (HTTP 400): {{ response.get('message', response) }}"
 
   # Requester
   requester:
