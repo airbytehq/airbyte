@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -58,15 +58,16 @@ jobs:
 
           commands: |
             ai-canary-prerelease
-            ai-docs-review
             ai-create-docs-pr
+            ai-dev
+            ai-docs-review
             ai-prove-fix
             ai-release-watch
             ai-review
             approve-regression-tests
+            build-connector-images
             bump-progressive-rollout-version
             bump-version
-            build-connector-images
             force-merge
             format-fix
             poe

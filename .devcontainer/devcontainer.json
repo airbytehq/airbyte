@@ -10,7 +10,6 @@
       "jdkDistro": "open",
       "gradleVersion": "7.5.1"
     },
-    // Python needed for `airbyte-ci` CLI
     "ghcr.io/devcontainers/features/python:1": {
       "installGradle": true,
       "version": "3.10",
@@ -57,8 +56,7 @@
   },
   // Mark the root directory as 'safe' for git.
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
-  // Install Gradle, `airbyte-ci` CLI, and Dagger (installed via airbyte-ci --help)
-  "postCreateCommand": "make tools.airbyte-ci-dev.install",
+  "postCreateCommand": "uv tool install airbyte-cdk",
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`
     "POETRY_VIRTUALENVS_IN_PROJECT": "true"

@@ -1,16 +1,15 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.output.DataChannelMedium.*
+import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.output.sockets.toJson
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import java.time.Duration
@@ -28,7 +27,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 ) : PartitionReader {
 
     lateinit var outputMessageRouter: OutputMessageRouter
-    lateinit var outputRoute: ((NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit)
+    lateinit var outputRoute: ((NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit)
 
     protected var partitionId: String = generatePartitionId(4)
     val streamState: JdbcStreamState<*> = partition.streamState
@@ -143,6 +142,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                     numRecords.incrementAndGet()
                 }
             }
+        streamState.validatePartition(partition, JdbcConnectionFactory(sharedState.configuration))
         runComplete.set(true)
     }
 
@@ -172,7 +172,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
 
     val incumbentLimit = AtomicLong()
     val numRecords = AtomicLong()
-    val lastRecord = AtomicReference<ObjectNode?>(null)
+    val lastRecord = AtomicReference<SelectQuerier.ResultRow>(null)
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
@@ -196,7 +196,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
+                    lastRecord.set(row)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
                         coroutineContext.ensureActive()
@@ -233,7 +233,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                 streamState.updateLimitState { it.down }
             }
         }
-        val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get()!!)
+        val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get())
         return PartitionReadCheckpoint(
             checkpointState,
             numRecords.get(),
