@@ -1994,7 +1994,7 @@ spec:
               - type: AddedFieldDefinition
                 path: ["num_workers"]
                 value: "2"
-            condition: "{{ config.get('num_workers', 25) == 1 }}"
+            condition: "{{ config.get('num_workers', 10) == 1 }}"
 # Concurrency level controls how many partition slices are processed in parallel.
 # Each worker handles a different time slice, preventing overlap.
 concurrency_level:
