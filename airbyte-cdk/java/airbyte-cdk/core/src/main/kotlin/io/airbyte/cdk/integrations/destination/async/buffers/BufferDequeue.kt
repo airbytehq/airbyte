@@ -77,7 +77,11 @@ class BufferDequeue(
 
                 // Free unused allocation for the queue.
                 // When the batch flushes it will flush its allocation.
-                memoryManager.free(allocatedBytes - batchSizeBytes)
+                // Guard: only free if there is genuinely unused allocation beyond the batch.
+                val unusedBytes = allocatedBytes - batchSizeBytes
+                if (unusedBytes > 0) {
+                    memoryManager.free(unusedBytes)
+                }
 
                 // Shrink queue to 0 — any new messages will reallocate.
                 queue.addMaxMemory(-allocatedBytes)
