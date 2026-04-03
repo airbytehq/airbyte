@@ -3,7 +3,7 @@
 #
 
 import json
-from typing import Any, List, MutableMapping
+from typing import Any
 
 import pytest
 from requests import Response
