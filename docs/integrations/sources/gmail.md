@@ -6,9 +6,10 @@ Gmail is the email service provided by Google.
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `credentials` | `object` | Authentication. Credentials for connecting to the Gmail API. |  |
-| `credentials.client_id` | `string` | Client ID. Enter your Google application's Client ID. |  |
-| `credentials.client_secret` | `string` | Client Secret. Enter your Google application's Client Secret. |  |
-| `credentials.client_refresh_token` | `string` | Refresh Token. Enter your Google application's refresh token. |  |
+| `credentials.client_id` | `string` | Client ID. Enter your Google application's Client ID. See Google's documentation for more information. |  |
+| `credentials.client_secret` | `string` | Client Secret. Enter your Google application's Client Secret. See Google's documentation for more information. |  |
+| `credentials.client_refresh_token` | `string` | Refresh Token. Enter your Google application's refresh token. See Google's documentation for more information. |  |
+| `credentials.service_account_info` | `string` | Service Account Information. The JSON key of the service account to use for authorization. |  |
 | `include_spam_and_trash` | `boolean` | Include Spam &amp; Trash. Include drafts/messages from SPAM and TRASH in the results. Defaults to false. | false |
 
 Note that this connector uses the Google API OAuth2.0 for authentication. To get started, follow the steps [here](https://developers.google.com/gmail/api/auth/web-server#create_a_client_id_and_client_secret) to retrieve `client_id` and `client_secret`. See [here](https://developers.google.com/identity/protocols/oauth2/web-server) for more detailed guide on the OAuth flow to retrieve the `client_refresh_token`.
