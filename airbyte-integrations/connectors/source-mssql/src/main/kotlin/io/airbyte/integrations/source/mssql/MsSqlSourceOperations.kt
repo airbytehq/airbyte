@@ -316,15 +316,15 @@ class MsSqlSourceOperations :
             }
             is FromSample -> {
                 val ns = this.namespace
+                val maybeWhere = where?.sql() ?: ""
                 if (sampleRateInv == 1L) {
-                    if (ns == null) "FROM ${name.quoted()}"
-                    else "FROM ${ns.quoted()}.${name.quoted()}"
+                    if (ns == null) "FROM ${name.quoted()} $maybeWhere"
+                    else "FROM ${ns.quoted()}.${name.quoted()} $maybeWhere"
                 } else {
                     val tableName =
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
 
-                    val maybeWhere = where?.sql() ?: ""
                     "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
                 }
             }
