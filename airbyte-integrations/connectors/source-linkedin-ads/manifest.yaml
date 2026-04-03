@@ -1834,6 +1834,7 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         scopes:
+          - scope: "lead_form_responses"
           - scope: "r_ads_reporting"
           - scope: "r_emailaddress"
           - scope: "r_liteprofile"
