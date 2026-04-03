@@ -79,7 +79,7 @@ class MsSqlSourceMetadataQuerier(
             base.conn.createStatement().use { stmt: Statement ->
                 stmt
                     .executeQuery(
-                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server Agent%' OR servicename LIKE '%SQL Server 代理%'"
+                        "SELECT servicename, status_desc FROM sys.dm_server_services WHERE servicename LIKE '%SQL Server%Agent%' OR servicename LIKE '%SQL Server 代理%'"
                     )
                     .use { rs: ResultSet ->
                         if (!rs.next()) {
