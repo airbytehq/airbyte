@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.databricks.operation
 
 import com.databricks.sdk.WorkspaceClient
+import com.databricks.sdk.service.files.CreateDirectoryRequest
+import com.databricks.sdk.service.files.UploadRequest
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.integrations.base.destination.operation.StorageOperation
@@ -38,7 +40,9 @@ class DatabricksStorageOperation(
     ) {
         val streamId = streamConfig.id
         val stagedFile = "${stagingDirectory(streamId, database)}/${data.filename}"
-        workspaceClient.files().upload(stagedFile, data.inputStream)
+        workspaceClient
+            .files()
+            .upload(UploadRequest().setFilePath(stagedFile).setContents(data.inputStream))
         destinationHandler.execute(
             Sql.of(
                 // schema inference sees _airbyte_generation_id as an int (int32),
@@ -103,7 +107,11 @@ class DatabricksStorageOperation(
                 "CREATE VOLUME IF NOT EXISTS `$database`.`${streamId.rawNamespace}`.`${volumeName(streamId)}`"
             )
         )
-        workspaceClient.files().createDirectory(stagingDirectory(streamId, database))
+        workspaceClient
+            .files()
+            .createDirectory(
+                CreateDirectoryRequest().setDirectoryPath(stagingDirectory(streamId, database))
+            )
     }
 
     override fun prepareStage(streamId: StreamId, suffix: String, replace: Boolean) {
