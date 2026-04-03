@@ -532,7 +532,7 @@ class MySqlSourceDebeziumOperations(
             val offsetNode: ObjectNode = stateNode[MYSQL_CDC_OFFSET] as ObjectNode
             val offsetMap: Map<JsonNode, JsonNode> =
                 offsetNode
-                    .fields()
+                    .properties()
                     .asSequence()
                     .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
                     .toMap()
