@@ -6,6 +6,10 @@ This page contains the setup guide and reference information for the [Facebook M
 
 </HideInUI>
 
+:::tip Looking for Facebook Pages?
+This connector is for the **Facebook Marketing API** (ads, campaigns, ad insights). If you need to sync **Facebook Page** data (posts, page insights, engagement metrics), use the [Facebook Pages connector](./facebook-pages.md) instead.
+:::
+
 ## Prerequisites
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
@@ -15,7 +19,7 @@ This page contains the setup guide and reference information for the [Facebook M
 <!-- env:oss -->
 -  **For Airbyte Open Source**:
    - [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled
-   - The following permissions: [ads_management](https://developers.facebook.com/docs/permissions#a), [ads_read](https://developers.facebook.com/docs/permissions#a), [business_management](https://developers.facebook.com/docs/permissions#b) and [read_insights](https://developers.facebook.com/docs/permissions#r).
+   - The following permissions: [ads_management](https://developers.facebook.com/docs/permissions#a), [ads_read](https://developers.facebook.com/docs/permissions#a), and [business_management](https://developers.facebook.com/docs/permissions#b).
 <!-- /env:oss -->
 
 ## Setup guide
@@ -94,8 +98,7 @@ To authorize your application to interact with the Facebook Marketing API, you'l
 
 - In the **Token Permissions** section, select the following permissions:
   - `ads_management`: Manage ads and campaigns.
-  - `ads_read`: Read ad and campaign data.
-  - `read_insights`: Access insights data for ads, ad sets, and campaigns.
+  - `ads_read`: Read ad and campaign data (includes insights access).
   - `business_management`: Manage business assets (often required to access ad accounts connected to a Meta Business Manager).
 
 - Click **Get Token** to generate the access token.
