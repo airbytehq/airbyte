@@ -5,10 +5,11 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `client_id` | `string` | Client ID.  |  |
-| `client_secret` | `string` | Client secret.  |  |
-| `client_refresh_token_2` | `string` | Refresh token.  |  |
-| `calendarid` | `string` | Calendar Id.  |  |
+| `credentials` | `object` | Authentication. Credentials for connecting to the Google Calendar API. |  |
+| `credentials.client_id` | `string` | Client ID. Enter your Google application's Client ID. |  |
+| `credentials.client_secret` | `string` | Client Secret. Enter your Google application's Client Secret. |  |
+| `credentials.client_refresh_token_2` | `string` | Refresh Token. Enter your Google application's refresh token. |  |
+| `calendarid` | `string` | Calendar Id. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
