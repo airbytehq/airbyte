@@ -169,6 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.0 | 2026-04-03 | [76067](https://github.com/airbytehq/airbyte/pull/76067) | Add OAuth 2.0 authentication support with config migration |
 | 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
 | 4.3.16 | 2026-03-10 | [74500](https://github.com/airbytehq/airbyte/pull/74500) | Update dependencies |
 | 4.3.15 | 2026-02-24 | [73898](https://github.com/airbytehq/airbyte/pull/73898) | Update dependencies |
