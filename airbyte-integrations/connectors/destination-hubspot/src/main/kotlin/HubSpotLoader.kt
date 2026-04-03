@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.write.dlq.DlqLoader
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.hubspot.io.airbyte.integrations.destination.hubspot.http.HubSpotObjectTypeIdMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -34,15 +35,18 @@ class HubSpotState(
     val requestBody: ObjectNode = Jsons.objectNode()
     val batch: ArrayNode = requestBody.putArray("inputs")
     val decoder: JsonDecoder = JsonDecoder()
+    private val recordsByTraceId: MutableMap<String, DestinationRecordRaw> = mutableMapOf()
 
     fun accumulate(record: DestinationRecordRaw) {
         if (isFull()) {
             throw IllegalStateException("Can't add records as the batch is already full")
         }
 
+        val traceId = UUID.randomUUID().toString()
         val data: JsonNode = record.asJsonRecord()
         val input =
             Jsons.objectNode().put("idProperty", getNonNestedMatchingKey()).apply {
+                this.put("objectWriteTraceId", traceId)
                 this.replace(
                     "id",
                     data.extract(
@@ -53,6 +57,7 @@ class HubSpotState(
                 data.properties().forEach { (key, value) -> properties.replace(key, value) }
             }
         batch.add(input)
+        recordsByTraceId[traceId] = record
     }
 
     fun isFull(): Boolean = batch.size() >= 100
@@ -76,13 +81,38 @@ class HubSpotState(
         response.use {
             return when (response.statusCode) {
                 200 -> null
-                207 -> null // FIXME generate dlq record with error from hubspot
+                207 -> extractFailedRecords(response)
                 else ->
                     throw IllegalStateException(
                         "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
                     )
             }
         }
+    }
+
+    private fun extractFailedRecords(response: Response): List<DestinationRecordRaw>? {
+        val body = decoder.decode(response.getBodyOrEmpty())
+        val errors = body.get("errors") ?: return null
+        if (!errors.isArray || errors.isEmpty) return null
+
+        val failedRecords = mutableListOf<DestinationRecordRaw>()
+        for (error in errors) {
+            val traceId = error.get("context")?.get("objectWriteTraceId")?.firstOrNull()?.asText()
+            if (traceId != null) {
+                val record = recordsByTraceId[traceId]
+                if (record != null) {
+                    logger.warn {
+                        "Record with traceId=$traceId failed: ${error.get("message")?.asText()}"
+                    }
+                    failedRecords.add(record)
+                } else {
+                    logger.warn { "Failed record with traceId=$traceId not found in batch" }
+                }
+            } else {
+                logger.warn { "Batch error without traceId: ${error.get("message")?.asText()}" }
+            }
+        }
+        return failedRecords.ifEmpty { null }
     }
 
     override fun close() {}
