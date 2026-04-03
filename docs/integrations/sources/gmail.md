@@ -33,6 +33,7 @@ Note that this connector uses the Google API OAuth2.0 for authentication. To get
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.51 | 2026-04-03 | [76XXX](https://github.com/airbytehq/airbyte/pull/76XXX) | Add `oauth_connector_input_specification` with granular scopes |
 | 0.0.50 | 2026-03-24 | [75387](https://github.com/airbytehq/airbyte/pull/75387) | Update dependencies |
 | 0.0.49 | 2026-03-10 | [74532](https://github.com/airbytehq/airbyte/pull/74532) | Update dependencies |
 | 0.0.48 | 2026-03-03 | [74205](https://github.com/airbytehq/airbyte/pull/74205) | Update dependencies |

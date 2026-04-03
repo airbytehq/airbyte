@@ -308,6 +308,44 @@ spec:
         default: false
         order: 3
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/gmail.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - client_refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - client_secret
 
 metadata:
   autoImportSchema:
