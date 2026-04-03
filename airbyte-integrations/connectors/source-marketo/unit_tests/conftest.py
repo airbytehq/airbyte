@@ -1,20 +1,20 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
 import os.path
 import sys
 import time
+from datetime import datetime, timedelta
 from typing import Any, Mapping
 
-import pendulum
 import pytest
-from source_marketo.source import Activities, MarketoAuthenticator, SourceMarketo
+from source_marketo.source import SourceMarketo
 
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
-START_DATE = pendulum.now().subtract(days=75)
+START_DATE = datetime.utcnow() - timedelta(days=75)
 
 
 @pytest.fixture(autouse=True)
@@ -22,29 +22,37 @@ def mock_requests(requests_mock):
     requests_mock.register_uri(
         "GET", "https://602-euo-598.mktorest.com/identity/oauth/token", json={"access_token": "token", "expires_in": 3600}
     )
+    # Dynamic streams resolution requires fetching activity types
     requests_mock.register_uri(
-        "POST",
-        "https://602-euo-598.mktorest.com/bulk/v1/activities/export/create.json",
-        [
-            {"json": {"result": [{"exportId": "2c09ce6d", "format": "CSV", "status": "Created", "createdAt": "2022-06-20T08:44:08Z"}]}},
-            {"json": {"result": [{"exportId": "cd465f55", "format": "CSV", "status": "Created", "createdAt": "2022-06-20T08:45:08Z"}]}},
-            {"json": {"result": [{"exportId": "null", "format": "CSV", "status": "Failed", "createdAt": "2022-06-20T08:46:08Z"}]}},
-            {"json": {"result": [{"exportId": "232aafb4", "format": "CSV", "status": "Created", "createdAt": "2022-06-20T08:47:08Z"}]}},
-        ],
+        "GET",
+        "https://602-euo-598.mktorest.com/rest/v1/activities/types.json",
+        json={
+            "success": True,
+            "result": [
+                {
+                    "id": 6,
+                    "name": "send_email",
+                    "description": "Send Marketo Email",
+                    "primaryAttribute": {"name": "Mailing ID", "dataType": "integer"},
+                    "attributes": [
+                        {"name": "Campaign Run ID", "dataType": "integer"},
+                        {"name": "Choice Number", "dataType": "integer"},
+                    ],
+                }
+            ],
+        },
     )
 
 
 @pytest.fixture
 def config():
-    config = {
+    return {
         "client_id": "client-id",
         "client_secret": "********",
         "domain_url": "https://602-EUO-598.mktorest.com",
         "start_date": START_DATE.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "window_in_days": 30,
     }
-    config["authenticator"] = MarketoAuthenticator(config)
-    return config
 
 
 @pytest.fixture
@@ -65,16 +73,9 @@ def activity():
 
 
 @pytest.fixture
-def send_email_stream(config, activity):
-    stream_name = f"activities_{activity['name']}"
-    cls = type(stream_name, (Activities,), {"activity": activity})
-    return cls(config)
-
-
-@pytest.fixture
 def file_generator(faker):
     def _generator(min_size: int):
-        print(f"Generating a test file of {min_size // 1024 ** 2} MB, this could take some time")
+        print(f"Generating a test file of {min_size // 1024**2} MB, this could take some time")
 
         def fake_records_gen():
             new_line = "\n"
@@ -103,7 +104,7 @@ def file_generator(faker):
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> DeclarativeStream:
     source = SourceMarketo()
-    matches_by_name = [stream_config for stream_config in source._get_declarative_streams(config) if stream_config.name == stream_name]
+    matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
     return matches_by_name[0]
