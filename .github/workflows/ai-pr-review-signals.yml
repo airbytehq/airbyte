@@ -1,0 +1,313 @@
+name: AI PR Review Signals
+
+# This workflow produces check-runs that the AI PR Review playbook can consume
+# for more precise trigger detection. Each job produces a clearly-named check-run
+# that maps to a specific gate trigger.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: read
+
+jobs:
+  # Generate matrix of modified connectors
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-24.04
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+      has-connectors: ${{ steps.generate-matrix.outputs.has_connectors }}
+      python-connectors-matrix: ${{ steps.generate-matrix.outputs.python_connectors_matrix }}
+      has-python-connectors: ${{ steps.generate-matrix.outputs.has_python_connectors }}
+      dependency-files-changed: ${{ steps.check-deps.outputs.changed }}
+      spec-files-changed: ${{ steps.check-spec.outputs.changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Generate Connector Matrix
+        id: generate-matrix
+        run: |
+          # Get list of modified connectors
+          connectors=$(./poe-tasks/get-modified-connectors.sh --json 2>/dev/null || echo '{"include":[]}')
+          echo "connectors_matrix=$connectors" | tee -a $GITHUB_OUTPUT
+
+          # Check if any connectors were modified
+          if [[ "$connectors" == '{"include":[]}' ]] || [[ -z "$connectors" ]]; then
+            echo "has_connectors=false" | tee -a $GITHUB_OUTPUT
+          else
+            echo "has_connectors=true" | tee -a $GITHUB_OUTPUT
+          fi
+
+          # Get Python connectors only (for pip-audit)
+          python_connectors=$(./poe-tasks/get-modified-connectors.sh --json --no-java 2>/dev/null || echo '{"include":[]}')
+          echo "python_connectors_matrix=$python_connectors" | tee -a $GITHUB_OUTPUT
+
+          if [[ "$python_connectors" == '{"include":[]}' ]] || [[ -z "$python_connectors" ]]; then
+            echo "has_python_connectors=false" | tee -a $GITHUB_OUTPUT
+          else
+            echo "has_python_connectors=true" | tee -a $GITHUB_OUTPUT
+          fi
+
+      - name: Check for Dependency File Changes
+        id: check-deps
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            changed:
+              - '**/pyproject.toml'
+              - '**/poetry.lock'
+              - '**/requirements.txt'
+              - '**/setup.py'
+              - '**/gradle.properties'
+              - '**/build.gradle'
+
+      - name: Check for Spec/Breaking Change Files
+        id: check-spec
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            changed:
+              - '**/spec.json'
+              - '**/spec.yaml'
+              - '**/manifest.yaml'
+              - '**/metadata.yaml'
+
+  # Check for skipped tests in test results
+  skipped-tests-check:
+    name: AI Review - Skipped Tests Check
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.has-connectors == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.connectors-matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        if: matrix.connector
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Check for Skip Markers in Test Files
+        if: matrix.connector
+        id: check-skips
+        run: |
+          connector_path="airbyte-integrations/connectors/${{ matrix.connector }}"
+
+          # Look for pytest skip markers in test files
+          skip_count=0
+          if [[ -d "$connector_path" ]]; then
+            # Count skip markers (pytest.mark.skip, @skip, skipIf, etc.)
+            skip_count=$(grep -r -E '@pytest\.mark\.skip|@skip|skipIf|pytest\.skip\(' "$connector_path" --include="*.py" 2>/dev/null | wc -l || echo "0")
+          fi
+
+          echo "skip_count=$skip_count" | tee -a $GITHUB_OUTPUT
+
+          # Check if there's a justification label on the PR
+          # For now, we just report the count - the playbook will evaluate
+          if [[ "$skip_count" -gt 0 ]]; then
+            echo "::warning::Found $skip_count skip markers in ${{ matrix.connector }} tests"
+          fi
+
+      - name: Report Skipped Tests Status
+        if: matrix.connector
+        run: |
+          skip_count="${{ steps.check-skips.outputs.skip_count }}"
+          if [[ "$skip_count" -gt 0 ]]; then
+            echo "Found $skip_count skipped test markers in ${{ matrix.connector }}"
+            echo "If these skips are intentional, add a justification in the PR description."
+          else
+            echo "No skipped tests detected in ${{ matrix.connector }}"
+          fi
+
+  # Dependency vulnerability scan for Python connectors
+  dependency-scan:
+    name: AI Review - Dependency Scan (${{ matrix.connector }})
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.has-python-connectors == 'true' && needs.detect-changes.outputs.dependency-files-changed == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.python-connectors-matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        if: matrix.connector
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Set up Python
+        if: matrix.connector
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit
+        if: matrix.connector
+        run: pip install pip-audit
+
+      - name: Run Dependency Vulnerability Scan
+        if: matrix.connector
+        id: pip-audit
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        continue-on-error: true
+        run: |
+          # Check if pyproject.toml exists
+          if [[ -f "pyproject.toml" ]]; then
+            # Try to audit dependencies
+            pip-audit --desc on --format json > audit-results.json 2>&1 || true
+
+            # Count vulnerabilities
+            vuln_count=$(cat audit-results.json | python3 -c "import sys, json; data=json.load(sys.stdin); print(len(data.get('dependencies', [])))" 2>/dev/null || echo "0")
+            echo "vuln_count=$vuln_count" | tee -a $GITHUB_OUTPUT
+
+            if [[ "$vuln_count" -gt 0 ]]; then
+              echo "::error::Found $vuln_count vulnerable dependencies in ${{ matrix.connector }}"
+              cat audit-results.json
+              exit 1
+            fi
+          else
+            echo "No pyproject.toml found, skipping dependency scan"
+            echo "vuln_count=0" | tee -a $GITHUB_OUTPUT
+          fi
+
+  # Version bump and breaking change detection
+  versioning-check:
+    name: AI Review - Versioning Check
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.has-connectors == 'true' && needs.detect-changes.outputs.spec-files-changed == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.connectors-matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        if: matrix.connector
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Check for Breaking Changes Without Version Bump
+        if: matrix.connector
+        id: version-check
+        run: |
+          connector_path="airbyte-integrations/connectors/${{ matrix.connector }}"
+          metadata_file="$connector_path/metadata.yaml"
+
+          # Get the base branch (usually master)
+          base_ref="${{ github.base_ref }}"
+
+          # Check if spec files changed
+          spec_changed=$(git diff --name-only origin/$base_ref...HEAD -- "$connector_path" | grep -E '(spec\.json|spec\.yaml|manifest\.yaml)' || true)
+
+          if [[ -n "$spec_changed" ]]; then
+            echo "Spec files changed: $spec_changed"
+
+            # Check if metadata.yaml has breakingChanges entry for current version
+            if [[ -f "$metadata_file" ]]; then
+              current_version=$(grep -E '^  dockerImageTag:' "$metadata_file" | awk '{print $2}' | tr -d '"' || echo "unknown")
+              echo "Current version: $current_version"
+
+              # Check if there's a breakingChanges entry
+              has_breaking_entry=$(grep -A5 "breakingChanges:" "$metadata_file" | grep -E "^\s+$current_version:" || true)
+
+              if [[ -z "$has_breaking_entry" ]]; then
+                echo "::warning::Spec files changed but no breakingChanges entry found for version $current_version"
+                echo "needs_review=true" | tee -a $GITHUB_OUTPUT
+              else
+                echo "Breaking changes entry found for version $current_version"
+                echo "needs_review=false" | tee -a $GITHUB_OUTPUT
+              fi
+            fi
+          else
+            echo "No spec files changed"
+            echo "needs_review=false" | tee -a $GITHUB_OUTPUT
+          fi
+
+  # Migration guide check
+  migration-guide-check:
+    name: AI Review - Migration Guide Check
+    needs: [detect-changes, versioning-check]
+    if: needs.detect-changes.outputs.has-connectors == 'true' && needs.detect-changes.outputs.spec-files-changed == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.connectors-matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        if: matrix.connector
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          fetch-depth: 0
+
+      - name: Check for Migration Guide
+        if: matrix.connector
+        id: migration-check
+        run: |
+          connector_path="airbyte-integrations/connectors/${{ matrix.connector }}"
+          metadata_file="$connector_path/metadata.yaml"
+
+          # Extract connector type and name
+          connector_type=$(echo "${{ matrix.connector }}" | cut -d'-' -f1)
+          connector_name=$(echo "${{ matrix.connector }}" | sed 's/^source-//;s/^destination-//')
+
+          # Determine docs path
+          if [[ "$connector_type" == "source" ]]; then
+            docs_path="docs/integrations/sources/${connector_name}.md"
+          else
+            docs_path="docs/integrations/destinations/${connector_name}.md"
+          fi
+
+          # Check if metadata has breakingChanges
+          if [[ -f "$metadata_file" ]]; then
+            has_breaking=$(grep -c "breakingChanges:" "$metadata_file" || echo "0")
+
+            if [[ "$has_breaking" -gt 0 ]]; then
+              # Check if docs file was updated
+              base_ref="${{ github.base_ref }}"
+              docs_changed=$(git diff --name-only origin/$base_ref...HEAD -- "$docs_path" || true)
+
+              if [[ -z "$docs_changed" ]]; then
+                echo "::warning::Breaking changes detected but docs not updated at $docs_path"
+                echo "needs_migration_guide=true" | tee -a $GITHUB_OUTPUT
+              else
+                echo "Docs updated at $docs_path"
+                echo "needs_migration_guide=false" | tee -a $GITHUB_OUTPUT
+              fi
+            else
+              echo "No breaking changes in metadata"
+              echo "needs_migration_guide=false" | tee -a $GITHUB_OUTPUT
+            fi
+          fi
+
+  # Summary job that aggregates all results
+  ai-review-signals-summary:
+    name: AI Review Signals Summary
+    if: always()
+    needs:
+      - detect-changes
+      - skipped-tests-check
+      - dependency-scan
+      - versioning-check
+      - migration-guide-check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Summarize Results
+        run: |
+          echo "## AI PR Review Signals Summary"
+          echo ""
+          echo "| Check | Status |"
+          echo "|-------|--------|"
+          echo "| Skipped Tests | ${{ needs.skipped-tests-check.result || 'skipped' }} |"
+          echo "| Dependency Scan | ${{ needs.dependency-scan.result || 'skipped' }} |"
+          echo "| Versioning Check | ${{ needs.versioning-check.result || 'skipped' }} |"
+          echo "| Migration Guide | ${{ needs.migration-guide-check.result || 'skipped' }} |"
+          echo ""
+          echo "These signals are consumed by the AI PR Review playbook for precise trigger detection."
