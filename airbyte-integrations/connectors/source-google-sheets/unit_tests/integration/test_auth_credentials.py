@@ -90,7 +90,7 @@ class TestCredentials(GoogleSheetsBaseTest):
     def test_check_invalid_creds_json_file(self) -> None:
         invalid_creds_json_file = {}
         output = self._check(invalid_creds_json_file, expecting_exception=True)
-        msg = AirbyteConnectionStatus(status=Status.FAILED, message="Config validation error: 'spreadsheet_id' is a required property")
+        msg = AirbyteConnectionStatus(status=Status.FAILED, message="Config validation error: 'credentials' is a required property")
         expected_message = AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=msg)
         assert output._messages[-1] == expected_message
 

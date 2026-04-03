@@ -167,6 +167,192 @@ dynamic_streams:
           value: "{{config.get('batch_size', 1000000)}}"
           description: batch size count for dynamic stream partition router (slicer).
 
+  - type: DynamicDeclarativeStream
+    use_parent_parameters: false
+    stream_template:
+      type: DeclarativeStream
+      name: ""
+      primary_key: []
+      $parameters:
+        spreadsheet_url_id: ""
+        sheet_id: ""
+        batch_size: 1000000
+      retriever:
+        type: SimpleRetriever
+        $parameters:
+          row_count: 0
+          sheet_id: ""
+          batch_size: 0
+        partition_router:
+          type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.RangePartitionRouter
+        paginator:
+          type: NoPagination
+        record_selector:
+          decoder:
+            type: JsonDecoder
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.SelfDiscoveringSchemaMatchingExtractor
+            field_path:
+              - valueRanges
+              - "*"
+            $parameters:
+              schema_type_identifier:
+                $ref: "#/definitions/schema_type_identifier"
+              values_to_match_key: "values"
+              spreadsheet_url_id: ""
+              sheet_id: ""
+          type: RecordSelector
+        requester:
+          $ref: "#/definitions/base_requester"
+          http_method: GET
+          path: >-
+            {{parameters["spreadsheet_url_id"]}}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
+          error_handler:
+            type: DefaultErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+            response_filters:
+              $ref: "#/definitions/response_filters/response_error_filters"
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          paginator:
+            type: NoPagination
+          record_selector:
+            extractor:
+              type: CustomRecordExtractor
+              class_name: source_declarative_manifest.components.DpathSchemaExtractor
+              parameters:
+                schema_type_identifier:
+                  $ref: "#/definitions/schema_type_identifier"
+              field_path:
+                - sheets
+                - "*"
+                - data
+                - "*"
+                - rowData
+                - "*"
+            type: RecordSelector
+          requester:
+            $ref: "#/definitions/base_requester"
+            http_method: GET
+            path: >-
+              {{parameters["spreadsheet_url_id"]}}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
+            error_handler:
+              type: CompositeErrorHandler
+              error_handlers:
+                - type: DefaultErrorHandler
+                  backoff_strategies:
+                    - type: ExponentialBackoffStrategy
+                  response_filters:
+                    $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+        schema_type_identifier:
+          $ref: "#/definitions/schema_type_identifier"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - streams
+      components_mapping:
+        - field_path:
+            - name
+          type: ComponentMappingDefinition
+          value: "{{ components_values['stream_name'] }}"
+          value_type: string
+        - field_path:
+            - $parameters
+            - spreadsheet_url_id
+          type: ComponentMappingDefinition
+          value: >-
+            {% if components_values['spreadsheet_id'] | regex_search('^(https://.*)') %}{{ components_values['spreadsheet_id'] | regex_search('/([-\\w]{20,})([/]?)') }}{% else %}{{ components_values['spreadsheet_id'] }}{% endif %}
+          value_type: string
+        - field_path:
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{ components_values['sheet_name'] }}"
+          value_type: string
+        - field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - $parameters
+            - spreadsheet_url_id
+          type: ComponentMappingDefinition
+          value: >-
+            {% if components_values['spreadsheet_id'] | regex_search('^(https://.*)') %}{{ components_values['spreadsheet_id'] | regex_search('/([-\\w]{20,})([/]?)') }}{% else %}{{ components_values['spreadsheet_id'] }}{% endif %}
+          value_type: string
+        - field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{ components_values['sheet_name'] }}"
+          value_type: string
+        - field_path:
+            - retriever
+            - requester
+            - $parameters
+            - spreadsheet_url_id
+          type: ComponentMappingDefinition
+          value: >-
+            {% if components_values['spreadsheet_id'] | regex_search('^(https://.*)') %}{{ components_values['spreadsheet_id'] | regex_search('/([-\\w]{20,})([/]?)') }}{% else %}{{ components_values['spreadsheet_id'] }}{% endif %}
+          value_type: string
+        - field_path:
+            - retriever
+            - requester
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{ components_values['sheet_name'] }}"
+          value_type: string
+        - field_path:
+            - retriever
+            - record_selector
+            - extractor
+            - $parameters
+            - spreadsheet_url_id
+          type: ComponentMappingDefinition
+          value: >-
+            {% if components_values['spreadsheet_id'] | regex_search('^(https://.*)') %}{{ components_values['spreadsheet_id'] | regex_search('/([-\\w]{20,})([/]?)') }}{% else %}{{ components_values['spreadsheet_id'] }}{% endif %}
+          value_type: string
+        - field_path:
+            - retriever
+            - record_selector
+            - extractor
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{ components_values['sheet_name'] }}"
+          value_type: string
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - row_count
+          type: ComponentMappingDefinition
+          value: "10000000"
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - sheet_id
+          type: ComponentMappingDefinition
+          value: "{{ components_values['sheet_name'] }}"
+        - field_path:
+            - retriever
+            - partition_router
+            - $parameters
+            - batch_size
+          type: ComponentMappingDefinition
+          value: "{{ config.get('batch_size', 1000000) }}"
+
 definitions:
   streams:
     get_spreadsheet_info_and_sheets:
@@ -426,7 +612,6 @@ spec:
     title: Google Sheets Source Spec
     type: object
     required:
-      - spreadsheet_id
       - credentials
     additionalProperties: true
     properties:
@@ -562,6 +747,47 @@ spec:
                 airbyte_secret: true
                 examples:
                   - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
+      streams:
+        type: array
+        title: Streams
+        description: >-
+          Define individual sheet streams to sync. Each stream reads data from a specific sheet
+          in a Google Spreadsheet. You can add any number of streams, each pointing to a different
+          spreadsheet and sheet combination. This is useful when you want to sync sheets from
+          multiple spreadsheets or specific sheets from one spreadsheet.
+          When this is configured, the top-level Spreadsheet Link field is not required.
+        order: 10
+        items:
+          type: object
+          required:
+            - stream_name
+            - spreadsheet_id
+            - sheet_name
+          properties:
+            stream_name:
+              type: string
+              title: Stream Name
+              description: >-
+                The name for this stream as it will appear in Airbyte and your destination.
+              order: 0
+            spreadsheet_id:
+              type: string
+              title: Spreadsheet Link
+              description: >-
+                Enter the link to the Google spreadsheet. To copy the link, click the
+                'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
+              examples:
+                - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+              order: 1
+            sheet_name:
+              type: string
+              title: Sheet Name
+              description: >-
+                The name of the sheet (tab) in the spreadsheet to sync.
+              examples:
+                - Sheet1
+                - Sales Data
+              order: 2
       stream_name_overrides:
         type: array
         title: Stream Name Overrides
