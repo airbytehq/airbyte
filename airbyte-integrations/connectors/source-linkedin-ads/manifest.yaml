@@ -1834,13 +1834,17 @@ spec:
     oauth_config_specification:
       oauth_connector_input_specification:
         scopes:
-          - scope: "lead_form_responses"
+          - scope: "r_marketing_leadgen_automation"
           - scope: "r_ads_reporting"
-          - scope: "r_emailaddress"
           - scope: "r_liteprofile"
-          - scope: "r_ads"
-          - scope: "r_basicprofile"
           - scope: "r_organization_social"
+          - scope: "r_ads"
+          - scope: "r_emailaddress"
+          - scope: "r_basicprofile"
+          - scope: "r_events"
+          - scope: "r_organization_admin"
+          - scope: "r_ads_leadgen_automation"
+          - scope: "r_1st_connections_size"
         consent_url: "https://www.linkedin.com/oauth/v2/authorization?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&{{state_param}}"
         access_token_url: "https://www.linkedin.com/oauth/v2/accessToken"
         access_token_headers:
