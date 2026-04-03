@@ -9,6 +9,22 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.util.Jsons
 import java.io.InputStream
 
+class HubSpotPropertiesApiResponseBuilder {
+    private val response = Jsons.objectNode()
+    private val results = response.putArray("results")
+
+    fun withProperty(
+        property: HubSpotPropertySchemaBuilder,
+    ): HubSpotPropertiesApiResponseBuilder {
+        results.add(property.build())
+        return this
+    }
+
+    fun build(): InputStream {
+        return ObjectMapper().writeValueAsString(response).byteInputStream()
+    }
+}
+
 class HubSpotCustomObjectSchemaResponseBuilder {
     private val response = Jsons.objectNode()
     private val results = response.putArray("results")
@@ -74,6 +90,11 @@ class HubSpotPropertySchemaBuilder {
 
     fun withReadOnlyValue(readOnlyValue: Boolean): HubSpotPropertySchemaBuilder {
         (node.get("modificationMetadata") as ObjectNode).put("readOnlyValue", readOnlyValue)
+        return this
+    }
+
+    fun withHasUniqueValue(hasUniqueValue: Boolean): HubSpotPropertySchemaBuilder {
+        node.put("hasUniqueValue", hasUniqueValue)
         return this
     }
 
