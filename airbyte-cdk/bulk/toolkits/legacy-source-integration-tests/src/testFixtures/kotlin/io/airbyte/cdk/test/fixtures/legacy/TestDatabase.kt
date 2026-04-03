@@ -5,6 +5,7 @@ package io.airbyte.cdk.test.fixtures.legacy
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
+import io.airbyte.cdk.test.fixtures.legacy.JdbcUtils.MODE_KEY
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.UncheckedIOException
@@ -51,7 +52,7 @@ protected constructor(val container: C) : AutoCloseable {
     private val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS")
 
     init {
-        LOGGER!!.info(formatLogLine("creating database $databaseName"))
+        LOGGER.info { formatLogLine("creating database $databaseName") }
     }
 
     protected fun formatLogLine(logLine: String?): String {
@@ -162,7 +163,7 @@ protected constructor(val container: C) : AutoCloseable {
         try {
             database.query<Any?> { ctx: DSLContext ->
                 sql.forEach { statement: String ->
-                    LOGGER!!.info("executing SQL statement {}", statement)
+                    LOGGER.info { "executing SQL statement $statement" }
                     ctx.execute(statement)
                 }
                 null
@@ -178,14 +179,14 @@ protected constructor(val container: C) : AutoCloseable {
             return
         }
         try {
-            LOGGER!!.info(
+            LOGGER.info {
                 formatLogLine(
                     String.format("executing command %s", Strings.join(cmd.asIterable(), " "))
                 )
-            )
+            }
             val exec = container.execInContainer(*cmd.toTypedArray<String>())
             if (exec!!.exitCode == 0) {
-                LOGGER.info(
+                LOGGER.info {
                     formatLogLine(
                         String.format(
                             "execution success\nstdout:\n%s\nstderr:\n%s",
@@ -193,9 +194,9 @@ protected constructor(val container: C) : AutoCloseable {
                             exec.stderr
                         )
                     )
-                )
+                }
             } else {
-                LOGGER.error(
+                LOGGER.error {
                     formatLogLine(
                         String.format(
                             "execution failure, code %s\nstdout:\n%s\nstderr:\n%s",
@@ -204,7 +205,7 @@ protected constructor(val container: C) : AutoCloseable {
                             exec.stderr
                         )
                     )
-                )
+                }
             }
         } catch (e: IOException) {
             throw UncheckedIOException(e)
@@ -239,7 +240,7 @@ protected constructor(val container: C) : AutoCloseable {
     override fun close() {
         execSQL(cleanupSQL.stream())
         execInContainer(inContainerUndoBootstrapCmd())
-        LOGGER!!.info("closing database databaseId=$databaseId")
+        LOGGER.info { "closing database databaseId=$databaseId" }
     }
 
     open class ConfigBuilder<T : TestDatabase<*, *, *>, B : ConfigBuilder<T, B>>(
@@ -284,7 +285,8 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         open fun withoutSsl(): B {
-            return with(JdbcUtils.SSL_KEY, false)
+            //            return with(JdbcUtils.SSL_KEY, false)
+            return withSsl(mutableMapOf(MODE_KEY to "disable"))
         }
 
         open fun withSsl(sslMode: MutableMap<Any?, Any?>): B {
@@ -292,7 +294,7 @@ protected constructor(val container: C) : AutoCloseable {
         }
 
         companion object {
-            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration = Duration.ofSeconds(5)
+            @JvmField val DEFAULT_CDC_REPLICATION_INITIAL_WAIT: Duration = Duration.ofSeconds(15)
         }
     }
 

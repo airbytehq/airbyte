@@ -1639,3 +1639,22 @@ class TestCalendarAlignedPeriods:
         # Next would be Mar 9 > end_date Mar 6, so stops
         expected = [date(2026, 3, 2)]
         assert intervals == expected
+
+    @freeze_time("2026-04-01")
+    def test_date_intervals_clamps_start_to_retention_boundary(self, api, some_config):
+        """Start date older than 37-month retention period is clamped forward."""
+        # Set start_date well before the retention boundary (4+ years ago).
+        # validate_start_date computes retention_date = today - 1123 days + 1 day.
+        # Frozen today = 2026-04-01 → retention_date = 2026-04-01 - 1123 + 1 = 2023-03-05.
+        retention_date = date(2026, 4, 1) - timedelta(days=1123) + timedelta(days=1)
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2022, 1, 1),  # way before retention boundary
+            end_date=datetime(2026, 4, 1),
+            insights_lookback_window=0,
+            time_increment=5,
+        )
+        intervals = list(stream._date_intervals(some_config["account_ids"][0]))
+        # The first interval should start at the retention boundary, not 2022-01-01
+        assert intervals[0] == retention_date

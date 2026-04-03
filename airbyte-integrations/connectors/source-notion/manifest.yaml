@@ -24,7 +24,7 @@ definitions:
             header: retry-after
         response_filters:
           - type: HttpResponseFilter
-            action: RETRY
+            action: RATE_LIMITED
             http_codes:
               - 429
       - type: DefaultErrorHandler
@@ -336,6 +336,18 @@ spec:
       - auth_type
     predicate_value: OAuth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://api.notion.com/v1/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}"
+        access_token_url: "https://api.notion.com/v1/oauth/token"
+        access_token_headers:
+          Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:

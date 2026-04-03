@@ -51,10 +51,21 @@ def get_channels_retriever_instance(token_config, components_module):
     )
 
 
-def test_join_channels_should_join_to_channel(token_config, components_module):
-    retriever = get_channels_retriever_instance(token_config, components_module)
-    assert retriever.should_join_to_channel(token_config, {"is_member": False}) is True
-    assert retriever.should_join_to_channel(token_config, {"is_member": True}) is False
+@pytest.mark.parametrize(
+    "join_channels,record,expected",
+    [
+        pytest.param(True, {"is_member": False, "is_archived": False}, True, id="join_enabled_non_member_non_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": False}, False, id="join_enabled_already_member"),
+        pytest.param(True, {"is_member": False, "is_archived": True}, False, id="join_enabled_archived_channel_rejected"),
+        pytest.param(False, {"is_member": False, "is_archived": False}, False, id="join_disabled"),
+        pytest.param(True, {"is_member": False}, True, id="join_enabled_missing_is_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": True}, False, id="archived_and_already_member"),
+    ],
+)
+def test_should_join_to_channel(token_config, components_module, join_channels, record, expected):
+    config = {**token_config, "join_channels": join_channels}
+    retriever = get_channels_retriever_instance(config, components_module)
+    assert retriever.should_join_to_channel(config, record) is expected
 
 
 def test_join_channels_make_join_channel_slice(token_config, components_module):
