@@ -19,6 +19,8 @@ data:
       type: api_release_history
     - title: 2025 Out-Of-Cycle Changes
       url: https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2025
+    - title: 2026 Out-Of-Cycle Changes
+      url: https://developers.facebook.com/docs/marketing-api/out-of-cycle-changes/occ-2026
     - title: API Upgrade Tool
       url: https://developers.facebook.com/tools/api_versioning/600551260845577/
       type: api_reference
