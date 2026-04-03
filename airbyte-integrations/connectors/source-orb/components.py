@@ -39,7 +39,9 @@ class SubscriptionUsageRecordExtractor(RecordExtractor):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters
 
-    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
+    def extract_records(
+        self, response: requests.Response
+    ) -> Iterable[MutableMapping[str, Any]]:
         for body in self.decoder.decode(response):
             data_items: List[Any] = body.get("data", [])
             for item in data_items:
@@ -81,18 +83,26 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
 
             for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
                 # if a plan_id filter is specified, skip any plan that doesn't match
-                if self.config.get("plan_id") and plan["id"] != self.config.get("plan_id"):
+                if self.config.get("plan_id") and plan["id"] != self.config.get(
+                    "plan_id"
+                ):
                     continue
 
                 prices = plan.get("prices", [])
-                metric_ids_by_plan_id[plan["id"]] = [(price.get("billable_metric") or {}).get("id") for price in prices]
+                metric_ids_by_plan_id[plan["id"]] = [
+                    (price.get("billable_metric") or {}).get("id") for price in prices
+                ]
 
-        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for subscription in subscriptions_stream.read_records(
+            sync_mode=SyncMode.full_refresh
+        ):
             subscription_id = subscription["id"]
             subscription_plan_id = subscription["plan_id"]
 
             # if filtering subscription usage by plan ID, skip any subscription that doesn't match the plan_id
-            if self.config.get("plan_id") and subscription_plan_id != self.config.get("plan_id"):
+            if self.config.get("plan_id") and subscription_plan_id != self.config.get(
+                "plan_id"
+            ):
                 continue
 
             slice = {

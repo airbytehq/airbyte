@@ -19,6 +19,7 @@ def _create_response(body: Any) -> Response:
 # SubscriptionUsageRecordExtractor tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize(
     "response_body, expected_records",
     [
@@ -28,8 +29,16 @@ def _create_response(body: Any) -> Response:
                     {
                         "billable_metric": {"name": "API Calls", "id": "metric_1"},
                         "usage": [
-                            {"quantity": 10, "timeframe_start": "2024-01-01T00:00:00Z", "timeframe_end": "2024-01-02T00:00:00Z"},
-                            {"quantity": 5, "timeframe_start": "2024-01-02T00:00:00Z", "timeframe_end": "2024-01-03T00:00:00Z"},
+                            {
+                                "quantity": 10,
+                                "timeframe_start": "2024-01-01T00:00:00Z",
+                                "timeframe_end": "2024-01-02T00:00:00Z",
+                            },
+                            {
+                                "quantity": 5,
+                                "timeframe_start": "2024-01-02T00:00:00Z",
+                                "timeframe_end": "2024-01-03T00:00:00Z",
+                            },
                         ],
                     }
                 ]
@@ -79,11 +88,15 @@ def _create_response(body: Any) -> Response:
                 "data": [
                     {
                         "billable_metric": {"name": "Metric A", "id": "m_a"},
-                        "usage": [{"quantity": 1, "timeframe_start": "2024-01-01T00:00:00Z"}],
+                        "usage": [
+                            {"quantity": 1, "timeframe_start": "2024-01-01T00:00:00Z"}
+                        ],
                     },
                     {
                         "billable_metric": {"name": "Metric B", "id": "m_b"},
-                        "usage": [{"quantity": 2, "timeframe_start": "2024-01-01T00:00:00Z"}],
+                        "usage": [
+                            {"quantity": 2, "timeframe_start": "2024-01-01T00:00:00Z"}
+                        ],
                     },
                 ]
             },
@@ -178,7 +191,9 @@ def _create_response(body: Any) -> Response:
     ],
 )
 def test_extract_records(components_module, response_body, expected_records):
-    SubscriptionUsageRecordExtractor = components_module.SubscriptionUsageRecordExtractor
+    SubscriptionUsageRecordExtractor = (
+        components_module.SubscriptionUsageRecordExtractor
+    )
     extractor = SubscriptionUsageRecordExtractor(
         config={},
         parameters={},
