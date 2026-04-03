@@ -5,12 +5,15 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `client_id` | `string` | Client ID.  |  |
-| `client_secret` | `string` | Client secret.  |  |
-| `client_refresh_token_2` | `string` | Refresh token.  |  |
-| `calendarid` | `string` | Calendar Id.  |  |
+| `credentials` | `object` | Authentication. Credentials for connecting to the Google Calendar API. |  |
+| `credentials.client_id` | `string` | Client ID. Enter your Google application's Client ID. See Google's documentation for more information. |  |
+| `credentials.client_secret` | `string` | Client Secret. Enter your Google application's Client Secret. See Google's documentation for more information. |  |
+| `credentials.client_refresh_token_2` | `string` | Refresh Token. Enter your Google application's refresh token. See Google's documentation for more information. |  |
+| `credentials.service_account_info` | `string` | Service Account Information. The JSON key of the service account to use for authorization. |  |
+| `calendarid` | `string` | Calendar Id. |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | colors | calendar.event | No pagination | ✅ |  ❌  |
@@ -26,6 +29,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2026-04-03 | [76066](https://github.com/airbytehq/airbyte/pull/76066) | Add OAuth flow with credentials wrapper and config migration |
 | 0.0.37 | 2026-03-31 | [75671](https://github.com/airbytehq/airbyte/pull/75671) | Update dependencies |
 | 0.0.36 | 2026-03-17 | [74985](https://github.com/airbytehq/airbyte/pull/74985) | Update dependencies |
 | 0.0.35 | 2026-02-24 | [73746](https://github.com/airbytehq/airbyte/pull/73746) | Update dependencies |
