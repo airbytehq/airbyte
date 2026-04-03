@@ -12,97 +12,75 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 
 ## Prerequisites
 
-- Google account or JSON credentials for the service account that have access to GCS. For more details check [instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
-- GCS bucket
-- The list of streams to sync
+- A Google Cloud account with a [service account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) that has read access to the target GCS bucket, or a Google account that can authenticate via OAuth
+- The service account must have the **Storage Object Viewer** (`roles/storage.objectViewer`) role on the bucket, or equivalent permissions (`storage.objects.get` and `storage.objects.list`). For more details, see the [GCS IAM documentation](https://cloud.google.com/storage/docs/access-control/iam-permissions).
+- A GCS bucket containing the files you want to replicate
 
 ## Setup guide
 
-## Set up Google Cloud Storage (GCS)
+### Create a service account
 
-### Create a Service Account
+First, select an existing project or create a new project in the Google Cloud Console:
 
-First, you need to select existing or create a new project in the Google Cloud Console:
-
-1. Sign in to the Google Account.
+1. Sign in to your Google account.
 2. Go to the [Service Accounts](https://console.developers.google.com/iam-admin/serviceaccounts) page.
-3. Click `Create service account`.
-4. Create a JSON key file for the service user. The contents of this file will be provided as the `service_account` in the UI.
+3. Click **Create service account**.
+4. Create a JSON key file for the service account. The contents of this file will be provided as the **Service Account Information** in the connector configuration.
 
 ### Grant permission to GCS
 
-Use the service account ID from above, grant read access to your target bucket. Click [here](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) for more details.
+Grant the service account read access to your target bucket. At minimum, assign the **Storage Object Viewer** (`roles/storage.objectViewer`) role. See [Using IAM permissions](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) for details.
 
-### Set up the Google Cloud Storage (GCS) connector in Airbyte
+### Set up the connector in Airbyte
 
-#### For Airbyte Cloud:
+1. Log in to your Airbyte account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Google Cloud Storage (GCS)** from the Source type dropdown.
+4. Enter a name for the connector.
+5. Select an authorization type:
+   - **Authenticate via Google (OAuth)**: Click **Sign in with Google** and complete the authentication workflow.
+   - **Service Account Information**: Paste the service account JSON key into the **Service Account Information** field.
+6. Enter your GCS bucket name in the **Bucket** field.
+7. Add a stream:
+   1. Enter a **Name** for the stream.
+   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggle the **Optional fields** button within the **Format** box to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format Settings](#file-format-settings) section.
+   3. Optionally, enter the **Globs** which dictate which files to sync. Globs use glob-style pattern matching to select specific files for replication. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns](#path-patterns) section.
+   4. Optionally, enter an **Input schema** to enforce a specific schema. By default, this value is set to `{}` and will automatically infer the schema from the files you are replicating. For details on providing a custom schema, refer to the [User Schema](#user-schema) section.
+8. Optionally, configure the **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank replicates data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
+9. Click **Set up source** and wait for the tests to complete.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Google Cloud Storage (GCS) from the Source type dropdown.
-4. Enter a name for the Google Cloud Storage (GCS) connector.
-5. Select authorization type:
-   1. **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow. 
-   2. **Service Account Information** and paste the service account JSON key to the `Service Account Information` field .
-6. Paste the service account JSON key to the `Service Account Information` field .
-7. Enter your GCS bucket name to the `Bucket` field. 
-8. Add a stream:
-   1. Give a **Name** to the stream 
-   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below. 
-   3. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-   4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-9. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
-10. Click **Set up source** and wait for the tests to complete.
+### File URLs
 
-#### For Airbyte Open Source:
+The GCS source connector uses signed URLs to work with files when authenticated with a service account, and `gs://` URIs when authenticated via Google OAuth.
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Google Cloud Storage (GCS) from the Source type dropdown.
-4. Enter a name for the Google Cloud Storage (GCS) connector.
-5. Select authorization type:
-   1. **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow. 
-   2. **Service Account Information** and paste the service account JSON key to the `Service Account Information` field .
-6. Paste the service account JSON key to the `Service Account Information` field .
-7. Enter your GCS bucket name to the `Bucket` field. 
-8. Add a stream:
-   1. Give a **Name** to the stream 
-   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below. 
-   3. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-   4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-9. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
-10. Click **Set up source** and wait for the tests to complete.
-
-#### File urls
-
-The Google Cloud Storage (GCS) source connector uses `signed url` to work with files when source authenticated with `Service Account Information` and `gs://{blob.bucket.name}/{blob.name}` when source authenticated via Google (OAuth).
-This is important to know that File urls are used in the connection state. 
-So if you change authorization type, and you use Incremental sync the next sync will not use old state and reread provided files in Full Refresh mode(like initial sync), next syncs will be Incremental as expected.
+File URLs are stored in the connection state. If you change the authorization type and use incremental sync, the next sync will not use the old state and will re-read all files in full refresh mode. Subsequent syncs will be incremental as expected.
 
 ## Path Patterns
 
-\(tl;dr -&gt; path pattern syntax using [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/). GLOBSTAR and SPLIT flags are enabled.\)
+:::tip
+Path patterns use [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/) syntax with GLOBSTAR and SPLIT flags enabled.
+:::
 
 This connector can sync multiple files by using glob-style patterns, rather than requiring a specific path for every file. This enables:
 
-- Referencing many files with just one pattern, e.g. `**` would indicate every file in the folder.
-- Referencing future files that don't exist yet \(and therefore don't have a specific path\).
+- Referencing many files with just one pattern, e.g. `**` would indicate every file in the bucket.
+- Referencing future files that don't exist yet and therefore don't have a specific path.
 
-You must provide a path pattern. You can also provide many patterns split with \| for more complex directory layouts.
+You must provide a path pattern. You can also provide multiple patterns split with `|` for more complex directory layouts.
 
-Each path pattern is a reference from the _root_ of the folder, so don't include the root folder name itself in the pattern\(s\).
+Each path pattern is a reference from the _root_ of the bucket, so don't include the bucket name itself in the patterns.
 
 Some example patterns:
 
 - `**` : match everything.
 - `**/*.csv` : match all files with specific extension.
-- `myFolder/**/*.csv` : match all csv files anywhere under myFolder.
+- `myFolder/**/*.csv` : match all CSV files anywhere under myFolder.
 - `*/**` : match everything at least one folder deep.
 - `*/*/*/**` : match everything at least three folders deep.
-- `**/file.*|**/file` : match every file called "file" with any extension \(or no extension\).
-- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y.
-- `**/prefix*.csv` : match all csv files with specific prefix.
-- `**/prefix*.parquet` : match all parquet files with specific prefix.
+- `**/file.*|**/file` : match every file called "file" with any extension or no extension.
+- `x/*/y/*` : match all files that sit in sub-folder x, then any folder, then folder y.
+- `**/prefix*.csv` : match all CSV files with specific prefix.
+- `**/prefix*.parquet` : match all Parquet files with specific prefix.
 
 Let's look at a specific example, matching the following folder layout (`MyFolder` is the folder specified in the connector config as the root folder, which the patterns are relative to):
 
@@ -120,27 +98,27 @@ MyFolder
             -> another_part1.csv
 ```
 
-We want to pick up part1.csv, part2.csv and part3.csv \(excluding another_part1.csv for now\). We could do this a few different ways:
+We want to pick up part1.csv, part2.csv and part3.csv (excluding another_part1.csv for now). We could do this a few different ways:
 
-- We could pick up every csv file called "partX" with the single pattern `**/part*.csv`.
+- We could pick up every CSV file called "partX" with the single pattern `**/part*.csv`.
 - To be a bit more robust, we could use the dual pattern `some_table_files/*.csv|more_table_files/*.csv` to pick up relevant files only from those exact folders.
 - We could achieve the above in a single pattern by using the pattern `*table_files/*.csv`. This could however cause problems in the future if new unexpected folders started being created.
-- We can also recursively wildcard, so adding the pattern `extras/**/*.csv` would pick up any csv files nested in folders below "extras", such as "extras/misc/another_part1.csv".
+- We can also recursively wildcard, so adding the pattern `extras/**/*.csv` would pick up any CSV files nested in folders below "extras", such as "extras/misc/another_part1.csv".
 
 As you can probably tell, there are many ways to achieve the same goal with path patterns. We recommend using a pattern that ensures clarity and is robust against future additions to the directory structure.
 
 ## User Schema
 
-When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
+When using the Avro, JSONL, CSV, or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
 - You only care about a specific known subset of the columns. The other columns would all still be included, but packed into the `_ab_additional_properties` map.
-- Your initial dataset is quite small \(in terms of number of records\), and you think the automatic type inference from this sample might not be representative of the data in the future.
+- Your initial dataset is quite small in terms of number of records, and you think the automatic type inference from this sample might not be representative of the data in the future.
 - You want to purposely define types for every column.
 - You know the names of columns that will be added to future data and want to include these in the core schema as columns rather than have them appear in the `_ab_additional_properties` map.
 
-Or any other reason! The schema must be provided as valid JSON as a map of `{"column": "datatype"}` where each datatype is one of:
+The schema must be provided as valid JSON as a map of `{"column": "datatype"}` where each datatype is one of:
 
 - string
 - number
@@ -168,10 +146,10 @@ Since CSV files are effectively plain text, providing specific reader options is
 - **Header Definition**: How headers will be defined. `User Provided` assumes the CSV does not have a header row and uses the headers provided and `Autogenerated` assumes the CSV does not have a header row and the CDK will generate headers using for `f{i}` where `i` is the index starting from 0. Else, the default behavior is to use the header from the CSV file. If a user wants to autogenerate or provide column names for a CSV having headers, they can set a value for the "Skip rows before header" option to ignore the header row.
 - **Delimiter**: Even though CSV is an acronym for Comma Separated Values, it is used more generally as a term for flat file data that may or may not be comma separated. The delimiter field lets you specify which character acts as the separator. To use [tab-delimiters](https://en.wikipedia.org/wiki/Tab-separated_values), you can set this value to `\t`. By default, this value is set to `,`.
 - **Double Quote**: This option determines whether two quotes in a quoted CSV value denote a single quote in the data. Set to True by default.
-- **Encoding**: Some data may use a different character set \(typically when different alphabets are involved\). See the [list of allowable encodings here](https://docs.python.org/3/library/codecs.html#standard-encodings). By default, this is set to `utf8`.
+- **Encoding**: Some data may use a different character set, typically when different alphabets are involved. See the [list of allowable encodings here](https://docs.python.org/3/library/codecs.html#standard-encodings). By default, this is set to `utf8`.
 - **Escape Character**: An escape character can be used to prefix a reserved character and ensure correct parsing. A commonly used character is the backslash (`\`). For example, given the following data:
 
-```
+```text
 Product,Description,Price
 Jeans,"Navy Blue, Bootcut, 34\"",49.99
 ```
@@ -182,7 +160,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 - **False Values**: A set of case-sensitive strings that should be interpreted as false values.
 - **Null Values**: A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.
-- **Quote Character**: In some cases, data values may contain instances of reserved characters \(like a comma, if that's the delimiter\). CSVs can handle this by wrapping a value in defined quote characters so that on read it can parse it correctly. By default, this is set to `"`.
+- **Quote Character**: In some cases, data values may contain instances of reserved characters, like a comma if that's the delimiter. CSVs can handle this by wrapping a value in defined quote characters so that on read it can parse it correctly. By default, this is set to `"`.
 - **Skip Rows After Header**: The number of rows to skip after the header row.
 - **Skip Rows Before Header**: The number of rows to skip before the header row.
 - **Strings Can Be Null**: Whether strings can be interpreted as null values. If true, strings that match the null_values set will be interpreted as null. If false, strings that match the null_values set will be interpreted as the string itself.
@@ -192,7 +170,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 - **Schemaless**: When enabled, syncs will not validate or structure records against the stream's schema.
 
-### Parquet 
+### Parquet
 
 - **Convert Double Fields to Strings**: Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.
 
@@ -213,21 +191,23 @@ Leaving this field blank (default option) will disallow escaping.
 
 The Google Cloud Storage (GCS) source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
+| Feature           | Supported? | Notes |
+|:------------------|:-----------|:------|
+| Full Refresh Sync | Yes        |       |
+| Incremental Sync  | Yes        |       |
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-|:------------------|:---------------------|:------|
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
+## Supported file formats
 
-## Supported Streams
+This connector supports the following file formats:
 
-Google Cloud Storage (GCS) supports following file formats:
- - avro
- - jsonl
- - csv
- - parquet
- - unstructured document format
- - excel
+- Avro
+- CSV
+- Excel
+- JSONL
+- Parquet
+- Unstructured document format
+
+The connector also supports reading files compressed with **gzip** (`.gz`) or **bzip2** (`.bz2`), and can extract and process files from **ZIP** (`.zip`) archives. ZIP archives containing files in any of the supported formats are automatically extracted during sync.
 
 ## Changelog
 
@@ -239,7 +219,7 @@ Google Cloud Storage (GCS) supports following file formats:
 | 0.10.11 | 2026-03-31 | [75690](https://github.com/airbytehq/airbyte/pull/75690) | Update dependencies |
 | 0.10.10 | 2026-03-24 | [75390](https://github.com/airbytehq/airbyte/pull/75390) | Update dependencies |
 | 0.10.9 | 2026-03-19 | [74779](https://github.com/airbytehq/airbyte/pull/74779) | Fix ZIP file detection for files with compound extensions (e.g. `.csv.zip`) |
-| 0.10.8 | 2026-03-18 | [74781](https://github.com/airbytehq/airbyte/pull/74781) | Fix records quadratic duplication |
+| 0.10.8 | 2026-03-19 | [74781](https://github.com/airbytehq/airbyte/pull/74781) | Fix records quadratic duplication when extracting ZIP archives |
 | 0.10.7 | 2026-03-03 | [70287](https://github.com/airbytehq/airbyte/pull/70287) | Update dependencies |
 | 0.10.6 | 2026-02-13 | [73332](https://github.com/airbytehq/airbyte/pull/73332) | Fix zip file extraction failing with `DeliverRawFiles has no attribute delivery_type` error |
 | 0.10.5 | 2025-11-25 | [69913](https://github.com/airbytehq/airbyte/pull/69913) | Update dependencies |
