@@ -288,6 +288,16 @@ def generate_excel_file(data):
     return tmp_file
 
 
+def generate_multi_sheet_excel_file(sheet_data):
+    """Helper to generate an Excel file with multiple sheets."""
+    tmp_file = NamedTemporaryFile(suffix=".xlsx", delete=False)
+    with pd.ExcelWriter(tmp_file.name, engine="openpyxl") as writer:
+        for sheet_name, data in sheet_data.items():
+            pd.DataFrame(data).to_excel(writer, index=False, header=False, sheet_name=sheet_name)
+    tmp_file.seek(0)
+    return tmp_file
+
+
 def test_excel_reader_option_names(config):
     """
     Test the 'names' option for the Excel reader.
@@ -344,3 +354,57 @@ def test_excel_reader_option_header(config):
         read_file = next(client.load_dataframes(fp=tmp.name))
         assert isinstance(read_file, pd.DataFrame)
         assert read_file.to_dict(orient="records") == expected_data
+
+
+def test_excel_reader_option_sheet_name(config):
+    config["format"] = "excel"
+    config["reader_options"] = {"sheet_name": "SheetB"}
+    client = Client(**config)
+
+    sheet_data = {
+        "SheetA": [["A1", "A2"], ["Value1", "Value2"]],
+        "SheetB": [["B1", "B2"], ["Keep1", "Keep2"]],
+    }
+    expected_data = [{"B1": "Keep1", "B2": "Keep2"}]
+
+    with generate_multi_sheet_excel_file(sheet_data) as tmp:
+        records = []
+        for df_chunk in client.load_dataframes(fp=tmp.name):
+            records.extend(df_chunk.to_dict(orient="records"))
+        assert records == expected_data
+
+
+def test_excel_reader_option_sheet_name_list(config):
+    config["format"] = "excel"
+    config["reader_options"] = {"sheet_name": ["SheetB", "SheetC"]}
+    client = Client(**config)
+
+    sheet_data = {
+        "SheetA": [["A1", "A2"], ["Value1", "Value2"]],
+        "SheetB": [["B1", "B2"], ["Keep1", "Keep2"]],
+        "SheetC": [["C1", "C2"], ["Keep3", "Keep4"]],
+    }
+    expected_data = [
+        {"B1": "Keep1", "B2": "Keep2"},
+        {"C1": "Keep3", "C2": "Keep4"},
+    ]
+
+    with generate_multi_sheet_excel_file(sheet_data) as tmp:
+        records = []
+        for df_chunk in client.load_dataframes(fp=tmp.name):
+            records.extend(df_chunk.to_dict(orient="records"))
+        assert records == expected_data
+
+
+def test_excel_reader_option_sheet_name_missing(config):
+    config["format"] = "excel"
+    config["reader_options"] = {"sheet_name": "Missing"}
+    client = Client(**config)
+
+    sheet_data = {
+        "SheetA": [["A1", "A2"], ["Value1", "Value2"]],
+    }
+
+    with generate_multi_sheet_excel_file(sheet_data) as tmp:
+        with pytest.raises(AirbyteTracedException):
+            next(client.load_dataframes(fp=tmp.name))
