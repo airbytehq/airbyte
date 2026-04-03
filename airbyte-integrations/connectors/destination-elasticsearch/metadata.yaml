@@ -4,7 +4,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/destination-elasticsearch
   githubIssueLabel: destination-elasticsearch
   icon: elasticsearch.svg
@@ -12,7 +12,6 @@ data:
   name: ElasticSearch
   registryOverrides:
     cloud:
-      dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
       enabled: true
     oss:
       enabled: true
