@@ -215,6 +215,26 @@ public class MongoDbCdcEventUtils {
     return "array".equals(typeNode.asText());
   }
 
+  /**
+   * Checks if the schema for a given field expects an object type.
+   *
+   * @param fieldSchemas Map of field names to their JSON schema definitions
+   * @param fieldName The field to check
+   * @return true if the schema expects an object, false otherwise
+   */
+  private static boolean schemaExpectsObject(final Map<String, JsonNode> fieldSchemas, final String fieldName) {
+    if (fieldSchemas == null || !fieldSchemas.containsKey(fieldName)) {
+      return false;
+    }
+    final JsonNode schema = fieldSchemas.get(fieldName);
+    final JsonNode typeNode = schema.get("type");
+    if (typeNode == null) {
+      return false;
+    }
+
+    return "object".equals(typeNode.asText());
+  }
+
   private static ObjectNode readDocument(final BsonReader reader,
                                          final ObjectNode jsonNodes,
                                          final Map<String, JsonNode> includedFields,
@@ -242,6 +262,13 @@ public class MongoDbCdcEventUtils {
             JsonNode valueNode = readField(reader, emptyTempNode, fieldName, fieldType).get(fieldName);
             jsonNodes.set(fieldName, Jsons.jsonNode(List.of(valueNode)));
           }
+        } else if (!DOCUMENT.equals(fieldType) && !ARRAY.equals(fieldType) && schemaExpectsObject(includedFields, fieldName)) {
+          LOGGER.warn("Field '{}' expected object but received {}. Auto-wrapping value in object to prevent " +
+              "DESTINATION_SERIALIZATION_ERROR.", fieldName, fieldType);
+          // Read the primitive value and wrap it in an object so the destination receives a valid JSON object
+          final var emptyTempNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+          JsonNode valueNode = readField(reader, emptyTempNode, fieldName, fieldType).get(fieldName);
+          jsonNodes.set(fieldName, Jsons.jsonNode(Map.of("value", valueNode)));
         } else if (DOCUMENT.equals(fieldType)) {
           /*
            * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
