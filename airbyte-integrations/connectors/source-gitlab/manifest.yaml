@@ -417,8 +417,8 @@ definitions:
         values: |
           {% set slices = [] %}
           {% for group_id in config.get('groups_list', []) %}
-          {% set _ = slices.append({'path': 'groups/' + group_id}) %}
-          {% set _ = slices.append({'path': 'groups/' + group_id + '/descendant_groups'}) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id.replace('/', '%2F')}) %}
+          {% set _ = slices.append({'path': 'groups/' + group_id.replace('/', '%2F') + '/descendant_groups'}) %}
           {% endfor %}
           {{ slices }}
     $parameters:
