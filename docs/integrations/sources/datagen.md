@@ -1,4 +1,4 @@
-# DataGen
+# End-to-End Testing (DataGen)
 
 The DataGen source connector generates synthetic data for testing and development purposes. This connector is designed for end-to-end testing of data destinations and for testing Airbyte configurations in speed mode without requiring access to an external data source.
 
@@ -33,11 +33,11 @@ The connector supports two data generation patterns:
 
 ### Incremental
 
-Generates a stream named `increment` with a single column named `id` that contains monotonically increasing integers. This mode is useful for testing incremental data loading and verifying that data arrives in the expected order.
+Generates a stream named `increment` with a single column named `id` that contains monotonically increasing integers. Despite the name, this mode is not specifically designed for testing incremental syncs—the name refers to the incrementing pattern of the data itself.
 
 ### All types
 
-Generates a stream named `all types` with columns for various Airbyte data types, including id, string, boolean, number, big integer, big decimal, date, time (with and without time zones), timestamp (with and without time zones), and JSON. This mode is useful for testing type handling and schema compatibility across different destinations.
+Generates a stream named `all types` with columns for various Airbyte data types, including id, string, boolean, number, big integer, big decimal, date, time (with and without time zones), timestamp (with and without time zones), and JSON. This mode is useful for testing type handling and schema compatibility across different destinations. This mode is also faster than the Incremental mode, making it better suited for performance and speed testing.
 
 ## Changelog
 
