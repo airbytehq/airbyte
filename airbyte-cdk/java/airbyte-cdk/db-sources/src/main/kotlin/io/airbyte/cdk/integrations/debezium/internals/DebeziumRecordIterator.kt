@@ -233,6 +233,10 @@ class DebeziumRecordIterator<T>(
                 continue
             }
             val changeEventWithMetadata = ChangeEventWithMetadata(event)
+            // #41647: discard event type with op code 'm' (same check as main processing loop)
+            if (!isEventTypeHandled(changeEventWithMetadata)) {
+                continue
+            }
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
             return changeEventWithMetadata
         }
