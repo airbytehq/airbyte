@@ -4,6 +4,7 @@
 
 
 from dataclasses import dataclass
+from importlib.resources import files
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from yaml import safe_load
@@ -82,9 +83,6 @@ class AsanaHttpRequester(HttpRequester):
         return prop
 
     def _get_stream_schema(self) -> MutableMapping[str, Any]:
-        try:
-            with open("/source_declarative_manifest/manifest.yaml") as f:
-                manifest = safe_load(f)
-            return manifest.get("definitions", {}).get(f"{self.name}_schema", {})
-        except Exception:
-            return {}
+        manifest_text = files("source_declarative_manifest").joinpath("manifest.yaml").read_text()
+        manifest = safe_load(manifest_text)
+        return manifest.get("definitions", {}).get(f"{self.name}_schema", {})
