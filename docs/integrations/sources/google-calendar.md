@@ -13,6 +13,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 | `calendarid` | `string` | Calendar Id. |  |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | colors | calendar.event | No pagination | ✅ |  ❌  |
