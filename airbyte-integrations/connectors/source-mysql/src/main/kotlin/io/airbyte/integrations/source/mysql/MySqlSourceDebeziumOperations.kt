@@ -223,24 +223,33 @@ class MySqlSourceDebeziumOperations(
             )
         }
 
-        val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
-        val availableGtidSet = MySqlGtidSet(gtidSet)
-        if (!savedGtidSet.isContainedWithin(availableGtidSet)) {
-            return abortCdcSync(
-                "Connector last known GTIDs are $savedGtidSet, but MySQL server only has $availableGtidSet"
-            )
-        }
-
-        // newGtidSet is gtids from server that hasn't been seen by this connector yet. If the set
-        // exists, check that they are not purged, or we may lose those data.
-        val newGtidSet = availableGtidSet.subtract(savedGtidSet)
-        if (!newGtidSet.isEmpty) {
-            val purgedGtidSet = queryPurgedIds()
-            if (!purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)) {
+        try {
+            val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
+            val availableGtidSet = MySqlGtidSet(gtidSet)
+            if (!savedGtidSet.isContainedWithin(availableGtidSet)) {
                 return abortCdcSync(
-                    "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
+                    "Connector last known GTIDs are $savedGtidSet, but MySQL server only has $availableGtidSet"
                 )
             }
+
+            // newGtidSet is gtids from server that hasn't been seen by this connector yet. If the
+            // set exists, check that they are not purged, or we may lose those data.
+            val newGtidSet = availableGtidSet.subtract(savedGtidSet)
+            if (!newGtidSet.isEmpty) {
+                val purgedGtidSet = queryPurgedIds()
+                if (
+                    !purgedGtidSet.isEmpty && !newGtidSet.subtract(purgedGtidSet).equals(newGtidSet)
+                ) {
+                    return abortCdcSync(
+                        "Connector has not seen GTIDs $newGtidSet, but MySQL server has purged $purgedGtidSet"
+                    )
+                }
+            }
+        } catch (e: NullPointerException) {
+            log.warn(e) { "GTID comparison failed due to malformed saved state." }
+            return abortCdcSync(
+                "Saved CDC replication state contains a malformed GTID set that is incompatible with the current MySQL server"
+            )
         }
         // If the connector has saved GTID set, we will use that to validate and skip
         // binlog validation. GTID and binlog works in an independent way to ensure data
@@ -274,7 +283,10 @@ class MySqlSourceDebeziumOperations(
 
     private fun parseSavedOffset(debeziumState: UnvalidatedDeserializedState): SavedOffset {
         val position: MySqlSourceCdcPosition = position(debeziumState.offset)
-        val gtidSet: String? = debeziumState.offset.wrapped.values.first()["gtids"]?.asText()
+        val gtidSet: String? =
+            debeziumState.offset.wrapped.values.first()["gtids"]?.asText()?.takeUnless {
+                it == "null" || it.isBlank()
+            }
         return SavedOffset(position, gtidSet)
     }
 
