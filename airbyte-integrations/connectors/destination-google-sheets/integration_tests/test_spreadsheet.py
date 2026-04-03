@@ -42,6 +42,45 @@ def test_clean_worksheet():
     assert len(records) == 0
 
 
+def test_clean_worksheet_deletes_rows_not_just_clears():
+    """
+    Test that clean_worksheet actually deletes rows (not just clears them)
+    to prevent accumulation of empty cells that can cause API limit issues.
+
+    This test verifies the fix for blank cell accumulation during full refresh.
+    """
+    test_wks = TEST_SPREADSHEET.open_worksheet(TEST_STREAM)
+
+    # Set headers
+    TEST_SPREADSHEET.set_headers(TEST_STREAM, ["id", "name"])
+
+    # Add some data rows
+    test_data = [[1, "test1"], [2, "test2"], [3, "test3"]]
+    test_wks.append_table(test_data, start="A2", dimension="ROWS")
+
+    # Verify rows were added
+    initial_row_count = test_wks.rows
+    assert initial_row_count >= 4  # 1 header + 3 data rows
+
+    # Clean the worksheet - this should DELETE rows, not just clear them
+    TEST_SPREADSHEET.clean_worksheet(TEST_STREAM)
+
+    # Re-open worksheet to get fresh state
+    test_wks = TEST_SPREADSHEET.open_worksheet(TEST_STREAM)
+
+    # Verify rows were actually deleted (not just cleared)
+    # After deletion, we should have 0 or 1 row (empty or header only)
+    final_row_count = test_wks.rows
+    assert final_row_count <= 1, f"Expected row count <= 1 after cleaning, got {final_row_count}. Rows were not properly deleted."
+
+    # Verify no records remain
+    records = test_wks.get_all_records()
+    assert len(records) == 0
+
+    # Verify the row count decreased (proving deletion vs clearing)
+    assert final_row_count < initial_row_count, "Row count should decrease after cleaning, indicating actual deletion occurred."
+
+
 def test_set_headers():
     test_headers = ["id", "key"]
     TEST_SPREADSHEET.set_headers("test_stream", ["id", "key"])
