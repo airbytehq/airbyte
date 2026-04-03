@@ -203,7 +203,8 @@ class TestGoogleAdsStreamingDecoder:
     @dataclass
     class _FakeResponse:
         chunks: List[bytes]
-        status: int = 200
+        status_code: int = 200
+        url: str = "https://googleads.googleapis.com/test"
 
         def iter_content(self, chunk_size=1):
             # Ignore chunk_size; we already control chunking via self.chunks
@@ -211,8 +212,8 @@ class TestGoogleAdsStreamingDecoder:
                 yield c
 
         def raise_for_status(self):
-            if self.status >= 400:
-                raise Exception(f"HTTP {self.status}")
+            if self.status_code >= 400:
+                raise Exception(f"HTTP {self.status_code}")
 
     @staticmethod
     def _decode_all(decoder: GoogleAdsStreamingDecoder, resp: "_FakeResponse"):
@@ -405,6 +406,8 @@ class TestGoogleAdsStreamingDecoder:
         class _ErroringResponse:
             parts: List[bytes]
             raise_after_index: int
+            status_code: int = 200
+            url: str = "https://googleads.googleapis.com/test"
 
             def iter_content(self, chunk_size=1):
                 for idx, p in enumerate(self.parts):
@@ -423,6 +426,9 @@ class TestGoogleAdsStreamingDecoder:
     def test_stream_consumed_error_propagates_immediately(self, decoder):
         @dataclass
         class _AlreadyConsumedResponse:
+            status_code: int = 200
+            url: str = "https://googleads.googleapis.com/test"
+
             def iter_content(self, chunk_size=1):
                 raise StreamConsumedError("already consumed")
 
@@ -437,15 +443,16 @@ class TestGoogleAdsStreamingDecoder:
         """Respects chunk_size by slicing the body bytes."""
 
         body: bytes
-        status: int = 200
+        status_code: int = 200
+        url: str = "https://googleads.googleapis.com/test"
 
         def iter_content(self, chunk_size=1):
             for i in range(0, len(self.body), chunk_size):
                 yield self.body[i : i + chunk_size]
 
         def raise_for_status(self):
-            if self.status >= 400:
-                raise Exception(f"HTTP {self.status}")
+            if self.status_code >= 400:
+                raise Exception(f"HTTP {self.status_code}")
 
     def test_fast_path_under_threshold_uses_json_loads(self):
         """Body size == max_direct_decode_bytes - 1 - fast path is taken."""
@@ -830,9 +837,9 @@ def test_custom_retriever_streams_have_expected_date_format(stream_name, datetim
 def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
-    )
+    assert isinstance(
+        extractor.decoder, GoogleAdsStreamingDecoder
+    ), f"Stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
 
 
 @pytest.mark.parametrize(
@@ -846,6 +853,6 @@ def test_default_streams_use_streaming_decoder_in_extractor(stream_name, retriev
 def test_dynamic_streams_use_streaming_decoder_in_extractor(stream_name, retriever):
     extractor = retriever.record_selector.extractor
     assert isinstance(extractor, DpathExtractor), f"Dynamic stream {stream_name}: expected DpathExtractor, got {type(extractor).__name__}"
-    assert isinstance(extractor.decoder, GoogleAdsStreamingDecoder), (
-        f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, " f"got {type(extractor.decoder).__name__}"
-    )
+    assert isinstance(
+        extractor.decoder, GoogleAdsStreamingDecoder
+    ), f"Dynamic stream {stream_name}: expected GoogleAdsStreamingDecoder on extractor, got {type(extractor.decoder).__name__}"
