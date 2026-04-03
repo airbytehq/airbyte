@@ -155,6 +155,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.17 | 2026-03-26 | [75490](https://github.com/airbytehq/airbyte/pull/75490) | Fix reportDate deduplication in daily report streams by using the actual date from API response |
 | 7.3.16 | 2026-03-30 | [74313](https://github.com/airbytehq/airbyte/pull/74313) | Fix profile ID type mismatch in record filter |
 | 7.3.15 | 2026-03-17 | [74975](https://github.com/airbytehq/airbyte/pull/74975) | Update dependencies |
 | 7.3.14 | 2026-02-24 | [73761](https://github.com/airbytehq/airbyte/pull/73761) | Update dependencies |

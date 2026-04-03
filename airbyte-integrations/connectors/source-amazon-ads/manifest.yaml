@@ -3209,7 +3209,7 @@ definitions:
     - type: AddFields
       fields:
         - path: ["reportDate"]
-          value: "{{ stream_interval.end_time }}"
+          value: "{{ record.get('date', stream_interval.end_time) }}"
     - type: AddFields
       fields:
         - path: ["profileId"]
