@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """
 Unit tests for source-pylon manifest configuration.
 
