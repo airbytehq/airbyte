@@ -187,6 +187,7 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: modified_after
+        lookback_window: PT1H
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -236,6 +237,7 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: after
+        lookback_window: PT1H
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -284,7 +286,8 @@ definitions:
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: "modified_after\t"
+          field_name: modified_after
+        lookback_window: PT1H
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -412,6 +415,7 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: modified_after
+        lookback_window: PT1H
       schema_loader:
         type: InlineSchemaLoader
         schema:
