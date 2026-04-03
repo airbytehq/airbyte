@@ -514,24 +514,195 @@ The entire connector is wired via Micronaut DI through `@Singleton` beans.
 
 ## Phase 10: Tests
 
-### 10.1 — Port unit tests
+The Bulk CDK provides a standardized component test framework via suite interfaces that every connector should implement. These are the primary quality gates and should be prioritized. The test structure follows a three-tier architecture: component tests (CDK suites against a real DB), unit tests (mocked), and acceptance tests (full E2E).
 
-- **`RedshiftSqlGeneratorTest.kt`**: Rewrite to test `RedshiftDirectLoadSqlGenerator`. Verify generated SQL for CREATE TABLE, upsert (CTE-based DELETE+UPDATE+INSERT), ALTER TABLE (with 5-step type change pattern), overwrite, copy, etc.
-- **`RedshiftValueCoercerTest.kt`**: Port from `RedshiftSuperLimitationTransformerTest.kt`. Test VARCHAR 64KB limit, SUPER 16MB limit, number ranges, date ranges, null byte stripping.
-- **`RedshiftTableSchemaMapperTest.kt`**: Test Airbyte type -> Redshift type mapping, `toColumnName()` sanitization, `toFinalTableName()`.
-- **`RedshiftSpecTest.kt`**: Port spec validation tests to new specification format.
+### 10.1 — Component tests (CDK suite interfaces)
 
-### 10.2 — Port integration tests
+These tests run against a real Redshift instance using Micronaut DI with `@MicronautTest(environments = ["component"])`. They exercise the connector's production beans in isolation against the actual database. Since Redshift is a managed service (no Testcontainers available), they connect to a dedicated test Redshift cluster via secrets.
 
-- **`RedshiftTypingDedupingTest.kt`**: Port the `AbstractRedshiftTypingDedupingTest` to use the Bulk CDK's test framework (if one exists) or write custom integration tests.
-- **`RedshiftSqlGeneratorIntegrationTest.kt`**: Test SQL generation against a live Redshift cluster.
-- **`RedshiftConnectionTest.kt`**: Test connection check with invalid credentials.
-- **`RedshiftStorageOperationTest.kt`**: Test S3 staging + COPY flow end-to-end.
+**Infrastructure files to create (under `src/test-integration/.../component/`):**
 
-### 10.3 — Drop obsolete tests
+- **`RedshiftComponentTestConfigFactory.kt`** — A Micronaut `@Factory` annotated with `@Requires(env = ["component"])`. Loads Redshift connection config from a secrets file (`secrets/test-instance.json` fetched from GSM via `TestConfigLoader.loadTestConfig()`). Creates a `RedshiftConfiguration` bean for the test environment, including S3 staging credentials.
+
+  **Reference:** `PostgresComponentTestConfigFactory.kt`, `SnowflakeTestConfigFactory.kt`
+
+- **`RedshiftTestTableOperationsClient.kt`** — Implements the CDK's `TestTableOperationsClient` interface (`@Singleton`, `@Requires(env = ["component"])`). Provides low-level JDBC operations for test setup/verification:
+  - `ping()` — simple connectivity check (`SELECT 1`)
+  - `dropNamespace(namespace)` — `DROP SCHEMA IF EXISTS ... CASCADE`
+  - `insertRecords(table, records)` — direct JDBC INSERT for test data. Must handle Redshift SUPER type serialization: convert `ObjectValue`/`ArrayValue` to JSON strings via `JSON_PARSE()`.
+  - `readTable(table)` — `SELECT * FROM ...` returning `List<Map<String, Any>>` with proper type conversion (SUPER -> JSON string, TIMESTAMPTZ -> OffsetDateTime, etc.)
+
+  **Reference:** `PostgresTestTableOperationsClient.kt`, `SnowflakeTestTableOperationsClient.kt`
+
+- **`RedshiftComponentTestFixtures.kt`** — Redshift-specific test fixtures:
+  - `airbyteMetaColumnMapping` — identity mapping for `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_meta`, `_airbyte_generation_id` (Redshift preserves lowercase column names when quoted)
+  - `testMapping`, `idAndTestMapping`, `idTestWithCdcMapping` — Redshift-compatible versions of the CDK standard test column mappings
+  - `allTypesTableSchema` — maps all CDK data types to Redshift column types (`IntegerType -> bigint`, `NumberType -> float8`, `StringType -> varchar(65535)`, `ObjectType -> super`, `ArrayType -> super`, `UnionType -> super`, etc.)
+
+  **Reference:** `PostgresComponentTestFixtures.kt`, `SnowflakeComponentTestFixtures.kt`
+
+**CDK suite implementations to create:**
+
+- **`RedshiftTableOperationsTest.kt`** — Implements `TableOperationsSuite`. Injects `client: TableOperationsClient`, `testClient: TestTableOperationsClient`, `schemaFactory: TableSchemaFactory`. Tests:
+  - `connect to database` — basic connectivity ping
+  - `create and drop namespaces` — schema lifecycle
+  - `create and drop tables` — table lifecycle
+  - `insert records` — insert via S3 staging + COPY, verify data
+  - `count table rows` — incremental insert + count verification
+  - `get generation id` — insert record with generation_id, read back
+  - `overwrite tables` — rename-based swap, verify source dropped
+  - `copy tables` — INSERT INTO ... SELECT, verify combined records
+  - `upsert tables` — CTE-based DELETE+UPDATE+INSERT with CDC, cursor-based conflict resolution
+
+  Each test delegates to `super.<method>(redshiftSpecificMapping)`.
+
+  **Reference:** `PostgresTableOperationsTest.kt`
+
+- **`RedshiftTableSchemaEvolutionTest.kt`** — Implements `TableSchemaEvolutionSuite`. Injects `client: TableSchemaEvolutionClient`, `opsClient: TableOperationsClient`, `testClient: TestTableOperationsClient`, `schemaFactory: TableSchemaFactory`. Tests:
+  - `discover recognizes all data types` — create table with all Redshift types, discover schema, assert match
+  - `computeSchema handles all data types` — compute expected schema from stream definition
+  - `noop diff` — no-change detection
+  - `changeset is correct when adding a column` — detect column addition
+  - `changeset is correct when dropping a column` — detect column removal
+  - `changeset is correct when changing a column's type` — detect type change
+  - `apply changeset - handle sync mode append/dedup` — apply schema evolution across all sync mode transitions (append->append, append->dedup, dedup->append, dedup->dedup)
+  - `change from string type to unknown type` — string -> unknown column evolution
+  - `change from unknown type to string type` — unknown -> string column evolution
+
+  **Critical:** The `apply changeset` tests for type changes are especially important since Redshift uses the 5-step rename pattern (not Postgres's `ALTER COLUMN TYPE ... USING`). These tests validate that the pattern works correctly with data preservation.
+
+  **Reference:** `PostgresTableSchemaEvolutionTest.kt`, `SnowflakeTableSchemaEvolutionTest.kt`
+
+- **`RedshiftDataCoercionTest.kt`** — Implements `DataCoercionSuite`. Uses `@ParameterizedTest` with `@MethodSource` pointing at CDK fixture classes. Injects `coercer: ValueCoercer`, `opsClient: TableOperationsClient`, `testClient: TestTableOperationsClient`, `schemaFactory: TableSchemaFactory`. Tests value coercion roundtrip (coerce -> insert -> read -> verify) for:
+  - `handle integer values` — BIGINT range validation
+  - `handle number values` — FLOAT8 range validation
+  - `handle timestamptz values` — TIMESTAMPTZ range and precision
+  - `handle timestampntz values` — TIMESTAMP range and precision
+  - `handle timetz values` — TIMETZ handling
+  - `handle timentz values` — TIME handling
+  - `handle date values` — DATE range validation
+  - `handle bool values` — BOOLEAN roundtrip
+  - `handle string values` — VARCHAR(65535) limit, null byte stripping
+  - `handle object values` — SUPER type for JSON objects (16MB limit)
+  - `handle empty/schemaless object values` — SUPER for untyped objects
+  - `handle array values` — SUPER for JSON arrays
+  - `handle schemaless array values` — SUPER for untyped arrays
+  - `handle union values` — SUPER for union types
+  - `handle legacy union values` — legacy union handling
+  - `handle unknown values` — SUPER for unknown types
+
+  Must customize CDK fixtures for Redshift-specific behaviors: SUPER type JSON serialization format, VARCHAR size limits, numeric precision, timestamp ranges.
+
+  **Reference:** `SnowflakeDataCoercionTest.kt`, `ClickhouseDataCoercionTest.kt`
+
+- **`RedshiftSchemaMapperTest.kt`** — Implements `SchemaMapperSuite`. Injects `tableSchemaMapper: TableSchemaMapper`, `schemaFactory: TableSchemaFactory`, `opsClient: TableOperationsClient`, `streamFactory: DestinationStreamFactory`, `tableNameResolver: TableNameResolver`, `namespaceMapper: NamespaceMapper`. Tests:
+  - `simple table name` — basic namespace/table mapping
+  - `funky chars in table name` — special characters sanitization
+  - `table name starts with non-letter character` — digit prefix handling
+  - `table name is reserved keyword` — reserved word handling
+  - `simple temp table name` — temp table generation
+  - `simple column name` — basic column mapping
+  - `column name with funky chars` — special character sanitization in columns
+  - `column name starts with non-letter character` — digit prefix in columns
+  - `column name is reserved keyword` — reserved word in columns
+  - `stream names avoid collisions` — two streams mapping to same table name
+  - `column names avoid collisions` — two columns mapping to same column name
+  - `column types support all airbyte types` — all type mappings + table creation validation
+
+  **Reference:** `ClickhouseSchemaMapperTest.kt`
+
+### 10.2 — Unit tests (mocked, no DB needed)
+
+Under `src/test/`:
+
+- **`RedshiftDirectLoadSqlGeneratorTest.kt`**: Verify generated SQL strings for CREATE TABLE, upsert (CTE-based DELETE+UPDATE+INSERT), ALTER TABLE (5-step type change pattern), overwrite (rename-based swap), copy, drop, count, COPY FROM S3.
+- **`RedshiftValueCoercerTest.kt`**: Test VARCHAR 64KB limit, SUPER 16MB limit, BIGINT range, FLOAT8 range, date/timestamp ranges, null byte stripping, union/unknown serialization.
+- **`RedshiftAirbyteClientTest.kt`**: Test client logic with mocked DataSource/JDBC. Verify SQL delegation to generator, error handling (CASCADE hint), retry logic for namespace creation.
+- **`RedshiftWriterTest.kt`**: Test stream loader selection logic for each sync mode + generation ID combination. Verify `ColumnNameMapping` is correctly extracted from stream schema.
+- **`RedshiftCheckerTest.kt`**: Test check logic with mocked dependencies.
+- **`RedshiftAggregateFactoryTest.kt`**: Test aggregate creation and buffer selection (schema vs raw mode).
+- **`RedshiftInsertBufferTest.kt`**: Test CSV formatting, S3 upload sequencing, manifest generation.
+- **`RedshiftRecordFormatterTest.kt`**: Test schema and raw record formatting (CSV column ordering, SUPER serialization).
+
+### 10.3 — Acceptance tests (full E2E via CDK runner)
+
+Under `src/test-integration/`:
+
+- **`RedshiftAcceptanceTest.kt`** — Extends `BasicFunctionalityIntegrationTest`. Full end-to-end test running the connector as a process. Create concrete subclasses for different configurations:
+  - `RedshiftS3StagingAcceptanceTest` — standard S3 staging mode with typed tables
+  - `RedshiftRawAcceptanceTest` — legacy raw tables mode (`disable_type_dedupe=true`)
+
+  Supporting utility classes:
+  - **`RedshiftDataDumper.kt`** — implements `DestinationDataDumper`, reads typed records from Redshift for verification
+  - **`RedshiftRawDataDumper.kt`** — reads raw mode records (SUPER `_airbyte_data` column)
+  - **`RedshiftExpectedRecordMapper.kt`** — implements `ExpectedRecordMapper`, normalizes expected records for Redshift behaviors (SUPER JSON format, timestamp precision, etc.)
+  - **`RedshiftDataCleaner.kt`** — implements `DestinationCleaner`, cleans up test schemas/tables
+
+  **Reference:** `PostgresAcceptanceTest.kt`, `SnowflakeAcceptanceTest.kt`
+
+- **`RedshiftCheckTest.kt`** — Extends `CheckIntegrationTest<RedshiftSpecification>`. Tests connection check with valid credentials, invalid credentials, invalid S3 bucket, etc.
+
+  **Reference:** `PostgresCheckTest.kt`, `SnowflakeCheckTest.kt`
+
+- **`RedshiftSpecTest.kt`** — Extends `SpecTest`. Validates the generated connector spec against expected JSON files.
+
+  **Test resources:**
+  - `src/test-integration/resources/expected-spec-oss.json` — expected spec output
+
+  **Reference:** `PostgresSpecTest.kt`, `SnowflakeSpecTest.kt`
+
+### 10.4 — Drop obsolete tests
 
 - Remove V1->V2 migration tests (migration dropped)
-- Remove tests for CDK classes that no longer exist
+- Remove tests for old CDK classes that no longer exist
+- Remove old `AbstractRedshiftTypingDedupingTest` (replaced by CDK acceptance tests)
+- Remove old `RedshiftSqlGeneratorIntegrationTest` (replaced by component tests)
+
+### 10.5 — Test secrets and metadata
+
+Update `metadata.yaml` to declare test secrets:
+```yaml
+connectorTestSuitesOptions:
+  - suite: unitTests
+  - suite: integrationTests
+    testSecrets:
+      - name: destination_redshift_component_test_instance
+        fileName: test-instance.json
+        secretStore:
+          type: GSM
+          alias: airbyte-connector-testing-secret-store
+```
+
+The secret should contain Redshift connection details + S3 staging credentials for the test cluster.
+
+### Test file summary
+
+| New Test File | CDK Base | Location |
+|---|---|---|
+| `RedshiftComponentTestConfigFactory.kt` | -- | `src/test-integration/.../component/` |
+| `RedshiftTestTableOperationsClient.kt` | `TestTableOperationsClient` | `src/test-integration/.../component/` |
+| `RedshiftComponentTestFixtures.kt` | -- | `src/test-integration/.../component/` |
+| `RedshiftTableOperationsTest.kt` | `TableOperationsSuite` | `src/test-integration/.../component/` |
+| `RedshiftTableSchemaEvolutionTest.kt` | `TableSchemaEvolutionSuite` | `src/test-integration/.../component/` |
+| `RedshiftDataCoercionTest.kt` | `DataCoercionSuite` | `src/test-integration/.../component/` |
+| `RedshiftSchemaMapperTest.kt` | `SchemaMapperSuite` | `src/test-integration/.../component/` |
+| `RedshiftAcceptanceTest.kt` (+ subclasses) | `BasicFunctionalityIntegrationTest` | `src/test-integration/.../write/` |
+| `RedshiftCheckTest.kt` | `CheckIntegrationTest` | `src/test-integration/.../check/` |
+| `RedshiftSpecTest.kt` | `SpecTest` | `src/test-integration/.../spec/` |
+| `RedshiftDataDumper.kt` | `DestinationDataDumper` | `src/test-integration/.../write/` |
+| `RedshiftRawDataDumper.kt` | `DestinationDataDumper` | `src/test-integration/.../write/` |
+| `RedshiftExpectedRecordMapper.kt` | `ExpectedRecordMapper` | `src/test-integration/.../write/` |
+| `RedshiftDataCleaner.kt` | `DestinationCleaner` | `src/test-integration/.../write/` |
+| `RedshiftDirectLoadSqlGeneratorTest.kt` | -- | `src/test/.../sql/` |
+| `RedshiftValueCoercerTest.kt` | -- | `src/test/.../write/transform/` |
+| `RedshiftAirbyteClientTest.kt` | -- | `src/test/.../client/` |
+| `RedshiftWriterTest.kt` | -- | `src/test/.../write/` |
+| `RedshiftCheckerTest.kt` | -- | `src/test/.../check/` |
+| `RedshiftAggregateFactoryTest.kt` | -- | `src/test/.../dataflow/` |
+| `RedshiftInsertBufferTest.kt` | -- | `src/test/.../write/load/` |
+| `RedshiftRecordFormatterTest.kt` | -- | `src/test/.../write/load/` |
+
+**References:** Postgres test structure (primary for component tests), Snowflake test structure (for S3/secrets and `DataCoercionSuite` patterns), ClickHouse test structure (for `SchemaMapperSuite`)
 
 ---
 
