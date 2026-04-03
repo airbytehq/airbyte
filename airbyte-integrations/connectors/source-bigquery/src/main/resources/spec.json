@@ -6,7 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Source Spec",
     "type": "object",
-    "required": ["project_id", "credentials_json"],
+    "required": ["project_id"],
     "properties": {
       "project_id": {
         "type": "string",
