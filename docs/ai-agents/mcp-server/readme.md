@@ -140,7 +140,7 @@ Add the MCP server to your Codex command line tool.
 </TabItem>
 <TabItem value="chatgpt" label="ChatGPT">
 
-ChatGPT supports remote MCP servers through its Developer Mode feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It is not available on Free plans.
+ChatGPT supports remote MCP servers through its [Developer Mode](https://platform.openai.com/docs/guides/developer-mode) feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It's not available on Free plans.
 
 :::note Business and Enterprise plans
 On Business plans, apps are enabled by default. Workspace owners can restrict them from **Workspace Settings** > **Apps**.
@@ -154,25 +154,21 @@ On Enterprise and Education plans, apps are disabled by default. A workspace adm
 
 3. Toggle **Developer mode** to **ON**.
 
-4. Click **Create app** next to "Advanced settings". This button only appears when Developer Mode is enabled.
+4. Go back to the apps screen.
 
-5. Enter the server details:
+5. Click **Create app** next to "Advanced settings." This button only appears when Developer Mode is enabled.
+
+6. Enter the server details:
 
     - **Name**: `Airbyte Agent Engine`
     - **Server URL**: `https://mcp.airbyte.ai/mcp`
     - **Authentication**: Select **OAuth**
 
-6. Click **Save**. The app appears under **Drafts** in your Apps settings.
+7. Accept ChatGPT's disclaimer and click **Create**. The app appears under **Drafts** in your Apps settings.
 
-7. Open a new conversation. Click the **+** menu in the composer and select **Developer mode**.
+8. When prompted, log into Agent Engine if necessary, then accept the access privileges.
 
-8. Select the Airbyte Agent Engine app from the list.
-
-9. ChatGPT discovers the available tools automatically. When ChatGPT connects, it triggers an OAuth flow. Log in with your [Agent Engine](https://app.airbyte.ai) account and grant access.
-
-10. Return to ChatGPT and begin using the MCP server.
-
-For more information, see the [OpenAI Developer Mode documentation](https://platform.openai.com/docs/guides/developer-mode).
+9. Open a new conversation to start using the MCP server.
 
 </TabItem>
 <TabItem value="other" label="Other clients">
