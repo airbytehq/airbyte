@@ -30,8 +30,7 @@ class BigqueryDirectLoadSqlTableOperations(
         // So we'll use a Copy job instead.
         // (this is more efficient than just `insert into tgt select * from src`)
         val sourceTableId = sourceTableName.toTableId()
-        val jobId =
-            JobId.newBuilder().setProject(jobProjectId).setRandomJob().build()
+        val jobId = JobId.newBuilder().setProject(jobProjectId).setRandomJob().build()
         val job =
             bq.create(
                 JobInfo.of(
