@@ -351,6 +351,10 @@ Once a connector is created, the agent uses it for all subsequent queries to tha
 - If the OAuth flow doesn't complete, try deleting the app in **Settings** > **Apps** and creating it again.
 - On Enterprise or Education plans, a workspace admin must enable the app before members can use it. Check with your admin if you see a permissions error.
 
+### ChatGPT doesn't use the MCP server tools
+
+ChatGPT may not realize it has access to data through the MCP server. If ChatGPT ignores the MCP or tries to answer without using your connected data, instruct it directly. For example: *"Use the Airbyte MCP to discover tools that can help you work with my Salesforce connector."*
+
 ### Queries return unexpected results
 
 - Ask the agent to describe the available entities before querying, so it picks the right one.
