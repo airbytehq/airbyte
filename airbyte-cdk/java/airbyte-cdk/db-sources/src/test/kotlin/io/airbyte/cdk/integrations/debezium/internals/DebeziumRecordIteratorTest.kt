@@ -9,6 +9,7 @@ import io.airbyte.cdk.integrations.debezium.CdcTargetPosition
 import io.debezium.engine.ChangeEvent
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.LinkedBlockingQueue
 import org.apache.kafka.connect.source.SourceRecord
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,8 +17,72 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
 class DebeziumRecordIteratorTest {
+
+    /** Helper to create a ChangeEvent with a given op code. */
+    private fun createChangeEvent(op: String): ChangeEvent<String?, String?> {
+        return object : ChangeEvent<String?, String?> {
+            override fun key(): String? = ""
+            override fun value(): String = "{\"op\":\"$op\", \"source\": {\"snapshot\": \"false\"}}"
+            override fun destination(): String? = null
+        }
+    }
+
+    /**
+     * Regression test for https://github.com/airbytehq/airbyte/issues/72476
+     *
+     * Verifies that op:m (message) events in the shutdown cleanup queue are properly filtered out.
+     * Before the fix, these events would be passed to the converter which throws
+     * IllegalStateException because they have no before/after records.
+     */
+    @Test
+    fun `op m events in shutdown cleanup queue should be filtered out`() {
+        // Setup: Create queues
+        val mainQueue = LinkedBlockingQueue<ChangeEvent<String?, String?>>()
+
+        // Create shutdown procedure mock with op:m event followed by valid op:c event
+        val shutdownQueue = LinkedBlockingQueue<ChangeEvent<String?, String?>>()
+        shutdownQueue.add(createChangeEvent("m")) // This should be filtered
+        shutdownQueue.add(createChangeEvent("c")) // This should be returned
+
+        val mockShutdownProcedure =
+            mock(DebeziumShutdownProcedure::class.java)
+                as DebeziumShutdownProcedure<ChangeEvent<String?, String?>>
+        `when`(mockShutdownProcedure.recordsRemainingAfterShutdown).thenReturn(shutdownQueue)
+
+        // Publisher is closed (returns true) so main loop exits immediately
+        val publisherClosed = { true }
+
+        val iterator =
+            DebeziumRecordIterator(
+                mainQueue,
+                object : CdcTargetPosition<Long> {
+                    override fun reachedTargetPosition(
+                        changeEventWithMetadata: ChangeEventWithMetadata?
+                    ): Boolean = false
+                    override fun extractPositionFromHeartbeatOffset(
+                        sourceOffset: Map<String?, *>
+                    ): Long = 0L
+                },
+                publisherClosed,
+                mockShutdownProcedure,
+                Duration.ofMillis(100),
+                getTestConfig()
+            )
+
+        // Act: Get the next event from the iterator
+        val result = iterator.next()
+
+        // Assert: Should get the op:c event, not the op:m event
+        val opCode = result.eventValueAsJson?.get("op")?.asText()
+        assertEquals(
+            "c",
+            opCode,
+            "Expected op:c event but got op:$opCode - op:m was not filtered in shutdown loop"
+        )
+    }
     @Test
     fun getHeartbeatPositionTest() {
         val debeziumRecordIterator =
