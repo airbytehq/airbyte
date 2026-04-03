@@ -83,7 +83,7 @@ The Instagram source connector supports the following streams. For more informat
   - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—demographic breakdowns by city, country, and age/gender
 - [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
   - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
-- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
+- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/) — only stories published within the last 24 hours are returned by the API
   - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
 
 :::info
@@ -111,7 +111,13 @@ must handle records that conform to this type system.
 
 ### Rate limiting
 
-Instagram limits the number of requests that can be made at a time. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+The Instagram Graph API enforces [Business Use Case (BUC) rate limits](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) based on the Instagram account's activity. When the connector encounters a rate limit error, it automatically retries with exponential backoff. No user action is required.
+
+The connector handles the following rate limit signals from the API:
+
+- Error code `4` (application request limit reached)
+- Error code `80002` (too many calls to this Instagram account)
+- Error messages containing "too many calls"
 
 ### Instagram API limitations
 
@@ -119,6 +125,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 - **Minimum follower count**: The `follower_count` and `online_followers` metrics require at least 100 followers on the Instagram Business or Creator account.
 - **Data retention**: The `online_followers` metric is only available for the last 30 days. The `since` parameter for insights is valid for up to the last 2 years.
 - **Demographic metrics**: Demographic metric calculations only include the top 45 entries and only count viewers for whom Instagram has demographic data.
+- **Media insights by media type**: The metrics available in the Media Insights stream depend on the media type. For example, Reels include metrics like `ig_reels_avg_watch_time` and `ig_reels_video_view_total_time`, while other media types include metrics like `reach`, `saved`, and `profile_visits`. See the [IG Media Insights documentation](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights#metrics) for the full breakdown.
 
 ### User Insights and UTC+ timezones
 
