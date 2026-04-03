@@ -86,9 +86,11 @@ jobs:
         run: |
           set -euo pipefail
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
-          # --quiet disables all of gradle's normal logging, so we only get the CDK version number
+          # --quiet disables all of gradle's normal logging, so we only get the value
           new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
+          cdk_core_type=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkCoreType --quiet)
           echo "new_cdk_version=$new_cdk_version" >> $GITHUB_OUTPUT
+          echo "cdk_core_type=$cdk_core_type" >> $GITHUB_OUTPUT
 
       - name: Check for changes
         id: check-changes
@@ -120,7 +122,7 @@ jobs:
           commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
           branch: "auto-upgrade-jvm-bulk-cdk/${{ steps.upgrade-cdk.outputs.new_cdk_version }}/${{ matrix.connector }}"
           delete-branch: true
-          title: "chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
+          title: "chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.cdk_core_type }} ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
           body: |
             Upgrade Bulk CDK version for `${{ matrix.connector }}`
 
@@ -145,7 +147,7 @@ jobs:
             "${{ matrix.connector }}" \
             "${{ steps.bump-version.outputs.new_version }}" \
             "${{ steps.create-pr.outputs.pull-request-number }}" \
-            "Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}."
+            "Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.cdk_core_type }} ${{ steps.upgrade-cdk.outputs.new_cdk_version }}."
 
           # Commit and push the changelog changes
           branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"

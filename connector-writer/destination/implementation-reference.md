@@ -1107,7 +1107,10 @@ cdkVersion=0.1.76  # Update to new version
 ### Check Latest CDK Version
 
 ```bash
-cat airbyte-cdk/bulk/version.properties
+# For destinations (load):
+cat airbyte-cdk/bulk/core/load/version.properties
+# For sources (extract):
+cat airbyte-cdk/bulk/core/extract/version.properties
 ```
 
 ---

@@ -40,8 +40,8 @@ mkdir write/load write/transform
 
 ```properties
 # Pin to latest stable Bulk CDK version
-# Check airbyte-cdk/bulk/version.properties for latest
-cdkVersion=0.1.76
+# Check airbyte-cdk/bulk/core/load/version.properties for latest (destinations use 'load')
+cdkVersion=1.0.2
 ```
 
 **IMPORTANT:** Always use a pinned version for production connectors.
