@@ -62,6 +62,12 @@ data:
     - title: Ads API announcements
       url: https://developers.snap.com/api/marketing-api/Ads-API/announcements
       type: api_reference
+    - title: Ads API breaking changes log
+      url: https://developers.snap.com/api/marketing-api/Ads-API/breaking-changes-log
+      type: api_deprecations
+    - title: Ads API change log
+      url: https://developers.snap.com/api/marketing-api/Ads-API/changelog
+      type: api_release_history
   suggestedStreams:
     streams:
       - campaigns
