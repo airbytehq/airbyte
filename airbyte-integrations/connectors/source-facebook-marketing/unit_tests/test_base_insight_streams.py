@@ -493,9 +493,9 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert (
-            len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1
-        ), "should be 37 slices because we ignore slices which are within insights_lookback_period"
+        assert len(generated_jobs) == (end_date.date() - (cursor_value.date() - stream.insights_lookback_period)).days + 1, (
+            "should be 37 slices because we ignore slices which are within insights_lookback_period"
+        )
         assert generated_jobs[0].interval.start == cursor_value.date() - stream.insights_lookback_period
         assert generated_jobs[1].interval.start == cursor_value.date() - stream.insights_lookback_period + timedelta(days=1)
 
@@ -1047,9 +1047,9 @@ class TestBaseInsightsStream:
 
         # Check for missing breakdowns
         missing_breakdowns = [b for b in valid_breakdowns if b not in breakdowns_properties]
-        assert (
-            not missing_breakdowns
-        ), f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+        assert not missing_breakdowns, (
+            f"Schema file 'ads_insights_breakdowns.json' is missing definitions for breakdowns: {missing_breakdowns}"
+        )
 
 
 class TestCalendarAlignedPeriods:

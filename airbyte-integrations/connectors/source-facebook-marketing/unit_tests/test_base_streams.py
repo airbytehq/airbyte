@@ -101,7 +101,6 @@ class TestFieldsExceptions:
         assert sorted(result) == ["id", "name"]
 
 
-
 class TestDateTimeValue:
     def test_date_time_value(self):
         record = {
