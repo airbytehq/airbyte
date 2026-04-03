@@ -588,6 +588,15 @@ class BingAdsReportDownloadRequester(HttpRequester):
 
     report_poll_authenticator: Optional[DeclarativeAuthenticator] = None
 
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # When instantiated via create_custom_component, stream_response is not
+        # explicitly passed (unlike create_http_requester which computes it from
+        # the decoder).  Derive it here so streaming decoders that read
+        # response.raw (e.g. BingAdsReportZipCsvDecoder) work correctly.
+        if self.decoder and hasattr(self.decoder, "is_stream_response"):
+            self.stream_response = self.decoder.is_stream_response()
+        super().__post_init__(parameters)
+
     def send_request(
         self,
         stream_state: Optional[Mapping[str, Any]] = None,
