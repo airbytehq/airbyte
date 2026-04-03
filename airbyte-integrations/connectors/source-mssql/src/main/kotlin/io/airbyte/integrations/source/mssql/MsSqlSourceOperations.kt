@@ -18,7 +18,7 @@ import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
 import io.airbyte.cdk.discover.CdcOffsetDateTimeMetaFieldType
 import io.airbyte.cdk.discover.CdcStringMetaFieldType
 import io.airbyte.cdk.discover.CommonMetaField
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -304,7 +304,7 @@ class MsSqlSourceOperations :
      */
     fun String.quoted(): String = "[${this.replace("]", "]]")}]"
 
-    fun Field.sql(): String =
+    fun DataField.sql(): String =
         if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
 
     fun FromNode.sql(): String =
@@ -316,15 +316,16 @@ class MsSqlSourceOperations :
             }
             is FromSample -> {
                 val ns = this.namespace
+                val maybeWhere = where?.sql() ?: ""
                 if (sampleRateInv == 1L) {
-                    if (ns == null) "FROM ${name.quoted()}"
-                    else "FROM ${ns.quoted()}.${name.quoted()}"
+                    if (ns == null) "FROM ${name.quoted()} $maybeWhere"
+                    else "FROM ${ns.quoted()}.${name.quoted()} $maybeWhere"
                 } else {
                     val tableName =
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
 
-                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) ORDER BY NEWID()) AS randomly_sampled"
+                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
                 }
             }
         }
@@ -352,7 +353,8 @@ class MsSqlSourceOperations :
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + limit.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
+        where.bindings() + from.bindings() + limit.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
@@ -377,6 +379,11 @@ class MsSqlSourceOperations :
             is Limit, -> emptyList()
         }
 
+    fun FromNode.bindings(): List<SelectQuery.Binding> =
+        when (this) {
+            is FromSample -> where?.bindings() ?: emptyList()
+            else -> emptyList()
+        }
     override val globalCursor: MetaField = MsSqlServerCdcMetaFields.CDC_CURSOR
     override val globalMetaFields: Set<MetaField> =
         setOf(

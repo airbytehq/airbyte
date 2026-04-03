@@ -6,11 +6,11 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.BinaryNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.OffsetDateTimeCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.Equal
@@ -29,6 +29,7 @@ import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
 import io.airbyte.cdk.read.SelectColumnMaxValue
 import io.airbyte.cdk.read.SelectColumns
+import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
@@ -74,7 +75,7 @@ private fun getEffectiveCursorCheckpoint(
  * Converts a state value string to a JsonNode based on the field type. This function handles type
  * conversions and date formatting for state checkpoints.
  */
-fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+fun stateValueToJsonNode(field: EmittedField, stateValue: String?): JsonNode {
     when (field.type.airbyteSchemaType) {
         is LeafAirbyteSchemaType ->
             return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
@@ -185,7 +186,7 @@ class MsSqlServerJdbcNonResumableSnapshotPartition(
 class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    val cursor: Field,
+    val cursor: EmittedField,
     val cursorCutoffTime: JsonNode? = null,
 ) :
     MsSqlServerJdbcPartition(selectQueryGenerator, streamState),
@@ -232,7 +233,7 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
 sealed class MsSqlServerJdbcResumablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    val checkpointColumns: List<Field>,
+    val checkpointColumns: List<EmittedField>,
 ) :
     MsSqlServerJdbcPartition(selectQueryGenerator, streamState),
     JdbcSplittablePartition<DefaultJdbcStreamState> {
@@ -262,7 +263,7 @@ sealed class MsSqlServerJdbcResumablePartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
                 NoWhere,
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())
@@ -272,10 +273,10 @@ sealed class MsSqlServerJdbcResumablePartition(
 
     val where: Where
         get() {
-            val zippedLowerBound: List<Pair<Field, JsonNode>> =
+            val zippedLowerBound: List<Pair<EmittedField, JsonNode>> =
                 lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val lowerBoundDisj: List<WhereClauseNode> =
-                zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
+                zippedLowerBound.mapIndexed { idx: Int, (gtCol: EmittedField, gtValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
                         if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
                             GreaterOrEqual(gtCol, gtValue)
@@ -283,15 +284,16 @@ sealed class MsSqlServerJdbcResumablePartition(
                             Greater(gtCol, gtValue)
                         }
                     And(
-                        zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                        zippedLowerBound.take(idx).map { (eqCol: EmittedField, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
                         } + listOf(lastLeaf),
                     )
                 }
-            val zippedUpperBound: List<Pair<Field, JsonNode>> =
+            val zippedUpperBound: List<Pair<EmittedField, JsonNode>> =
                 upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val upperBoundDisj: List<WhereClauseNode> =
-                zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
+                zippedUpperBound.mapIndexed { idx: Int, (leqCol: EmittedField, leqValue: JsonNode)
+                    ->
                     val lastLeaf: WhereClauseLeafNode =
                         if (idx < zippedUpperBound.size - 1) {
                             Lesser(leqCol, leqValue)
@@ -299,7 +301,7 @@ sealed class MsSqlServerJdbcResumablePartition(
                             LesserOrEqual(leqCol, leqValue)
                         }
                     And(
-                        zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                        zippedUpperBound.take(idx).map { (eqCol: EmittedField, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
                         } + listOf(lastLeaf),
                     )
@@ -323,7 +325,7 @@ sealed class MsSqlServerJdbcResumablePartition(
 class MsSqlServerJdbcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
@@ -341,10 +343,11 @@ class MsSqlServerJdbcRfrSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -352,7 +355,7 @@ class MsSqlServerJdbcRfrSnapshotPartition(
 class MsSqlServerJdbcCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
@@ -367,10 +370,11 @@ class MsSqlServerJdbcCdcRfrSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -381,25 +385,26 @@ class MsSqlServerJdbcCdcRfrSnapshotPartition(
 class MsSqlServerJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
 ) : MsSqlServerJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val upperBound: List<JsonNode>? = null
     override val completeState: OpaqueStateValue
         get() = MsSqlServerCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
 sealed class MsSqlServerJdbcCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    checkpointColumns: List<Field>,
-    val cursor: Field,
+    checkpointColumns: List<EmittedField>,
+    val cursor: EmittedField,
     private val explicitCursorUpperBound: JsonNode?,
     val cursorCutoffTime: JsonNode? = null,
 ) :
@@ -433,7 +438,7 @@ sealed class MsSqlServerJdbcCursorPartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                from,
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
                 NoWhere,
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())
@@ -454,9 +459,9 @@ sealed class MsSqlServerJdbcCursorPartition(
 class MsSqlServerJdbcSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
-    cursor: Field,
+    cursor: EmittedField,
     cursorUpperBound: JsonNode?,
     cursorCutoffTime: JsonNode? = null,
 ) :
@@ -478,10 +483,11 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
                 getEffectiveCursorCheckpoint(cursorCutoffTime, cursorUpperBound, Jsons.nullNode()),
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
         )
 }
@@ -489,10 +495,10 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
 class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
-    cursor: Field,
+    cursor: EmittedField,
     cursorUpperBound: JsonNode?,
     cursorCutoffTime: JsonNode? = null,
 ) :
@@ -524,10 +530,11 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
         )
 }
@@ -539,7 +546,7 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
 class MsSqlServerJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    cursor: Field,
+    cursor: EmittedField,
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
@@ -564,10 +571,10 @@ class MsSqlServerJdbcCursorIncrementalPartition(
                 getEffectiveCursorCheckpoint(cursorCutoffTime, cursorUpperBound, cursorLowerBound),
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
-            cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
+            cursorCheckpoint = lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode(),
         )
 }
 
