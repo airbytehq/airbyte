@@ -6,7 +6,6 @@ package io.airbyte.cdk.db.jdbc.streaming
 import com.google.common.annotations.VisibleForTesting
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import kotlin.math.max
 
 private val LOGGER = KotlinLogging.logger {}
 /**
@@ -71,14 +70,13 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
             }
             val targetBufferByteSize =
                 Math.round(maxMemory * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO)
-            val finalBufferByteSize =
-                max(
-                        FetchSizeConstants.MIN_BUFFER_BYTE_SIZE.toDouble(),
-                        targetBufferByteSize.toDouble()
-                    )
-                    .toLong()
-            LOGGER.info { "Max memory limit: $maxMemory, JDBC buffer size: $finalBufferByteSize" }
-            return finalBufferByteSize
+            val clampedBufferByteSize =
+                targetBufferByteSize.coerceIn(
+                    FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
+                    FetchSizeConstants.MAX_BUFFER_BYTE_SIZE
+                )
+            LOGGER.info { "Max memory limit: $maxMemory, JDBC buffer size: $clampedBufferByteSize" }
+            return clampedBufferByteSize
         }
     }
 }

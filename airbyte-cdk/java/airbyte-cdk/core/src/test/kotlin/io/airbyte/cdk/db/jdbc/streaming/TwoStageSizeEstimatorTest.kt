@@ -37,5 +37,18 @@ internal class TwoStageSizeEstimatorTest {
                 FetchSizeConstants.MIN_BUFFER_BYTE_SIZE - 10L
             )
         )
+        // With 10% ratio and 8Gi heap, buffer should be capped at MAX_BUFFER_BYTE_SIZE
+        val eightGiHeap = 8L * 1024L * 1024L * 1024L
+        Assertions.assertEquals(
+            FetchSizeConstants.MAX_BUFFER_BYTE_SIZE,
+            TwoStageSizeEstimator.getTargetBufferByteSize(eightGiHeap)
+        )
+        // With a smaller heap where 10% is between min and max, should return 10% of heap
+        val threeGiHeap = 3L * 1024L * 1024L * 1024L
+        val expected = Math.round(threeGiHeap * FetchSizeConstants.TARGET_BUFFER_SIZE_RATIO)
+        Assertions.assertEquals(
+            expected,
+            TwoStageSizeEstimator.getTargetBufferByteSize(threeGiHeap)
+        )
     }
 }
