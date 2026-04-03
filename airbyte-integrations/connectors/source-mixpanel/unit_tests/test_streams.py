@@ -31,8 +31,8 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import get_url_to_mock, init_stream, read_incremental, setup_response
 
@@ -676,7 +676,7 @@ def test_handle_time_zone_mismatch(requests_mock, export_config, caplog):
     try:
         for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
             records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
-    except MessageRepresentationAirbyteTracedErrors as airbyte_error:
+    except AirbyteTracedException as airbyte_error:
         assert (
             "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings."
         ) in airbyte_error.message

@@ -84,6 +84,4 @@ help = "Get the base image of the connector from its metadata.yaml file."
 cmd = """yq eval '.data.dockerImageTag' ${POE_PWD}/metadata.yaml"""
 help = "Get the version of the connector from its metadata.yaml file."
 
-[tasks.run-cat-tests]
-shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
-help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
+# [tasks.run-cat-tests] - Removed: airbyte-ci CLI and CAT tests have been deprecated.
