@@ -2,9 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from urllib.parse import parse_qsl, urlparse, urlunparse
 
+import backoff
 from facebook_business.api import Cursor
+from facebook_business.exceptions import FacebookBadObjectError
+
+from source_facebook_marketing.streams.common import retry_pattern
+
+
+logger = logging.getLogger("airbyte")
+
+backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
 
 
 class CursorPatch(Cursor):
@@ -26,6 +36,7 @@ class CursorPatch(Cursor):
     whole URL in the `path` param. To change this, the `load_next_page` method was overridden where the params are separated from the path.
     """
 
+    @backoff_policy
     def load_next_page(self):
         """Queries server for more nodes and loads them into the internal queue.
         Returns:
