@@ -253,10 +253,10 @@ definitions:
     url_base: https://gmail.googleapis.com/gmail/v1/users/me/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: "{{ config[\"credentials\"][\"client_id\"] }}"
       grant_type: refresh_token
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      client_secret: "{{ config[\"credentials\"][\"client_secret\"] }}"
+      refresh_token: "{{ config[\"credentials\"][\"client_refresh_token\"] }}"
       expires_in_name: expires_in
       access_token_name: access_token
       refresh_request_body: {}
@@ -278,27 +278,39 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - client_id
-      - client_secret
-      - client_refresh_token
+      - credentials
     properties:
-      client_id:
-        type: string
-        name: client_id
+      credentials:
+        type: object
+        title: Authentication
         order: 0
-        title: OAuth Client ID
-        airbyte_secret: true
-      client_secret:
-        type: string
-        name: client_secret
-        order: 1
-        title: OAuth Client Secret
-        airbyte_secret: true
-      client_refresh_token:
-        type: string
-        order: 2
-        title: Refresh token
-        airbyte_secret: true
+        oneOf:
+          - title: Authenticate via Google (OAuth)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - client_refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+              client_id:
+                title: Client ID
+                type: string
+                description: "Enter your Google application's Client ID. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: "Enter your Google application's Client Secret. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              client_refresh_token:
+                title: Refresh Token
+                type: string
+                description: "Enter your Google application's refresh token. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
       include_spam_and_trash:
         type: boolean
         description: >-
@@ -306,10 +318,49 @@ spec:
           to false.
         title: Include Spam & Trash
         default: false
-        order: 3
+        order: 1
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate top-level OAuth fields into a nested credentials object.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_type
+                value: "Client"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_id
+                value: "{{ config['client_id'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_secret
+                value: "{{ config['client_secret'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_refresh_token
+                value: "{{ config['client_refresh_token'] }}"
+            condition: "{{ config.get('client_id') is not none and config.get('credentials') is none }}"
+          - type: ConfigRemoveFields
+            field_pointers:
+              - - client_id
+              - - client_secret
+              - - client_refresh_token
+            condition: "{{ config.get('credentials') is not none }}"
   advanced_auth:
     auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
     oauth_config_specification:
       oauth_connector_input_specification:
         scopes:
@@ -325,6 +376,7 @@ spec:
           refresh_token:
             type: string
             path_in_connector_config:
+              - credentials
               - client_refresh_token
       complete_oauth_server_input_specification:
         type: object
@@ -341,10 +393,12 @@ spec:
           client_id:
             type: string
             path_in_connector_config:
+              - credentials
               - client_id
           client_secret:
             type: string
             path_in_connector_config:
+              - credentials
               - client_secret
 
 metadata:
