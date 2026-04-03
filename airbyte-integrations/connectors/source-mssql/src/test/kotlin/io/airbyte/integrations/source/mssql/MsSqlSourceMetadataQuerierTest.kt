@@ -533,6 +533,110 @@ class MsSqlSourceMetadataQuerierTest {
         )
     }
 
+    @Test
+    @DisplayName("Should discover alias type mapping from sys.types")
+    fun testAliasTypeMappingDiscovery() {
+        // Create user-defined alias types and a table using them
+        JdbcConnectionFactory(config).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { stmt ->
+                // Clean up first
+                stmt.execute("DROP TABLE IF EXISTS dbo.table_with_alias_types")
+                try {
+                    stmt.execute("DROP TYPE dbo.my_int_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_varchar_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_date_type")
+                } catch (_: Exception) {}
+
+                // Create user-defined alias types
+                stmt.execute("CREATE TYPE dbo.my_int_type FROM int")
+                stmt.execute("CREATE TYPE dbo.my_varchar_type FROM varchar(255)")
+                stmt.execute("CREATE TYPE dbo.my_date_type FROM date")
+
+                // Create a table using these alias types
+                stmt.execute(
+                    """
+                    CREATE TABLE dbo.table_with_alias_types (
+                        id INT NOT NULL PRIMARY KEY,
+                        alias_int_col dbo.my_int_type,
+                        alias_varchar_col dbo.my_varchar_type,
+                        alias_date_col dbo.my_date_type,
+                        normal_col NVARCHAR(100)
+                    )
+                    """
+                )
+            }
+        }
+
+        // Create a fresh metadata querier so the lazy properties re-evaluate
+        val jdbcConnectionFactory = JdbcConnectionFactory(config)
+        val sourceOperations = MsSqlSourceOperations()
+        val base =
+            JdbcMetadataQuerier(
+                DefaultJdbcConstants(),
+                config,
+                sourceOperations,
+                sourceOperations,
+                JdbcCheckQueries(),
+                jdbcConnectionFactory
+            )
+        val freshQuerier = MsSqlSourceMetadataQuerier(base)
+
+        // Verify the alias type mapping was discovered
+        val aliasMapping = freshQuerier.memoizedAliasTypeMapping
+        assertTrue(aliasMapping.isNotEmpty(), "Should discover at least one alias type mapping")
+        assertTrue(aliasMapping.containsKey("MY_INT_TYPE"), "Should discover MY_INT_TYPE alias")
+        assertEquals("int", aliasMapping["MY_INT_TYPE"], "MY_INT_TYPE should map to int")
+        assertTrue(
+            aliasMapping.containsKey("MY_VARCHAR_TYPE"),
+            "Should discover MY_VARCHAR_TYPE alias"
+        )
+        assertEquals(
+            "varchar",
+            aliasMapping["MY_VARCHAR_TYPE"],
+            "MY_VARCHAR_TYPE should map to varchar"
+        )
+        assertTrue(aliasMapping.containsKey("MY_DATE_TYPE"), "Should discover MY_DATE_TYPE alias")
+        assertEquals("date", aliasMapping["MY_DATE_TYPE"], "MY_DATE_TYPE should map to date")
+
+        // Verify that columns with alias types are resolved to base types in column metadata
+        val streamId =
+            StreamIdentifier.from(
+                StreamDescriptor().withName("table_with_alias_types").withNamespace("dbo")
+            )
+        val fields = freshQuerier.fields(streamId)
+        assertTrue(fields.isNotEmpty(), "Should discover fields for table with alias types")
+
+        // The alias type columns should have been resolved to their base types
+        // and mapped to appropriate Airbyte field types (not STRING/PokemonFieldType)
+        val fieldNames = fields.map { it.id }
+        assertTrue("alias_int_col" in fieldNames, "Should discover alias_int_col")
+        assertTrue("alias_varchar_col" in fieldNames, "Should discover alias_varchar_col")
+        assertTrue("alias_date_col" in fieldNames, "Should discover alias_date_col")
+        assertTrue("normal_col" in fieldNames, "Should discover normal_col")
+
+        // Clean up
+        JdbcConnectionFactory(config).get().use { connection: Connection ->
+            connection.isReadOnly = false
+            connection.createStatement().use { stmt ->
+                stmt.execute("DROP TABLE IF EXISTS dbo.table_with_alias_types")
+                try {
+                    stmt.execute("DROP TYPE dbo.my_int_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_varchar_type")
+                } catch (_: Exception) {}
+                try {
+                    stmt.execute("DROP TYPE dbo.my_date_type")
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
     @AfterAll
     fun tearDown() {
         // Clean up test tables

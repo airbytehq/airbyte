@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -29,6 +30,45 @@ class MsSqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
     val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier by base {
+
+    /**
+     * Mapping of user-defined alias type names to their base system type names. Queried from
+     * sys.types to resolve alias types during discovery.
+     */
+    val memoizedAliasTypeMapping: Map<String, String> by lazy {
+        log.info { "Querying SQL Server sys.types for user-defined alias type mappings." }
+        val mapping = mutableMapOf<String, String>()
+        try {
+            base.conn.createStatement().use { stmt: Statement ->
+                stmt
+                    .executeQuery(
+                        """
+                    SELECT t.name AS alias_name, bt.name AS base_type_name
+                    FROM sys.types t
+                    JOIN sys.types bt ON t.system_type_id = bt.system_type_id
+                        AND bt.user_type_id = bt.system_type_id
+                    WHERE t.is_user_defined = 1
+                    """
+                    )
+                    .use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val aliasName = rs.getString("alias_name")
+                            val baseTypeName = rs.getString("base_type_name")
+                            mapping[aliasName.uppercase()] = baseTypeName
+                        }
+                    }
+            }
+            if (mapping.isNotEmpty()) {
+                log.info {
+                    "Discovered ${mapping.size} user-defined alias type(s): " +
+                        mapping.entries.joinToString(", ") { "${it.key} -> ${it.value}" }
+                }
+            }
+        } catch (e: Exception) {
+            log.warn { "Failed to query sys.types for alias type mappings: ${e.message}" }
+        }
+        return@lazy mapping
+    }
 
     override fun extraChecks() {
         base.extraChecks()
@@ -197,6 +237,22 @@ class MsSqlSourceMetadataQuerier(
         }
     }
 
+    /**
+     * Resolves alias type names to their base system type names in [ColumnMetadata]. If the type
+     * name is a user-defined alias, it is replaced with the base type name so that
+     * [MsSqlSourceOperations.toFieldType] can correctly map it.
+     */
+    private fun resolveAliasType(
+        metadata: JdbcMetadataQuerier.ColumnMetadata
+    ): JdbcMetadataQuerier.ColumnMetadata {
+        val type = metadata.type
+        if (type !is SystemType) return metadata
+        val typeName = type.typeName ?: return metadata
+        val baseTypeName = memoizedAliasTypeMapping[typeName.uppercase()] ?: return metadata
+        val resolvedType = type.copy(typeName = baseTypeName)
+        return metadata.copy(type = resolvedType)
+    }
+
     val memoizedColumnMetadata: Map<TableName, List<JdbcMetadataQuerier.ColumnMetadata>> by lazy {
         val joinMap: Map<TableName, TableName> =
             memoizedTableNames.associateBy { it.copy(type = "") }
@@ -215,9 +271,12 @@ class MsSqlSourceMetadataQuerier(
                 val rsMethod = if (isPseudoColumn) dbmd::getPseudoColumns else dbmd::getColumns
                 rsMethod(catalog, schema, tablePattern, null).use { rs ->
                     while (rs.next()) {
-                        val (tableName: TableName, metadata: JdbcMetadataQuerier.ColumnMetadata) =
+                        val (
+                            tableName: TableName, rawMetadata: JdbcMetadataQuerier.ColumnMetadata) =
                             base.columnMetadataFromResultSet(rs, isPseudoColumn)
                         val joinedTableName: TableName = joinMap[tableName] ?: continue
+                        // Resolve alias types to their base system types
+                        val metadata = resolveAliasType(rawMetadata)
                         results.add(joinedTableName to metadata)
                     }
                 }

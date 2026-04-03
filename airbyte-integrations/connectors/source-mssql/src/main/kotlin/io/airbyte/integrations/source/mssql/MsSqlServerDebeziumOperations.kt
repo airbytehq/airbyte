@@ -644,6 +644,17 @@ class MsSqlServerDebeziumOperations(
             // Register the MSSQL custom converter
             .with("converters", "mssql_converter")
             .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.name)
+            .let { builder ->
+                val aliasMapping = queryAliasTypeMapping()
+                if (aliasMapping.isNotEmpty()) {
+                    builder.with(
+                        "mssql_converter.${MsSqlServerDebeziumConverter.ALIAS_TYPE_MAPPING_PROPERTY}",
+                        aliasMapping.entries.joinToString(",") { "${it.key}=${it.value}" }
+                    )
+                } else {
+                    builder
+                }
+            }
             .with("binary.handling.mode", "base64")
             .with("snapshot.locking.mode", "none")
             // Set poll.interval.ms to control how often Debezium queries for new data
@@ -707,6 +718,47 @@ class MsSqlServerDebeziumOperations(
                 }
             }
             .joinToString("")
+    }
+
+    /**
+     * Queries sys.types to build a mapping of user-defined alias type names to their base system
+     * type names. This mapping is passed to the Debezium converter so it can resolve alias types
+     * during CDC processing.
+     */
+    private fun queryAliasTypeMapping(): Map<String, String> {
+        val mapping = mutableMapOf<String, String>()
+        try {
+            jdbcConnectionFactory.get().use { conn: Connection ->
+                conn.createStatement().use { stmt ->
+                    stmt
+                        .executeQuery(
+                            """
+                        SELECT t.name AS alias_name, bt.name AS base_type_name
+                        FROM sys.types t
+                        JOIN sys.types bt ON t.system_type_id = bt.system_type_id
+                            AND bt.user_type_id = bt.system_type_id
+                        WHERE t.is_user_defined = 1
+                        """
+                        )
+                        .use { rs ->
+                            while (rs.next()) {
+                                val aliasName = rs.getString("alias_name")
+                                val baseTypeName = rs.getString("base_type_name")
+                                mapping[aliasName.uppercase()] = baseTypeName.uppercase()
+                            }
+                        }
+                }
+            }
+            if (mapping.isNotEmpty()) {
+                log.info {
+                    "Discovered ${mapping.size} user-defined alias type(s) for CDC: " +
+                        mapping.entries.joinToString(", ") { "${it.key} -> ${it.value}" }
+                }
+            }
+        } catch (e: Exception) {
+            log.warn { "Failed to query sys.types for alias type mappings (CDC): ${e.message}" }
+        }
+        return mapping
     }
 
     companion object {
