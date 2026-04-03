@@ -141,27 +141,21 @@ This connector outputs the following incremental streams:
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
-### Notes
+### Notes on incremental sync behavior
 
-1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the listed above streams are pure incremental meaning that they:
+Incremental streams fall into three categories based on how they read data from the GitHub API:
 
-   - read only new records;
-   - output only new records.
+1. **Truly incremental** (`comments`, `commits`, `issues`, `review_comments`): These streams read and output only new records since the last sync.
 
-2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
+2. **Nearly incremental** (`workflow_runs`, `workflow_jobs`): These streams read new records plus some older records from the past 30 days, per [GitHub's workflow re-run policy](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs). Only new records are output. The `workflow_jobs` stream depends on `workflow_runs`, so both follow the same logic.
 
-   - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
-   - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
-   - output only new records.
+3. **Incremental output only**: The remaining incremental streams read all records from the API but output only new records. This behavior may affect your API rate limits.
 
-3. Other 19 incremental streams are also incremental but with one difference, they:
+### Start date limitations
 
-   - read all records;
-   - output only new records.
-     Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
+Setting a distant `start_date` for large repositories may result in errors from GitHub instead of records. If this happens, set a more recent `start_date`.
 
-4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
-   **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
+The **Start date** option does not apply to the following streams because the GitHub API does not support date-based filtering for them:
 
 - `assignees`
 - `branches`
@@ -208,13 +202,25 @@ The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per
 
 #### Permissions and scopes
 
-If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
+If you use OAuth, the OAuth 2.0 application requests the following [scopes](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. If you use a [personal access token](https://github.com/settings/tokens), select the scopes manually.
 
-Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
+Your token should have at least the `repo` scope. Depending on which streams you want to sync, you may need additional scopes:
 
-- For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
-- Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
-- To sync the Projects stream, the repository must have the Projects feature enabled.
+| Scope | Required for |
+|:------|:-------------|
+| `repo` | Most streams, including issues, pull requests, commits, comments, deployments, and stargazers |
+| `read:org` | Organizations, Users, Teams, TeamMembers, and TeamMemberships streams |
+| `read:repo_hook` | Repository webhook metadata |
+| `read:user` | User profile data |
+| `read:discussion` | Discussion-related data |
+| `read:project` | Projects and ProjectsV2 streams |
+| `workflow` | Workflows, WorkflowRuns, and WorkflowJobs streams |
+
+Additional requirements for specific streams:
+
+- **Collaborators**: The user generating the token must be a collaborator on the repository. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records are synced. Read more about [access permissions on GitHub](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
+- **Teams, TeamMembers, TeamMemberships**: Only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). Personal user accounts and their repositories don't have access to Teams features.
+- **Projects, ProjectsV2**: The repository must have the Projects feature enabled.
 
 ### Troubleshooting
 
@@ -229,7 +235,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
+| 2.1.15 | 2026-04-01 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
 | 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
