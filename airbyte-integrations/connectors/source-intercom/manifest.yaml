@@ -2,6 +2,11 @@ version: 6.33.0
 
 type: DeclarativeSource
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 10
+  max_concurrency: 25
+
 check:
   type: CheckStream
   stream_names:
@@ -594,7 +599,8 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: DefaultErrorHandler
+              - type: CustomErrorHandler
+                class_name: source_declarative_manifest.components.ErrorHandlerWithRateLimiter
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
@@ -938,6 +944,7 @@ metadata:
         - errorHandler
         - incrementalSync
       conversation_parts:
+        - errorHandler
         - incrementalSync
         - parentStreams
       company_segments:
