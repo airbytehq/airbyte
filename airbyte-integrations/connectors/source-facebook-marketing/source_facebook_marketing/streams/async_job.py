@@ -132,6 +132,15 @@ class AsyncJob(ABC):
     def get_result(self) -> Iterator[Any]:
         """Retrieve result of the finished job."""
 
+    @abstractmethod
+    def restart_and_get_result(self) -> Iterator[Any]:
+        """Restart the job from scratch and return fresh results.
+
+        Used when FacebookBadObjectError occurs during result iteration,
+        indicating the current job's data is corrupted. Creates a new
+        AdReportRun, polls until completion, and returns the new results.
+        """
+
 
 # ----------------------------- parent job -----------------------------------
 class ParentAsyncJob(AsyncJob):
@@ -223,6 +232,34 @@ class ParentAsyncJob(AsyncJob):
                 raw = row.export_all_data() if hasattr(row, "export_all_data") else dict(row)
                 data = self._inject_object_breakdown_ids(raw)
 
+                key = tuple(data.get(k) for k in self._primary_key)
+                if key not in merged:
+                    merged[key] = dict(data)
+                else:
+                    for k, v in data.items():
+                        if k in self._primary_key:
+                            continue
+                        merged[key][k] = v
+
+        for rec in merged.values():
+            yield ParentAsyncJob._ExportableRow(rec)
+
+    def restart_and_get_result(self) -> Iterator[Any]:
+        """Restart all child jobs and return fresh merged results.
+
+        Each child is restarted independently (creating new AdReportRuns),
+        then results are merged using the same primary-key logic as get_result().
+        """
+        if not self._primary_key:
+            for child in self._jobs:
+                yield from child.restart_and_get_result()
+            return
+
+        merged: dict[Tuple[Any, ...], dict] = {}
+        for child in self._jobs:
+            for row in child.restart_and_get_result():
+                raw = row.export_all_data() if hasattr(row, "export_all_data") else dict(row)
+                data = self._inject_object_breakdown_ids(raw)
                 key = tuple(data.get(k) for k in self._primary_key)
                 if key not in merged:
                     merged[key] = dict(data)
@@ -510,6 +547,59 @@ class InsightAsyncJob(AsyncJob):
         if not self._job or self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of get_result - the job is not started or failed")
         return self._job.get_result(params={"limit": self.page_size})
+
+    _RESTART_POLL_INTERVAL = 30
+    _RESTART_MAX_RETRIES = 3
+
+    def restart_and_get_result(self) -> Iterator[Any]:
+        """Restart the job from scratch and return fresh results.
+
+        Resets internal state, creates a new AdReportRun on Facebook,
+        polls until the new job completes, and returns the result iterator.
+        Retries up to _RESTART_MAX_RETRIES times if the new job fails.
+        """
+        for restart_attempt in range(self._RESTART_MAX_RETRIES):
+            logger.info("%s: restarting job (attempt %d/%d)", self, restart_attempt + 1, self._RESTART_MAX_RETRIES)
+            # Reset state so start() can be called again
+            self._job = None
+            self._failed = False
+            self._start_time = None
+            self._finish_time = None
+
+            if not self._api_limit:
+                raise RuntimeError(f"{self}: Cannot restart - job was never started (no api_limit)")
+
+            # Start a new AdReportRun
+            self._job = self._edge_object.get_insights(params=self._params, is_async=True)
+            self._start_time = ab_datetime_now()
+            self._attempt_number += 1
+            logger.info("%s: created new AdReportRun for restart", self)
+
+            # Poll until the job reaches a terminal state
+            while not self.completed and not self.failed:
+                time.sleep(self._RESTART_POLL_INTERVAL)
+                self._job = self._job.api_get()
+                job_status = self._job.get("async_status")
+                percent = self._job.get("async_percent_completion")
+                logger.info("%s: restart poll - %s%% (%s)", self, percent, job_status)
+
+                if job_status == Status.COMPLETED:
+                    self._finish_time = ab_datetime_now()
+                elif job_status in (Status.FAILED, Status.SKIPPED):
+                    self._finish_time = ab_datetime_now()
+                    self._failed = True
+                    logger.warning("%s: restarted job failed with status %s", self, job_status)
+                elif self.elapsed_time and self.elapsed_time > self._job_timeout:
+                    self._finish_time = ab_datetime_now()
+                    self._failed = True
+                    logger.warning("%s: restarted job timed out after %s", self, self.elapsed_time)
+
+            if not self.failed:
+                return self._job.get_result(params={"limit": self.page_size})
+
+            logger.warning("%s: restart attempt %d failed, will retry", self, restart_attempt + 1)
+
+        raise RuntimeError(f"{self}: All {self._RESTART_MAX_RETRIES} restart attempts failed")
 
     def __str__(self) -> str:
         """String representation of the job wrapper."""

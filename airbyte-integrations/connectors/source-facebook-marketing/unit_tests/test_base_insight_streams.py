@@ -1644,7 +1644,7 @@ class TestCalendarAlignedPeriods:
 
 
 class TestInsightStreamBadObjectError:
-    """Tests for FacebookBadObjectError handling with retry in insight stream read_records."""
+    """Tests for FacebookBadObjectError handling with job restart in insight stream read_records."""
 
     def _make_stream(self, api, some_config):
         return AdsInsights(
@@ -1676,17 +1676,16 @@ class TestInsightStreamBadObjectError:
 
         assert len(records) == 2
         assert job.get_result.call_count == 1
+        assert job.restart_and_get_result.call_count == 0
 
-    def test_read_records_retries_on_bad_object_error(self, mocker, api, some_config):
-        """read_records retries after FacebookBadObjectError and succeeds."""
-        mocker.patch("source_facebook_marketing.streams.base_insight_streams.time.sleep")
+    def test_read_records_restarts_job_on_bad_object_error(self, mocker, api, some_config):
+        """read_records restarts the job after FacebookBadObjectError and succeeds."""
         job = mocker.Mock(spec=InsightAsyncJob)
         rec = mocker.Mock()
         rec.export_all_data.return_value = {"date_start": "2010-01-01"}
-        job.get_result.side_effect = [
-            FacebookBadObjectError("Bad data"),
-            [rec, rec],
-        ]
+        # First get_result raises error; restart_and_get_result succeeds
+        job.get_result.side_effect = FacebookBadObjectError("Bad data")
+        job.restart_and_get_result.return_value = [rec, rec]
         job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
 
         stream = self._make_stream(api, some_config)
@@ -1701,13 +1700,14 @@ class TestInsightStreamBadObjectError:
         )
 
         assert len(records) == 2
-        assert job.get_result.call_count == 2
+        assert job.get_result.call_count == 1
+        assert job.restart_and_get_result.call_count == 1
 
-    def test_read_records_raises_traced_exception_after_max_retries(self, mocker, api, some_config):
-        """read_records raises AirbyteTracedException(transient_error) after exhausting retries."""
-        mocker.patch("source_facebook_marketing.streams.base_insight_streams.time.sleep")
+    def test_read_records_raises_traced_exception_when_restart_fails(self, mocker, api, some_config):
+        """read_records raises AirbyteTracedException(transient_error) when restart also fails."""
         job = mocker.Mock(spec=InsightAsyncJob)
         job.get_result.side_effect = FacebookBadObjectError("Bad data")
+        job.restart_and_get_result.side_effect = FacebookBadObjectError("Still bad data")
         job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
 
         stream = self._make_stream(api, some_config)
@@ -1724,5 +1724,27 @@ class TestInsightStreamBadObjectError:
             )
 
         assert exc_info.value.failure_type == FailureType.transient_error
-        assert exc_info.value.internal_message == "Bad data"
-        assert job.get_result.call_count == 5
+        assert "Still bad data" in exc_info.value.internal_message
+
+    def test_read_records_raises_traced_exception_on_runtime_error(self, mocker, api, some_config):
+        """read_records raises AirbyteTracedException when restart_and_get_result raises RuntimeError."""
+        job = mocker.Mock(spec=InsightAsyncJob)
+        job.get_result.side_effect = FacebookBadObjectError("Bad data")
+        job.restart_and_get_result.side_effect = RuntimeError("All restart attempts failed")
+        job.interval = DateInterval(date(2010, 1, 1), date(2010, 1, 1))
+
+        stream = self._make_stream(api, some_config)
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.incremental,
+                    stream_slice={
+                        "insight_job": job,
+                        "account_id": some_config["account_ids"][0],
+                    },
+                )
+            )
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+        assert "All restart attempts failed" in exc_info.value.internal_message
