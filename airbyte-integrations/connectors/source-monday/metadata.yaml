@@ -32,6 +32,16 @@ data:
               ]
   dockerRepository: airbyte/source-monday
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
+  externalDocumentationUrls:
+    - title: Changelog
+      url: https://developer.monday.com/api-reference/changelog
+      type: api_release_history
+    - title: API Versioning
+      url: https://developer.monday.com/api-reference/docs/api-versioning#making-a-request
+      type: api_reference
+    - title: Release notes
+      url: https://developer.monday.com/api-reference/docs/release-notes
+      type: api_release_history
   githubIssueLabel: source-monday
   icon: monday.svg
   license: ELv2
