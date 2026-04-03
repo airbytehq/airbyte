@@ -11,7 +11,6 @@ from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
-from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.types import Record
 
 
@@ -59,18 +58,36 @@ class SubscriptionUsageRecordExtractor(RecordExtractor):
 
 @dataclass
 class SubscriptionUsagePartitionRouter(StreamSlicer):
-    plans_stream: Stream
-    subscriptions_stream: Stream
+    plans_stream: Any  # Stream or DefaultStream depending on CDK execution context
+    subscriptions_stream: Any  # Stream or DefaultStream depending on CDK execution context
     config: Config
 
     @staticmethod
     def _to_dict(record: Any) -> Mapping[str, Any]:
-        """Extract a plain dict from a record returned by read_only_records()."""
+        """Extract a plain dict from a record."""
         if isinstance(record, Record):
             return record.data  # type: ignore[return-value]
         if isinstance(record, Mapping):
             return record
         return dict(record)  # type: ignore[arg-type]
+
+    def _read_records(self, stream: Any) -> Iterable[Mapping[str, Any]]:
+        """Read records from a stream, handling both Stream and DefaultStream types.
+
+        In CDK 6.x, parent streams injected into custom partition routers may be
+        either ``Stream`` (with ``read_only_records()``) or ``DefaultStream``
+        (concurrent wrapper with only ``generate_partitions()``).  This helper
+        abstracts the difference so ``stream_slices`` works in both contexts.
+        """
+        if hasattr(stream, "read_only_records"):
+            for record in stream.read_only_records():
+                yield self._to_dict(record)
+        elif hasattr(stream, "generate_partitions"):
+            for partition in stream.generate_partitions():
+                for record in partition.read():
+                    yield self._to_dict(record)
+        else:
+            raise AttributeError(f"Stream {type(stream).__name__} has no supported method for reading records")
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
@@ -88,8 +105,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
         if self.config.get("subscription_usage_grouping_key"):
             metric_ids_by_plan_id = {}
 
-            for raw_plan in plans_stream.read_only_records():
-                plan = self._to_dict(raw_plan)
+            for plan in self._read_records(plans_stream):
                 # if a plan_id filter is specified, skip any plan that doesn't match
                 if self.config.get("plan_id") and plan["id"] != self.config.get("plan_id"):
                     continue
@@ -97,8 +113,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
                 prices = plan.get("prices", [])
                 metric_ids_by_plan_id[plan["id"]] = [(price.get("billable_metric") or {}).get("id") for price in prices]
 
-        for raw_subscription in subscriptions_stream.read_only_records():
-            subscription = self._to_dict(raw_subscription)
+        for subscription in self._read_records(subscriptions_stream):
             subscription_id = subscription["id"]
             subscription_plan_id = subscription["plan_id"]
 
