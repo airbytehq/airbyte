@@ -14808,6 +14808,18 @@ spec:
         - 3
         description: The number of worker threads to use for the sync.
         order: 6
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate flat api_token/email config to nested credentials structure for OAuth 2.0 support
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials"]
+                value: "{{ {'auth_type': 'API Token', 'api_token': config['api_token'], 'email': config['email']} }}"
+            condition: "{{ config.get('api_token') and not config.get('credentials') }}"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

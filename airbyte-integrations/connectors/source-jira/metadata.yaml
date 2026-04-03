@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 5.0.0
+  dockerImageTag: 4.4.0
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   externalDocumentationUrls:
@@ -41,11 +41,6 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
-      5.0.0:
-        deadlineAction: "auto_upgrade"
-        message: "This update adds OAuth 2.0 authentication support for Jira. The connector spec has been restructured to include a `credentials` field with a `oneOf` for API Token or OAuth2.0. Users who configured `api_token` and `email` at the top level must update their configuration to nest these fields under `credentials`. Please refer to the migration guide for more information."
-        upgradeDeadline: "2026-07-01"
-        scopedImpact: []
       4.0.0:
         deadlineAction: "auto_upgrade"
         message: "The `pull_requests` stream has been fully deprecated. This change constitutes a breaking change. For more information, see our migration documentation for source Jira."
