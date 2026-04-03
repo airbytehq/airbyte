@@ -1,28 +1,27 @@
 # Milvus
 
-## Overview
+This page guides you through setting up the [Milvus](https://milvus.io/) destination connector.
 
-This page guides you through the process of setting up the [Milvus](https://milvus.io/) destination connector.
+The Milvus destination loads data in three stages:
 
-There are three parts to this:
-
-- Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-- Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported.)
-- Indexing - store the vectors in a vector database for similarity search
+- **Processing** - Splits individual records into chunks that fit the context window. You configure which fields to use as context and which are supplementary metadata.
+- **Embedding** - Converts text into a vector representation using a pre-trained model.
+- **Indexing** - Stores the vectors in Milvus for similarity search.
 
 ## Prerequisites
 
-To use the Milvus destination, you'll need:
+To use the Milvus destination, you need:
 
-- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
-- Either a running self-managed Milvus instance or a [Zilliz](https://zilliz.com/) account
+- An account with API access for your chosen embedding provider (OpenAI, Cohere, Azure OpenAI, or an OpenAI-compatible service)
+- A running self-managed Milvus instance or a [Zilliz](https://zilliz.com/) account
 
-You'll need the following information to configure the destination:
+You need the following information to configure the destination:
 
-- **Embedding service API Key** - The API key for your OpenAI or Cohere account
+- **Embedding service API key** - The API key for your embedding provider
 - **Milvus Endpoint URL** - The URL of your Milvus instance
-- Either **Milvus API token** or **Milvus Instance Username and Password**
+- **Authentication** - Either a Milvus API token (for Zilliz Cloud) or a username and password (for self-managed clusters). You can also use no authentication for local test clusters.
 - **Milvus Collection name** - The name of the collection to load data into
+- **Database name** (optional) - The database to connect to
 
 ## Supported sync modes
 
@@ -50,22 +49,23 @@ The stream name gets added as a metadata field `_ab_stream` to each document. If
 
 The connector can use one of the following embedding methods:
 
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+1. **OpenAI** - Uses the [OpenAI API](https://platform.openai.com/docs/api-reference/embeddings) to produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration is constrained by the [OpenAI rate limits](https://platform.openai.com/docs/guides/rate-limits/overview).
+2. **Cohere** - Uses the [Cohere API](https://docs.cohere.com/reference/embed) to produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+3. **Azure OpenAI** - Uses an Azure-hosted OpenAI deployment for embeddings.
+4. **OpenAI-compatible** - Uses any API that implements the OpenAI embeddings interface.
 
-2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
-
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+For testing purposes, you can use the Fake embeddings integration, which generates random embeddings suitable for testing a data pipeline without incurring embedding costs.
 
 ### Indexing
 
-If the specified collection doesn't exist, the connector will create it for you with a primary key field `pk` and the configured vector field matching the embedding configuration. Dynamic fields will be enabled. The vector field will have an L2 IVF_FLAT index with an `nlist` parameter of 1024.
+If the specified collection doesn't exist, the connector creates it with a primary key field `pk` and the configured vector field matching the embedding configuration. Dynamic fields are enabled. The vector field has an L2 IVF_FLAT index with an `nlist` parameter of 1024.
 
-If you want to change any of these settings, create a new collection in your Milvus instance yourself. Make sure that
+To customize these settings, create the collection in your Milvus instance before configuring the destination. The collection must meet these requirements:
 
 - The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md)
 - There is a vector field with the correct dimensionality (1536 for OpenAI, 1024 for Cohere) and [a configured index](https://milvus.io/docs/build_index.md)
 
-If the record contains a field with the same name as the primary key, it will be prefixed with an underscore so Milvus can control the primary key internally.
+If a record contains a field with the same name as the primary key, the connector prefixes it with an underscore so Milvus can control the primary key internally.
 
 ### Setting up a collection
 

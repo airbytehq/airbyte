@@ -1,29 +1,28 @@
 # Weaviate
 
-## Overview
+This page guides you through setting up the [Weaviate](https://weaviate.io/) destination connector.
 
-This page guides you through the process of setting up the [Weaviate](https://weaviate.io/) destination connector.
+The Weaviate destination loads data in three stages:
 
-There are three parts to this:
-
-- Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-- Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported.)
-- Indexing - store the vectors in a vector database for similarity search
+- **Processing** - Splits individual records into chunks that fit the context window. You configure which fields to use as context and which are supplementary metadata.
+- **Embedding** - Converts text into a vector representation using a pre-trained model.
+- **Indexing** - Stores the vectors in Weaviate for similarity search.
 
 ## Prerequisites
 
-To use the Weaviate destination, you'll need:
+To use the Weaviate destination, you need:
 
-- Access to a running Weaviate instance (either self-hosted or via Weaviate Cloud Services), minimum version 1.21.2
-- Either
-  - An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
-  - Pre-calculated embeddings stored in a field in your source database
+- A running Weaviate instance (self-hosted or via Weaviate Cloud), minimum version 1.21.2
+- One of the following for embeddings:
+  - An account with API access for OpenAI, Cohere, Azure OpenAI, or an OpenAI-compatible service
+  - Pre-calculated embeddings stored in a field in your source data
+  - A configured [vectorizer](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules) on your Weaviate cluster (no external embedding needed)
 
-You'll need the following information to configure the destination:
+You need the following information to configure the destination:
 
-- **Embedding service API Key** - The API key for your OpenAI or Cohere account
-- **Weaviate cluster URL** - The URL of the Weaviate cluster to load data into. Airbyte Cloud only supports connecting to your Weaviate Instance instance with TLS encryption.
-- **Weaviate credentials** - The credentials for your Weaviate instance (either API token or username/password)
+- **Embedding service API key** - The API key for your embedding provider (if using external embeddings)
+- **Weaviate cluster URL** - The URL of the Weaviate cluster to load data into. Airbyte Cloud only supports connecting to your Weaviate instance with TLS encryption.
+- **Weaviate credentials** - The credentials for your Weaviate instance (API token, username/password, or no authentication for local test clusters)
 
 ## Supported sync modes
 
@@ -37,10 +36,10 @@ You'll need the following information to configure the destination:
 
 ## Data type mapping
 
-All fields specified as metadata fields will be stored as properties in the object can be used for filtering. The following data types are allowed for metadata fields:
+All fields specified as metadata fields are stored as properties in the object and can be used for filtering. The following data types are allowed for metadata fields:
 
 - String
-- Number (integer or floating point, gets converted to a 64 bit floating point)
+- Number (integer or floating point, converted to a 64-bit floating point)
 - Booleans (true, false)
 - List of String
 
@@ -62,26 +61,24 @@ The stream name gets added as a metadata field `_ab_stream` to each document. If
 
 The connector can use one of the following embedding methods:
 
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
+1. **OpenAI** - Uses the [OpenAI API](https://platform.openai.com/docs/api-reference/embeddings) to produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration is constrained by the [OpenAI rate limits](https://platform.openai.com/docs/guides/rate-limits/overview).
+2. **Cohere** - Uses the [Cohere API](https://docs.cohere.com/reference/embed) to produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
+3. **Azure OpenAI** - Uses an Azure-hosted OpenAI deployment for embeddings.
+4. **OpenAI-compatible** - Uses any API that implements the OpenAI embeddings interface.
+5. **From field** - If you have pre-calculated embeddings stored in a field in your source data, use this option to load them directly into Weaviate. The field must be a JSON array of numbers, for example `[0.1, 0.2, 0.3]`.
+6. **No embedding** - If you don't need embeddings or have configured a [vectorizer](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules) for your class, use this option.
 
-2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
-
-3. From field - if you have pre-calculated embeddings stored in a field in your source database, you can use the `From field` integration to load them into Weaviate. The field must be a JSON array of numbers, e.g. `[0.1, 0.2, 0.3]`.
-
-4. No embedding - if you don't want to use embeddings or have configured a [vectorizer](https://weaviate.io/developers/weaviate/modules/retriever-vectorizer-modules) for your class, you can use the `No embedding` integration.
-
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
+For testing purposes, you can use the Fake embeddings integration, which generates random embeddings suitable for testing a data pipeline without incurring embedding costs.
 
 ### Indexing
 
-All streams will be indexed into separate classes derived from the stream name.
-If a class doesn't exist in the schema of the cluster, it will be created using the configure vectorizer configuration. In this case, dynamic schema has to be enabled on the server.
+All streams are indexed into separate classes derived from the stream name. If a class doesn't exist in the schema of the cluster, the connector creates it using the configured vectorizer. Dynamic schema must be enabled on the server for this to work.
 
-You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons. In case a sync is run in `Overwrite` mode, the class will be deleted and recreated.
+You can also create the class in Weaviate in advance if you need more control over the schema. If you do, the text properties `_ab_stream` and `_ab_record_id` must exist for bookkeeping. If a sync runs in `Overwrite` mode, the class is deleted and recreated.
 
-As properties have to start will a lowercase letter in Weaviate and can't contain spaces or special characters. Field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
+Properties in Weaviate must start with a lowercase letter and can't contain spaces or special characters. Field names are updated during the loading process if needed. The field names `id`, `_id`, and `_additional` are reserved keywords in Weaviate, so they are renamed to `raw_id`, `raw__id`, and `raw_additional` respectively.
 
-When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/multi-tenancy), the tenant id can be configured in the connector configuration. If not specified, multi-tenancy will be disabled. In case you want to index into an already created class, you need to make sure the class is created with multi-tenancy enabled. In case the class doesn't exist, it will be created with multi-tenancy properly configured. If the class already exists but the tenant id is not associated with the class, the connector will automatically add the tenant id to the class. This allows you to configure multiple connections for different tenants on the same schema.
+When using [multi-tenancy](https://weaviate.io/developers/weaviate/manage-data/multi-tenancy), you can configure the tenant ID in the connector configuration. If not specified, multi-tenancy is disabled. If you index into an existing class, make sure the class was created with multi-tenancy enabled. If the class doesn't exist, the connector creates it with multi-tenancy properly configured. If the class already exists but the tenant ID isn't associated with it, the connector automatically adds the tenant ID. This allows you to configure multiple connections for different tenants on the same schema.
 
 ## Namespace support
 
