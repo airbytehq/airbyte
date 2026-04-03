@@ -122,6 +122,67 @@ class TestBaseInsightsStream:
         assert stream.action_attribution_windows == expected_windows
         assert stream.request_params()["action_attribution_windows"] == expected_windows
 
+    @pytest.mark.parametrize(
+        "include_engaged_view,expected_windows",
+        [
+            pytest.param(
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="disabled_uses_default_windows",
+            ),
+            pytest.param(
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "1d_ev"],
+                id="enabled_appends_ev_windows",
+            ),
+        ],
+    )
+    def test_include_engaged_view(self, api, some_config, include_engaged_view, expected_windows):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_engaged_view=include_engaged_view,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
+    @pytest.mark.parametrize(
+        "include_incrementality,include_engaged_view,expected_windows",
+        [
+            pytest.param(
+                True,
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality", "1d_ev"],
+                id="both_enabled",
+            ),
+            pytest.param(
+                False,
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="both_disabled",
+            ),
+        ],
+    )
+    def test_include_incrementality_and_engaged_view(
+        self, api, some_config, include_incrementality, include_engaged_view, expected_windows
+    ):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_incrementality=include_incrementality,
+            include_engaged_view=include_engaged_view,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
     def test_init_statuses(self, api, some_config):
         stream = AdsInsights(
             api=api,
