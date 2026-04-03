@@ -29,7 +29,7 @@ definitions:
 
   requester:
     type: CustomRequester
-    class_name: source_asana.components.AsanaHttpRequester
+    class_name: source_declarative_manifest.components.AsanaHttpRequester
     url_base: https://app.asana.com/api/1.0/
     http_method: GET
     authenticator:
@@ -2661,6 +2661,19 @@ spec:
       - option_title
     predicate_value: OAuth Credentials
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://app.asana.com/-/oauth_authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}"
+        access_token_url: "https://app.asana.com/-/oauth_token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         properties:
@@ -2689,6 +2702,31 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the old config format where access_token was at root level to the new credentials format.
+          OLD: {"access_token": "xxx"}
+          NEW: {"credentials": {"option_title": "PAT Credentials", "personal_access_token": "xxx"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "personal_access_token"]
+                value: "{{ config['access_token'] }}"
+            condition: "{{ config.get('access_token') and not config.get('credentials') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "option_title"]
+                value: "PAT Credentials"
+            condition: "{{ config.get('access_token') and not config.get('credentials') }}"
+          - type: ConfigRemoveFields
+            field_pointers:
+              - ["access_token"]
+            condition: "{{ config.get('access_token') and config.get('credentials') }}"
 metadata:
   autoImportSchema:
     projects: false

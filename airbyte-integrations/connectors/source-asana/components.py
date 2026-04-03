@@ -4,7 +4,7 @@
 
 
 from dataclasses import dataclass
-from pkgutil import get_data
+from pathlib import Path
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from yaml import safe_load
@@ -52,7 +52,7 @@ class AsanaHttpRequester(HttpRequester):
         opt_fields = []
         schema = self._get_stream_schema()
 
-        for prop, value in schema["properties"].items():
+        for prop, value in schema.get("properties", {}).items():
             if "object" in value["type"]:
                 opt_fields.append(self._handle_object_type(prop, value))
             elif "array" in value["type"]:
@@ -83,8 +83,13 @@ class AsanaHttpRequester(HttpRequester):
         return prop
 
     def _get_stream_schema(self) -> MutableMapping[str, Any]:
-        raw_manifest_file = get_data("source_asana", "manifest.yaml")
-        if raw_manifest_file:
-            manifest = safe_load(raw_manifest_file.decode())
-            return manifest.get("definitions", {}).get(f"{self.name}_schema", {})
-        return {}
+        manifest_path = Path("/source_declarative_manifest/manifest.yaml")
+        if not manifest_path.exists():
+            source_file = globals().get("__file__")
+            if source_file is None:
+                return {}
+            manifest_path = Path(source_file).parent / "manifest.yaml"
+        if not manifest_path.exists():
+            return {}
+        manifest = safe_load(manifest_path.read_text())
+        return manifest.get("definitions", {}).get(f"{self.name}_schema", {})
