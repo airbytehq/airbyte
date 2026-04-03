@@ -4,12 +4,12 @@
 
 Airbyte's certified Postgres connector offers the following features:
 
-- Replicate data from tables, views and materialized views. Other data objects won't be replicated to the destination like indexes, permissions.
+- Replicate data from tables, views, and materialized views. Other data objects, such as indexes and permissions, are not replicated to the destination.
 - Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin).
 - All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshoot issues with the Postgres connector.
+The contents below include a Quick Start guide, advanced setup steps, and reference information including data type mapping and changelogs. To troubleshoot issues with the Postgres connector, see the [Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
 
 </HideInUI>
 
@@ -106,7 +106,7 @@ For CDC, you may connect to primary/master databases or replicas. To use a repli
 
 To configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user created in [step 1 of the quick start](#step-1-create-a-dedicated-read-only-postgres-user):
 
-```
+```sql
 ALTER USER <user_name> REPLICATION;
 ```
 
@@ -139,10 +139,11 @@ AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/databas
 
 Change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
 
-```
+```bash
 az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
 az postgres server restart --resource-group group --name server
 ```
+
 ### Step 4: Create a replication slot on your Postgres database
 
 <FieldAnchor field="replication_method.replication_slot">
@@ -150,7 +151,7 @@ Airbyte requires a replication slot configured only for its use. Only one source
 
 For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
 
-```
+```sql
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
@@ -164,7 +165,7 @@ For each table you want to replicate with CDC, follow the steps below:
 
 1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
 
-```
+```sql
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
@@ -173,7 +174,7 @@ ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
-```
+```sql
 CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;
 ```
 
@@ -190,7 +191,7 @@ In your Postgres source, change the update method to `Read Changes using Change 
 
 ## Postgres Replication Methods
 
-The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
+The Postgres source offers three methods of replicating updates to your destination: CDC, xmin, and standard (with a user-defined cursor). CDC and xmin are the **most reliable methods** of updating your data.
 
 <FieldAnchor field="replication_method[CDC]">
 
@@ -209,7 +210,7 @@ If your goal is to maintain a snapshot of your table in the destination but the 
 
 ### Xmin
 
-Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
+Xmin replication is a cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column, available in all Postgres databases, is used to track inserts and updates to your source data.
 
 This is a good solution if:
 
@@ -268,7 +269,7 @@ To connect to a Postgres instance via an SSH tunnel:
 
 The connector supports any SSH compatible key format such as RSA or Ed25519. To generate an RSA key, for example, run:
 
-```
+```bash
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
@@ -295,7 +296,7 @@ To see connector limitations, or troubleshoot your Postgres connector, see more 
 
 ## Data type mapping
 
-According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to the Postgres [documentation](https://www.postgresql.org/docs/current/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples in the [PostgresSourceDatatypeTest](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/kotlin/io/airbyte/integrations/source/postgres/legacy/PostgresSourceDatatypeTest.kt). If you can't find the data type you are looking for or have any problems, feel free to add a new test.
 
 | Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
 | ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
