@@ -43,14 +43,14 @@ You'll need the following information to configure the Postgres destination:
 
 [Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
 
-#### Configure Network Access
+### Configure Network Access
 
 Make sure your Postgres database can be accessed by Airbyte. If your database is within a VPC, you
 may need to allow access from the IP you're using to expose Airbyte.
 
 ## Step 1: Set up Postgres
 
-#### **Permissions**
+### Permissions
 
 You need a Postgres user with the following permissions:
 
@@ -59,7 +59,7 @@ You need a Postgres user with the following permissions:
 
 You can create such a user by running:
 
-```
+```sql
 CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 ```
@@ -68,7 +68,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 ## Step 2: Set up the Postgres connector in Airbyte
 
-#### Target Database
+### Target Database
 
 You will need to choose an existing database or create a new database that will be used to store
 synced data from Airbyte.
@@ -298,8 +298,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.12  | 2026-03-25 | | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert |
-| 3.0.11  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
+| 3.0.12  | 2026-03-26 | [75481](https://github.com/airbytehq/airbyte/pull/75481) | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert |
+| 3.0.11  | 2026-02-25 | [74040](https://github.com/airbytehq/airbyte/pull/74040) | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
 | 3.0.10  | 2026-02-04 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
 | 3.0.9   | 2026-01-28 | [72292](https://github.com/airbytehq/airbyte/pull/72292)   | Upgrade CDK to 0.2.0                                                                                                                                                                   |
 | 3.0.8 | 2026-01-28 | [72412](https://github.com/airbytehq/airbyte/pull/72412) | Promoting release candidate 3.0.8-rc1 to a main version. |
