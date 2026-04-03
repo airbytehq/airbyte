@@ -7,12 +7,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping
 
 import requests
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import Record
 
 
 @dataclass
@@ -63,6 +63,15 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
     subscriptions_stream: Stream
     config: Config
 
+    @staticmethod
+    def _to_dict(record: Any) -> Mapping[str, Any]:
+        """Extract a plain dict from a record returned by read_only_records()."""
+        if isinstance(record, Record):
+            return record.data  # type: ignore[return-value]
+        if isinstance(record, Mapping):
+            return record
+        return dict(record)  # type: ignore[arg-type]
+
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         This stream is sliced per `subscription_id` and day, as well as `billable_metric_id`
@@ -79,7 +88,8 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
         if self.config.get("subscription_usage_grouping_key"):
             metric_ids_by_plan_id = {}
 
-            for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
+            for raw_plan in plans_stream.read_only_records():
+                plan = self._to_dict(raw_plan)
                 # if a plan_id filter is specified, skip any plan that doesn't match
                 if self.config.get("plan_id") and plan["id"] != self.config.get("plan_id"):
                     continue
@@ -87,7 +97,8 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
                 prices = plan.get("prices", [])
                 metric_ids_by_plan_id[plan["id"]] = [(price.get("billable_metric") or {}).get("id") for price in prices]
 
-        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for raw_subscription in subscriptions_stream.read_only_records():
+            subscription = self._to_dict(raw_subscription)
             subscription_id = subscription["id"]
             subscription_plan_id = subscription["plan_id"]
 
