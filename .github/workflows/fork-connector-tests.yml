@@ -1,0 +1,78 @@
+name: Fork PR Connector Tests
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  statuses: write
+  pull-requests: write
+
+jobs:
+  check-fork-and-trigger-tests:
+    name: Check Fork and Trigger Tests
+    runs-on: ubuntu-24.04
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    steps:
+      - name: Attempt to get GitHub App token for fork
+        id: get-app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          owner: ${{ github.event.pull_request.head.repo.owner.login }}
+
+      - name: Skip message for missing GitHub App
+        if: steps.get-app-token.outcome != 'success'
+        run: |
+          echo "Skipping fork connector tests - GitHub App not installed on fork"
+          echo "Fork URL: https://github.com/${{ github.event.pull_request.head.repo.full_name }}"
+
+      - name: Post pending commit status
+        if: steps.get-app-token.outcome == 'success'
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: pending
+          context: Fork Connector Tests
+          description: Running connector tests in fork with BYO secrets...
+          targetUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          sha: ${{ github.event.pull_request.head.sha }}
+
+      # GitHub App tokens expire after 60 minutes, so we limit the wait timeout to 55 minutes
+      - name: Trigger connector tests in fork
+        id: trigger-tests
+        if: steps.get-app-token.outcome == 'success'
+        uses: the-actions-org/workflow-dispatch@v4
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          repo: ${{ github.event.pull_request.head.repo.full_name }}
+          workflow: connector-ci-checks.yml
+          ref: ${{ github.event.pull_request.head.ref }}
+          wait-for-completion: true
+          wait-for-completion-timeout: 55m
+          wait-for-completion-interval: 30s
+          inputs: |
+            {
+              "repo": "${{ github.event.pull_request.head.repo.full_name }}",
+              "gitref": "${{ github.event.pull_request.head.ref }}",
+              "pr": "${{ github.event.pull_request.number }}"
+            }
+
+      - name: Post commit status
+        if: steps.get-app-token.outcome == 'success'
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ steps.trigger-tests.outcome == 'success' && steps.trigger-tests.outputs.workflow-conclusion == 'success' && 'success' || 'failure' }}
+          context: Fork Connector Tests
+          # Workflow conclusion 'success' or 'failure'
+          description: Connector tests ${{ steps.trigger-tests.outputs.workflow-conclusion }} using BYO secrets
+          targetUrl: ${{ steps.trigger-tests.outputs.workflow-url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
+          sha: ${{ github.event.pull_request.head.sha }}
