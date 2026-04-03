@@ -45,13 +45,17 @@ constructor(
                         ByteArrayInputStream(jsonCreds.toByteArray(StandardCharsets.UTF_8))
                     )
             }
+            val scopedCredentials =
+                (credentials ?: GoogleCredentials.getApplicationDefault()).createScoped(
+                    listOf(
+                        "https://www.googleapis.com/auth/bigquery",
+                        "https://www.googleapis.com/auth/drive.readonly",
+                    )
+                )
             bigQuery =
                 bigQueryBuilder
                     .setProjectId(projectId)
-                    .setCredentials(
-                        if (!Objects.isNull(credentials)) credentials
-                        else GoogleCredentials.getApplicationDefault()
-                    )
+                    .setCredentials(scopedCredentials)
                     .setHeaderProvider {
                         ImmutableMap.of("user-agent", getUserAgentHeader(connectorVersion))
                     }
