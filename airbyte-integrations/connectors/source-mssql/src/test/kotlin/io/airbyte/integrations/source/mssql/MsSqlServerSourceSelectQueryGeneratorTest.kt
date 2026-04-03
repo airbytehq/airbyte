@@ -128,7 +128,8 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectWithHierarchyId() {
         // Test special handling for hierarchyid field type in SQL Server
-        val hierarchyField = EmittedField("org_node", MsSqlSourceOperations.MsSqlServerHierarchyFieldType)
+        val hierarchyField =
+            EmittedField("org_node", MsSqlSourceOperations.MsSqlServerHierarchyFieldType)
         SelectQuerySpec(
                 SelectColumns(
                     listOf(
@@ -216,7 +217,9 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
         val orderField = EmittedField("Order", IntFieldType)
 
         SelectQuerySpec(
-                SelectColumns(listOf(EmittedField("Id", IntFieldType), startField, endField, orderField)),
+                SelectColumns(
+                    listOf(EmittedField("Id", IntFieldType), startField, endField, orderField)
+                ),
                 From("CustomerAgreementProfiles", "dbo"),
                 limit = Limit(100),
             )
