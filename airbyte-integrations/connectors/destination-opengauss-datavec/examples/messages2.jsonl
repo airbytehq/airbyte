@@ -1,0 +1,3 @@
+{"type": "RECORD", "record": {"stream": "example_stream_3", "data": { "title": "value1", "field2": "value2", "str_col":"text1", "int_col":1 }, "emitted_at": 1625383200000}}
+{"type": "STATE", "state": {"type": "STREAM", "stream": {"stream_descriptor": {"name": "example_stream_3", "namespace": null}, "stream_state": {"__ab_no_cursor_state_message": true}}, "global_": null, "data": null, "sourceStats": {"recordCount": 1.0, "rejectedRecordCount": null}, "destinationStats": null, "id": 2}}
+{"type": "RECORD", "record": {"stream": "example_stream_3", "data": { "title": "value2", "field2": "value2", "str_col":"text2", "int_col":2 }, "emitted_at": 1625383200000}}
