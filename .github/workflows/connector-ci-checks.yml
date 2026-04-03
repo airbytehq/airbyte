@@ -204,7 +204,7 @@ jobs:
         run: poe test-integration-tests
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
+        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
         # Skip if cancelled, if no connector is specified, or if running from a fork.
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
@@ -308,7 +308,7 @@ jobs:
           airbyte-cdk image test
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
+        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
         # Skip if cancelled, if no connector is specified, or if the repository is a fork.
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
