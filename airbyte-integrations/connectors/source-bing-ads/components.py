@@ -22,6 +22,7 @@ from airbyte_cdk.sources.declarative.requesters.http_requester import HttpReques
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.http_client import HttpClient
 
 
 logger = logging.getLogger(__name__)
@@ -657,13 +658,17 @@ class BingAdsReportDownloadRequester(HttpRequester):
                 auth_header = self.report_poll_authenticator.get_auth_header()
                 headers.update(auth_header)
 
-            response = requests.post(
-                BING_ADS_REPORTING_POLL_URL,
+            http_client = HttpClient(
+                name="bing_ads_report_repoll",
+                logger=logger,
+            )
+            _, response = http_client.send_request(
+                http_method="POST",
+                url=BING_ADS_REPORTING_POLL_URL,
                 headers=headers,
                 json={"ReportRequestId": str(report_request_id)},
-                timeout=30,
+                request_kwargs={"timeout": 30},
             )
-            response.raise_for_status()
             data = response.json()
             fresh_url = data.get("ReportRequestStatus", {}).get("ReportDownloadUrl")
             if fresh_url:

@@ -1140,3 +1140,59 @@ def test_get_fresh_download_url_falls_back_on_auth_error(components_module):
 
     result = requester._get_fresh_download_url(stream_slice)
     assert result is None
+
+
+# --- Manifest-level integration test (P1) ---
+
+
+def test_manifest_instantiates_custom_download_requester(config):
+    """Verify the CustomRequester factory path produces a correctly wired BingAdsReportDownloadRequester.
+
+    This test builds the full source from manifest.yaml via YamlDeclarativeSource,
+    finds a report stream, and asserts that:
+    1. The download requester is an instance of BingAdsReportDownloadRequester.
+    2. stream_response is True (derived from decoder in __post_init__).
+    3. The report_poll_authenticator is resolved and has get_auth_header().
+    """
+    from pathlib import Path
+
+    from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+    from airbyte_cdk.test.catalog_builder import CatalogBuilder
+    from airbyte_cdk.test.state_builder import StateBuilder
+
+    yaml_path = Path(__file__).parent.parent / "manifest.yaml"
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build()
+    source = YamlDeclarativeSource(path_to_yaml=str(yaml_path), catalog=catalog, config=config, state=state)
+
+    # Find a report stream that uses the async retriever with download_requester
+    target_stream = None
+    for stream in source.streams(config=config):
+        if stream.name == "account_performance_report_daily":
+            target_stream = stream
+            break
+    assert target_stream is not None, "account_performance_report_daily stream not found"
+
+    # Navigate: stream -> partition_generator -> slicer -> factory closure -> job_repository
+    slicer = target_stream._stream_partition_generator._stream_slicer
+    factory_fn = slicer._job_orchestrator_factory
+    job_repository = None
+    for var_name, cell in zip(factory_fn.__code__.co_freevars, factory_fn.__closure__):
+        if var_name == "job_repository":
+            job_repository = cell.cell_contents
+            break
+    assert job_repository is not None, "Could not find job_repository in factory closure"
+
+    download_requester = job_repository.download_retriever.requester
+
+    # Assert the requester is our custom class (not plain HttpRequester)
+    import components as components_mod
+
+    assert isinstance(download_requester, components_mod.BingAdsReportDownloadRequester)
+
+    # Assert stream_response is True (critical for streaming decoders)
+    assert download_requester.stream_response is True
+
+    # Assert report_poll_authenticator is resolved and usable
+    assert download_requester.report_poll_authenticator is not None
+    assert hasattr(download_requester.report_poll_authenticator, "get_auth_header")
