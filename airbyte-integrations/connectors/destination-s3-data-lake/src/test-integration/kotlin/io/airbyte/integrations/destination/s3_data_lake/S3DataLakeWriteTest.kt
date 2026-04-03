@@ -21,16 +21,15 @@ import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
-import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.integrations.destination.s3_data_lake.catalog.GlueTableIdGenerator
 import io.airbyte.integrations.destination.s3_data_lake.schema.GlueTableSchemaMapper
 import io.airbyte.integrations.destination.s3_data_lake.spec.S3DataLakeSpecification
@@ -73,7 +72,8 @@ abstract class S3DataLakeWriteTest(
 class GlueWriteTest :
     S3DataLakeWriteTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        tableIdGenerator = GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
+        tableIdGenerator =
+            GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.getConfig(spec),
@@ -197,7 +197,8 @@ class GlueWriteTest :
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        tableIdGenerator = GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
+        tableIdGenerator =
+            GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.getConfig(spec),
@@ -383,7 +384,8 @@ class PolarisWriteTest :
 class GlueWriteTestProtoSocket :
     S3DataLakeWriteTest(
         configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        tableIdGenerator = GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
+        tableIdGenerator =
+            GlueTableIdGenerator(GlueTableSchemaMapper(null, DefaultTempTableNameGenerator())),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
                 S3DataLakeTestUtil.getConfig(spec),
@@ -418,7 +420,11 @@ class GlueWriteTestWithLowercaseColumns :
             withLowercaseColumnNames(Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH)),
         tableIdGenerator =
             GlueTableIdGenerator(
-                GlueTableSchemaMapper(null, DefaultTempTableNameGenerator(), lowercaseColumnNames = true)
+                GlueTableSchemaMapper(
+                    null,
+                    DefaultTempTableNameGenerator(),
+                    lowercaseColumnNames = true
+                )
             ),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
@@ -445,7 +451,11 @@ class GlueWriteTestWithLowercaseColumns :
                 properties =
                     linkedMapOf(
                         "RecordId" to intType,
-                        "updatedAt" to FieldType(io.airbyte.cdk.load.data.TimestampTypeWithTimezone, nullable = true),
+                        "updatedAt" to
+                            FieldType(
+                                io.airbyte.cdk.load.data.TimestampTypeWithTimezone,
+                                nullable = true
+                            ),
                         "userName" to stringType,
                     )
             )
@@ -486,8 +496,7 @@ class GlueWriteTestWithLowercaseColumns :
                     data =
                         mapOf(
                             "record_id" to 1,
-                            "updated_at" to
-                                TimestampWithTimezoneValue("2001-01-01T00:00:00Z"),
+                            "updated_at" to TimestampWithTimezoneValue("2001-01-01T00:00:00Z"),
                             "user_name" to "Alice2",
                         ),
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
@@ -534,7 +543,9 @@ class GlueWriteTestWithLowercaseColumns :
                 stream,
                 ObjectValue(
                     schema
-                        .mapValuesTo(linkedMapOf<String, AirbyteValue>()) { StringValue("foo\nbar") }
+                        .mapValuesTo(linkedMapOf<String, AirbyteValue>()) {
+                            StringValue("foo\nbar")
+                        }
                         .also { it["id"] = IntegerValue(42) }
                 ),
                 emittedAtMs = 1234,
