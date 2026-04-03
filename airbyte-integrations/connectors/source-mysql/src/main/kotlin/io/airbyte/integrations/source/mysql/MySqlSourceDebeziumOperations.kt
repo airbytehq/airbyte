@@ -32,6 +32,7 @@ import io.airbyte.cdk.read.cdc.CdcPartitionReaderDebeziumOperations
 import io.airbyte.cdk.read.cdc.CdcPartitionsCreatorDebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder
+import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder.Companion.AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS
 import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
 import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
@@ -453,6 +454,12 @@ class MySqlSourceDebeziumOperations(
     val serverID: Int = random.nextInt(MIN_SERVER_ID..MAX_SERVER_ID)
 
     val commonProperties: Map<String, String> by lazy {
+        log.info {
+            "CDC initial waiting time: ${cdcIncrementalConfiguration.initialWaitingSeconds.seconds} seconds"
+        }
+        log.info {
+            "CDC load timeout: ${cdcIncrementalConfiguration.initialLoadTimeout.toHours()} hours"
+        }
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
         val dbzPropertiesBuilder =
             DebeziumPropertiesBuilder()
@@ -497,6 +504,13 @@ class MySqlSourceDebeziumOperations(
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }
             ?.let { dbzPropertiesBuilder.withDatabase("connectionTimezone", it) }
+
+        // Enable heartbeat timeout for MySQL to detect idle database states.
+        // The load timeout is being handled in MySqlSourceConfiguration
+        dbzPropertiesBuilder.with(
+            AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS,
+            cdcIncrementalConfiguration.initialWaitingSeconds.toSeconds().toString()
+        )
 
         dbzPropertiesBuilder.buildMap()
     }

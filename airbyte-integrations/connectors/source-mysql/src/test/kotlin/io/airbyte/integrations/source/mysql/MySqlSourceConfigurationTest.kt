@@ -83,6 +83,9 @@ class MySqlSourceConfigurationTest {
 
         val cdcCursor = config.incrementalConfiguration as CdcIncrementalConfiguration
 
+        // CONFIG_V1 initiate "initial_waiting_seconds" to 301
+        Assertions.assertEquals(cdcCursor.initialWaitingSeconds, Duration.ofSeconds(301))
+
         Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
         Assertions.assertEquals(
             cdcCursor.invalidCdcCursorPositionBehavior,
@@ -90,6 +93,23 @@ class MySqlSourceConfigurationTest {
         )
 
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "12345")
+    @Property(name = "airbyte.connector.config.username", value = "FOO")
+    @Property(name = "airbyte.connector.config.password", value = "BAR")
+    @Property(name = "airbyte.connector.config.database", value = "SYSTEM")
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_INVALID_WAITING_SECONDS)
+    fun testInvalidInitialWaitingSeconds() {
+        val pojo: MySqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        val exception =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                factory.makeWithoutExceptionHandling(pojo)
+            }
+        Assertions.assertTrue(exception.message!!.contains("Initial Waiting Time must be between"))
     }
 
     @Test
@@ -249,6 +269,29 @@ class MySqlSourceConfigurationTest {
     "initial_waiting_seconds": 301,
     "initial_load_timeout_hours": 9,
     "invalid_cdc_cursor_position_behavior": "Re-sync data"
+  }
+}
+"""
+
+        const val CONFIG_INVALID_WAITING_SECONDS: String =
+            """
+{
+  "host": "localhost",
+  "port": 12345,
+  "database": "SYSTEM",
+  "password": "BAR",
+  "ssl_mode": {
+    "mode": "required"
+  },
+  "username": "FOO",
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": {
+    "method": "CDC",
+    "initial_waiting_seconds": 5,
+    "initial_load_timeout_hours": 8,
+    "invalid_cdc_cursor_position_behavior": "Fail sync"
   }
 }
 """
