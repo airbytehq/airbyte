@@ -23,7 +23,7 @@ data:
       url: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication
       type: api_reference
     - title: SendGrid API OpenAPI specification
-      url: https://github.com/sendgrid/sendgrid-oai
+      url: https://github.com/twilio/sendgrid-oai
       type: openapi_spec
   githubIssueLabel: source-sendgrid
   icon: sendgrid.svg
