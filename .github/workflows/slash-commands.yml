@@ -91,7 +91,7 @@ jobs:
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
-        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ github.event.comment.id }}
           body: |

@@ -66,7 +66,7 @@ jobs:
 
       - name: Append comment with job run link
         id: first-comment-action
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
@@ -98,7 +98,7 @@ jobs:
 
       - name: Post success comment
         if: steps.merge.outputs.merged == 'true'
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: hooray
@@ -125,7 +125,7 @@ jobs:
                     text: "Initiated by: ${{ github.actor }} | Reason: ${{ github.event.inputs.reason }} | <https://github.com/${{ github.repository }}/pull/${{ github.event.inputs.pr }}|View PR>"
 
       - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
         if: failure()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
