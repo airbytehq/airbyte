@@ -357,7 +357,10 @@ class AdAccount(FBMarketingStream):
             # before this except block can catch it. Check the wrapped exception for the same conditions.
             if isinstance(e._exception, FacebookRequestError):
                 fb_err = e._exception
-                if fb_err.api_error_code() == 200 and fb_err.api_error_message() == "(#200) Requires business_management permission to manage the object":
+                if (
+                    fb_err.api_error_code() == 200
+                    and fb_err.api_error_message() == "(#200) Requires business_management permission to manage the object"
+                ):
                     fields.remove("owner")
                     return [FBAdAccount(self._api.get_account(account_id=account_id).get_id()).api_get(fields=fields)]
                 if fb_err.api_error_code() == 100 and fb_err.api_error_message() == "Unsupported request - method type: get":
