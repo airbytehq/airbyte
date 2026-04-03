@@ -96,6 +96,35 @@ These are the additional steps required (after following the [quick start](#quic
 4. Create publication and replication identities for each Postgres table
 5. Enable CDC replication in the Airbyte UI
 
+### Special note for partitioned tables
+
+If you are replicating partitioned tables using CDC, we strongly recommend configuring the Postgres publication with publish_via_partition_root = true.
+
+By default, Postgres logical replication publishes changes using the leaf partition as the relation identity. This can cause downstream consumers (including Airbyte) to observe multiple logical streams for what is conceptually a single table, which may result in duplicate records and incorrect deduplication behavior.
+
+Enabling publish_via_partition_root ensures that all changes across partitions are published as if they originate from the partition root table, producing a single logical stream that works correctly with incremental and deduplicated syncs.
+
+To enable this behavior, either create the publication with the option set:
+
+```
+CREATE PUBLICATION airbyte_publication
+FOR TABLE <partitioned_root_table>
+WITH (publish_via_partition_root = true);
+```
+Or, if the publication already exists:
+```
+ALTER PUBLICATION airbyte_publication
+SET (publish_via_partition_root = true);
+```
+
+Notes:
+
+- This setting applies only to CDC (logical replication) and has no effect on xmin or standard incremental replication methods.
+
+- Changing this setting on an existing publication should be treated as a controlled cutover to avoid duplicate or missing records in downstream systems.
+
+- When enabled, TRUNCATE operations executed directly on individual partitions are not replicated; truncating the partitioned root table is replicated.
+
 ### Step 1: Prepopulate your Postgres source configuration
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
