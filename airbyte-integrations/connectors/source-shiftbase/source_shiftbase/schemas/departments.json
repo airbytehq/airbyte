@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "account_id": {
+      "type": "string"
+    },
+    "location_id": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "longitude": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "holiday_group_id": {
+      "type": "string"
+    },
+    "order": {
+      "type": "string"
+    },
+    "price": {
+      "type": "string"
+    },
+    "timesheet_copy_starttime": {
+      "type": "string"
+    },
+    "timesheet_copy_endtime": {
+      "type": "string"
+    },
+    "timesheet_break_calculation": {
+      "type": "string"
+    },
+    "break_rule_type": {
+      "type": "string"
+    },
+    "timesheet_surcharges": {
+      "type": "boolean"
+    },
+    "meal_registration": {
+      "type": "boolean"
+    },
+    "km_registration": {
+      "type": "boolean"
+    },
+    "timesheet_copy_schedule": {
+      "type": "boolean"
+    },
+    "timesheet_interval": {
+      "type": "string"
+    },
+    "break_interval": {
+      "type": "string"
+    },
+    "round_clock_in": {
+      "type": "string"
+    },
+    "round_clock_out": {
+      "type": "string"
+    },
+    "round_clock_break": {
+      "type": "string"
+    },
+    "round_break_shift": {
+      "type": "string"
+    },
+    "clock_out_after": {
+      "type": "string"
+    },
+    "approve_clock": {
+      "type": "string"
+    },
+    "allow_clock_in_without_roster": {
+      "type": "boolean"
+    },
+    "approve_schedule": {
+      "type": "boolean"
+    },
+    "split_clocked_shifts": {
+      "type": "string"
+    },
+    "default_clock_shift": {
+      "type": "string"
+    },
+    "send_availability_reminder": {
+      "type": "boolean"
+    },
+    "reminder_days_before": {
+      "type": "string"
+    },
+    "lock_availability_days_before_period": {
+      "type": "string"
+    },
+    "required_days_per_week": {
+      "type": "string"
+    },
+    "publish_schedules": {
+      "type": "string"
+    },
+    "show_open_shifts": {
+      "type": "boolean"
+    },
+    "show_required_shifts": {
+      "type": "boolean"
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "deleted_date": {
+      "type": "null"
+    },
+    "created": {
+      "type": "string"
+    },
+    "updated": {
+      "type": "string"
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "modified_by": {
+      "type": "string"
+    }
+  }
+}

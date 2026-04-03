@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": ["null", "string"]
+    },
+    "userEmployeeNr": {
+      "type": ["null", "string"]
+    },
+    "rosterDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "day": {
+      "type": ["null", "string"]
+    },
+    "rosterStarttime": {
+      "type": ["null", "string"]
+    },
+    "rosterEndtime": {
+      "type": ["null", "string"]
+    },
+    "rosterBreak": {
+      "type": ["null", "integer"]
+    },
+    "rosterPaidBreak": {
+      "type": ["null", "integer"]
+    },
+    "shiftLongName": {
+      "type": ["null", "string"]
+    },
+    "rosterDepartmentLocationName": {
+      "type": ["null", "string"]
+    },
+    "rosterDepartmentName": {
+      "type": ["null", "string"]
+    },
+    "teamName": {
+      "type": ["null", "string"]
+    },
+    "rosterTotal": {
+      "type": ["null", "number"]
+    },
+    "rosterSalary": {
+      "type": ["null", "number"]
+    },
+    "rosterCoc": {
+      "type": ["null", "number"]
+    },
+    "rosterCreated": {
+      "type": ["null", "string"]
+    },
+    "rosterUpdated": {
+      "type": ["null", "string"]
+    },
+    "rosterId": {
+      "type": ["null", "string"]
+    },
+    "rosterShiftId": {
+      "type": ["null", "string"]
+    },
+    "rosterTeamId": {
+      "type": ["null", "string"]
+    },
+    "rosterDepartmentId": {
+      "type": ["null", "string"]
+    },
+    "rosterDepartmentLocationId": {
+      "type": ["null", "string"]
+    },
+    "rosterRateCardId": {
+      "type": ["null", "string"]
+    }
+  }
+}

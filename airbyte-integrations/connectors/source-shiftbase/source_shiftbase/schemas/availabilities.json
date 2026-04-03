@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "all_day": {
+      "type": "boolean"
+    },
+    "type": {
+      "type": "string"
+    },
+    "starttime": {
+      "type": "string"
+    },
+    "endtime": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "weekday": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "employeeId": {
+      "type": "string"
+    },
+    "workedHours": {
+      "type": "number"
+    },
+    "workedHoursPercentage": {
+      "type": "integer"
+    },
+    "absences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "absenceTypeId": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "valueUnit": {
+            "type": "string"
+          },
+          "percentage": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}
