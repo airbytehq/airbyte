@@ -121,6 +121,7 @@ If you are upgrading from a previous version of the connector, please refer to t
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 2.1.6 | 2026-03-31 | [64963](https://github.com/airbytehq/airbyte/pull/64963) | Update dependencies |
 | 2.1.5 | 2026-02-25 | [71340](https://github.com/airbytehq/airbyte/pull/71340) | Resolve the generator returned from JsonDecoder into dictionary |
 | 2.1.4 | 2025-03-01 | [55142](https://github.com/airbytehq/airbyte/pull/55142) | Update dependencies |
 | 2.1.3 | 2025-02-22 | [54526](https://github.com/airbytehq/airbyte/pull/54526) | Update dependencies |
