@@ -32,19 +32,17 @@ _Note: Not all types of tests work for all connectors, only configure the ones t
 
 Build your connector image if needed.
 
-**Option A (Preferred): Building the docker image with `airbyte-ci`**
+**Option A (Preferred): Building the docker image with the Airbyte CDK**
 
 This is the preferred method for building and testing connectors.
 
-If you want to open source your connector we encourage you to use our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector.
-It will not use a Dockerfile but will build the connector image from our [base image](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/README.md) and use our internal build logic to build an image from your Python connector code.
+The build process will not use a Dockerfile but will build the connector image from our base image and use our internal build logic to build an image from your Python connector code.
 
-Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
-Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+Once the build is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
 
 **Option B: Building the docker image with a Dockerfile**
 
-If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
+You can also build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
 
 Create a `Dockerfile` in the root of your connector directory. The `Dockerfile` should look something like this:
 
@@ -70,30 +68,11 @@ docker build . -t airbyte/source-example-python:dev
 
 And test via one of the two following Options
 
-### Option 1 (Preferred): Run against the Airbyte CI test suite
+### Running acceptance tests
 
-Learn how to use and install [`airbyte-ci` here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md). Once installed, `airbyte-ci connectors test` command will run unit, integration, and acceptance tests against your connector. Pass `--name <your_connector_name>` to test just one connector.
+Connector acceptance tests are run automatically in CI when you open a pull request. The CI pipeline will run unit, integration, and acceptance tests against your connector.
 
-```bash
-airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> test
-```
-
-### Option 2 (Debugging): Run against the acceptance tests on your branch
-
-This will run the acceptance test suite directly with pytest. Allowing you to set breakpoints and debug your connector locally.
-
-The only pre-requisite is that you have [Poetry](https://python-poetry.org/docs/#installation) installed.
-
-Afterwards you do the following from the root of the `airbyte` repo:
-
-```bash
-cd airbyte-integrations/bases/connector-acceptance-test/
-poetry install
-poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/<your-connector> --pdb
-```
-
-See other useful pytest options [here](https://docs.pytest.org/en/stable/usage.html)
-See a more comprehensive guide in our README [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/connector-acceptance-test/README.md)
+See useful pytest options [here](https://docs.pytest.org/en/stable/usage.html).
 
 ## Dynamically managing inputs & resources used in standard tests
 

@@ -44,6 +44,7 @@ import io.mockk.verify
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.apache.iceberg.Schema
+import org.apache.iceberg.SortOrder
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
 import org.apache.iceberg.catalog.Catalog
@@ -261,7 +262,10 @@ internal class S3DataLakeStreamLoaderTest {
             every { s3BucketConfiguration } returns bucketConfiguration
         }
         val catalog: Catalog = mockk()
-        val table: Table = mockk { every { schema() } returns icebergSchema }
+        val table: Table = mockk {
+            every { schema() } returns icebergSchema
+            every { sortOrder() } returns SortOrder.unsorted()
+        }
         val updateSchema: UpdateSchema = mockk()
         every { table.updateSchema().allowIncompatibleChanges() } returns updateSchema
         every {
@@ -433,7 +437,10 @@ internal class S3DataLakeStreamLoaderTest {
             every { s3BucketConfiguration } returns bucketConfiguration
         }
         val catalog: Catalog = mockk()
-        val table: Table = mockk { every { schema() } returns icebergSchema }
+        val table: Table = mockk {
+            every { schema() } returns icebergSchema
+            every { sortOrder() } returns SortOrder.unsorted()
+        }
         val updateSchema: UpdateSchema = mockk()
         every { table.updateSchema().allowIncompatibleChanges() } returns updateSchema
         every {
