@@ -1089,6 +1089,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
+        lookback_window: "P{{ config.get('reporting_lookback_window', 0) }}D"
       transformations:
         - type: AddFields
           fields:
@@ -1231,6 +1232,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         step: P30D
         cursor_granularity: PT1S
+        lookback_window: "P{{ config.get('reporting_lookback_window', 0) }}D"
       transformations:
         - type: AddFields
           fields:
@@ -1343,7 +1345,8 @@ spec:
         description: >-
           The number of days to look back when syncing data in incremental mode.
           This helps capture any late-arriving data. Only applies to the
-          events_detailed stream.
+          events_detailed stream. For reporting streams (flow_series_reports,
+          campaign_values_reports), use Reporting Lookback Window instead.
         title: Lookback Window (Days)
         minimum: 0
         default: 0
@@ -1351,6 +1354,21 @@ spec:
           - 0
           - 7
         order: 4
+      reporting_lookback_window:
+        type: integer
+        title: Reporting Lookback Window (Days)
+        description: >-
+          The number of days to look back when syncing reporting data
+          (flow_series_reports and campaign_values_reports) in incremental
+          mode. This helps capture late-arriving attribution data that
+          Klaviyo may update after the initial sync. Defaults to 0.
+        minimum: 0
+        default: 0
+        examples:
+          - 0
+          - 7
+          - 30
+        order: 5
       metric_ids:
         type: string
         title: Report Stream Conversion Metric IDs
@@ -1365,7 +1383,7 @@ spec:
           for Placed Order) to avoid slow syncs. Find metric IDs in your Klaviyo
           account under Analytics > Metrics, or use the metrics stream to list all
           available metrics and their IDs.
-        order: 5
+        order: 6
         examples:
           - "RESQ6t"
           - "RESQ6t,ABC123,XYZ789"

@@ -121,6 +121,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.18.0 | 2026-03-26 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Add configurable lookback window for flow_series_reports and campaign_values_reports streams |
 | 2.17.3 | 2026-03-17 | [74995](https://github.com/airbytehq/airbyte/pull/74995) | Update dependencies |
 | 2.17.2 | 2026-03-10 | [74435](https://github.com/airbytehq/airbyte/pull/74435) | Update dependencies |
 | 2.17.1 | 2026-03-03 | [73958](https://github.com/airbytehq/airbyte/pull/73958) | Update dependencies |
