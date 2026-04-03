@@ -194,7 +194,10 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             } catch (e: SQLException) {
-                throw RuntimeException("Column name discovery query failed: ${e.message}", e)
+                log.warn {
+                    "Column metadata query failed for privilege check (this may be expected for views using session variables): ${e.message}"
+                }
+                return null
             }
         }
     }
@@ -229,22 +232,29 @@ class SnowflakeSourceMetadataQuerier(
             val dbmd: DatabaseMetaData = base.conn.metaData
 
             log.info { "Querying table names for Snowflake source." }
-            for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                // Query all schemas in the current database
-                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use {
-                    rs: ResultSet ->
-                    while (rs.next()) {
-                        val tableName =
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = rs.getString("TABLE_TYPE") ?: "",
-                            )
-                        // Filter out system schemas
-                        if (!EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
-                            allTables.add(tableName)
+            // Try both original and uppercase versions of database names (namespaces)
+            val namespacesToTry =
+                base.config.namespaces + base.config.namespaces.map { it.uppercase() }
+            // Try both original and uppercase versions of schema for case-insensitive matching
+            val schemasToTry =
+                if (schema != null) listOf(schema, schema.uppercase()).distinct() else listOf(null)
+            for (namespace in namespacesToTry) {
+                for (schemaToTry in schemasToTry) {
+                    // Query all schemas in the current database
+                    dbmd.getTables(namespace, schemaToTry, null, arrayOf("TABLE", "VIEW")).use {
+                        rs: ResultSet ->
+                        while (rs.next()) {
+                            val tableName =
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = rs.getString("TABLE_NAME"),
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                )
+                            // Filter out system schemas
+                            if (!EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
+                                allTables.add(tableName)
+                            }
                         }
                     }
                 }
