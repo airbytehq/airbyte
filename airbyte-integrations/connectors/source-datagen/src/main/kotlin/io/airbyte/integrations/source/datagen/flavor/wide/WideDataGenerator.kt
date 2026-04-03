@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.datagen.flavor.types
+package io.airbyte.integrations.source.datagen.flavor.wide
 
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
@@ -16,6 +16,8 @@ import io.airbyte.cdk.data.LocalTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.TextCodec
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.integrations.source.datagen.BigDecimalFieldType
@@ -37,19 +39,18 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
-import kotlin.collections.set
-import kotlin.random.Random
 
-class TypesDataGenerator() : DataGenerator {
-    val stringData = "string".repeat(200)
-    val bigInt = BigDecimal("3000000000")
-    val bigDecimal = BigDecimal("3000000000.123")
-    val date = LocalDate.now()
-    val timeWithTimeZone = OffsetTime.now()
-    val timeWithoutTimeZone = LocalTime.now()
-    val timestampWithTimeZone = OffsetDateTime.now()
-    val timestampWithoutTimeZone = LocalDateTime.now()
-    val json = """{"id": 1, "name": "alice", "active": true}"""
+class WideDataGenerator(private val fields: List<Field>) : DataGenerator {
+
+    private val stringData = "string".repeat(200)
+    private val bigInt = BigDecimal("3000000000")
+    private val bigDecimal = BigDecimal("3000000000.123")
+    private val date = LocalDate.now()
+    private val timeWithTimeZone = OffsetTime.now()
+    private val timeWithoutTimeZone = LocalTime.now()
+    private val timestampWithTimeZone = OffsetDateTime.now()
+    private val timestampWithoutTimeZone = LocalDateTime.now()
+    private val json = """{"id": 1, "name": "alice", "active": true}"""
 
     private val intCodec = IntegerFieldType.jsonEncoder as IntCodec
     private val textCodec = StringFieldType.jsonEncoder as TextCodec
@@ -70,38 +71,29 @@ class TypesDataGenerator() : DataGenerator {
         val incrementedID = (currentID * modulo + offset)
         val recordData: NativeRecordPayload = mutableMapOf()
 
-        recordData[TypesFlavor.FieldNames.ID] = FieldValueEncoder(incrementedID.toInt(), intCodec)
-
-        recordData[TypesFlavor.FieldNames.STRING] = FieldValueEncoder(stringData, textCodec)
-
-        recordData[TypesFlavor.FieldNames.BOOLEAN] =
-            FieldValueEncoder(Random.nextBoolean(), booleanCodec)
-
-        recordData[TypesFlavor.FieldNames.NUMBER] =
-            FieldValueEncoder(incrementedID.toDouble(), doubleCodec)
-
-        recordData[TypesFlavor.FieldNames.BIG_INTEGER] =
-            FieldValueEncoder(bigInt, bigDecimalIntCodec)
-
-        recordData[TypesFlavor.FieldNames.BIG_DECIMAL] =
-            FieldValueEncoder(bigDecimal, bigDecimalCodec)
-
-        recordData[TypesFlavor.FieldNames.DATE] = FieldValueEncoder(date, localDateCodec)
-
-        recordData[TypesFlavor.FieldNames.TIME_WITH_TIME_ZONE] =
-            FieldValueEncoder(timeWithTimeZone, offsetTimeCodec)
-
-        recordData[TypesFlavor.FieldNames.TIME_WITHOUT_TIME_ZONE] =
-            FieldValueEncoder(timeWithoutTimeZone, localTimeCodec)
-
-        recordData[TypesFlavor.FieldNames.TIMESTAMP_WITH_TIME_ZONE] =
-            FieldValueEncoder(timestampWithTimeZone, offsetDateTimeCodec)
-
-        recordData[TypesFlavor.FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE] =
-            FieldValueEncoder(timestampWithoutTimeZone, localDateTimeCodec)
-
-        recordData[TypesFlavor.FieldNames.JSON] = FieldValueEncoder(json, jsonStringCodec)
+        for (field in fields) {
+            recordData[field.id] = encodeField(field.type, incrementedID)
+        }
 
         return recordData
     }
+
+    private fun encodeField(fieldType: FieldType, incrementedID: Long): FieldValueEncoder<*> =
+        when (fieldType) {
+            IntegerFieldType -> FieldValueEncoder(incrementedID.toInt(), intCodec)
+            StringFieldType -> FieldValueEncoder(stringData, textCodec)
+            BooleanFieldType -> FieldValueEncoder(incrementedID % 2 == 0L, booleanCodec)
+            NumberFieldType -> FieldValueEncoder(incrementedID.toDouble(), doubleCodec)
+            BigIntegerFieldType -> FieldValueEncoder(bigInt, bigDecimalIntCodec)
+            BigDecimalFieldType -> FieldValueEncoder(bigDecimal, bigDecimalCodec)
+            DateFieldType -> FieldValueEncoder(date, localDateCodec)
+            TimeWithTimeZoneFieldType -> FieldValueEncoder(timeWithTimeZone, offsetTimeCodec)
+            TimeWithoutTimeZoneFieldType -> FieldValueEncoder(timeWithoutTimeZone, localTimeCodec)
+            TimestampWithTimeZoneFieldType ->
+                FieldValueEncoder(timestampWithTimeZone, offsetDateTimeCodec)
+            TimestampWithoutTimeZoneFieldType ->
+                FieldValueEncoder(timestampWithoutTimeZone, localDateTimeCodec)
+            JsonFieldType -> FieldValueEncoder(json, jsonStringCodec)
+            else -> throw IllegalArgumentException("Unsupported field type: $fieldType")
+        }
 }
