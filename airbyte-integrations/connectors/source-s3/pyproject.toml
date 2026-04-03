@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.15.2"
+version = "4.15.3"
 name = "source-s3"
 description = "Source implementation for S3."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -22,8 +22,9 @@ wcmatch = "^10.0"
 dill = "^0.3.4"
 transformers = "^4.38.2"
 urllib3 = "<2"
-airbyte-cdk = {extras = ["file-based"], version = "^7.0.4"}
+airbyte-cdk = {extras = ["file-based"], git = "https://github.com/airbytehq/airbyte-python-cdk.git", branch = "devin/1774667708-update-nltk-cryptography"}  # TK-TODO: Revert to stable version pin before merge
 pendulum = "^3.0.0"
+psutil = ">=5.8,<7"
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"

@@ -324,6 +324,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.5.15 | 2026-04-01 | [75557](https://github.com/airbytehq/airbyte/pull/75557) | Update CDK dependency with nltk 3.9.4 |
 | 0.5.14 | 2026-03-31 | [75573](https://github.com/airbytehq/airbyte/pull/75573) | Migrate OAuth scope to scopes object array for granular scopes support |
 | 0.5.13 | 2026-03-31 | [75368](https://github.com/airbytehq/airbyte/pull/75368) | Update dependencies |
 | 0.5.12 | 2026-03-17 | [74923](https://github.com/airbytehq/airbyte/pull/74923) | Update dependencies |
@@ -364,7 +365,7 @@ By default, this stream is enabled and retrieves information about **users and g
 | 0.1.2 | 2025-02-08 | [53320](https://github.com/airbytehq/airbyte/pull/53320) | Update dependencies |
 | 0.1.1 | 2025-02-01 | [43895](https://github.com/airbytehq/airbyte/pull/43895) | Update dependencies |
 | 0.1.0 | 2025-01-27 | [52572](https://github.com/airbytehq/airbyte/pull/52572) | Promoting release candidate 0.1.0-rc.1 to a main version. |
-| 0.1.0-rc.1  | 2025-01-20 | [51585](https://github.com/airbytehq/airbyte/pull/51585) | Bump cdk to enable universal file transfer |
+| 0.1.0-rc.1 | 2025-01-20 | [51585](https://github.com/airbytehq/airbyte/pull/51585) | Bump cdk to enable universal file transfer |
 | 0.0.12 | 2024-06-06 | [39291](https://github.com/airbytehq/airbyte/pull/39291) | [autopull] Upgrade base image to v1.2.2 |
 | 0.0.11 | 2024-05-29 | [38698](https://github.com/airbytehq/airbyte/pull/38698) | Avoid error on empty stream when running discover |
 | 0.0.10 | 2024-03-28 | [36581](https://github.com/airbytehq/airbyte/pull/36581) | Manage dependencies with Poetry |
