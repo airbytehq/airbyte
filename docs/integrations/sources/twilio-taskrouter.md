@@ -13,7 +13,7 @@ See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 
 ## Setup guide
 
-## Step 1: Set up the Twilio Takrouter connector in Airbyte
+## Step 1: Set up the Twilio Taskrouter connector in Airbyte
 
 ### For Airbyte Cloud:
 
