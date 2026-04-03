@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """
 Unit tests for the source-wordpress manifest.yaml.
 
@@ -38,8 +40,7 @@ def test_incremental_stream_has_lookback_window(manifest, stream_name):
     stream = _get_stream_def(manifest, stream_name)
     inc = stream.get("incremental_sync", {})
     assert inc.get("lookback_window") == "PT1H", (
-        f"Stream '{stream_name}' should have lookback_window=PT1H, "
-        f"got {inc.get('lookback_window')!r}"
+        f"Stream '{stream_name}' should have lookback_window=PT1H, " f"got {inc.get('lookback_window')!r}"
     )
 
 
@@ -47,9 +48,7 @@ def test_pages_modified_after_field_name_has_no_tab(manifest):
     """Regression: pages stream field_name must not contain a tab character."""
     pages = _get_stream_def(manifest, "pages")
     field_name = pages["incremental_sync"]["start_time_option"]["field_name"]
-    assert "\t" not in field_name, (
-        f"pages stream field_name contains a tab character: {field_name!r}"
-    )
+    assert "\t" not in field_name, f"pages stream field_name contains a tab character: {field_name!r}"
     assert field_name == "modified_after"
 
 
@@ -57,10 +56,7 @@ def test_no_field_names_contain_tabs_anywhere(manifest):
     """Walk the entire manifest and ensure no field_name value contains a tab."""
     violations = []
     _check_for_tab_in_field_names(manifest, path="", violations=violations)
-    assert not violations, (
-        "Found tab characters in field_name values:\n"
-        + "\n".join(f"  - {v}" for v in violations)
-    )
+    assert not violations, "Found tab characters in field_name values:\n" + "\n".join(f"  - {v}" for v in violations)
 
 
 def _check_for_tab_in_field_names(obj, path, violations):
