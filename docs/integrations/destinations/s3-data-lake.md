@@ -401,6 +401,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.47      | 2026-04-03 | [\#76072](https://github.com/airbytehq/airbyte/pull/76072) | Add `lowercase_column_names` configuration option |
 | 0.3.46      | 2026-03-30 |                                                           | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution. |
 | 0.3.45      | 2026-03-12 | [74326](https://github.com/airbytehq/airbyte/pull/74326) | Upgrade CDK to 1.0.5: Number-type primary keys are now stored as String (enabling dedup on numeric PKs); fix schema evolution when replacing identifier columns |
 | 0.3.44      | 2026-02-04 | [72848](https://github.com/airbytehq/airbyte/pull/72848)   | Enable Speed.                                                                                                               |
