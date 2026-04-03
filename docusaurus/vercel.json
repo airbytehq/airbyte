@@ -512,13 +512,28 @@
       "statusCode": 301
     },
     {
-      "source": "/integrations/enterprise-connectors/source-db2",
-      "destination": "/integrations/enterprise-connectors/source-db2-enterprise",
+      "source": "/integrations/enterprise-connectors/source-db2-enterprise",
+      "destination": "/integrations/enterprise-connectors/source-db2",
       "statusCode": 301
     },
     {
       "source": "/integrations/enterprise-connectors/source-netsuite",
       "destination": "/integrations/enterprise-connectors/source-netsuite-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-service-now",
+      "destination": "/integrations/enterprise-connectors/source-servicenow",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-workday",
+      "destination": "/integrations/enterprise-connectors/source-workday-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-workday-rest",
+      "destination": "/integrations/enterprise-connectors/source-workday-rest-enterprise",
       "statusCode": 301
     },
     {
