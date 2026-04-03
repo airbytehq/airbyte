@@ -32,9 +32,7 @@ This page contains the setup guide and reference information for the [Instagram]
 4. Enter a name for the Instagram connector.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
-   date will be replicated. If left blank, the start date will be set to 2 years before the present
-   date.
+7. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 8. Click **Set up source**.
 
 <!-- /env:cloud -->
@@ -48,9 +46,7 @@ This page contains the setup guide and reference information for the [Instagram]
 3. On the Set up the source page, select **Instagram** from the **Source type** dropdown.
 4. Enter a name for your source.
 5. Enter the **Access Token** generated using the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) or a [Facebook app](https://developers.facebook.com/docs/instagram-platform/getting-started) with the required permissions: `instagram_basic`, `instagram_manage_insights`, `pages_show_list`, `pages_read_engagement`.
-6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this
-   date will be replicated. If left blank, the start date will be set to 2 years before the present
-   date.
+6. (Optional) Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. This date applies to the User Insights stream only. All data generated after this date will be replicated. If left blank, the start date will be set to 2 years before the present date.
 7. Click **Set up source**.
 
 <!-- /env:oss -->
@@ -68,57 +64,41 @@ The Instagram source connector supports the following [sync modes](https://docs.
 
 :::note
 
-Incremental sync modes are only available for
-the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)
-stream.
+Incremental sync modes are only available for the [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) stream.
 
 :::
 
-## Supported Streams
+## Supported streams
 
-The Instagram source connector supports the following streams. For more information, see the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) and [Instagram Insights API documentation](https://developers.facebook.com/docs/instagram-api/guides/insights/).
+This connector uses the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) (v23.0) to sync data from Instagram Business and Creator accounts. For performance data related to Instagram Ads, use the Facebook Marketing source.
 
-- [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user)
-  - [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights) (incremental)
-  - [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—demographic breakdowns by city, country, and age/gender
-- [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)
-  - [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
-- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)
-  - [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)
+The following streams are available:
 
-:::info
-This connector syncs data from the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). For performance data related to Instagram Ads, use the Facebook Marketing source.
-:::
+- [Users](https://developers.facebook.com/docs/instagram-api/reference/ig-user)—Profile information for each connected Instagram Business or Creator account.
+- [User Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Daily account-level metrics such as `follower_count`, `reach`, and `online_followers`. This is the only incremental stream; it uses the `date` field as its cursor.
+- [User Lifetime Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-user/insights)—Demographic breakdowns of followers by city, country, and age/gender.
+- [Media](https://developers.facebook.com/docs/instagram-api/reference/ig-user/media)—All media objects (photos, videos, reels, carousel albums) published by each account. For carousel albums, the connector fetches detailed information for each child media item.
+- [Media Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Per-media engagement metrics. The specific metrics requested vary by media type (Reels, Video, Carousel Album, or Image).
+- [Stories](https://developers.facebook.com/docs/instagram-api/reference/ig-user/stories/)—Currently published stories. The Instagram API only returns stories that are live at the time of the sync; expired stories are not available.
+- [Story Insights](https://developers.facebook.com/docs/instagram-api/reference/ig-media/insights)—Engagement metrics for currently published stories.
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
-## Data type map
-
-AirbyteRecords are required to conform to
-the [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) system.
-This means that all sources must produce schemas and records within these types and all destinations
-must handle records that conform to this type system.
-
-| Integration Type | Airbyte Type |
-|:-----------------|:-------------|
-| `string`         | `string`     |
-| `number`         | `number`     |
-| `array`          | `array`      |
-| `object`         | `object`     |
-
-## Limitations & Troubleshooting
+## Limitations and troubleshooting
 
 ### Rate limiting
 
-Instagram limits the number of requests that can be made at a time. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
+Instagram limits the number of API requests per hour. The connector retries automatically with exponential backoff when rate limits are hit. See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/#instagram-graph-api) for more information.
 
 ### Instagram API limitations
 
 - **Data delay**: Metrics data from the Instagram API may be delayed by up to 48 hours.
 - **Minimum follower count**: The `follower_count` and `online_followers` metrics require at least 100 followers on the Instagram Business or Creator account.
-- **Data retention**: The `online_followers` metric is only available for the last 30 days. The `since` parameter for insights is valid for up to the last 2 years.
+- **Data retention**: The `online_followers` metric is only available for the last 30 days. User Insights data is available for up to 30 days in the past.
 - **Demographic metrics**: Demographic metric calculations only include the top 45 entries and only count viewers for whom Instagram has demographic data.
+- **Stories availability**: The Instagram API only returns stories that are currently live (not yet expired). Stories typically expire 24 hours after posting.
+- **Carousel children errors**: If a child media item within a carousel album is unavailable (for example, deleted or restricted), the connector skips that child and continues syncing the remaining children. A warning is logged for each skipped child.
 
 ### User Insights and UTC+ timezones
 
