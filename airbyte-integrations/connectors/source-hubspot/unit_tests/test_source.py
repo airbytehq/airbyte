@@ -75,7 +75,7 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
     responses = [
         {"json": {"message": "invalid client_id"}, "status_code": 400},
     ]
-    requests_mock.register_uri("POST", "/oauth/v1/token", responses)
+    requests_mock.register_uri("POST", "/oauth/v3/token", responses)
     connection_status = get_source(config_invalid_client_id).check(logger, config=config_invalid_client_id)
     assert connection_status.status == ConnectionStatus.FAILED
     assert connection_status.message
