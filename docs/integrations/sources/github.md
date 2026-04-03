@@ -122,9 +122,9 @@ This connector outputs the following incremental streams:
 - [Issue milestones](https://docs.github.com/en/rest/issues/milestones?apiVersion=2022-11-28#list-milestones)
 - [Issue reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue)
 - [Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues)
-- [Project (Classic) cards](https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28#list-project-cards)
-- [Project (Classic) columns](https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns)
-- [Projects (Classic)](https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects)
+- [Project (Classic) cards](https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28#list-project-cards) \*
+- [Project (Classic) columns](https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns) \*
+- [Projects (Classic)](https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects) \*
 - [ProjectsV2](https://docs.github.com/en/graphql/reference/objects#projectv2)
 - [Pull request comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
@@ -141,38 +141,19 @@ This connector outputs the following incremental streams:
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
 
-### Notes
+\* GitHub [sunset Projects (classic)](https://github.blog/changelog/2024-05-23-sunset-notice-projects-classic/) on August 23, 2024 for github.com. The REST API endpoints remain available, but no new classic projects can be created. If you use GitHub Enterprise Server, classic projects remain available until June 3, 2025.
 
-1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the listed above streams are pure incremental meaning that they:
+### Notes on incremental sync behavior
 
-   - read only new records;
-   - output only new records.
+Not all incremental streams behave the same way:
 
-2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
+- **Pure incremental** (`comments`, `commits`, `issues`, `review_comments`): These streams read and output only new records since the last sync.
+- **Workflow streams** (`workflow_runs`, `workflow_jobs`): These streams read new records plus records from the past 30 days. The `workflow_jobs` stream depends on `workflow_runs`. Both output only new records.
+- **Semi-incremental** (all other incremental streams): These streams read all records on each sync but output only new records. This behavior may affect your API rate limits.
 
-   - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
-   - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
-   - output only new records.
-
-3. Other 19 incremental streams are also incremental but with one difference, they:
-
-   - read all records;
-   - output only new records.
-     Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
-
-4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
-   **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
-
-- `assignees`
-- `branches`
-- `collaborators`
-- `issue_labels`
-- `organizations`
-- `pull_request_commits`
-- `repositories`
-- `tags`
-- `teams`
-- `users`
+:::note
+Specifying a very distant `start_date` for large repositories may cause persistent errors from the GitHub API. If this occurs, use a more recent start date.
+:::
 
 ## Limitations & Troubleshooting
 
@@ -229,7 +210,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.16 | 2026-04-02 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
+| 2.1.16 | 2026-04-03 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
 | 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
