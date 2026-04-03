@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "destination-starrocks"
+version = "0.1.0"
+description = "Destination implementation for StarRocks."
+authors = ["Airbyte"]
+license = "ELv2"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+airbyte-cdk = "0.62.1"
+starrocks = "^1.3.3"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+ruff = "^0.7.1"
+black = "^23.7.0"
+mypy = "^1.5.1"
+faker = "24.4.0"
+coverage = "^7.5.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
+[tool.poetry.scripts]
+destination-starrocks = "destination_starrocks.run:run"
