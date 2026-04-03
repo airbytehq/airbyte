@@ -1,0 +1,1014 @@
+# GitHub Projects v2 Connector
+# This connector extracts GitHub Projects v2 items and field values using the GraphQL API
+
+version: 0.78.5
+type: DeclarativeSource
+
+definitions:
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['api_token'] }}"
+
+  # Base requester for GraphQL API
+  base_requester:
+    type: HttpRequester
+    url_base: "https://api.github.com"
+    path: "/graphql"
+    http_method: POST
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      Content-Type: "application/json"
+      Accept: "application/json"
+
+  # Cursor-based pagination for GraphQL projects
+  graphql_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: "variables.cursor"
+    page_size_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: "variables.first"
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['data']['organization']['projectsV2']['pageInfo']['endCursor'] }}"
+      stop_condition: "{{ not response['data']['organization']['projectsV2']['pageInfo']['hasNextPage'] }}"
+      page_size: 20
+
+  # Cursor-based pagination for GraphQL project items
+  items_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: "variables.cursor"
+    page_size_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: "variables.first"
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['data']['node']['items']['pageInfo']['endCursor'] }}"
+      stop_condition: "{{ not response['data']['node']['items']['pageInfo']['hasNextPage'] }}"
+      page_size: 50
+
+  # Cursor-based pagination for GraphQL project fields
+  fields_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: "variables.cursor"
+    page_size_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: "variables.first"
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['data']['node']['fields']['pageInfo']['endCursor'] }}"
+      stop_condition: "{{ not response['data']['node']['fields']['pageInfo']['hasNextPage'] }}"
+      page_size: 50
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects_v2
+
+streams:
+  # Stream 1: Projects V2 - Lists all projects for an organization
+  - type: DeclarativeStream
+    name: projects_v2
+    primary_key:
+      - project_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_body_json:
+          query: |
+            query($org: String!, $first: Int!, $cursor: String) {
+              organization(login: $org) {
+                projectsV2(first: $first, after: $cursor) {
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
+                  nodes {
+                    id
+                    number
+                    title
+                    shortDescription
+                    url
+                    public
+                    closed
+                    closedAt
+                    createdAt
+                    updatedAt
+                    creator {
+                      login
+                    }
+                    owner {
+                      ... on Organization {
+                        login
+                      }
+                      ... on User {
+                        login
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          variables:
+            org: "{{ config['organization'] }}"
+            first: 20
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - organization
+            - projectsV2
+            - nodes
+      paginator:
+        $ref: "#/definitions/graphql_paginator"
+    transformations:
+      - type: AddFields
+        fields:
+          # Disambiguate id to project_id
+          - path:
+              - project_id
+            value: "{{ record['id'] }}"
+          # Flatten creator.login to creator_login
+          - path:
+              - creator_login
+            value: "{{ record.get('creator', {}).get('login') if record.get('creator') else None }}"
+          # Flatten owner.login to owner_login
+          - path:
+              - owner_login
+            value: "{{ record.get('owner', {}).get('login') if record.get('owner') else None }}"
+          # Rename timestamps for clarity
+          - path:
+              - project_created_at
+            value: "{{ record['createdAt'] }}"
+          - path:
+              - project_updated_at
+            value: "{{ record['updatedAt'] }}"
+          - path:
+              - project_closed_at
+            value: "{{ record.get('closedAt') }}"
+      - type: RemoveFields
+        field_pointers:
+          - - id
+          - - creator
+          - - owner
+          - - createdAt
+          - - updatedAt
+          - - closedAt
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          project_id:
+            type: string
+            description: "Unique identifier for the project"
+          number:
+            type: integer
+            description: "Project number within the organization"
+          title:
+            type: string
+            description: "Project title"
+          shortDescription:
+            type:
+              - string
+              - "null"
+            description: "Short description of the project"
+          url:
+            type: string
+            description: "URL to the project"
+          public:
+            type: boolean
+            description: "Whether the project is public"
+          closed:
+            type: boolean
+            description: "Whether the project is closed"
+          project_closed_at:
+            type:
+              - string
+              - "null"
+            description: "When the project was closed"
+          project_created_at:
+            type: string
+            description: "When the project was created"
+          project_updated_at:
+            type: string
+            description: "When the project was last updated"
+          creator_login:
+            type:
+              - string
+              - "null"
+            description: "GitHub login of the project creator"
+          owner_login:
+            type:
+              - string
+              - "null"
+            description: "GitHub login of the project owner (org or user)"
+
+  # Stream 2: Projects V2 Fields - Field definitions for each project
+  - type: DeclarativeStream
+    name: projects_v2_fields
+    primary_key:
+      - field_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_body_json:
+          query: |
+            query($projectId: ID!, $first: Int!, $cursor: String) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  fields(first: $first, after: $cursor) {
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                    nodes {
+                      ... on ProjectV2Field {
+                        __typename
+                        id
+                        name
+                        dataType
+                      }
+                      ... on ProjectV2SingleSelectField {
+                        __typename
+                        id
+                        name
+                        options {
+                          id
+                          name
+                          color
+                          description
+                        }
+                      }
+                      ... on ProjectV2IterationField {
+                        __typename
+                        id
+                        name
+                        configuration {
+                          iterations {
+                            id
+                            title
+                            startDate
+                            duration
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          variables:
+            projectId: "{{ stream_partition['project_id'] }}"
+            first: 50
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - node
+            - fields
+            - nodes
+      paginator:
+        $ref: "#/definitions/fields_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: project_id
+            partition_field: project_id
+            stream:
+              $ref: "#/streams/0"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - project_id
+            value: "{{ stream_partition['project_id'] }}"
+          # Disambiguate id to field_id
+          - path:
+              - field_id
+            value: "{{ record['id'] }}"
+          # Rename name to field_name for clarity
+          - path:
+              - field_name
+            value: "{{ record['name'] }}"
+          # Rename __typename to field_type for clarity
+          - path:
+              - field_type
+            value: "{{ record['__typename'] }}"
+          # Count options
+          - path:
+              - option_count
+            value: "{{ record.get('options', []) | length if record.get('options') else 0 }}"
+          # Count iterations
+          - path:
+              - iteration_count
+            value: "{{ record.get('configuration', {}).get('iterations', []) | length if record.get('configuration') else 0 }}"
+      - type: RemoveFields
+        field_pointers:
+          - - id
+          - - name
+          - - __typename
+          - - options
+          - - configuration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          field_id:
+            type: string
+            description: "Unique identifier for the field"
+          project_id:
+            type: string
+            description: "ID of the project this field belongs to"
+          field_type:
+            type: string
+            description: "Field type: ProjectV2Field, ProjectV2SingleSelectField, or ProjectV2IterationField"
+          field_name:
+            type: string
+            description: "Display name of the field"
+          dataType:
+            type:
+              - string
+              - "null"
+            description: "Data type for basic fields (TITLE, DATE, NUMBER, TEXT, etc.)"
+          option_count:
+            type: integer
+            description: "Number of options for SingleSelect fields"
+          iteration_count:
+            type: integer
+            description: "Number of iterations for Iteration fields"
+
+  # Stream 3: Projects V2 Field Options - SingleSelect and Iteration fields with their options
+  # Join pattern: field_values.(field_id, option_id) -> field_options.(field_id, options[].id)
+  # Note: options[] is a nested array - use UNNEST/CROSS JOIN LATERAL in SQL to join
+  - type: DeclarativeStream
+    name: projects_v2_field_options
+    primary_key:
+      - field_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_body_json:
+          query: |
+            query($projectId: ID!, $first: Int!, $cursor: String) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  fields(first: $first, after: $cursor) {
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
+                        __typename
+                        id
+                        name
+                        options {
+                          id
+                          name
+                          color
+                          description
+                        }
+                      }
+                      ... on ProjectV2IterationField {
+                        __typename
+                        id
+                        name
+                        configuration {
+                          iterations {
+                            id
+                            title
+                            startDate
+                            duration
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          variables:
+            projectId: "{{ stream_partition['project_id'] }}"
+            first: 50
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - node
+            - fields
+            - nodes
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('options') is not none or record.get('configuration') is not none }}"
+      paginator:
+        $ref: "#/definitions/fields_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: project_id
+            partition_field: project_id
+            stream:
+              $ref: "#/streams/0"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - project_id
+            value: "{{ stream_partition['project_id'] }}"
+          - path:
+              - field_id
+            value: "{{ record['id'] }}"
+          - path:
+              - field_name
+            value: "{{ record['name'] }}"
+          - path:
+              - field_type
+            value: "{{ record['__typename'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - id
+          - - name
+          - - __typename
+          - - configuration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          field_id:
+            type: string
+            description: "ID of the field this option belongs to"
+          project_id:
+            type: string
+            description: "ID of the project"
+          field_name:
+            type: string
+            description: "Display name of the field"
+          field_type:
+            type: string
+            description: "Field type: ProjectV2SingleSelectField or ProjectV2IterationField"
+          options:
+            type:
+              - array
+              - "null"
+            description: "Available options for SingleSelect fields - join via (field_id, options[].id)"
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: "Option ID - use with field_id to join to field_values.option_id"
+                name:
+                  type: string
+                  description: "Display name of the option"
+                color:
+                  type:
+                    - string
+                    - "null"
+                  description: "Color of the option"
+                description:
+                  type:
+                    - string
+                    - "null"
+                  description: "Description of the option"
+
+  # Stream 3: Projects V2 Item Field Values - Normalized field values (one record per field value)
+  # This is a substream of items, querying field values per item for full normalization
+  - type: DeclarativeStream
+    name: projects_v2_item_field_values
+    primary_key:
+      - item_id
+      - field_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_body_json:
+          query: |
+            query($itemId: ID!) {
+              node(id: $itemId) {
+                ... on ProjectV2Item {
+                  fieldValues(first: 50) {
+                    nodes {
+                      ... on ProjectV2ItemFieldTextValue {
+                        __typename
+                        text
+                        field { ... on ProjectV2Field { id name } }
+                        createdAt
+                        updatedAt
+                      }
+                      ... on ProjectV2ItemFieldNumberValue {
+                        __typename
+                        number
+                        field { ... on ProjectV2Field { id name } }
+                        createdAt
+                        updatedAt
+                      }
+                      ... on ProjectV2ItemFieldDateValue {
+                        __typename
+                        date
+                        field { ... on ProjectV2Field { id name } }
+                        createdAt
+                        updatedAt
+                      }
+                      ... on ProjectV2ItemFieldSingleSelectValue {
+                        __typename
+                        name
+                        optionId
+                        field { ... on ProjectV2SingleSelectField { id name } }
+                        createdAt
+                        updatedAt
+                      }
+                      ... on ProjectV2ItemFieldIterationValue {
+                        __typename
+                        title
+                        iterationId
+                        field { ... on ProjectV2IterationField { id name } }
+                        createdAt
+                        updatedAt
+                      }
+                      ... on ProjectV2ItemFieldLabelValue {
+                        __typename
+                        labels(first: 10) { nodes { id name } }
+                        field { ... on ProjectV2Field { id name } }
+                      }
+                      ... on ProjectV2ItemFieldMilestoneValue {
+                        __typename
+                        milestone { id title }
+                        field { ... on ProjectV2Field { id name } }
+                      }
+                      ... on ProjectV2ItemFieldRepositoryValue {
+                        __typename
+                        repository { id name nameWithOwner }
+                        field { ... on ProjectV2Field { id name } }
+                      }
+                      ... on ProjectV2ItemFieldUserValue {
+                        __typename
+                        users(first: 10) { nodes { id login } }
+                        field { ... on ProjectV2Field { id name } }
+                      }
+                      ... on ProjectV2ItemFieldPullRequestValue {
+                        __typename
+                        pullRequests(first: 10) { nodes { id number title } }
+                        field { ... on ProjectV2Field { id name } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          variables:
+            itemId: "{{ stream_partition['item_id'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - node
+            - fieldValues
+            - nodes
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('field') is not none }}"
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: item_id
+            partition_field: item_id
+            stream:
+              $ref: "#/streams/4"
+          - type: ParentStreamConfig
+            parent_key: project_id
+            partition_field: project_id
+            stream:
+              $ref: "#/streams/4"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - item_id
+            value: "{{ stream_partition['item_id'] }}"
+          - path:
+              - project_id
+            value: "{{ stream_partition['project_id'] }}"
+          # Flatten field.id and field.name to top level
+          - path:
+              - field_id
+            value: "{{ record.get('field', {}).get('id') }}"
+          - path:
+              - field_name
+            value: "{{ record.get('field', {}).get('name') }}"
+          # Normalize value type
+          - path:
+              - value_type
+            value: "{{ record.get('__typename', '').replace('ProjectV2ItemField', '').replace('Value', '') }}"
+          # Extract the actual value based on type
+          - path:
+              - value
+            value: "{{ record.get('text') or record.get('date') or record.get('name') or record.get('title') or (record.get('number') | string if record.get('number') is not none else none) or (record.get('milestone', {}).get('title') if record.get('milestone') else none) or (record.get('repository', {}).get('nameWithOwner') if record.get('repository') else none) }}"
+          # Extract option_id for SingleSelect fields
+          - path:
+              - option_id
+            value: "{{ record.get('optionId') or record.get('iterationId') }}"
+          # Flatten labels to comma-separated string
+          - path:
+              - label_names
+            value: "{{ record.get('labels', {}).get('nodes', []) | map(attribute='name') | join(', ') if record.get('labels') else None }}"
+          # Flatten users to comma-separated logins
+          - path:
+              - user_logins
+            value: "{{ record.get('users', {}).get('nodes', []) | map(attribute='login') | join(', ') if record.get('users') else None }}"
+          # Flatten pull requests to comma-separated numbers
+          - path:
+              - pull_request_numbers
+            value: "{{ record.get('pullRequests', {}).get('nodes', []) | map(attribute='number') | join(', ') if record.get('pullRequests') else None }}"
+          # Rename timestamps for clarity
+          - path:
+              - field_value_created_at
+            value: "{{ record.get('createdAt') }}"
+          - path:
+              - field_value_updated_at
+            value: "{{ record.get('updatedAt') }}"
+      - type: RemoveFields
+        field_pointers:
+          - - field
+          - - __typename
+          - - text
+          - - number
+          - - date
+          - - name
+          - - title
+          - - optionId
+          - - iterationId
+          - - milestone
+          - - repository
+          - - labels
+          - - users
+          - - pullRequests
+          - - createdAt
+          - - updatedAt
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          item_id:
+            type: string
+            description: "ID of the project item this field value belongs to"
+          project_id:
+            type: string
+            description: "ID of the project"
+          field_id:
+            type: string
+            description: "ID of the field (joins to projects_v2_field_options.field_id)"
+          field_name:
+            type: string
+            description: "Display name of the field (denormalized for convenience)"
+          value_type:
+            type: string
+            description: "Type of value: Text, Number, Date, SingleSelect, Iteration, Label, Milestone, Repository, User, PullRequest"
+          value:
+            type:
+              - string
+              - "null"
+            description: "The field value (text, date, select option name, etc.)"
+          option_id:
+            type:
+              - string
+              - "null"
+            description: "Option ID for SingleSelect/Iteration fields (joins to projects_v2_field_options.options[].id)"
+          label_names:
+            type:
+              - string
+              - "null"
+            description: "Comma-separated label names for Label fields"
+          user_logins:
+            type:
+              - string
+              - "null"
+            description: "Comma-separated user logins for User fields"
+          pull_request_numbers:
+            type:
+              - string
+              - "null"
+            description: "Comma-separated PR numbers for PullRequest fields"
+          field_value_created_at:
+            type:
+              - string
+              - "null"
+            description: "When the field value was created"
+          field_value_updated_at:
+            type:
+              - string
+              - "null"
+            description: "When the field value was last updated"
+
+  # Stream 4: Projects V2 Items - Lists all items within each project (child stream)
+  - type: DeclarativeStream
+    name: projects_v2_items
+    primary_key:
+      - item_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        request_body_json:
+          query: |
+            query($projectId: ID!, $first: Int!, $cursor: String) {
+              node(id: $projectId) {
+                ... on ProjectV2 {
+                  items(first: $first, after: $cursor) {
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                    }
+                    nodes {
+                      id
+                      type
+                      createdAt
+                      updatedAt
+                      isArchived
+                      content {
+                        ... on Issue {
+                          __typename
+                          id
+                          number
+                          title
+                          state
+                          url
+                          createdAt
+                          updatedAt
+                          closedAt
+                          author {
+                            login
+                          }
+                        }
+                        ... on PullRequest {
+                          __typename
+                          id
+                          number
+                          title
+                          state
+                          url
+                          createdAt
+                          updatedAt
+                          closedAt
+                          mergedAt
+                          author {
+                            login
+                          }
+                        }
+                        ... on DraftIssue {
+                          __typename
+                          id
+                          title
+                          createdAt
+                          updatedAt
+                          creator {
+                            login
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          variables:
+            projectId: "{{ stream_partition['project_id'] }}"
+            first: 50
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - node
+            - items
+            - nodes
+      paginator:
+        $ref: "#/definitions/items_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: project_id
+            partition_field: project_id
+            stream:
+              $ref: "#/streams/0"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - project_id
+            value: "{{ stream_partition['project_id'] }}"
+          # Disambiguate id to item_id
+          - path:
+              - item_id
+            value: "{{ record['id'] }}"
+          # Disambiguate type to item_type
+          - path:
+              - item_type
+            value: "{{ record['type'] }}"
+          # Rename timestamps for clarity
+          - path:
+              - item_created_at
+            value: "{{ record['createdAt'] }}"
+          - path:
+              - item_updated_at
+            value: "{{ record['updatedAt'] }}"
+          # Flatten content fields to top-level
+          - path:
+              - content_type
+            value: "{{ record.get('content', {}).get('__typename') if record.get('content') else None }}"
+          - path:
+              - content_id
+            value: "{{ record.get('content', {}).get('id') if record.get('content') else None }}"
+          - path:
+              - content_number
+            value: "{{ record.get('content', {}).get('number') if record.get('content') else None }}"
+          - path:
+              - content_title
+            value: "{{ record.get('content', {}).get('title') if record.get('content') else None }}"
+          - path:
+              - content_state
+            value: "{{ record.get('content', {}).get('state') if record.get('content') else None }}"
+          - path:
+              - content_url
+            value: "{{ record.get('content', {}).get('url') if record.get('content') else None }}"
+          - path:
+              - content_created_at
+            value: "{{ record.get('content', {}).get('createdAt') if record.get('content') else None }}"
+          - path:
+              - content_updated_at
+            value: "{{ record.get('content', {}).get('updatedAt') if record.get('content') else None }}"
+          - path:
+              - content_closed_at
+            value: "{{ record.get('content', {}).get('closedAt') if record.get('content') else None }}"
+          - path:
+              - content_merged_at
+            value: "{{ record.get('content', {}).get('mergedAt') if record.get('content') else None }}"
+          - path:
+              - content_author_login
+            value: "{{ record.get('content', {}).get('author', {}).get('login') if record.get('content') and record.get('content').get('author') else (record.get('content', {}).get('creator', {}).get('login') if record.get('content') and record.get('content').get('creator') else None) }}"
+      - type: RemoveFields
+        field_pointers:
+          - - content
+          - - id
+          - - type
+          - - createdAt
+          - - updatedAt
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: item_updated_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_data_feed: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          item_id:
+            type: string
+            description: "Unique identifier for the project item"
+          project_id:
+            type: string
+            description: "ID of the project this item belongs to"
+          item_type:
+            type: string
+            description: "Type of item: ISSUE, PULL_REQUEST, DRAFT_ISSUE, or REDACTED"
+          item_created_at:
+            type: string
+            description: "When the item was added to the project"
+          item_updated_at:
+            type: string
+            description: "When the item was last updated in the project"
+          isArchived:
+            type: boolean
+            description: "Whether the item is archived"
+          # Flattened content fields (from linked Issue/PullRequest/DraftIssue)
+          content_type:
+            type:
+              - string
+              - "null"
+            description: "Type of linked content: Issue, PullRequest, or DraftIssue"
+          content_id:
+            type:
+              - string
+              - "null"
+            description: "Node ID of the linked content"
+          content_number:
+            type:
+              - integer
+              - "null"
+            description: "Issue or PR number"
+          content_title:
+            type:
+              - string
+              - "null"
+            description: "Title of the linked issue/PR"
+          content_state:
+            type:
+              - string
+              - "null"
+            description: "State of the linked issue/PR (OPEN, CLOSED, MERGED)"
+          content_url:
+            type:
+              - string
+              - "null"
+            description: "URL to the linked issue/PR"
+          content_created_at:
+            type:
+              - string
+              - "null"
+            description: "When the linked content was created"
+          content_updated_at:
+            type:
+              - string
+              - "null"
+            description: "When the linked content was last updated"
+          content_closed_at:
+            type:
+              - string
+              - "null"
+            description: "When the linked issue/PR was closed"
+          content_merged_at:
+            type:
+              - string
+              - "null"
+            description: "When the linked PR was merged (PRs only)"
+          content_author_login:
+            type:
+              - string
+              - "null"
+            description: "Login of the author/creator of the linked content"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/github-projects-v2
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: GitHub Projects V2 Source Spec
+    type: object
+    additionalProperties: true
+    properties:
+      api_token:
+        type: string
+        title: GitHub Personal Access Token
+        description: "GitHub Personal Access Token with 'project:read' scope for accessing Projects v2"
+        airbyte_secret: true
+        order: 0
+      organization:
+        type: string
+        title: Organization
+        description: "GitHub organization name to fetch projects from"
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: "Start date for incremental sync (ISO 8601 format, e.g., 2024-01-01T00:00:00Z)"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        order: 2
+    required:
+      - api_token
+      - organization
