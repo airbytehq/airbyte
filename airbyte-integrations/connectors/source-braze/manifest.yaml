@@ -354,7 +354,7 @@ definitions:
         - type: AddFields
           fields:
             - path:
-                - event_id
+                - event_name
               value: "{{ stream_slice.event }}"
       schema_loader:
         type: InlineSchemaLoader
