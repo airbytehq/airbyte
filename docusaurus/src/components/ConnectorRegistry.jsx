@@ -1,21 +1,9 @@
-import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
-import { useEffect, useState } from "react";
-import { REGISTRY_URL } from "../constants";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
 
-async function fetchCatalog(url, setter) {
-  const response = await fetch(url);
-  const registry = await response.json();
-  setter(registry);
-}
-
-/*
-Sorts connectors by release stage and then name
-*/
 function connectorSort(a, b) {
   if (a.supportLevel_oss !== b.supportLevel_oss) {
     if (a.supportLevel_oss === "certified") return -3;
@@ -116,57 +104,9 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
   );
 }
 
-export default function ConnectorRegistry({ type }) {
-  const pluginData = usePluginData("enterprise-connectors-plugin");
-  const [registry, setRegistry] = useState([]);
-  const [enterpriseConnectors, setEnterpriseConnectors] = useState([]);
-
-  useEffect(() => {
-    fetchCatalog(REGISTRY_URL, setRegistry);
-  }, []);
-
-  useEffect(() => {
-    if (registry.length > 0) {
-      const enterpriseFromRegistry = registry.filter(
-        (c) =>
-          c.connector_type === type &&
-          (c.documentationUrl_oss?.includes("/integrations/enterprise-connectors/") ||
-           c.documentationUrl_cloud?.includes("/integrations/enterprise-connectors/"))
-      );
-
-      const enterpriseFromPlugin = pluginData.enterpriseConnectors.length > 0
-        ? pluginData.enterpriseConnectors
-            .filter((name) => name.includes(type))
-            .map((name) => {
-              const _name = name.replace(`${type}-`, "");
-
-              const info = registry.find(
-                (c) =>
-                  c.name_oss?.includes(_name) ||
-                  c.name_cloud?.includes(_name) ||
-                  c.documentationUrl_oss?.includes(_name) ||
-                  c.documentationUrl_cloud?.includes(_name),
-              );
-              return info;
-            })
-            .filter(Boolean)
-        : [];
-
-      const allEnterpriseConnectors = [...enterpriseFromRegistry, ...enterpriseFromPlugin];
-      const uniqueEnterpriseConnectors = Array.from(
-        new Map(allEnterpriseConnectors.map(c => [c.definitionId, c])).values()
-      );
-
-      setEnterpriseConnectors(uniqueEnterpriseConnectors);
-    }
-  }, [registry, pluginData, type]);
-
-  if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;
-
-  const connectors = registry
-    .filter((c) => c.connector_type === type)
-    .filter((c) => c.name_oss)
-    .filter((c) => c.supportLevel_oss); // at least one connector is missing a support level
+export default function ConnectorRegistry({ type, connectorsJSON, enterpriseConnectorsJSON }) {
+  const connectors = JSON.parse(connectorsJSON);
+  const enterpriseConnectors = JSON.parse(enterpriseConnectorsJSON);
 
   return (
     <Tabs>
@@ -191,13 +131,6 @@ export default function ConnectorRegistry({ type }) {
           enterpriseConnectors={enterpriseConnectors}
         />
       </TabItem>
-      {/* There are no archived connectors to show at the moment, so hiding for now */}
-      {/* <TabItem value="archived" label="Archived" default>
-        <ConnectorTable
-          connectors={connectors}
-          connectorSupportLevel={"archived"}
-        />
-      </TabItem> */}
     </Tabs>
   );
 }

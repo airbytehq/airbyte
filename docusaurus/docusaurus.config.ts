@@ -19,6 +19,7 @@ const getRemarkPlugins = () => ({
   addButtonToTitle: require("./src/remark/addButtonToTitle"),
   npm2yarn: require("@docusaurus/remark-plugin-npm2yarn"),
   agentConnectorHeaderDecoration: require("./src/remark/agentConnectorHeaderDecoration"),
+  connectorRegistryDecoration: require("./src/remark/connectorRegistryDecoration"),
 });
 
 const plugins = getRemarkPlugins();
@@ -217,6 +218,7 @@ const config: Config = {
         beforeDefaultRemarkPlugins: [
           plugins.specDecoration,
           plugins.connectorList,
+          plugins.connectorRegistryDecoration,
         ], // use before-default plugins so TOC rendering picks up inserted headings
         remarkPlugins: [
           plugins.docsHeaderDecoration,
