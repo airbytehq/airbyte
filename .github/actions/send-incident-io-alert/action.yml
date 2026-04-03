@@ -1,0 +1,64 @@
+name: "Send Incident.io alert"
+description: "Use the Incident.io Alert Events V2 API to send an alert via an HTTP alert source."
+inputs:
+  alert_source_config_id:
+    description: "The ID of the HTTP alert source configuration in Incident.io."
+    required: true
+  alert_source_token:
+    description: "The secret token for authenticating with the Incident.io HTTP alert source."
+    required: true
+  title:
+    description: "A brief title summarizing the alert."
+    required: true
+  description:
+    description: "An optional longer description with additional detail. Supports markdown."
+    required: false
+    default: ""
+  source_url:
+    description: "A link to the origin of the alert, such as a CI run URL."
+    required: false
+    default: ""
+  deduplication_key:
+    description: "An optional key to deduplicate alerts. Alerts with the same key will be grouped."
+    required: false
+    default: ""
+  status:
+    description: "The status of the alert. (firing, resolved)"
+    required: false
+    default: "firing"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Incident.io alert
+      id: send-incident-io-alert
+      shell: bash
+      env:
+        INPUT_ALERT_SOURCE_CONFIG_ID: ${{ inputs.alert_source_config_id }}
+        INPUT_ALERT_SOURCE_TOKEN: ${{ inputs.alert_source_token }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_STATUS: ${{ inputs.status }}
+        INPUT_DESCRIPTION: ${{ inputs.description }}
+        INPUT_SOURCE_URL: ${{ inputs.source_url }}
+        INPUT_DEDUP_KEY: ${{ inputs.deduplication_key }}
+      run: |
+        PAYLOAD=$(jq -n \
+          --arg title "$INPUT_TITLE" \
+          --arg status "$INPUT_STATUS" \
+          --arg description "$INPUT_DESCRIPTION" \
+          --arg source_url "$INPUT_SOURCE_URL" \
+          --arg dedup_key "$INPUT_DEDUP_KEY" \
+          '{
+            title: $title,
+            status: $status,
+            description: (if $description != "" then $description else null end),
+            source_url: (if $source_url != "" then $source_url else null end),
+            deduplication_key: (if $dedup_key != "" then $dedup_key else null end)
+          } | with_entries(select(.value != null))')
+
+        curl --request 'POST' \
+          --fail \
+          --url "https://api.incident.io/v2/alert_events/http/${INPUT_ALERT_SOURCE_CONFIG_ID}" \
+          --header 'Content-Type: application/json' \
+          --header "Authorization: Bearer ${INPUT_ALERT_SOURCE_TOKEN}" \
+          --data "$PAYLOAD"

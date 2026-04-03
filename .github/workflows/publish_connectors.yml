@@ -600,3 +600,27 @@ jobs:
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
+  notify-failure-incident-io:
+    name: "Notify Incident.io on Publish Failures"
+    runs-on: ubuntu-24.04
+    needs:
+      - publish_connectors
+      - publish_options
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Checkout Airbyte
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          ref: ${{ inputs.gitref || '' }}
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+      - name: Notify Incident.io
+        id: incident-io
+        uses: ./.github/actions/send-incident-io-alert
+        with:
+          alert_source_config_id: ${{ secrets.INCIDENT_IO_PUBLISH_FAILURES_ALERT_SOURCE_CONFIG_ID }}
+          alert_source_token: ${{ secrets.INCIDENT_IO_PUBLISH_FAILURES_ALERT_SOURCE_TOKEN }}
+          title: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
+          source_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          deduplication_key: "publish-failure-${{ github.run_id }}"
