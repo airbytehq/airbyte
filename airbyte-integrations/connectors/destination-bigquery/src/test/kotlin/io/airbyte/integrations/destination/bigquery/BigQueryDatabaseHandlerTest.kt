@@ -33,7 +33,7 @@ class BigQueryDatabaseHandlerTest {
                     every { executionErrors } returns listOf(bqError)
                 }
         }
-        val handler = BigQueryDatabaseHandler(bq, "location")
+        val handler = BigQueryDatabaseHandler(bq, "location", "test-project")
 
         assertThrows<ConfigErrorException> { handler.execute(Sql.of("select * from nowhere")) }
     }
