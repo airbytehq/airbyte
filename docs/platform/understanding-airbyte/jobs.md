@@ -63,6 +63,45 @@ With this set up, Airbyte now supports:
 This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage. See
 [this blogpost](https://airbyte.com/blog/introducing-workloads-how-airbyte-1-0-orchestrates-data-movement-jobs) for more detailed information.
 
+### Troubleshooting Workload Launch Delays
+
+You may see a gap of several minutes in the platform logs between the workload being submitted and the sync starting. Specifically, between the `APPLY Stage: LAUNCH` log line and the `Attempting to update workload ... to LAUNCHED` log line. This time is spent waiting for Kubernetes to schedule the pod and for its init containers to complete.
+
+Common causes of delay include:
+
+- **Large resource requests** require the cluster autoscaler to provision new nodes (e.g. 4 CPU / 4 GiB per container × 4 containers = 16 CPU / 16 GiB total). Reducing resource requests or provisioning larger nodes can help.
+- **Container images** need to be pulled for the first time on a new node.
+- **Init containers** must complete before the main containers start.
+- **Cluster capacity** is insufficient and pods remain in a `Pending` state until resources free up.
+
+To diagnose long delays, check the Kubernetes pod events (`kubectl describe pod <pod-name> -n <namespace>`) for scheduling or image-pull issues.
+
+### Workload Monitor
+
+Airbyte runs a background monitoring process (the **Workload Monitor**) that periodically checks whether workloads are making expected progress through their lifecycle. If a workload misses its expected deadline, the monitor fails it automatically.
+
+The monitor runs the following checks approximately every minute:
+
+| Check | Watches for | Error message | Likely cause |
+|-------|------------|---------------|-------------|
+| **Not claimed** | Workloads stuck in PENDING status past their deadline | _"No data-plane available to process the job."_ | No Launcher instances are running, or all are at capacity. |
+| **Not started** | Workloads stuck in CLAIMED status past their deadline | _"Unable to start the job."_ | The Launcher claimed the workload but failed to launch the pod (e.g. Kubernetes API errors, resource limits). |
+| **Not heartbeating** | Workloads in LAUNCHED or RUNNING status whose heartbeat deadline has expired | _"Airbyte could not track the sync progress. Sync process exited without reporting status."_ | The pod crashed, was OOM-killed, or the orchestrator process exited before it could report status. |
+| **Timeout** | Workloads exceeding their maximum allowed duration | _(varies)_ | Non-sync workloads timeout after 4 hours by default; sync workloads after 30 days. |
+
+When one of these checks fails a workload, the platform surfaces a `WorkloadMonitorException` with failure type `TRANSIENT_ERROR`. The user-facing message is:
+
+> _"Airbyte could not start the sync process or track the progress of the sync."_
+
+This is distinct from [source/destination heartbeat errors](./heartbeats.md), which monitor connector-level responsiveness within a running sync. The Workload Monitor operates at the platform level and checks whether the pod itself is alive and reporting.
+
+**How to debug a WorkloadMonitorException:**
+
+1. Check the Kubernetes pod status: `kubectl get pods -n <namespace>` — look for `CrashLoopBackOff`, `OOMKilled`, `ImagePullBackOff`, or `Pending` states.
+2. Inspect pod events: `kubectl describe pod <pod-name> -n <namespace>` — check for scheduling failures, resource pressure, or image pull errors.
+3. Review pod logs: `kubectl logs <pod-name> -n <namespace> -c <container-name>` — look for startup errors or uncaught exceptions.
+4. Check cluster resources: Ensure the cluster has enough CPU and memory to satisfy the pod's resource requests.
+
 ## Further configuring Jobs & Workloads
 
 Details on configuring jobs & workloads can be found [here](../operator-guides/configuring-airbyte.md).
@@ -131,6 +170,19 @@ Based on the outcome of previous attempts, the number of permitted attempts per 
 - 20 total attempts where some data was synchronized
 
 For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+### Workflow Restarts and Retry Limits
+
+Retries described above operate **within a single job execution**. However, certain platform-level events can cause the orchestration workflow to restart entirely. When this happens, the behavior is different from a normal retry:
+
+1. All in-progress jobs for the connection are **terminally failed** — both the current attempt and the job itself are marked as `FAILED`.
+2. The failure message reads: _"An internal transient Airbyte error has occurred. The sync should work fine on the next retry."_
+3. **No automatic retry occurs.** The connection waits for its next scheduled sync to create a new job.
+4. Retry counters (successive failures, total failures) are reset because they are scoped to a single workflow execution.
+
+:::note
+The error message says "the sync should work fine on the next retry," but this refers to the **next scheduled sync run**, not an immediate automatic retry. If the underlying issue persists (e.g. repeated platform restarts), the connection may fail on successive scheduled runs without ever completing.
+:::
 
 ### Retry Backoff
 

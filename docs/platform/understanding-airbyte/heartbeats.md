@@ -67,3 +67,7 @@ The timeout can be configured using the file `flags.yaml` through 2 entries:
 
 - `destination-timeout-max-seconds`: If the platform detects a call to the destination exceeding the duration specified in this entry, it will consider the destination to have timed out. The default timeout value is 24 hours.
 - `destination-timeout.failSync`: If enabled (true by default), a detected destination timeout will cause the platform to fail the sync. If not, the platform will log a message and allow the sync to continue. When the platform fails a sync due to a destination timeout, the UI will display the message: `The destination is unresponsive`.
+
+## Not a Heartbeat: Workload Monitor
+
+The heartbeat mechanisms described on this page monitor connector-level responsiveness within a running sync. Airbyte also has a separate platform-level monitor that checks whether the workload pod itself is alive and progressing. For details, see [Workload Monitor](./jobs.md#workload-monitor).
