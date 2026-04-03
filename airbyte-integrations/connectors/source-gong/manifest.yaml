@@ -134,6 +134,10 @@ definitions:
                       - 404
           request_body_json:
             contentSelector:
+              context: "Extended"
+              contextTiming:
+                - "Now"
+                - "TimeOfCall"
               exposedFields:
                 media: true
                 content:
