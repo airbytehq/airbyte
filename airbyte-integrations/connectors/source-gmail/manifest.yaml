@@ -248,19 +248,42 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/threads_details"
+  jwt_authenticator:
+    type: JwtAuthenticator
+    secret_key: "{{ json_loads(config['credentials']['service_account_info'])['private_key'] }}"
+    algorithm: "RS256"
+    token_duration: 3600
+    jwt_payload:
+      aud: "{{ json_loads(config['credentials']['service_account_info'])['token_uri'] }}"
+      iss: "{{ json_loads(config['credentials']['service_account_info'])['client_email'] }}"
+    additional_jwt_payload:
+      scope: "https://www.googleapis.com/auth/gmail.readonly"
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    refresh_request_body: {}
+    token_refresh_endpoint: https://accounts.google.com/o/oauth2/token
+    grant_type: refresh_token
+    client_id: '{{ config["credentials"]["client_id"] }}'
+    client_secret: '{{ config["credentials"]["client_secret"] }}'
+    refresh_token: '{{ config["credentials"]["client_refresh_token"] }}'
+  jwt_profile_assertion_oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://oauth2.googleapis.com/token
+    refresh_request_headers:
+      Content-Type: application/x-www-form-urlencoded
+    use_profile_assertion: true
+    profile_assertion:
+      $ref: "#/definitions/jwt_authenticator"
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      Client: "#/definitions/oauth_authenticator"
+      Service: "#/definitions/jwt_profile_assertion_oauth_authenticator"
   base_requester:
     type: HttpRequester
     url_base: https://gmail.googleapis.com/gmail/v1/users/me/
-    authenticator:
-      type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
-      grant_type: refresh_token
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token\"] }}"
-      expires_in_name: expires_in
-      access_token_name: access_token
-      refresh_request_body: {}
-      token_refresh_endpoint: https://accounts.google.com/o/oauth2/token
+    authenticator: "#/definitions/authenticator"
 
 streams:
   - $ref: "#/definitions/streams/profile"
@@ -278,27 +301,57 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - client_id
-      - client_secret
-      - client_refresh_token
+      - credentials
     properties:
-      client_id:
-        type: string
-        name: client_id
+      credentials:
+        type: object
+        title: Authentication
+        description: >-
+          Credentials for connecting to the Gmail API
         order: 0
-        title: OAuth Client ID
-        airbyte_secret: true
-      client_secret:
-        type: string
-        name: client_secret
-        order: 1
-        title: OAuth Client Secret
-        airbyte_secret: true
-      client_refresh_token:
-        type: string
-        order: 2
-        title: Refresh token
-        airbyte_secret: true
+        oneOf:
+          - title: Authenticate via Google (OAuth)
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - client_refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: Client
+              client_id:
+                title: Client ID
+                type: string
+                description: "Enter your Google application's Client ID. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: "Enter your Google application's Client Secret. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+              client_refresh_token:
+                title: Refresh Token
+                type: string
+                description: "Enter your Google application's refresh token. See <a href='https://developers.google.com/identity/protocols/oauth2'>Google's documentation</a> for more information."
+                airbyte_secret: true
+          - title: Service Account Key Authentication
+            type: object
+            required:
+              - auth_type
+              - service_account_info
+            properties:
+              auth_type:
+                type: string
+                const: Service
+              service_account_info:
+                type: string
+                title: Service Account Information.
+                description: 'The JSON key of the service account to use for authorization. Read more <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">here</a>.'
+                airbyte_secret: true
+                examples:
+                  - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
       include_spam_and_trash:
         type: boolean
         description: >-
@@ -306,8 +359,88 @@ spec:
           to false.
         title: Include Spam & Trash
         default: false
-        order: 3
+        order: 1
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate top-level OAuth fields into a nested credentials object.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - auth_type
+                value: "Client"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_id
+                value: "{{ config['client_id'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_secret
+                value: "{{ config['client_secret'] }}"
+              - type: AddedFieldDefinition
+                path:
+                  - credentials
+                  - client_refresh_token
+                value: "{{ config['client_refresh_token'] }}"
+            condition: "{{ config.get('client_id') is not none and config.get('credentials') is none }}"
+          - type: ConfigRemoveFields
+            field_pointers:
+              - - client_id
+              - - client_secret
+              - - client_refresh_token
+            condition: "{{ config.get('credentials') is not none }}"
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/gmail.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
 
 metadata:
   autoImportSchema:
