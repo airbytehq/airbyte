@@ -1173,8 +1173,16 @@ def test_manifest_instantiates_custom_download_requester(config):
             break
     assert target_stream is not None, "account_performance_report_daily stream not found"
 
-    # Navigate: stream -> partition_generator -> slicer -> factory closure -> job_repository
-    slicer = target_stream._stream_partition_generator._stream_slicer
+    # Navigate to the AsyncJobPartitionRouter (stream_slicer).
+    # The CDK may wrap the stream as a concurrent DefaultStream or leave it as a
+    # DeclarativeStream depending on config/version, so handle both paths.
+    if hasattr(target_stream, "retriever"):
+        # DeclarativeStream path (non-concurrent)
+        slicer = target_stream.retriever.stream_slicer
+    else:
+        # DefaultStream path (concurrent wrapper)
+        slicer = target_stream._stream_partition_generator._stream_slicer
+
     factory_fn = slicer._job_orchestrator_factory
     job_repository = None
     for var_name, cell in zip(factory_fn.__code__.co_freevars, factory_fn.__closure__):
