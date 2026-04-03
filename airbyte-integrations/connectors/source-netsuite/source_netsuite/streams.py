@@ -41,6 +41,8 @@ class NetsuiteStream(HttpStream, ABC):
         self.start_datetime = start_datetime
         self.window_in_days = window_in_days
         self.schemas = {}  # store subschemas to reduce API calls
+        self._session = requests.Session()
+        self._session.auth = auth
         super().__init__(authenticator=auth)
 
     primary_key = "id"
