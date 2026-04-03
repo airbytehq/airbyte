@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c01b6259-bdf4-45ff-bcd5-66424cd2f18b
-  dockerImageTag: 0.0.38
+  dockerImageTag: 0.0.39
   dockerRepository: airbyte/source-google-calendar
   githubIssueLabel: source-google-calendar
   icon: icon.svg

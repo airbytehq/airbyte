@@ -27,6 +27,7 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2026-04-03 | [76066](https://github.com/airbytehq/airbyte/pull/76066) | Add OAuth flow with credentials wrapper and config migration |
 | 0.0.38 | 2026-04-03 | [76066](https://github.com/airbytehq/airbyte/pull/76066) | Add `oauth_connector_input_specification` with granular scopes |
 | 0.0.37 | 2026-03-31 | [75671](https://github.com/airbytehq/airbyte/pull/75671) | Update dependencies |
 | 0.0.36 | 2026-03-17 | [74985](https://github.com/airbytehq/airbyte/pull/74985) | Update dependencies |
