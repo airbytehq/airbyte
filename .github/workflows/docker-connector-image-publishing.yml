@@ -87,7 +87,7 @@ jobs:
 
       - name: Build Base Image
         id: docker-build-base
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           file: ${{ steps.vars.outputs.DOCKERFILE }}
           tags: ${{ steps.vars.outputs.FULL_IMAGE_REF }}
@@ -110,7 +110,7 @@ jobs:
         # https://docs.docker.com/build/ci/github-actions/test-before-push/
         id: docker-image-publish
         if: ${{ github.event.inputs.dry-run == 'false' }}
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           platforms: linux/amd64,linux/arm64
           file: ${{ steps.vars.outputs.DOCKERFILE }}

@@ -73,7 +73,7 @@ jobs:
 
       - name: Build Java Base Image
         id: docker-build-java-base
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
           file: docker-images/Dockerfile.java-connector-base
@@ -120,7 +120,7 @@ jobs:
 
       - name: Build Python Base Image
         id: docker-build-python-base
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
           file: docker-images/Dockerfile.python-connector-base
@@ -199,7 +199,7 @@ jobs:
 
       - name: Build ${{ matrix.connector }} Image
         id: docker-build-java-connector
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.java-connector
@@ -283,7 +283,7 @@ jobs:
 
       - name: Build ${{ matrix.connector }} Image
         id: docker-build-python-connector
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.python-connector
@@ -364,7 +364,7 @@ jobs:
           echo "CONNECTOR_NAME=${{ matrix.connector }}"
 
       - name: Build ${{ matrix.connector }} Image
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: airbyte-integrations/connectors/${{ matrix.connector }}
           file: docker-images/Dockerfile.manifest-only-connector
