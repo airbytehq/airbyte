@@ -9,21 +9,19 @@ import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
 
 # Upgrade to Helm chart V2 (Core)
 
-Airbyte has upgraded its Helm chart to a new version called "V2." Using Helm chart V2 is currently optional. At some future date the V2 Helm chart will become the standard, so we advise that you upgrade your existing deployment to use the new chart before the transition. If you're a new Airbyte user, you can skip the upgrade altogether and start with the new chart.
+As of Airbyte v2.1.0, Helm chart V1 is no longer supported. Helm chart V2 is now the only supported chart. If you haven't already upgraded, you must migrate to Helm chart V2 to continue receiving updates. If you're a new Airbyte user, you can skip this guide and start directly with the current chart — see [Deploying Airbyte](../deploying-airbyte/deploying-airbyte.md).
 
 :::important Enterprise customers
 Follow the [Self-Managed Enterprise guide](../enterprise-setup/chart-v2-enterprise) instead.
 :::
 
-## Why you should upgrade
+## Why you must upgrade
 
-Upgrading to the new Helm chart now has the following benefits.
+Helm chart V1 is no longer supported as of Airbyte v2.1.0. You must upgrade to Helm chart V2 to continue receiving Airbyte updates. In addition to being required, the new chart has the following benefits:
 
-1. By upgrading in advance, you can schedule this upgrade for a convenient time. Avoid blocking yourself from upgrading Airbyte to a future version when the new chart is mandatory and you're busy.
+1. The new Helm chart is more aligned with Helm's best practices for chart design.
 
-2. The new Helm chart is more aligned with Helm's best practices for chart design.
-
-3. The new Helm chart has broader and more detailed options to customize your deployment. In most cases, it's no longer necessary to specify environment variables in your `values.yaml` file because the chart offers a more detailed interface for customization. If you do need to use environment variables, you can use fewer of them.
+2. The new Helm chart has broader and more detailed options to customize your deployment. In most cases, it's no longer necessary to specify environment variables in your `values.yaml` file because the chart offers a more detailed interface for customization. If you do need to use environment variables, you can use fewer of them.
 
 ## Which versions can upgrade to Helm chart V2
 
@@ -33,9 +31,9 @@ The following versions of Airbyte can use Helm chart V2:
 
 - Airbyte version 1.6.0 and later, if installed and managed with abctl version 0.30.0 or later (abctl uses Helm chart V2 by default starting with version 0.30.0)
 
-The following versions of Airbyte _can't_ use Helm chart V2:
+The following versions of Airbyte _can't_ use Helm chart V2 directly:
 
-- Airbyte versions before 1.6.0
+- Airbyte versions before 1.6.0 — you must first upgrade to at least 1.6.0 on Helm chart V1 before migrating to V2
 
 - Airbyte installed and managed with abctl versions before 0.30.0
 
