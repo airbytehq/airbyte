@@ -644,18 +644,34 @@ class MySqlSourceJdbcPartitionFactory(
         log.info { "calculating boundaries: [$effectiveLowerBound], [$upperBound]" }
         val guidPattern =
             "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$".toRegex()
-        // If all sample values match GUID pattern, we calculate boundaries over GUID character set
-        val isGuidPk =
+        // If all sample values AND the actual boundary values match GUID pattern,
+        // we calculate boundaries over the GUID character set.
+        // We must validate boundaries too, because sample values may not be representative
+        // of MIN/MAX values in the table.
+        val samplesMatchGuid =
             opaqueStateValues.count {
                 it["pk_val"] != null &&
                     it["pk_val"].isTextual &&
                     guidPattern.matches(it["pk_val"].asText())
             } == opaqueStateValues.count()
+        val boundsMatchGuid =
+            guidPattern.matches(upperBound) &&
+                (effectiveLowerBound.isEmpty() || guidPattern.matches(effectiveLowerBound))
+        val isGuidPk = samplesMatchGuid && boundsMatchGuid
 
         val queryPlan: List<String> =
             when (isGuidPk) {
                 false -> unicodeInterpolatedStrings(effectiveLowerBound, upperBound, num)
-                true -> guidInterpolatedStrings(effectiveLowerBound, upperBound, num)
+                true -> {
+                    try {
+                        guidInterpolatedStrings(effectiveLowerBound, upperBound, num)
+                    } catch (e: IllegalArgumentException) {
+                        log.warn {
+                            "GUID interpolation failed (${e.message}), falling back to unicode interpolation"
+                        }
+                        unicodeInterpolatedStrings(effectiveLowerBound, upperBound, num)
+                    }
+                }
             }
 
         log.info { "boundaries: $queryPlan" }
