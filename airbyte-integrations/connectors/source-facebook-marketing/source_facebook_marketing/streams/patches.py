@@ -2,9 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from urllib.parse import parse_qsl, urlparse, urlunparse
 
 from facebook_business.api import Cursor
+
+
+logger = logging.getLogger("airbyte")
 
 
 class CursorPatch(Cursor):
@@ -62,5 +66,14 @@ class CursorPatch(Cursor):
         if self._include_summary and "summary" in response:
             self._summary = response["summary"]
 
-        self._queue = self.build_objects_from_response(response)
+        try:
+            self._queue = self.build_objects_from_response(response)
+        except TypeError as e:
+            logger.warning(
+                f"TypeError while parsing Facebook API response in CursorPatch: {e}. "
+                f"The API may have returned data in an unexpected format (e.g. a string instead of a dict). "
+                f"Treating this page as empty and ending pagination."
+            )
+            self._queue = []
+            self._finished_iteration = True
         return len(self._queue) > 0
