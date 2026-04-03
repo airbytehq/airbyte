@@ -103,6 +103,17 @@ public class MongoDbSource extends BaseConnector implements Source {
               .withMessage("Target MongoDB instance is not a replica set cluster.")
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
+      } catch (final MongoCommandException e) {
+        if (e.getErrorCode() == MongoConstants.MONGODB_UNAUTHORIZED_ERROR_CODE) {
+          LOGGER.error("MongoDB authorization error during connection check.", e);
+          return new AirbyteConnectionStatus()
+              .withMessage(MongoConstants.MONGODB_CHANGESTREAM_UNAUTHORIZED_ERROR_MESSAGE)
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
+        LOGGER.error("Unable to perform source check operation.", e);
+        return new AirbyteConnectionStatus()
+            .withMessage(e.getMessage())
+            .withStatus(AirbyteConnectionStatus.Status.FAILED);
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);
         return new AirbyteConnectionStatus()
