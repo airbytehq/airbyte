@@ -1,0 +1,130 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/nebula-graph",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "NebulaGraph Destination Spec",
+    "type": "object",
+    "required": ["graphd_addresses", "space", "username"],
+    "additionalProperties": true,
+    "properties": {
+      "graphd_addresses": {
+        "title": "Graphd Addresses",
+        "description": "NebulaGraph graphd addresses in the form host:port,host:port",
+        "type": "string",
+        "examples": ["127.0.0.1:9669", "node1:9669,node2:9669"]
+      },
+      "space": {
+        "title": "Space Name",
+        "description": "Target space name. Connector can create it if allowed below.",
+        "type": "string"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "airbyte_secret": true
+      },
+      "create_space_if_missing": {
+        "title": "Create Space If Missing",
+        "type": "boolean",
+        "default": true
+      },
+      "vid_fixed_string_length": {
+        "title": "VID FIXED_STRING Length",
+        "description": "Space will be created with vid_type=FIXED_STRING(N).",
+        "type": "integer",
+        "minimum": 8,
+        "maximum": 1024,
+        "default": 128
+      },
+      "use_upsert": {
+        "title": "Use UPSERT",
+        "description": "If true, write using UPSERT per-record instead of buffered INSERT.",
+        "type": "boolean",
+        "default": false
+      },
+      "max_batch_records": {
+        "title": "Max Batch Records",
+        "description": "Buffer size for append mode; also used as max rows per single INSERT.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10000,
+        "default": 500
+      },
+      "vid_separator": {
+        "title": "VID Separator",
+        "type": "string",
+        "default": "::"
+      },
+
+      "streams": {
+        "title": "Streams",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["name", "entity_type"],
+          "additionalProperties": true,
+          "properties": {
+            "name": { "title": "Stream Name", "type": "string" },
+            "namespace": { "title": "Namespace", "type": "string" },
+            "entity_type": {
+              "title": "Entity Type",
+              "type": "string",
+              "enum": ["vertex", "edge"]
+            },
+            "typed": {
+              "title": "Typed Columns",
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "default": false }
+              }
+            },
+            "edge_type": {
+              "title": "Edge Type Name (override)",
+              "description": "If not set, it will be derived from namespace and stream name.",
+              "type": "string"
+            },
+            "vid_fields": {
+              "title": "VID Fields",
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "src_fields": {
+              "title": "Edge Source VID Fields",
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "dst_fields": {
+              "title": "Edge Destination VID Fields",
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "rank_field": {
+              "title": "Edge Rank Field",
+              "type": ["string", "null"]
+            }
+          },
+          "oneOf": [
+            {
+              "title": "Vertex Stream",
+              "required": ["vid_fields"],
+              "properties": { "entity_type": { "const": "vertex" } }
+            },
+            {
+              "title": "Edge Stream",
+              "required": ["src_fields", "dst_fields"],
+              "properties": { "entity_type": { "const": "edge" } }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
