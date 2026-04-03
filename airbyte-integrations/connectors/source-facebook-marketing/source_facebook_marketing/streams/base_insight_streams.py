@@ -245,6 +245,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         if job.interval.start == self._next_cursor_values[account_id]:
             self._advance_cursor(account_id)
 
+    def _process_result_objects(self, result_iter: Iterable, account_id: str) -> Iterable[Mapping[str, Any]]:
+        """Transform raw FB SDK objects into output records."""
+        for obj in result_iter:
+            data = obj.export_all_data()
+            if self._response_data_is_valid(data):
+                self._add_account_id(data, account_id)
+                data = self._transform_breakdown(data)
+                data = self._transform_objective_results(data)
+                yield data
+
     def _get_job_results(self, job: AsyncJob, account_id: str) -> Iterable[Mapping[str, Any]]:
         """Iterate job results, restarting the job on FacebookBadObjectError.
 
@@ -255,13 +265,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         also fails.
         """
         try:
-            for obj in job.get_result():
-                data = obj.export_all_data()
-                if self._response_data_is_valid(data):
-                    self._add_account_id(data, account_id)
-                    data = self._transform_breakdown(data)
-                    data = self._transform_objective_results(data)
-                    yield data
+            yield from self._process_result_objects(job.get_result(), account_id)
         except FacebookBadObjectError as e:
             logger.warning(
                 "FacebookBadObjectError for job %s, restarting job with fresh AdReportRun: %s",
@@ -269,13 +273,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 e,
             )
             try:
-                for obj in job.restart_and_get_result():
-                    data = obj.export_all_data()
-                    if self._response_data_is_valid(data):
-                        self._add_account_id(data, account_id)
-                        data = self._transform_breakdown(data)
-                        data = self._transform_objective_results(data)
-                        yield data
+                yield from self._process_result_objects(job.restart_and_get_result(), account_id)
             except (FacebookBadObjectError, RuntimeError) as restart_err:
                 raise AirbyteTracedException(
                     internal_message=str(restart_err),
