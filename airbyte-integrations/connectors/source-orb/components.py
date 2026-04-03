@@ -2,57 +2,59 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
-from typing import Iterable, Optional
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Iterable, List, Mapping, MutableMapping
+
+import requests
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
-class SubscriptionUsageTransformation(RecordTransformation):
-    subscription_id: str
+class SubscriptionUsageRecordExtractor(RecordExtractor):
+    """
+    Custom record extractor for the subscription_usage stream.
 
-    def transform(
-        self,
-        record: Record,
-        config: Optional[Config] = None,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> Record:
-        # for each top level response record, there can be multiple sub-records depending
-        # on granularity and other input params. This function yields one transformed record
-        # for each subrecord in the response.
+    The Orb API returns records in the shape:
+        {"data": [{"billable_metric": {...}, "usage": [{"quantity": ..., "timeframe_start": ..., ...}, ...]}, ...]}
 
-        subrecords = record.get("usage", [])
-        del record["usage"]
-        for subrecord in subrecords:
-            # skip records that don't contain any actual usage
-            if subrecord.get("quantity", 0) > 0:
-                # Merge the parent record with the sub record
-                output = record.update(subrecord)
+    This extractor performs 1:N expansion: each top-level data item is expanded
+    into one output record per usage sub-record that has quantity > 0.  Parent-level
+    fields (billable_metric name/id) are merged into each output record.
 
-                # Add the subscription ID to the output
-                output["subscription_id"] = self.subscription_id
+    This cannot be done with built-in declarative components because
+    RecordTransformation.transform() only supports 1:1 in-place mutation, and no
+    built-in extractor supports nested array expansion with parent-field merging.
+    """
 
-                # Un-nest billable_metric -> name,id into billable_metric_name and billable_metric_id
-                nested_billable_metric_name = output["billable_metric"]["name"]
-                nested_billable_metric_id = output["billable_metric"]["id"]
-                del output["billable_metric"]
-                output["billable_metric_name"] = nested_billable_metric_name
-                output["billable_metric_id"] = nested_billable_metric_id
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
-                # If a group_by key is specified, un-nest it
-                if config.subscription_usage_grouping_key:
-                    nested_key = output["metric_group"]["property_key"]
-                    nested_value = output["metric_group"]["property_value"]
-                    del output["metric_group"]
-                    output[nested_key] = nested_value
-                yield output
-        yield from []
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._parameters = parameters
+
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
+        for body in self.decoder.decode(response):
+            data_items: List[Any] = body.get("data", [])
+            for item in data_items:
+                billable_metric = item.get("billable_metric", {})
+                billable_metric_name = billable_metric.get("name", "")
+                billable_metric_id = billable_metric.get("id", "")
+
+                usage_records = item.get("usage", [])
+                for subrecord in usage_records:
+                    if subrecord.get("quantity", 0) > 0:
+                        output: MutableMapping[str, Any] = {}
+                        output.update(subrecord)
+                        output["billable_metric_name"] = billable_metric_name
+                        output["billable_metric_id"] = billable_metric_id
+                        yield output
 
 
 @dataclass
