@@ -39,6 +39,27 @@ If you encounter this error, you have several options to resolve it:
 
 For more information about MongoDB's document size limits, see the [MongoDB documentation on limits](https://www.mongodb.com/docs/manual/reference/limits/).
 
+### Update Capture Mode: Lookup vs Post Image
+
+When using CDC (Incremental sync mode), the **Update Capture Mode** setting controls how Airbyte retrieves the full document content for update events. The default mode is **Lookup**, but the two modes have important behavioral differences:
+
+- **Lookup** (default): When an update event is received, Airbyte performs a separate read to fetch the *current* state of the document from MongoDB. If a document is updated multiple times in rapid succession (or between syncs), the lookup may return the document's final state for all update events, rather than the intermediate states. This is a [known Debezium behavior](https://debezium.io/documentation/reference/stable/connectors/mongodb.html#mongodb-property-capture-mode-full-update-type): the connector requests the full document only *after* receiving the update event, so a later update can modify the document before it is retrieved.
+
+- **Post Image** (requires MongoDB 6.0+): Uses MongoDB's built-in [change stream post-images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images), which capture the document state immediately after each individual change. This avoids the inconsistency problem described above.
+
+**When to use Post Image:**
+- If you need accurate per-update document states (e.g., for `Incremental | Append` syncs that track each change)
+- If your MongoDB version is 6.0 or later
+
+**Requirements for Post Image mode:**
+- MongoDB 6.0+
+- Collections must be configured to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to enable this setting will lead to data loss.
+
+**When to keep Lookup mode:**
+- If your MongoDB version is older than 6.0
+- If you only need the latest document state (e.g., `Incremental | Append + Dedup` syncs where only the most recent version matters)
+- If your documents are very large and you want to reduce change stream event sizes (Post Image includes the full document in the change event itself, which can trigger `BSONObjectTooLarge` errors for documents near the 16MB limit)
+
 ### Supported MongoDB Clusters
 
 - Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
