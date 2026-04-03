@@ -4,12 +4,12 @@
 
 Airbyte's certified Postgres connector offers the following features:
 
-- Replicate data from tables, views and materialized views. Other data objects won't be replicated to the destination like indexes, permissions.
+- Replicate data from tables, views, and materialized views. Other data objects like indexes and permissions are not replicated.
 - Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) and replication using the [xmin system column](#xmin).
 - All available [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing flexibility in how data is delivered to your destination.
 - Reliable replication at any table size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshoot issues with the Postgres connector.
+The contents below include a quick start guide, advanced setup steps, and reference information including data type mapping and changelogs. For troubleshooting, see the [Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
 
 </HideInUI>
 
@@ -190,7 +190,7 @@ In your Postgres source, change the update method to `Read Changes using Change 
 
 ## Postgres Replication Methods
 
-The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
+The Postgres source offers three methods of replicating updates to your destination: CDC, Xmin, and Standard (with a user-defined cursor). CDC and Xmin are the **most reliable methods** of updating your data.
 
 <FieldAnchor field="replication_method[CDC]">
 
@@ -295,7 +295,7 @@ To see connector limitations, or troubleshoot your Postgres connector, see more 
 
 ## Data type mapping
 
-According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.org/docs/current/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/kotlin/io/airbyte/integrations/source/postgres/legacy/PostgresSourceDatatypeTest.kt). If you can't find the data type you are looking for or have any problems, feel free to add a new test.
 
 | Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
 | ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
