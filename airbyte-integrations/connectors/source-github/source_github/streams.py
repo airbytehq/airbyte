@@ -22,7 +22,6 @@ from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_parse
 
@@ -133,8 +132,8 @@ class GithubStreamABC(HttpStream, ABC):
         # Reading records while handling the errors
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        # HTTP Client wraps DefaultBackoffException into MessageRepresentationAirbyteTracedErrors
-        except MessageRepresentationAirbyteTracedErrors as e:
+        # HTTP Client wraps DefaultBackoffException into AirbyteTracedException
+        except AirbyteTracedException as e:
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
