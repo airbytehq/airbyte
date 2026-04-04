@@ -696,13 +696,8 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: NextToken
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: MaxResultsPerPage
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
             cursor_value: "{{ response.payload.NextToken }}"
       schema_loader:
         type: InlineSchemaLoader
