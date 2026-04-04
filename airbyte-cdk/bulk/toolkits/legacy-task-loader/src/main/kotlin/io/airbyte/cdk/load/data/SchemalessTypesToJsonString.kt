@@ -21,13 +21,14 @@ import io.airbyte.cdk.load.util.serializeToString
  * For example, [FailOnAllUnknownTypesExceptNull] is used to add support for `{ "type": "null" }`
  */
 class FailOnAllUnknownTypesExceptNull : AirbyteSchemaIdentityMapper {
-    override fun mapUnknown(schema: UnknownType) =
-        if (
+    override fun mapUnknown(schema: UnknownType): AirbyteType {
+        val typeNode = schema.schema.get("type")
+        return if (
             schema.schema.isObject &&
-                ((schema.schema.get("type").isTextual &&
-                    schema.schema.get("type").textValue() == "null") ||
-                    (schema.schema.get("type").isArray &&
-                        schema.schema.get("type").elements().asSequence().all {
+                typeNode != null &&
+                ((typeNode.isTextual && typeNode.textValue() == "null") ||
+                    (typeNode.isArray &&
+                        typeNode.elements().asSequence().all {
                             it.isTextual && it.textValue() == "null"
                         }))
         ) {
@@ -35,6 +36,7 @@ class FailOnAllUnknownTypesExceptNull : AirbyteSchemaIdentityMapper {
         } else {
             throw IllegalStateException("Unknown type: $schema")
         }
+    }
 }
 
 class SchemalessValuesToJsonString : AirbyteValueIdentityMapper() {

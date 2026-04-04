@@ -43,4 +43,26 @@ class FailOnAllUnknownTypesExceptNullTest {
             FailOnAllUnknownTypesExceptNull().map(inputSchema)
         }
     }
+
+    @Test
+    fun `test throws on schema without type field`() {
+        val (inputSchema, _) =
+            SchemaRecordBuilder<Root>()
+                .with(UnknownType(JsonNodeFactory.instance.objectNode().put("foo", "bar")))
+                .build()
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            FailOnAllUnknownTypesExceptNull().map(inputSchema)
+        }
+    }
+
+    @Test
+    fun `test throws on empty object schema`() {
+        val (inputSchema, _) =
+            SchemaRecordBuilder<Root>()
+                .with(UnknownType(JsonNodeFactory.instance.objectNode()))
+                .build()
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            FailOnAllUnknownTypesExceptNull().map(inputSchema)
+        }
+    }
 }
