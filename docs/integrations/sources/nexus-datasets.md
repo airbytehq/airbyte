@@ -124,6 +124,7 @@ Please refer https://developer.infornexus.com/api/authentication-choices/hmac fo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.4 | 2026-03-31 | [73832](https://github.com/airbytehq/airbyte/pull/73832) | Update dependencies |
 | 0.1.3 | 2026-02-17 | [73548](https://github.com/airbytehq/airbyte/pull/73548) | Update dependencies |
 | 0.1.2 | 2026-02-10 | [73030](https://github.com/airbytehq/airbyte/pull/73030) | Update dependencies |
 | 0.1.1 | 2026-02-03 | [72789](https://github.com/airbytehq/airbyte/pull/72789) | Add missing registryOverrides to metadata.yaml |
