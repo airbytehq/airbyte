@@ -113,7 +113,7 @@ See the official [Confluence API reference](https://developer.atlassian.com/clou
 
 ## Version information
 
-- **Package version:** 0.1.7
+- **Package version:** 0.1.9
 - **Connector version:** 1.0.0
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
+- **Generated with Connector SDK commit SHA:** e4c7493336bcabf5bea5a761ab7b4edfe2a606a5
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/confluence/CHANGELOG.md)
