@@ -915,12 +915,12 @@
           }
         ],
         "responses": {
-          "200": {
+          "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectorSourceDeleteResponse"
+                  "$ref": "#/components/schemas/ConnectorSourceDeleteAcceptedResponse"
                 }
               }
             }
@@ -4298,22 +4298,17 @@
         "required": ["id", "name", "source_template", "replication_config"],
         "title": "ConnectorSourceCreateResponse"
       },
-      "ConnectorSourceDeleteResponse": {
+      "ConnectorSourceDeleteAcceptedResponse": {
         "properties": {
-          "id": {
+          "job_id": {
             "type": "string",
             "format": "uuid",
-            "title": "Id"
-          },
-          "deleted_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Deleted At"
+            "title": "Job Id"
           }
         },
         "type": "object",
-        "required": ["id", "deleted_at"],
-        "title": "ConnectorSourceDeleteResponse"
+        "required": ["job_id"],
+        "title": "ConnectorSourceDeleteAcceptedResponse"
       },
       "ConnectorSourceGetResponse": {
         "properties": {
