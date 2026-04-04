@@ -12,7 +12,10 @@ This connector works with Google Analytics 4 (GA4) and [Google Analytics 360](ht
 
 ## Prerequisites
 
-- A Google Analytics account with access to the GA4 property and property ID you want to sync
+- A Google Analytics account with access to the GA4 property you want to sync
+- Your GA4 [property ID](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id) (a numeric value, such as `123456789`)
+- For **OAuth** (Airbyte Cloud): A Google account with at least Viewer access to the GA4 property. The connector requests the `analytics.readonly` scope.
+- For **Service Account** (Airbyte Open Source): A service account JSON key with the Google Analytics Data API enabled in the associated Google Cloud project. The service account must have at least Viewer access to the GA4 property in Google Analytics.
 
 ## Setup guide
 
@@ -39,13 +42,11 @@ When authenticating with a **service account** (Airbyte Open Source), you must a
 3. Grant at least the **Viewer** role (read-only) for the target property.
 :::
 
-#### Enable the Google Analytics APIs
+#### Enable the Google Analytics Data API
 
-Before you can use the service account to access Google Analytics data, you need to enable the required APIs:
+Before you can use the service account to access Google Analytics data, you need to enable the required API:
 
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API. You can also set quotas and check usage.
-2. Go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
-3. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
+1. Go to the [Google Analytics Data API dashboard](https://console.developers.google.com/apis/api/analyticsdata.googleapis.com/overview). Make sure you have selected the associated project for your service account, and enable the API.
 
 <!-- /env:oss -->
 
@@ -86,7 +87,7 @@ To mitigate this, we recommend adjusting the **Data Request Interval (Days)** va
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Analytics 4 (GA4)** from the list of available sources.
-4. Select **Service Account Key Authenication** dropdown list and enter **Service Account JSON Key** from Step 1.
+4. Select **Service Account Key Authentication** dropdown list and enter **Service Account JSON Key** from Step 1.
 5. Enter the **Property ID** whose events are tracked. This ID should be a numeric value, such as `123456789`. If you are unsure where to find this value, refer to [Google's documentation](https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id).
    :::note
    If the Property Settings shows a "Tracking Id" such as "UA-123...-1", this denotes that the property is a Universal Analytics property, and the Analytics data for that property cannot be reported on in the Data API. You can create a new Google Analytics 4 property by following [these instructions](https://support.google.com/analytics/answer/9744165?hl=en).
@@ -105,7 +106,7 @@ Many analyses and data investigations may require 24-48 hours to process informa
 7. (Optional) Toggle the switch **Keep Empty Rows** if you want each row with all metrics equal to 0 to be returned.
 8. (Optional) In the **Custom Reports** field, you may optionally describe any custom reports you want to sync from Google Analytics. See the [Custom Reports](#custom-reports) section below for more information on formulating these reports.
 9. (Optional) In the **Data Request Interval (Days)** field, you can specify the interval in days (ranging from 1 to 364) used when requesting data from the Google Analytics API. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. This field does not apply to custom Cohort reports. See the [Data Sampling](#data-sampling-and-data-request-intervals) section below for more context on this field.
-10. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past we should refresh the data in every run. Since attribution changes after the event date, and Google Analytics has a data processing latency this is key to keep up with consistent information. If you set it at 5 days, in every sync it will fetch the last bookmark date minus 5 days..
+10. (Optional) In the **Lookback window (Days)** field, you can specify how many days in the past the connector refreshes data on every sync. Because attribution changes after the event date and Google Analytics has a data processing latency, this setting helps keep your data consistent. For example, if you set it to 5 days, every sync fetches data starting from the last bookmark date minus 5 days.
 
 :::caution
 
@@ -280,7 +281,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.9.29 | 2026-04-01 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
+| 2.9.29 | 2026-04-02 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
 | 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
 | 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |
 | 2.9.26 | 2026-02-25 | [73632](https://github.com/airbytehq/airbyte/pull/73632) | fix(source-google-analytics-data-api): use GA4 today keyword for timezone-correct end dates (AI-Triage PR) |
