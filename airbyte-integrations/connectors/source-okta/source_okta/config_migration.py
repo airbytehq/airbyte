@@ -4,10 +4,13 @@
 
 
 import logging
-from typing import Any, List, Mapping
+from typing import Any, Dict, List, Mapping
+
+import orjson
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.models import AirbyteMessageSerializer
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 
@@ -35,17 +38,18 @@ class OktaConfigMigration:
         return "domain" not in config
 
     @classmethod
-    def modify(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        config["domain"] = config["base_url"].split("https://")[1].split(".")[0]
-        if "credentials" not in config:
-            if "token" in config:
-                config["credentials"] = {
+    def modify(cls, config: Mapping[str, Any]) -> Dict[str, Any]:
+        mutable_config = dict(config)
+        mutable_config["domain"] = mutable_config["base_url"].split("https://")[1].split(".")[0]
+        if "credentials" not in mutable_config:
+            if "token" in mutable_config:
+                mutable_config["credentials"] = {
                     "auth_type": "api_token",
-                    "api_token": config["token"],
+                    "api_token": mutable_config["token"],
                 }
             else:
-                raise ValueError(f"Invalid config. got {config}")
-        return config
+                raise ValueError(f"Invalid config. got {mutable_config}")
+        return mutable_config
 
     @classmethod
     def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -62,7 +66,7 @@ class OktaConfigMigration:
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
         for message in cls.message_repository._message_queue:
-            print(message.json(exclude_unset=True))
+            print(orjson.dumps(AirbyteMessageSerializer.dump(message)).decode())
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
