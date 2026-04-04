@@ -61,6 +61,7 @@ definitions:
       name: organizations
       primary_key:
         - organization
+        - role
       retriever:
         type: SimpleRetriever
         requester:
