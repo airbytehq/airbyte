@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.spec
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -69,6 +70,14 @@ class S3DataLakeSpecification :
 
     @get:JsonSchemaInject(json = """{"always_show": true,"order":7}""")
     override val catalogType: CatalogType = GlueCatalogSpecification(glueId = "", databaseName = "")
+
+    @get:JsonSchemaTitle("Lowercase column names")
+    @get:JsonPropertyDescription(
+        """When enabled, all column names will be lowercased and non-alphanumeric characters replaced with underscores. Existing syncs may require a full refresh after enabling this option."""
+    )
+    @get:JsonProperty("lowercase_column_names")
+    @get:JsonSchemaInject(json = """{"order":8, "default": false}""")
+    val lowercaseColumnNames: Boolean? = false
 }
 
 @Singleton

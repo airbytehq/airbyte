@@ -214,6 +214,13 @@
         "always_show" : true,
         "order" : 7,
         "type" : "object"
+      },
+      "lowercase_column_names" : {
+        "type" : "boolean",
+        "description" : "When enabled, all column names will be lowercased and non-alphanumeric characters replaced with underscores. Existing syncs may require a full refresh after enabling this option.",
+        "title" : "Lowercase column names",
+        "order" : 8,
+        "default" : false
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]
