@@ -1,8 +1,6 @@
 import React from 'react';
 import Layout from '@theme/Layout';
 import styles from './index.module.css';
-import { Arcade } from '../components/Arcade';
-import { Navattic } from '../components/Navattic';
 
 export default function Home() {
   const PlatformIcon = () => (
@@ -59,6 +57,56 @@ export default function Home() {
     </svg>
   );
 
+  const TutorialsIcon = () => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className={styles.navIconSvg}
+    >
+      <path d="M12 0L1 5l11 5 9-4.09V17h2V5M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+    </svg>
+  );
+
+  const AgentConnectorsIcon = () => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className={styles.navIconSvg}
+    >
+      <path d="M12 0c6.623 0 12 5.377 12 12s-5.377 12-12 12-12-5.377-12-12 5.377-12 12-12zm2.085 14h-9v2h9v3l5-4-5-4v3zm-4-6v-3l-5 4 5 4v-3h9v-2h-9z"/>
+    </svg>
+  );
+
+  const AgentApiIcon = () => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      className={styles.navIconSvg}
+    >
+      <path d="M24 10.935v2.131l-8 3.947v-2.23l5.64-2.783-5.64-2.79v-2.223l8 3.948zm-16 3.848l-5.64-2.783 5.64-2.79v-2.223l-8 3.948v2.131l8 3.947v-2.23zm7.047-10.783h-2.078l-4.011 16h2.073l4.016-16z"/>
+    </svg>
+  );
+
+  const McpServerIcon = () => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 180 180"
+      xmlns="http://www.w3.org/2000/svg"
+      className={styles.mcpIconSvg}
+    >
+      <path d="M18 84.8528L85.8822 16.9706C95.2548 7.59798 110.451 7.59798 119.823 16.9706C129.196 26.3431 129.196 41.5391 119.823 50.9117L68.5581 102.177" strokeWidth="12" strokeLinecap="round" fill="none"/>
+      <path d="M69.2652 101.47L119.823 50.9117C129.196 41.5391 144.392 41.5391 153.765 50.9117L154.118 51.2652C163.491 60.6378 163.491 75.8338 154.118 85.2063L92.7248 146.6C89.6006 149.724 89.6006 154.789 92.7248 157.913L105.331 170.52" strokeWidth="12" strokeLinecap="round" fill="none"/>
+      <path d="M102.853 33.9411L52.6482 84.1457C43.2756 93.5183 43.2756 108.714 52.6482 118.087C62.0208 127.459 77.2167 127.459 86.5893 118.087L136.794 67.8822" strokeWidth="12" strokeLinecap="round" fill="none"/>
+    </svg>
+  );
+
   const DevelopersIcon = () => (
     <svg
       width="48"
@@ -83,30 +131,24 @@ export default function Home() {
     </svg>
   );
 
-  const navLinks = [
+  const drNavLinks = [
     {
       title: 'Platform',
       link: '/platform/',
-      description: 'Use Airbyte\'s data replication platform to create connections, build custom connectors, and start syncing data in minutes.',
+      description: 'Create connections, build custom connectors, and start syncing data in minutes.',
       icon: PlatformIcon,
     },
     {
       title: 'Connectors',
       link: '/integrations/',
-      description: 'Browse Airbyte\'s catalog of over 600 sources and destinations, and learn to set them up in Airbyte\'s data replication platform.',
+      description: 'Browse over 600 sources and destinations, and learn to set them up.',
       icon: ConnectorsIcon,
     },
     {
       title: 'Release notes',
       link: '/release_notes/',
-      description: 'See what\'s new. Airbyte releases new Self-Managed versions regularly. Airbyte Cloud customers always have the latest enhancements.',
+      description: 'See what\'s new. Self-Managed versions release regularly. Cloud customers always have the latest.',
       icon: ReleaseNotesIcon,
-    },
-    {
-      title: 'AI agents',
-      link: '/ai-agents/',
-      description: 'Equip your AI agents to explore and work with your data.',
-      icon: AIAgentsIcon,
     },
     {
       title: 'Developers',
@@ -115,265 +157,194 @@ export default function Home() {
       icon: DevelopersIcon,
     },
     {
-      title: 'Community and support',
+      title: 'Community',
       link: '/community',
       description: 'Get help using, and contribute to, Airbyte.',
       icon: CommunityIcon,
     },
   ];
 
+  const aeNavLinks = [
+    {
+      title: 'About Agent Engine',
+      link: '/ai-agents/about/',
+      description: 'Learn what Agent Engine is, how it works, and who it\'s for.',
+      icon: AIAgentsIcon,
+    },
+    {
+      title: 'Tutorials',
+      link: '/ai-agents/tutorials/',
+      description: 'Step-by-step guides and quickstarts to get your agents up and running.',
+      icon: TutorialsIcon,
+    },
+    {
+      title: 'Platform',
+      link: '/ai-agents/platform/',
+      description: 'Authenticate, configure connectors, manage context stores, and execute agent workflows.',
+      icon: PlatformIcon,
+    },
+    {
+      title: 'API reference',
+      link: '/ai-agents/api/',
+      description: 'Integrate Agent Engine into your applications with the REST API.',
+      icon: AgentApiIcon,
+    },
+    {
+      title: 'Connectors',
+      link: '/ai-agents/connectors/',
+      description: 'Browse the growing catalog of agent-optimized connectors for popular platforms.',
+      icon: AgentConnectorsIcon,
+    },
+    {
+      title: 'MCP server',
+      link: '/ai-agents/mcp-server/',
+      description: 'Let AI agents interact with your data sources through the Model Context Protocol.',
+      icon: McpServerIcon,
+    },
+  ];
+
   return (
     <Layout
       title=""
-      description="Airbyte is an open source data integration and activation platform. It helps you consolidate data from hundreds of sources into your data warehouses, data lakes, and databases."
+      description="Airbyte is an open source data integration, activation, and agentic data platform. Replicate data from hundreds of sources into warehouses, lakes, and databases, and equip AI agents to query, search, and act on your data in real-time."
     >
       <div className={styles.homePage}>
-        {/* Section 1: Hero with purple background */}
+        {/* Section 1: Hero */}
         <section className={styles.heroSection}>
-          <h1 className={styles.heroTitle}>Airbyte documentation</h1>
           <div className={styles.heroContainer}>
-            <div className={styles.heroLeft}>
-              <p className={styles.heroDescription}>
-                Airbyte is an open source data integration, activation, and agentic data platform.
-                Use our data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. 
-                Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
+            <h1 className={styles.heroTitle}>Airbyte documentation</h1>
+            <p className={styles.heroDescription}>
+              Airbyte is an open source data integration, activation, and agentic data platform.
+              Replicate data from hundreds of sources into warehouses, lakes, and databases,
+              and equip AI agents to query, search, and act on your data in real-time.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 2: Data Replication */}
+        <section className={styles.drSection}>
+          <div className={styles.sectionInner}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.drSectionTitle}>Data Replication</h2>
+              <p className={styles.sectionSubtitle}>
+                Consolidate data from hundreds of sources into your data warehouses, data lakes, and databases.
+                Then, move data into the operational tools where work happens.
               </p>
             </div>
-            <div className={styles.heroRight}>
-              <div className={styles.popularConnectors}>
-                <h3 className={styles.popularTitle}>Popular sources</h3>
+
+            {/* Popular connectors */}
+            <div className={styles.connectorsRow}>
+              <div className={styles.connectorGroup}>
+                <h3 className={styles.drPopularTitle}>Popular sources</h3>
                 <div className={styles.connectorButtons}>
-                  <a 
-                    href="/integrations/sources/postgres" 
-                    className={styles.connectorButton}
-                    aria-label="Postgres"
-                    title="Postgres"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-postgres/latest/icon.svg" 
-                      alt="Postgres" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/postgres" className={styles.connectorButton} aria-label="Postgres" title="Postgres">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-postgres/latest/icon.svg" alt="Postgres" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/sources/facebook-marketing" 
-                    className={styles.connectorButton}
-                    aria-label="Facebook Marketing"
-                    title="Facebook Marketing"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-facebook-marketing/latest/icon.svg" 
-                      alt="Facebook Marketing" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/facebook-marketing" className={styles.connectorButton} aria-label="Facebook Marketing" title="Facebook Marketing">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-facebook-marketing/latest/icon.svg" alt="Facebook Marketing" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/sources/salesforce" 
-                    className={styles.connectorButton}
-                    aria-label="Salesforce"
-                    title="Salesforce"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-salesforce/latest/icon.svg" 
-                      alt="Salesforce" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/salesforce" className={styles.connectorButton} aria-label="Salesforce" title="Salesforce">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-salesforce/latest/icon.svg" alt="Salesforce" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/sources/mysql" 
-                    className={styles.connectorButton}
-                    aria-label="MySQL"
-                    title="MySQL"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-mysql/latest/icon.svg" 
-                      alt="MySQL" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/mysql" className={styles.connectorButton} aria-label="MySQL" title="MySQL">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-mysql/latest/icon.svg" alt="MySQL" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/sources/google-sheets" 
-                    className={styles.connectorButton}
-                    aria-label="Google Sheets"
-                    title="Google Sheets"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-google-sheets/latest/icon.svg" 
-                      alt="Google Sheets" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/google-sheets" className={styles.connectorButton} aria-label="Google Sheets" title="Google Sheets">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-google-sheets/latest/icon.svg" alt="Google Sheets" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/sources/linkedin-ads" 
-                    className={styles.connectorButton}
-                    aria-label="LinkedIn Ads"
-                    title="LinkedIn Ads"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-linkedin-ads/latest/icon.svg" 
-                      alt="LinkedIn Ads" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/linkedin-ads" className={styles.connectorButton} aria-label="LinkedIn Ads" title="LinkedIn Ads">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-linkedin-ads/latest/icon.svg" alt="LinkedIn Ads" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/sources/mssql" 
-                    className={styles.connectorButton}
-                    aria-label="MSSQL"
-                    title="MSSQL"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-mssql/latest/icon.svg" 
-                      alt="MSSQL" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/mssql" className={styles.connectorButton} aria-label="MSSQL" title="MSSQL">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-mssql/latest/icon.svg" alt="MSSQL" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/sources/s3" 
-                    className={styles.connectorButton}
-                    aria-label="S3"
-                    title="S3"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/source-s3/latest/icon.svg" 
-                      alt="S3" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/sources/s3" className={styles.connectorButton} aria-label="S3" title="S3">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/source-s3/latest/icon.svg" alt="S3" className={styles.connectorIcon} />
                   </a>
                 </div>
-
-                <h3 className={styles.popularTitle}>Popular destinations</h3>
+              </div>
+              <div className={styles.connectorGroup}>
+                <h3 className={styles.drPopularTitle}>Popular destinations</h3>
                 <div className={styles.connectorButtons}>
-                  <a 
-                    href="/integrations/destinations/s3" 
-                    className={styles.connectorButton}
-                    aria-label="S3"
-                    title="S3"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3/latest/icon.svg" 
-                      alt="S3" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/s3" className={styles.connectorButton} aria-label="S3" title="S3">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3/latest/icon.svg" alt="S3" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/destinations/postgres" 
-                    className={styles.connectorButton}
-                    aria-label="Postgres"
-                    title="Postgres"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-postgres/latest/icon.svg" 
-                      alt="Postgres" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/postgres" className={styles.connectorButton} aria-label="Postgres" title="Postgres">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-postgres/latest/icon.svg" alt="Postgres" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/destinations/snowflake" 
-                    className={styles.connectorButton}
-                    aria-label="Snowflake"
-                    title="Snowflake"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-snowflake/latest/icon.svg" 
-                      alt="Snowflake" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/snowflake" className={styles.connectorButton} aria-label="Snowflake" title="Snowflake">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-snowflake/latest/icon.svg" alt="Snowflake" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/destinations/bigquery" 
-                    className={styles.connectorButton}
-                    aria-label="BigQuery"
-                    title="BigQuery"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-bigquery/latest/icon.svg" 
-                      alt="BigQuery" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/bigquery" className={styles.connectorButton} aria-label="BigQuery" title="BigQuery">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-bigquery/latest/icon.svg" alt="BigQuery" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/destinations/databricks" 
-                    className={styles.connectorButton}
-                    aria-label="Databricks"
-                    title="Databricks"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-databricks/latest/icon.svg" 
-                      alt="Databricks" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/databricks" className={styles.connectorButton} aria-label="Databricks" title="Databricks">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-databricks/latest/icon.svg" alt="Databricks" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/destinations/s3-data-lake" 
-                    className={styles.connectorButton}
-                    aria-label="S3 Data Lake"
-                    title="S3 Data Lake"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3-data-lake/latest/icon.svg" 
-                      alt="S3 Data Lake" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/s3-data-lake" className={styles.connectorButton} aria-label="S3 Data Lake" title="S3 Data Lake">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-s3-data-lake/latest/icon.svg" alt="S3 Data Lake" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/destinations/clickhouse" 
-                    className={styles.connectorButton}
-                    aria-label="ClickHouse"
-                    title="ClickHouse"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-clickhouse/latest/icon.svg" 
-                      alt="ClickHouse" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/clickhouse" className={styles.connectorButton} aria-label="ClickHouse" title="ClickHouse">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-clickhouse/latest/icon.svg" alt="ClickHouse" className={styles.connectorIcon} />
                   </a>
-                  <a 
-                    href="/integrations/destinations/mssql" 
-                    className={styles.connectorButton}
-                    aria-label="MSSQL"
-                    title="MSSQL"
-                  >
-                    <img 
-                      src="https://connectors.airbyte.com/files/metadata/airbyte/destination-mssql/latest/icon.svg" 
-                      alt="MSSQL" 
-                      className={styles.connectorIcon}
-                    />
+                  <a href="/integrations/destinations/mssql" className={styles.connectorButton} aria-label="MSSQL" title="MSSQL">
+                    <img src="https://connectors.airbyte.com/files/metadata/airbyte/destination-mssql/latest/icon.svg" alt="MSSQL" className={styles.connectorIcon} />
                   </a>
                 </div>
               </div>
             </div>
+
+            {/* DR navigation cards */}
+            <div className={styles.drNavGrid}>
+              {drNavLinks.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <a
+                    key={index}
+                    href={item.link}
+                    className={styles.drNavCard}
+                  >
+                    <div className={styles.drNavIcon}>
+                      <IconComponent />
+                    </div>
+                    <h3 className={styles.drNavTitle}>{item.title}</h3>
+                    <p className={styles.drNavDescription}>{item.description}</p>
+                  </a>
+                );
+              })}
+            </div>
+
           </div>
         </section>
 
-        {/* Section 2: Navigation Links */}
-        <section className={styles.navSection}>
-          <div className={styles.navGrid}>
-            {navLinks.map((item, index) => {
-              const IconComponent = item.icon;
-              return (
-                <a 
-                  key={index} 
-                  href={item.link} 
-                  className={styles.navCard}
-                >
-                  <div className={styles.navIcon}>
-                    <IconComponent />
-                  </div>
-                  <h3 className={styles.navTitle}>{item.title}</h3>
-                  <p className={styles.navDescription}>{item.description}</p>
-                </a>
-              );
-            })}
-          </div>
-        </section>
+        {/* Section 3: Agent Engine */}
+        <section className={styles.aeSection}>
+          <div className={styles.sectionInner}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.aeSectionTitle}>Agent Engine</h2>
+              <p className={styles.aeSectionSubtitle}>
+                Equip your AI agents to explore, query, and act on live data from any connected source.
+              </p>
+            </div>
 
-        {/* Section 3: Interactive Demo */}
-        <section className={styles.navSection}>
-          <div className={styles.badgesContainer}>
-            <Navattic 
-              id="cmhfnvz6w000004jrbwla348h" 
-              title="Airbyte Interactive Product Tour"
-            />
+            <div className={styles.aeNavGrid}>
+              {aeNavLinks.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <a
+                    key={index}
+                    href={item.link}
+                    className={styles.aeNavCard}
+                  >
+                    <div className={styles.aeNavIcon}>
+                      <IconComponent />
+                    </div>
+                    <h3 className={styles.aeNavTitle}>{item.title}</h3>
+                    <p className={styles.aeNavDescription}>{item.description}</p>
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -382,7 +353,7 @@ export default function Home() {
           <div className={styles.badgesContainer}>
             <a href="https://GitHub.com/airbytehq/airbyte/stargazers/">
               <img 
-                src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000" 
+                src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star" 
                 alt="GitHub stars" 
               />
             </a>{' '}
