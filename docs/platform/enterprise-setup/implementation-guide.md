@@ -50,7 +50,7 @@ We require you to install and configure the following Kubernetes tooling:
 <TabItem value="Amazon EKS" label="Amazon EKS" default>
 
 1. Configure your [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
-2. Install [eksctl](https://eksctl.io/introduction/).
+2. Install [eksctl](https://eksctl.io/getting-started/).
 3. Run `eksctl utils write-kubeconfig --cluster=$CLUSTER_NAME` to make the context available to kubectl.
 4. Use `kubectl config get-contexts` to show the available contexts.
 5. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
