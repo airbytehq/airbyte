@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.Stream
@@ -345,7 +346,12 @@ class PostgresSourceJdbcPartitionFactoryTest {
         fun `xmin cold start with null filenode should fall back to unsplittable snapshot`() {
             val stream =
                 Stream(
-                    id = StreamIdentifier.from("test_namespace", "test_table"),
+                    id =
+                        StreamIdentifier.from(
+                            StreamDescriptor()
+                                .withName("test_table")
+                                .withNamespace("test_namespace")
+                        ),
                     schema = emptySet(),
                     configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                     configuredPrimaryKey = null,
@@ -398,7 +404,12 @@ class PostgresSourceJdbcPartitionFactoryTest {
         fun `xmin incremental ongoing with null filenode should create partition without error`() {
             val stream =
                 Stream(
-                    id = StreamIdentifier.from("test_namespace", "test_table"),
+                    id =
+                        StreamIdentifier.from(
+                            StreamDescriptor()
+                                .withName("test_table")
+                                .withNamespace("test_namespace")
+                        ),
                     schema = emptySet(),
                     configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
                     configuredPrimaryKey = null,
