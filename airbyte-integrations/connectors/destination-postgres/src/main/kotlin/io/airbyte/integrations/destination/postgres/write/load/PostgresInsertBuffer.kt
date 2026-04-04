@@ -63,6 +63,7 @@ class PostgresInsertBuffer(
                 }
             } catch (e: Exception) {
                 logger.error(e) { "Unable to flush accumulated data." }
+                throw e
             } finally {
                 filePath.deleteIfExists()
                 csvPrinter?.close()
