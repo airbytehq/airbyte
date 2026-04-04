@@ -335,12 +335,11 @@ class PostgresSourceJdbcPartitionFactoryTest {
     inner class XminNullFilenodeTests {
 
         /**
-         * Tests that when filenode is null (Postgres < 14, no TID range scan support),
-         * the Xmin cold start path falls back to an unsplittable snapshot partition
-         * instead of throwing an error.
+         * Tests that when filenode is null (Postgres < 14, no TID range scan support), the Xmin
+         * cold start path falls back to an unsplittable snapshot partition instead of throwing an
+         * error.
          *
-         * This is a regression test for
-         * https://github.com/airbytehq/oncall/issues/11886
+         * This is a regression test for https://github.com/airbytehq/oncall/issues/11886
          */
         @Test
         fun `xmin cold start with null filenode should fall back to unsplittable snapshot`() {
@@ -377,9 +376,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
                         handler = mockk<CatalogValidationFailureHandler>(),
                         connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
                     )
-                ) {
-                    every { tidRangeScanCapableDBServer } returns false
-                }
+                ) { every { tidRangeScanCapableDBServer } returns false }
 
             val partition = testFactory.create(streamFeedBootstrap)
 
@@ -391,12 +388,11 @@ class PostgresSourceJdbcPartitionFactoryTest {
         }
 
         /**
-         * Tests that when filenode is null (Postgres < 14) and there is ongoing
-         * xmin incremental state, the factory creates an XminIncrementalPartition
-         * directly without guarding on filenode.
+         * Tests that when filenode is null (Postgres < 14) and there is ongoing xmin incremental
+         * state, the factory creates an XminIncrementalPartition directly without guarding on
+         * filenode.
          *
-         * This is a regression test for
-         * https://github.com/airbytehq/oncall/issues/11886
+         * This is a regression test for https://github.com/airbytehq/oncall/issues/11886
          */
         @Test
         fun `xmin incremental ongoing with null filenode should create partition without error`() {
@@ -443,9 +439,7 @@ class PostgresSourceJdbcPartitionFactoryTest {
                         handler = mockk<CatalogValidationFailureHandler>(),
                         connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
                     )
-                ) {
-                    every { tidRangeScanCapableDBServer } returns false
-                }
+                ) { every { tidRangeScanCapableDBServer } returns false }
 
             val partition = testFactory.create(streamFeedBootstrap)
 
