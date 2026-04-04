@@ -183,6 +183,9 @@ data:
     - title: Shopify rate limits
       url: https://shopify.dev/docs/api/usage/rate-limits
       type: rate_limits
+    - title: Shopify API versioning and deprecation policy
+      url: https://shopify.dev/docs/api/usage/versioning
+      type: api_deprecations
     - title: Shopify Status
       url: https://www.shopifystatus.com/
       type: status_page
