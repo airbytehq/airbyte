@@ -1,4 +1,4 @@
-version: 1.3.1
+version: 1.3.2
 
 type: DeclarativeSource
 
@@ -27,6 +27,11 @@ definitions:
             - 429
           error_message: >-
             Twilio rate limit reached (429). Backoff based on 'retry-after' header, then exponential backoff fallback.
+        - type: HttpResponseFilter
+          action: RETRY
+          predicate: "{{ response.get('status', 0) == 401 and headers.get('X-Cache', '') == 'Error from cloudfront' }}"
+          error_message: >-
+            Transient CloudFront authentication error (401). Retrying request.
         - type: HttpResponseFilter
           action: IGNORE
           http_codes:
