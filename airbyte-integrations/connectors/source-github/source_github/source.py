@@ -9,7 +9,6 @@ from urllib.parse import urlparse
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
@@ -204,7 +203,7 @@ class SourceGithub(AbstractSource):
                 )
             return True, None
 
-        except MessageRepresentationAirbyteTracedErrors as e:
+        except AirbyteTracedException as e:
             user_message = self.user_friendly_error_message(e.message)
             return False, user_message or e.message
         except Exception as e:
