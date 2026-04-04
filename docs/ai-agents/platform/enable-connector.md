@@ -13,7 +13,7 @@ When you add a connector to a customer, that customer can use the connector to r
 
 ### Add a new connector
 
-Enable a connector through the Agent Engine dashboard.
+Add a connector through the Agent Engine dashboard.
 
 1. Click **Connector Credentials**.
 
