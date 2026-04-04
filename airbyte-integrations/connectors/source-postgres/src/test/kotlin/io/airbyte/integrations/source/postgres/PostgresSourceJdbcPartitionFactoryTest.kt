@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.Stream
@@ -17,6 +16,7 @@ import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguratio
 import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
