@@ -259,11 +259,19 @@ sealed class MsSqlServerJdbcResumablePartition(
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
+        // Optimize where to collapse empty bounds (Or([]), And(Or([]),Or([]))) into NoWhere
+        val optimizedWhere = where.optimize()
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
-                NoWhere,
+                FromSample(
+                    stream.name,
+                    stream.namespace,
+                    sampleRateInvPow2,
+                    sampleSize,
+                    optimizedWhere
+                ),
+                NoWhere, // WHERE is already in FromSample, don't duplicate in outer query
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())
             )
