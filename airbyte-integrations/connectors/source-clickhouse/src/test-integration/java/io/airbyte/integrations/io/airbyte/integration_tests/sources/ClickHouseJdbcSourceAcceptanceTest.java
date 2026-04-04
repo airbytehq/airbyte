@@ -5,7 +5,6 @@
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.JDBC_URL_KEY;
-import static io.airbyte.integrations.source.clickhouse.ClickHouseSource.SSL_MODE;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -93,7 +92,8 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
     assertNotNull(jdbcUrlNode);
     String actualJdbcUrl = jdbcUrlNode.asText();
-    assertTrue(actualJdbcUrl.endsWith("?" + SSL_MODE));
+    assertTrue(actualJdbcUrl.startsWith("jdbc:clickhouse:https://"));
+    assertTrue(actualJdbcUrl.endsWith(config.get("database").asText()));
   }
 
   @Test
@@ -115,7 +115,8 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     JsonNode jdbcUrlNode = jdbcConfig.get(JDBC_URL_KEY);
     assertNotNull(jdbcUrlNode);
     String actualJdbcUrl = jdbcUrlNode.asText();
-    assertTrue(actualJdbcUrl.endsWith(getFullExpectedValue(extraParam, SSL_MODE)));
+    assertTrue(actualJdbcUrl.startsWith("jdbc:clickhouse:https://"));
+    assertTrue(actualJdbcUrl.endsWith("?" + extraParam));
   }
 
   @Test
@@ -127,11 +128,6 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
     assertNotNull(jdbcUrlNode);
     String actualJdbcUrl = jdbcUrlNode.asText();
     assertTrue(actualJdbcUrl.endsWith("?" + extraParam));
-  }
-
-  private String getFullExpectedValue(String extraParam, String sslMode) {
-    StringBuilder expected = new StringBuilder();
-    return expected.append("?").append(sslMode).append("&").append(extraParam).toString();
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(String extraParam, boolean isSsl) {
