@@ -29,7 +29,7 @@ Your end users can now authenticate with this connector.
 
 ### Remove a connector
 
-To remove a connector, click the trash icon next to it on the **Existing Connectors** tab. This removes the source template and prevents end users from creating new connections with that connector type.
+To remove a connector, click the trash icon next to it on the **Existing Connectors** tab.
 
 ## With the API
 
@@ -79,7 +79,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/definitions/sources' \
 | `iconUrl` | URL to the connector's icon. |
 | `supportLevel` | Support tier: `certified`, `community`, or `archived`. |
 
-You can filter by name with the `name` query parameter, for example `?name=hubspot`.
+You can filter by name with the `name` query parameter (case-insensitive partial match), for example `?name=hub` returns Hubspot.
 
 ### Create a new connector
 
@@ -100,8 +100,8 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
 
 | Field | Required | Description |
 | --- | --- | --- |
-| `connector_type` | Yes (or `definition_id`) | Connector name, case-insensitive (for example, `hubspot`). Exactly one of `connector_type` or `definition_id` must be provided. |
-| `definition_id` | Yes (or `connector_type`) | The `sourceDefinitionId` from the [definitions endpoint](#list-available-connectors). Exactly one of `connector_type` or `definition_id` must be provided. |
+| `connector_type` | Yes (or `definition_id`) | Connector name, case-insensitive (for example, `hubspot`). Provide either `connector_type` or `definition_id` to identify the connector. |
+| `definition_id` | Yes (or `connector_type`) | The `sourceDefinitionId` from the [definitions endpoint](#list-available-connectors). Provide either `connector_type` or `definition_id` to identify the connector. |
 | `customer_name` | Yes | The customer to associate this connector with. |
 | `credentials` | Conditional | Authentication credentials for the connector. Required unless using OAuth (`server_side_oauth_secret_id`). |
 | `replication_config` | No | Configuration for data replication. For replication-mode connectors, this is the full config. For direct-mode connectors, this can contain settings like `start_date` or `lookback_window`. |
