@@ -112,6 +112,22 @@ class PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
     val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
 }
 
+class PostgresSourceJdbcUnsplittableSnapshotWithXminPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: PostgresSourceJdbcStreamState,
+) :
+    PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
+    JdbcCursorPartition<PostgresSourceJdbcStreamState> {
+    override val completeState: OpaqueStateValue
+        get() =
+            PostgresSourceJdbcStreamStateValue.xminIncrementalCheckpoint(
+                streamState.cursorUpperBound ?: Jsons.nullNode(),
+            )
+
+    override val cursorUpperBoundQuery: SelectQuery
+        get() = xminCursorUpperBoundQuery
+}
+
 class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
