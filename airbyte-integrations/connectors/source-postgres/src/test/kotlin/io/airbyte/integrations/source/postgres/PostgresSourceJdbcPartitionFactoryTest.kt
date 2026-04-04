@@ -449,6 +449,5 @@ class PostgresSourceJdbcPartitionFactoryTest {
                     "but got ${partition?.javaClass?.simpleName}"
             )
         }
-
     }
 }
