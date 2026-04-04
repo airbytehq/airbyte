@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
@@ -20,6 +21,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.UpdateSchema
+import org.apache.iceberg.types.Types
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,7 +46,47 @@ class S3DataLakeStreamLoader(
         } else {
             ColumnTypeChangeBehavior.SAFE_SUPERTYPE
         }
-    private val incomingSchema = icebergUtil.toIcebergSchema(stream = stream)
+    private val incomingSchema = computeIncomingSchema()
+
+    private fun computeIncomingSchema() =
+        icebergUtil.toIcebergSchema(stream = stream).let { schema ->
+            transformSchemaWithMappedNames(schema)
+        }
+
+    /**
+     * Transforms an Iceberg schema to use mapped column names. This ensures column names are
+     * Glue-compatible (alphanumeric + underscore, lowercase).
+     */
+    private fun transformSchemaWithMappedNames(schema: Schema): Schema {
+        val mappedFields =
+            schema.asStruct().fields().map { field ->
+                val originalName = field.name()
+
+                // Skip Airbyte metadata columns - they're already valid
+                if (Meta.COLUMN_NAMES.contains(originalName)) {
+                    return@map field
+                }
+
+                // Get the mapped column name from the stream's table schema
+                val mappedName =
+                    stream.tableSchema.columnSchema.inputToFinalColumnNames[originalName]
+                        ?: originalName
+
+                if (mappedName != originalName) {
+                    Types.NestedField.of(
+                        field.fieldId(),
+                        field.isOptional,
+                        mappedName,
+                        field.type(),
+                        field.doc()
+                    )
+                } else {
+                    field
+                }
+            }
+
+        return Schema(mappedFields)
+    }
 
     @SuppressFBWarnings(
         "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
