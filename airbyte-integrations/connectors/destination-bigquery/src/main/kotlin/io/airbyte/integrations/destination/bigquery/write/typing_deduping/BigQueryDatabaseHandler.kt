@@ -90,16 +90,29 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
          * doesn't do a good job of inferring the query location. Pass it in explicitly.
          */
         var job =
-            bq.create(
-                JobInfo.of(
-                    JobId.newBuilder().setLocation(datasetLocation).build(),
-                    QueryJobConfiguration.of(statement)
+            try {
+                bq.create(
+                    JobInfo.of(
+                        JobId.newBuilder().setLocation(datasetLocation).build(),
+                        QueryJobConfiguration.of(statement)
+                    )
                 )
-            )
+            } catch (e: BigQueryException) {
+                if (e.cause is InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    throw RuntimeException(INTERRUPTED_ERROR_MESSAGE, e)
+                }
+                throw e
+            }
         // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
-        while (JobStatus.State.DONE != job.status.state) {
-            Thread.sleep(1000L)
-            job = job.reload()
+        try {
+            while (JobStatus.State.DONE != job.status.state) {
+                Thread.sleep(1000L)
+                job = job.reload()
+            }
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw RuntimeException(INTERRUPTED_ERROR_MESSAGE, e)
         }
         job.status.error?.let {
             throw wrapWithConfigExceptionIfNeeded(
@@ -184,5 +197,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
 
     companion object {
         private const val BILLING_CONFIG_ERROR = "Billing has not been enabled for this project"
+        private const val INTERRUPTED_ERROR_MESSAGE =
+            "BigQuery operation was interrupted. This typically indicates the sync was cancelled due to an upstream failure."
     }
 }
