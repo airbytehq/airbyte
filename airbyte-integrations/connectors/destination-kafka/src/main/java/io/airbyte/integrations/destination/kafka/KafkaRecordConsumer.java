@@ -16,7 +16,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -36,6 +35,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final NamingConventionTransformer nameTransformer;
+  private final KafkaDestinationConfig kafkaDestinationConfig;
 
   public KafkaRecordConsumer(final KafkaDestinationConfig kafkaDestinationConfig,
                              final ConfiguredAirbyteCatalog catalog,
@@ -48,6 +48,7 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.catalog = catalog;
     this.outputRecordCollector = outputRecordCollector;
     this.nameTransformer = nameTransformer;
+    this.kafkaDestinationConfig = kafkaDestinationConfig;
   }
 
   @Override
@@ -65,7 +66,12 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
       // if brokers have the property "auto.create.topics.enable" enabled then topics will be auto-created
       // otherwise these topics need to have been pre-created.
       final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
-      final String key = UUID.randomUUID().toString();
+
+      // Extract partition key from record data using configured field(s)
+      final String key = PartitionKeyExtractor.determinePartitionKey(
+          kafkaDestinationConfig.getPartitionKeyField(),
+          recordMessage.getData());
+
       final JsonNode value = Jsons.jsonNode(ImmutableMap.of(
           KafkaDestination.COLUMN_NAME_AB_ID, key,
           KafkaDestination.COLUMN_NAME_STREAM, recordMessage.getStream(),
