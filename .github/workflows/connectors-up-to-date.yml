@@ -25,10 +25,10 @@ jobs:
       generated_matrix: ${{ steps.generate_matrix.outputs.generated_matrix }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install uv
-        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
@@ -126,7 +126,7 @@ jobs:
 
   run_connectors_up_to_date:
     needs: generate_matrix
-    name: Connectors up-to-date
+    name: Connectors up-to-date (${{ matrix.connector }})
     runs-on: connector-up-to-date-medium
     continue-on-error: true
     strategy:
@@ -139,23 +139,25 @@ jobs:
       CONNECTOR_DIR: ${{ matrix.connector_dir }}
       CONNECTOR_LANGUAGE: ${{ matrix.connector_language }}
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
-
-      - name: Install airbyte-ops CLI
-        run: uv tool install airbyte-internal-ops
+      - name: Set today's date
+        run: echo "TODAY=$(date -u +%Y-%m-%d)" >> "$GITHUB_ENV"
 
       - name: Authenticate as 'octavia-bot-hoard' GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
           repositories: ${{ inputs.repo || github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      # Checkout with the App token so git push authenticates as the
+      # GitHub App. Pushes made with GITHUB_TOKEN do not trigger
+      # pull_request workflows; pushes made with a GitHub App token do.
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
 
       - name: Get GitHub App User ID
         id: get-user-id
@@ -168,8 +170,14 @@ jobs:
           git config --global user.name '${{ steps.get-app-token.outputs.app-slug }}[bot]'
           git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.get-app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
       - name: Docker login
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -177,7 +185,7 @@ jobs:
       # --- Step 1: Set up Python + Poetry ---
       # bump-deps runs `poetry update --lock` internally, so Poetry must be available.
       - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.11"
 
@@ -241,13 +249,13 @@ jobs:
       - name: Create or update PR
         id: create-pr
         if: steps.check-changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          commit-message: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
-          branch: "connectors-up-to-date/${{ env.CONNECTOR_NAME }}"
+          commit-message: "deps(${{ env.CONNECTOR_NAME }}): update dependencies [skip ci]"
+          branch: "up-to-date/${{ env.CONNECTOR_NAME }}"
           delete-branch: true
-          title: "chore(${{ env.CONNECTOR_NAME }}): update dependencies"
+          title: "deps(${{ env.CONNECTOR_NAME }}): 🐙 update dependencies [${{ env.TODAY }}]"
           body: |
             Updates dependencies for `${{ env.CONNECTOR_NAME }}`.
 
@@ -259,9 +267,21 @@ jobs:
             auto-merge
           draft: true
 
-      # --- Step 6: Bump version + changelog (needs PR number) ---
+      # --- Step 6: Check out PR branch ---
+      # peter-evans/create-pull-request commits dependency changes to the PR branch
+      # but leaves the working tree dirty on master. We must reset and switch to the
+      # PR branch before running the version bump (which needs the PR number).
+      - name: Check out PR branch
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
+        run: |
+          git checkout -- .
+          git fetch --depth=1 origin "$PR_BRANCH"
+          git checkout "$PR_BRANCH"
+
+      # --- Step 7: Bump version + changelog (needs PR number) ---
       # This runs after PR creation so we can reference the PR number in the changelog.
-      # The changes are pushed as a follow-up commit to the PR branch.
       - name: Bump connector version (patch) with changelog
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
@@ -274,20 +294,9 @@ jobs:
             --changelog-message "Update dependencies" \
             --pr-number "$PR_NUMBER"
 
-      # --- Step 7: Push changelog commit to the PR branch ---
-      - name: Push changelog commit to PR branch
-        if: steps.check-changes.outputs.has_changes == 'true'
-        env:
-          PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
-          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
-        run: |
-          git fetch --depth=1 origin "$PR_BRANCH"
-          git checkout "$PR_BRANCH"
-          git add "$CONNECTOR_DIR"
-          git commit -m "chore($CONNECTOR_NAME): bump version and update changelog"
-          git push origin "$PR_BRANCH"
-
       # --- Step 8: Mark PR ready for review ---
+      # Mark ready BEFORE pushing the changelog commit so that the push
+      # triggers pull_request/synchronize CI workflows (drafts skip most CI).
       - name: Mark PR as ready for review
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
@@ -295,7 +304,21 @@ jobs:
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr ready "$PR_NUMBER"
 
-      # --- Step 9: Enable auto-merge ---
+      # --- Step 9: Push changelog commit to the PR branch ---
+      # bump-version modifies files in both the connector dir and the
+      # docs changelog (docs/integrations/…), so we stage everything.
+      - name: Push changelog commit to PR branch
+        if: steps.check-changes.outputs.has_changes == 'true'
+        env:
+          PR_BRANCH: ${{ steps.create-pr.outputs.pull-request-branch }}
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          git add "$CONNECTOR_DIR" docs/
+          git diff --cached --stat
+          git commit -m "deps($CONNECTOR_NAME): bump version and update changelog"
+          git push origin "$PR_BRANCH"
+
+      # --- Step 10: Enable auto-merge ---
       - name: Enable auto-merge on PR
         if: steps.check-changes.outputs.has_changes == 'true'
         env:
@@ -303,12 +326,12 @@ jobs:
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr merge "$PR_NUMBER" --squash --auto
 
-      # --- Step 10: Apply bot approval ---
+      # --- Step 11: Apply bot approval ---
       # Use a different bot identity (admin) to approve, because the hoard bot
       # that created the PR cannot approve its own PRs.
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.check-changes.outputs.has_changes == 'true'
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-admin-token
         with:
           owner: "airbytehq"
@@ -324,7 +347,7 @@ jobs:
           PR_NUMBER: ${{ steps.create-pr.outputs.pull-request-number }}
         run: gh pr review "$PR_NUMBER" --approve --body "Auto-approved by connectors up-to-date workflow."
 
-      # --- Step 11: Write job summary ---
+      # --- Step 12: Write job summary ---
       - name: Write step summary
         if: always()
         env:
