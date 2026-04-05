@@ -73,7 +73,7 @@ The Pylon API enforces per-endpoint rate limits. The Issues endpoint allows 10 r
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
-| 0.0.6 | 2026-04-03 | [76083](https://github.com/airbytehq/airbyte/pull/76083) | Use POST /issues/search for true incremental sync on updated_at |
+| 0.0.6 | 2026-04-03 | [76083](https://github.com/airbytehq/airbyte/pull/76083) | Use POST /issues/search for true incremental sync on updated_at; add state migration from created_at cursor |
 | 0.0.5 | 2026-03-31 | [75855](https://github.com/airbytehq/airbyte/pull/75855) | Update dependencies |
 | 0.0.4 | 2026-03-17 | [74921](https://github.com/airbytehq/airbyte/pull/74921) | Update dependencies |
 | 0.0.3 | 2026-02-24 | [73850](https://github.com/airbytehq/airbyte/pull/73850) | Update dependencies |
