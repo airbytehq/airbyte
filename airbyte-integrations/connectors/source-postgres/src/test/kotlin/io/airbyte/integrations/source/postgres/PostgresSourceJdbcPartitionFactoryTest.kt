@@ -5,16 +5,26 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
+import io.airbyte.integrations.source.postgres.config.XminIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
+import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class PostgresSourceJdbcPartitionFactoryTest {
@@ -320,5 +330,134 @@ class PostgresSourceJdbcPartitionFactoryTest {
         // Last partition gets the remainder
         assertEquals(Ctid(18, 1), bounds[3].first)
         assertNull(bounds[3].second)
+    }
+
+    @Nested
+    inner class XminNullFilenodeTests {
+
+        /**
+         * Tests that when filenode is null (Postgres < 14, no TID range scan support), the Xmin
+         * cold start path falls back to an unsplittable snapshot partition instead of throwing an
+         * error.
+         *
+         * This is a regression test for https://github.com/airbytehq/oncall/issues/11886
+         */
+        @Test
+        fun `xmin cold start with null filenode should fall back to unsplittable snapshot`() {
+            val stream =
+                Stream(
+                    id =
+                        StreamIdentifier.from(
+                            StreamDescriptor()
+                                .withName("test_table")
+                                .withNamespace("test_namespace")
+                        ),
+                    schema = emptySet(),
+                    configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                    configuredPrimaryKey = null,
+                    configuredCursor = null,
+                )
+
+            val config =
+                mockk<PostgresSourceConfiguration> {
+                    every { incrementalConfiguration } returns XminIncrementalConfiguration
+                    every { global } returns false
+                }
+
+            val sharedState = mockk<DefaultJdbcSharedState>(relaxed = true)
+            val selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>()
+
+            val streamFeedBootstrap =
+                mockk<StreamFeedBootstrap> {
+                    every { feed } returns stream
+                    every { currentState } returns null
+                }
+
+            val testFactory =
+                spyk(
+                    PostgresSourceJdbcPartitionFactory(
+                        sharedState = sharedState,
+                        selectQueryGenerator = selectQueryGenerator,
+                        config = config,
+                        handler = mockk<CatalogValidationFailureHandler>(),
+                        connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
+                    )
+                ) { every { tidRangeScanCapableDBServer } returns false }
+
+            val partition = testFactory.create(streamFeedBootstrap)
+
+            assertTrue(
+                partition is PostgresSourceJdbcUnsplittableSnapshotWithXminPartition,
+                "Expected PostgresSourceJdbcUnsplittableSnapshotWithXminPartition " +
+                    "but got ${partition?.javaClass?.simpleName}"
+            )
+        }
+
+        /**
+         * Tests that when filenode is null (Postgres < 14) and there is ongoing xmin incremental
+         * state, the factory creates an XminIncrementalPartition directly without guarding on
+         * filenode.
+         *
+         * This is a regression test for https://github.com/airbytehq/oncall/issues/11886
+         */
+        @Test
+        fun `xmin incremental ongoing with null filenode should create partition without error`() {
+            val stream =
+                Stream(
+                    id =
+                        StreamIdentifier.from(
+                            StreamDescriptor()
+                                .withName("test_table")
+                                .withNamespace("test_namespace")
+                        ),
+                    schema = emptySet(),
+                    configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                    configuredPrimaryKey = null,
+                    configuredCursor = null,
+                )
+
+            val config =
+                mockk<PostgresSourceConfiguration> {
+                    every { incrementalConfiguration } returns XminIncrementalConfiguration
+                    every { global } returns false
+                }
+
+            val sharedState = mockk<DefaultJdbcSharedState>(relaxed = true)
+            val selectQueryGenerator = mockk<PostgresSourceSelectQueryGenerator>()
+
+            // State with xmin set and no ctid (snapshot complete, incremental ongoing)
+            val xminCheckpoint = Jsons.numberNode(12345L)
+            val stateValue =
+                PostgresSourceJdbcStreamStateValue(
+                    stateType = "xmin_based",
+                    xmin = xminCheckpoint,
+                )
+            val opaqueState = Jsons.valueToTree<JsonNode>(stateValue)
+
+            val streamFeedBootstrap =
+                mockk<StreamFeedBootstrap> {
+                    every { feed } returns stream
+                    every { currentState } returns opaqueState
+                }
+
+            val testFactory =
+                spyk(
+                    PostgresSourceJdbcPartitionFactory(
+                        sharedState = sharedState,
+                        selectQueryGenerator = selectQueryGenerator,
+                        config = config,
+                        handler = mockk<CatalogValidationFailureHandler>(),
+                        connectionFactory = mockk<PostgresSourceJdbcConnectionFactory>()
+                    )
+                ) { every { tidRangeScanCapableDBServer } returns false }
+
+            val partition = testFactory.create(streamFeedBootstrap)
+
+            assertTrue(
+                partition is PostgresSourceJdbcXminIncrementalPartition,
+                "Expected PostgresSourceJdbcXminIncrementalPartition " +
+                    "but got ${partition?.javaClass?.simpleName}"
+            )
+        }
     }
 }
