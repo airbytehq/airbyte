@@ -75,8 +75,18 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: issues
-          http_method: GET
+          path: issues/search
+          http_method: POST
+          request_body_json:
+            filter:
+              operator: "and"
+              subfilters:
+                - field: "updated_at"
+                  operator: "time_is_after"
+                  value: "{{ stream_interval.start_time }}"
+                - field: "updated_at"
+                  operator: "time_is_before"
+                  value: "{{ stream_interval.end_time }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -86,10 +96,10 @@ definitions:
             field_path:
               - data
         paginator:
-          $ref: "#/definitions/cursor_paginator"
+          $ref: "#/definitions/cursor_paginator_body"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: created_at
+        cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
           - "%Y-%m-%dT%H:%M:%SZ"
@@ -104,14 +114,9 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P30D
         cursor_granularity: PT1S
-        start_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: start_time
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: end_time
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.MigrateIssuesCursorFromCreatedAtToUpdatedAt
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -500,6 +505,22 @@ definitions:
       cursor_value: "{{ response.get('pagination', {}).get('cursor', '') }}"
       stop_condition: "{{ not response.get('pagination', {}).get('has_next_page', False) }}"
 
+  cursor_paginator_body:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 999
+      cursor_value: "{{ response.get('pagination', {}).get('cursor', '') }}"
+      stop_condition: "{{ not response.get('pagination', {}).get('has_next_page', False) }}"
+
 streams:
   - $ref: "#/definitions/streams/accounts"
   - $ref: "#/definitions/streams/contacts"
@@ -721,6 +742,10 @@ schemas:
           - "null"
           - string
       created_at:
+        type:
+          - "null"
+          - string
+      updated_at:
         type:
           - "null"
           - string

@@ -55,7 +55,7 @@ The Pylon source connector supports the following streams:
 
 ### Stream notes
 
-- **Issues** is the only incremental stream. It uses `created_at` as its cursor field and syncs data in 30-day windows, as required by the Pylon API.
+- **Issues** is the only incremental stream. It uses `updated_at` as its cursor field and the `POST /issues/search` endpoint, so incremental syncs capture all issue modifications (not just newly created issues). Data is synced in 30-day windows.
 - **Issue Messages** and **Issue Threads** are child streams of Issues. They retrieve data for each issue returned by the Issues stream, so the Start Date configuration indirectly affects these streams.
 - **Knowledge Base Articles** is a child stream of Knowledge Bases.
 - **Custom Fields** queries the Pylon API once for each of the three supported object types: account, issue, and contact.
@@ -73,6 +73,7 @@ The Pylon API enforces per-endpoint rate limits. The Issues endpoint allows 10 r
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.0.6 | 2026-04-03 | [76083](https://github.com/airbytehq/airbyte/pull/76083) | Use POST /issues/search for true incremental sync on updated_at; add state migration from created_at cursor |
 | 0.0.5 | 2026-03-31 | [75855](https://github.com/airbytehq/airbyte/pull/75855) | Update dependencies |
 | 0.0.4 | 2026-03-17 | [74921](https://github.com/airbytehq/airbyte/pull/74921) | Update dependencies |
 | 0.0.3 | 2026-02-24 | [73850](https://github.com/airbytehq/airbyte/pull/73850) | Update dependencies |
