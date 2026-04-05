@@ -114,6 +114,9 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P30D
         cursor_granularity: PT1S
+      state_migrations:
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.MigrateIssuesCursorFromCreatedAtToUpdatedAt
       schema_loader:
         type: InlineSchemaLoader
         schema:
