@@ -427,7 +427,6 @@ class PostgresSourceJdbcPartitionFactoryTest {
 
             // State with xmin set and no ctid (snapshot complete, incremental ongoing)
             val xminCheckpoint = Jsons.numberNode(12345L)
-            val cursorUpperBound = Jsons.numberNode(99999L)
             val stateValue =
                 PostgresSourceJdbcStreamStateValue(
                     stateType = "xmin_based",
