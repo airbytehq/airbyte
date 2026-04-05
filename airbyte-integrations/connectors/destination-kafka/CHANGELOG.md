@@ -2,7 +2,7 @@
 
 All notable changes to the Kafka Destination Connector will be documented in this file.
 
-## [0.2.0] - 2024-03-19
+## [0.2.0] - 2026-03-19
 
 ### Added
 - **Partition Routing Feature**: Added configurable partition key support for deterministic routing of related records to the same Kafka partition
