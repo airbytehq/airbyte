@@ -56,6 +56,52 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/accounts"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - organization
+        - role
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizationAcls
+          http_method: GET
+          request_parameters:
+            q: roleAssignee
+          request_headers:
+            Linkedin-Version: "202601"
+          error_handlers:
+            type: CustomErrorHandler
+            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 500
+            cursor_value: '{{ response.get("metadata", {}).get("nextPageToken", {}) }}'
+            stop_condition: '{{ not response.get("metadata", {}).get("nextPageToken", {}) }}'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
     account_users:
       type: DeclarativeStream
       name: account_users
@@ -1603,6 +1649,7 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/organizations"
   - $ref: "#/definitions/streams/account_users"
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/campaign_groups"
@@ -1980,6 +2027,40 @@ schemas:
           - integer
       status:
         description: The status of the account.
+        type:
+          - "null"
+          - string
+
+  organizations:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: "Organizations"
+    additionalProperties: true
+    properties:
+      organization:
+        description: The URN of the organization (e.g. urn:li:organization:12345).
+        type:
+          - "null"
+          - string
+      organizationalTarget:
+        description: The URN of the organizational target.
+        type:
+          - "null"
+          - string
+      roleAssignee:
+        description: The URN of the member assigned the role.
+        type:
+          - "null"
+          - string
+      state:
+        description: The state of the organization access (e.g. APPROVED).
+        type:
+          - "null"
+          - string
+      role:
+        description: The role of the member in the organization (e.g. ADMINISTRATOR, DIRECT_SPONSORED_CONTENT_POSTER).
         type:
           - "null"
           - string
