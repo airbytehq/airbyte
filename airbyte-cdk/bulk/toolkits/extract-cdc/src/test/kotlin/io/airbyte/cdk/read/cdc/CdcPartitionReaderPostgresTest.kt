@@ -18,8 +18,12 @@ import org.postgresql.replication.LogSequenceNumber
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
 
+data class LsnPosition(val lsn: LogSequenceNumber) : PartiallyOrdered<LsnPosition> {
+    override fun compareTo(other: LsnPosition): Int? = lsn.asLong().compareTo(other.lsn.asLong())
+}
+
 class CdcPartitionReaderPostgresTest :
-    AbstractCdcPartitionReaderTest<LogSequenceNumber, PostgreSQLContainer<*>>(
+    AbstractCdcPartitionReaderTest<LsnPosition, PostgreSQLContainer<*>>(
         namespace = "public",
     ) {
 
@@ -77,11 +81,10 @@ class CdcPartitionReaderPostgresTest :
 
     override fun createCdcPartitionReaderDbzOps() = TestCdcPartitionReaderDbzOps()
 
-    inner class TestCdcPartitionsCreatorDbzOps :
-        AbstractCdcPartitionsCreatorDbzOps<LogSequenceNumber>() {
-        override fun position(offset: DebeziumOffset): LogSequenceNumber {
+    inner class TestCdcPartitionsCreatorDbzOps : AbstractCdcPartitionsCreatorDbzOps<LsnPosition>() {
+        override fun position(offset: DebeziumOffset): LsnPosition {
             val offsetValue: ObjectNode = offset.wrapped.values.first() as ObjectNode
-            return LogSequenceNumber.valueOf(offsetValue["lsn"].asLong())
+            return LsnPosition(LogSequenceNumber.valueOf(offsetValue["lsn"].asLong()))
         }
 
         override fun generateWarmStartProperties(streams: List<Stream>): Map<String, String> =
@@ -131,18 +134,17 @@ class CdcPartitionReaderPostgresTest :
         }
     }
 
-    inner class TestCdcPartitionReaderDbzOps :
-        AbstractCdcPartitionReaderDbzOps<LogSequenceNumber>() {
-        override fun position(recordValue: DebeziumRecordValue): LogSequenceNumber? {
+    inner class TestCdcPartitionReaderDbzOps : AbstractCdcPartitionReaderDbzOps<LsnPosition>() {
+        override fun position(recordValue: DebeziumRecordValue): LsnPosition? {
             val lsn: Long =
                 recordValue.source["lsn"]?.takeIf { it.isIntegralNumber }?.asLong() ?: return null
-            return LogSequenceNumber.valueOf(lsn)
+            return LsnPosition(LogSequenceNumber.valueOf(lsn))
         }
 
-        override fun position(sourceRecord: SourceRecord): LogSequenceNumber? {
+        override fun position(sourceRecord: SourceRecord): LsnPosition? {
             val offset: Map<String, *> = sourceRecord.sourceOffset()
             val lsn: Long = offset["lsn"] as? Long ?: return null
-            return LogSequenceNumber.valueOf(lsn)
+            return LsnPosition(LogSequenceNumber.valueOf(lsn))
         }
     }
 }

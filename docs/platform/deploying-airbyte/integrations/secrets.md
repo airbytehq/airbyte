@@ -85,28 +85,6 @@ Modifing the configuration of connector secret storage will cause all <i>existin
 
 If authenticating with credentials, ensure you've already created a Kubernetes secret containing both your AWS Secrets Manager access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `aws-secret-manager-access-key-id` and `aws-secret-manager-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#secrets).
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-global:
-  secretsManager:
-    type: awsSecretManager
-    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
-    awsSecretManager:
-      region: <aws-region>
-      authenticationType: credentials ## Use "credentials" or "instanceProfile"
-      tags: ## Optional - You may add tags to new secrets created by Airbyte.
-        - key: ## e.g. team
-          value: ## e.g. deployments
-        - key: business-unit
-          value: engineering
-      kms: ## Optional - ARN for KMS Decryption.
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
 ```yaml title="values.yaml"
 global:
   secretsManager:
@@ -123,11 +101,6 @@ global:
       kms: ## Optional - ARN for KMS Decryption.
 ```
 
-</TabItem>
-</Tabs>
-
-
-
 Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from AWS Secrets Manager.
 
 To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
@@ -136,23 +109,6 @@ To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field
 <TabItem label="GCP" value="GCP">
 
 Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#secrets). For simplicity, we recommend provisioning a single service account with access to both GCS and GSM.
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-global:
-  secretsManager:
-    type: googleSecretManager
-    secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
-    googleSecretManager:
-      projectId: <project-id>
-      region: "" ## Optional - e.g. us-central1
-      credentialsSecretKey: gcp.json
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -166,32 +122,8 @@ global:
 ```
 
 </TabItem>
-</Tabs>
-
-</TabItem>
 
 <TabItem label="Azure Key Vault" value="Azure">
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-global:
-  secretsManager:
-    type: azureKeyVault
-    secretsManagerSecretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
-    azureKeyVault:
-      vaultUrl: ## https://my-vault.vault.azure.net/
-      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
-      tags: ## Optional - You may add tags to new secrets created by Airbyte.
-        - key: ## e.g. team
-          value: ## e.g. deployments
-        - key: business-unit
-          value: engineering
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -213,18 +145,7 @@ global:
 ```
 
 </TabItem>
-</Tabs>
-
-</TabItem>
 <TabItem label="HashiCorp Vault" value="Vault">
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -237,9 +158,6 @@ global:
       authToken: ""
       authTokenSecretKey: ""
 ```
-
-</TabItem>
-</Tabs>
 
 </TabItem>
 

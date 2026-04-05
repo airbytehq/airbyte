@@ -15,7 +15,6 @@ from source_github.streams import Organizations
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter, read_full_refresh
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
