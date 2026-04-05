@@ -475,13 +475,18 @@ class InsightAsyncJob(AsyncJob):
             raise ValueError(f"ID-collection failed for level={level} after {self.MAX_ID_COLLECTION_ATTEMPTS} attempts: {last_status}")
 
         try:
-            result_cursor = id_job.get_result(params={"limit": self.page_size})
+            result_cursor = self._get_id_collection_result(id_job)
         except FacebookBadObjectError as e:
             raise ValueError(f"Failed to fetch ID-collection results for level={level}: {e}") from e
 
         ids = {row[pk_name] for row in result_cursor if pk_name in row}
         logger.info(f"[Split:{level}] collected {len(ids)} {pk_name}(s)")
         return list(ids)
+
+    @backoff_policy
+    def _get_id_collection_result(self, id_job: AdReportRun) -> Any:
+        """Retrieve result of the ID collection job with retry on FacebookBadObjectError."""
+        return id_job.get_result(params={"limit": self.page_size})
 
     def _split_by_fields_parent(self) -> ParentAsyncJob:
         all_fields: List[str] = list(self._params.get("fields", []))
