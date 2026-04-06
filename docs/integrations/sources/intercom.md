@@ -65,7 +65,7 @@ To authenticate the connector in **Airbyte Open Source**, you need an access tok
 
 6. For **Start date**, use the provided datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`. Only data created on or after this date is replicated.
 7. Optionally, configure **Lookback window** to re-sync records updated within the specified number of days before the current cursor position. This helps capture late-arriving updates. The default is `0` (no lookback).
-8. Optionally, configure **Activity logs stream slice step size** to control how many days of activity log data the connector fetches per request. The default is `30` days. Lower this value if you experience timeouts on the Activity Logs stream.
+8. Optionally, configure **Activity logs stream slice step size** to control how many days of activity log data the connector fetches per request. Valid values are `1` to `91` days. The default is `30`. Lower this value if you experience timeouts on the Activity Logs stream.
 9. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -88,7 +88,7 @@ The Intercom source connector supports the following streams:
 - [Contacts](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/searchcontacts) \(Incremental\)
 - [Conversations](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/searchconversations) \(Incremental\)
   - [Conversation Parts](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
-- [Segments](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/segments/listsegments) \(Incremental\)
+- [Segments](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/segments/listsegments) \(Incremental\) — uses client-side filtering; see [Limitations](#segments-use-client-side-incremental-sync)
 - [Tags](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tags/listtags) \(Full table\)
 - [Teams](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/teams/listteams) \(Full table\)
 - [Tickets](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tickets/searchtickets) \(Incremental\)
@@ -113,9 +113,15 @@ The Intercom API allows only one company scroll to be open per app at a time. If
 
 To prevent conflicts, the connector blocks simultaneous reads from the Companies endpoint. If you run multiple connections that sync the Companies or Company Segments streams from the same Intercom workspace, the connector queues the reads so only one scroll is active at a time.
 
+### Segments use client-side incremental sync
+
+The Segments stream uses the [List all segments](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/segments/listsegments) endpoint, which returns all segments in a single unpaginated response and does not support server-side datetime filtering. Like Companies, incremental sync for this stream works by fetching all records and filtering locally.
+
+Because the Segments endpoint returns all segments in one call, the performance impact is minimal for most workspaces.
+
 ### Recommendation for reducing sync times
 
-Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams.
+Because the Companies and Company Segments streams must read all records on every sync, syncing them alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams.
 
 ## Changelog
 
@@ -124,7 +130,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.18 | 2026-03-31 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |
+| 0.13.18 | 2026-04-06 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |
 | 0.13.17 | 2026-03-30 | [75575](https://github.com/airbytehq/airbyte/pull/75575) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 0.13.16 | 2026-03-24 | [75419](https://github.com/airbytehq/airbyte/pull/75419) | Promote 0.13.16-rc.6 to GA — includes CDK 7.13.0 upgrade, block_simultaneous_read for companies, rate limiter fix, step size/end_datetime for incremental streams, and heartbeat timeout bump |
 | 0.13.16-rc.6 | 2026-03-19 | [75216](https://github.com/airbytehq/airbyte/pull/75216) | Bump CDK base image to 7.13.0 (includes block_simultaneous_read support and cursor field fix) |

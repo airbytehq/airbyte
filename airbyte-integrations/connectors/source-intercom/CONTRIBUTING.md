@@ -12,7 +12,7 @@ The sleep duration scales dynamically: 10ms when load is low (>50% capacity rema
 
 The `companies` stream uses Intercom's Scroll API (`companies/scroll`) instead of standard cursor pagination. Intercom enforces a hard constraint: **only one scroll can be active per workspace at a time**. If a second scroll request is made while one is already in progress, the API returns HTTP 400. The connector treats this as a `transient_error` with the message: "Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time."
 
-This constraint also applies to any substream that uses `companies` as a parent — specifically `company_segments` and `company_attributes`. Since these streams depend on iterating over company records, they inherit the single-scroll limitation. Running two syncs that involve any combination of companies, company_segments, or company_attributes against the same Intercom workspace simultaneously will cause one to fail.
+This constraint also applies to the `company_segments` substream, which uses `companies` as its parent. Since `company_segments` depends on iterating over company records, it inherits the single-scroll limitation. Running two syncs that involve any combination of companies or company_segments against the same Intercom workspace simultaneously will cause one to fail.
 
 Additionally, on HTTP 500 the connector uses `RESET_PAGINATION` to restart the scroll from the beginning, meaning a transient server error can cause the entire companies stream to re-read all data.
 
