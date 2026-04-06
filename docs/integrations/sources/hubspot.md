@@ -344,6 +344,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.4.1 | 2026-04-03 | [75574](https://github.com/airbytehq/airbyte/pull/75574) | Add `oauth_connector_input_specification` with granular scopes and optional_scopes |
 | 6.4.0 | 2026-04-01 | [70920](https://github.com/airbytehq/airbyte/pull/70920) | Add new stream Users |
 | 6.3.5 | 2026-03-31 | [75665](https://github.com/airbytehq/airbyte/pull/75665) | Update dependencies |
 | 6.3.4 | 2026-03-30 | [75595](https://github.com/airbytehq/airbyte/pull/75595) | Fixed HTTP 429 responses mapped to RETRY instead of RATE_LIMITED, enabling correct rate-limit handling |
