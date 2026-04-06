@@ -710,7 +710,7 @@ class ReportCreationRequester(HttpRequester):
                 try:
                     report_created_time = ab_datetime_parse(created_time_str)
                 except (ValueError, TypeError):
-                    pass
+                    pass  # If we can't parse createdTime, treat as unknown — don't use it for ordering
 
             # Keep the most recently created matching report
             if best_candidate is None or (
