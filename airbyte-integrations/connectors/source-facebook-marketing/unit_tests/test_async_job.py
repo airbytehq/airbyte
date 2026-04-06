@@ -20,6 +20,7 @@ from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentA
 from source_facebook_marketing.utils import DateInterval
 
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class DummyAPILimit:
@@ -554,7 +555,7 @@ class TestInsightAsyncJob:
             primary_key=pk,
         )
 
-        with pytest.raises(ValueError, match="Cannot split by fields: not enough non-PK fields"):
+        with pytest.raises(AirbyteTracedException, match="Facebook Insights API request failed during data retrieval"):
             job._split_job()
 
 
