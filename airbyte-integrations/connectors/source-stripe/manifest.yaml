@@ -1464,7 +1464,27 @@ definitions:
           $ref: "#/definitions/events_read_slice_cursor"
           cursor_field: invoice_updated
         retriever:
-          $ref: "#/definitions/events_objects_retriever"
+          type: SimpleRetriever
+          requester:
+            $ref: "#/definitions/base_requester"
+            path: events
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path:
+                - data
+              record_expander:
+                type: RecordExpander
+                expand_records_from_field:
+                  - data
+                  - object
+                  - lines
+                  - data
+                remain_original_record: true
+            transform_before_filtering: true
+          paginator:
+            $ref: "#/definitions/base_paginator"
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
@@ -1476,25 +1496,16 @@ definitions:
           - type: AddFields
             fields:
               - path:
-                  - data
-                  - object
-                  - is_deleted
-                value: "{{ True }}"
-            condition: "{{ record.get('data', {}).get('object', False) and record.get('type', '').endswith('.deleted') }}"
-          - type: AddFields
-            fields:
-              - path:
-                  - data
-                  - object
                   - invoice_updated
-                value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+                value: "{{ (record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int }}"
                 value_type: integer
-            condition: "{{ record.get('data', {}).get('object', False) }}"
-          - type: DpathFlattenFields
-            field_path:
-              - data
-              - object
-            replace_record: true
+              - path:
+                  - invoice_id
+                value: "{{ record['original_record']['data']['object']['id'] }}"
+            condition: "{{ record.get('original_record') }}"
+          - type: RemoveFields
+            field_pointers:
+              - - original_record
 
     application_fees_refunds:
       type: StateDelegatingStream
