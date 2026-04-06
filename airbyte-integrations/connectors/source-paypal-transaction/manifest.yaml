@@ -480,7 +480,7 @@ definitions:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 2
+  default_concurrency: 4
   max_concurrency: 12
 
 streams:
