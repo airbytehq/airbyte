@@ -189,10 +189,7 @@ class FlexibleDecoder(Decoder):
             )
         elif response.status_code != 200:
             raise AirbyteTracedException(
-                message=(
-                    f"Unexpected status code {response.status_code}. "
-                    "Please contact Infor member services."
-                ),
+                message=(f"Unexpected status code {response.status_code}. Please contact Infor member services."),
                 failure_type=FailureType.config_error,
             )
 
@@ -245,22 +242,22 @@ class DynamicSchemaLoader(SchemaLoader):
     _schema_cache: Optional[dict] = field(default=None, init=False)
 
     DATA_TYPE_MAP: ClassVar[Mapping[str, Any]] = {
-        "TEXT":      {"type": ["string", "null"]},
-        "PICKLIST":  {"type": ["string", "null"]},
-        "CHAR":      {"type": ["string", "null"]},
-        "VARCHAR":   {"type": ["string", "null"]},
-        "DATE":      {"type": ["string", "null"], "format": "date"},
-        "DATETIME":  {"type": ["string", "null"], "format": "date-time"},
+        "TEXT": {"type": ["string", "null"]},
+        "PICKLIST": {"type": ["string", "null"]},
+        "CHAR": {"type": ["string", "null"]},
+        "VARCHAR": {"type": ["string", "null"]},
+        "DATE": {"type": ["string", "null"], "format": "date"},
+        "DATETIME": {"type": ["string", "null"], "format": "date-time"},
         "TIMESTAMP": {"type": ["string", "null"], "format": "date-time"},
-        "INTEGER":   {"type": ["integer", "null"]},
-        "LONG":      {"type": ["integer", "null"]},
-        "DECIMAL":   {"type": ["number", "null"]},
-        "NUMERIC":   {"type": ["number", "null"]},
-        "FLOAT":     {"type": ["number", "null"]},
-        "DOUBLE":    {"type": ["number", "null"]},
-        "BOOLEAN":   {"type": ["boolean", "null"]},
-        "OBJECT":    {"type": ["object", "null"]},
-        "ARRAY":     {"type": ["array", "null"]},
+        "INTEGER": {"type": ["integer", "null"]},
+        "LONG": {"type": ["integer", "null"]},
+        "DECIMAL": {"type": ["number", "null"]},
+        "NUMERIC": {"type": ["number", "null"]},
+        "FLOAT": {"type": ["number", "null"]},
+        "DOUBLE": {"type": ["number", "null"]},
+        "BOOLEAN": {"type": ["boolean", "null"]},
+        "OBJECT": {"type": ["object", "null"]},
+        "ARRAY": {"type": ["array", "null"]},
     }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -305,10 +302,7 @@ class DynamicSchemaLoader(SchemaLoader):
             raise
         except requests.exceptions.RequestException as exc:
             raise AirbyteTracedException(
-                message=(
-                    f"Failed to fetch schema for Dataset Model Name '{dataset_model_name}' "
-                    f"from Infor Nexus. Error: {exc}"
-                ),
+                message=(f"Failed to fetch schema for Dataset Model Name '{dataset_model_name}' from Infor Nexus. Error: {exc}"),
                 failure_type=FailureType.system_error,
             ) from exc
 
