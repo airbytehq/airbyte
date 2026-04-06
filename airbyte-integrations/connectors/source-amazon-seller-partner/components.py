@@ -567,7 +567,7 @@ class ReportCreationRequester(HttpRequester):
     Flow:
     1. Before creating a new report via POST, call GET /reports to check for existing reports
        of the same reportType and matching date range.
-    2. If a matching report is found (any status: DONE, IN_PROGRESS, IN_QUEUE), return it
+    2. If a matching report is found (any status except CANCELLED or FATAL), return it
        as the creation response so the polling requester will track that existing report.
     3. If no matching report is found, fall through to super().send_request() to create a new one.
     """
@@ -589,6 +589,7 @@ class ReportCreationRequester(HttpRequester):
         report_type = body_json.get("reportType", "") if body_json else ""
         requested_start = body_json.get("dataStartTime", "") if body_json else ""
         requested_end = body_json.get("dataEndTime", "") if body_json else ""
+        requested_marketplace_ids = body_json.get("marketplaceIds", []) if body_json else []
 
         if report_type:
             existing_report = self._find_existing_report(
@@ -597,6 +598,7 @@ class ReportCreationRequester(HttpRequester):
                 report_type=report_type,
                 requested_start=requested_start,
                 requested_end=requested_end,
+                requested_marketplace_ids=requested_marketplace_ids,
             )
             if existing_report is not None:
                 return existing_report
@@ -621,10 +623,11 @@ class ReportCreationRequester(HttpRequester):
         report_type: str,
         requested_start: str,
         requested_end: str,
+        requested_marketplace_ids: List[str],
     ) -> Optional[requests.Response]:
         """
-        Query GET /reports to find an existing report matching the given reportType and date range.
-        Returns a synthetic Response wrapping the matching report if found, or None.
+        Query GET /reports to find an existing report matching the given reportType, date range,
+        and marketplaceIds. Returns a synthetic Response wrapping the matching report if found, or None.
         """
         try:
             url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
@@ -662,8 +665,12 @@ class ReportCreationRequester(HttpRequester):
             report_end = report.get("dataEndTime", "")
             report_status = report.get("processingStatus", "")
 
-            # Skip cancelled reports as they cannot be reused
-            if report_status == "CANCELLED":
+            # Skip cancelled and fatal reports as they cannot be reused
+            if report_status in ("CANCELLED", "FATAL"):
+                continue
+
+            report_marketplace_ids = report.get("marketplaceIds", [])
+            if not self._marketplace_ids_match(requested_marketplace_ids, report_marketplace_ids):
                 continue
 
             if self._date_ranges_match(requested_start, requested_end, report_start, report_end):
@@ -675,6 +682,19 @@ class ReportCreationRequester(HttpRequester):
                 return self._build_synthetic_response(report, get_response)
 
         return None
+
+    @staticmethod
+    def _marketplace_ids_match(
+        requested_marketplace_ids: List[str],
+        report_marketplace_ids: List[str],
+    ) -> bool:
+        """
+        Check if the marketplace IDs from the creation request match those of an existing report.
+        Both are lists of marketplace ID strings. We compare as sorted sets to handle ordering differences.
+        """
+        if not requested_marketplace_ids or not report_marketplace_ids:
+            return False
+        return sorted(requested_marketplace_ids) == sorted(report_marketplace_ids)
 
     @staticmethod
     def _date_ranges_match(
