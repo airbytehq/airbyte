@@ -313,7 +313,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.15.24 | 2026-04-06 | [76095](https://github.com/airbytehq/airbyte/pull/76095) | Fix missing records in Invoice Line Items incremental stream by adding RecordExpander to expand nested line items from Stripe events |
+| 5.15.24 | 2026-04-06 | [76095](https://github.com/airbytehq/airbyte/pull/76095) | Fix missing records in Invoice Line Items and Subscription Items incremental streams by adding RecordExpander to expand nested items from Stripe events |
 | 5.15.23 | 2026-03-31 | [75864](https://github.com/airbytehq/airbyte/pull/75864) | Update dependencies |
 | 5.15.22 | 2026-03-12 | [74770](https://github.com/airbytehq/airbyte/pull/74770) | Upgrade CDK to 7.13.0 |
 | 5.15.21 | 2026-03-06 | [74342](https://github.com/airbytehq/airbyte/pull/74342) | Promoting release candidate 5.15.21-rc.5 to a main version. |
