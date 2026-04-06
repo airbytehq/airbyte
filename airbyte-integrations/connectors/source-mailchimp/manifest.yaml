@@ -4792,6 +4792,19 @@ spec:
       - auth_type
     predicate_value: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://login.mailchimp.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}"
+        access_token_url: "https://login.mailchimp.com/oauth2/token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
