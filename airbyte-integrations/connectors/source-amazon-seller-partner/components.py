@@ -566,10 +566,11 @@ class ReportCreationRequester(HttpRequester):
 
     Flow:
     1. Before creating a new report via POST, call GET /reports to check for existing reports
-       of the same reportType and matching date range.
-    2. If a matching report is found (any status except CANCELLED or FATAL), return it
-       as the creation response so the polling requester will track that existing report.
-    3. If no matching report is found, fall through to super().send_request() to create a new one.
+       of the same reportType, matching date range, and marketplaceIds.
+    2. If matching reports are found (any status except CANCELLED or FATAL), select the most
+       recently created one (by createdTime). DONE reports older than 1 day are skipped since
+       their data snapshot may be stale and the report document may have expired.
+    3. If no suitable report is found, fall through to super().send_request() to create a new one.
     """
 
     def send_request(
@@ -627,7 +628,9 @@ class ReportCreationRequester(HttpRequester):
     ) -> Optional[requests.Response]:
         """
         Query GET /reports to find an existing report matching the given reportType, date range,
-        and marketplaceIds. Returns a synthetic Response wrapping the matching report if found, or None.
+        and marketplaceIds. Returns a synthetic Response wrapping the most recently created
+        matching report if found, or None. DONE reports older than 1 day are skipped to avoid
+        reusing stale data snapshots.
         """
         try:
             url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
@@ -659,7 +662,16 @@ class ReportCreationRequester(HttpRequester):
         if not reports:
             return None
 
-        # Find a report whose dataStartTime and dataEndTime match the requested slice
+        # DONE reports older than this threshold are considered stale (data snapshot may be outdated,
+        # report document may have expired). IN_QUEUE and IN_PROGRESS reports are not subject to
+        # this check because they are still being processed.
+        max_done_report_age_hours = 24
+        now = ab_datetime_now()
+
+        # Collect all matching candidates, then pick the most recently created one
+        best_candidate = None
+        best_created_time = None
+
         for report in reports:
             report_start = report.get("dataStartTime", "")
             report_end = report.get("dataEndTime", "")
@@ -673,13 +685,50 @@ class ReportCreationRequester(HttpRequester):
             if not self._marketplace_ids_match(requested_marketplace_ids, report_marketplace_ids):
                 continue
 
-            if self._date_ranges_match(requested_start, requested_end, report_start, report_end):
-                report_id = report.get("reportId", "")
-                logger.info(
-                    f"Found existing report {report_id} (status={report_status}) "
-                    f"for {report_type} [{report_start} - {report_end}]. Reusing instead of creating a new one."
-                )
-                return self._build_synthetic_response(report, get_response)
+            if not self._date_ranges_match(requested_start, requested_end, report_start, report_end):
+                continue
+
+            # Check createdTime freshness for DONE reports
+            created_time_str = report.get("createdTime", "")
+            if report_status == "DONE" and created_time_str:
+                try:
+                    created_time = ab_datetime_parse(created_time_str)
+                    age_hours = (now - created_time).total_seconds() / 3600
+                    if age_hours > max_done_report_age_hours:
+                        report_id = report.get("reportId", "")
+                        logger.info(
+                            f"Skipping stale DONE report {report_id} (created {age_hours:.1f}h ago) "
+                            f"for {report_type}. Will look for a newer one."
+                        )
+                        continue
+                except (ValueError, TypeError):
+                    pass  # If we can't parse createdTime, don't skip — still usable
+
+            # Parse createdTime to compare candidates
+            report_created_time = None
+            if created_time_str:
+                try:
+                    report_created_time = ab_datetime_parse(created_time_str)
+                except (ValueError, TypeError):
+                    pass
+
+            # Keep the most recently created matching report
+            if best_candidate is None or (
+                report_created_time is not None and (best_created_time is None or report_created_time > best_created_time)
+            ):
+                best_candidate = report
+                best_created_time = report_created_time
+
+        if best_candidate is not None:
+            report_id = best_candidate.get("reportId", "")
+            report_status = best_candidate.get("processingStatus", "")
+            report_start = best_candidate.get("dataStartTime", "")
+            report_end = best_candidate.get("dataEndTime", "")
+            logger.info(
+                f"Found existing report {report_id} (status={report_status}) "
+                f"for {report_type} [{report_start} - {report_end}]. Reusing instead of creating a new one."
+            )
+            return self._build_synthetic_response(best_candidate, get_response)
 
         return None
 

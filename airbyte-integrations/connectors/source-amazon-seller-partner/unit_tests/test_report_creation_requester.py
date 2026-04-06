@@ -3,6 +3,7 @@
 #
 
 import json
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import requests
@@ -29,9 +30,10 @@ def _make_report(
     start_time: str = "2023-01-01T00:00:00Z",
     end_time: str = "2023-01-30T00:00:00Z",
     marketplace_ids: list = None,
+    created_time: str = "",
 ) -> dict:
     """Build a report object matching the Amazon SP-API Report schema."""
-    return {
+    report = {
         "reportId": report_id,
         "reportType": report_type,
         "processingStatus": status,
@@ -39,6 +41,9 @@ def _make_report(
         "dataEndTime": end_time,
         "marketplaceIds": marketplace_ids or ["ATVPDKIKX0DER"],
     }
+    if created_time:
+        report["createdTime"] = created_time
+    return report
 
 
 def _make_requester() -> ReportCreationRequester:
@@ -457,6 +462,136 @@ class TestFindExistingReport:
 
         assert result is not None
         assert result.json()["reportId"] == "rpt-in-queue"
+
+    def test_skips_stale_done_report(self):
+        """DONE reports older than 24h should be skipped."""
+        requester = _make_requester()
+        # Report created 48 hours ago
+        old_time = datetime(2023, 1, 1, 0, 0, 0, tzinfo=timezone.utc).isoformat()
+        report = _make_report(report_id="rpt-stale", status="DONE", created_time=old_time)
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is None
+
+    def test_reuses_fresh_done_report(self):
+        """DONE reports created within 24h should be reusable."""
+        requester = _make_requester()
+        # Use a very recent timestamp
+        now = datetime.now(tz=timezone.utc)
+        fresh_time = now.isoformat()
+        report = _make_report(report_id="rpt-fresh", status="DONE", created_time=fresh_time)
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-fresh"
+
+    def test_in_progress_report_not_subject_to_staleness(self):
+        """IN_PROGRESS reports should not be subject to the 24h staleness check."""
+        requester = _make_requester()
+        old_time = datetime(2023, 1, 1, 0, 0, 0, tzinfo=timezone.utc).isoformat()
+        report = _make_report(report_id="rpt-old-ip", status="IN_PROGRESS", created_time=old_time)
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-old-ip"
+
+    def test_returns_latest_report_by_created_time(self):
+        """When multiple matching reports exist, return the most recently created one."""
+        requester = _make_requester()
+        now = datetime.now(tz=timezone.utc)
+        older_time = (now - timedelta(hours=2)).isoformat()
+        newer_time = (now - timedelta(hours=1)).isoformat()
+
+        older_report = _make_report(report_id="rpt-older", status="DONE", created_time=older_time)
+        newer_report = _make_report(report_id="rpt-newer", status="DONE", created_time=newer_time)
+        # Older report appears first in the list
+        get_response = _make_get_reports_response([older_report, newer_report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-newer"
+
+    def test_returns_latest_in_progress_over_older_done(self):
+        """A newer IN_PROGRESS report should be preferred over an older DONE report."""
+        requester = _make_requester()
+        now = datetime.now(tz=timezone.utc)
+        done_time = (now - timedelta(hours=10)).isoformat()
+        ip_time = (now - timedelta(hours=1)).isoformat()
+
+        done_report = _make_report(report_id="rpt-done", status="DONE", created_time=done_time)
+        ip_report = _make_report(report_id="rpt-ip", status="IN_PROGRESS", created_time=ip_time)
+        get_response = _make_get_reports_response([done_report, ip_report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-ip"
+
+    def test_done_report_without_created_time_is_still_usable(self):
+        """DONE reports without createdTime should still be reusable (no staleness check)."""
+        requester = _make_requester()
+        report = _make_report(report_id="rpt-no-time", status="DONE")
+        get_response = _make_get_reports_response([report])
+        requester._http_client.send_request.return_value = (None, get_response)
+
+        result = requester._find_existing_report(
+            stream_state=None,
+            stream_slice=None,
+            report_type="GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
+            requested_start="2023-01-01T00:00:00Z",
+            requested_end="2023-01-30T00:00:00Z",
+            requested_marketplace_ids=["ATVPDKIKX0DER"],
+        )
+
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-no-time"
 
 
 class TestSendRequest:
