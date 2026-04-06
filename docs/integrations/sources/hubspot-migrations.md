@@ -46,11 +46,11 @@ For more information on resetting your data in Airbyte, see [this page](/platfor
 This change is only breaking if you are syncing streams `Contact Lists`, `Contacts Form Submissions`, `Contacts List Memberships`, or `Contacts Merged Audit`.
 :::
 
-This update deprecates three contacts streams because Hubspot is deprecating V1 of their REST API and these
+This update deprecates three contacts streams because HubSpot is deprecating V1 of their REST API and these
 streams make use of data from endpoints that no longer exist in their V3 API.
 
-In addition, the certain schema fields of the Contact Lists stream will be added, removed, or modified due to
-changes in how Hubspot's V3 API in comparison to the V1 API being deprecated.
+In addition, certain schema fields of the Contact Lists stream will be added, removed, or modified due to
+changes in HubSpot's V3 API in comparison to the V1 API being deprecated.
 
 Users should:
 
@@ -88,15 +88,15 @@ For more information on resetting your data in Airbyte, see [this page](/platfor
 ## Upgrading to 4.0.0
 
 :::note
-This change is only breaking if you are syncing streams `Deals Property History` or `Companies Peoperty History`.
+This change is only breaking if you are syncing streams `Deals Property History` or `Companies Property History`.
 :::
 
-This update brings extended schema with data type changes for the Marketing Emails stream.
+This update brings extended schema with data type changes for the `Deals Property History` and `Companies Property History` streams.
 
 Users should:
 
-- Refresh the source schema for the Marketing Emails stream.
-- Reset the stream after upgrading to ensure uninterrupted syncs.
+- Refresh the source schema for the `Deals Property History` and `Companies Property History` streams.
+- Reset the streams after upgrading to ensure uninterrupted syncs.
 
 ### Refresh affected schemas and reset data
 
