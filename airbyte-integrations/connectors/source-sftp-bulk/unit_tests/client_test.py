@@ -66,8 +66,9 @@ def test_parse_private_key_unrecognized_format_raises_config_error():
         patch.object(paramiko.ECDSAKey, "from_private_key", side_effect=paramiko.SSHException("fail")),
         patch.object(paramiko.DSSKey, "from_private_key", side_effect=paramiko.SSHException("fail")),
     ):
-        with pytest.raises(AirbyteTracedException, match="Private key format is not recognized"):
+        with pytest.raises(AirbyteTracedException) as exc_info:
             _parse_private_key("invalid-key-content")
+        assert "Private key format is not recognized" in exc_info.value.message
 
 
 def test_parse_private_key_catches_value_error():
@@ -135,5 +136,6 @@ def test_parse_private_key_all_struct_errors_raises_config_error():
         patch.object(paramiko.ECDSAKey, "from_private_key", side_effect=struct.error("bad data")),
         patch.object(paramiko.DSSKey, "from_private_key", side_effect=struct.error("bad data")),
     ):
-        with pytest.raises(AirbyteTracedException, match="Private key format is not recognized"):
+        with pytest.raises(AirbyteTracedException) as exc_info:
             _parse_private_key("invalid-key-content")
+        assert "Private key format is not recognized" in exc_info.value.message

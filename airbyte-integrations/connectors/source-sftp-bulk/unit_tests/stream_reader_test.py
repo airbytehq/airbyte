@@ -97,5 +97,6 @@ def test_get_matching_files_reraises_airbyte_traced_exception():
             start_date="2024-01-01T00:00:00.000000Z",
         )
         reader.config = config
-        with pytest.raises(AirbyteTracedException, match="Private key format is not recognized"):
+        with pytest.raises(AirbyteTracedException) as exc_info:
             list(reader.get_matching_files(globs=["**"], prefix=None, logger=logger))
+        assert "Private key format is not recognized" in exc_info.value.message
