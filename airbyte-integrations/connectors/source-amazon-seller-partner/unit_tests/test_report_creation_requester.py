@@ -53,9 +53,7 @@ def _make_requester() -> ReportCreationRequester:
     requester.get_url_base = MagicMock(return_value="https://sellingpartnerapi-na.amazon.com")
 
     # Mock _join_url
-    requester._join_url = MagicMock(
-        return_value="https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports"
-    )
+    requester._join_url = MagicMock(return_value="https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports")
 
     # Mock _request_headers
     requester._request_headers = MagicMock(return_value={"content-type": "application/json"})
@@ -70,105 +68,175 @@ class TestDateRangesMatch:
     """Tests for ReportCreationRequester._date_ranges_match static method."""
 
     def test_matching_dates(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-        ) is True
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+            )
+            is True
+        )
 
     def test_matching_dates_with_different_timezones(self):
         """Date-only comparison should match even if times differ."""
-        assert ReportCreationRequester._date_ranges_match(
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-            "2023-01-01T05:00:00+05:00", "2023-01-30T12:00:00+00:00",
-        ) is True
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+                "2023-01-01T05:00:00+05:00",
+                "2023-01-30T12:00:00+00:00",
+            )
+            is True
+        )
 
     def test_non_matching_start_date(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-            "2023-01-02T00:00:00Z", "2023-01-30T00:00:00Z",
-        ) is False
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+                "2023-01-02T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+            )
+            is False
+        )
 
     def test_non_matching_end_date(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-            "2023-01-01T00:00:00Z", "2023-01-31T00:00:00Z",
-        ) is False
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+                "2023-01-01T00:00:00Z",
+                "2023-01-31T00:00:00Z",
+            )
+            is False
+        )
 
     def test_empty_report_start(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-            "", "2023-01-30T00:00:00Z",
-        ) is False
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+                "",
+                "2023-01-30T00:00:00Z",
+            )
+            is False
+        )
 
     def test_empty_report_end(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-            "2023-01-01T00:00:00Z", "",
-        ) is False
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+                "2023-01-01T00:00:00Z",
+                "",
+            )
+            is False
+        )
 
     def test_empty_requested_start(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "", "2023-01-30T00:00:00Z",
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-        ) is False
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "",
+                "2023-01-30T00:00:00Z",
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+            )
+            is False
+        )
 
     def test_empty_requested_end(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "2023-01-01T00:00:00Z", "",
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-        ) is False
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "2023-01-01T00:00:00Z",
+                "",
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+            )
+            is False
+        )
 
     def test_invalid_date_format(self):
-        assert ReportCreationRequester._date_ranges_match(
-            "not-a-date", "2023-01-30T00:00:00Z",
-            "2023-01-01T00:00:00Z", "2023-01-30T00:00:00Z",
-        ) is False
+        assert (
+            ReportCreationRequester._date_ranges_match(
+                "not-a-date",
+                "2023-01-30T00:00:00Z",
+                "2023-01-01T00:00:00Z",
+                "2023-01-30T00:00:00Z",
+            )
+            is False
+        )
 
 
 class TestMarketplaceIdsMatch:
     """Tests for ReportCreationRequester._marketplace_ids_match static method."""
 
     def test_matching_single_marketplace(self):
-        assert ReportCreationRequester._marketplace_ids_match(
-            ["ATVPDKIKX0DER"], ["ATVPDKIKX0DER"],
-        ) is True
+        assert (
+            ReportCreationRequester._marketplace_ids_match(
+                ["ATVPDKIKX0DER"],
+                ["ATVPDKIKX0DER"],
+            )
+            is True
+        )
 
     def test_matching_multiple_marketplaces(self):
-        assert ReportCreationRequester._marketplace_ids_match(
-            ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-            ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-        ) is True
+        assert (
+            ReportCreationRequester._marketplace_ids_match(
+                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
+                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
+            )
+            is True
+        )
 
     def test_matching_different_order(self):
         """Order shouldn't matter — sets should be compared."""
-        assert ReportCreationRequester._marketplace_ids_match(
-            ["A2EUQ1WTGCTBG2", "ATVPDKIKX0DER"],
-            ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-        ) is True
+        assert (
+            ReportCreationRequester._marketplace_ids_match(
+                ["A2EUQ1WTGCTBG2", "ATVPDKIKX0DER"],
+                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
+            )
+            is True
+        )
 
     def test_non_matching_marketplace(self):
-        assert ReportCreationRequester._marketplace_ids_match(
-            ["ATVPDKIKX0DER"], ["A2EUQ1WTGCTBG2"],
-        ) is False
+        assert (
+            ReportCreationRequester._marketplace_ids_match(
+                ["ATVPDKIKX0DER"],
+                ["A2EUQ1WTGCTBG2"],
+            )
+            is False
+        )
 
     def test_empty_requested(self):
-        assert ReportCreationRequester._marketplace_ids_match(
-            [], ["ATVPDKIKX0DER"],
-        ) is False
+        assert (
+            ReportCreationRequester._marketplace_ids_match(
+                [],
+                ["ATVPDKIKX0DER"],
+            )
+            is False
+        )
 
     def test_empty_report(self):
-        assert ReportCreationRequester._marketplace_ids_match(
-            ["ATVPDKIKX0DER"], [],
-        ) is False
+        assert (
+            ReportCreationRequester._marketplace_ids_match(
+                ["ATVPDKIKX0DER"],
+                [],
+            )
+            is False
+        )
 
     def test_both_empty(self):
         assert ReportCreationRequester._marketplace_ids_match([], []) is False
 
     def test_subset_does_not_match(self):
-        assert ReportCreationRequester._marketplace_ids_match(
-            ["ATVPDKIKX0DER"],
-            ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
-        ) is False
+        assert (
+            ReportCreationRequester._marketplace_ids_match(
+                ["ATVPDKIKX0DER"],
+                ["ATVPDKIKX0DER", "A2EUQ1WTGCTBG2"],
+            )
+            is False
+        )
 
 
 class TestBuildSyntheticResponse:
@@ -426,9 +494,7 @@ class TestSendRequest:
 
         # Mock super().send_request to return a creation response
         create_response = _create_response(200, {"reportId": "rpt-new"})
-        with patch.object(
-            ReportCreationRequester.__bases__[0], "send_request", return_value=create_response
-        ):
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", return_value=create_response):
             result = requester.send_request(stream_state=None, stream_slice=None)
 
         assert result is not None
@@ -447,9 +513,7 @@ class TestSendRequest:
 
         # Mock super().send_request to return a creation response
         create_response = _create_response(200, {"reportId": "rpt-fallback"})
-        with patch.object(
-            ReportCreationRequester.__bases__[0], "send_request", return_value=create_response
-        ):
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", return_value=create_response):
             result = requester.send_request(stream_state=None, stream_slice=None)
 
         assert result is not None
@@ -464,9 +528,7 @@ class TestSendRequest:
 
         # Mock super().send_request to return a creation response
         create_response = _create_response(200, {"reportId": "rpt-no-type"})
-        with patch.object(
-            ReportCreationRequester.__bases__[0], "send_request", return_value=create_response
-        ):
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", return_value=create_response):
             result = requester.send_request(stream_state=None, stream_slice=None)
 
         # Should not call _http_client for GET since there's no report_type
@@ -526,9 +588,7 @@ class TestSendRequest:
         requester._http_client.send_request.return_value = (None, get_response)
 
         create_response = _create_response(200, {"reportId": "rpt-new"})
-        with patch.object(
-            ReportCreationRequester.__bases__[0], "send_request", return_value=create_response
-        ):
+        with patch.object(ReportCreationRequester.__bases__[0], "send_request", return_value=create_response):
             result = requester.send_request(stream_state=None, stream_slice=None)
 
         assert result is not None
