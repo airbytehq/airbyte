@@ -103,8 +103,9 @@ open class PostgresSourceJdbcPartitionFactory(
                         true
                     )
                 }
-                    ?: error(
-                        "Unexpected incremental sync for a table ${stream.id} with no filenode."
+                    ?: PostgresSourceJdbcUnsplittableSnapshotWithXminPartition(
+                        selectQueryGenerator,
+                        streamState,
                     )
             }
             is UserDefinedCursorIncrementalConfiguration -> {
@@ -297,18 +298,14 @@ open class PostgresSourceJdbcPartitionFactory(
                             // Incremental done
                             null
                         } else {
-                            filenode?.let { // Incremental ongoing
-                                PostgresSourceJdbcXminIncrementalPartition(
-                                    selectQueryGenerator,
-                                    streamState,
-                                    xminLowerBound = sv.xmin,
-                                    isLowerBoundIncluded = true,
-                                    xminUpperBound = streamState.cursorUpperBound,
-                                )
-                            }
-                                ?: error(
-                                    "Unexpected incremental sync for a table ${stream.id} with no filenode."
-                                )
+                            // Incremental ongoing
+                            PostgresSourceJdbcXminIncrementalPartition(
+                                selectQueryGenerator,
+                                streamState,
+                                xminLowerBound = sv.xmin,
+                                isLowerBoundIncluded = true,
+                                xminUpperBound = streamState.cursorUpperBound,
+                            )
                         }
                     }
                 }

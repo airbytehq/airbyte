@@ -357,6 +357,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version    | Date       | Pull Request                                        | Subject                                                                                                                                                                    |
 |------------|------------|-----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.0-rc.4 | 2026-04-04 | [76088](https://github.com/airbytehq/airbyte/pull/76088) | Fix Xmin incremental sync failure on Postgres < 14 when filenode is null |
 | 3.8.0-rc.3 | 2026-04-02 | [76055](https://github.com/airbytehq/airbyte/pull/76055) | Use CDK 1.1.1                                                                                                                                                              |
 | 3.8.0-rc.2 | 2026-04-01 | [75957](https://github.com/airbytehq/airbyte/pull/75957) | Fix non-CDC connections failing due to unconditional CDC bean initialization                                                                                               |
 | 3.8.0-rc.1 | 2026-03-31 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release candidate for rewritten connector on the bulk CDK                                                                                                          |
