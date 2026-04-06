@@ -106,7 +106,7 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
         return super().interpret_response(response_or_exception)
 
 
-class ContributorActivityErrorHandler(HttpStatusErrorHandler):
+class ContributorActivityErrorHandler(GithubStreamABCErrorHandler):
     """
     This custom error handler is needed for streams based on repository statistics endpoints like ContributorActivity because
     when requesting data that hasn't been cached yet when the request is made, you'll receive a 202 response. And these requests
