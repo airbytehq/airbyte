@@ -29,6 +29,7 @@ The Github connector supports the following entities and actions.
 | Viewer Repositories | [List](#viewer-repositories-list) |
 | Projects | [List](#projects-list), [Get](#projects-get) |
 | Project Items | [List](#project-items-list) |
+| Discussions | [List](#discussions-list), [Get](#discussions-get), [API Search](#discussions-api-search) |
 | File Content | [Get](#file-content-get) |
 | Directory Content | [List](#directory-content-list) |
 
@@ -118,7 +119,7 @@ If not provided, uses default fields.
 ### Repositories API Search
 
 Search for GitHub repositories using GitHub's powerful search syntax.
-Examples: "language:python stars:>1000", "topic:machine-learning", "org:facebook is:public"
+Examples: "language:python stars:\>1000", "topic:machine-learning", "org:facebook is:public"
 
 
 #### Python SDK
@@ -1684,6 +1685,131 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `project_number` | `integer` | Yes | The project number |
 | `per_page` | `integer` | No | The number of results per page |
 | `after` | `string` | No | Cursor for pagination (from previous response's endCursor) |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+## Discussions
+
+### Discussions List
+
+Returns a list of discussions for the specified repository using GraphQL
+
+#### Python SDK
+
+```python
+await github.discussions.list(
+    owner="<str>",
+    repo="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "discussions",
+    "action": "list",
+    "params": {
+        "owner": "<str>",
+        "repo": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `owner` | `string` | Yes | The account owner of the repository |
+| `repo` | `string` | Yes | The name of the repository |
+| `states` | `array<"OPEN" \| "CLOSED">` | No | Filter by discussion state |
+| `answered` | `boolean` | No | Filter by answered/unanswered status |
+| `per_page` | `integer` | No | The number of results per page |
+| `after` | `string` | No | Cursor for pagination |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+### Discussions Get
+
+Gets information about a specific discussion by number using GraphQL
+
+#### Python SDK
+
+```python
+await github.discussions.get(
+    owner="<str>",
+    repo="<str>",
+    number=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "discussions",
+    "action": "get",
+    "params": {
+        "owner": "<str>",
+        "repo": "<str>",
+        "number": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `owner` | `string` | Yes | The account owner of the repository |
+| `repo` | `string` | Yes | The name of the repository |
+| `number` | `integer` | Yes | The discussion number |
+| `fields` | `array<string>` | No | Optional array of field names to select |
+
+
+### Discussions API Search
+
+Search for discussions using GitHub's search syntax
+
+#### Python SDK
+
+```python
+await github.discussions.api_search(
+    query="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "discussions",
+    "action": "api_search",
+    "params": {
+        "query": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `string` | Yes | GitHub discussion search query using GitHub's search syntax |
+| `per_page` | `integer` | No | The number of results per page |
+| `after` | `string` | No | Cursor for pagination |
 | `fields` | `array<string>` | No | Optional array of field names to select |
 
 

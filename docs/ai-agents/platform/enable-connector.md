@@ -84,7 +84,7 @@ You can also enable connectors programmatically using the Agent Engine API. This
 Request an application token using your Airbyte client credentials.
 
 ```bash title="Request"
-curl --location 'https://cloud.airbyte.com/api/v1/applications/token' \
+curl --location 'https://api.airbyte.ai/api/v1/account/applications/token' \
   --header 'Content-Type: application/json' \
   --data '{
     "client_id": "<your_client_id>",

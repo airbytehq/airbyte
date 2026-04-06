@@ -1,4 +1,5 @@
 import styles from "./AgentConnectorRegistry.module.css";
+import slugs from "../data/agent_connectors.json";
 
 const ICON_BASE_URL =
   "https://connectors.airbyte.com/files/metadata/airbyte";
@@ -14,8 +15,8 @@ function formatConnectorName(slug) {
     .join(" ");
 }
 
-export default function AgentConnectorRegistry({ connectors: connectorJson }) {
-  const connectors = JSON.parse(connectorJson)
+export default function AgentConnectorRegistry() {
+  const connectors = slugs
     .map((slug) => ({
       slug,
       name: formatConnectorName(slug),

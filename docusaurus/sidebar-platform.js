@@ -463,7 +463,6 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
-            "enterprise-flex/external-secrets",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
           ],
@@ -522,6 +521,14 @@ module.exports = {
             {
               type: "doc",
               id: "operating-airbyte/ip-allowlist",
+            },
+            {
+              type: "doc",
+              id: "operating-airbyte/privatelink",
+            },
+            {
+              type: "doc",
+              id: "operating-airbyte/external-secrets",
             },
           ],
         },

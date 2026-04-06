@@ -8,13 +8,15 @@ The Intercom connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [Search](#contacts-search) |
+| Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Search](#contacts-search) |
 | Conversations | [List](#conversations-list), [Get](#conversations-get), [Search](#conversations-search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [Search](#companies-search) |
+| Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Search](#companies-search) |
 | Teams | [List](#teams-list), [Get](#teams-get), [Search](#teams-search) |
 | Admins | [List](#admins-list), [Get](#admins-get) |
-| Tags | [List](#tags-list), [Get](#tags-get) |
+| Tags | [List](#tags-list), [Create](#tags-create), [Get](#tags-get) |
+| Notes | [Create](#notes-create) |
 | Segments | [List](#segments-list), [Get](#segments-get) |
+| Internal Articles | [Create](#internal-articles-create) |
 
 ## Contacts
 
@@ -110,6 +112,126 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Contacts Create
+
+Create a new contact (user or lead)
+
+#### Python SDK
+
+```python
+await intercom.contacts.create(
+    role="<str>",
+    external_id="<str>",
+    email="<str>",
+    phone="<str>",
+    name="<str>",
+    avatar="<str>",
+    signed_up_at=0,
+    last_seen_at=0,
+    owner_id=0,
+    unsubscribed_from_emails=True,
+    custom_attributes={}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "create",
+    "params": {
+        "role": "<str>",
+        "external_id": "<str>",
+        "email": "<str>",
+        "phone": "<str>",
+        "name": "<str>",
+        "avatar": "<str>",
+        "signed_up_at": 0,
+        "last_seen_at": 0,
+        "owner_id": 0,
+        "unsubscribed_from_emails": True,
+        "custom_attributes": {}
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `role` | `string` | Yes | The role of the contact (user or lead) |
+| `external_id` | `string` | No | A unique identifier for the contact from your system |
+| `email` | `string` | No | The contact's email address |
+| `phone` | `string` | No | The contact's phone number |
+| `name` | `string` | No | The contact's full name |
+| `avatar` | `string` | No | An image URL for the contact's avatar |
+| `signed_up_at` | `integer` | No | Sign up timestamp (Unix) |
+| `last_seen_at` | `integer` | No | Last seen timestamp (Unix) |
+| `owner_id` | `integer` | No | The ID of the admin assigned as owner |
+| `unsubscribed_from_emails` | `boolean` | No | Whether the contact is unsubscribed from emails |
+| `custom_attributes` | `object` | No | Custom attributes for the contact |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `workspace_id` | `string \| null` |  |
+| `external_id` | `string \| null` |  |
+| `role` | `string \| null` |  |
+| `email` | `string \| null` |  |
+| `phone` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `avatar` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `social_profiles` | `object \| any` |  |
+| `has_hard_bounced` | `boolean \| null` |  |
+| `marked_email_as_spam` | `boolean \| null` |  |
+| `unsubscribed_from_emails` | `boolean \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `signed_up_at` | `integer \| null` |  |
+| `last_seen_at` | `integer \| null` |  |
+| `last_replied_at` | `integer \| null` |  |
+| `last_contacted_at` | `integer \| null` |  |
+| `last_email_opened_at` | `integer \| null` |  |
+| `last_email_clicked_at` | `integer \| null` |  |
+| `language_override` | `string \| null` |  |
+| `browser` | `string \| null` |  |
+| `browser_version` | `string \| null` |  |
+| `browser_language` | `string \| null` |  |
+| `os` | `string \| null` |  |
+| `location` | `object \| any` |  |
+| `android_app_name` | `string \| null` |  |
+| `android_app_version` | `string \| null` |  |
+| `android_device` | `string \| null` |  |
+| `android_os_version` | `string \| null` |  |
+| `android_sdk_version` | `string \| null` |  |
+| `android_last_seen_at` | `integer \| null` |  |
+| `ios_app_name` | `string \| null` |  |
+| `ios_app_version` | `string \| null` |  |
+| `ios_device` | `string \| null` |  |
+| `ios_os_version` | `string \| null` |  |
+| `ios_sdk_version` | `string \| null` |  |
+| `ios_last_seen_at` | `integer \| null` |  |
+| `custom_attributes` | `object \| null` |  |
+| `tags` | `object \| any` |  |
+| `notes` | `object \| any` |  |
+| `companies` | `object \| any` |  |
+
+
+</details>
+
 ### Contacts Get
 
 Get a single contact by ID
@@ -142,6 +264,129 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
+| `id` | `string` | Yes | Contact ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `workspace_id` | `string \| null` |  |
+| `external_id` | `string \| null` |  |
+| `role` | `string \| null` |  |
+| `email` | `string \| null` |  |
+| `phone` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `avatar` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `social_profiles` | `object \| any` |  |
+| `has_hard_bounced` | `boolean \| null` |  |
+| `marked_email_as_spam` | `boolean \| null` |  |
+| `unsubscribed_from_emails` | `boolean \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `signed_up_at` | `integer \| null` |  |
+| `last_seen_at` | `integer \| null` |  |
+| `last_replied_at` | `integer \| null` |  |
+| `last_contacted_at` | `integer \| null` |  |
+| `last_email_opened_at` | `integer \| null` |  |
+| `last_email_clicked_at` | `integer \| null` |  |
+| `language_override` | `string \| null` |  |
+| `browser` | `string \| null` |  |
+| `browser_version` | `string \| null` |  |
+| `browser_language` | `string \| null` |  |
+| `os` | `string \| null` |  |
+| `location` | `object \| any` |  |
+| `android_app_name` | `string \| null` |  |
+| `android_app_version` | `string \| null` |  |
+| `android_device` | `string \| null` |  |
+| `android_os_version` | `string \| null` |  |
+| `android_sdk_version` | `string \| null` |  |
+| `android_last_seen_at` | `integer \| null` |  |
+| `ios_app_name` | `string \| null` |  |
+| `ios_app_version` | `string \| null` |  |
+| `ios_device` | `string \| null` |  |
+| `ios_os_version` | `string \| null` |  |
+| `ios_sdk_version` | `string \| null` |  |
+| `ios_last_seen_at` | `integer \| null` |  |
+| `custom_attributes` | `object \| null` |  |
+| `tags` | `object \| any` |  |
+| `notes` | `object \| any` |  |
+| `companies` | `object \| any` |  |
+
+
+</details>
+
+### Contacts Update
+
+Update an existing contact by ID
+
+#### Python SDK
+
+```python
+await intercom.contacts.update(
+    role="<str>",
+    external_id="<str>",
+    email="<str>",
+    phone="<str>",
+    name="<str>",
+    avatar="<str>",
+    signed_up_at=0,
+    last_seen_at=0,
+    owner_id=0,
+    unsubscribed_from_emails=True,
+    custom_attributes={},
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "update",
+    "params": {
+        "role": "<str>",
+        "external_id": "<str>",
+        "email": "<str>",
+        "phone": "<str>",
+        "name": "<str>",
+        "avatar": "<str>",
+        "signed_up_at": 0,
+        "last_seen_at": 0,
+        "owner_id": 0,
+        "unsubscribed_from_emails": True,
+        "custom_attributes": {},
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `role` | `string` | No | The role of the contact (user or lead) |
+| `external_id` | `string` | No | A unique identifier for the contact from your system |
+| `email` | `string` | No | The contact's email address |
+| `phone` | `string` | No | The contact's phone number |
+| `name` | `string` | No | The contact's full name |
+| `avatar` | `string` | No | An image URL for the contact's avatar |
+| `signed_up_at` | `integer` | No | Sign up timestamp (Unix) |
+| `last_seen_at` | `integer` | No | Last seen timestamp (Unix) |
+| `owner_id` | `integer` | No | The ID of the admin assigned as owner |
+| `unsubscribed_from_emails` | `boolean` | No | Whether the contact is unsubscribed from emails |
+| `custom_attributes` | `object` | No | Custom attributes for the contact |
 | `id` | `string` | Yes | Contact ID |
 
 
@@ -670,6 +915,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `type` | `string \| null` |  |
 | `id` | `string` |  |
+| `app_id` | `string \| null` |  |
 | `name` | `string \| null` |  |
 | `company_id` | `string \| null` |  |
 | `plan` | `object \| any` |  |
@@ -693,6 +939,92 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `next_page` | `string \| null` |  |
+
+</details>
+
+### Companies Create
+
+Create a new company or update an existing one by company_id
+
+#### Python SDK
+
+```python
+await intercom.companies.create(
+    company_id="<str>",
+    name="<str>",
+    plan="<str>",
+    monthly_spend=0.0,
+    size=0,
+    website="<str>",
+    industry="<str>",
+    custom_attributes={}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "create",
+    "params": {
+        "company_id": "<str>",
+        "name": "<str>",
+        "plan": "<str>",
+        "monthly_spend": 0.0,
+        "size": 0,
+        "website": "<str>",
+        "industry": "<str>",
+        "custom_attributes": {}
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `company_id` | `string` | Yes | A unique identifier for the company from your system |
+| `name` | `string` | No | The name of the company |
+| `plan` | `string` | No | The name of the plan the company is on |
+| `monthly_spend` | `number` | No | The monthly spend of the company |
+| `size` | `integer` | No | The number of employees in the company |
+| `website` | `string` | No | The URL of the company website |
+| `industry` | `string` | No | The industry the company operates in |
+| `custom_attributes` | `object` | No | Custom attributes for the company |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `app_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `company_id` | `string \| null` |  |
+| `plan` | `object \| any` |  |
+| `size` | `integer \| null` |  |
+| `industry` | `string \| null` |  |
+| `website` | `string \| null` |  |
+| `remote_created_at` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `last_request_at` | `integer \| null` |  |
+| `session_count` | `integer \| null` |  |
+| `monthly_spend` | `number \| null` |  |
+| `user_count` | `integer \| null` |  |
+| `tags` | `object \| any` |  |
+| `segments` | `object \| any` |  |
+| `custom_attributes` | `object \| null` |  |
+
 
 </details>
 
@@ -740,6 +1072,93 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `type` | `string \| null` |  |
 | `id` | `string` |  |
+| `app_id` | `string \| null` |  |
+| `name` | `string \| null` |  |
+| `company_id` | `string \| null` |  |
+| `plan` | `object \| any` |  |
+| `size` | `integer \| null` |  |
+| `industry` | `string \| null` |  |
+| `website` | `string \| null` |  |
+| `remote_created_at` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `last_request_at` | `integer \| null` |  |
+| `session_count` | `integer \| null` |  |
+| `monthly_spend` | `number \| null` |  |
+| `user_count` | `integer \| null` |  |
+| `tags` | `object \| any` |  |
+| `segments` | `object \| any` |  |
+| `custom_attributes` | `object \| null` |  |
+
+
+</details>
+
+### Companies Update
+
+Update an existing company by ID
+
+#### Python SDK
+
+```python
+await intercom.companies.update(
+    name="<str>",
+    plan="<str>",
+    monthly_spend=0.0,
+    size=0,
+    website="<str>",
+    industry="<str>",
+    custom_attributes={},
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "update",
+    "params": {
+        "name": "<str>",
+        "plan": "<str>",
+        "monthly_spend": 0.0,
+        "size": 0,
+        "website": "<str>",
+        "industry": "<str>",
+        "custom_attributes": {},
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | No | The name of the company |
+| `plan` | `string` | No | The name of the plan the company is on |
+| `monthly_spend` | `number` | No | The monthly spend of the company |
+| `size` | `integer` | No | The number of employees in the company |
+| `website` | `string` | No | The URL of the company website |
+| `industry` | `string` | No | The industry the company operates in |
+| `custom_attributes` | `object` | No | Custom attributes for the company |
+| `id` | `string` | Yes | Company ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `app_id` | `string \| null` |  |
 | `name` | `string \| null` |  |
 | `company_id` | `string \| null` |  |
 | `plan` | `object \| any` |  |
@@ -1156,6 +1575,57 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tags Create
+
+Create a new tag or update an existing one
+
+#### Python SDK
+
+```python
+await intercom.tags.create(
+    name="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tags",
+    "action": "create",
+    "params": {
+        "name": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `name` | `string` | Yes | The name of the tag |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `name` | `string \| null` |  |
+| `applied_at` | `integer \| null` |  |
+| `applied_by` | `object \| any` |  |
+
+
+</details>
+
 ### Tags Get
 
 Get a single tag by ID
@@ -1203,6 +1673,66 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `name` | `string \| null` |  |
 | `applied_at` | `integer \| null` |  |
 | `applied_by` | `object \| any` |  |
+
+
+</details>
+
+## Notes
+
+### Notes Create
+
+Create a note on an existing contact
+
+#### Python SDK
+
+```python
+await intercom.notes.create(
+    body="<str>",
+    admin_id="<str>",
+    contact_id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "notes",
+    "action": "create",
+    "params": {
+        "body": "<str>",
+        "admin_id": "<str>",
+        "contact_id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `body` | `string` | Yes | The body of the note in HTML format |
+| `admin_id` | `string` | No | The ID of the admin creating the note |
+| `contact_id` | `string` | Yes | Contact ID to add note to |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string \| null` |  |
+| `id` | `string` |  |
+| `created_at` | `integer \| null` |  |
+| `contact` | `object \| any` |  |
+| `author` | `object \| any` |  |
+| `body` | `string \| null` |  |
 
 
 </details>
@@ -1306,6 +1836,71 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `integer \| null` |  |
 | `person_type` | `string \| null` |  |
 | `count` | `integer \| null` |  |
+
+
+</details>
+
+## Internal Articles
+
+### Internal Articles Create
+
+Create a new internal article in the workspace
+
+#### Python SDK
+
+```python
+await intercom.internal_articles.create(
+    title="<str>",
+    body="<str>",
+    owner_id=0,
+    author_id=0
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "internal_articles",
+    "action": "create",
+    "params": {
+        "title": "<str>",
+        "body": "<str>",
+        "owner_id": 0,
+        "author_id": 0
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `title` | `string` | Yes | The title of the article |
+| `body` | `string` | No | The content of the article in HTML |
+| `owner_id` | `integer` | Yes | The ID of the owner of the article |
+| `author_id` | `integer` | Yes | The ID of the author of the article |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer \| string` |  |
+| `title` | `string \| null` |  |
+| `body` | `string \| null` |  |
+| `owner_id` | `integer \| null` |  |
+| `author_id` | `integer \| null` |  |
+| `created_at` | `integer \| null` |  |
+| `updated_at` | `integer \| null` |  |
+| `locale` | `string \| null` |  |
 
 
 </details>

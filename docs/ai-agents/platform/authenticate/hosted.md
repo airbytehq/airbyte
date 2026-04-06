@@ -42,7 +42,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <scoped_token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<your_user_identifier>",
+    "customer_name": "<your_customer_name>",
     "connector_type": "github",
     "name": "My GitHub Connector",
     "credentials": {
@@ -60,7 +60,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <scoped_token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "external_user_id": "<your_user_identifier>",
+    "customer_name": "<your_customer_name>",
     "connector_type": "hubspot",
     "name": "My HubSpot Connector",
     "credentials": {

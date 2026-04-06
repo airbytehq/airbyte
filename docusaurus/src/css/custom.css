@@ -363,6 +363,21 @@ nav a.navbar__link--active {
   border-bottom: 3px solid var(--ifm-color-primary);
 }
 
+/* Active-route indicator for the Data Replication dropdown.
+   The wrapper <div> must stretch to full navbar height so the
+   border-bottom aligns with Agent Engine's underline. */
+@media (min-width: 996px) {
+  .dropdown--active-route {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-bottom: 3px solid var(--ifm-color-primary);
+  }
+  .dropdown--active-route > .navbar__link {
+    color: var(--ifm-color-primary) !important;
+  }
+}
+
 /* Hide Ask AI button until Osano consent is granted */
 .kapa-ai-hidden {
   display: none !important;

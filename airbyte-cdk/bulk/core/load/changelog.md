@@ -7,8 +7,15 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request | Subject                                                                                                                                                           |
-|---------|------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request | Subject                                                                                         |
+|---------|------------|--------------|-------------------------------------------------------------------------------------------------|
+| 1.0.7   | 2026-03-27 | | Fix: update Iceberg sort order before schema evolution to prevent ValidationException when deleting columns referenced by the sort order. Handles Dedupe-to-Append mode switches and PK changes. |
+| 1.0.6   | 2026-03-12 | [#74715](https://github.com/airbytehq/airbyte/pull/74715) | Fix: drop temp table after successful upsert to prevent duplicate records across syncs. |
+| 1.0.5   | 2026-03-10 | [#74723](https://github.com/airbytehq/airbyte/pull/74723) | Fix schema evolution: defer identifier field update when replacing columns to avoid Iceberg conflict. |
+| 1.0.4   | 2026-03-05 | [#74328](https://github.com/airbytehq/airbyte/pull/74328) | Fix iceberg dedup: map PK NumberType to StringType instead of DecimalType for identifier field compatibility. |
+| 1.0.3   | 2026-03-05 | [#74272](https://github.com/airbytehq/airbyte/pull/74272) | Fix iceberg dedup.                                                                              |
+| 1.0.2   | 2026-02-24 | | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944).         |
+| 1.0.1   | 2026-02-09 | [#72959](https://github.com/airbytehq/airbyte/pull/72959) | Fix: CVE-2026-25526 (Jinjava dependency bump).                                                  |
 | 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-load. Separate versioning for load package begins. |
 
 </details>
@@ -24,7 +31,6 @@ The entries below are from the unified bulk CDK before the split into separate b
 
 | Version | Date       | Pull Request                                             | CDK Component | Subject                                                                                                                                                                                                                                                                                                                                                         |
 |--------|------------|----------------------------------------------------------|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.6  | 2025-02-09 |                                                          | Load          | Fix: CVE-2026-25526                                                                                                                                                                                                                                                                                                                                                           |
 | 0.2.6  | 2025-02-02 |                                                          | Load          | Cleanup load-iceberg-parquet toolkit: remove unused methods from IcebergUtil, inline generation ID validation into IcebergTableWriterFactory, add unit tests for toolkit classes.                                                                                                                                                                               |
 | 0.2.5  | 2025-02-02 |                                                          | Load          | Fix legacy-task-loader base dependency: `implementation` -> `api` for transitive resolution. into IcebergTableWriterFactory, add unit tests for toolkit classes.                                                                                                                                                                                                |
 | 0.2.4  | 2025-01-29 |                                                          | Load, Extract | Load and Extract now declare base CDK as an `api` dependency with explicit version (1.0.0), enabling transitive dependency resolution for connectors. Moved micronautVersion to gradle.properties.                                                                                                                                                              |

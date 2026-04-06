@@ -82,6 +82,7 @@ async def slack_execute(entity: str, action: str, params: dict | None = None):
 ### Hosted
 
 In hosted mode, API credentials are stored securely in Airbyte Cloud. You provide your Airbyte credentials instead. 
+If your Airbyte client can access multiple organizations, also set `organization_id`.
 
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
@@ -90,7 +91,8 @@ from airbyte_agent_slack import SlackConnector, AirbyteAuthConfig
 
 connector = SlackConnector(
     auth_config=AirbyteAuthConfig(
-        external_user_id="<your_external_user_id>",
+        customer_name="<your_customer_name>",
+        organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
     )
@@ -112,8 +114,8 @@ This connector supports the following entities and actions. For more details, se
 |--------|---------|
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
 | Channels | [List](./REFERENCE.md#channels-list), [Get](./REFERENCE.md#channels-get), [Create](./REFERENCE.md#channels-create), [Update](./REFERENCE.md#channels-update), [Search](./REFERENCE.md#channels-search) |
-| Channel Messages | [List](./REFERENCE.md#channel-messages-list) |
-| Threads | [List](./REFERENCE.md#threads-list) |
+| Channel Messages | [List](./REFERENCE.md#channel-messages-list), [Search](./REFERENCE.md#channel-messages-search) |
+| Threads | [List](./REFERENCE.md#threads-list), [Search](./REFERENCE.md#threads-search) |
 | Messages | [Create](./REFERENCE.md#messages-create), [Update](./REFERENCE.md#messages-update) |
 | Channel Topics | [Create](./REFERENCE.md#channel-topics-create) |
 | Channel Purposes | [Create](./REFERENCE.md#channel-purposes-create) |
@@ -130,7 +132,7 @@ See the official [Slack API reference](https://api.slack.com/methods).
 
 ## Version information
 
-- **Package version:** 0.1.67
-- **Connector version:** 0.1.15
-- **Generated with Connector SDK commit SHA:** 8c602f77c94fa829be7c1e10d063c5234b17dbef
+- **Package version:** 0.1.87
+- **Connector version:** 0.1.17
+- **Generated with Connector SDK commit SHA:** f07b3c8f134cf5c31405771d57ff2d95748d241b
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/slack/CHANGELOG.md)
