@@ -4,6 +4,7 @@
 
 import base64
 import logging
+import time
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import requests
@@ -11,9 +12,9 @@ from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adcreative import AdCreative as FBAdCreative
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
-from facebook_business.exceptions import FacebookRequestError
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
@@ -134,19 +135,45 @@ class AdCreativesFromAds(FBMarketingStream):
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
 
     def _fetch_creative_details(self, creative_id: str) -> Optional[Mapping[str, Any]]:
-        """Fetch full creative details by ID using the AdCreative API"""
-        try:
-            creative = FBAdCreative(creative_id)
-            creative_data = creative.api_get(fields=self._get_creative_fields())
-            return creative_data.export_all_data()
-        except (FacebookRequestError, TypeError) as e:
-            logger.warning(f"Failed to fetch creative {creative_id}: {e}")
-            return None
-        except AirbyteTracedException as e:
-            if isinstance(e._exception, FacebookRequestError) and e._exception.http_status() == 500:
+        """Fetch full creative details by ID using the AdCreative API.
+
+        Retries on FacebookBadObjectError with exponential backoff (same
+        parameters as FBMarketingStream.read_records).  Falls back to
+        AirbyteTracedException(transient_error) after all retries are
+        exhausted.
+        """
+        for attempt in range(self._bad_object_max_retries):
+            try:
+                creative = FBAdCreative(creative_id)
+                creative_data = creative.api_get(fields=self._get_creative_fields())
+                return creative_data.export_all_data()
+            except FacebookBadObjectError as e:
+                if attempt < self._bad_object_max_retries - 1:
+                    wait_time = self._bad_object_backoff_factor * (2**attempt)
+                    logger.warning(
+                        "FacebookBadObjectError fetching creative %s on attempt %d/%d, retrying in %ds: %s",
+                        creative_id,
+                        attempt + 1,
+                        self._bad_object_max_retries,
+                        wait_time,
+                        e,
+                    )
+                    time.sleep(wait_time)
+                else:
+                    raise AirbyteTracedException(
+                        message="Facebook API returned inconsistent object data.",
+                        internal_message=str(e),
+                        failure_type=FailureType.transient_error,
+                    ) from e
+            except (FacebookRequestError, TypeError) as e:
                 logger.warning(f"Failed to fetch creative {creative_id}: {e}")
                 return None
-            raise
+            except AirbyteTracedException as e:
+                if isinstance(e._exception, FacebookRequestError) and e._exception.http_status() == 500:
+                    logger.warning(f"Failed to fetch creative {creative_id}: {e}")
+                    return None
+                raise
+        return None
 
     def read_records(
         self,
