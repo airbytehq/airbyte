@@ -811,6 +811,16 @@ streams:
   - $ref: "#/definitions/streams/company_segments"
   - $ref: "#/definitions/streams/tickets"
 
+# Concurrency tuning for source-intercom.
+# Intercom's lowest-tier rate limit is 1000 req/min (~17 req/s).
+# Starting concurrency = max(floor(17/4), 2) = 4.
+# The custom ErrorHandlerWithRateLimiter already provides proactive backoff
+# based on X-RateLimit-Remaining headers.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 25
+
 spec:
   type: Spec
   connection_specification:
