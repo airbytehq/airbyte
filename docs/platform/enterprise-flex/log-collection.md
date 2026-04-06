@@ -7,6 +7,10 @@ sidebar_label: Log Collection
 
 This guide explains how to collect logs from an Airbyte Flex data plane running in your Kubernetes cluster.
 
+:::info
+Requires data plane Helm chart version **2.1.0** or later. Structured JSON logging to stdout is enabled by default starting in 2.1.0. Earlier chart versions emit plaintext logs and do not propagate the log format setting to all containers.
+:::
+
 ## How Airbyte Emits Logs
 
 The Airbyte data plane has three components that emit logs to stdout:
@@ -21,7 +25,7 @@ You collect these logs the same way you collect logs from any other workload in 
 
 ### Log Format
 
-The data plane Helm chart sets `PLATFORM_LOG_FORMAT=json` by default. Each line on stdout from all Airbyte containers is a JSON object:
+The data plane Helm chart sets `PLATFORM_LOG_FORMAT=json` by default (starting in version 2.1.0). Each line on stdout from all Airbyte containers is a JSON object:
 
 ```json
 {"timestamp":1740494422000,"message":"Starting sync for connection abc-123","level":"INFO","logSource":"source","caller":{"className":"io.airbyte.container.orchestrator.worker.ReplicationWorker","methodName":"run","lineNumber":245,"threadName":"replication-worker-1"},"throwable":null}
