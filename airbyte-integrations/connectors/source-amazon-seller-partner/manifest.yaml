@@ -3013,11 +3013,10 @@ definitions:
     status_mapping:
       failed:
         - FATAL
+        - CANCELLED
       running:
         - IN_PROGRESS
         - IN_QUEUE
-      timeout:
-        - CANCELLED
       completed:
         - DONE
     download_target_extractor:
