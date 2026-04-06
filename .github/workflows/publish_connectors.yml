@@ -362,6 +362,21 @@ jobs:
           grep -n "enableProgressiveRollout" metadata.yaml
           echo "Progressive rollout enabled in metadata.yaml"
 
+      - name: Disable progressive rollout for preview builds
+        if: needs.publish_options.outputs.with-semver-suffix == 'preview'
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          echo "Disabling progressive rollout for preview build..."
+          echo "=== enableProgressiveRollout BEFORE update ==="
+          grep -n "enableProgressiveRollout" metadata.yaml || echo "(not found)"
+          # Ephemerally disable progressive rollout in metadata.yaml (not committed back).
+          # Preview versions are not RC versions and the validator rejects
+          # enableProgressiveRollout=true on non-RC versions.
+          yq -i '.data.releases.rolloutConfiguration.enableProgressiveRollout = false' metadata.yaml
+          echo "=== enableProgressiveRollout AFTER update ==="
+          grep -n "enableProgressiveRollout" metadata.yaml
+          echo "Progressive rollout disabled in metadata.yaml"
+
       # --- Ephemeral version bump for pre-release builds ---
       # For preview builds, the metadata.yaml still contains the base version (e.g. 3.2.3)
       # but the actual published tag is the preview version (e.g. 3.2.3-preview.820ce48).
