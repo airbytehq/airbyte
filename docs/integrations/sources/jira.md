@@ -169,10 +169,25 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
+| 4.3.16 | 2026-03-10 | [74500](https://github.com/airbytehq/airbyte/pull/74500) | Update dependencies |
+| 4.3.15 | 2026-02-24 | [73898](https://github.com/airbytehq/airbyte/pull/73898) | Update dependencies |
+| 4.3.14 | 2026-02-17 | [73494](https://github.com/airbytehq/airbyte/pull/73494) | Update dependencies |
+| 4.3.13 | 2026-02-10 | [73044](https://github.com/airbytehq/airbyte/pull/73044) | Update dependencies |
+| 4.3.12 | 2026-02-03 | [72758](https://github.com/airbytehq/airbyte/pull/72758) | Update dependencies |
+| 4.3.11 | 2026-01-20 | [71963](https://github.com/airbytehq/airbyte/pull/71963) | Update dependencies |
+| 4.3.10 | 2026-01-14 | [71423](https://github.com/airbytehq/airbyte/pull/71423) | Update dependencies |
+| 4.3.9 | 2025-12-18 | [70533](https://github.com/airbytehq/airbyte/pull/70533) | Update dependencies |
+| 4.3.8 | 2025-11-25 | [70186](https://github.com/airbytehq/airbyte/pull/70186) | Update dependencies |
+| 4.3.7 | 2025-11-18 | [69571](https://github.com/airbytehq/airbyte/pull/69571) | Update dependencies |
+| 4.3.6 | 2025-10-29 | [68818](https://github.com/airbytehq/airbyte/pull/68818) | Update dependencies |
+| 4.3.5 | 2025-10-21 | [68478](https://github.com/airbytehq/airbyte/pull/68478) | Update dependencies |
+| 4.3.4 | 2025-10-14 | [67962](https://github.com/airbytehq/airbyte/pull/67962) | Update dependencies |
+| 4.3.3 | 2025-10-07 | [67375](https://github.com/airbytehq/airbyte/pull/67375) | Update dependencies |
 | 4.3.2 | 2025-09-30 | [66791](https://github.com/airbytehq/airbyte/pull/66791) | Update dependencies |
 | 4.3.1 | 2025-09-09 | [65900](https://github.com/airbytehq/airbyte/pull/65900) | Update dependencies |
-| 4.3.0 | 2025-09-03 | [65917](https://github.com/airbytehq/airbyte/pull/65917) | Add issue_changelogs stream |
-| 4.2.5 | 2025-08-26 | [65565](https://github.com/airbytehq/airbyte/pull/65565) | Increases `maxSecondsBetweenMessages` and defaults start_date to 2 years in the past |
+| 4.3.0 | 2025-09-08 | [65917](https://github.com/airbytehq/airbyte/pull/65917) | Add issue_changelogs stream |
+| 4.2.5 | 2025-08-27 | [65565](https://github.com/airbytehq/airbyte/pull/65565) | Increases `maxSecondsBetweenMessages` and defaults start_date to 2 years in the past |
 | 4.2.4 | 2025-08-23 | [65337](https://github.com/airbytehq/airbyte/pull/65337) | Update dependencies |
 | 4.2.3 | 2025-08-09 | [64583](https://github.com/airbytehq/airbyte/pull/64583) | Update dependencies |
 | 4.2.2 | 2025-08-02 | [64216](https://github.com/airbytehq/airbyte/pull/64216) | Update dependencies |

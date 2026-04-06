@@ -1,0 +1,48 @@
+[
+  {
+    "type": "campaign",
+    "id": "campaign_001",
+    "attributes": {
+      "name": "Summer Sale Campaign",
+      "status": "Sent",
+      "archived": false,
+      "audiences": {
+        "included": ["list_001"],
+        "excluded": []
+      },
+      "send_options": {
+        "use_smart_sending": true,
+        "is_transactional": false
+      },
+      "tracking_options": {
+        "is_add_utm": true,
+        "is_tracking_clicks": true,
+        "is_tracking_opens": true
+      },
+      "send_strategy": {
+        "method": "immediate",
+        "options_static": null,
+        "options_throttled": null,
+        "options_sto": null
+      },
+      "created_at": "2024-01-01T10:00:00+00:00",
+      "scheduled_at": "2024-01-15T10:00:00+00:00",
+      "updated_at": "2024-01-15T12:30:00+00:00",
+      "send_time": "2024-01-15T10:00:00+00:00"
+    },
+    "relationships": {
+      "campaign-messages": {
+        "links": {
+          "self": "https://a.klaviyo.com/api/campaigns/campaign_001/relationships/campaign-messages",
+          "related": "https://a.klaviyo.com/api/campaigns/campaign_001/campaign-messages"
+        }
+      },
+      "tags": {
+        "data": []
+      }
+    },
+    "links": {
+      "self": "https://a.klaviyo.com/api/campaigns/campaign_001"
+    }
+  }
+]

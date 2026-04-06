@@ -1,43 +1,32 @@
 plugins {
-    id 'airbyte-java-connector'
+    id 'airbyte-bulk-connector'
     id "io.airbyte.gradle.docker"
     id 'airbyte-connector-docker-convention'
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.48.18'
-    features = ['db-sources']
-    useLocalCdk = false
-}
-
-java {
-    // TODO: rewrite code to avoid javac warnings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-try,-rawtypes"
-    }
-    compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-this-escape"
-    }
-}
-
 application {
-    mainClass = 'io.airbyte.integrations.source.mssql.MssqlSource'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.source.mssql.MsSqlServerSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc', 'extract-cdc']
 }
 
 dependencies {
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.10.0.jre11'
-    implementation 'io.debezium:debezium-embedded:3.0.7.Final'
-    implementation 'io.debezium:debezium-connector-sqlserver:3.0.7.Final'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.10.1.jre11'
+    implementation 'com.azure:azure-identity:1.15.3'
+    implementation 'io.debezium:debezium-embedded:3.3.0.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:3.3.0.Final'
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
-
-    testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
+    api 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
 
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
     testImplementation 'org.testcontainers:mssqlserver:1.19.0'
-}
-
-compileKotlin {
-
+    testImplementation 'com.zaxxer:HikariCP:5.1.0'
+    testImplementation("io.mockk:mockk:1.12.0")
+    api 'com.google.guava:guava:33.4.0-jre'
 }

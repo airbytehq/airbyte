@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -313,7 +313,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
-                        Where(Or(listOf(And(listOf(Greater(id, IntCodec.encode(22))))))),
+                        Where(Greater(id, IntCodec.encode(22))),
                     ),
                     NoWhere,
                     OrderBy(id),
@@ -372,7 +372,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
-                        Where(Or(listOf(And(listOf(Greater(id, IntCodec.encode(22))))))),
+                        Where(Greater(id, IntCodec.encode(22))),
                     ),
                     NoWhere,
                     OrderBy(id)
@@ -456,30 +456,8 @@ class DefaultJdbcPartitionFactoryTest {
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                         Where(
                             And(
-                                Or(
-                                    listOf(
-                                        And(
-                                            listOf(
-                                                GreaterOrEqual(
-                                                    ts,
-                                                    LocalDateCodec.encode(cursorValue)
-                                                )
-                                            )
-                                        )
-                                    )
-                                ),
-                                Or(
-                                    listOf(
-                                        And(
-                                            listOf(
-                                                LesserOrEqual(
-                                                    ts,
-                                                    LocalDateCodec.encode(cursorUpperBound)
-                                                )
-                                            )
-                                        )
-                                    )
-                                )
+                                GreaterOrEqual(ts, LocalDateCodec.encode(cursorValue)),
+                                LesserOrEqual(ts, LocalDateCodec.encode(cursorUpperBound))
                             )
                         ),
                     ),

@@ -1,116 +1,140 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.sql
 
-import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
+import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.write.load.CSV_FORMAT
+import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
+import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMITER
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-internal const val COUNT_TOTAL_ALIAS = "total"
+internal const val COUNT_TOTAL_ALIAS = "TOTAL"
+internal const val NOT_NULL = "NOT NULL"
+
+// Snowflake-compatible (uppercase) versions of the Airbyte meta column names
+internal val SNOWFLAKE_AB_RAW_ID = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+internal val SNOWFLAKE_AB_EXTRACTED_AT = COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()
+internal val SNOWFLAKE_AB_META = COLUMN_NAME_AB_META.toSnowflakeCompatibleName()
+internal val SNOWFLAKE_AB_GENERATION_ID = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+internal val SNOWFLAKE_AB_CDC_DELETED_AT_COLUMN = CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName()
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * This extension is here to avoid writing `.also { log.info { it }}` for every returned string we
+ * want to log
+ */
+fun String.andLog(): String {
+    log.info { this.trim() }
+    return this
+}
+
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
-    private val columnUtils: SnowflakeColumnUtils,
     private val uuidGenerator: UUIDGenerator,
-    private val snowflakeConfiguration: SnowflakeConfiguration,
-    private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
+    private val config: SnowflakeConfiguration,
+    private val columnManager: SnowflakeColumnManager,
 ) {
-
-    /**
-     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
-     * we want to log
-     */
-    private fun String.andLog(): String {
-        log.info { this.trim() }
-        return this
-    }
-
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${fullyQualifiedName(tableName)}".andLog()
     }
 
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
+        return "CREATE SCHEMA IF NOT EXISTS ${fullyQualifiedNamespace(namespace)}".andLog()
     }
 
     fun createTable(
-        stream: DestinationStream,
         tableName: TableName,
-        columnNameMapping: ColumnNameMapping,
+        tableSchema: StreamTableSchema,
         replace: Boolean
     ): String {
+        val finalSchema = tableSchema.columnSchema.finalSchema
+        val metaColumns = columnManager.getMetaColumns()
+
+        // Build column declarations from the meta columns and user schema
         val columnDeclarations =
-            columnUtils
-                .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
-                .joinToString(",\n")
+            buildList {
+                    // Add Airbyte meta columns from the column manager
+                    metaColumns.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("${columnName.quote()} ${columnType.type}$nullability")
+                    }
+
+                    // Add user columns from the munged schema
+                    finalSchema.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("${columnName.quote()} ${columnType.type}$nullability")
+                    }
+                }
+                .joinToString(",\n    ")
 
         // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
         val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
 
         val createTableStatement =
             """
-            $createOrReplace TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (
-                $columnDeclarations
-            )
-        """.trimIndent()
+            |$createOrReplace TABLE ${fullyQualifiedName(tableName)} (
+            |    $columnDeclarations
+            |)
+            """.trimMargin() // Something was tripping up trimIndent so we opt for trimMargin
 
         return createTableStatement.andLog()
     }
 
     fun showColumns(tableName: TableName): String =
-        "SHOW COLUMNS IN TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        "SHOW COLUMNS IN TABLE ${fullyQualifiedName(tableName)}".andLog()
 
     fun copyTable(
-        columnNameMapping: ColumnNameMapping,
+        columnNames: Set<String>,
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val columnNames = columnUtils.getColumnNames(columnNameMapping)
+        val columnList = columnNames.joinToString(", ") { it.quote() }
 
         return """
-            INSERT INTO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)} 
+            INSERT INTO ${fullyQualifiedName(targetTableName)} 
             (
-                $columnNames
+                $columnList
             )
             SELECT
-                $columnNames
-            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
+                $columnList
+            FROM ${fullyQualifiedName(sourceTableName)}
             """
             .trimIndent()
             .andLog()
     }
 
     fun upsertTable(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping,
+        tableSchema: StreamTableSchema,
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val importType = stream.importType as Dedupe
+        val finalSchema = tableSchema.columnSchema.finalSchema
 
         // Build primary key matching condition
+        val pks = tableSchema.getPrimaryKey().flatten()
         val pkEquivalent =
-            if (importType.primaryKey.isNotEmpty()) {
-                importType.primaryKey.joinToString(" AND ") { fieldPath ->
-                    val fieldName = fieldPath.first()
-                    val columnName = columnNameMapping[fieldName] ?: fieldName
-                    """(target_table."$columnName" = new_record."$columnName" OR (target_table."$columnName" IS NULL AND new_record."$columnName" IS NULL))"""
+            if (pks.isNotEmpty()) {
+                pks.joinToString(" AND ") { columnName ->
+                    val targetTableColumnName = "target_table.${columnName.quote()}"
+                    val newRecordColumnName = "new_record.${columnName.quote()}"
+                    """($targetTableColumnName = $newRecordColumnName OR ($targetTableColumnName IS NULL AND $newRecordColumnName IS NULL))"""
                 }
             } else {
                 // If no primary key, we can't perform a meaningful upsert
@@ -118,69 +142,62 @@ class SnowflakeDirectLoadSqlGenerator(
             }
 
         // Build column lists for INSERT and UPDATE
-        val columnList: String =
-            columnUtils
-                .columnsAndTypes(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping
-                )
-                .map { it.columnName }
-                .joinToString(",\n") { "\"$it\"" }
+        val allColumns = buildList {
+            add(SNOWFLAKE_AB_RAW_ID)
+            add(SNOWFLAKE_AB_EXTRACTED_AT)
+            add(SNOWFLAKE_AB_META)
+            add(SNOWFLAKE_AB_GENERATION_ID)
+            addAll(finalSchema.keys)
+        }
 
+        val columnList: String = allColumns.joinToString(",\n  ") { it.quote() }
         val newRecordColumnList: String =
-            columnUtils
-                .columnsAndTypes(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping
-                )
-                .map { it.columnName }
-                .joinToString(",\n") { "new_record.\"$it\"" }
+            allColumns.joinToString(",\n  ") { "new_record.${it.quote()}" }
 
         // Get deduped records from source
-        val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
+        val selectSourceRecords = selectDedupedRecords(tableSchema, sourceTableName)
 
         // Build cursor comparison for determining which record is newer
         val cursorComparison: String
-        if (importType.cursor.isNotEmpty()) {
-            val cursorFieldName = importType.cursor.first()
-            val cursorColumnName = columnNameMapping[cursorFieldName] ?: cursorFieldName
-            val cursor = "\"$cursorColumnName\""
+        val cursor = tableSchema.getCursor().firstOrNull()
+        if (cursor != null) {
+            val targetTableCursor = "target_table.${cursor.quote()}"
+            val newRecordCursor = "new_record.${cursor.quote()}"
             cursorComparison =
                 """
                 (
-                  target_table.$cursor < new_record.$cursor
-                  OR (target_table.$cursor = new_record.$cursor AND target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT")
-                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT")
-                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS $NOT_NULL)
+                  $targetTableCursor < $newRecordCursor
+                  OR ($targetTableCursor = $newRecordCursor AND target_table."$SNOWFLAKE_AB_EXTRACTED_AT" < new_record."$SNOWFLAKE_AB_EXTRACTED_AT")
+                  OR ($targetTableCursor IS NULL AND $newRecordCursor IS NULL AND target_table."$SNOWFLAKE_AB_EXTRACTED_AT" < new_record."$SNOWFLAKE_AB_EXTRACTED_AT")
+                  OR ($targetTableCursor IS NULL AND $newRecordCursor IS $NOT_NULL)
                 )
             """.trimIndent()
         } else {
             // No cursor - use extraction timestamp only
             cursorComparison =
-                """target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT""""
+                """target_table."$SNOWFLAKE_AB_EXTRACTED_AT" < new_record."$SNOWFLAKE_AB_EXTRACTED_AT""""
         }
 
         // Build column assignments for UPDATE
         val columnAssignments: String =
-            (stream.schema.asColumns().keys + COLUMN_NAMES).joinToString(",\n") { fieldName ->
-                val column = columnNameMapping[fieldName] ?: fieldName
-                "\"$column\" = new_record.\"$column\""
+            allColumns.joinToString(",\n  ") { column ->
+                "${column.quote()} = new_record.${column.quote()}"
             }
 
         // Handle CDC deletions based on mode
         val cdcDeleteClause: String
         val cdcSkipInsertClause: String
         if (
-            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
-                snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+            finalSchema.containsKey(SNOWFLAKE_AB_CDC_DELETED_AT_COLUMN) &&
+                config.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
-                "WHEN MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NOT NULL AND $cursorComparison THEN DELETE"
+                "WHEN MATCHED AND new_record.\"${SNOWFLAKE_AB_CDC_DELETED_AT_COLUMN}\" IS NOT NULL AND $cursorComparison THEN DELETE"
             // And skip insertion entirely if there's no matching record.
             // (This is possible if a single T+D batch contains both an insertion and deletion for
             // the same PK)
-            cdcSkipInsertClause = "AND new_record.\"_ab_cdc_deleted_at\" IS NULL"
+            cdcSkipInsertClause = "AND new_record.\"${SNOWFLAKE_AB_CDC_DELETED_AT_COLUMN}\" IS NULL"
         } else {
             cdcDeleteClause = ""
             cdcSkipInsertClause = ""
@@ -190,35 +207,35 @@ class SnowflakeDirectLoadSqlGenerator(
         val mergeStatement =
             if (cdcDeleteClause.isNotEmpty()) {
                 """
-            MERGE INTO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)} AS target_table
-            USING (
-              $selectSourceRecords
-            ) AS new_record
-            ON $pkEquivalent
-            $cdcDeleteClause
-            WHEN MATCHED AND $cursorComparison THEN UPDATE SET
-              $columnAssignments
-            WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
-              $columnList
-            ) VALUES (
-              $newRecordColumnList
-            )
-        """.trimIndent()
+            |MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
+            |USING (
+            |$selectSourceRecords
+            |) AS new_record
+            |ON $pkEquivalent
+            |$cdcDeleteClause
+            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+            |  $columnAssignments
+            |WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
+            |  $columnList
+            |) VALUES (
+            |  $newRecordColumnList
+            |)
+        """.trimMargin()
             } else {
                 """
-            MERGE INTO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)} AS target_table
-            USING (
-              $selectSourceRecords
-            ) AS new_record
-            ON $pkEquivalent
-            WHEN MATCHED AND $cursorComparison THEN UPDATE SET
-              $columnAssignments
-            WHEN NOT MATCHED THEN INSERT (
-              $columnList
-            ) VALUES (
-              $newRecordColumnList
-            )
-        """.trimIndent()
+            |MERGE INTO ${fullyQualifiedName(targetTableName)} AS target_table
+            |USING (
+            |$selectSourceRecords
+            |) AS new_record
+            |ON $pkEquivalent
+            |WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+            |  $columnAssignments
+            |WHEN NOT MATCHED THEN INSERT (
+            |  $columnList
+            |) VALUES (
+            |  $newRecordColumnList
+            |)
+        """.trimMargin()
             }
 
         return mergeStatement.andLog()
@@ -229,133 +246,128 @@ class SnowflakeDirectLoadSqlGenerator(
      * table. Uses ROW_NUMBER() window function to select the most recent record per primary key.
      */
     private fun selectDedupedRecords(
-        stream: DestinationStream,
-        sourceTableName: TableName,
-        columnNameMapping: ColumnNameMapping
+        tableSchema: StreamTableSchema,
+        sourceTableName: TableName
     ): String {
-        val columnList: String =
-            (stream.schema.asColumns().keys + COLUMN_NAMES).joinToString(",\n") { fieldName ->
-                val columnName = columnNameMapping[fieldName] ?: fieldName
-                "\"$columnName\""
-            }
-
-        val importType = stream.importType as Dedupe
+        val allColumns = buildList {
+            add(SNOWFLAKE_AB_RAW_ID)
+            add(SNOWFLAKE_AB_EXTRACTED_AT)
+            add(SNOWFLAKE_AB_META)
+            add(SNOWFLAKE_AB_GENERATION_ID)
+            addAll(tableSchema.columnSchema.finalSchema.keys)
+        }
+        val columnList: String = allColumns.joinToString(",\n      ") { it.quote() }
 
         // Build the primary key list for partitioning
+        val pks = tableSchema.getPrimaryKey().flatten()
         val pkList =
-            if (importType.primaryKey.isNotEmpty()) {
-                importType.primaryKey.joinToString(",") { fieldPath ->
-                    val columnName = columnNameMapping[fieldPath.first()] ?: fieldPath.first()
-                    "\"$columnName\""
-                }
+            if (pks.isNotEmpty()) {
+                pks.joinToString(",") { it.quote() }
             } else {
                 // Should not happen as we check this earlier, but handle it defensively
                 throw IllegalArgumentException("Cannot deduplicate without primary key")
             }
 
         // Build cursor order clause for sorting within each partition
+        val cursor = tableSchema.getCursor().firstOrNull()
         val cursorOrderClause =
-            if (importType.cursor.isNotEmpty()) {
-                val columnName =
-                    columnNameMapping[importType.cursor.first()] ?: importType.cursor.first()
-                "\"$columnName\" DESC NULLS LAST,"
+            if (cursor != null) {
+                "${cursor.quote()} DESC NULLS LAST,"
             } else {
                 ""
             }
 
         return """
-            WITH records AS (
-              SELECT
-                $columnList
-              FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
-            ), numbered_rows AS (
-              SELECT *, ROW_NUMBER() OVER (
-                PARTITION BY $pkList ORDER BY $cursorOrderClause "$COLUMN_NAME_AB_EXTRACTED_AT" DESC
-              ) AS row_number
-              FROM records
-            )
-            SELECT $columnList
-            FROM numbered_rows
-            WHERE row_number = 1
+            |  WITH records AS (
+            |    SELECT
+            |      $columnList
+            |    FROM ${fullyQualifiedName(sourceTableName)}
+            |  ), numbered_rows AS (
+            |    SELECT *, ROW_NUMBER() OVER (
+            |      PARTITION BY $pkList ORDER BY $cursorOrderClause "$SNOWFLAKE_AB_EXTRACTED_AT" DESC
+            |    ) AS row_number
+            |    FROM records
+            |  )
+            |  SELECT $columnList
+            |  FROM numbered_rows
+            |  WHERE row_number = 1
         """
-            .trimIndent()
+            .trimMargin()
             .andLog()
     }
 
     fun dropTable(tableName: TableName): String {
-        return "DROP TABLE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
-    }
-
-    fun dropStage(tableName: TableName): String {
-        return "DROP STAGE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)}".andLog()
+        return "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)}".andLog()
     }
 
     fun getGenerationId(
         tableName: TableName,
     ): String {
         return """
-            SELECT "$COLUMN_NAME_AB_GENERATION_ID"
-            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} 
+            SELECT "${columnManager.getGenerationIdColumnName()}"
+            FROM ${fullyQualifiedName(tableName)}
             LIMIT 1
         """
             .trimIndent()
             .andLog()
     }
 
-    fun createFileFormat(namespace: String): String {
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        return """
-            CREATE OR REPLACE FILE FORMAT $formatName
-            TYPE = 'CSV'
-            FIELD_DELIMITER = '${CSV_FORMAT.delimiterString}'
-            RECORD_DELIMITER = '${CSV_FORMAT.recordSeparator}'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-        """.trimIndent()
-    }
-
     fun createSnowflakeStage(tableName: TableName): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
-        return """
-            CREATE OR REPLACE STAGE $stageName
-                FILE_FORMAT = $formatName;
-        """
-            .trimIndent()
-            .andLog()
+        val stageName = fullyQualifiedStageName(tableName)
+        return "CREATE STAGE IF NOT EXISTS $stageName".andLog()
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val stageName = fullyQualifiedStageName(tableName, true)
         return """
-            PUT 'file://$tempFilePath' @$stageName
-            AUTO_COMPRESS = TRUE
+            PUT 'file://$tempFilePath' '@$stageName'
+            AUTO_COMPRESS = FALSE
+            SOURCE_COMPRESSION = GZIP
             OVERWRITE = TRUE
         """
             .trimIndent()
             .andLog()
     }
 
-    fun copyFromStage(tableName: TableName): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
+    fun copyFromStage(
+        tableName: TableName,
+        filename: String,
+        columnNames: List<String>? = null
+    ): String {
+        val stageName = fullyQualifiedStageName(tableName, true)
+        val columnList =
+            columnNames?.let { names -> "(${names.joinToString(", ") { it.quote() }})" } ?: ""
 
         return """
-            COPY INTO ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
-            FROM @$stageName
-            FILE_FORMAT = $formatName
-            ON_ERROR = 'ABORT_STATEMENT'
-            PURGE = TRUE;
+            |COPY INTO ${fullyQualifiedName(tableName)}$columnList
+            |FROM '@$stageName'
+            |FILE_FORMAT = (
+            |    TYPE = 'CSV'
+            |    COMPRESSION = GZIP
+            |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+            |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            |    TRIM_SPACE = TRUE
+            |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            |    REPLACE_INVALID_CHARACTERS = TRUE
+            |    ESCAPE = NONE
+            |    ESCAPE_UNENCLOSED_FIELD = NONE
+            |)
+            |ON_ERROR = 'ABORT_STATEMENT'
+            |PURGE = TRUE
+            |files = ('$filename')
         """
-            .trimIndent()
+            .trimMargin()
             .andLog()
     }
 
     fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} SWAP WITH ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${fullyQualifiedName(sourceTableName)} SWAP WITH ${
+            fullyQualifiedName(
+                targetTableName,
+            )
+        }
         """
             .trimIndent()
             .andLog()
@@ -365,7 +377,11 @@ class SnowflakeDirectLoadSqlGenerator(
         // Snowflake RENAME TO only accepts the table name, not a fully qualified name
         // The renamed table stays in the same schema
         return """
-            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} RENAME TO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${fullyQualifiedName(sourceTableName)} RENAME TO ${
+            fullyQualifiedName(
+                targetTableName,
+            )
+        }
         """
             .trimIndent()
             .andLog()
@@ -375,45 +391,112 @@ class SnowflakeDirectLoadSqlGenerator(
         schemaName: String,
         tableName: String,
     ): String =
-        """DESCRIBE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
+        """DESCRIBE TABLE ${fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
 
     fun alterTable(
         tableName: TableName,
-        addedColumns: Set<ColumnDefinition>,
-        deletedColumns: Set<ColumnDefinition>,
-        modifiedColumns: Set<ColumnDefinition>,
+        addedColumns: Map<String, ColumnType>,
+        deletedColumns: Map<String, ColumnType>,
+        modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
-        val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
-        addedColumns.forEach {
+        val prettyTableName = fullyQualifiedName(tableName)
+        addedColumns.forEach { (name, columnType) ->
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN \"${it.name}\" ${it.type};".andLog()
+                // Note that we intentionally don't set NOT NULL.
+                // We're adding a new column, and we don't know what constitutes a reasonable
+                // default value for preexisting records.
+                // So we add the column as nullable.
+                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog(),
             )
         }
         deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"${it.name}\";".andLog())
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
-        modifiedColumns.forEach {
-            val tempColumn = "${it.name}_${uuidGenerator.v4()}"
-            clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN \"$tempColumn\" ${it.type};".andLog()
-            )
-            clauses.add(
-                "UPDATE $prettyTableName SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog()
-            )
-            val backupColumn = "${tempColumn}_backup"
-            clauses.add(
-                """ALTER TABLE $prettyTableName
-                RENAME COLUMN "${it.name}" TO "$backupColumn";
-            """.trimIndent()
-            )
-            clauses.add(
-                """ALTER TABLE $prettyTableName
-                RENAME COLUMN "$tempColumn" TO "${it.name}";
-            """.trimIndent()
-            )
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"$backupColumn\";".andLog())
+        modifiedColumns.forEach { (name, typeChange) ->
+            if (typeChange.originalType.type != typeChange.newType.type) {
+                // If we're changing the actual column type, then we need to add a temp column,
+                // cast the original column to that column, drop the original column,
+                // and rename the temp column.
+                val tempColumn = "${name}_${uuidGenerator.v4()}"
+                clauses.add(
+                    // As above: we add the column as nullable.
+                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog(),
+                )
+                clauses.add(
+                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog(),
+                )
+                val backupColumn = "${tempColumn}_backup"
+                clauses.add(
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$name" TO "$backupColumn";
+                    """.trimIndent(),
+                )
+                clauses.add(
+                    """
+                    ALTER TABLE $prettyTableName
+                    RENAME COLUMN "$tempColumn" TO "$name";
+                    """.trimIndent(),
+                )
+                clauses.add(
+                    "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog(),
+                )
+            } else if (!typeChange.originalType.nullable && typeChange.newType.nullable) {
+                // If the type is unchanged, we can change a column from NOT NULL to nullable.
+                // But we'll never do the reverse, because there's a decent chance that historical
+                // records had null values.
+                // Users can always manually ALTER COLUMN ... SET NOT NULL if they want.
+                clauses.add(
+                    """ALTER TABLE $prettyTableName ALTER COLUMN "$name" DROP NOT NULL;""".andLog(),
+                )
+            } else {
+                log.info {
+                    "Table ${tableName.toPrettyString()} column $name wants to change from nullable to non-nullable; ignoring this change."
+                }
+            }
         }
         return clauses
     }
+
+    @VisibleForTesting
+    fun fullyQualifiedName(tableName: TableName): String =
+        combineParts(listOf(getDatabaseName(), tableName.namespace, tableName.name))
+
+    @VisibleForTesting
+    fun fullyQualifiedNamespace(namespace: String) =
+        combineParts(listOf(getDatabaseName(), namespace))
+
+    @VisibleForTesting
+    fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
+        val currentTableName =
+            if (escape) {
+                tableName.name
+            } else {
+                tableName.name
+            }
+        return combineParts(
+            parts =
+                listOf(
+                    getDatabaseName(),
+                    tableName.namespace,
+                    "$STAGE_NAME_PREFIX$currentTableName",
+                ),
+            escape = escape,
+        )
+    }
+
+    @VisibleForTesting
+    internal fun combineParts(parts: List<String>, escape: Boolean = false): String =
+        parts
+            .map { if (escape) sqlEscape(it) else it }
+            .joinToString(separator = ".") {
+                if (!it.startsWith(QUOTE)) {
+                    "$QUOTE$it$QUOTE"
+                } else {
+                    it
+                }
+            }
+
+    private fun getDatabaseName() = config.database.toSnowflakeCompatibleName()
 }

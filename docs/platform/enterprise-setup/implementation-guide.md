@@ -12,18 +12,15 @@ Once you [have a license key](https://airbyte.com/company/talk-to-sales), you ca
 
 Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
-:::note
-Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instructions on this page describe both V1 and V2 requirements. Airbyte recommends using Helm chart V2 from the start. The new chart will become mandatory in the future and you can avoid having to upgrade later.
-:::
-
 ## Prerequisites
 
 ### Infrastructure Prerequisites
-For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
+
+For a production-ready deployment of Self-Managed Enterprise, the following infrastructure components are required. Deploy to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
 
-Prior to deploying Self-Managed Enterprise, we recommend having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
+Prior to deploying Self-Managed Enterprise, Airbyte recommends having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
 
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -33,12 +30,12 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 | Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
 | External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
 
-
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
-* We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
-* We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
-* While we support GKE Autopilot, we do not support Amazon EKS on Fargate. 
-* We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
+
+- Airbyte supports Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
+- Airbyte recommends running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+- While Airbyte supports GKE Autopilot, it doesn't support Amazon EKS on Fargate.
+- You should run Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -74,7 +71,7 @@ We require you to install and configure the following Kubernetes tooling:
 
 We also require you to create a Kubernetes namespace for your Airbyte deployment:
 
-```
+```bash
 kubectl create namespace airbyte
 ```
 
@@ -87,7 +84,6 @@ You may apply your Kubernetes secrets by applying the example manifests below to
 #### Creating a Kubernetes Secret
 
 While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
-
 
 <details>
 <summary>airbyte-config-secrets</summary>
@@ -156,12 +152,10 @@ kubectl create secret generic airbyte-config-secrets \
   --namespace airbyte
 ```
 
-
 </TabItem>
 <TabItem value="GCS" label="GCS">
 
 First, create a new file `gcp.json` containing the credentials JSON blob for the service account you are looking to assume.
-
 
 ```yaml
 apiVersion: v1
@@ -235,27 +229,8 @@ Follow these instructions to add the Airbyte helm repository:
 
 3. To enable SSO authentication, add instance admin details [SSO auth details](/platform/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/platform/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
 
-    <Tabs groupId="helm-chart-version">
-    <TabItem value='helm-1' label='Helm chart V1' default>
-
-    ```yaml title="values.yaml"
-    auth:
-      instanceAdmin:
-        firstName: ## First name of admin user.
-        lastName: ## Last name of admin user.
-      identityProvider:
-        type: oidc
-        secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
-        oidc:
-          domain: ## e.g. company.example
-          appName: ## e.g. airbyte
-          display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
-          clientIdSecretKey: client-id
-          clientSecretSecretKey: client-secret
-    ```
-
-    </TabItem>
-    <TabItem value='helm-2' label='Helm chart V2 with OIDC' default>
+    <Tabs>
+    <TabItem value='oidc' label='OIDC' default>
 
     ```yaml title="values.yaml"
     global:
@@ -284,7 +259,7 @@ Follow these instructions to add the Airbyte helm repository:
     ```
 
     </TabItem>
-    <TabItem value='helm-2-oidc' label='Helm chart V2 with generic OIDC' default>
+    <TabItem value='generic-oidc' label='Generic OIDC'>
 
     ```yaml title="values.yaml"
     global:
@@ -319,38 +294,18 @@ Follow these instructions to add the Airbyte helm repository:
     </TabItem>
     </Tabs>
 
-
-
 4. You must configure the public facing URL of your Airbyte instance to your `values.yaml` file, under `global`:
 
-    <Tabs groupId="helm-chart-version">
-    <TabItem value='helm-1' label='Helm chart V1' default>
-
     ```yaml title="values.yaml"
     global:
       airbyteUrl: # e.g. https://airbyte.company.example
     ```
-
-    </TabItem>
-    <TabItem value='helm-2' label='Helm chart V2' default>
-
-    ```yaml title="values.yaml"
-    global:
-      airbyteUrl: # e.g. https://airbyte.company.example
-    ```
-
-    </TabItem>
-    </Tabs>
-    
 
 5. Verify the configuration of your `values.yaml` so far. Ensure `license-key`, `instance-admin-email` and `instance-admin-password` are all available via Kubernetes Secrets (configured in [prerequisites](#creating-a-kubernetes-secret)). It should appear as follows:
 
 <details>
 <summary>Sample initial values.yaml file</summary>
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
 ```yaml
 global:
   edition: enterprise
@@ -368,31 +323,6 @@ global:
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
-```yaml
-global:
-  edition: enterprise
-  airbyteUrl: # e.g. https://airbyte.company.example
-  auth:
-    instanceAdmin:
-      firstName: ## First name of admin user.
-      lastName: ## Last name of admin user.
-    identityProvider:
-      type: oidc
-      secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
-      oidc:
-        domain: ## e.g. company.example
-        appName: ## e.g. airbyte
-        clientIdSecretKey: client-id
-        clientSecretSecretKey: client-secret
-```
-
-</TabItem>
-</Tabs>
-
 
 </details>
 
@@ -400,7 +330,7 @@ The following subsections help you customize your deployment to use an external 
 
 #### Configuring the Airbyte Database
 
-For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
+For Self-Managed Enterprise deployments, you must use a dedicated database instance for better reliability and backups, such as AWS RDS or GCP Cloud SQL. Don't use the default internal Postgres database, `airbyte/db`, that Airbyte spins up within the Kubernetes cluster.
 
 We assume in the following that you've already configured a Postgres instance:
 
@@ -408,44 +338,6 @@ We assume in the following that you've already configured a Postgres instance:
 <summary>External database setup steps</summary>
 
 Add external database details to your `values.yaml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database. You can override all of the values below by setting them in the airbyte-config-secrets or set them directly here. You must set the database password in the airbyte-config-secrets. Here is an example configuration:
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml
-postgresql:
-  enabled: false
-
-global:
-  database:
-    # -- Secret name where database credentials are stored
-    secretName: "" # e.g. "airbyte-config-secrets"
-
-    # -- The database host
-    host: ""
-    # -- The key within `secretName` where host is stored 
-    #hostSecretKey: "" # e.g. "database-host"
-
-    # -- The database port
-    port: ""
-    # -- The key within `secretName` where port is stored 
-    #portSecretKey: "" # e.g. "database-port" 
-
-    # -- The database name
-    database: ""
-    # -- The key within `secretName` where the database name is stored 
-    #databaseSecretKey: "" # e.g. "database-name" 
-
-    # -- The database user
-    user: "" # -- The key within `secretName` where the user is stored 
-    #userSecretKey: "" # e.g. "database-user"
-
-    # -- The key within `secretName` where password is stored
-    passwordSecretKey: "" # e.g."database-password"
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 postgresql:
@@ -459,7 +351,7 @@ global:
     host: ""
     # -- The database port
     port:
-    # -- The database name - this key used to be "database" in Helm chart 1.0
+    # -- The database name
     name: ""
 
     # Use EITHER user or userSecretKey, but not both
@@ -475,14 +367,11 @@ global:
     passwordSecretKey: "" # e.g."database-password"
 ```
 
-</TabItem>
-</Tabs>
-
 </details>
 
 #### Configuring External Logging
 
-For Self-Managed Enterprise deployments, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS instead of against using the default internal Minio storage (`airbyte/minio`). It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+For Self-Managed Enterprise deployments, spin up standalone log storage for additional reliability using tools such as S3 and GCS. Don't use the default internal MinIO storage, `airbyte/minio`. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
 
 <details>
 <summary>External log storage setup steps</summary>
@@ -493,26 +382,6 @@ Add external log storage details to your `values.yaml` file. This disables the d
 <TabItem value="S3" label="S3" default>
 
 Ensure you've already created a Kubernetes secret containing both your S3 access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `aws-s3-access-key-id` and `aws-s3-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-global:
-  storage:
-    type: "S3"
-    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
-    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
-      log: airbyte-bucket
-      state: airbyte-bucket
-      workloadOutput: airbyte-bucket
-    s3:
-      region: "" ## e.g. us-east-1
-      authenticationType: credentials ## Use "credentials" or "instanceProfile"
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -532,34 +401,12 @@ global:
       secretAccessKey: ""
 ```
 
-</TabItem>
-</Tabs>
-
 Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from the appropriate buckets.
 
 </TabItem>
 <TabItem value="GCS" label="GCS" default>
 
 Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-global:
-  storage:
-    type: "GCS"
-    storageSecretName: airbyte-config-secrets
-    bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
-      log: airbyte-bucket
-      state: airbyte-bucket
-      workloadOutput: airbyte-bucket
-    gcs:
-      projectId: <project-id>
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -578,30 +425,8 @@ global:
 ```
 
 </TabItem>
-</Tabs>
-
-</TabItem>
 
 <TabItem value="Azure Blob" label="Azure" default>
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-global:
-  storage:
-    type: "Azure"
-    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
-    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
-      log: airbyte-bucket
-      state: airbyte-bucket
-      workloadOutput: airbyte-bucket
-    azure:
-      connectionStringSecretKey: azure-blob-store-connection-string
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -622,10 +447,6 @@ global:
 </TabItem>
 </Tabs>
 
-
-</TabItem>
-</Tabs>
-
 </details>
 
 #### Configuring External Connector Secret Management
@@ -642,33 +463,12 @@ Airbyte's default behavior is to store encrypted connector secrets on your clust
 
 If authenticating with credentials, ensure you've already created a Kubernetes secret containing both your AWS Secrets Manager access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `aws-secret-manager-access-key-id` and `aws-secret-manager-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-secretsManager:
-  type: awsSecretManager
-  awsSecretManager:
-    region: <aws-region>
-    authenticationType: credentials ## Use "credentials" or "instanceProfile"
-    tags: ## Optional - You may add tags to new secrets created by Airbyte.
-      - key: ## e.g. team
-        value: ## e.g. deployments
-      - key: business-unit
-        value: engineering
-    kms: ## Optional - ARN for KMS Decryption.
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
 ```yaml title="values.yaml"
 global:
   secretsManager:
     enabled: false
     type: AWS_SECRET_MANAGER
     secretName: "airbyte-config-secrets"
-    # Set ONE OF the following groups of configurations, based on your configuration in global.secretsManager.type.
     awsSecretManager:
       region: <aws-region>
       authenticationType: credentials ## Use "credentials" or "instanceProfile"
@@ -680,9 +480,6 @@ global:
       kms: ## Optional - ARN for KMS Decryption.
 ```
 
-</TabItem>
-</Tabs>
-
 Set `authenticationType` to `instanceProfile` if the compute infrastructure running Airbyte has pre-existing permissions (e.g. IAM role) to read and write from AWS Secrets Manager.
 
 To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field, and ensure your Kubernetes cluster has pre-existing permissions to read and decrypt secrets.
@@ -691,21 +488,6 @@ To decrypt secrets in the secret manager with AWS KMS, configure the `kms` field
 <TabItem label="GCP" value="GCP">
 
 Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets). For simplicity, we recommend provisioning a single service account with access to both GCS and GSM.
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-secretsManager:
-  type: googleSecretManager
-  storageSecretName: gcp-cred-secrets
-  googleSecretManager:
-    projectId: <project-id>
-    credentialsSecretKey: gcp.json
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -719,33 +501,8 @@ global:
 ```
 
 </TabItem>
-</Tabs>
-
-
-
-</TabItem>
 
 <TabItem label="Azure Key Vault" value="Azure">
-
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
-
-```yaml title="values.yaml"
-global:
-  secretsManager:
-    type: azureKeyVault
-    azureKeyVault:
-      vaultUrl: ## https://my-vault.vault.azure.net/
-      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
-      tags: ## Optional - You may add tags to new secrets created by Airbyte.
-        - key: ## e.g. team
-          value: ## e.g. deployments
-        - key: business-unit
-          value: engineering
-```
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
 
 ```yaml title="values.yaml"
 global:
@@ -766,17 +523,69 @@ global:
 </TabItem>
 </Tabs>
 
-</TabItem>
-</Tabs>
-
 </details>
 
 #### Configuring Ingress
 
-To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
+To access the Airbyte UI, you need to configure ingress for your deployment. You have two options:
+
+- **Use Airbyte's Helm chart ingress configuration** - Configure ingress through your `values.yaml` file.
+
+- **Bring your own ingress** - Manually create and manage your own Kubernetes ingress resource.
+
+Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically. Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently.
+
+##### Before enabling ingress
+
+You must have an ingress controller deployed in your Kubernetes cluster. Refer to ingress controller documentation for setup: [NGINX](https://kubernetes.github.io/ingress-nginx/deploy/), [AWS ALB](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html), or your controller's documentation. For TLS certificate management, refer to [cert-manager](https://cert-manager.io/docs/) or your cloud provider's certificate service.
+
+Set appropriate backend timeout values for the Airbyte server ingress. Timeout values that are too short can lead to 504 errors in the UI when creating new sources or destinations.
+
+##### Set up ingress in Airbyte
 
 <details>
-<summary>Ingress configuration setup steps</summary>
+<summary>Option 1: use Airbyte's Helm chart ingress configuration</summary>
+
+You can configure ingress directly in your `values.yaml` file. Airbyte automatically creates and manages the ingress resource for you.
+
+```yaml
+ingress:
+  enabled: true
+  className: "nginx"  # Specify your ingress class
+  annotations: {}
+    # Add any ingress-specific annotations here
+  hosts:
+    - host: airbyte.example.com  # Replace with your domain
+      paths:
+        - path: /auth
+          pathType: Prefix
+          backend: keycloak  # For Keycloak authentication (if using OIDC)
+        - path: /
+          pathType: Prefix
+          backend: server  # Routes to airbyte-server
+        - path: /connector-builder
+          pathType: Prefix
+          backend: connector-builder-server  # Required for connector builder
+  tls: []
+    # Optionally configure TLS
+    # - secretName: airbyte-tls
+    #   hosts:
+    #     - airbyte.example.com
+```
+
+The `backend` field specifies which service to route to:
+
+- `keycloak` - Routes to Keycloak service (required for OIDC authentication, omit if using generic OIDC)
+- `server` - Routes to the main Airbyte server
+- `connector-builder-server` - Routes to the connector builder service (required for Airbyte's connector builder to work)
+
+</details>
+
+<details>
+<summary>Option 2: bring your own ingress</summary>
+
+If you prefer to manage your own ingress resource, you can manually create a Kubernetes ingress resource.
+
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 
@@ -875,9 +684,17 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 
 </TabItem>
 </Tabs>
+
 </details>
 
-Once this is complete, ensure that the value of the `airbyteUrl` field in your `values.yaml` is configured to match the ingress URL.
+##### Ensure your airbyte URL matches your ingress host
+
+Once you configure ingress, ensure that the value of `global.airbyteUrl` in your values.yaml matches the ingress URL.
+
+```yaml
+global:
+  airbyteUrl: # e.g. https://airbyte.example.com
+```
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
@@ -885,28 +702,20 @@ You may configure ingress using a load balancer or an API Gateway. We do not cur
 
 Install Airbyte Self-Managed Enterprise on helm using the following command:
 
-<Tabs groupId="helm-chart-version">
-<TabItem value='helm-1' label='Helm chart V1' default>
+1. Identify the Helm chart version that corresponds to the platform version you want to run. Most Helm chart versions are designed to work with one Airbyte version, and they don't necessarily have the same version number.
 
-```bash
-helm install airbyte-enterprise airbyte/airbyte \
-  --namespace airbyte \   # Target Kubernetes namespace
-  --values ./values.yaml  # Custom configuration values
-```
+    ```bash
+    helm search repo airbyte --versions
+    ```
 
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
+2. Install Airbyte Self-Managed Enterprise.
 
-```bash
-helm install airbyte-enterprise airbyte-v2/airbyte \
-  --namespace airbyte-v2 \       # Target Kubernetes namespace
-  --values ./values.yaml \       # Custom configuration values
-  --version 2.0.3 \              # Helm chart version to use
-  --set global.image.tag=1.7.0   # Airbyte version to use
-```
-
-</TabItem>
-</Tabs>
+    ```bash
+    helm install airbyte airbyte/airbyte \
+      --namespace airbyte \           # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.x.x                # Helm chart version to use
+    ```
 
 To uninstall Self-Managed Enterprise, run `helm uninstall airbyte-enterprise`.
 
@@ -917,28 +726,12 @@ Upgrade Airbyte Self-Managed Enterprise by:
 1. Running `helm repo update`. This pulls an up-to-date version of our helm charts, which is tied to a version of the Airbyte platform.
 2. Re-installing Airbyte Self-Managed Enterprise:
 
-    <Tabs groupId="helm-chart-version">
-    <TabItem value='helm-1' label='Helm chart V1' default>
-
     ```bash
-    helm upgrade airbyte-enterprise airbyte/airbyte \
-      --namespace airbyte \   # Target Kubernetes namespace
-      --values ./values.yaml  # Custom configuration values
-    ```
-
-    </TabItem>
-    <TabItem value='helm-2' label='Helm chart V2' default>
-
-    ```bash
-    helm upgrade airbyte-enterprise airbyte-v2/airbyte \
-      --namespace airbyte-v2 \       # Target Kubernetes namespace
+    helm upgrade airbyte airbyte/airbyte \
+      --namespace airbyte \           # Target Kubernetes namespace
       --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
+      --version 2.x.x                # Helm chart version to use
     ```
-
-    </TabItem>
-    </Tabs>
 
 ## Customizing your Deployment
 
@@ -946,28 +739,12 @@ In order to customize your deployment, you need to create an additional `values.
 
 After specifying your own configuration, run the following command:
 
-<Tabs groupId="helm-chart-version">
-    <TabItem value='helm-1' label='Helm chart V1' default>
-
-    ```bash
-    helm upgrade airbyte-enterprise airbyte/airbyte \
-      --namespace airbyte \   # Target Kubernetes namespace
-      --values ./values.yaml  # Custom configuration values
-    ```
-
-    </TabItem>
-    <TabItem value='helm-2' label='Helm chart V2' default>
-
-    ```bash
-    helm upgrade airbyte-enterprise airbyte-v2/airbyte \
-      --namespace airbyte-v2 \       # Target Kubernetes namespace
-      --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
-    ```
-
-    </TabItem>
-    </Tabs>
+```bash
+helm upgrade airbyte airbyte/airbyte \
+  --namespace airbyte \           # Target Kubernetes namespace
+  --values ./values.yaml \       # Custom configuration values
+  --version 2.x.x                # Helm chart version to use
+```
 
 ### Configure a custom image registry
 
@@ -1081,7 +858,7 @@ If your registry requires authentication, you can create a Kubernetes secret and
 <details>
 <summary>Step 2: Tag and push Airbyte images</summary>
 
-Tag and push Airbyte's images to your custom image registry. 
+Tag and push Airbyte's images to your custom image registry.
 
 In this example, you tag all platform images and push them all to GitHub.
 
@@ -1109,7 +886,7 @@ You may choose to use your own service account instead of the Airbyte default, `
 
 To do this, add the following to your `values.yaml`:
 
-```
+```yaml
 serviceAccount:
   name:
 ```
@@ -1159,7 +936,6 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
 
 ### AWS Secret Manager Policy
 
-
 ```yaml
 {
     "Version": "2012-10-17",
@@ -1184,5 +960,45 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             }
         }
     ]
+}
+```
+
+## Azure Policies Appendix
+
+### Azure Key Vault Policy
+
+Airbyte requires the ability to write and read secrets in an Azure Key Vault. The built-in role that supports this is the Key Vault Secrets Officer role, whose JSON configuration can be viewed below to understand the specific permissions needed.
+
+```yaml
+{
+    "id": "/providers/Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb2c155cd7",
+    "properties": {
+        "roleName": "Key Vault Secrets Officer",
+        "description": "Perform any action on the secrets of a key vault, except manage permissions. Only works for key vaults that use the 'Azure role-based access control' permission model.",
+        "assignableScopes": [
+            "/"
+        ],
+        "permissions": [
+            {
+                "actions": [
+                    "Microsoft.Authorization/*/read",
+                    "Microsoft.Insights/alertRules/*",
+                    "Microsoft.Resources/deployments/*",
+                    "Microsoft.Resources/subscriptions/resourceGroups/read",
+                    "Microsoft.Support/*",
+                    "Microsoft.KeyVault/checkNameAvailability/read",
+                    "Microsoft.KeyVault/deletedVaults/read",
+                    "Microsoft.KeyVault/locations/*/read",
+                    "Microsoft.KeyVault/vaults/*/read",
+                    "Microsoft.KeyVault/operations/read"
+                ],
+                "notActions": [],
+                "dataActions": [
+                    "Microsoft.KeyVault/vaults/secrets/*"
+                ],
+                "notDataActions": []
+            }
+        ]
+    }
 }
 ```

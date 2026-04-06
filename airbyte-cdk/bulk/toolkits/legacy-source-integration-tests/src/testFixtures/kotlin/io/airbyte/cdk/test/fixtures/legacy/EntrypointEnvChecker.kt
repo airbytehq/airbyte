@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
@@ -47,8 +47,7 @@ object EntrypointEnvChecker {
                 emptyMap()
             )
 
-        val stdout =
-            BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
+        val stdout = BufferedReader(InputStreamReader(process.inputStream, StandardCharsets.UTF_8))
 
         var outputLine: String? = null
 

@@ -7,7 +7,7 @@ description: "We love contributions to Airbyte, big or small."
 Thank you for your interest in contributing! Contributions are very welcome.
 We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#dev-and-contribuions` channel](https://airbytehq.slack.com/archives/C054V9JFTC6).
 
-Everyone interacting in Slack, codebases, mailing lists, events, or any other Airbyte activities is expected to follow the [Code of Conduct](/platform/community/code-of-conduct). Please review it before getting started.
+Everyone interacting in Slack, codebases, mailing lists, events, or any other Airbyte activities is expected to follow the [Code of Conduct](/community/code-of-conduct). Please review it before getting started.
 
 ## Code Contributions
 
@@ -27,9 +27,7 @@ If you see an issue that isn't tagged that you're interested in, post a comment 
 Please be aware that contributions to Airbyte Connectors may take some time to review, as they can affect many users. We appreciate your patience and encourage you to include as much information as possible to assist reviewers. Please add examples, use cases, documentation links, and more.
 
 :::warning
-Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in April 2025.
-We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
-We're not actively reviewing/accepting new Java connectors for now.
+Airbyte is revamping its core Java destinations codebase. We're not reviewing/accepting new Java connectors at this time.
 :::
 
 #### The usual workflow of code contribution is:

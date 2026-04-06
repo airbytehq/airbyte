@@ -39,4 +39,8 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Serpstat API documentation
+      url: https://serpstat.com/api/
+      type: api_reference
 metadataSpecVersion: "1.0"

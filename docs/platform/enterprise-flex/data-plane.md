@@ -23,7 +23,7 @@ This separation of duties is what allows a single Airbyte deployment to ensure y
 
 By default, Airbyte has a single data plane that any workspace in the organization can access, and it's automatically tied to the default workspace when Airbyte first starts. To configure additional data planes and regions, complete these steps.
 
-If you have not already, ensure you have the [required infrastructure](https://docs.airbyte.com/platform/enterprise-flex/getting-started) to run your data plane.
+If you have not already, ensure you have the [required infrastructure](getting-started) to run your data plane.
 
 1. [Create a region](#step-1).
 2. [Create a data plane](#step-2) in that region.
@@ -57,6 +57,15 @@ For a production-ready deployment of self-managed data planes, you require the f
 | Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html). |
 | External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/enterprise-setup/implementation-guide#aws-secret-manager-policy). |
 | Object Storage (Optional)| Amazon S3 bucket with a directory for log storage.                                                                         |
+
+</TabItem>
+<TabItem value="Azure" label="Azure" default>
+
+| Component                | Recommendation                                                                                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kubernetes Cluster       | Azure Kubernetes Service cluster running in [2 or more availability zones](https://learn.microsoft.com/en-us/azure/aks/reliability-zone-resiliency-recommendations). |
+| External Secrets Manager | [Azure Key Vault](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/enterprise-setup/implementation-guide#azure-key-vault-policy). |
+| Object Storage (Optional)| Azure Blob Storage with a directory for log storage.                                                                         |
 
 </TabItem>
 </Tabs>
@@ -253,6 +262,39 @@ kubectl create secret generic airbyte-config-secrets \
 ```
 
 </TabItem>
+
+<TabItem value="Azure" label="Azure" default>
+
+```yaml title="values.yaml"
+airbyteUrl: https://cloud.airbyte.com # Base URL for the control plane so Airbyte knows where to authenticate
+
+dataPlane:
+  # Used to render the data plane creds secret into the Helm chart.
+  secretName: airbyte-config-secrets
+  id: "preview-data-plane"
+
+  # Describe secret name and key where each of the client ID and secret are stored
+  clientIdSecretName: airbyte-config-secrets
+  clientIdSecretKey: DATA_PLANE_CLIENT_ID
+  clientSecretSecretName: airbyte-config-secrets
+  clientSecretSecretKey: DATA_PLANE_CLIENT_SECRET
+
+# Secret manager secrets/config
+# Must be set to the same secrets manager as the control plane
+secretsManager:
+  secretName: airbyte-config-secrets
+  type: AZURE_KEY_VAULT
+  azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      clientId: ""
+      clientIdSecretKey: ""
+      clientSecret: ""
+      clientSecretSecretKey: ""
+```
+
+</TabItem>
+
 </Tabs>
 </details>
 
@@ -307,11 +349,11 @@ secretsManager:
 In your command-line tool, deploy the data plane using `helm upgrade`. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
 
 ```bash title="Example using the default namespace in your cluster"
-helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.8.1 --values values.yaml
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.0.1 --values values.yaml
 ```
 
 ```bash title="Example using or creating a namespace called 'airbyte-dataplane'"
-helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.8.1 -n airbyte-dataplane --create-namespace --values values.yaml
+helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 2.0.1 -n airbyte-dataplane --create-namespace --values values.yaml
 ```
 
 ## 6. Associate a region to a workspace {#step-6}

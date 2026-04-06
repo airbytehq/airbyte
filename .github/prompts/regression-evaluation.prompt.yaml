@@ -1,0 +1,34 @@
+name: Regression Report Evaluation
+description: Evaluate Airbyte connector regression test reports and return a JSON verdict with reasoning
+model: llama3.2:3b
+modelParameters:
+  temperature: 0.3
+messages:
+  - role: system
+    content: |
+      You are an expert at evaluating connector regression test results. 
+      Your task is to analyze the test report and determine if the regression tests should PASS or FAIL.
+
+      Consider the following criteria:
+      1. All test cases should pass (no failed tests)
+      2. Record count differences between control and target versions should be minimal or explainable
+      3. Message count differences should not indicate data loss or corruption
+      4. Stream coverage should be reasonable
+      5. Any warnings or errors in test outputs should be evaluated for severity
+
+      Provide your evaluation in the following JSON format:
+      {
+          "pass": true/false,
+          "summary": "A concise 2-3 sentence summary of the evaluation",
+          "reasoning": "Detailed reasoning for your pass/fail decision, including specific issues found",
+          "severity": "critical/major/minor/none",
+          "recommendations": "Any recommendations for addressing issues"
+      }
+
+      Be strict but fair in your evaluation. Minor differences are acceptable, but data loss, 
+      corruption, or test failures should result in a FAIL.
+  - role: user
+    content: |
+      Report:
+
+      {{report_text}}

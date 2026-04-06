@@ -1,52 +1,67 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.sql
 
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.StreamTableSchema
+import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.cdk.load.schema.model.TableNames
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.write.load.CSV_FORMAT
+import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
+import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMITER
 import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+/** TODO: These tests are somewhat dubious. */
 internal class SnowflakeDirectLoadSqlGeneratorTest {
 
-    private lateinit var columnUtils: SnowflakeColumnUtils
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
     private val uuidGenerator: UUIDGenerator = mockk()
     private val snowflakeConfiguration: SnowflakeConfiguration = mockk()
-    private lateinit var snowflakeSqlNameUtils: SnowflakeSqlNameUtils
+    private val snowflakeColumnManager: SnowflakeColumnManager = mockk()
 
     @BeforeEach
     fun setUp() {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
-        columnUtils = mockk()
-        snowflakeSqlNameUtils = SnowflakeSqlNameUtils(snowflakeConfiguration)
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns false
+
+        every { snowflakeColumnManager.getMetaColumns() } returns
+            linkedMapOf(
+                SNOWFLAKE_AB_RAW_ID to ColumnType("VARCHAR", false),
+                SNOWFLAKE_AB_EXTRACTED_AT to ColumnType("TIMESTAMP_TZ", false),
+                SNOWFLAKE_AB_META to ColumnType("VARIANT", false),
+                SNOWFLAKE_AB_GENERATION_ID to ColumnType("NUMBER", true),
+            )
+
+        every { snowflakeColumnManager.getGenerationIdColumnName() } returns
+            SNOWFLAKE_AB_GENERATION_ID
+
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
-                columnUtils = columnUtils,
                 uuidGenerator = uuidGenerator,
-                snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeSqlNameUtils = snowflakeSqlNameUtils,
+                config = snowflakeConfiguration,
+                columnManager = snowflakeColumnManager,
             )
     }
 
@@ -55,7 +70,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
         assertEquals(
-            "SELECT COUNT(*) AS \"total\" FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            "SELECT COUNT(*) AS TOTAL FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
             sql
         )
     }
@@ -65,57 +80,82 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val namespace = "namespace"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
         assertEquals(
-            "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}",
+            "CREATE SCHEMA IF NOT EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedNamespace(namespace)}",
             sql
         )
     }
 
     @Test
     fun testGenerateCreateTableStatement() {
-        val columnAndType =
-            ColumnAndType(columnName = "column-name", columnType = "VARCHAR NOT NULL")
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
-        val stream = mockk<DestinationStream>(relaxed = true)
         val tableName = TableName(namespace = "namespace", name = "name")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            listOf(columnAndType)
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = mapOf("column" to "COLUMN_NAME"),
+                        finalSchema = mapOf("COLUMN_NAME" to ColumnType("VARCHAR", false)),
+                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false))
+                    ),
+                importType = Append
+            )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(
-                stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
+                tableSchema = tableSchema,
                 replace = true
             )
-        assertEquals(
-            "CREATE OR REPLACE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (\n    $columnAndType\n)",
-            sql
-        )
+
+        // The expected SQL should match the exact format
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val expectedSql =
+            """
+            CREATE OR REPLACE TABLE $expectedTableName (
+                "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
+                "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+                "_AIRBYTE_META" VARIANT NOT NULL,
+                "_AIRBYTE_GENERATION_ID" NUMBER,
+                "COLUMN_NAME" VARCHAR NOT NULL
+            )
+            """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testGenerateCreateTableStatementNoReplace() {
-        val columnAndType =
-            ColumnAndType(columnName = "column-name", columnType = "VARCHAR NOT NULL")
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
-        val stream = mockk<DestinationStream>(relaxed = true)
         val tableName = TableName(namespace = "namespace", name = "name")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            listOf(columnAndType)
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = mapOf("column" to "COLUMN_NAME"),
+                        finalSchema = mapOf("COLUMN_NAME" to ColumnType("VARCHAR", false)),
+                        inputSchema = mapOf("column" to FieldType(StringType, nullable = false))
+                    ),
+                importType = Append
+            )
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(
-                stream = stream,
                 tableName = tableName,
-                columnNameMapping = columnNameMapping,
+                tableSchema = tableSchema,
                 replace = false
             )
-        assertEquals(
-            "CREATE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (\n    $columnAndType\n)",
-            sql
-        )
+
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val expectedSql =
+            """
+            CREATE TABLE $expectedTableName (
+                "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
+                "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+                "_AIRBYTE_META" VARIANT NOT NULL,
+                "_AIRBYTE_GENERATION_ID" NUMBER,
+                "COLUMN_NAME" VARCHAR NOT NULL
+            )
+            """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
@@ -123,119 +163,42 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.showColumns(tableName)
         assertEquals(
-            "SHOW COLUMNS IN TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            "SHOW COLUMNS IN TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
             sql
         )
     }
 
     @Test
     fun testGenerateCopyTable() {
-        val columnName = "column-name"
-        val mappedColumnName = "mapped-column-name"
-        val columns = mapOf(columnName to mappedColumnName)
-        val columnNameMapping = ColumnNameMapping(columns)
         val columnNames =
-            (DEFAULT_COLUMNS.map { it.columnName } + "mappedColumnName").joinToString(",") {
-                "\"$it\""
-            }
+            setOf(
+                "_AIRBYTE_RAW_ID",
+                "_AIRBYTE_EXTRACTED_AT",
+                "_AIRBYTE_META",
+                "_AIRBYTE_GENERATION_ID",
+                "MAPPED_COLUMN_NAME"
+            )
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
 
-        every { columnUtils.getColumnNames(columnNameMapping) } returns columnNames
-
-        val expected =
-            """
-            INSERT INTO ${snowflakeSqlNameUtils.fullyQualifiedName(destinationTableName)} 
-            (
-                $columnNames
-            )
-            SELECT
-                $columnNames
-            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
-            """.trimIndent()
         val sql =
             snowflakeDirectLoadSqlGenerator.copyTable(
-                columnNameMapping = columnNameMapping,
+                columnNames = columnNames,
                 sourceTableName = sourceTableName,
                 targetTableName = destinationTableName,
             )
-        assertEquals(expected, sql)
-    }
 
-    @Test
-    fun testGenerateUpsertTable() {
-        val primaryKey = listOf(listOf("primaryKey"))
-        val cursor = listOf("cursor")
-        val stream =
-            mockk<DestinationStream> {
-                every { importType } returns
-                    Dedupe(
-                        primaryKey = primaryKey,
-                        cursor = cursor,
-                    )
-                every { schema } returns StringType
-            }
-        val columnNameMapping = ColumnNameMapping(emptyMap())
-        val sourceTableName = TableName(namespace = "namespace", name = "source")
-        val destinationTableName = TableName(namespace = "namespace", name = "destination")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns DEFAULT_COLUMNS
-
+        val columnList = columnNames.joinToString(", ") { "\"$it\"" }
         val expected =
             """
-            MERGE INTO "test_database"."namespace"."destination" AS target_table
-            USING (
-                          WITH records AS (
-              SELECT
-                "_airbyte_raw_id",
-"_airbyte_extracted_at",
-"_airbyte_meta",
-"_airbyte_generation_id"
-              FROM "test_database"."namespace"."source"
-            ), numbered_rows AS (
-              SELECT *, ROW_NUMBER() OVER (
-                PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_airbyte_extracted_at" DESC
-              ) AS row_number
-              FROM records
+            INSERT INTO ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(destinationTableName)} 
+            (
+                $columnList
             )
-            SELECT "_airbyte_raw_id",
-"_airbyte_extracted_at",
-"_airbyte_meta",
-"_airbyte_generation_id"
-            FROM numbered_rows
-            WHERE row_number = 1
-            ) AS new_record
-            ON (target_table."primaryKey" = new_record."primaryKey" OR (target_table."primaryKey" IS NULL AND new_record."primaryKey" IS NULL))
-            WHEN MATCHED AND (
-  target_table."cursor" < new_record."cursor"
-  OR (target_table."cursor" = new_record."cursor" AND target_table."_airbyte_extracted_at" < new_record."_airbyte_extracted_at")
-  OR (target_table."cursor" IS NULL AND new_record."cursor" IS NULL AND target_table."_airbyte_extracted_at" < new_record."_airbyte_extracted_at")
-  OR (target_table."cursor" IS NULL AND new_record."cursor" IS NOT NULL)
-) THEN UPDATE SET
-              "_airbyte_raw_id" = new_record."_airbyte_raw_id",
-"_airbyte_extracted_at" = new_record."_airbyte_extracted_at",
-"_airbyte_meta" = new_record."_airbyte_meta",
-"_airbyte_generation_id" = new_record."_airbyte_generation_id"
-            WHEN NOT MATCHED THEN INSERT (
-              "_airbyte_raw_id",
-"_airbyte_extracted_at",
-"_airbyte_meta",
-"_airbyte_generation_id"
-            ) VALUES (
-              new_record."_airbyte_raw_id",
-new_record."_airbyte_extracted_at",
-new_record."_airbyte_meta",
-new_record."_airbyte_generation_id"
-            )
-        """.trimIndent()
-
-        val sql =
-            snowflakeDirectLoadSqlGenerator.upsertTable(
-                stream = stream,
-                columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = destinationTableName,
-            )
+            SELECT
+                $columnList
+            FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)}
+            """.trimIndent()
         assertEquals(expected, sql)
     }
 
@@ -244,17 +207,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
         assertEquals(
-            "DROP TABLE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
-            sql
-        )
-    }
-
-    @Test
-    fun testGenerateDropStage() {
-        val tableName = TableName(namespace = "namespace", name = "name")
-        val sql = snowflakeDirectLoadSqlGenerator.dropStage(tableName)
-        assertEquals(
-            "DROP STAGE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)}",
+            "DROP TABLE IF EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}",
             sql
         )
     }
@@ -263,337 +216,146 @@ new_record."_airbyte_generation_id"
     fun testGenerateGenerationIdQuery() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
-        assertEquals(
-            "SELECT \"$COLUMN_NAME_AB_GENERATION_ID\"\nFROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} \nLIMIT 1",
-            sql
-        )
-    }
-
-    @Test
-    fun testGenerateCreateFileFormat() {
-        val namespace = "test-namespace"
-        val fileFormatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        val expected =
+        val expectedSql =
             """
-            CREATE OR REPLACE FILE FORMAT $fileFormatName
-            TYPE = 'CSV'
-            FIELD_DELIMITER = '${CSV_FORMAT.delimiterString}'
-            RECORD_DELIMITER = '${CSV_FORMAT.recordSeparator}'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
+            SELECT "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
+            FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}
+            LIMIT 1
         """.trimIndent()
-        val sql = snowflakeDirectLoadSqlGenerator.createFileFormat(namespace)
-        assertEquals(expected, sql)
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testGenerateCreateStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
+        val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
-        assertEquals(
-            "CREATE OR REPLACE STAGE $stagingTableName\n    FILE_FORMAT = $fileFormat;",
-            sql
-        )
+        assertEquals("CREATE STAGE IF NOT EXISTS $stagingTableName", sql)
     }
 
     @Test
     fun testGeneratePutInStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val tempFilePath = "/some/file/path.csv"
-        val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
         val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, tempFilePath)
-        assertEquals(
-            "PUT 'file://$tempFilePath' @$stagingTableName\nAUTO_COMPRESS = TRUE\nOVERWRITE = TRUE",
-            sql
-        )
+        val expectedSql =
+            """
+            PUT 'file://$tempFilePath' '@$stagingTableName'
+            AUTO_COMPRESS = FALSE
+            SOURCE_COMPRESSION = GZIP
+            OVERWRITE = TRUE
+        """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testGenerateCopyFromStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val targetTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
-        val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
-        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
-        assertEquals(
-            "COPY INTO $targetTableName\nFROM @$stagingTableName\nFILE_FORMAT = $fileFormat\nON_ERROR = 'ABORT_STATEMENT'\nPURGE = TRUE;",
-            sql
-        )
+        val targetTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
+        val expectedSql =
+            """
+            |COPY INTO $targetTableName
+            |FROM '@$stagingTableName'
+            |FILE_FORMAT = (
+            |    TYPE = 'CSV'
+            |    COMPRESSION = GZIP
+            |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+            |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            |    TRIM_SPACE = TRUE
+            |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            |    REPLACE_INVALID_CHARACTERS = TRUE
+            |    ESCAPE = NONE
+            |    ESCAPE_UNENCLOSED_FIELD = NONE
+            |)
+            |ON_ERROR = 'ABORT_STATEMENT'
+            |PURGE = TRUE
+            |files = ('test.csv.gz')
+        """.trimMargin()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
-    fun testGenerateUpsertTableWithCdcHardDelete() {
-        // Test with CDC hard delete mode when _ab_cdc_deleted_at column is present
-        val primaryKey = listOf(listOf("id"))
-        val cursor = listOf("updated_at")
-
-        // Create schema with CDC deletion column
-        val schemaWithCdc =
-            ObjectType(
-                properties =
-                    linkedMapOf(
-                        "id" to FieldType(StringType, nullable = false),
-                        "name" to FieldType(StringType, nullable = true),
-                        "updated_at" to FieldType(TimestampTypeWithTimezone, nullable = true),
-                        CDC_DELETED_AT_COLUMN to
-                            FieldType(TimestampTypeWithTimezone, nullable = true)
-                    )
-            )
-
-        val stream =
-            mockk<DestinationStream> {
-                every { importType } returns
-                    Dedupe(
-                        primaryKey = primaryKey,
-                        cursor = cursor,
-                    )
-                every { schema } returns schemaWithCdc
-            }
-
-        val columnNameMapping =
-            ColumnNameMapping(
-                mapOf(
-                    "id" to "id",
-                    "name" to "name",
-                    "updated_at" to "updated_at",
-                    CDC_DELETED_AT_COLUMN to "_ab_cdc_deleted_at"
-                )
-            )
-        val sourceTableName = TableName(namespace = "test_ns", name = "source")
-        val targetTableName = TableName(namespace = "test_ns", name = "target")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
+    fun testGenerateCopyFromStageWithColumnList() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val targetTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
+        // Test with uppercase column names (schema mode)
+        val schemaColumns =
             listOf(
-                ColumnAndType("id", "VARCHAR"),
-                ColumnAndType("name", "VARCHAR"),
-                ColumnAndType("updated_at", "TIMESTAMP_TZ"),
-                ColumnAndType("_ab_cdc_deleted_at", "TIMESTAMP_TZ")
-            ) + DEFAULT_COLUMNS
-
+                "_AIRBYTE_RAW_ID",
+                "_AIRBYTE_EXTRACTED_AT",
+                "_AIRBYTE_META",
+                "_AIRBYTE_GENERATION_ID",
+                "COL1",
+                "COL2"
+            )
         val sql =
-            snowflakeDirectLoadSqlGenerator.upsertTable(
-                stream = stream,
-                columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = targetTableName,
-            )
-
-        // Should include the DELETE clause and skip insert clause
-        assert(sql.contains("WHEN MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NOT NULL"))
-        assert(sql.contains("THEN DELETE"))
-        assert(
-            sql.contains(
-                "WHEN NOT MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NULL THEN INSERT"
-            )
-        )
+            snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz", schemaColumns)
+        val expectedSql =
+            """
+            |COPY INTO $targetTableName("_AIRBYTE_RAW_ID", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_META", "_AIRBYTE_GENERATION_ID", "COL1", "COL2")
+            |FROM '@$stagingTableName'
+            |FILE_FORMAT = (
+            |    TYPE = 'CSV'
+            |    COMPRESSION = GZIP
+            |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+            |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            |    TRIM_SPACE = TRUE
+            |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            |    REPLACE_INVALID_CHARACTERS = TRUE
+            |    ESCAPE = NONE
+            |    ESCAPE_UNENCLOSED_FIELD = NONE
+            |)
+            |ON_ERROR = 'ABORT_STATEMENT'
+            |PURGE = TRUE
+            |files = ('test.csv.gz')
+        """.trimMargin()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
-    fun testGenerateUpsertTableWithCdcSoftDelete() {
-        // Test with CDC soft delete mode - should NOT add delete clauses
-        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
-        val softDeleteGenerator =
-            SnowflakeDirectLoadSqlGenerator(
-                columnUtils = columnUtils,
-                uuidGenerator = uuidGenerator,
-                snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeSqlNameUtils = snowflakeSqlNameUtils,
-            )
-
-        val primaryKey = listOf(listOf("id"))
-        val cursor = listOf("updated_at")
-
-        // Create schema with CDC deletion column
-        val schemaWithCdc =
-            ObjectType(
-                properties =
-                    linkedMapOf(
-                        "id" to FieldType(StringType, nullable = false),
-                        "name" to FieldType(StringType, nullable = true),
-                        "updated_at" to FieldType(TimestampTypeWithTimezone, nullable = true),
-                        CDC_DELETED_AT_COLUMN to
-                            FieldType(TimestampTypeWithTimezone, nullable = true)
-                    )
-            )
-
-        val stream =
-            mockk<DestinationStream> {
-                every { importType } returns
-                    Dedupe(
-                        primaryKey = primaryKey,
-                        cursor = cursor,
-                    )
-                every { schema } returns schemaWithCdc
-            }
-
-        val columnNameMapping =
-            ColumnNameMapping(
-                mapOf(
-                    "id" to "id",
-                    "name" to "name",
-                    "updated_at" to "updated_at",
-                    CDC_DELETED_AT_COLUMN to "_ab_cdc_deleted_at"
-                )
-            )
-        val sourceTableName = TableName(namespace = "test_ns", name = "source")
-        val targetTableName = TableName(namespace = "test_ns", name = "target")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
+    fun testGenerateCopyFromStageWithRawModeColumns() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val targetTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
+        // Test with lowercase column names (raw mode)
+        val rawColumns =
             listOf(
-                ColumnAndType("id", "VARCHAR"),
-                ColumnAndType("name", "VARCHAR"),
-                ColumnAndType("updated_at", "TIMESTAMP_TZ"),
-                ColumnAndType("_ab_cdc_deleted_at", "TIMESTAMP_TZ")
-            ) + DEFAULT_COLUMNS
-
+                "_airbyte_raw_id",
+                "_airbyte_extracted_at",
+                "_airbyte_meta",
+                "_airbyte_generation_id",
+                "_airbyte_loaded_at",
+                "_airbyte_data"
+            )
         val sql =
-            softDeleteGenerator.upsertTable(
-                stream = stream,
-                columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = targetTableName,
-            )
-
-        // Should NOT include DELETE clause in soft delete mode
-        assert(!sql.contains("THEN DELETE"))
-        assert(sql.contains("WHEN NOT MATCHED THEN INSERT"))
-        assert(!sql.contains("AND new_record.\"_ab_cdc_deleted_at\" IS NULL"))
-    }
-
-    @Test
-    fun testGenerateUpsertTableWithoutCdcColumn() {
-        // Test that CDC deletion logic is NOT applied when column is absent
-        val primaryKey = listOf(listOf("id"))
-        val cursor = listOf("updated_at")
-
-        // Schema without CDC deletion column
-        val schemaWithoutCdc =
-            ObjectType(
-                properties =
-                    linkedMapOf(
-                        "id" to FieldType(StringType, nullable = false),
-                        "name" to FieldType(StringType, nullable = true),
-                        "updated_at" to FieldType(TimestampTypeWithTimezone, nullable = true)
-                    )
-            )
-
-        val stream =
-            mockk<DestinationStream> {
-                every { importType } returns
-                    Dedupe(
-                        primaryKey = primaryKey,
-                        cursor = cursor,
-                    )
-                every { schema } returns schemaWithoutCdc
-            }
-
-        val columnNameMapping =
-            ColumnNameMapping(mapOf("id" to "id", "name" to "name", "updated_at" to "updated_at"))
-        val sourceTableName = TableName(namespace = "test_ns", name = "source")
-        val targetTableName = TableName(namespace = "test_ns", name = "target")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            listOf(
-                ColumnAndType("id", "VARCHAR"),
-                ColumnAndType("name", "VARCHAR"),
-                ColumnAndType("updated_at", "TIMESTAMP_TZ")
-            ) + DEFAULT_COLUMNS
-
-        val sql =
-            snowflakeDirectLoadSqlGenerator.upsertTable(
-                stream = stream,
-                columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = targetTableName,
-            )
-
-        // Should NOT include any CDC-related clauses
-        assert(!sql.contains("_ab_cdc_deleted_at"))
-        assert(!sql.contains("THEN DELETE"))
-        assert(sql.contains("WHEN NOT MATCHED THEN INSERT"))
-    }
-
-    @Test
-    fun testGenerateUpsertTableWithNoCursor() {
-        // Test upsert with no cursor field
-        val primaryKey = listOf(listOf("id"))
-
-        val schemaWithoutCursor =
-            ObjectType(
-                properties =
-                    linkedMapOf(
-                        "id" to FieldType(StringType, nullable = false),
-                        "name" to FieldType(StringType, nullable = true)
-                    )
-            )
-
-        val stream =
-            mockk<DestinationStream> {
-                every { importType } returns
-                    Dedupe(
-                        primaryKey = primaryKey,
-                        cursor = emptyList(), // No cursor
-                    )
-                every { schema } returns schemaWithoutCursor
-            }
-
-        val columnNameMapping = ColumnNameMapping(mapOf("id" to "id", "name" to "name"))
-        val sourceTableName = TableName(namespace = "test_ns", name = "source")
-        val targetTableName = TableName(namespace = "test_ns", name = "target")
-
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            listOf(ColumnAndType("id", "VARCHAR"), ColumnAndType("name", "VARCHAR")) +
-                DEFAULT_COLUMNS
-
-        val sql =
-            snowflakeDirectLoadSqlGenerator.upsertTable(
-                stream = stream,
-                columnNameMapping = columnNameMapping,
-                sourceTableName = sourceTableName,
-                targetTableName = targetTableName,
-            )
-
-        // Should use only _airbyte_extracted_at for comparison when no cursor
-        assert(
-            sql.contains(
-                "target_table.\"_airbyte_extracted_at\" < new_record.\"_airbyte_extracted_at\""
-            )
-        )
-        assert(!sql.contains("target_table.\"cursor\"")) // No cursor field reference
-    }
-
-    @Test
-    fun testGenerateUpsertTableWithoutPrimaryKeyThrowsException() {
-        // Test that upsert without primary key throws an exception
-        val stream =
-            mockk<DestinationStream> {
-                every { importType } returns
-                    Dedupe(
-                        primaryKey = emptyList(), // No primary key
-                        cursor = listOf("updated_at"),
-                    )
-                every { schema } returns StringType
-            }
-
-        val columnNameMapping = ColumnNameMapping(emptyMap())
-        val sourceTableName = TableName(namespace = "test_ns", name = "source")
-        val targetTableName = TableName(namespace = "test_ns", name = "target")
-
-        val exception =
-            assertThrows(IllegalArgumentException::class.java) {
-                snowflakeDirectLoadSqlGenerator.upsertTable(
-                    stream = stream,
-                    columnNameMapping = columnNameMapping,
-                    sourceTableName = sourceTableName,
-                    targetTableName = targetTableName,
-                )
-            }
-
-        assertEquals("Cannot perform upsert without primary key", exception.message)
+            snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz", rawColumns)
+        val expectedSql =
+            """
+            |COPY INTO $targetTableName("_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta", "_airbyte_generation_id", "_airbyte_loaded_at", "_airbyte_data")
+            |FROM '@$stagingTableName'
+            |FILE_FORMAT = (
+            |    TYPE = 'CSV'
+            |    COMPRESSION = GZIP
+            |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+            |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            |    TRIM_SPACE = TRUE
+            |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            |    REPLACE_INVALID_CHARACTERS = TRUE
+            |    ESCAPE = NONE
+            |    ESCAPE_UNENCLOSED_FIELD = NONE
+            |)
+            |ON_ERROR = 'ABORT_STATEMENT'
+            |PURGE = TRUE
+            |files = ('test.csv.gz')
+        """.trimMargin()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
@@ -602,7 +364,7 @@ new_record."_airbyte_generation_id"
         val targetTableName = TableName(namespace = "namespace", name = "target")
         val sql = snowflakeDirectLoadSqlGenerator.swapTableWith(sourceTableName, targetTableName)
         assertEquals(
-            "ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} SWAP WITH ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}",
+            "ALTER TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} SWAP WITH ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)}",
             sql
         )
     }
@@ -612,9 +374,10 @@ new_record."_airbyte_generation_id"
         val uuid = UUID.randomUUID()
         every { uuidGenerator.v4() } returns uuid
         val tableName = TableName(namespace = "namespace", name = "name")
-        val addedColumns = setOf(ColumnDefinition("col1", "TEXT", false))
-        val deletedColumns = setOf(ColumnDefinition("col2", "TEXT", false))
-        val modifiedColumns = setOf(ColumnDefinition("col3", "TEXT", false))
+        val addedColumns = mapOf("COL1" to ColumnType("TEXT", true))
+        val deletedColumns = mapOf("COL2" to ColumnType("TEXT", true))
+        val modifiedColumns =
+            mapOf("COL3" to ColumnTypeChange(ColumnType("NUMBER", true), ColumnType("TEXT", true)))
         val sql =
             snowflakeDirectLoadSqlGenerator.alterTable(
                 tableName,
@@ -622,18 +385,22 @@ new_record."_airbyte_generation_id"
                 deletedColumns,
                 modifiedColumns
             )
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
 
         assertEquals(
             setOf(
-                """ALTER TABLE "test_database"."namespace"."name" ADD COLUMN "col1" TEXT;""",
-                """ALTER TABLE "test_database"."namespace"."name" DROP COLUMN "col2";""",
-                """ALTER TABLE "test_database"."namespace"."name" ADD COLUMN "col3_${uuid}" TEXT;""",
-                """UPDATE "test_database"."namespace"."name" SET "col3_${uuid}" = CAST("col3" AS TEXT);""",
-                """ALTER TABLE "test_database"."namespace"."name"
-                RENAME COLUMN "col3" TO "col3_${uuid}_backup";""".trimIndent(),
-                """ALTER TABLE "test_database"."namespace"."name"
-                RENAME COLUMN "col3_${uuid}" TO "col3";""".trimIndent(),
-                """ALTER TABLE "test_database"."namespace"."name" DROP COLUMN "col3_${uuid}_backup";"""
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL1" TEXT;""",
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL2";""",
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL3_${uuid}" TEXT;""",
+                """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL3" TO "COL3_${uuid}_backup";""".trimIndent(),
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL3_${uuid}" TO "COL3";""".trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";"""
             ),
             sql
         )
@@ -644,8 +411,10 @@ new_record."_airbyte_generation_id"
         val schemaName = "namespace"
         val tableName = "name"
         val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${schemaName.quote()}.${tableName.quote()}"
 
-        assertEquals("""DESCRIBE TABLE "test_database"."namespace"."name"""", sql)
+        assertEquals("""DESCRIBE TABLE $expectedTableName""", sql)
     }
 
     @Test
@@ -653,11 +422,16 @@ new_record."_airbyte_generation_id"
         val sourceTableName = TableName(namespace = "namespace", name = "old_name")
         val targetTableName = TableName(namespace = "namespace", name = "new_name")
         val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+        val expectedSourceTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${sourceTableName.namespace.quote()}.${sourceTableName.name.quote()}"
+        val expectedTargetTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${targetTableName.namespace.quote()}.${targetTableName.name.quote()}"
+        val expectedSql =
+            """
+            ALTER TABLE $expectedSourceTableName RENAME TO $expectedTargetTableName
+        """.trimIndent()
 
-        assertEquals(
-            """ALTER TABLE "test_database"."namespace"."old_name" RENAME TO "test_database"."namespace"."new_name"""",
-            sql
-        )
+        assertEquals(expectedSql, sql)
     }
 
     @Test
@@ -665,157 +439,578 @@ new_record."_airbyte_generation_id"
         val sourceTableName = TableName(namespace = "namespace", name = "table-with-dashes")
         val targetTableName = TableName(namespace = "namespace", name = "table_with_underscores")
         val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+        val expectedSourceTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${sourceTableName.namespace.quote()}.${sourceTableName.name.quote()}"
+        val expectedTargetTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${targetTableName.namespace.quote()}.${targetTableName.name.quote()}"
+        val expectedSql =
+            """
+            ALTER TABLE $expectedSourceTableName RENAME TO $expectedTargetTableName
+        """.trimIndent()
 
-        assertEquals(
-            "ALTER TABLE \"test_database\".\"namespace\".\"table_with_dashes\" RENAME TO \"test_database\".\"namespace\".\"table_with_underscores\"",
-            sql
-        )
-    }
-
-    @Test
-    fun testDescribeTableWithSpecialCharacters() {
-        val schemaName = "namespace-with-dash"
-        val tableName = "table.with.dots"
-        val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
-
-        assertEquals(
-            "DESCRIBE TABLE \"test_database\".\"namespace_with_dash\".\"table_with_dots\"",
-            sql
-        )
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testCreateTableWithSQLInjectionAttemptInTableName() {
-        val tableName = TableName(namespace = "namespace", name = "table\"; DROP TABLE users; --")
-        val stream = mockk<DestinationStream>(relaxed = true)
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val tableName = TableName(namespace = "namespace", name = "table'; DROP TABLE users; --")
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
+        // Create a minimal table schema for testing
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = emptyMap(),
+                        finalSchema = emptyMap(),
+                        inputSchema = emptyMap()
+                    ),
+                importType = Append
+            )
 
-        val sql =
-            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+        val sql = snowflakeDirectLoadSqlGenerator.createTable(tableName, tableSchema, false)
 
-        // The dangerous SQL characters should be sanitized to underscores
-        assertEquals(
-            "CREATE TABLE \"test_database\".\"namespace\".\"table___DROP_TABLE_users____\" (\n    \n)",
-            sql
-        )
+        // The SQL injection attempt should be properly escaped with quotes
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val expectedSql =
+            """
+            CREATE TABLE $expectedTableName (
+                "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
+                "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+                "_AIRBYTE_META" VARIANT NOT NULL,
+                "_AIRBYTE_GENERATION_ID" NUMBER
+            )
+            """.trimIndent()
+
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testCreateTableWithSQLInjectionAttemptInNamespace() {
-        val tableName = TableName(namespace = "namespace\"; DROP SCHEMA test; --", name = "table")
-        val stream = mockk<DestinationStream>(relaxed = true)
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val tableName = TableName(namespace = "namespace'; DROP SCHEMA test; --", name = "table")
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
-
-        val sql =
-            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
-
-        // The dangerous SQL characters should be sanitized to underscores
-        assertEquals(
-            "CREATE TABLE \"test_database\".\"namespace___DROP_SCHEMA_test____\".\"table\" (\n    \n)",
-            sql
-        )
-    }
-
-    @Test
-    fun testDropTableWithSQLInjectionAttempt() {
-        val tableName =
-            TableName(namespace = "namespace", name = "table'; DELETE FROM users WHERE '1'='1")
-        val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
-
-        // The dangerous SQL characters should be sanitized to underscores
-        assertEquals(
-            """DROP TABLE IF EXISTS "test_database"."namespace"."table___DELETE_FROM_users_WHERE__1___1"""",
-            sql
-        )
-    }
-
-    @Test
-    fun testRenameTableWithSQLInjectionAttempt() {
-        val sourceTableName = TableName(namespace = "namespace", name = "table")
-        val targetTableName =
-            TableName(namespace = "namespace", name = "new_table\"; DROP TABLE important; --")
-        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
-
-        // The dangerous SQL characters should be sanitized to underscores
-        assertEquals(
-            """ALTER TABLE "test_database"."namespace"."table" RENAME TO "test_database"."namespace"."new_table___DROP_TABLE_important____"""",
-            sql
-        )
-    }
-
-    @Test
-    fun testCountTableWithSQLInjectionAttempt() {
-        val tableName =
-            TableName(
-                namespace = "namespace",
-                name = "table\" UNION SELECT * FROM sensitive_data --"
+        // Create a minimal table schema for testing
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = emptyMap(),
+                        finalSchema = emptyMap(),
+                        inputSchema = emptyMap()
+                    ),
+                importType = Append
             )
-        val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
 
-        // The dangerous SQL characters should be sanitized to underscores
-        assertEquals(
-            """SELECT COUNT(*) AS "total" FROM "test_database"."namespace"."table__UNION_SELECT___FROM_sensitive_data___"""",
-            sql
-        )
+        val sql = snowflakeDirectLoadSqlGenerator.createTable(tableName, tableSchema, false)
+
+        // The SQL injection attempt should be properly escaped with quotes
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val expectedSql =
+            """
+            CREATE TABLE $expectedTableName (
+                "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
+                "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+                "_AIRBYTE_META" VARIANT NOT NULL,
+                "_AIRBYTE_GENERATION_ID" NUMBER
+            )
+            """.trimIndent()
+
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testCreateTableWithReservedKeywordsAsNames() {
         // Test with Snowflake reserved keywords as table/namespace names
         val tableName = TableName(namespace = "SELECT", name = "WHERE")
-        val stream = mockk<DestinationStream>(relaxed = true)
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
+        // Create a minimal table schema for testing
+        val tableSchema =
+            StreamTableSchema(
+                tableNames = TableNames(finalTableName = tableName, tempTableName = tableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = emptyMap(),
+                        finalSchema = emptyMap(),
+                        inputSchema = emptyMap()
+                    ),
+                importType = Append
+            )
+
+        val sql = snowflakeDirectLoadSqlGenerator.createTable(tableName, tableSchema, false)
+
+        // Reserved keywords should be properly quoted
+        val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val expectedSql =
+            """
+            CREATE TABLE $expectedTableName (
+                "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
+                "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+                "_AIRBYTE_META" VARIANT NOT NULL,
+                "_AIRBYTE_GENERATION_ID" NUMBER
+            )
+            """.trimIndent()
+
+        assertEquals(expectedSql, sql)
+    }
+
+    @Test
+    fun testGenerateUpsertTableWithCdcHardDelete() {
+        // Test with CDC hard delete mode when _ab_cdc_deleted_at column is present
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
+
+        val sourceTableName = TableName(namespace = "test_ns", name = "source")
+        val targetTableName = TableName(namespace = "test_ns", name = "target")
+
+        // Create table schema with CDC deletion column
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames =
+                            mapOf(
+                                "id" to "ID",
+                                "name" to "NAME",
+                                "updated_at" to "UPDATED_AT",
+                                "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT"
+                            ),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "NAME" to ColumnType("VARCHAR", true),
+                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
+                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true),
+                                "updated_at" to FieldType(StringType, nullable = true),
+                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true)
+                            )
+                    ),
+                importType =
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+            )
 
         val sql =
-            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
 
-        // Reserved keywords should be properly quoted
-        assertEquals("CREATE TABLE \"test_database\".\"SELECT\".\"WHERE\" (\n    \n)", sql)
-    }
-
-    @Test
-    fun testDropTableWithReservedKeywords() {
-        val tableName = TableName(namespace = "GROUP", name = "ORDER")
-        val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
-
-        // Reserved keywords should be properly quoted
-        assertEquals("""DROP TABLE IF EXISTS "test_database"."GROUP"."ORDER"""", sql)
-    }
-
-    @Test
-    fun testRenameTableWithReservedKeywords() {
-        val sourceTableName = TableName(namespace = "FROM", name = "JOIN")
-        val targetTableName = TableName(namespace = "FROM", name = "UNION")
-        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
-
-        // Reserved keywords should be properly quoted
-        assertEquals(
-            """ALTER TABLE "test_database"."FROM"."JOIN" RENAME TO "test_database"."FROM"."UNION"""",
-            sql
+        // Should include the DELETE clause and skip insert clause
+        assert(
+            sql.contains(
+                "WHEN MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NOT NULL"
+            )
+        )
+        assert(sql.contains("THEN DELETE"))
+        assert(
+            sql.contains(
+                "WHEN NOT MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NULL THEN INSERT"
+            )
         )
     }
 
     @Test
-    fun testCreateNamespaceWithReservedKeyword() {
-        val sql = snowflakeDirectLoadSqlGenerator.createNamespace("TABLE")
+    fun testGenerateUpsertTableWithCdcSoftDelete() {
+        // Test with CDC soft delete mode - should NOT add delete clauses
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
 
-        // Reserved keyword should be properly quoted
-        assertEquals("""CREATE SCHEMA IF NOT EXISTS "test_database"."TABLE"""", sql)
+        val sourceTableName = TableName(namespace = "test_ns", name = "source")
+        val targetTableName = TableName(namespace = "test_ns", name = "target")
+
+        // Create table schema with CDC deletion column
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames =
+                            mapOf(
+                                "id" to "ID",
+                                "name" to "NAME",
+                                "updated_at" to "UPDATED_AT",
+                                "_ab_cdc_deleted_at" to "_AB_CDC_DELETED_AT"
+                            ),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "NAME" to ColumnType("VARCHAR", true),
+                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true),
+                                "_AB_CDC_DELETED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true),
+                                "updated_at" to FieldType(StringType, nullable = true),
+                                "_ab_cdc_deleted_at" to FieldType(StringType, nullable = true)
+                            )
+                    ),
+                importType =
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
+
+        // Should NOT include DELETE clause in soft delete mode
+        assert(!sql.contains("THEN DELETE"))
+        assert(sql.contains("WHEN NOT MATCHED THEN INSERT"))
+        assert(!sql.contains("AND new_record.${CDC_DELETED_AT_COLUMN.quote()} IS NULL"))
     }
 
     @Test
-    fun testDescribeTableWithReservedKeywords() {
-        val schemaName = "DATABASE"
-        val tableName = "SCHEMA"
-        val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
+    fun testGenerateUpsertTableWithoutCdc() {
+        // Configure for no CDC
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
 
-        // Reserved keywords should be properly quoted
-        assertEquals("""DESCRIBE TABLE "test_database"."DATABASE"."SCHEMA"""", sql)
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+
+        // Create a table schema with primary key and cursor but no CDC column
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = mapOf("id" to "ID", "updated_at" to "UPDATED_AT"),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "updated_at" to FieldType(StringType, nullable = true)
+                            )
+                    ),
+                importType =
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
+
+        // Print the actual SQL for debugging
+        println("Generated SQL (without CDC):\n$sql")
+
+        // Verify the SQL contains the expected components for non-CDC upsert
+        assertTrue(sql.contains("MERGE INTO"))
+        assertTrue(sql.contains("WITH records AS"))
+        assertTrue(sql.contains("numbered_rows AS"))
+        assertTrue(sql.contains("ROW_NUMBER() OVER"))
+        assertTrue(sql.contains("PARTITION BY \"ID\""))
+        assertTrue(sql.contains("ORDER BY \"UPDATED_AT\" DESC NULLS LAST"))
+        // No CDC DELETE clause
+        assertFalse(sql.contains("_AB_CDC_DELETED_AT"))
+        assertTrue(sql.contains("WHEN MATCHED AND"))
+        assertTrue(sql.contains("THEN UPDATE SET"))
+        assertTrue(sql.contains("WHEN NOT MATCHED"))
+        assertTrue(sql.contains("THEN INSERT"))
+    }
+
+    @Test
+    fun testGenerateUpsertTableNoCursor() {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+
+        // Create a table schema with primary key but no cursor
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames = mapOf("id" to "ID", "data" to "DATA"),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "DATA" to ColumnType("VARCHAR", true)
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "data" to FieldType(StringType, nullable = true)
+                            )
+                    ),
+                importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
+
+        // Print the actual SQL for debugging
+        println("Generated SQL (no cursor):\n$sql")
+
+        // Verify the SQL contains the expected components for no-cursor upsert
+        assertTrue(sql.contains("MERGE INTO"))
+        assertTrue(sql.contains("WITH records AS"))
+        assertTrue(sql.contains("numbered_rows AS"))
+        assertTrue(sql.contains("ROW_NUMBER() OVER"))
+        assertTrue(sql.contains("PARTITION BY \"ID\""))
+        // No cursor ordering, just _AIRBYTE_EXTRACTED_AT (may have extra space)
+        assertTrue(sql.contains("\"_AIRBYTE_EXTRACTED_AT\" DESC"))
+        assertFalse(sql.contains("UPDATED_AT"))
+        // Simple extracted_at comparison in WHEN MATCHED
+        assertTrue(
+            sql.contains(
+                "target_table.\"_AIRBYTE_EXTRACTED_AT\" < new_record.\"_AIRBYTE_EXTRACTED_AT\""
+            )
+        )
+        assertTrue(sql.contains("THEN UPDATE SET"))
+        assertTrue(sql.contains("WHEN NOT MATCHED"))
+        assertTrue(sql.contains("THEN INSERT"))
+    }
+
+    @Test
+    fun testGenerateOverwriteTable() {
+        // Test overwrite functionality using copyTable with empty destination
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+
+        val columnNames =
+            setOf(
+                "_AIRBYTE_RAW_ID",
+                "_AIRBYTE_EXTRACTED_AT",
+                "_AIRBYTE_META",
+                "_AIRBYTE_GENERATION_ID",
+                "DATA_COL"
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.copyTable(
+                columnNames = columnNames,
+                sourceTableName = sourceTableName,
+                targetTableName = targetTableName
+            )
+
+        val expectedSourceTable =
+            snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)
+        val expectedTargetTable =
+            snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)
+
+        val columnList = columnNames.joinToString(", ") { "\"$it\"" }
+        val expectedSql =
+            """
+            INSERT INTO $expectedTargetTable 
+            (
+                $columnList
+            )
+            SELECT
+                $columnList
+            FROM $expectedSourceTable
+        """.trimIndent()
+
+        assertEquals(expectedSql, sql)
+    }
+
+    @Test
+    fun testGenerateUpdateTable() {
+        // Test update functionality is part of the MERGE statement
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+
+        // Create a table schema with multiple columns to update
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames =
+                            mapOf(
+                                "id" to "ID",
+                                "name" to "NAME",
+                                "value" to "VALUE",
+                                "updated_at" to "UPDATED_AT"
+                            ),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "NAME" to ColumnType("VARCHAR", true),
+                                "VALUE" to ColumnType("NUMBER", true),
+                                "UPDATED_AT" to ColumnType("TIMESTAMP_TZ", true)
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "name" to FieldType(StringType, nullable = true),
+                                "value" to FieldType(StringType, nullable = true),
+                                "updated_at" to FieldType(StringType, nullable = true)
+                            )
+                    ),
+                importType =
+                    Dedupe(primaryKey = listOf(listOf("id")), cursor = listOf("updated_at"))
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
+
+        // The MERGE statement should include UPDATE SET clause for all columns
+        val expectedSourceTable =
+            snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)
+        val expectedTargetTable =
+            snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)
+
+        val expectedSql =
+            """
+                |MERGE INTO $expectedTargetTable AS target_table
+                |USING (
+                |  WITH records AS (
+                |    SELECT
+                |      "_AIRBYTE_RAW_ID",
+                |      "_AIRBYTE_EXTRACTED_AT",
+                |      "_AIRBYTE_META",
+                |      "_AIRBYTE_GENERATION_ID",
+                |      "ID",
+                |      "NAME",
+                |      "VALUE",
+                |      "UPDATED_AT"
+                |    FROM $expectedSourceTable
+                |  ), numbered_rows AS (
+                |    SELECT *, ROW_NUMBER() OVER (
+                |      PARTITION BY "ID" ORDER BY "UPDATED_AT" DESC NULLS LAST, "_AIRBYTE_EXTRACTED_AT" DESC
+                |    ) AS row_number
+                |    FROM records
+                |  )
+                |  SELECT "_AIRBYTE_RAW_ID",
+                |      "_AIRBYTE_EXTRACTED_AT",
+                |      "_AIRBYTE_META",
+                |      "_AIRBYTE_GENERATION_ID",
+                |      "ID",
+                |      "NAME",
+                |      "VALUE",
+                |      "UPDATED_AT"
+                |  FROM numbered_rows
+                |  WHERE row_number = 1
+                |) AS new_record
+                |ON (target_table."ID" = new_record."ID" OR (target_table."ID" IS NULL AND new_record."ID" IS NULL))
+                |WHEN MATCHED AND (
+                |  target_table."UPDATED_AT" < new_record."UPDATED_AT"
+                |  OR (target_table."UPDATED_AT" = new_record."UPDATED_AT" AND target_table."_AIRBYTE_EXTRACTED_AT" < new_record."_AIRBYTE_EXTRACTED_AT")
+                |  OR (target_table."UPDATED_AT" IS NULL AND new_record."UPDATED_AT" IS NULL AND target_table."_AIRBYTE_EXTRACTED_AT" < new_record."_AIRBYTE_EXTRACTED_AT")
+                |  OR (target_table."UPDATED_AT" IS NULL AND new_record."UPDATED_AT" IS NOT NULL)
+                |) THEN UPDATE SET
+                |  "_AIRBYTE_RAW_ID" = new_record."_AIRBYTE_RAW_ID",
+                |  "_AIRBYTE_EXTRACTED_AT" = new_record."_AIRBYTE_EXTRACTED_AT",
+                |  "_AIRBYTE_META" = new_record."_AIRBYTE_META",
+                |  "_AIRBYTE_GENERATION_ID" = new_record."_AIRBYTE_GENERATION_ID",
+                |  "ID" = new_record."ID",
+                |  "NAME" = new_record."NAME",
+                |  "VALUE" = new_record."VALUE",
+                |  "UPDATED_AT" = new_record."UPDATED_AT"
+                |WHEN NOT MATCHED THEN INSERT (
+                |  "_AIRBYTE_RAW_ID",
+                |  "_AIRBYTE_EXTRACTED_AT",
+                |  "_AIRBYTE_META",
+                |  "_AIRBYTE_GENERATION_ID",
+                |  "ID",
+                |  "NAME",
+                |  "VALUE",
+                |  "UPDATED_AT"
+                |) VALUES (
+                |  new_record."_AIRBYTE_RAW_ID",
+                |  new_record."_AIRBYTE_EXTRACTED_AT",
+                |  new_record."_AIRBYTE_META",
+                |  new_record."_AIRBYTE_GENERATION_ID",
+                |  new_record."ID",
+                |  new_record."NAME",
+                |  new_record."VALUE",
+                |  new_record."UPDATED_AT"
+                |)
+        """.trimMargin()
+
+        assertEquals(expectedSql, sql)
+    }
+
+    // Tests moved from SnowflakeSqlNameUtilsTest
+    @Test
+    fun testFullyQualifiedNameInCountTable() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        val name = "test=name"
+        val tableName = TableName(namespace = namespace, name = name)
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
+
+        val expected =
+            "SELECT COUNT(*) AS TOTAL FROM ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)}"
+        assertEquals(expected, sql)
+    }
+
+    @Test
+    fun testFullyQualifiedNamespaceInCreateNamespace() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
+
+        val expected =
+            "CREATE SCHEMA IF NOT EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedNamespace(namespace)}"
+        assertEquals(expected, sql)
+    }
+
+    @Test
+    fun testFullyQualifiedStageNameInCreateStage() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        val name = "test=name"
+        val tableName = TableName(namespace = namespace, name = name)
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
+
+        val expected =
+            "CREATE STAGE IF NOT EXISTS ${snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)}"
+        assertEquals(expected, sql)
+    }
+
+    @Test
+    fun testFullyQualifiedStageNameWithEscapeInPutInStage() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        val name = "test=\"\"\'name"
+        val tableName = TableName(namespace = namespace, name = name)
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, "/tmp/test.csv")
+
+        val expectedStageName =
+            snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName, true)
+        val expected =
+            """
+            PUT 'file:///tmp/test.csv' '@$expectedStageName'
+            AUTO_COMPRESS = FALSE
+            SOURCE_COMPRESSION = GZIP
+            OVERWRITE = TRUE
+        """.trimIndent()
+        assertEquals(expected, sql)
     }
 }

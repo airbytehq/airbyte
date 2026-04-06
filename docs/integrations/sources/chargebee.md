@@ -8,13 +8,14 @@ This page contains the setup guide and reference information for the Chargebee s
 
 ## Prerequisites
 
-To set up the Chargebee source connector, you will need:
+To set up the Chargebee source connector, you need:
 
-- [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth)
-- [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of the Chargebee site you are syncing.
+- A [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth) with read access. A full-access key or a read-only key both work.
+- Your Chargebee site name, which is the subdomain in your Chargebee URL. For example, if your dashboard URL is `https://acme.chargebee.com`, your site name is `acme`.
+- The [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of your Chargebee site.
 
 :::info
-All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2.0](https://www.chargebee.com/docs/2.0/product-catalog.html) enabled by default. Sites created prior to this date will use [Product Catalog 1.0](https://www.chargebee.com/docs/1.0/product-catalog.html).
+All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://www.chargebee.com/docs/2.0/product-catalog.html) by default. Sites created before this date use [Product Catalog 1.0](https://www.chargebee.com/docs/1.0/product-catalog.html). You can check your version in the Chargebee API docs under the **API Version** section.
 :::
 
 ## Set up the Chargebee connector in Airbyte
@@ -23,11 +24,12 @@ All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
 4. Enter the name for the Chargebee connector.
-5. For **Site**, enter the site prefix for your Chargebee instance.
-6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. For **API Key**, enter the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
-8. For **Product Catalog**, enter the Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). Connector defaults to Product Catalog 2.0 unless otherwise specified.
-9. Click **Set up source**.
+5. For **Site**, enter the site prefix for your Chargebee instance. For example, if your Chargebee URL is `https://acme.chargebee.com`, enter `acme`.
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date is replicated.
+7. For **API Key**, enter your [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth).
+8. For **Product Catalog**, select your Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). The connector defaults to Product Catalog 2.0.
+9. Optionally, adjust the **Number of concurrent workers** to control how many worker threads the connector uses during syncs. The default is 3. Higher values increase throughput but consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
+10. Click **Set up source**.
 
 <HideInUI>
 
@@ -80,22 +82,23 @@ When using incremental sync mode, the `Attached Items` stream behaves differentl
 
 ## Limitations & Troubleshooting
 
-<details>
-<summary>
-Expand to see details about the Chargebee connector limitations and troubleshooting.
-</summary>
+### Rate limiting
 
-### Connector limitations
+The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. The connector automatically retries rate-limited requests using the `Retry-After` header provided by the Chargebee API. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
-#### Rate limiting
+Chargebee API rate limits vary by plan. See [Chargebee's API limits documentation](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits) for details.
 
-The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+### Deleted resources
+
+The Chargebee API may return HTTP 404 errors when the connector encounters references to deleted resources, such as subscriptions linked to removed plans or items. The connector handles these errors gracefully by skipping the unavailable resource and continuing the sync. This applies to the Contacts, Subscriptions, Subscriptions With Scheduled Changes, and Quote Line Groups streams.
+
+### Product Catalog version mismatch
+
+Some streams are only available on a specific Product Catalog version. If you attempt to sync a stream that is not compatible with your site's Product Catalog version, the connector skips the stream and logs a message: "Stream is available only for Product Catalog 1.0" or the equivalent for Product Catalog 2.0.
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the Instagram source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
-
-</details>
+- Check out common troubleshooting issues for the Chargebee source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 ## Changelog
 
@@ -104,11 +107,25 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.32 | 2026-03-25 | [75476](https://github.com/airbytehq/airbyte/pull/75476) | Handle 404 errors in subscription stream to prevent sync failures when Chargebee returns not found for deleted resources |
+| 0.10.31 | 2026-03-24 | [74459](https://github.com/airbytehq/airbyte/pull/74459) | Update dependencies |
+| 0.10.30 | 2026-03-03 | [74228](https://github.com/airbytehq/airbyte/pull/74228) | Update dependencies |
+| 0.10.29 | 2026-02-17 | [73452](https://github.com/airbytehq/airbyte/pull/73452) | Update dependencies |
+| 0.10.28 | 2026-02-10 | [72990](https://github.com/airbytehq/airbyte/pull/72990) | Update dependencies |
+| 0.10.27 | 2026-01-20 | [72117](https://github.com/airbytehq/airbyte/pull/72117) | Update dependencies |
+| 0.10.26 | 2026-01-14 | [71716](https://github.com/airbytehq/airbyte/pull/71716) | Update dependencies |
+| 0.10.25 | 2025-12-18 | [70665](https://github.com/airbytehq/airbyte/pull/70665) | Update dependencies |
+| 0.10.24 | 2025-11-25 | [69940](https://github.com/airbytehq/airbyte/pull/69940) | Update dependencies |
+| 0.10.23 | 2025-11-18 | [69621](https://github.com/airbytehq/airbyte/pull/69621) | Update dependencies |
+| 0.10.22 | 2025-10-29 | [68902](https://github.com/airbytehq/airbyte/pull/68902) | Update dependencies |
+| 0.10.21 | 2025-10-21 | [68546](https://github.com/airbytehq/airbyte/pull/68546) | Update dependencies |
+| 0.10.20 | 2025-10-14 | [68083](https://github.com/airbytehq/airbyte/pull/68083) | Update dependencies |
+| 0.10.19 | 2025-10-07 | [67181](https://github.com/airbytehq/airbyte/pull/67181) | Update dependencies |
 | 0.10.18 | 2025-09-30 | [65793](https://github.com/airbytehq/airbyte/pull/65793) | Update dependencies |
-| 0.10.17 | 2025-09-08 | [65996](https://github.com/airbytehq/airbyte/pull/65996) | Update to CDK v7 |
+| 0.10.17 | 2025-09-10 | [65996](https://github.com/airbytehq/airbyte/pull/65996) | Update to CDK v7 |
 | 0.10.16 | 2025-08-23 | [65294](https://github.com/airbytehq/airbyte/pull/65294) | Update dependencies |
 | 0.10.15 | 2025-08-09 | [64707](https://github.com/airbytehq/airbyte/pull/64707) | Update dependencies |
-| 0.10.14 | 2025-07-04 | [63936](https://github.com/airbytehq/airbyte/pull/63936) | Fix missing data in subscriptions with scheduled changes stream |
+| 0.10.14 | 2025-08-04 | [63936](https://github.com/airbytehq/airbyte/pull/63936) | Fix missing data in subscriptions with scheduled changes stream |
 | 0.10.13 | 2025-08-02 | [64333](https://github.com/airbytehq/airbyte/pull/64333) | Update dependencies |
 | 0.10.12 | 2025-07-26 | [64039](https://github.com/airbytehq/airbyte/pull/64039) | Update dependencies |
 | 0.10.11 | 2025-07-19 | [63538](https://github.com/airbytehq/airbyte/pull/63538) | Update dependencies |
@@ -131,7 +148,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 | 0.7.1       | 2024-11-04 | [48133](https://github.com/airbytehq/airbyte/pull/48133) | Fix `error message pattern` to handle `Product 1.0` related errors                                                                                                     |
 | 0.7.0       | 2024-10-30 | [47978](https://github.com/airbytehq/airbyte/pull/47978) | Upgrade the CDK and startup files to sync incremental streams concurrently                                                                                             |
 | 0.6.18      | 2024-10-31 | [47099](https://github.com/airbytehq/airbyte/pull/47099) | Update dependencies                                                                                                                                                    |
-| 0.6.17      | 2024-10-28 | [46846](https://github.com/airbytehq/airbyte/pull/47387) | Update CDK dependencies to yield parent records more frequently                                                                                                        |
+| 0.6.17      | 2024-10-28 | [47387](https://github.com/airbytehq/airbyte/pull/47387) | Update CDK dependencies to yield parent records more frequently                                                                                                        |
 | 0.6.16      | 2024-10-12 | [46846](https://github.com/airbytehq/airbyte/pull/46846) | Update dependencies                                                                                                                                                    |
 | 0.6.15      | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies                                                                                                                                                    |
 | 0.6.14      | 2024-10-03 | [46343](https://github.com/airbytehq/airbyte/pull/46343) | Added `incremental dependency` for substreams with `Incremental` parent streams                                                                                        |

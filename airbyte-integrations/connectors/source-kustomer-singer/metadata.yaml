@@ -27,4 +27,14 @@ data:
     sl: 100
     ql: 100
   supportLevel: archived
+  externalDocumentationUrls:
+    - title: Kustomer API reference
+      url: https://developer.kustomer.com/kustomer-api-docs/reference/introduction
+      type: api_reference
+    - title: Kustomer authentication
+      url: https://developer.kustomer.com/kustomer-api-docs/reference/authentication
+      type: authentication_guide
+    - title: Kustomer rate limits
+      url: https://developer.kustomer.com/kustomer-api-docs/reference/rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

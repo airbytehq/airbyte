@@ -30,6 +30,16 @@ The [Agile CRM](https://agilecrm.com/) Airbyte Connector allows you to sync and 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2026-03-17 | [74965](https://github.com/airbytehq/airbyte/pull/74965) | Update dependencies |
+| 0.0.36 | 2026-03-10 | [74554](https://github.com/airbytehq/airbyte/pull/74554) | Update dependencies |
+| 0.0.35 | 2026-02-17 | [73388](https://github.com/airbytehq/airbyte/pull/73388) | Update dependencies |
+| 0.0.34 | 2026-02-10 | [73009](https://github.com/airbytehq/airbyte/pull/73009) | Update dependencies |
+| 0.0.33 | 2026-02-03 | [72629](https://github.com/airbytehq/airbyte/pull/72629) | Update dependencies |
+| 0.0.32 | 2026-01-20 | [71993](https://github.com/airbytehq/airbyte/pull/71993) | Update dependencies |
+| 0.0.31 | 2026-01-14 | [71516](https://github.com/airbytehq/airbyte/pull/71516) | Update dependencies |
+| 0.0.30 | 2025-12-19 | [70935](https://github.com/airbytehq/airbyte/pull/70935) | Update dependencies |
+| 0.0.29 | 2025-12-02 | [70283](https://github.com/airbytehq/airbyte/pull/70283) | Update dependencies |
+| 0.0.28 | 2025-10-29 | [66244](https://github.com/airbytehq/airbyte/pull/66244) | Update dependencies |
 | 0.0.27 | 2025-08-16 | [65050](https://github.com/airbytehq/airbyte/pull/65050) | Update dependencies |
 | 0.0.26 | 2025-07-26 | [63809](https://github.com/airbytehq/airbyte/pull/63809) | Update dependencies |
 | 0.0.25 | 2025-07-05 | [62538](https://github.com/airbytehq/airbyte/pull/62538) | Update dependencies |

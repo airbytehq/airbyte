@@ -55,6 +55,21 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.1.23 | 2026-03-17 | [75081](https://github.com/airbytehq/airbyte/pull/75081) | Update dependencies |
+| 0.1.22 | 2026-03-10 | [74503](https://github.com/airbytehq/airbyte/pull/74503) | Update dependencies |
+| 0.1.21 | 2026-02-26 | [74072](https://github.com/airbytehq/airbyte/pull/74072) | feat: source-incident-io: use incident_roles v2 + add escalations stream |
+| 0.1.20 | 2026-02-24 | [73520](https://github.com/airbytehq/airbyte/pull/73520) | Update dependencies |
+| 0.1.19 | 2026-02-10 | [73089](https://github.com/airbytehq/airbyte/pull/73089) | Update dependencies |
+| 0.1.18 | 2026-02-03 | [72760](https://github.com/airbytehq/airbyte/pull/72760) | Update dependencies |
+| 0.1.17 | 2026-01-20 | [71981](https://github.com/airbytehq/airbyte/pull/71981) | Update dependencies |
+| 0.1.16 | 2026-01-14 | [71413](https://github.com/airbytehq/airbyte/pull/71413) | Update dependencies |
+| 0.1.15 | 2025-12-18 | [70511](https://github.com/airbytehq/airbyte/pull/70511) | Update dependencies |
+| 0.1.14 | 2025-11-25 | [70182](https://github.com/airbytehq/airbyte/pull/70182) | Update dependencies |
+| 0.1.13 | 2025-11-18 | [69504](https://github.com/airbytehq/airbyte/pull/69504) | Update dependencies |
+| 0.1.12 | 2025-10-29 | [68778](https://github.com/airbytehq/airbyte/pull/68778) | Update dependencies |
+| 0.1.11 | 2025-10-21 | [68531](https://github.com/airbytehq/airbyte/pull/68531) | Update dependencies |
+| 0.1.10 | 2025-10-14 | [67973](https://github.com/airbytehq/airbyte/pull/67973) | Update dependencies |
+| 0.1.9 | 2025-10-07 | [67363](https://github.com/airbytehq/airbyte/pull/67363) | Update dependencies |
 | 0.1.8 | 2025-09-30 | [66802](https://github.com/airbytehq/airbyte/pull/66802) | Update dependencies |
 | 0.1.7 | 2025-09-09 | [66041](https://github.com/airbytehq/airbyte/pull/66041) | Update dependencies |
 | 0.1.6 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |

@@ -9,6 +9,7 @@ from unittest.mock import patch
 import pytest
 import responses
 from freezegun import freeze_time
+from requests import JSONDecodeError
 from source_github import SourceGithub
 from source_github.streams import Organizations
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter, read_full_refresh
@@ -148,3 +149,21 @@ def test_multiple_token_authenticator_with_rate_limiter_and_sleep(sleep_mock, ca
     list(read_full_refresh(stream))
     sleep_mock.assert_called_once_with(ACCEPTED_WAITING_TIME_IN_SECONDS)
     assert [(x.count_rest, x.count_graphql) for x in authenticator._tokens.values()] == [(500, 500), (500, 500), (498, 500)]
+
+
+def test_invalid_credentials_error_message(requests_mock):
+    """
+    Test that validates that invalid or expired credentials are gracefully caught and surfaced back in a way
+    that the connector can display actionable messages back to users
+    """
+
+    requests_mock.get(
+        "https://api.github.com/rate_limit",
+        status_code=401,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest", "status": "401"},
+    )
+
+    with pytest.raises(AirbyteTracedException) as e:
+        MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2", "token3"])
+
+    assert "HTTP Status Code: 401" in e.value.message

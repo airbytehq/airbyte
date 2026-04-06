@@ -1,8 +1,8 @@
 import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
-import React, { useEffect, useState } from "react";
-import { REGISTRY_URL } from "../connector_registry";
+import { useEffect, useState } from "react";
+import { REGISTRY_URL } from "../constants";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
@@ -126,25 +126,40 @@ export default function ConnectorRegistry({ type }) {
   }, []);
 
   useEffect(() => {
-    if (pluginData.enterpriseConnectors.length > 0 && registry.length > 0) {
-      const _connectors = pluginData.enterpriseConnectors
-        .filter((name) => name.includes(type))
-        .map((name) => {
-          const _name = name.replace(`${type}-`, "");
+    if (registry.length > 0) {
+      const enterpriseFromRegistry = registry.filter(
+        (c) =>
+          c.connector_type === type &&
+          (c.documentationUrl_oss?.includes("/integrations/enterprise-connectors/") ||
+           c.documentationUrl_cloud?.includes("/integrations/enterprise-connectors/"))
+      );
 
-          const info = registry.find(
-            (c) =>
-              c.name_oss?.includes(_name) ||
-              c.name_cloud?.includes(_name) ||
-              c.documentationUrl_oss?.includes(_name) ||
-              c.documentationUrl_cloud?.includes(_name),
-          );
-          return info;
-        })
-        .filter(Boolean);
-      setEnterpriseConnectors(_connectors);
+      const enterpriseFromPlugin = pluginData.enterpriseConnectors.length > 0
+        ? pluginData.enterpriseConnectors
+            .filter((name) => name.includes(type))
+            .map((name) => {
+              const _name = name.replace(`${type}-`, "");
+
+              const info = registry.find(
+                (c) =>
+                  c.name_oss?.includes(_name) ||
+                  c.name_cloud?.includes(_name) ||
+                  c.documentationUrl_oss?.includes(_name) ||
+                  c.documentationUrl_cloud?.includes(_name),
+              );
+              return info;
+            })
+            .filter(Boolean)
+        : [];
+
+      const allEnterpriseConnectors = [...enterpriseFromRegistry, ...enterpriseFromPlugin];
+      const uniqueEnterpriseConnectors = Array.from(
+        new Map(allEnterpriseConnectors.map(c => [c.definitionId, c])).values()
+      );
+
+      setEnterpriseConnectors(uniqueEnterpriseConnectors);
     }
-  }, [registry, pluginData]);
+  }, [registry, pluginData, type]);
 
   if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;
 

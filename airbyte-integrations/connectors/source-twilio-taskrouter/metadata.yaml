@@ -40,4 +40,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Twilio TaskRouter API
+      url: https://www.twilio.com/docs/taskrouter/api
+      type: api_reference
+    - title: Twilio authentication
+      url: https://www.twilio.com/docs/iam/credentials/api-credentials
+      type: authentication_guide
+    - title: Twilio Status
+      url: https://status.twilio.com/
+      type: status_page
 metadataSpecVersion: "1.0"

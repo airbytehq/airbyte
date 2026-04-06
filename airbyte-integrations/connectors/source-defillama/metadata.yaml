@@ -32,3 +32,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  externalDocumentationUrls:
+    - title: DefiLlama API documentation
+      url: https://defillama.com/docs/api
+      type: api_reference

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.command.iceberg.parquet
@@ -102,6 +102,47 @@ data class RestCatalogConfiguration(
            `Destination-defined` or `Source-defined`"""
     )
     val namespace: String
+) : CatalogConfiguration
+
+/**
+ * Polaris catalog configuration details.
+ *
+ * Stores information required to connect to an Apache Polaris server.
+ */
+@JsonSchemaTitle("Polaris Catalog Configuration")
+@JsonSchemaDescription(
+    "Apache Polaris-specific configuration details for connecting an Iceberg catalog."
+)
+data class PolarisCatalogConfiguration(
+    @JsonSchemaTitle("Polaris Server URI")
+    @JsonPropertyDescription("The base URL of the Polaris server.")
+    val serverUri: String,
+    @JsonSchemaTitle("Polaris Catalog Name")
+    @JsonPropertyDescription("The name of the catalog in Polaris.")
+    val catalogName: String,
+    @JsonSchemaTitle("Client ID")
+    @JsonPropertyDescription("The OAuth Client ID for authenticating with the Polaris server.")
+    val clientId: String,
+    @JsonSchemaTitle("Client Secret")
+    @JsonPropertyDescription("The OAuth Client Secret for authenticating with the Polaris server.")
+    val clientSecret: String,
+    @JsonSchemaTitle("OAuth Scope")
+    @JsonPropertyDescription(
+        "The OAuth scope for authentication. Must be in the format PRINCIPAL_ROLE:<role_name>."
+    )
+    val scope: String,
+    @JsonSchemaTitle("OAuth2 Server URI")
+    @JsonPropertyDescription(
+        "The OAuth2 token endpoint URI. If not provided, a deprecation warning may be issued as this will become required in future versions."
+    )
+    val oauth2ServerUri: String? = null,
+    @get:JsonSchemaTitle("Namespace")
+    @get:JsonPropertyDescription(
+        """The namespace to be used in the Table identifier.
+           This will ONLY be used if the `Destination Namespace` setting for the connection is set to
+           `Destination-defined` or `Source-defined`"""
+    )
+    val namespace: String,
 ) : CatalogConfiguration
 
 /**

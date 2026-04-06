@@ -1,10 +1,10 @@
 # GitLab
 
-This page contains the setup guide and reference information for the Gitlab Source connector.
+This page contains the setup guide and reference information for the GitLab source connector.
 
 ## Prerequisites
 
-- Gitlab instance or an account at [Gitlab](https://gitlab.com)
+- A GitLab instance or an account at [GitLab](https://gitlab.com)
 
 <!-- env:cloud -->
 
@@ -31,7 +31,7 @@ Create a [GitLab Account](https://gitlab.com) or set up a local instance of GitL
 
 **Airbyte Open Source additional setup steps**
 
-Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your token should have the `read_api` scope, that Grants read access to the API, including all groups and projects, the container registry, and the package registry.
+Log into [GitLab](https://gitlab.com) and then generate a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html). Your token should have the `read_api` scope, which grants read access to the API, including all groups and projects, the container registry, and the package registry.
 
 <!-- /env:oss -->
 
@@ -44,15 +44,16 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your GitLab account` by selecting Oauth or Personal Access Token for Authentication.
-5. Log in and Authorize to the GitLab account.
-6. **API URL (Optional)** - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
-7. **Start date (Optional)** - The date from which you'd like to replicate data for streams.
-8. **Groups (Optional)** - List of GitLab group IDs, e.g. `airbytehq` for single group, `airbytehq another-repo` for multiple groups.
-9. **Projects (Optional)** - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
-10. Click **Set up source**.
+4. Click **Authenticate your GitLab account** by selecting OAuth or Personal Access Token for authentication.
+5. Log in and authorize the GitLab account.
+6. **API URL** (Optional) - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
+8. **Groups** (Optional) - List of GitLab group IDs, e.g. `airbytehq` for a single group.
+9. **Projects** (Optional) - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
+10. **Number of Concurrent Workers** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+11. Click **Set up source**.
 
-**Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector will retrieve a list of all the groups that are accessible to the configured token and ingest as normal.
+**Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector retrieves a list of all groups accessible to the configured token and ingests as normal.
 
 <!-- /env:cloud -->
 
@@ -65,45 +66,68 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 ## Supported sync modes
 
-The Gitlab Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The GitLab source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 This connector outputs the following streams:
 
 - [Branches](https://docs.gitlab.com/ee/api/branches.html)
-- [Commits](https://docs.gitlab.com/ee/api/commits.html) \(Incremental\)
-- [Issues](https://docs.gitlab.com/ee/api/issues.html) \(Incremental\)
-- [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
-- [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) \(Incremental\)
-- [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
-- [Projects](https://docs.gitlab.com/ee/api/projects.html)
-- [Project Milestones](https://docs.gitlab.com/ee/api/milestones.html)
-- [Project Merge Requests](https://docs.gitlab.com/ee/api/merge_requests.html) \(Incremental\)
-- [Users](https://docs.gitlab.com/ee/api/users.html)
-- [Groups](https://docs.gitlab.com/ee/api/groups.html)
-- [Group Milestones](https://docs.gitlab.com/ee/api/group_milestones.html)
-- [Group and Project members](https://docs.gitlab.com/ee/api/members.html)
-- [Tags](https://docs.gitlab.com/ee/api/tags.html)
-- [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
+- [Commits](https://docs.gitlab.com/ee/api/commits.html) (Incremental)
 - [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
+- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) (GitLab Ultimate only)
+- [Epics](https://docs.gitlab.com/ee/api/epics.html) (GitLab Ultimate only)
+- [Group Issue Boards](https://docs.gitlab.com/ee/api/group_boards.html)
 - [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
+- [Group Members](https://docs.gitlab.com/ee/api/members.html)
+- [Group Milestones](https://docs.gitlab.com/ee/api/group_milestones.html)
+- [Groups](https://docs.gitlab.com/ee/api/groups.html)
+- [Issues](https://docs.gitlab.com/ee/api/issues.html) (Incremental)
+- [Jobs](https://docs.gitlab.com/ee/api/jobs.html)
+- [Merge Request Commits](https://docs.gitlab.com/ee/api/merge_requests.html)
+- [Merge Requests](https://docs.gitlab.com/ee/api/merge_requests.html) (Incremental)
+- [Pipelines](https://docs.gitlab.com/ee/api/pipelines.html) (Incremental)
+- [Pipelines Extended](https://docs.gitlab.com/ee/api/pipelines.html)
 - [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts. Stream Epics uses iid field as primary key for more convenient search and matching with UI. Iid is the internal ID of the epic, number of Epic on UI.\)
-- [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
+- [Project Members](https://docs.gitlab.com/ee/api/members.html)
+- [Project Milestones](https://docs.gitlab.com/ee/api/milestones.html)
+- [Projects](https://docs.gitlab.com/ee/api/projects.html)
+- [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
+- [Tags](https://docs.gitlab.com/ee/api/tags.html)
+- [Users](https://docs.gitlab.com/ee/api/users.html)
 
-## Additional information
+## Limitations
 
-GitLab source works with GitLab API v4. It can also work with self-hosted GitLab API v4.
+### API version
 
-## Performance considerations
+This connector uses GitLab API v4. It works with both GitLab.com and self-hosted GitLab instances.
 
-Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.html#gitlabcom-specific-rate-limits), but the Gitlab connector should not run into Gitlab API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+### Rate limits
+
+GitLab.com enforces per-endpoint rate limits on its REST API. The following defaults apply to the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
+
+| Endpoint | Rate limit |
+| :--- | :--- |
+| `GET /groups` | 200 requests/min |
+| `GET /groups/:id` | 400 requests/min |
+| `GET /groups/:id/descendant_groups` | 200 requests/min |
+| `GET /projects/:id` | 400 requests/min |
+| `GET /groups/:id/members/all` | 200 requests/min |
+| `GET /projects/:id/members/all` | 200 requests/min |
+| All other authenticated requests | 2,000 requests/min |
+
+Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector automatically retries requests that receive HTTP 429 responses. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
+
+You can adjust the **Number of Concurrent Workers** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
+
+### Inaccessible resources
+
+The connector silently skips any group, project, or resource that returns an HTTP 403 (Forbidden) response. If you notice missing data, verify that your access token has the required permissions for the groups and projects you want to sync.
 
 ## Changelog
 
@@ -112,8 +136,25 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.23-rc.5 | 2026-04-01 | [75994](https://github.com/airbytehq/airbyte/pull/75994) | Revert concurrency to 8 with HTTPAPIBudget for progressive rollout tuning |
+| 4.4.23-rc.4 | 2026-03-31 | [75915](https://github.com/airbytehq/airbyte/pull/75915) | Re-enable HTTPAPIBudget with concurrency 10 for rate limit protection during progressive rollout |
+| 4.4.23-rc.3 | 2026-03-27 | [75537](https://github.com/airbytehq/airbyte/pull/75537) | Increase default concurrency from 8 to 10 for progressive rollout tuning |
+| 4.4.23-rc.2 | 2026-03-25 | [75480](https://github.com/airbytehq/airbyte/pull/75480) | Comment out HTTPAPIBudget to isolate concurrency tuning during progressive rollout |
+| 4.4.23-rc.1 | 2026-03-09 | [70858](https://github.com/airbytehq/airbyte/pull/70858) | Add HTTPAPIBudget and concurrency_level for improved sync performance |
+| 4.4.22 | 2026-02-24 | [73774](https://github.com/airbytehq/airbyte/pull/73774) | Update dependencies |
+| 4.4.21 | 2026-02-17 | [73401](https://github.com/airbytehq/airbyte/pull/73401) | Update dependencies |
+| 4.4.20 | 2026-02-10 | [71398](https://github.com/airbytehq/airbyte/pull/71398) | Update dependencies |
+| 4.4.19 | 2026-02-05 | [72262](https://github.com/airbytehq/airbyte/pull/72262) | Update CDK version from 7.6.1 to 7.6.5 |
+| 4.4.18 | 2025-12-18 | [70698](https://github.com/airbytehq/airbyte/pull/70698) | Update dependencies |
+| 4.4.17 | 2025-12-11 | [70839](https://github.com/airbytehq/airbyte/pull/70839) | Change check stream from projects to groups to fix timeout for large GitLab organizations |
+| 4.4.16 | 2025-11-25 | [69875](https://github.com/airbytehq/airbyte/pull/69875) | Update dependencies |
+| 4.4.15 | 2025-11-18 | [69411](https://github.com/airbytehq/airbyte/pull/69411) | Update dependencies |
+| 4.4.14 | 2025-10-29 | [69030](https://github.com/airbytehq/airbyte/pull/69030) | Update dependencies |
+| 4.4.13 | 2025-10-21 | [68297](https://github.com/airbytehq/airbyte/pull/68297) | Update dependencies |
+| 4.4.12 | 2025-10-14 | [68000](https://github.com/airbytehq/airbyte/pull/68000) | Update dependencies |
+| 4.4.11 | 2025-10-07 | [67266](https://github.com/airbytehq/airbyte/pull/67266) | Update dependencies |
 | 4.4.10 | 2025-09-30 | [66076](https://github.com/airbytehq/airbyte/pull/66076) | Update dependencies |
-| 4.4.9 | 2025-09-08 | [65997](https://github.com/airbytehq/airbyte/pull/65997) | Update dependencies |
+| 4.4.9 | 2025-09-10 | [65997](https://github.com/airbytehq/airbyte/pull/65997) | Update dependencies |
 | 4.4.8 | 2025-08-26 | [65556](https://github.com/airbytehq/airbyte/pull/65556) | Update dependencies |
 | 4.4.7 | 2025-08-23 | [65362](https://github.com/airbytehq/airbyte/pull/65362) | Update dependencies |
 | 4.4.6 | 2025-08-09 | [64579](https://github.com/airbytehq/airbyte/pull/64579) | Update dependencies |
@@ -156,7 +197,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 | 1.8.1 | 2023-10-12 | [31375](https://github.com/airbytehq/airbyte/pull/31375) | Mark `start_date` as optional, migrate `groups` and `projects` to array |
 | 1.8.0 | 2023-10-12 | [31339](https://github.com/airbytehq/airbyte/pull/31339) | Add undeclared fields to streams schemas, validate date/date-time format in stream schemas |
 | 1.7.1 | 2023-10-10 | [31210](https://github.com/airbytehq/airbyte/pull/31210) | Added expired `access_token` handling, while checking the connection |
-| 1.7.0   | 2023-08-08 | [27869](https://github.com/airbytehq/airbyte/pull/29203) | Add Deployments stream                                                                                                                                                             |
+| 1.7.0   | 2023-08-08 | [29203](https://github.com/airbytehq/airbyte/pull/29203) | Add Deployments stream                                                                                                                                                             |
 | 1.6.0   | 2023-06-30 | [27869](https://github.com/airbytehq/airbyte/pull/27869) | Add `shared_runners_setting` field to groups                                                                                                                                       |
 | 1.5.1   | 2023-06-24 | [27679](https://github.com/airbytehq/airbyte/pull/27679) | Fix formatting                                                                                                                                                                     |
 | 1.5.0   | 2023-06-15 | [27392](https://github.com/airbytehq/airbyte/pull/27392) | Make API URL an optional parameter in spec.                                                                                                                                        |

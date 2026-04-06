@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.cdk
@@ -125,8 +125,6 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
             unprettyPrintJson(
                 this.javaClass.getResource("/config_with_top_level_password.json")!!.readText()
             )
-
-        println(json)
 
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)

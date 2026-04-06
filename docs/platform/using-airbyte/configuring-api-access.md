@@ -5,111 +5,165 @@ products: all
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Configuring API Access
+# Get an API access token
 
-The Airbyte API enables you to programmatically interact with Airbyte: create sources, destinations, run syncs, list workspaces, and much more.
+Most programmatic interactions with Airbyte require an access token. An access token represents an individual Airbyte user, and it has the same permissions as that Airbyte user.
 
-Access to the API is controlled through application keys. Applications keys are tied to individual users and their respective permissions. 
+:::tip
+Using a service account for this purpose is helpful. If you rely on making requests to the Airbyte API using personal credentials, your apps and scripts could break if someone leaves your organization.
+:::
 
-# Prerequisites
-<Tabs groupId="cloud-hosted">
-  <TabItem value="cloud" label="Cloud">
-   Access to a Cloud workspace.
+The process to generate an access token involves two steps.
 
-  </TabItem>
-  <TabItem value="self-managed" label="Self-Managed">
-    A deployment of Airbyte Self-Managed that exposes the `airbyte-server` service. 
-  </TabItem>
-</Tabs>
+1. Create an application in Airbyte.
+2. Use that application to get an access token.
 
-## Step 1: Create an Application
+## Prerequisites
 
-While logged into the Airbyte UI, go to \<Your Name\> -> User Settings -> Applications. Click the button "Create an application".
+You need access to either of the following:
 
-![Create an Application](./assets/applications-ui.png)
+- An Airbyte Cloud organization
+- A self-managed deployment of Airbyte that exposes the `airbyte-server` service
 
-Name your application for easy identification.
+## Step 1: Create an application
 
-![Name Application](./assets/applications-create.png)
- 
+An Airbyte application represents an individual user using a client ID and client secret.
 
-A `client_id` and `client_secret` will be automatically generated. The `client_secret` can be exposed by clicking on the icon next to the secret.
+<Tabs>
+<TabItem value="cloud" label="Cloud">
+
+1. In Airbyte's UI, click your name > **User settings** > **Applications**.
+
+    ![Create an Application](./assets/applications-ui.png)
+
+2. Click **Create an application**.
+
+3. Give your application a descriptive name and click **Submit**.
+
+    ![Name Application](./assets/applications-create.png)
+
+4. Click the <svg fill="none" data-icon="eye" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M21.92 11.6C19.9 6.91 16.1 4 12 4s-7.9 2.91-9.92 7.6a1 1 0 0 0 0 .8C4.1 17.09 7.9 20 12 20s7.9-2.91 9.92-7.6a1 1 0 0 0 0-.8M12 18c-3.17 0-6.17-2.29-7.9-6C5.83 8.29 8.83 6 12 6s6.17 2.29 7.9 6c-1.73 3.71-4.73 6-7.9 6m0-10a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4"></path></svg> icon to expose your client secret.
+
+    ![Get Application Client ID and Client Secret](./assets/applications-client-secret.png)
+
+</TabItem>
+<TabItem value="oss" label="Core">
+
+Since Airbyte Core only has a single user, Airbyte already provides an application with a client ID and client secret for you.
+
+In Airbyte's UI, click **User** > **User settings** > **Applications**. Click the <svg fill="none" data-icon="eye" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M21.92 11.6C19.9 6.91 16.1 4 12 4s-7.9 2.91-9.92 7.6a1 1 0 0 0 0 .8C4.1 17.09 7.9 20 12 20s7.9-2.91 9.92-7.6a1 1 0 0 0 0-.8M12 18c-3.17 0-6.17-2.29-7.9-6C5.83 8.29 8.83 6 12 6s6.17 2.29 7.9 6c-1.73 3.71-4.73 6-7.9 6m0-10a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4"></path></svg> icon to expose your client secret.
 
 ![Get Application Client and Secret](./assets/applications-client-secret.png)
 
-## Step 2: Obtain an Access Token
+If you deploy Airbyte with abctl, you can also [use the command line interface](../deploying-airbyte/abctl/#view-and-change-credentials) to see your client ID and client secret.
 
-Once the `client_secret` is exposed, you can use the button in the UI to get an access token to do a quick test. 
+</TabItem>
+<TabItem value="sme" label="Self-Managed Enterprise">
 
-You can also use the `client_id` and `client_secret` to retrive an access token using the [Get an Access Token endpoint](https://reference.airbyte.com/reference/createaccesstoken).
+1. In Airbyte's UI, click your name > **User settings** > **Applications**.
 
+    ![Create an Application](./assets/applications-ui.png)
 
-<Tabs groupId="cloud-hosted">
-  <TabItem value="cloud" label="Cloud">
-    
-    ```yml
-    POST https://api.airbyte.com/api/v1/applications/token
-    ```
+2. Click **Create an application**.
 
-    Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
+3. Give your application a descriptive name and click **Submit**.
 
-    ```yaml
-    { 
-      "client_id": "", 
-      "client_secret": "" 
-      }
-    ```
+    ![Name Application](./assets/applications-create.png)
 
-  </TabItem>
-  <TabItem value="self-managed" label="Self-Managed">
-    Self-Managed users should replace `<YOUR_WEBAPP_URL>` below with the URL used to access the Airbyte UI
+4. Click the <svg fill="none" data-icon="eye" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M21.92 11.6C19.9 6.91 16.1 4 12 4s-7.9 2.91-9.92 7.6a1 1 0 0 0 0 .8C4.1 17.09 7.9 20 12 20s7.9-2.91 9.92-7.6a1 1 0 0 0 0-.8M12 18c-3.17 0-6.17-2.29-7.9-6C5.83 8.29 8.83 6 12 6s6.17 2.29 7.9 6c-1.73 3.71-4.73 6-7.9 6m0-10a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4"></path></svg> icon to expose your client secret.
 
-    ```yml
-    POST <YOUR_WEBAPP_URL>/api/v1/applications/token
-    ```
+    ![Get Application Client ID and Client Secret](./assets/applications-client-secret.png)
 
-    Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
-
-    ```yaml
-    { 
-      "client_id": "", 
-      "client_secret": "" 
-      }
-    ```
-  </TabItem>
+</TabItem>
 </Tabs>
 
-The API response should provide an `access_token`, which is a Bearer Token valid for 3 minutes. It can be used to make requests to the API. Once your `access_token` expires, you must make a new request to the `applications/token` endpoint to get a new token.
+## Step 2: Get an access token
 
-:::tip
-Access tokens are short-lived (3 minutes) so we recommend fetching a new token before each request. The Terraform Provider/SDKs properly handle this for you if you initialize the Provider/SDK with the Client Credentials grant type using your Application's `client_id` and `client_secret`.
-:::
+You can exchange your client ID and client secret for an access token. Use this access token to make requests. Access tokens expire in 15 minutes. Each time your access token expires, request a new one.
 
-## Step 3: Operate Airbyte via API
+<Tabs>
+<TabItem value="manually" label="Manually">
 
-You may now make requests to any endpoint documented in our [Airbyte API Reference](https://reference.airbyte.com). For example, you may use the [List workspaces endpoint](https://reference.airbyte.com/reference/listworkspaces) to verify the list of workspaces in your organization. Ensure to include your `access_token` as a `Bearer Token` in your request.:
+You can manually generate an access token from Airbyte's UI.
 
-```yaml
-GET <YOUR_WEBAPP_URL>/api/public/v1/workspaces
+1. Still on the Applications page, hover over the application for which you want to generate an access token.
+
+2. Click **Generate access token**.
+
+3. Click **Copy** or **Download access token**.
+
+4. Close the dialog.
+
+</TabItem>
+<TabItem value="cloud" label="Cloud">
+
+Make a POST request to the API, replacing the client ID and client secret placeholders below with your actual client ID and client secret.
+
+```bash title="Request"
+curl --request POST \
+     --url https://api.airbyte.com/v1/applications/token \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "client_id": "<YOUR_CLIENT_ID>",
+  "client_secret": "<YOUR_CLIENT_SECRET>",
+  "grant-type": "client_credentials"
+}
+'
 ```
 
-Expect a response like the following:
+If your request was successful, the API returns your access token with an expiry time.
 
-```json
+```bash title="Response"
 {
-  "data": [
-    {
-      "workspaceId": "b5367aab-9d68-4fea-800f-0000000000",
-      "name": "Finance Team",
-      "dataResidency": "auto"
-    },
-    {
-      "workspaceId": "b5367aab-9d68-4fea-800f-0000000001",
-      "name": "Analytics Team",
-      "dataResidency": "auto"
-    }
-  ]
+  "access_token": "<YOUR_ACCESS_TOKEN>",
+  "token_type": "Bearer",
+  "expires_in": 900
 }
 ```
 
-To go further, you may use our [Python](https://github.com/airbytehq/airbyte-api-python-sdk) and [Java](https://github.com/airbytehq/airbyte-api-java-sdk) SDKs to make API requests directly in code, or our [Terraform Provider](https://registry.terraform.io/providers/airbytehq/airbyte/latest) (which uses the Airbyte API) to declare your Airbyte configuration as infrastructure.
+For more examples, see [Get an access token](https://reference.airbyte.com/reference/createaccesstoken#/).
+
+</TabItem>
+<TabItem value="self-managed" label="Self-Managed">
+
+Make a POST request to the API, replacing the Airbyte URL, client ID and client secret placeholders below with your actual Airbyte URL, client ID, and client secret. If Airbyte is running locally, your Airbyte URL is probably `http://localhost:8000`.
+
+```bash title="Request"
+curl --request POST \
+     --url <YOUR_AIRBYTE_URL>/api/public/v1/applications/token \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --data '
+{
+  "client_id": "<YOUR_CLIENT_ID>",
+  "client_secret": "<YOUR_CLIENT_SECRET>",
+  "grant-type": "client_credentials"
+}
+'
+```
+
+If your request was successful, the API returns your access token with an expiry time.
+
+```bash title="Response"
+{
+  "access_token": "<YOUR_ACCESS_TOKEN>",
+  "token_type": "Bearer",
+  "expires_in": 900
+}
+```
+
+For more examples, see [Get an access token](https://reference.airbyte.com/reference/createaccesstoken#/).
+
+</TabItem>
+<TabItem value="other" label="Terraform and SDKs">
+
+The Terraform Provider and SDKs can handle this for you. Initialize the Provider/SDK with the Client Credentials grant type using your Application's `client_id` and `client_secret`.
+
+</TabItem>
+</Tabs>
+
+## Step 3: Use your access token
+
+Once you have an application and/or access token, use it to make requests from your source code. [Learn more in the Developers section](/developers).

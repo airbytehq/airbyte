@@ -20,8 +20,48 @@
 help = "Build the docs.airbyte.com site documentation using Docusaurus."
 shell = '''
 cd $POE_ROOT/docusaurus
-pnpm install
+pnpm install --ignore-scripts
 pnpm build
+'''
+
+[tasks.docs-update-latest-evergreen]
+help = "Copy evergreen docs (connector development, contribution guides) to the latest versioned docs directories."
+shell = '''
+set -e
+
+VERSIONS_FILE="$POE_ROOT/docusaurus/platform_versions.json"
+LATEST_VERSION=$(jq -r '.[0]' "$VERSIONS_FILE")
+
+echo "Copying evergreen docs to version $LATEST_VERSION..."
+
+VERSIONED_DIR="$POE_ROOT/docusaurus/platform_versioned_docs/version-$LATEST_VERSION"
+
+copy_and_replace() {
+  SOURCE="$POE_ROOT/docs/platform/$1"
+  DEST="$VERSIONED_DIR/$1"
+
+  if [ -e "$SOURCE" ]; then
+    echo "Replacing $1..."
+    if [ -d "$SOURCE" ]; then
+      # For directories, remove old content and copy fresh
+      rm -rf "$DEST"
+      mkdir -p "$DEST"
+      cp -r "$SOURCE"/* "$DEST"/
+    else
+      # For files, ensure parent directory exists
+      mkdir -p "$(dirname "$DEST")"
+      cp "$SOURCE" "$DEST"
+    fi
+  else
+    echo "Warning: $SOURCE does not exist, skipping..."
+  fi
+}
+
+# Copy evergreen doc paths (relative to docs/platform/)
+copy_and_replace "connector-development/"
+copy_and_replace "contributing-to-airbyte/"
+
+echo "Evergreen docs copied successfully to version $LATEST_VERSION"
 '''
 
 [tasks.get-modified-connectors]

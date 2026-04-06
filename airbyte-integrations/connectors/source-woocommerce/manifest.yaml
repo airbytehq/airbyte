@@ -42,6 +42,21 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             page_size: 100
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date_modified_gmt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S"
+        is_client_side_incremental: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
