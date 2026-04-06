@@ -138,7 +138,7 @@ class DefaultJdbcPartitionFactoryTest {
                         NoWhere,
                     ),
                     NoWhere,
-//                    OrderBy(id),
+                    //                    OrderBy(id),
                     NoOrderBy,
                 )
             )
@@ -210,7 +210,7 @@ class DefaultJdbcPartitionFactoryTest {
                         NoWhere,
                     ),
                     NoWhere,
-//                    OrderBy(id)
+                    //                    OrderBy(id)
                     NoOrderBy,
                 )
             )
@@ -318,7 +318,7 @@ class DefaultJdbcPartitionFactoryTest {
                         Where(Greater(id, IntCodec.encode(22))),
                     ),
                     NoWhere,
-//                    OrderBy(id),
+                    //                    OrderBy(id),
                     NoOrderBy,
                 )
             )
@@ -378,7 +378,7 @@ class DefaultJdbcPartitionFactoryTest {
                         Where(Greater(id, IntCodec.encode(22))),
                     ),
                     NoWhere,
-//                    OrderBy(id)
+                    //                    OrderBy(id)
                     NoOrderBy,
                 )
             )
@@ -466,7 +466,7 @@ class DefaultJdbcPartitionFactoryTest {
                         ),
                     ),
                     NoWhere,
-//                    OrderBy(ts)
+                    //                    OrderBy(ts)
                     NoOrderBy,
                 )
             )

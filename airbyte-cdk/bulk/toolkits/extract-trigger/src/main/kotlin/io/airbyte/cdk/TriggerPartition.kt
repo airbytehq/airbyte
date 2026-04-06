@@ -176,7 +176,7 @@ sealed class TriggerSplittablePartition(
                 SelectColumns((queryTableColumns + checkpointColumns).distinct()),
                 FromSample(samplingTableName, samplingNamespace, sampleRateInvPow2, sampleSize),
                 where,
-//                OrderBy(checkpointColumns),
+                //                OrderBy(checkpointColumns),
                 NoOrderBy,
             )
         return selectQueryGenerator.generate(querySpec.optimize())

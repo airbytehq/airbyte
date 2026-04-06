@@ -108,13 +108,15 @@ sealed class DefaultJdbcSplittablePartition(
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
-        log.info { "Generating sampling query for stream '${stream.label}' without ORDER BY (CDK optimized)" }
+        log.info {
+            "Generating sampling query for stream '${stream.label}' without ORDER BY (CDK optimized)"
+        }
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
                 NoWhere, // WHERE is already in FromSample, don't duplicate in outer query
-//                OrderBy(checkpointColumns),
+                //                OrderBy(checkpointColumns),
                 NoOrderBy,
             )
         return selectQueryGenerator.generate(querySpec.optimize())
