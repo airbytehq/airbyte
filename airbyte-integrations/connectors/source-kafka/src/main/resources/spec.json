@@ -157,10 +157,10 @@
                 "type": "string",
                 "default": "PLAIN",
                 "enum": [
-                  "GSSAPI", 
-                  "OAUTHBEARER", 
-                  "SCRAM-SHA-256", 
-                  "SCRAM-SHA-512", 
+                  "GSSAPI",
+                  "OAUTHBEARER",
+                  "SCRAM-SHA-256",
+                  "SCRAM-SHA-512",
                   "PLAIN"
                 ]
               },
