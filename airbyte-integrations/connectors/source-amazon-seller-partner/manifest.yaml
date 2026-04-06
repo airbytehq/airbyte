@@ -3013,10 +3013,15 @@ definitions:
     status_mapping:
       failed:
         - FATAL
-        - CANCELLED
       running:
         - IN_PROGRESS
         - IN_QUEUE
+      # CANCELLED means the report was either explicitly cancelled or automatically cancelled because
+      # there is no data to return (per SP-API docs). Ideally we would not retry CANCELLED reports,
+      # but the CDK retries both timeout and failed statuses. We map CANCELLED to timeout as the
+      # least impactful option — the CDK schema requires all four keys (running, completed, failed, timeout).
+      timeout:
+        - CANCELLED
       completed:
         - DONE
     download_target_extractor:
