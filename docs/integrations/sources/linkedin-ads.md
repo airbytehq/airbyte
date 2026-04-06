@@ -9,7 +9,8 @@ This page contains the setup guide and reference information for the [LinkedIn A
 ## Prerequisites
 
 - A LinkedIn Ads account with permission to access data from accounts you want to sync.
-- Start Date - a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
+- Your LinkedIn developer application must have [Advertising API](https://learn.microsoft.com/en-us/linkedin/marketing/increasing-access) access approved. To sync lead form data, you also need the [Marketing Developer Platform](https://learn.microsoft.com/en-us/linkedin/marketing/increasing-access) product enabled.
+- A start date in the format YYYY-MM-DD. Any data before this date will not be replicated.
 
 ## Setup guide
 
@@ -17,7 +18,7 @@ This page contains the setup guide and reference information for the [LinkedIn A
 
 <!-- env:cloud -->
 
-We recommend using **Oauth2.0** authentication for Airbyte Cloud, as this significantly simplifies the setup process, and allows you to authenticate your account directly from the Airbyte UI.
+Airbyte recommends using **OAuth2.0** authentication for Airbyte Cloud, as this simplifies the setup process and lets you authenticate your account directly from the Airbyte UI.
 
 <!-- /env:cloud -->
 
@@ -25,7 +26,7 @@ We recommend using **Oauth2.0** authentication for Airbyte Cloud, as this signif
 
 ### Set up LinkedIn Ads authentication (Airbyte Open Source)
 
-To authenticate the connector in Airbyte Open Source, you will need to create a Linkedin developer application and obtain one of the following credentials:
+To authenticate the connector in Airbyte Open Source, create a LinkedIn developer application and obtain one of the following credentials:
 
 1. OAuth2.0 credentials, consisting of:
 
@@ -35,7 +36,7 @@ To authenticate the connector in Airbyte Open Source, you will need to create a 
 
 2. Access Token (expires after 60 days)
 
-You can follow the steps laid out below to create the application and obtain the necessary credentials. For an overview of the LinkedIn authentication process, see the [official documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext).
+Follow the steps below to create the application and obtain the necessary credentials. For an overview of the LinkedIn authentication process, see the [official documentation](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authentication?context=linkedin%2Fcontext).
 
 #### Create a LinkedIn developer application
 
@@ -60,20 +61,31 @@ You can follow the steps laid out below to create the application and obtain the
 
 2. Click the **OAuth 2.0 tools** link in the **Understanding authentication and OAuth 2.0** section on the right side of the page.
 3. Click **Create token**.
-4. Select the scopes you want to use for your app. We recommend using the following scopes:
-   - `r_emailaddress`
-   - `r_liteprofile`
-   - `r_ads`
-   - `r_ads_reporting`
-   - `r_organization_social`
-5. Click **Request access token**. You will be redirected to an authorization page. Use your LinkedIn credentials to log in and authorize your app and obtain your **Access Token** and **Refresh Token**.
+4. Select the scopes for your app. The connector requests the following scopes during OAuth:
+   - `r_ads` — Read ad accounts
+   - `r_ads_reporting` — Retrieve ad reporting data
+   - `r_organization_social` — Read organization social data
+   - `r_basicprofile` — Read basic profile data
+   - `r_organization_admin` — Read organization admin data
+   - `r_1st_connections_size` — Read first-degree connections count
+   - `r_events` — Read events data
+   - `r_marketing_leadgen_automation` — Read lead gen automation data
+   - `r_ads_leadgen_automation` — Read ads lead gen automation data
+   - `r_liteprofile` — Read lite profile data (deprecated by LinkedIn; may fail for new apps)
+   - `r_emailaddress` — Read email address (deprecated by LinkedIn; may fail for new apps)
+
+   :::note
+   LinkedIn deprecated the `r_liteprofile`, `r_emailaddress`, and `r_basicprofile` scopes for newly created developer applications as of August 2023. If your app was created after this date and you encounter an `unauthorized_scope_error` during OAuth, see [Troubleshooting](#troubleshooting) below.
+   :::
+
+5. Click **Request access token**. You are redirected to an authorization page. Use your LinkedIn credentials to log in, authorize your app, and obtain your **Access Token** and **Refresh Token**.
 
 :::caution
-These tokens will not be displayed again, so make sure to copy them and store them securely.
+These tokens are not displayed again. Copy and store them securely.
 :::
 
 :::tip
-If either of your tokens expire, you can generate new ones by returning to LinkedIn's [Token Generator](https://www.linkedin.com/developers/tools/oauth/token-generator). You can also check on the status of your tokens using the [Token Inspector](https://www.linkedin.com/developers/tools/oauth/token-inspector).
+If your tokens expire, generate new ones from LinkedIn's [Token Generator](https://www.linkedin.com/developers/tools/oauth/token-generator). Check the status of your tokens with the [Token Inspector](https://www.linkedin.com/developers/tools/oauth/token-inspector).
 :::
 
 <!-- /env:oss -->
@@ -104,13 +116,14 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 4. Enter a name for the LinkedIn Ads connector.
 5. To authenticate:
 - Select an option from the Authentication dropdown:
-  1. **OAuth2.0:** Enter your **Client ID**, **Client Secret** and **Refresh Token**. Please note that the refresh token expires after 12 months.
-  2. **Access Token:** Enter your **Access Token**. Please note that the access token expires after 60 days.
+  1. **OAuth2.0:** Enter your **Client ID**, **Client Secret**, and **Refresh Token**. The refresh token expires after 12 months.
+  2. **Access Token:** Enter your **Access Token**. The access token expires after 60 days.
   <!-- /env:oss -->
 
-6. For **Start Date**, use the provided datepicker or enter a date programmatically in the format YYYY-MM-DD. Any data before this date will not be replicated.
-7. (Optional) For **Account IDs**, you may optionally provide a space separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector will replicate data from all accounts accessible using your credentials.
-8. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled form LinkedIn Ads with your particular needs. To add a custom report:
+6. For **Start Date**, use the provided datepicker or enter a date in the format YYYY-MM-DD. Any data before this date will not be replicated.
+7. (Optional) For **Account IDs**, provide a space-separated list of Account IDs to pull data from. If you do not specify any account IDs, the connector replicates data from all accounts accessible with your credentials. See [Find LinkedIn Ads Account Details](https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details) to locate your account IDs.
+8. (Optional) For **Lookback Window**, enter the number of days to look back for updated records. Defaults to 0.
+9. (Optional) For **Custom Ad Analytics Reports**, provide one or more custom reports to query the LinkedIn Ads API for. Custom reports let you align the data pulled from LinkedIn Ads with your needs. To add a custom report:
    1. Click on **Add**.
    2. Enter a **Report Name**. This will be used as the stream name during replication.
    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
@@ -119,7 +132,7 @@ If either of your tokens expire, you can generate new ones by returning to Linke
       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
-9. Click **Set up source** and wait for the tests to complete.
+10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 ## Supported sync modes
@@ -131,7 +144,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Accounts](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-2023-05#search-for-accounts)
 - [Account Users](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts)
@@ -149,12 +162,13 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Ad Analytics by Member Job Function](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Job Title](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Industry](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
+- [Ad Analytics by Member Seniority](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Region](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Company](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 
 :::info
 
-For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Creative`, the `pivot` column name is renamed to `pivotValue` to handle the data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). Please refer to the [LinkedIn documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for the format of the URN value for the Ad Analytics streams.
+For Ad Analytics streams, the `pivot` column name is renamed to `pivotValue` to handle data normalization correctly and avoid name conflicts with certain destinations. This field contains the ID of the associated entity as a [URN](https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/urns). See the [LinkedIn URN resolution documentation](https://learn.microsoft.com/en-us/linkedin/marketing/urn-resolution?view=li-lms-2023-05) for details.
 
 :::
 
@@ -162,27 +176,29 @@ For Ad Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by
 
 ### Rate limits
 
-LinkedIn Ads has Official Rate Limits for API Usage, [more information here](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate limited requests will receive a 429 response. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service will return to normal automatically. In such cases, you will receive the following error message:
+LinkedIn Ads has [official rate limits for API usage](https://docs.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits?context=linkedin/marketing/context). Rate-limited requests receive a 429 response. These limits reset at midnight UTC every day. In rare cases, LinkedIn may also return a 429 response as part of infrastructure protection. API service returns to normal automatically. In such cases, you receive the following error message:
 
 ```text
 "Caught retriable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
 ```
 
-This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. If the maximum available API requests capacity is reached, you will have the following message:
+This is expected when the connector hits the 429 Rate Limit Exceeded HTTP error. If the maximum available API request capacity is reached, you see the following message:
 
 ```text
 "Max try rate limit exceeded..."
 ```
 
-After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose your app &gt; Analytics.
+After 5 unsuccessful attempts, the connector stops the sync operation. Check your rate limits at [LinkedIn Developers](https://www.linkedin.com/developers/apps) > choose your app > **Analytics**.
 
 ### Ad analytics streams
 
-LinkedIn Ads supports a number of different streams that provide metrics about the effectiveness of ads for a specified date range across various properties and dimensions such as `clicks`, `follows`, `impressions`, `reactions`, `totalEngagements`, and others. Fetching the entire set of properties per ad object can lead to increased sync times.
+Ad analytics streams provide metrics about ad effectiveness for a specified date range across properties and dimensions such as `clicks`, `follows`, `impressions`, `reactions`, and `totalEngagements`. Fetching the entire set of properties per ad object can increase sync times.
 
-In order to improve sync performance, when configuring your connection, only select the columns that you need replicated into your downstream destination. Fewer columns selected should reduce the duration of syncs.
+To improve sync performance, only select the columns that you need replicated into your downstream destination. Fewer columns reduces the sync duration.
 
-:::caution The LinkedIn Ads API will not return records that do not have no values for any of the dimensions you specify. Please take caution selecting columns as you may see fewer or more records depending on your selection.:::
+:::caution
+The LinkedIn Ads API does not return records that have no values for any of the dimensions you specify. You may see fewer or more records depending on your column selection.
+:::
 
 ## Data type map
 
@@ -196,14 +212,15 @@ In order to improve sync performance, when configuring your connection, only sel
 | `boolean`        | `boolean`    | True/False                  |
 | `string`         | `string`     |                             |
 
-## Limits & considerations regarding  `Lead forms` and `Lead form responses` streams
-1. LinkedIn API requires special query params characters (eg: `(`, `:` or `)`), and low-code automatically escapes them using `query params`.
-As auto-escaping disabling does not look not manageable via low-code, the workaround was to hard-code them in the request `path` directly.
-2. `Incremental Sync` is not manageable via low-code due to LinkedIn API way to handle timerange via query param:
-```
-submittedAtTimeRange=(start:1711407600000,end:1711494000000)
-```
-No workaround has been identified to manage this issue as of 2025, February.
+## Limitations
+
+### Lead forms and Lead form responses
+
+The Lead forms and Lead form responses streams only support Full Refresh sync mode. Incremental sync is not available for these streams due to how the LinkedIn API handles time-range filtering.
+
+### Deprecated OAuth scopes {#troubleshooting}
+
+LinkedIn deprecated the `r_liteprofile`, `r_emailaddress`, and `r_basicprofile` scopes for newly created developer applications as of August 2023. If your LinkedIn developer app was created after this date, you may encounter an `unauthorized_scope_error` when authenticating. The connector still includes these scopes for backward compatibility with older apps. For new apps, this error typically does not block syncing advertising data, but may prevent the OAuth flow from completing. If this happens, use the **Access Token** authentication method as a workaround, or contact [Airbyte Support](https://support.airbyte.com).
 
 ## Changelog
 
@@ -212,7 +229,7 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
 | 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for proper indefinite backoff on rate-limited requests |
 | 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
 | 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |
