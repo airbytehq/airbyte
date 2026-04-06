@@ -555,7 +555,7 @@ class TestInsightAsyncJob:
             primary_key=pk,
         )
 
-        with pytest.raises(AirbyteTracedException, match="Facebook Insights API request failed during data retrieval"):
+        with pytest.raises(AirbyteTracedException, match="Cannot split by fields"):
             job._split_job()
 
 
