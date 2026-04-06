@@ -11,7 +11,7 @@ import time
 from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
 from io import StringIO
-from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Mapping, MutableMapping, Optional, Union
 
 import backoff
 import dateparser
@@ -25,6 +25,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -554,6 +555,168 @@ class FlatFileSettlementV2ReportsTypeTransformer(TypeTransformer):
             return original_value
 
         return transform_function
+
+
+@dataclass
+class ReportCreationRequester(HttpRequester):
+    """
+    Custom HttpRequester for Amazon SP-API report creation that checks for existing reports
+    before creating new ones. This avoids hitting Amazon's strict per-report-type rate limits
+    (undocumented ~30-minute cooldown) by reusing reports that are already in progress or completed.
+
+    Flow:
+    1. Before creating a new report via POST, call GET /reports to check for existing reports
+       of the same reportType and matching date range.
+    2. If a matching report is found (any status: DONE, IN_PROGRESS, IN_QUEUE), return it
+       as the creation response so the polling requester will track that existing report.
+    3. If no matching report is found, fall through to super().send_request() to create a new one.
+    """
+
+    def send_request(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Any] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        # Extract reportType and date range from the request body JSON that would be sent to createReport
+        body_json = self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json)
+        report_type = body_json.get("reportType", "") if body_json else ""
+        requested_start = body_json.get("dataStartTime", "") if body_json else ""
+        requested_end = body_json.get("dataEndTime", "") if body_json else ""
+
+        if report_type:
+            existing_report = self._find_existing_report(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                report_type=report_type,
+                requested_start=requested_start,
+                requested_end=requested_end,
+            )
+            if existing_report is not None:
+                return existing_report
+
+        # No existing report found — create a new one via the normal POST flow
+        return super().send_request(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            path=path,
+            request_headers=request_headers,
+            request_params=request_params,
+            request_body_data=request_body_data,
+            request_body_json=request_body_json,
+            log_formatter=log_formatter,
+        )
+
+    def _find_existing_report(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Any],
+        report_type: str,
+        requested_start: str,
+        requested_end: str,
+    ) -> Optional[requests.Response]:
+        """
+        Query GET /reports to find an existing report matching the given reportType and date range.
+        Returns a synthetic Response wrapping the matching report if found, or None.
+        """
+        try:
+            url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
+            get_url = self._join_url(url_base, "reports/2021-06-30/reports")
+            headers = self._request_headers(stream_state, stream_slice, None, {"content-type": "application/json"})
+            _, get_response = self._http_client.send_request(
+                http_method="GET",
+                url=get_url,
+                request_kwargs={"stream": False},
+                headers=headers,
+                params={"reportTypes": report_type},
+            )
+        except Exception:
+            logger.warning(
+                f"Failed to query existing reports for {report_type}. Will create a new report.",
+                exc_info=True,
+            )
+            return None
+
+        if not get_response or not get_response.ok:
+            return None
+
+        try:
+            data = get_response.json()
+        except (json.JSONDecodeError, ValueError):
+            return None
+
+        reports = data.get("reports", [])
+        if not reports:
+            return None
+
+        # Find a report whose dataStartTime and dataEndTime match the requested slice
+        for report in reports:
+            report_start = report.get("dataStartTime", "")
+            report_end = report.get("dataEndTime", "")
+            report_status = report.get("processingStatus", "")
+
+            # Skip cancelled reports as they cannot be reused
+            if report_status == "CANCELLED":
+                continue
+
+            if self._date_ranges_match(requested_start, requested_end, report_start, report_end):
+                report_id = report.get("reportId", "")
+                logger.info(
+                    f"Found existing report {report_id} (status={report_status}) "
+                    f"for {report_type} [{report_start} - {report_end}]. Reusing instead of creating a new one."
+                )
+                return self._build_synthetic_response(report, get_response)
+
+        return None
+
+    @staticmethod
+    def _date_ranges_match(
+        requested_start: str,
+        requested_end: str,
+        report_start: str,
+        report_end: str,
+    ) -> bool:
+        """
+        Compare requested date range with a report's date range.
+        Both sides use ISO 8601 format from the Amazon SP-API.
+        We normalize to date-only comparison to handle timezone/time variations.
+        """
+        if not report_start or not report_end:
+            return False
+        try:
+            req_start_dt = ab_datetime_parse(requested_start) if requested_start else None
+            req_end_dt = ab_datetime_parse(requested_end) if requested_end else None
+            rep_start_dt = ab_datetime_parse(report_start)
+            rep_end_dt = ab_datetime_parse(report_end)
+
+            if req_start_dt is None or req_end_dt is None:
+                return False
+
+            return req_start_dt.date() == rep_start_dt.date() and req_end_dt.date() == rep_end_dt.date()
+        except (ValueError, TypeError):
+            return False
+
+    @staticmethod
+    def _build_synthetic_response(report: Dict[str, Any], original_response: requests.Response) -> requests.Response:
+        """
+        Build a synthetic requests.Response that looks like a createReport response,
+        containing the reportId from the existing report. The polling_requester uses
+        creation_response['reportId'] to poll the report status.
+        """
+        synthetic = requests.Response()
+        synthetic.status_code = 200
+        synthetic.headers.update(original_response.headers)
+        # The createReport response normally returns {"reportId": "..."}.
+        # We return the same structure so the polling_requester can use creation_response['reportId'].
+        synthetic._content = json.dumps({"reportId": report["reportId"]}).encode("utf-8")
+        return synthetic
 
 
 @dataclass
