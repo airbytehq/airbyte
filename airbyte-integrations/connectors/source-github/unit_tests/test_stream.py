@@ -1769,43 +1769,44 @@ def test_pull_request_stats(requests_mock):
 
 
 @patch("time.sleep")
-def test_github_stream_abc_read_records_reraises_when_no_exception_attr(time_mock, requests_mock):
-    """Bug fix: GithubStreamABC.read_records() should re-raise when AirbyteTracedException
-    has no _exception attribute. Previously used `and` instead of `or` which would cause
-    an AttributeError when accessing e._exception on an exception without that attribute."""
+def test_github_stream_abc_read_records_reraises_when_no_exception_attr(time_mock):
+    """Bug fix: GithubStreamABC.read_records() guard clause uses `or` so that when
+    AirbyteTracedException has no _exception attribute, the exception is re-raised
+    immediately. With the old `and`, the second hasattr would raise AttributeError."""
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)
 
-    requests_mock.get(
-        "https://api.github.com/orgs/org_name/teams",
-        status_code=requests.codes.INTERNAL_SERVER_ERROR,
-        json={"message": "Internal Server Error"},
-    )
+    # Construct an AirbyteTracedException WITHOUT _exception attribute
+    exc = AirbyteTracedException(message="bare error", failure_type=FailureType.system_error)
+    # CDK sets _exception=None by default; delete it to simulate the case where it's truly absent
+    delattr(exc, "_exception")
+    assert not hasattr(exc, "_exception"), "Test precondition: exception must lack _exception attr"
 
-    # The exception should be re-raised (not swallowed)
-    with pytest.raises(AirbyteTracedException):
-        list(read_full_refresh(stream))
+    # Patch HttpStream.read_records (the super() target) to raise our bare exception
+    with patch("airbyte_cdk.sources.streams.http.http.HttpStream.read_records", side_effect=exc):
+        with pytest.raises(AirbyteTracedException):
+            list(stream.read_records(stream_slice={"organization": "org_name"}))
 
 
 @patch("time.sleep")
-def test_github_stream_abc_read_records_reraises_for_unhandled_status(time_mock, requests_mock):
-    """Bug fix: GithubStreamABC.read_records() correctly handles exceptions with _exception
-    and response attributes for status codes not explicitly handled (e.g. 422)."""
-    repository_args = {
-        "repositories": ["airbytehq/airbyte"],
-        "page_size_for_large_streams": 20,
-    }
-    stream = Branches(**repository_args)
+def test_github_stream_abc_read_records_reraises_when_no_response_attr(time_mock):
+    """Bug fix: GithubStreamABC.read_records() guard clause uses `or` so that when
+    AirbyteTracedException has _exception but _exception lacks response attribute,
+    the exception is re-raised. With the old `and`, this case was silently swallowed."""
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
 
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/airbyte/branches",
-        status_code=422,
-        json={"message": "Unprocessable Entity"},
-    )
+    # Construct an AirbyteTracedException WITH _exception but WITHOUT response
+    exc = AirbyteTracedException(message="missing response", failure_type=FailureType.system_error)
+    inner = Exception("inner error")
+    exc._exception = inner
+    assert hasattr(exc, "_exception"), "Test precondition: exception must have _exception attr"
+    assert not hasattr(exc._exception, "response"), "Test precondition: _exception must lack response attr"
 
-    # Unhandled status codes should propagate up through the else clause on line 188
-    with pytest.raises(AirbyteTracedException):
-        list(read_full_refresh(stream))
+    # Patch HttpStream.read_records (the super() target) to raise our exception
+    with patch("airbyte_cdk.sources.streams.http.http.HttpStream.read_records", side_effect=exc):
+        with pytest.raises(AirbyteTracedException):
+            list(stream.read_records(stream_slice={"organization": "org_name"}))
 
 
 @patch("time.sleep")
