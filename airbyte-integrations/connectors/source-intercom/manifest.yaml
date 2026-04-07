@@ -3723,3 +3723,40 @@ schemas:
           - integer
           - "null"
         description: The last time the ticket was updated as a UTC Unix timestamp.
+
+# Intercom API Rate Limiting Configuration
+# According to Intercom documentation (https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting):
+# - Private apps: 10,000 API calls per minute per app, 25,000 per workspace
+# - Public apps: 10,000 API calls per minute per app, 25,000 per workspace
+# - Rate limits are distributed into 10-second windows (~1,666 requests per 10 seconds)
+# - Headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+#
+# The connector already has custom rate limiting via ErrorHandlerWithRateLimiter in components.py,
+# which dynamically adjusts backoff based on rate limit headers. This HTTPAPIBudget configuration
+# provides an additional layer of proactive rate limiting to prevent hitting 429 errors.
+#
+# NOTE: HTTPAPIBudget is commented out for Phase 1 tuning. Concurrency is tuned in isolation first.
+# Uncomment in Phase 2 after concurrency tuning is complete.
+#
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 100
+#           interval: PT1S
+#         - limit: 8000
+#           interval: PT1M
+#       matchers: []
+#   ratelimit_reset_header: "X-RateLimit-Reset"
+#   ratelimit_remaining_header: "X-RateLimit-Remaining"
+#   status_codes_for_ratelimit_hit:
+#     - 429
+
+# Concurrency Configuration
+# Starting concurrency: max(floor(17 / 4), 2) = 4, step size = 1
+# Phase 1 iteration 2: bumped from 4 to 5 after 0% failure rate at concurrency=4
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
+  max_concurrency: 40
