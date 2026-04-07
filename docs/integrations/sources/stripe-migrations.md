@@ -1,5 +1,34 @@
 # Stripe Migration Guide
 
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
+## Upgrading to 6.0.0
+
+Version 6.0.0 fixes a bug where the `invoice_line_items` and `subscription_items` incremental streams emitted only one record per Stripe event instead of correctly expanding nested line items. An event containing N line items previously produced 1 record; it now produces N records.
+
+### What changed
+
+The `DpathFlattenFields` transformation has been replaced with a `RecordExpander` component for the `invoice_line_items` and `subscription_items` incremental streams. This ensures that nested arrays (`data.object.lines.data` for invoices and `data.object.items.data` for subscriptions) are properly expanded into individual records.
+
+### Who is affected
+
+Users syncing the `invoice_line_items` or `subscription_items` streams in incremental mode. Previously synced data for these streams may be incomplete due to the bug.
+
+### Migration steps
+
+After upgrading, you can choose to either leave your syncs as-is or run a full refresh to recapture the correct values for impacted fields.
+
+**Option 1: Leave syncs alone.** Future incremental syncs will emit records correctly. Historical data already in your destination will remain incomplete, but no action is required.
+
+**Option 2: Run a full refresh.** A full refresh will recapture the correct values for all records in the impacted streams. If you choose this option, decide between:
+
+- **Full Refresh and Retain records:** Keeps existing data in your destination and layers the refreshed data on top. This is the safer option for most users.
+- **Full Refresh and Clear:** Replaces all existing data in the destination for these streams. **Use caution:** because the Stripe Events API only retains events for the last 30 days, clearing will cause you to lose all updates to event-based streams in your destination that are older than 30 days. See the [Stripe API event retention limitation](/integrations/sources/stripe#limitations--troubleshooting) for more details.
+
+### Connector upgrade guide
+
+<MigrationGuide />
+
 ###  Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
