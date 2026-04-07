@@ -94,9 +94,10 @@ jobs:
       - name: Add release-block marker
         if: inputs.action == 'add'
         shell: bash
+        env:
+          REASON: ${{ inputs.reason }}
         run: |
           BLOCK_FILE="airbyte-integrations/connectors/${{ inputs.connector }}/release-block.yaml"
-          REASON="${{ inputs.reason }}"
 
           if [[ -f "$BLOCK_FILE" ]]; then
             echo "::warning::release-block.yaml already exists for ${{ inputs.connector }}. Overwriting."
@@ -134,7 +135,7 @@ jobs:
         id: git-diff
         shell: bash
         run: |
-          git diff --quiet && echo "No changes to commit" || echo "changes=true" >> $GITHUB_OUTPUT
+          if [[ -n "$(git status --porcelain)" ]]; then echo "changes=true" >> $GITHUB_OUTPUT; else echo "No changes to commit"; fi
 
       - name: Create PR with release-block change
         if: steps.git-diff.outputs.changes == 'true'
@@ -166,13 +167,15 @@ jobs:
 
       - name: Summary
         if: steps.create-pr.outputs.pull-request-number
+        env:
+          BLOCK_REASON: ${{ inputs.reason }}
         run: |
           echo "### Release Block PR Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Connector:** ${{ inputs.connector }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Action:** ${{ inputs.action }}" >> $GITHUB_STEP_SUMMARY
           echo "- **PR:** #${{ steps.create-pr.outputs.pull-request-number }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Reason:** ${{ inputs.reason || 'No reason provided' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason:** ${BLOCK_REASON:-No reason provided}" >> $GITHUB_STEP_SUMMARY
 
       - name: Summary (no changes)
         if: steps.git-diff.outputs.changes != 'true'
