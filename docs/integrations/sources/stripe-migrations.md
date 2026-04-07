@@ -29,7 +29,7 @@ After upgrading, you can choose to either leave your syncs as-is or run a full r
 
 <MigrationGuide />
 
-###  Upgrading to 5.6.0
+### Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 
