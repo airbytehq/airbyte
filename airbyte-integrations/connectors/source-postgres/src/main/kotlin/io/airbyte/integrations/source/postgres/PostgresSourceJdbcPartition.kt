@@ -92,6 +92,7 @@ class PostgresSourceJdbcUnsplittableSnapshotPartition(
         get() = PostgresSourceJdbcStreamStateValue.snapshotCompleted
 }
 
+
 class PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
