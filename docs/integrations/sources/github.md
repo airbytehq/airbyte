@@ -62,12 +62,12 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
 :::caution
-Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
+Repositories with incorrect names, that don't exist, or that have the wrong name format are skipped with a `WARN` message in the logs.
 :::
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+- These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_jobs`, `workflow_runs`, `workflows`.
 
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
@@ -143,24 +143,20 @@ This connector outputs the following incremental streams:
 
 ### Notes
 
-1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the listed above streams are pure incremental meaning that they:
+1. Only 4 streams (`comments`, `commits`, `issues`, and `review comments`) are pure incremental, meaning that they:
 
-   - read only new records;
-   - output only new records.
+   - Read only new records.
+   - Output only new records.
 
 2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
 
-   - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
-   - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
-   - output only new records.
+   - Read new records and some portion of old records (in the past 30 days). See the [GitHub docs on re-running workflows](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs).
+   - The `workflow_jobs` stream depends on `workflow_runs` to read data, so both follow the same logic. See the [GitHub docs on listing jobs for a workflow run](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run).
+   - Output only new records.
 
-3. Other 19 incremental streams are also incremental but with one difference, they:
+3. The remaining incremental streams read all records but output only new records. This behavior may affect your API call limits.
 
-   - read all records;
-   - output only new records.
-     Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
-
-4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+4. For large streams, specifying a very distant `start_date` in the past may result in errors from GitHub instead of records (a `WARN` log message will be output). Specifying a more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
 - `assignees`
@@ -185,20 +181,19 @@ Expand to see details about GitHub connector limitations and troubleshooting.
 
 #### Rate limiting
 
-You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make API requests on your behalf.
-All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization).
+You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make API requests on your behalf. All of these requests count towards your personal rate limit of 5,000 requests per hour (15,000 requests per hour if the app is owned by a GitHub Enterprise Cloud organization).
 
 :::info
 `REST API` and `GraphQL API` rate limits are counted separately. The REST API uses a request-based limit, while the GraphQL API uses a [point-based limit](https://docs.github.com/en/graphql/overview/rate-limits-and-node-limits-for-the-graphql-api) where each query costs a calculated number of points. Streams that use the GraphQL API include `pull_request_stats`, `reviews`, `pull_request_comment_reactions`, `issue_reactions`, `releases`, and `projects_v2`.
 :::
 
 :::tip
-In the event that limits are reached before all streams have been read, it is recommended to take the following actions:
+If rate limits are reached before all streams have been read:
 
-1. Utilize Incremental sync mode.
+1. Use incremental sync mode.
 2. Set a higher sync interval.
-3. Divide the sync into separate connections with a smaller number of streams.
-   :::
+3. Divide the sync into separate connections with fewer streams.
+:::
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
@@ -218,7 +213,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
+- Check out common troubleshooting issues for the GitHub source connector on the [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
@@ -229,8 +224,8 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.17 | 2026-04-03 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
-| 2.1.16 | 2026-04-02 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
+| 2.1.17 | 2026-04-07 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
+| 2.1.16 | 2026-04-03 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
 | 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
