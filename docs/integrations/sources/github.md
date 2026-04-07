@@ -193,6 +193,7 @@ If rate limits are reached before all streams have been read:
 1. Use incremental sync mode.
 2. Set a higher sync interval.
 3. Divide the sync into separate connections with fewer streams.
+
 :::
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
