@@ -14,7 +14,7 @@ from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
@@ -172,14 +172,7 @@ class AdCreativesFromAds(FBMarketingStream):
 
             self._seen_creative_ids.add(creative_id)
 
-            try:
-                creative_data = self._fetch_creative_details(creative_id)
-            except FacebookBadObjectError as e:
-                raise AirbyteTracedException(
-                    message="Facebook API returned inconsistent object data.",
-                    internal_message=str(e),
-                    failure_type=FailureType.transient_error,
-                ) from e
+            creative_data = self._fetch_creative_details(creative_id)
             if not creative_data:
                 continue
 
