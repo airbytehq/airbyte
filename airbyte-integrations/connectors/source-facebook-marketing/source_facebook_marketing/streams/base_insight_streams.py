@@ -21,7 +21,7 @@ from source_facebook_marketing.spec import TimeIncrementPeriod
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
-from source_facebook_marketing.utils import DateInterval
+from source_facebook_marketing.utils import DateInterval, validate_start_date
 
 from .base_streams import FBMarketingIncrementalStream
 
@@ -374,7 +374,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         if end_date < self._next_cursor_values[account_id]:
             return
 
-        current_date = self._next_cursor_values[account_id]
+        # Validate start date against the data retention period so that
+        # downstream code (e.g. _collect_child_ids) never receives an
+        # interval whose start predates the 37-month retention boundary.
+        current_date = validate_start_date(
+            AirbyteDateTime.from_datetime(datetime.combine(self._next_cursor_values[account_id], datetime.min.time()))
+        ).date()
+        if current_date > end_date:
+            return
 
         if self.time_increment_period == TimeIncrementPeriod.weekly:
             # Snap to Monday boundary
