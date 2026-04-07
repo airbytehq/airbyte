@@ -510,7 +510,7 @@ class InsightAsyncJob(AsyncJob):
         split_candidates = [f for f in all_fields if f not in self._primary_key]
         if len(split_candidates) <= 1:
             raise AirbyteTracedException(
-                message="Facebook Insights API request failed during data retrieval.",
+                message="Unable to split the Facebook Insights request because there are not enough non-primary-key fields.",
                 internal_message=f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, pk={self._primary_key})",
                 failure_type=FailureType.system_error,
             )
