@@ -4,14 +4,20 @@
 
 package io.airbyte.integrations.destination.redshift2.config
 
+import com.fasterxml.jackson.annotation.JsonGetter
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonSetter
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
+import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
+import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.micronaut.context.annotation.ConfigurationBuilder
 import jakarta.inject.Singleton
 
 /**
@@ -81,6 +87,26 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     @get:JsonProperty("uploading_method")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 8, "display_type": "radio"}""")
     val uploadingMethod: S3StagingConfig? = null
+
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "tunnel_method")
+    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
+
+    @JsonIgnore var tunnelMethodJson: SshTunnelMethodConfiguration? = null
+
+    @JsonSetter("tunnel_method")
+    fun setTunnelMethodValue(value: SshTunnelMethodConfiguration?) {
+        tunnelMethodJson = value
+    }
+
+    @JsonGetter("tunnel_method")
+    @JsonSchemaTitle("SSH Tunnel Method")
+    @JsonPropertyDescription(
+        "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use."
+    )
+    @JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
+    fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
+        tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 }
 
 /**

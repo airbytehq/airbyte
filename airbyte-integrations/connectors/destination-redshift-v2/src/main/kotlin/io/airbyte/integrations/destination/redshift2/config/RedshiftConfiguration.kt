@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.redshift2.config
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
 
 /**
@@ -19,15 +20,9 @@ data class RedshiftConfiguration(
     val username: String,
     val password: String,
     val jdbcUrlParams: String?,
-    val uploadingMethod: S3StagingConfig?
-) : DestinationConfiguration() {
-    
-    val jdbcUrl: String
-        get() {
-            val baseUrl = "jdbc:redshift://$host:$port/$database"
-            return if (jdbcUrlParams.isNullOrBlank()) baseUrl else "$baseUrl?$jdbcUrlParams"
-        }
-}
+    val uploadingMethod: S3StagingConfig?,
+    val tunnelMethod: SshTunnelMethodConfiguration?,
+) : DestinationConfiguration()
 
 /**
  * Factory for creating RedshiftConfiguration from RedshiftSpecification.
@@ -45,7 +40,8 @@ class RedshiftConfigurationFactory :
             username = pojo.username,
             password = pojo.password,
             jdbcUrlParams = pojo.jdbcUrlParams,
-            uploadingMethod = pojo.uploadingMethod
+            uploadingMethod = pojo.uploadingMethod,
+            tunnelMethod = pojo.getTunnelMethodValue(),
         )
     }
 }

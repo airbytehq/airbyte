@@ -4,13 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift2.config
 
-import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
-import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -19,7 +15,6 @@ import java.nio.charset.StandardCharsets
 import java.sql.Connection
 import java.util.logging.Logger
 import javax.sql.DataSource
-import kotlin.time.Duration.Companion.minutes
 
 /**
  * Micronaut Factory for creating and wiring Redshift destination beans.
@@ -58,28 +53,13 @@ class RedshiftBeanFactory {
     }
 
     /**
-     * Creates the HikariCP DataSource for Redshift connections.
+     * Creates the HikariCP DataSource for Redshift connections,
+     * delegating to [RedshiftConnect] for connection configuration,
+     * SSH tunnel resolution, and SSL setup.
      */
     @Singleton
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
-    fun redshiftDataSource(redshiftConfiguration: RedshiftConfiguration): HikariDataSource {
-        val datasourceConfig =
-            HikariConfig().apply {
-                connectionTimeout = 1.minutes.inWholeMilliseconds
-                maximumPoolSize = 10
-                minimumIdle = 0
-                initializationFailTimeout = -1
-                leakDetectionThreshold = 5.minutes.inWholeMilliseconds
-                driverClassName = "com.amazon.redshift.jdbc42.Driver"
-                jdbcUrl = redshiftConfiguration.jdbcUrl
-                username = redshiftConfiguration.username
-                password = redshiftConfiguration.password
-                schema = redshiftConfiguration.schema
-
-                // Configure connection validation
-                connectionTestQuery = "SELECT 1"
-            }
-
-        return HikariDataSource(datasourceConfig)
+    fun redshiftDataSource(redshiftConnect: RedshiftConnect): HikariDataSource {
+        return redshiftConnect.createDataSource()
     }
 }
