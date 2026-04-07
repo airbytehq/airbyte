@@ -124,6 +124,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.18 | 2026-03-31 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |
 | 0.13.17 | 2026-03-30 | [75575](https://github.com/airbytehq/airbyte/pull/75575) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 0.13.16 | 2026-03-24 | [75419](https://github.com/airbytehq/airbyte/pull/75419) | Promote 0.13.16-rc.6 to GA — includes CDK 7.13.0 upgrade, block_simultaneous_read for companies, rate limiter fix, step size/end_datetime for incremental streams, and heartbeat timeout bump |
 | 0.13.16-rc.6 | 2026-03-19 | [75216](https://github.com/airbytehq/airbyte/pull/75216) | Bump CDK base image to 7.13.0 (includes block_simultaneous_read support and cursor field fix) |

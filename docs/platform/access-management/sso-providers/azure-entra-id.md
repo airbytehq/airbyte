@@ -3,9 +3,6 @@ sidebar_label: Entra ID
 products: cloud, oss-enterprise
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 # Set up single sign on using Entra ID
 
 This guide shows you how to set up Microsoft Entra ID (formerly Azure ActiveDirectory) and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) and OpenID Connect (OIDC).
@@ -197,11 +194,6 @@ To set up single sign on for Airbyte Self-Managed Enterprise, complete the follo
 - [Update Airbyte's values.yaml file](#sme-update-values)
 - [Redeploy Airbyte](#sme-deploy)
 
-:::note
-You can only use generic OIDC after you migrate to Helm chart V2.
-<!-- [Helm chart V2](../../enterprise-setup/chart-v2-enterprise). -->
-:::
-
 ### Create application {#sme-entra-id-app}
 
 To start, you create a new Entra ID application for Airbyte.
@@ -317,8 +309,8 @@ You collect these values from Microsoft in the locations shown below.
 In your command-line tool, deploy Airbyte using your updated values file.
 
 ```bash
-helm upgrade airbyte-enterprise airbyte-v2/airbyte \
-  --namespace airbyte-v2 \       # Target Kubernetes namespace
+helm upgrade airbyte-enterprise airbyte/airbyte \
+  --namespace airbyte \           # Target Kubernetes namespace
   --values ./values.yaml \       # Custom configuration values
   --version 2.x.x                # Helm chart version to use
 ```
