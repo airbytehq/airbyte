@@ -1104,7 +1104,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1186,7 +1186,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1268,7 +1268,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1349,7 +1349,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
