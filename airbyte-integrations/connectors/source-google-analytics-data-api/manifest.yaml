@@ -922,13 +922,11 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path: ["schema_loader", "retriever", "requester", "path"]
           value: "properties/{{ components_values['source_config_1'][1] }}/metadata"
-        # NOTE: Yes, this is weird, but it exists solely for backward-compatibility.
-        # When the config contains multiple property IDs, it keeps the
-        # first stream as <report_name>, and names each additional stream
-        # <report_name>Property<property_id>.
+        # This mapping sets the stream name with a "custom_" prefix to differentiate
+        # dynamic streams from built-in ones and avoid name collisions with parent streams.
         - type: ComponentMappingDefinition
-          field_path: ["**", "name"]
-          value: "{{ components_values['name'] + 'Property' + components_values['source_config_1'][1] if components_values['source_config_1'][0] > 0 else components_values['name'] }}"
+          field_path: ["name"]
+          value: "custom_{{components_values['name']}}"
         # This mapping add transformation that add property_id and date slice value to record.
         # Note: We need {% raw %} as we don't want to attempt interpolation on stream_slice since
         # it doesn't exist in this context yet as we populate the template
