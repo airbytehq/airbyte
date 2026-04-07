@@ -21,8 +21,7 @@ internal class MSSQLConfigurationTest {
             jdbcUrlParams = null,
             sslMethod = Unencrypted(),
             ssh = null,
-            mssqlLoadTypeConfiguration =
-                MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration()),
+            mssqlLoadTypeConfiguration = MSSQLLoadTypeConfiguration(InsertLoadTypeConfiguration()),
         )
 
     @Test
@@ -51,6 +50,9 @@ internal class MSSQLConfigurationTest {
         // With 4 loaders each holding up to 5MB, peak is 20MB.
         // Previous settings (8 loaders x 10MB) allowed 80MB.
         val peakBytes = config.maxNumOpenLoaders.toLong() * config.recordBatchSizeBytes
-        assertTrue(peakBytes <= 25L * 1024 * 1024, "Peak loader memory should be <= 25MB, was $peakBytes")
+        assertTrue(
+            peakBytes <= 25L * 1024 * 1024,
+            "Peak loader memory should be <= 25MB, was $peakBytes"
+        )
     }
 }

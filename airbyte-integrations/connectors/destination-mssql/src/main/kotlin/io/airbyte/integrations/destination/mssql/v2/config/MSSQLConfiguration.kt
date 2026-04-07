@@ -25,12 +25,14 @@ data class MSSQLConfiguration(
     val ssh: SshTunnelMethodConfiguration?,
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
-    override val recordBatchSizeBytes = 5L * 1024 * 1024 // 5MB to reduce per-loader memory footprint
+    override val recordBatchSizeBytes =
+        5L * 1024 * 1024 // 5MB to reduce per-loader memory footprint
 
     val numInputPartitions: Int = 1 // this should not be raised without implementing a partitioner
     val batchEveryNRecords: Int = 2_500
     val maxBatchSizeBytes: Long = recordBatchSizeBytes
-    val maxNumOpenLoaders: Int = 4 // reduced from 8 to limit concurrent memory usage during large syncs
+    val maxNumOpenLoaders: Int =
+        4 // reduced from 8 to limit concurrent memory usage during large syncs
 
     /**
      * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
