@@ -14,9 +14,11 @@ from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 DATASET_PATH = "rest/3.1/analytics/dataset"

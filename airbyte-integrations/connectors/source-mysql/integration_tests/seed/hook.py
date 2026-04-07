@@ -175,7 +175,7 @@ def delete_schemas_with_prefix(conn, date_prefix):
                 print(f"Database {schema[0]} has been dropped.")
             conn.commit()
     except Error as error:
-        print(f"An error occurred in deleting schema: {e}")
+        print(f"An error occurred in deleting schema: {error}")
         sys.exit(1)
 
 

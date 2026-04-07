@@ -87,6 +87,7 @@ def main():
     secret_id = CREDS.get("client_secret")
     token = get_paypal_token(client_id, secret_id)
 
+    security_context = None
     if sys.argv[1] == "create":
         payment = create_payment(token, security_context)
         print("Created Payment:", payment)
