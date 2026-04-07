@@ -88,7 +88,7 @@ def main():
     token = get_paypal_token(client_id, secret_id)
 
     if sys.argv[1] == "create":
-        payment = create_payment(token, security_context)
+        payment = create_payment(token, security_context)  # noqa: F821 — script is known-broken for "create" (see NOTE on line 19)
         print("Created Payment:", payment)
 
     elif sys.argv[1] == "update":
