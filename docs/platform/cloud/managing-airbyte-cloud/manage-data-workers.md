@@ -72,7 +72,7 @@ If you've tried to optimize scheduling and still need more data workers, contact
 
 For critical data pipelines that must always run on time, you can enable on-demand capacity on individual connections. When committed capacity is available, the sync uses it at no extra cost. When committed capacity is exhausted, the sync consumes organization credits at a premium rate so it runs immediately instead of being queued.
 
-On-demand capacity must be part of your signed contract. Contact your Airbyte representative or [talk to sales](https://www.airbyte.com/talk-to-sales) if you're interested. Once your organization administrator enables on-demand capacity at the organization level, workspace editors can enable it per connection.
+On-demand capacity must be part of your signed contract. Contact your Airbyte representative or [talk to sales](https://www.airbyte.com/talk-to-sales) if you're interested. Once your organization administrator enables on-demand capacity at the organization level, organization admins and workspace admins can enable it per connection. Other roles can view the toggle but cannot change it.
 
 If your organization runs out of credits, syncs are queued even if on-demand capacity is enabled. For more information about credit consumption, see [Manage billing and credits](./manage-credits.md).
 
@@ -82,7 +82,7 @@ If your organization runs out of credits, syncs are queued even if on-demand cap
 
 2. Click **Settings**.
 
-3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable connection to use credits to always run syncs on demand. Syncs for this connection will never be queued, and only consume credits if no capacity is available."
+3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable connection to use credits to always run syncs on demand. Syncs for this connection will never be queued, and only consume credits if no capacity is available." You must have the organization admin or workspace admin role to change this toggle.
 
 You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup.
 
