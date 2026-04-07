@@ -13,7 +13,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 
 from .ad_requests import AttributionReportRequestBuilder, OAuthRequestBuilder, ProfilesRequestBuilder
 from .ad_responses import AttributionReportResponseBuilder, ErrorResponseBuilder, OAuthResponseBuilder, ProfilesResponseBuilder
-from .ad_responses.pagination_strategies import CursorBasedPaginationStrategy
+from .ad_responses.pagination_strategies import CursorBasedPaginationStrategy, JsonCursorBasedPaginationStrategy
 from .ad_responses.records import AttributionReportRecordBuilder, ErrorRecordBuilder, ProfilesRecordBuilder
 from .config import ConfigBuilder
 from .utils import get_log_messages_by_log_level, read_stream
@@ -153,6 +153,46 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
                 end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
             )
             .with_cursor_field("next-page-token")
+            .build(),
+            AttributionReportResponseBuilder.products_response().with_record(AttributionReportRecordBuilder.products_record()).build(),
+        )
+
+        output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
+        assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_given_many_pages_with_json_cursor_when_read_products_then_return_records(self, http_mocker):
+        """
+        Check products stream: pagination works when cursorId is a JSON-encoded string.
+        This is the format returned by the real Amazon Attribution API and previously
+        caused HTTP 400 errors because ast.literal_eval converted the JSON string to a dict.
+        """
+        self._given_oauth_and_profiles(http_mocker, self._config)
+
+        profile_timezone = ProfilesRecordBuilder.profiles_record().build().get("timezone")
+
+        http_mocker.post(
+            AttributionReportRequestBuilder.products_endpoint(
+                self._config["client_id"],
+                self._config["access_token"],
+                self._config["profiles"][0],
+                start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            ).build(),
+            AttributionReportResponseBuilder.products_response(JsonCursorBasedPaginationStrategy())
+            .with_record(AttributionReportRecordBuilder.products_record())
+            .with_pagination()
+            .build(),
+        )
+        http_mocker.post(
+            AttributionReportRequestBuilder.products_endpoint(
+                self._config["client_id"],
+                self._config["access_token"],
+                self._config["profiles"][0],
+                start_date=_A_START_DATE.astimezone(ZoneInfo(profile_timezone)).date(),
+                end_date=_NOW.astimezone(ZoneInfo(profile_timezone)).date(),
+            )
+            .with_cursor_field(JsonCursorBasedPaginationStrategy.CURSOR_VALUE)
             .build(),
             AttributionReportResponseBuilder.products_response().with_record(AttributionReportRecordBuilder.products_record()).build(),
         )

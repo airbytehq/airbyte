@@ -1,3 +1,3 @@
 from .count_based_pagination_strategy import CountBasedPaginationStrategy
-from .cursor_based_pagination_strategy import CursorBasedPaginationStrategy
+from .cursor_based_pagination_strategy import CursorBasedPaginationStrategy, JsonCursorBasedPaginationStrategy
 from .sponsored_cursor_based_pagination_strategy import SponsoredCursorBasedPaginationStrategy
