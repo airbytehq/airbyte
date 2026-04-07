@@ -730,11 +730,12 @@ class TestAPILimitTypeAnnotation:
     def test_start_method_apilimit_annotation_resolves(self, cls_name):
         """The 'APILimit' string annotation on <cls>.start() must resolve
         to the real class when the proper namespace is provided."""
+        import importlib
         import typing
 
-        import source_facebook_marketing.streams.async_job as mod
         from source_facebook_marketing.streams.async_job_manager import APILimit
 
+        mod = importlib.import_module("source_facebook_marketing.streams.async_job")
         cls = getattr(mod, cls_name)
         # Provide the module globals + APILimit so get_type_hints can resolve the forward ref,
         # mirroring what static type-checkers do with the TYPE_CHECKING import.
@@ -744,9 +745,10 @@ class TestAPILimitTypeAnnotation:
 
     def test_type_checking_import_exists(self):
         """The async_job module must contain a TYPE_CHECKING-guarded import of APILimit."""
+        import importlib
         import inspect
 
-        import source_facebook_marketing.streams.async_job as mod
+        mod = importlib.import_module("source_facebook_marketing.streams.async_job")
 
         source = inspect.getsource(mod)
         assert "TYPE_CHECKING" in source
