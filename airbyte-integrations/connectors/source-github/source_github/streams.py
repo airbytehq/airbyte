@@ -1810,8 +1810,8 @@ class ContributorActivity(GithubStream):
         repository = stream_slice.get("repository", "")
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        # HTTP Client wraps BackoffException into MessageRepresentationAirbyteTracedErrors
-        except MessageRepresentationAirbyteTracedErrors as e:
+        # HTTP Client wraps BackoffException into AirbyteTracedException
+        except AirbyteTracedException as e:
             if hasattr(e, "_exception") and hasattr(e._exception, "response"):
                 if e._exception.response.status_code == requests.codes.ACCEPTED:
                     yield AirbyteMessage(

@@ -1613,7 +1613,7 @@ def test_stream_projects_v2_graphql_retry(time_mock, rate_limit_mock_response, r
 
     backoff_strategy = GithubStreamABCBackoffStrategy(stream)
 
-    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(AirbyteTracedException):
         read_incremental(stream, stream_state={})
     assert requests_mock.call_count == stream.max_retries + 1
 
