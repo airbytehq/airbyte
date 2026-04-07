@@ -103,9 +103,12 @@ open class PostgresSourceJdbcPartitionFactory(
                         true
                     )
                 }
-                    ?: PostgresSourceJdbcUnsplittableSnapshotWithXminPartition(
+                    ?: PostgresSourceJdbcXminIncrementalPartition(
                         selectQueryGenerator,
                         streamState,
+                        xminLowerBound = null,
+                        isLowerBoundIncluded = true,
+                        xminUpperBound = null,
                     )
             }
             is UserDefinedCursorIncrementalConfiguration -> {
