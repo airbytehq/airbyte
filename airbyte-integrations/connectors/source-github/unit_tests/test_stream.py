@@ -1848,10 +1848,12 @@ def test_releases_extract_database_id_does_not_catch_type_error():
     """Bug fix: _extract_database_id_from_node_id() should only catch ValueError,
     struct.error, and binascii.Error — not all exceptions. A TypeError (or other
     unexpected exception) should propagate instead of being silently swallowed."""
+
     # Passing a non-string type that has an underscore representation but causes
     # TypeError during string operations
     class BadNodeId:
         """Object that contains underscore but causes TypeError on split."""
+
         def __contains__(self, item):
             return True  # "_" in BadNodeId() returns True
 
