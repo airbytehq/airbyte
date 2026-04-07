@@ -8,7 +8,12 @@ This page contains the setup guide and reference information for the [Asana](htt
 
 ## Prerequisites
 
-This connector supports **OAuth** and **Personal Access Tokens**. Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
+- An Asana account with access to the workspaces and projects you want to sync.
+- Authentication credentials using one of the following methods:
+  - **OAuth** (recommended for Airbyte Cloud) — Authenticate directly through the Airbyte UI.
+  - **Personal Access Token (PAT)** — Generate a PAT from the [Asana developer console](https://app.asana.com/0/developer-console). For detailed instructions, see Asana's [Personal Access Token](https://developers.asana.com/docs/personal-access-token) documentation.
+
+A PAT provides the same level of access as the user who generated it. The connector can only read data that the authenticating user has permission to view in Asana.
 
 ## Setup guide
 
@@ -19,12 +24,9 @@ This connector supports **OAuth** and **Personal Access Tokens**. Please follow 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. Set the name for your source.
-4. Authenticate using OAuth (recommended) or enter your `personal_access_token`.
-5. Click **Set up source**.
-
-#### Syncing Multiple Projects
-
-If you have access to multiple projects, Airbyte will sync data related to all projects you have access to. The ability to filter to specific projects is not available at this time.
+4. Authenticate using OAuth (recommended) or enter your **Personal Access Token**.
+5. Optionally, enter **Organization Export IDs** if you want to sync organization export data. These are the globally unique identifiers for the organization exports you want to retrieve.
+6. Click **Set up source**.
 
 <!-- /env:cloud -->
 
@@ -35,10 +37,13 @@ If you have access to multiple projects, Airbyte will sync data related to all p
 1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. Set the name for your source.
-4. Enter your `personal_access_token`.
-5. Click **Set up source**.
+4. Enter your **Personal Access Token**.
+5. Optionally, enter **Organization Export IDs** if you want to sync organization export data.
+6. Click **Set up source**.
 
 <!-- /env:oss -->
+
+The connector syncs data from all workspaces and projects that the authenticating user has access to. Filtering to specific projects is not available.
 
 <HideInUI>
 
@@ -52,7 +57,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 | Incremental Sync  | No         |
 | Namespaces        | No         |
 
-## Supported Streams
+## Supported streams
 
 - [Attachments](https://developers.asana.com/reference/attachments)
 - [Custom fields](https://developers.asana.com/reference/custom-fields)
@@ -72,6 +77,8 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 - [Teams](https://developers.asana.com/reference/teams)
 - [Users](https://developers.asana.com/reference/users)
 - [Workspaces](https://developers.asana.com/reference/workspaces)
+
+The Organization Exports stream requires you to provide organization export IDs in the connector configuration. Without these IDs, this stream returns no data.
 
 ## Data type map
 
@@ -95,12 +102,20 @@ Expand to see details about Asana connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The connector is restricted by [Asana rate limits](https://developers.asana.com/docs/rate-limits).
+The connector is restricted by [Asana rate limits](https://developers.asana.com/docs/rate-limits). Rate limits differ by Asana plan:
+
+| Plan type | Maximum requests per minute |
+| :-------- | :-------------------------- |
+| Free      | 150                         |
+| Paid      | 1500                        |
+
+When the connector hits a rate limit, it automatically retries after the delay specified by the Asana API's `Retry-After` header.
 
 ### Troubleshooting
 
-- If you encounter access errors while using **OAuth** authentication, please make sure you've followed this [Asana Article](https://developers.asana.com/docs/oauth).
-- Check out common troubleshooting issues for the Asana source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+- **Authentication errors (HTTP 401)**: Verify that your Personal Access Token or OAuth credentials are valid and have not expired. If using a PAT, generate a new one from the [Asana developer console](https://app.asana.com/0/developer-console).
+- **OAuth access errors**: Verify that you completed the OAuth flow correctly. See the [Asana OAuth documentation](https://developers.asana.com/docs/oauth) for details.
+- **Rate limit errors (HTTP 429)**: The connector retries automatically, but if you experience persistent rate limit errors, consider reducing the number of concurrent workers in the connector configuration.
 
 </details>
 
@@ -111,7 +126,7 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
-| 1.5.2 | 2026-04-06 | [76100](https://github.com/airbytehq/airbyte/pull/76100) | Improve error messages for HTTP 400, 401, and 429 responses with granular failure type classification |
+| 1.5.2 | 2026-04-07 | [76100](https://github.com/airbytehq/airbyte/pull/76100) | Improve error messages for HTTP 400, 401, and 429 responses with granular failure type classification |
 | 1.5.1 | 2025-12-09 | [70445](https://github.com/airbytehq/airbyte/pull/70445) | Fix `organization_export_ids` spec to properly define array items type |
 | 1.5.0 | 2025-05-02 | [59224](https://github.com/airbytehq/airbyte/pull/59224) | Adds `portfolio_items` stream to sync items (such as projects and portfolios) in each portfolio ([API reference](https://developers.asana.com/reference/getitemsforportfolio)) |
 | 1.4.0 | 2025-04-25 | [58594](https://github.com/airbytehq/airbyte/pull/58594) | Adds `actual_time_minute` field to the `task` stream |
