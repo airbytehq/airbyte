@@ -567,9 +567,11 @@ class ReportCreationRequester(HttpRequester):
     Flow:
     1. Before creating a new report via POST, call GET /reports to check for existing reports
        of the same reportType, matching date range, and marketplaceIds.
-    2. If matching reports are found (any status except CANCELLED or FATAL), select the most
-       recently created one (by createdTime). DONE reports older than 1 day are skipped since
-       their data snapshot may be stale and the report document may have expired.
+    2. If matching reports are found, select the most recently created one (by createdTime).
+       DONE reports older than 1 day are skipped since their data snapshot may be stale and
+       the report document may have expired. Status filtering (e.g. CANCELLED, FATAL) is NOT
+       done here — the manifest's status_mapping is the single source of truth for which
+       statuses are retryable, skippable, or terminal.
     3. If no suitable report is found, fall through to super().send_request() to create a new one.
     """
 
@@ -630,7 +632,8 @@ class ReportCreationRequester(HttpRequester):
         Query GET /reports to find an existing report matching the given reportType, date range,
         and marketplaceIds. Returns a synthetic Response wrapping the most recently created
         matching report if found, or None. DONE reports older than 1 day are skipped to avoid
-        reusing stale data snapshots.
+        reusing stale data snapshots. No status filtering is applied here — the manifest's
+        status_mapping is the single source of truth for handling each report status.
         """
         try:
             url_base = self.get_url_base(stream_state=stream_state, stream_slice=stream_slice)
@@ -675,12 +678,6 @@ class ReportCreationRequester(HttpRequester):
         for report in reports:
             report_start = report.get("dataStartTime", "")
             report_end = report.get("dataEndTime", "")
-            report_status = report.get("processingStatus", "")
-
-            # Skip cancelled and fatal reports as they cannot be reused
-            if report_status in ("CANCELLED", "FATAL"):
-                continue
-
             report_marketplace_ids = report.get("marketplaceIds", [])
             if not self._marketplace_ids_match(requested_marketplace_ids, report_marketplace_ids):
                 continue
@@ -689,6 +686,7 @@ class ReportCreationRequester(HttpRequester):
                 continue
 
             # Check createdTime freshness for DONE reports
+            report_status = report.get("processingStatus", "")
             created_time_str = report.get("createdTime", "")
             if report_status == "DONE" and created_time_str:
                 try:

@@ -286,7 +286,8 @@ class TestFindExistingReport:
         assert result is not None
         assert result.json()["reportId"] == "rpt-match"
 
-    def test_skips_cancelled_report(self):
+    def test_reuses_cancelled_report(self):
+        """CANCELLED reports should be reused — status_mapping handles the behavior."""
         requester = _make_requester()
         cancelled_report = _make_report(report_id="rpt-cancelled", status="CANCELLED")
         get_response = _make_get_reports_response([cancelled_report])
@@ -301,9 +302,11 @@ class TestFindExistingReport:
             requested_marketplace_ids=["ATVPDKIKX0DER"],
         )
 
-        assert result is None
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-cancelled"
 
-    def test_skips_fatal_report(self):
+    def test_reuses_fatal_report(self):
+        """FATAL reports should be reused — status_mapping handles the behavior."""
         requester = _make_requester()
         fatal_report = _make_report(report_id="rpt-fatal", status="FATAL")
         get_response = _make_get_reports_response([fatal_report])
@@ -318,14 +321,24 @@ class TestFindExistingReport:
             requested_marketplace_ids=["ATVPDKIKX0DER"],
         )
 
-        assert result is None
+        assert result is not None
+        assert result.json()["reportId"] == "rpt-fatal"
 
-    def test_skips_fatal_and_returns_next_valid_report(self):
-        """If the first report is FATAL but a second matching report exists, return the second."""
+    def test_returns_latest_when_fatal_and_in_progress_exist(self):
+        """When both FATAL and IN_PROGRESS reports exist, return the latest by createdTime."""
         requester = _make_requester()
-        fatal_report = _make_report(report_id="rpt-fatal", status="FATAL")
-        valid_report = _make_report(report_id="rpt-valid", status="IN_PROGRESS")
-        get_response = _make_get_reports_response([fatal_report, valid_report])
+        now = datetime.now(tz=timezone.utc)
+        fatal_report = _make_report(
+            report_id="rpt-fatal",
+            status="FATAL",
+            created_time=(now - timedelta(hours=2)).isoformat(),
+        )
+        ip_report = _make_report(
+            report_id="rpt-ip",
+            status="IN_PROGRESS",
+            created_time=(now - timedelta(hours=1)).isoformat(),
+        )
+        get_response = _make_get_reports_response([fatal_report, ip_report])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester._find_existing_report(
@@ -338,7 +351,7 @@ class TestFindExistingReport:
         )
 
         assert result is not None
-        assert result.json()["reportId"] == "rpt-valid"
+        assert result.json()["reportId"] == "rpt-ip"
 
     def test_skips_marketplace_mismatch(self):
         requester = _make_requester()
@@ -670,8 +683,8 @@ class TestSendRequest:
         assert result is not None
         assert result.json()["reportId"] == "rpt-no-type"
 
-    def test_skips_cancelled_and_returns_done_report(self):
-        """When first report is CANCELLED, should skip it and find the DONE report."""
+    def test_reuses_cancelled_report_in_send_request(self):
+        """CANCELLED reports should be reused — status_mapping handles the behavior."""
         requester = _make_requester()
         requester._request_body_json.return_value = {
             "reportType": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
@@ -680,17 +693,16 @@ class TestSendRequest:
             "marketplaceIds": ["ATVPDKIKX0DER"],
         }
         cancelled = _make_report(report_id="rpt-cancelled", status="CANCELLED")
-        done = _make_report(report_id="rpt-done", status="DONE")
-        get_response = _make_get_reports_response([cancelled, done])
+        get_response = _make_get_reports_response([cancelled])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester.send_request(stream_state=None, stream_slice=None)
 
         assert result is not None
-        assert result.json()["reportId"] == "rpt-done"
+        assert result.json()["reportId"] == "rpt-cancelled"
 
-    def test_skips_fatal_and_returns_done_report(self):
-        """When first report is FATAL, should skip it and find the DONE report."""
+    def test_reuses_fatal_report_in_send_request(self):
+        """FATAL reports should be reused — status_mapping handles the behavior."""
         requester = _make_requester()
         requester._request_body_json.return_value = {
             "reportType": "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL",
@@ -699,14 +711,13 @@ class TestSendRequest:
             "marketplaceIds": ["ATVPDKIKX0DER"],
         }
         fatal = _make_report(report_id="rpt-fatal", status="FATAL")
-        done = _make_report(report_id="rpt-done", status="DONE")
-        get_response = _make_get_reports_response([fatal, done])
+        get_response = _make_get_reports_response([fatal])
         requester._http_client.send_request.return_value = (None, get_response)
 
         result = requester.send_request(stream_state=None, stream_slice=None)
 
         assert result is not None
-        assert result.json()["reportId"] == "rpt-done"
+        assert result.json()["reportId"] == "rpt-fatal"
 
     def test_skips_marketplace_mismatch_in_send_request(self):
         """When report has different marketplace, should create new."""
