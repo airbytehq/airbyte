@@ -43,7 +43,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
   suggestedStreams:
     streams:
       - conversations
