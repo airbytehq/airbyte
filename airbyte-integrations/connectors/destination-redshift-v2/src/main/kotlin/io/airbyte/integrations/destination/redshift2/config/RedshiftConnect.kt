@@ -4,6 +4,10 @@
 
 package io.airbyte.integrations.destination.redshift2.config
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.ssh.SshConnectionOptions
@@ -20,11 +24,12 @@ import org.apache.sshd.common.util.net.SshdSocketAddress
 private val log = KotlinLogging.logger {}
 
 /**
- * Manages Redshift JDBC connections with support for:
+ * Manages Redshift JDBC and S3 connections with support for:
  * - HikariCP connection pooling
  * - SSL encryption (always enabled)
  * - SSH tunnel resolution (key-auth and password-auth)
  * - Configurable JDBC URL parameters
+ * - S3 client creation for staging operations
  */
 @Singleton
 class RedshiftConnect(
@@ -102,6 +107,36 @@ class RedshiftConnect(
         return HikariDataSource(hikariConfig)
     }
 
+    /**
+     * Creates an [AmazonS3] client from the S3 staging configuration.
+     *
+     * Uses static credentials (access key + secret key) and the configured region.
+     * Requires [RedshiftConfiguration.uploadingMethod] to be non-null.
+     *
+     * @throws IllegalStateException if S3 staging configuration is not provided.
+     */
+    fun createS3Client(): AmazonS3 {
+        val s3Config =
+            configuration.uploadingMethod
+                ?: throw IllegalStateException(
+                    "S3 staging configuration is required but not provided"
+                )
+
+        log.info {
+            "Creating S3 client for bucket '${s3Config.s3BucketName}' " +
+                "in region '${s3Config.s3BucketRegion ?: DEFAULT_S3_REGION}'"
+        }
+
+        return AmazonS3ClientBuilder.standard()
+            .withCredentials(
+                AWSStaticCredentialsProvider(
+                    BasicAWSCredentials(s3Config.accessKeyId, s3Config.secretAccessKey)
+                )
+            )
+            .withRegion(s3Config.s3BucketRegion?.ifBlank { DEFAULT_S3_REGION } ?: DEFAULT_S3_REGION)
+            .build()
+    }
+
     private fun buildJdbcUrl(resolvedHost: String, resolvedPort: Int): String {
         val baseUrl = "jdbc:redshift://$resolvedHost:$resolvedPort/${configuration.database}"
         return if (configuration.jdbcUrlParams.isNullOrBlank()) {
@@ -114,6 +149,7 @@ class RedshiftConnect(
     companion object {
         const val DRIVER_CLASS = "com.amazon.redshift.jdbc42.Driver"
         const val SSL_FACTORY = "com.amazon.redshift.ssl.NonValidatingFactory"
+        const val DEFAULT_S3_REGION = "us-east-1"
 
         /** Redshift JDBC driver-level connect timeout in seconds. */
         const val DRIVER_CONNECT_TIMEOUT_SECONDS = "120"
