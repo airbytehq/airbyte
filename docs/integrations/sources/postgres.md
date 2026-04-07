@@ -190,7 +190,7 @@ In your Postgres source, change the update method to `Read Changes using Change 
 
 ## Postgres Replication Methods
 
-The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
+The Postgres source offers three methods of replicating updates to your destination: CDC, xmin, and standard (with a user-defined cursor). CDC and xmin are the **most reliable methods** of updating your data.
 
 <FieldAnchor field="replication_method[CDC]">
 
@@ -209,7 +209,7 @@ If your goal is to maintain a snapshot of your table in the destination but the 
 
 ### Xmin
 
-Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
+Xmin replication is a cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column, available in all Postgres databases, is used to track inserts and updates to your source data.
 
 This is a good solution if:
 

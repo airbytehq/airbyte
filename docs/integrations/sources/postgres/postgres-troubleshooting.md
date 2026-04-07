@@ -18,10 +18,10 @@ import TabItem from '@theme/TabItem';
 
 There are some notable shortcomings associated with the Xmin replication method:
 
-- Unsupported DDL operations : This replication method cannot support row deletions.
-- Performance : Requires a full table scan, so can lead to poor performance.
-- Row-level granularity : The xmin column is stored at the row level. This means that a row will still be synced if it had been modified, regardless of whether the modification corresponded to the subset of columns the user is interested in.
-- Transaction ID (XID) wraparound : the transaction ID (aka xid) is represented by a 32-bit integer and has an upper limit value of 4,294,967,295. Once this value is reached, the xid wraps around and stops increasing monotonically. At this point, the xmin column cannot be reliably used as a cursor, which can lead to resyncing data that had already been synced. Also see the trouble-shooting section on Xmin wraparound below.
+- No delete detection: This replication method cannot detect row deletions.
+- Performance: Requires a full table scan, which can lead to poor performance.
+- Row-level granularity: The xmin column is stored at the row level. This means that a row is synced if it was modified, regardless of whether the modification involved the subset of columns you are syncing.
+- Transaction ID (XID) wraparound: The transaction ID is represented by a 32-bit integer with an upper limit of 4,294,967,295. Once this value is reached, the XID wraps around and stops increasing monotonically. At this point, the xmin column cannot be reliably used as a cursor, which can lead to resyncing data that was already synced. See [Xmin Wraparound](#xmin-wraparound) for more information.
 
 ### Version Requirements
 
