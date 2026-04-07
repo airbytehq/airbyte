@@ -158,6 +158,34 @@ class TestSourceFacebookMarketing:
         assert streams[0].time_increment_period == TimeIncrementPeriod.weekly
         assert streams[0].time_increment == 7
 
+    @pytest.mark.parametrize(
+        "config_include_incrementality,insight_include_incrementality,expected_has_incrementality",
+        [
+            pytest.param(False, False, False, id="both_false"),
+            pytest.param(True, False, True, id="config_true_insight_false_falls_back"),
+            pytest.param(False, True, True, id="config_false_insight_true"),
+            pytest.param(True, True, True, id="both_true"),
+        ],
+    )
+    def test_custom_insights_include_incrementality_fallback(
+        self, api, config, fb_marketing, config_include_incrementality, insight_include_incrementality, expected_has_incrementality
+    ):
+        config["include_incrementality"] = config_include_incrementality
+        config["custom_insights"] = [
+            {
+                "name": "test_incrementality",
+                "fields": ["account_id"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+                "include_incrementality": insight_include_incrementality,
+            },
+        ]
+        config = ConnectorConfig.parse_obj(config)
+        streams = fb_marketing.get_custom_insights_streams(api, config)
+        assert len(streams) == 1
+        has_incrementality = "incrementality" in streams[0].action_attribution_windows
+        assert has_incrementality == expected_has_incrementality
+
     def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config, fb_marketing):
         config["custom_insights"] = [
             {
