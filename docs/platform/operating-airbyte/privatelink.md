@@ -1,5 +1,5 @@
 ---
-products: enterprise-flex
+products: cloud-teams
 ---
 
 # PrivateLink

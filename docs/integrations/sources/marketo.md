@@ -89,7 +89,7 @@ This connector syncs the following streams from Marketo:
 | **[Emails](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/emails)** | Incremental | Marketo email assets, including subject, sender info, status, and template. Uses `updatedAt` as the cursor field. |
 | **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)** | Incremental | Marketo leads. Uses `updatedAt` as the cursor field. The schema is dynamically generated from the `leads/describe.json` API, so custom fields are automatically discovered and included. |
 | **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)** | Incremental | Marketo static lists. Uses `createdAt` as the cursor field. |
-| **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)** | Incremental | Marketo programs, including user-defined tags and period costs. Uses `updatedAt` as the cursor field. |
+| **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)** | Incremental | Marketo programs, including user-defined tags, period costs, and Salesforce cross-reference fields (`sfdcId` and `sfdcName`) for programs synced with Salesforce. Uses `updatedAt` as the cursor field. |
 | **[Program Tokens](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/assets/tokens)** | Full Refresh | Token definitions (My Tokens) for each program. This is a child stream of Programs, fetching tokens for every program. |
 | **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)** | Full Refresh | Marketo segmentations. |
 
@@ -134,6 +134,7 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
 | 1.6.1 | 2026-03-25 | [74088](https://github.com/airbytehq/airbyte/pull/74088) | Fix CSV column misalignment when syncing leads containing CJK characters |
 | 1.6.0 | 2026-03-19 | [74826](https://github.com/airbytehq/airbyte/pull/74826) | Add Emails and Program Tokens streams |
 | 1.5.0 | 2026-03-18 | [74136](https://github.com/airbytehq/airbyte/pull/74136) | Add dynamic schema discovery for custom fields on Leads stream; add tags and costs to Programs schema; add workspace to Segmentations schema |

@@ -127,7 +127,7 @@ See the official [Gong API reference](https://gong.app.gong.io/settings/api/docu
 
 ## Version information
 
-- **Package version:** 0.19.127
+- **Package version:** 0.19.129
 - **Connector version:** 0.1.20
-- **Generated with Connector SDK commit SHA:** bbb4625615c5a514170db99dfb0a413153726447
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/gong/CHANGELOG.md)
