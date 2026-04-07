@@ -4,9 +4,9 @@
 
 import base64
 import logging
-import time
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
+import backoff
 import requests
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adcreative import AdCreative as FBAdCreative
@@ -134,46 +134,26 @@ class AdCreativesFromAds(FBMarketingStream):
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         return self._api.get_account(account_id=account_id).get_ads(params=params, fields=self.fields())
 
+    @backoff.on_exception(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5, jitter=None)
     def _fetch_creative_details(self, creative_id: str) -> Optional[Mapping[str, Any]]:
         """Fetch full creative details by ID using the AdCreative API.
 
         Retries on FacebookBadObjectError with exponential backoff (same
-        parameters as FBMarketingStream.read_records).  Falls back to
-        AirbyteTracedException(transient_error) after all retries are
-        exhausted.
+        parameters as refresh_throttle).  The decorator re-raises after
+        all retries are exhausted; the caller handles the final error.
         """
-        for attempt in range(self._bad_object_max_retries):
-            try:
-                creative = FBAdCreative(creative_id)
-                creative_data = creative.api_get(fields=self._get_creative_fields())
-                return creative_data.export_all_data()
-            except FacebookBadObjectError as e:
-                if attempt < self._bad_object_max_retries - 1:
-                    wait_time = self._bad_object_backoff_factor * (2**attempt)
-                    logger.warning(
-                        "FacebookBadObjectError fetching creative %s on attempt %d/%d, retrying in %ds: %s",
-                        creative_id,
-                        attempt + 1,
-                        self._bad_object_max_retries,
-                        wait_time,
-                        e,
-                    )
-                    time.sleep(wait_time)
-                else:
-                    raise AirbyteTracedException(
-                        message="Facebook API returned inconsistent object data.",
-                        internal_message=str(e),
-                        failure_type=FailureType.transient_error,
-                    ) from e
-            except (FacebookRequestError, TypeError) as e:
+        try:
+            creative = FBAdCreative(creative_id)
+            creative_data = creative.api_get(fields=self._get_creative_fields())
+            return creative_data.export_all_data()
+        except (FacebookRequestError, TypeError) as e:
+            logger.warning(f"Failed to fetch creative {creative_id}: {e}")
+            return None
+        except AirbyteTracedException as e:
+            if isinstance(e._exception, FacebookRequestError) and e._exception.http_status() == 500:
                 logger.warning(f"Failed to fetch creative {creative_id}: {e}")
                 return None
-            except AirbyteTracedException as e:
-                if isinstance(e._exception, FacebookRequestError) and e._exception.http_status() == 500:
-                    logger.warning(f"Failed to fetch creative {creative_id}: {e}")
-                    return None
-                raise
-        return None
+            raise
 
     def read_records(
         self,
@@ -192,7 +172,14 @@ class AdCreativesFromAds(FBMarketingStream):
 
             self._seen_creative_ids.add(creative_id)
 
-            creative_data = self._fetch_creative_details(creative_id)
+            try:
+                creative_data = self._fetch_creative_details(creative_id)
+            except FacebookBadObjectError as e:
+                raise AirbyteTracedException(
+                    message="Facebook API returned inconsistent object data.",
+                    internal_message=str(e),
+                    failure_type=FailureType.transient_error,
+                ) from e
             if not creative_data:
                 continue
 
