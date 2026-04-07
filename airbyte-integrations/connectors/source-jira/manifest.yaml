@@ -14819,13 +14819,19 @@ spec:
               - type: AddedFieldDefinition
                 path: ["credentials", "auth_type"]
                 value: "API Token"
+            condition: "{{ config.get('api_token') and not config.get('credentials') }}"
+          - type: ConfigAddFields
+            fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "api_token"]
                 value: "{{ config['api_token'] }}"
+            condition: "{{ config.get('api_token') and not config.get('credentials', {}).get('api_token') }}"
+          - type: ConfigAddFields
+            fields:
               - type: AddedFieldDefinition
                 path: ["credentials", "email"]
                 value: "{{ config['email'] }}"
-            condition: "{{ config.get('api_token') and not config.get('credentials') }}"
+            condition: "{{ config.get('email') and not config.get('credentials', {}).get('email') }}"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
