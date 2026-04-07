@@ -2650,7 +2650,7 @@ definitions:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 10
 
 # Rate limits: https://help.getharvest.com/api-v2/introduction/overview/general/
@@ -2804,7 +2804,7 @@ spec:
           Number of concurrent threads for syncing. Higher values can speed up
           syncs but may increase API rate limit usage. Adjust based on your
           Harvest API plan.
-        default: 5
+        default: 6
         minimum: 2
         maximum: 10
         order: 4
