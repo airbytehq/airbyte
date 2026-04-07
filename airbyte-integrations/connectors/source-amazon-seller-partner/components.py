@@ -26,6 +26,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -574,6 +575,19 @@ class ReportCreationRequester(HttpRequester):
        statuses are retryable, skippable, or terminal.
     3. If no suitable report is found, fall through to super().send_request() to create a new one.
     """
+
+    request_body_json: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        if self.request_options_provider is None:
+            self._request_options_provider = InterpolatedRequestOptionsProvider(
+                config=self.config, parameters=parameters, request_body_json=self.request_body_json
+            )
+        elif isinstance(self.request_options_provider, dict):
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
+        else:
+            self._request_options_provider = self.request_options_provider
 
     def send_request(
         self,
