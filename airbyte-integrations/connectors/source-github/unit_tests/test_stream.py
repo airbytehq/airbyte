@@ -1763,3 +1763,112 @@ def test_pull_request_stats(requests_mock):
 
     list(read_full_refresh(stream))
     assert query == expected_query
+
+
+# === Tests for error-swallowing bug fixes (oncall/issues/11907) ===
+
+
+@patch("time.sleep")
+def test_github_stream_abc_read_records_reraises_when_no_exception_attr(time_mock, requests_mock):
+    """Bug fix: GithubStreamABC.read_records() should re-raise when AirbyteTracedException
+    has no _exception attribute. Previously used `and` instead of `or` which would cause
+    an AttributeError when accessing e._exception on an exception without that attribute."""
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
+
+    requests_mock.get(
+        "https://api.github.com/orgs/org_name/teams",
+        status_code=requests.codes.INTERNAL_SERVER_ERROR,
+        json={"message": "Internal Server Error"},
+    )
+
+    # The exception should be re-raised (not swallowed)
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+
+@patch("time.sleep")
+def test_github_stream_abc_read_records_reraises_for_unhandled_status(time_mock, requests_mock):
+    """Bug fix: GithubStreamABC.read_records() correctly handles exceptions with _exception
+    and response attributes for status codes not explicitly handled (e.g. 422)."""
+    repository_args = {
+        "repositories": ["airbytehq/airbyte"],
+        "page_size_for_large_streams": 20,
+    }
+    stream = Branches(**repository_args)
+
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/airbyte/branches",
+        status_code=422,
+        json={"message": "Unprocessable Entity"},
+    )
+
+    # Unhandled status codes should propagate up through the else clause on line 188
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+
+@patch("time.sleep")
+def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit_mock_response, requests_mock):
+    """Bug fix: ContributorActivity.read_records() should re-raise when the exception has
+    a valid _exception.response but the status code is NOT 202 ACCEPTED. Previously, the
+    `else: raise e` was paired with the outer `if` instead of the inner `if`, causing
+    non-ACCEPTED errors to be silently swallowed."""
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte"},
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        json={},
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
+        json={"message": "Unauthorized"},
+        status_code=401,
+    )
+
+    source = SourceGithub()
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+
+    # The 401 error should be re-raised, not silently swallowed
+    with pytest.raises(AirbyteTracedException):
+        list(source.read(config=config, logger=MagicMock(), catalog=catalog, state={}))
+
+
+def test_releases_extract_database_id_does_not_catch_type_error():
+    """Bug fix: _extract_database_id_from_node_id() should only catch ValueError,
+    struct.error, and binascii.Error — not all exceptions. A TypeError (or other
+    unexpected exception) should propagate instead of being silently swallowed."""
+    # Passing a non-string type that has an underscore representation but causes
+    # TypeError during string operations
+    class BadNodeId:
+        """Object that contains underscore but causes TypeError on split."""
+        def __contains__(self, item):
+            return True  # "_" in BadNodeId() returns True
+
+        def split(self, *args, **kwargs):
+            raise TypeError("split not supported")
+
+    with pytest.raises(TypeError):
+        Releases._extract_database_id_from_node_id(BadNodeId())
+
+
+@pytest.mark.parametrize(
+    "node_id,expected_id",
+    [
+        pytest.param("RA_####", None, id="invalid_base64_caught_by_binascii_error"),
+        pytest.param("RA_ab", None, id="short_decoded_data"),
+    ],
+)
+def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
+    """Verify that expected decode/unpack errors still return None after narrowing the except."""
+    assert Releases._extract_database_id_from_node_id(node_id) == expected_id

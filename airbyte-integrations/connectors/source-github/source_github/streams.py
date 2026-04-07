@@ -3,6 +3,7 @@
 #
 
 import base64
+import binascii
 import re
 import struct
 from abc import ABC, abstractmethod
@@ -137,7 +138,7 @@ class GithubStreamABC(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if not hasattr(e, "_exception") and not hasattr(e._exception, "response"):
+            if not hasattr(e, "_exception") or not hasattr(e._exception, "response"):
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
@@ -827,7 +828,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
             decoded = base64.urlsafe_b64decode(encoded + "==")
             if len(decoded) >= 4:
                 return struct.unpack(">I", decoded[-4:])[0]
-        except Exception:
+        except (ValueError, struct.error, binascii.Error):
             return None
         return None
 
@@ -1828,6 +1829,8 @@ class ContributorActivity(GithubStream):
                     partition_obj = stream_slice.get("partition")
                     if self.cursor and partition_obj:
                         self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+                else:
+                    raise e
             else:
                 raise e
 
