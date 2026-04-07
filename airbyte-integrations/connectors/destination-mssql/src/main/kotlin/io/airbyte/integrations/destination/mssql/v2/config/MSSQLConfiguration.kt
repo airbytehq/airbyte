@@ -8,7 +8,6 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.file.azureBlobStorage.GENERATION_ID_METADATA_KEY_OVERRIDE
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Factory
@@ -26,12 +25,12 @@ data class MSSQLConfiguration(
     val ssh: SshTunnelMethodConfiguration?,
     override val mssqlLoadTypeConfiguration: MSSQLLoadTypeConfiguration,
 ) : DestinationConfiguration(), MSSQLLoadTypeConfigurationProvider {
-    override val recordBatchSizeBytes = ObjectStorageUploadConfiguration.DEFAULT_PART_SIZE_BYTES
+    override val recordBatchSizeBytes = 5L * 1024 * 1024 // 5MB to reduce per-loader memory footprint
 
     val numInputPartitions: Int = 1 // this should not be raised without implementing a partitioner
-    val batchEveryNRecords: Int = 5_000
+    val batchEveryNRecords: Int = 2_500
     val maxBatchSizeBytes: Long = recordBatchSizeBytes
-    val maxNumOpenLoaders: Int = 8 // allows for 1 concurrent open and close + 8 concurrent keys
+    val maxNumOpenLoaders: Int = 4 // reduced from 8 to limit concurrent memory usage during large syncs
 
     /**
      * Azure requires blob metadata keys to be alphanumeric+underscores, so replace the dashes with
