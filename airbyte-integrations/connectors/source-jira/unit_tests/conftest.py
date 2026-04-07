@@ -65,9 +65,12 @@ def clear_cache_before_each_test():
 @fixture
 def config():
     return {
-        "api_token": "token",
+        "credentials": {
+            "auth_type": "API Token",
+            "api_token": "token",
+            "email": "email@email.com",
+        },
         "domain": "domain",
-        "email": "email@email.com",
         "start_date": "2021-01-01T00:00:00Z",
         "projects": ["Project1"],
         "enable_experimental_streams": True,
