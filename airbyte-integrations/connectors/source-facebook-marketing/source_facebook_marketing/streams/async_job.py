@@ -23,6 +23,7 @@ from source_facebook_marketing.streams.common import retry_pattern
 
 from ..utils import DateInterval
 
+
 if TYPE_CHECKING:
     from source_facebook_marketing.streams.async_job_manager import APILimit
 
