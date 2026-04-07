@@ -33,11 +33,11 @@ class RedshiftSqlGenerator {
      * Generates SQL to create a schema if it does not already exist.
      *
      * ```sql
-     * CREATE SCHEMA IF NOT EXISTS "my_schema";
+     * CREATE SCHEMA IF NOT EXISTS "my_schema"
      * ```
      */
     fun createNamespace(namespace: String): String =
-        """CREATE SCHEMA IF NOT EXISTS "$namespace";""".andLog()
+        """CREATE SCHEMA IF NOT EXISTS "$namespace"""".andLog()
 
     // ---- Table DDL ----
 
@@ -68,7 +68,7 @@ class RedshiftSqlGenerator {
             |    $COLUMN_NAME_AB_EXTRACTED_AT ${RedshiftSqlTypes.TIMESTAMPTZ} NOT NULL,
             |    $COLUMN_NAME_AB_META ${RedshiftSqlTypes.SUPER} NOT NULL,
             |    $COLUMN_NAME_AB_GENERATION_ID ${RedshiftSqlTypes.BIGINT} NOT NULL$userColumnBlock
-            |);
+            |)
             """
             .trimMargin()
             .andLog()
@@ -78,11 +78,11 @@ class RedshiftSqlGenerator {
      * Generates a DROP TABLE IF EXISTS statement.
      *
      * ```sql
-     * DROP TABLE IF EXISTS "schema"."table";
+     * DROP TABLE IF EXISTS "schema"."table"
      * ```
      */
     fun dropTable(tableName: TableName): String =
-        """DROP TABLE IF EXISTS ${tableName.quoted()};""".andLog()
+        "DROP TABLE IF EXISTS ${tableName.quoted()}".andLog()
 
     // ---- Read ----
 
@@ -90,13 +90,15 @@ class RedshiftSqlGenerator {
      * Generates a SELECT count query.
      *
      * ```sql
-     * SELECT count(1) FROM "schema"."table";
+     * SELECT count(1) FROM "schema"."table"
      * ```
      *
      * @param alias Optional column alias for the count result.
      */
-    fun countTable(tableName: TableName, alias: String = ""): String =
-        """SELECT count(1) $alias FROM ${tableName.quoted()};""".trimEnd().andLog()
+    fun countTable(tableName: TableName, alias: String = ""): String {
+        val aliasClause = if (alias.isNotEmpty()) " $alias" else ""
+        return "SELECT count(1)$aliasClause FROM ${tableName.quoted()}".andLog()
+    }
 
     // ---- Write ----
 
@@ -107,7 +109,7 @@ class RedshiftSqlGenerator {
      * the provided user column names. Values are placeholder `?` markers.
      *
      * ```sql
-     * INSERT INTO "schema"."table" ("_airbyte_raw_id", ..., "user_col") VALUES (?, ?, ...);
+     * INSERT INTO "schema"."table" ("_airbyte_raw_id", ..., "user_col") VALUES (?, ?, ...)
      * ```
      *
      * @param columnNames User-defined column names (excluding meta columns).
@@ -124,7 +126,7 @@ class RedshiftSqlGenerator {
         val quotedColumns = allColumns.joinToString(", ") { "\"$it\"" }
         val placeholders = allColumns.joinToString(", ") { "?" }
 
-        return """INSERT INTO ${tableName.quoted()} ($quotedColumns) VALUES ($placeholders);"""
+        return "INSERT INTO ${tableName.quoted()} ($quotedColumns) VALUES ($placeholders)"
             .andLog()
     }
 
@@ -135,11 +137,11 @@ class RedshiftSqlGenerator {
      * `_airbyte_raw_id` value. For use with [java.sql.PreparedStatement].
      *
      * ```sql
-     * DELETE FROM "schema"."table" WHERE _airbyte_raw_id = ?;
+     * DELETE FROM "schema"."table" WHERE _airbyte_raw_id = ?
      * ```
      */
     fun deleteByRawId(tableName: TableName): String =
-        """DELETE FROM ${tableName.quoted()} WHERE $COLUMN_NAME_AB_RAW_ID = ?;""".andLog()
+        "DELETE FROM ${tableName.quoted()} WHERE $COLUMN_NAME_AB_RAW_ID = ?".andLog()
 
     // ---- Helpers ----
 
