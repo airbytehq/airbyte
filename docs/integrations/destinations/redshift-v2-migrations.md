@@ -1,4 +1,4 @@
-# Redshift V2 Migration Guide
+# Redshift Migration Guide
 
 ## Upgrading to 4.0.0
 
