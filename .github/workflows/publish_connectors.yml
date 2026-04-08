@@ -477,7 +477,7 @@ jobs:
         run: |
           echo "Creating RC metadata marker for ${{ matrix.connector }}"
           airbyte-ops \
-            registry progressive-rollout create \
+            registry rc create \
             --name "${{ matrix.connector }}" \
             --store "${REGISTRY_STORE}"
 
