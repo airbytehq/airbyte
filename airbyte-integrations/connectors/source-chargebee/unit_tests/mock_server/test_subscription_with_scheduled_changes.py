@@ -116,3 +116,27 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
 
         custom_fields = {cf["name"]: cf["value"] for cf in record_data["custom_fields"]}
         assert len(custom_fields) == 2
+
+    @HttpMocker()
+    def test_parent_stream_sends_has_scheduled_changes_filter(self, http_mocker: HttpMocker) -> None:
+        """Test that the parent stream sends has_scheduled_changes[is]=true to filter subscriptions.
+
+        This is a performance optimization: instead of iterating over ALL subscriptions,
+        we only fetch subscriptions that have scheduled changes.
+        """
+        http_mocker.get(
+            RequestBuilder.subscriptions_endpoint()
+            .with_sort_by_asc("updated_at")
+            .with_include_deleted("true")
+            .with_has_scheduled_changes("true")
+            .with_limit(100)
+            .build(),
+            subscription_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.subscription_scheduled_changes_endpoint("sub_001").with_any_query_params().build(),
+            subscription_with_scheduled_changes_response(),
+        )
+
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+        assert len(output.records) == 1
