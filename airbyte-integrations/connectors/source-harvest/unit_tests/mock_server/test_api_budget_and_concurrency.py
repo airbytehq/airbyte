@@ -218,3 +218,34 @@ class TestConcurrencyLevel(TestCase):
         assert num_workers_spec["default"] == 4
         assert num_workers_spec["minimum"] == 2
         assert num_workers_spec["maximum"] == 10
+
+    def test_manifest_api_budget_structure(self):
+        """
+        Test that the manifest contains a properly structured HTTPAPIBudget.
+
+        Given: The connector manifest with api_budget configured
+        When: Loading and parsing the manifest
+        Then: The api_budget should have HTTPAPIBudget type with correct rate limit policies
+        """
+        manifest_path = Path(__file__).parent.parent.parent / "manifest.yaml"
+        manifest = yaml.safe_load(manifest_path.read_text())
+
+        assert "api_budget" in manifest, "api_budget should be defined in the manifest"
+        budget = manifest["api_budget"]
+        assert budget["type"] == "HTTPAPIBudget"
+        assert len(budget["policies"]) == 2
+        # Reports endpoint: 100 req / 15 minutes
+        reports_policy = budget["policies"][0]
+        assert reports_policy["type"] == "MovingWindowCallRatePolicy"
+        assert reports_policy["rates"][0]["limit"] == 100
+        assert reports_policy["rates"][0]["interval"] == "PT15M"
+        assert reports_policy["matchers"][0]["url_path_pattern"] == "^/reports/"
+        # General: 100 req / 15 seconds
+        general_policy = budget["policies"][1]
+        assert general_policy["type"] == "MovingWindowCallRatePolicy"
+        assert general_policy["rates"][0]["limit"] == 100
+        assert general_policy["rates"][0]["interval"] == "PT15S"
+        assert general_policy["matchers"] == []
+        # Rate limit headers
+        assert budget["ratelimit_reset_header"] == "Retry-After"
+        assert 429 in budget["status_codes_for_ratelimit_hit"]
