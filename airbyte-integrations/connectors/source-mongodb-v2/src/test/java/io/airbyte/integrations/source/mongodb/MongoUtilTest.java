@@ -25,7 +25,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.MongoCommandException;
@@ -57,6 +56,7 @@ import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 public class MongoUtilTest {
 
