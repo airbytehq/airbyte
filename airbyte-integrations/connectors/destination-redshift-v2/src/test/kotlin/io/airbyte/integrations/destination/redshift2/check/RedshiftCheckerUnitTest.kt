@@ -21,6 +21,8 @@ import java.sql.SQLException
 import java.sql.Statement
 import java.util.stream.Stream
 import javax.sql.DataSource
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -29,8 +31,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @ExtendWith(MockKExtension::class)
 class RedshiftCheckerUnitTest {
@@ -120,8 +120,7 @@ class RedshiftCheckerUnitTest {
         expectedSubstring: String,
     ) {
         // Make the very first DB call (SELECT 1) throw a SQLException
-        every { mockStatement.executeQuery(any()) } throws
-            SQLException("test error", sqlState, 0)
+        every { mockStatement.executeQuery(any()) } throws SQLException("test error", sqlState, 0)
 
         val caught = assertThrows<IllegalStateException> { checker.check() }
         assertTrue(
