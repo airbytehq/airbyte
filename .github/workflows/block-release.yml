@@ -96,29 +96,24 @@ jobs:
             exit 1
           fi
 
-      # ── Block: create marker file ──────────────────────────────────
+      # ── Install airbyte-ops CLI ───────────────────────────────────
+      - name: Install airbyte-ops CLI
+        run: pip install airbyte-internal-ops
+
+      # ── Block: create marker file via CLI ────────────────────────────
       - name: Create block-release.yaml
         if: env.ACTION == 'block'
         run: |
-          BLOCK_FILE="airbyte-integrations/connectors/${CONNECTOR_NAME}/block-release.yaml"
-          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          ARGS="--name ${CONNECTOR_NAME} --reason \"${REASON}\""
+          if [[ -n "${YANKED_VERSION}" ]]; then
+            ARGS="${ARGS} --yanked-version ${YANKED_VERSION}"
+          fi
+          if [[ -n "${BLOCKED_BY}" ]]; then
+            ARGS="${ARGS} --blocked-by ${BLOCKED_BY}"
+          fi
+          eval airbyte-ops local connector release-block add ${ARGS} --repo-path .
 
-          cat > "${BLOCK_FILE}" <<EOF
-          reason: "${REASON}"
-          yanked_version: "${YANKED_VERSION}"
-          blocked_at: "${TIMESTAMP}"
-          blocked_by: "${BLOCKED_BY}"
-          instructions: |
-            This connector's release is blocked due to a known issue.
-            The broken code from the yanked version still lives on master.
-            To unblock, remove this file via the 'unblock-release' workflow
-            or by merging a PR that deletes this file.
-          EOF
-
-          # Clean up leading whitespace from heredoc indentation
-          sed -i 's/^          //' "${BLOCK_FILE}"
-
-      # ── Unblock: remove marker file ────────────────────────────────
+      # ── Unblock: remove marker file via CLI ──────────────────────────
       - name: Remove block-release.yaml
         if: env.ACTION == 'unblock'
         run: |
@@ -127,7 +122,7 @@ jobs:
             echo "::warning::No block-release.yaml found for ${CONNECTOR_NAME}. Nothing to unblock."
             exit 0
           fi
-          rm -f "${BLOCK_FILE}"
+          airbyte-ops local connector release-block clear --name "${CONNECTOR_NAME}" --repo-path .
 
       # ── Create and force-merge PR ──────────────────────────────────
       - name: Create PR
