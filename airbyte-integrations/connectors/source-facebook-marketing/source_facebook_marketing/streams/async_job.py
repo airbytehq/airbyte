@@ -15,11 +15,12 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from source_facebook_marketing.streams.common import retry_pattern
+from source_facebook_marketing.streams.common import retry_pattern, traced_exception
 
 from ..utils import DateInterval
 
@@ -450,6 +451,8 @@ class InsightAsyncJob(AsyncJob):
         for attempt in range(1, self.MAX_ID_COLLECTION_ATTEMPTS + 1):
             try:
                 id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
+            except FacebookRequestError as e:
+                raise traced_exception(e) from e
             except Exception as e:
                 raise AirbyteTracedException(
                     message="Facebook Insights API request failed during data retrieval.",

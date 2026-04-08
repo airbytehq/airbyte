@@ -555,14 +555,17 @@ class TestInsightAsyncJob:
             primary_key=pk,
         )
 
-        with pytest.raises(AirbyteTracedException, match="Cannot split by fields"):
+        with pytest.raises(AirbyteTracedException, match="Cannot split by fields") as exc_info:
             job._split_job()
 
+        from airbyte_cdk.models import FailureType
+        assert exc_info.value.failure_type == FailureType.system_error
+
     @freezegun.freeze_time("2023-10-29")
-    def test_collect_child_ids_start_failure(self, mocker, api):
+    def test_collect_child_ids_start_failure_generic(self, mocker, api):
         """
-        When get_insights raises, _collect_child_ids should wrap it in
-        AirbyteTracedException with transient_error.
+        When get_insights raises a non-FacebookRequestError exception,
+        _collect_child_ids should wrap it in AirbyteTracedException with transient_error.
         """
         from airbyte_cdk.models import FailureType
 
@@ -579,6 +582,43 @@ class TestInsightAsyncJob:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_start_failure_facebook_request_error(self, mocker, api):
+        """
+        When get_insights raises a FacebookRequestError, _collect_child_ids should
+        delegate to traced_exception() to preserve the correct FailureType classification
+        (e.g. config_error for invalid tokens, transient_error for rate limits).
+        """
+        from unittest.mock import PropertyMock
+
+        from facebook_business.exceptions import FacebookRequestError
+
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Simulate a FacebookRequestError with an invalid-token message
+        fb_error = FacebookRequestError(
+            message="Invalid OAuth access token",
+            request_context={"method": "GET"},
+            http_status=400,
+            http_headers={},
+            body='{"error": {"message": "Invalid OAuth access token", "type": "OAuthException", "code": 190, "fbtrace_id": "abc"}}',
+        )
+        mocker.patch.object(job._edge_object, "get_insights", side_effect=fb_error)
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        # traced_exception classifies invalid token errors as config_error
+        assert exc_info.value.failure_type == FailureType.config_error
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_all_attempts_exhausted(self, mocker, api):
@@ -643,6 +683,38 @@ class TestInsightAsyncJob:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
         assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_no_child_ids(self, mocker, api):
+        """
+        When _collect_child_ids returns an empty list, _split_by_edge_class should
+        raise AirbyteTracedException with system_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Create a mock that completes immediately and returns no IDs
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.return_value = []  # no rows → no IDs
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
+
+        with pytest.raises(AirbyteTracedException, match="No child IDs at level=campaign") as exc_info:
+            job._split_by_edge_class(Campaign)
+
+        assert exc_info.value.failure_type == FailureType.system_error
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_timeout(self, mocker, api):
