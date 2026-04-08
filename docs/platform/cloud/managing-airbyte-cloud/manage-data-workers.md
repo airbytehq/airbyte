@@ -82,7 +82,7 @@ If your organization runs out of credits, syncs are queued even if on-demand cap
 
 2. Click **Settings**.
 
-3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable connection to use credits to always run syncs on demand. Syncs for this connection will never be queued, and only consume credits if no capacity is available." You must have the organization admin or workspace admin role to change this toggle.
+3. Toggle **Use on-demand capacity**. The toggle description reads: "Enable on demand capacity for this connection. Syncs for this connection will never be queued. Syncs that run when committed data worker is exhausted will be charged a premium rate." You must have the organization admin or workspace admin role to change this toggle.
 
 You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup.
 
