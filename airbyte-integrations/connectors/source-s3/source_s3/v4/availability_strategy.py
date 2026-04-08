@@ -8,6 +8,7 @@ import traceback
 from typing import Optional, Tuple
 
 import pyarrow.parquet as pq
+
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.availability_strategy import (
@@ -62,9 +63,7 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
                 parquet_file = pq.ParquetFile(fp)
                 column_names = parquet_file.schema_arrow.names
                 if not column_names:
-                    raise CheckAvailabilityError(
-                        FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri
-                    )
+                    raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri)
 
                 first_col = column_names[0]
                 batches = parquet_file.iter_batches(batch_size=1, columns=[first_col], use_threads=False)
@@ -82,7 +81,5 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
         except AirbyteTracedException as ate:
             raise ate
         except Exception as exc:  # pragma: no cover - defensive
-            raise CheckAvailabilityError(
-                FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri
-            ) from exc
+            raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
 
