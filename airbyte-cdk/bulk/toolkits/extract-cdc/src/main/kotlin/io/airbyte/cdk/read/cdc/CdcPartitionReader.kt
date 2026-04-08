@@ -7,6 +7,8 @@ package io.airbyte.cdk.read.cdc
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
@@ -491,8 +493,98 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
                 // There are cases where Debezium doesn't succeed but only fills the message field.
                 val e: Throwable = error ?: RuntimeException(message)
                 log.warn(e) { "Debezium engine has NOT shut down successfully: $message" }
-                throw e
+                throw classifyDebeziumError(e, message)
             }
+        }
+
+        /**
+         * Classifies a Debezium engine error into an appropriate [ConnectorErrorException]
+         * subtype based on the error message and exception chain. Debezium often wraps
+         * connection failures in generic validation messages; this method detects the
+         * underlying cause and produces an Airbyte-style error with the correct FailureType.
+         */
+        private fun classifyDebeziumError(error: Throwable, message: String?): Throwable {
+            val fullText = buildString {
+                message?.let { append(it).append(" ") }
+                append(error.message.orEmpty()).append(" ")
+                var cause = error.cause
+                while (cause != null) {
+                    append(cause.message.orEmpty()).append(" ")
+                    cause = cause.cause
+                }
+            }.lowercase()
+
+            // DNS resolution failure — network/infrastructure issue, not a config error.
+            if (fullText.contains("unknownhostexception") ||
+                fullText.contains("unknown host") ||
+                fullText.contains("name or service not known") ||
+                fullText.contains("no such host") ||
+                fullText.contains("could not be resolved")
+            ) {
+                return TransientErrorException(
+                    "Database host could not be resolved.",
+                    error,
+                )
+            }
+
+            // Connection refused — database may be down or port is wrong.
+            if (fullText.contains("connection refused") ||
+                fullText.contains("connectexception")
+            ) {
+                return TransientErrorException(
+                    "Database connection refused on the configured host and port.",
+                    error,
+                )
+            }
+
+            // Connection timeout.
+            if (fullText.contains("connect timed out") ||
+                fullText.contains("connection timed out") ||
+                fullText.contains("sockettimeoutexception")
+            ) {
+                return TransientErrorException(
+                    "Database connection timed out.",
+                    error,
+                )
+            }
+
+            // Authentication failure — genuine config error.
+            if (fullText.contains("authentication failed") ||
+                fullText.contains("password authentication failed") ||
+                fullText.contains("access denied") ||
+                fullText.contains("login failed")
+            ) {
+                return ConfigErrorException(
+                    "Database authentication failed. Verify credentials in the connection settings.",
+                    error,
+                )
+            }
+
+            // SSH tunnel failure.
+            if (fullText.contains("ssh tunnel") ||
+                fullText.contains("ssh_tunnel") ||
+                fullText.contains("jschexception") ||
+                fullText.contains("sshexception")
+            ) {
+                return TransientErrorException(
+                    "CDC replication could not connect through the SSH tunnel.",
+                    error,
+                )
+            }
+
+            // If the error is already a ConnectorErrorException, preserve it.
+            if (error is ConfigErrorException ||
+                error is TransientErrorException ||
+                error is SystemErrorException
+            ) {
+                return error
+            }
+
+            // Fallback: unrecognized Debezium failure.
+            return SystemErrorException(
+                "CDC replication engine failed unexpectedly.",
+                error,
+            )
         }
     }
 
