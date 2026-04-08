@@ -44,7 +44,7 @@ Both GB and UK refer to the United Kingdom marketplace and can be used interchan
 
 ## Setup guide
 
-## Step 1: Set up Amazon Seller Partner
+### Step 1: Set up Amazon Seller Partner
 
 [Register](https://sellercentral.amazon.com/) your Amazon Seller Partner account.
 
@@ -56,7 +56,7 @@ Both GB and UK refer to the United Kingdom marketplace and can be used interchan
 
 <!-- /env:oss -->
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
 To pass the check for Seller and Vendor accounts, you must have access to the [Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/orders-api-v0-reference) and the [Vendor Orders endpoint](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders), respectively.
 
@@ -112,7 +112,7 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 
 ## Supported sync modes
 
-The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The Amazon Seller Partner source connector supports the following [sync modes](https://docs.airbyte.com/using-airbyte/core-concepts/sync-modes):
 
 - Full Refresh
 - Incremental
@@ -155,8 +155,6 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Sales and Traffic Report By Date](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
 - [Restock Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-inventory-reports) \(incremental\)
 - [Scheduled XML Order Report (Shipping)](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
-- [Subscribe and Save Forecast Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
-- [Subscribe and Save Performance Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-fba#fba-subscribe-and-save-reports) \(incremental\)
 - [Suppressed Listings Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-inventory) \(incremental\)
 - [Unshipped Orders Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-reports) \(incremental\)
 - [Vendor Direct Fulfillment Shipping](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference) \(incremental\)
@@ -187,19 +185,18 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 
 ## Report options
 
-Report options can be assigned on a per-stream basis that alter the behavior when generating a report.
+You can assign report options on a per-stream basis to alter the behavior when generating a report.
 For the full list, refer to Amazon’s report type values [documentation](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 
 Certain report types have required parameters that must be defined.
 For the `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL`, `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL`, and `GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE` streams, the maximum allowable value for `period_in_days` is 30 days, 30 days, and 60 days, respectively.
 If the specified `period_in_days` exceeds these limits, it will be automatically adjusted to the maximum value for the respective stream, or set to 365 days if not provided.
 
-For the Vendor Forecasting Report, we have two streams - `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` which use the same `GET_VENDOR_FORECASTING_REPORT` Amazon's report,
-but with different options for the `sellingProgram` parameter - `FRESH` and `RETAIL` respectively.
+For the Vendor Forecasting Report, the connector provides two streams — `GET_VENDOR_FORECASTING_FRESH_REPORT` and `GET_VENDOR_FORECASTING_RETAIL_REPORT` — that use the same `GET_VENDOR_FORECASTING_REPORT` Amazon report, but with different options for the `sellingProgram` parameter: `FRESH` and `RETAIL`, respectively.
 
 ## Performance considerations
 
-Information about rate limits you may find [here](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
+For information about rate limits, see [Usage Plans and Rate Limits in the SP-API](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits-in-the-sp-api).
 
 - Use the **Financial Events Step Size** configuration for the ListFinancialEvents and ListFinancialEventGroups streams:
   - **Hourly step sizes** (e.g., `1H`, `6H`) are recommended for high-volume sellers experiencing pagination token expiration (TTL errors). They fetch smaller chunks per request, reducing the risk of timeouts.
@@ -255,16 +252,16 @@ Create a separate connection for streams which usually fail with error above "Fa
 Syncing Report Streams sometimes may fail due to rate limits.
 
 The Amazon Seller Partner source connector makes requests according to the limits mentioned in the [SP API docs](https://developer-docs.amazon.com/sp-api/lang-pt_BR/docs/reports-api-rate-limits).
-But actual Rate Limits could be differ from ones mentioned in the docs. See [Usage Plans and Rate Limits](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits) for more information.
-Depending on actual rate limits the Amazon Seller Partner source connector can receive "rate limited" responses, unfortunately there is no way to find actual rate limits values for account.
+However, actual rate limits can differ from those documented. See [Usage Plans and Rate Limits](https://developer-docs.amazon.com/sp-api/docs/usage-plans-and-rate-limits) for more information.
+Depending on the actual rate limits, the connector can receive throttled responses. There is no way to determine the exact rate limit values for a specific account.
 
-We recommend next steps to overcome the rate limits issue:
+To work around rate limit issues:
 
-1. Depending on your amount of data per [Period In Days](https://docs.airbyte.com/integrations/sources/amazon-seller-partner#reference) adjust this value to reduce time of processing the report on API Side. If creation of the report takes more than 1 hour it's recommended to set lower value for `Period In Days` setting.
-2. Configure affected Report Stream to read data incrementally, use Incremental Sync mode (Append). This will prevent the source of rereading already fetched data and make the source to read new data starting from state cursor value. See [Incremental Sync Mode - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
+1. Reduce the **Period In Days** setting to shorten the time the API spends generating each report. If report creation takes more than 1 hour, use a lower value.
+2. Configure affected report streams to use Incremental Sync mode (Append). This prevents the connector from re-reading previously fetched data. See [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) for more information.
 3. Set syncs to run every 24 hours.
 
-This configuration will sync partial data, until the source gets rate limited. Once state value reaches date that equal the date of sync, next sync will have only one partition(date period for report). The source will make only one request for affected report which should be enough to avoid rate limits issue.
+With this configuration, each sync fetches partial data until the connector is rate limited. Once the state cursor reaches the current sync date, subsequent syncs require only one partition per report, which is typically enough to avoid rate limit issues.
 
 ### ListFinancialEvents stream incompatible with deduplication on BigQuery
 
@@ -306,7 +303,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.7.1 | 2026-04-02 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
+| 5.7.1 | 2026-04-08 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
 | 5.7.0 | 2026-03-23 | [74740](https://github.com/airbytehq/airbyte/pull/74740) | Add configurable `asinGranularity` for GET_SALES_AND_TRAFFIC_REPORT streams, enabling CHILD and SKU level data with populated childAsin and sku values |
 | 5.6.1 | 2026-03-17 | [74538](https://github.com/airbytehq/airbyte/pull/74538) | Update dependencies |
 | 5.6.0 | 2026-03-10 | [74296](https://github.com/airbytehq/airbyte/pull/74296) | Add Restricted Data Token (RDT) support for Orders and OrderItems streams to access PII fields (BuyerInfo, ShippingAddress) via opt-in `include_pii` config option |
