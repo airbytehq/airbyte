@@ -1,5 +1,66 @@
 # Amazon Ads Migration Guide
 
+## Upgrading to 8.0.0
+
+Daily report streams now use the `date` field from the Amazon Ads API response as the cursor and primary key instead of the synthetic `reportDate` field.
+
+Previously, all rows within a 30-day reporting window were incorrectly assigned the same `reportDate` value (the stream interval end date), causing approximately 96% of data to be lost during deduplication when using incremental + dedup sync mode. This version fixes the issue by using the actual `date` field returned by the API.
+
+### Affected streams
+
+All daily report streams are affected:
+
+- `sponsored_brands_v3_report_stream_daily`
+- `sponsored_display_campaigns_report_stream_daily`
+- `sponsored_display_adgroups_report_stream_daily`
+- `sponsored_display_productads_report_stream_daily`
+- `sponsored_display_targets_report_stream_daily`
+- `sponsored_display_asins_report_stream_daily`
+- `sponsored_products_campaigns_report_stream_daily`
+- `sponsored_products_adgroups_report_stream_daily`
+- `sponsored_products_keywords_report_stream_daily`
+- `sponsored_products_targets_report_stream_daily`
+- `sponsored_products_productads_report_stream_daily`
+- `sponsored_products_asins_keywords_report_stream_daily`
+- `sponsored_products_asins_targets_report_stream_daily`
+
+### Primary key and cursor changes
+
+| Change | Before | After |
+|--------|--------|-------|
+| Cursor field | `reportDate` (synthetic) | `date` (from API response) |
+| Primary key date component | `reportDate` | `date` |
+
+Non-daily (SUMMARY) report streams are **not affected** and continue to use `reportDate`.
+
+### Refresh affected schemas and reset data
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Replication** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+
+```note
+Any detected schema changes will be listed for your review.
+```
+
+3. Select **Save changes** at the bottom of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+
+```note
+Depending on destination type you may not be prompted to reset your data.
+```
+
+4. Select **Save connection**.
+
+```note
+This will reset the data in your destination and initiate a fresh sync.
+```
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+
 ## Upgrading to 7.0.0
 
 - The stream SponsoredDisplayReportStream is split into five:

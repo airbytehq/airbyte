@@ -343,13 +343,13 @@ class TestDisplayReportStreams:
             "sponsored_products_campaigns_report_stream_daily",
         ],
     )
-    def test_daily_stream_report_date_uses_record_date(self, requests_mock, config, mock_oauth, mock_profiles, stream_name):
+    def test_daily_stream_uses_date_as_cursor(self, requests_mock, config, mock_oauth, mock_profiles, stream_name):
         """
-        Verify that the reportDate transformation uses the 'date' field from the API response
-        rather than stream_interval.end_time. This prevents deduplication issues where all rows
-        within a 30-day window would get the same reportDate value.
+        Verify that daily streams use the 'date' field from the API response as the cursor field
+        instead of the synthetic 'reportDate'. This ensures correct deduplication when using
+        incremental + dedup sync mode with a 30-day step.
         """
-        report_id = f"report-id-{stream_name}-date-fix"
+        report_id = f"report-id-{stream_name}-date-cursor"
         download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
         requests_mock.post(
             "https://advertising-api.amazon.com/reporting/reports",
@@ -369,23 +369,22 @@ class TestDisplayReportStreams:
             content=report_data,
             status_code=200,
         )
-        output = self._read(config, stream_name)
+        output = self._read(config, stream_name, SyncMode.incremental)
         assert len(output.records) == 2
-        # The reportDate field should match the record's 'date' field, NOT the stream interval end time
-        report_dates = [record.record.data["reportDate"] for record in output.records]
-        assert report_dates == [
-            "2023-01-15",
-            "2023-01-16",
-        ], f"reportDate should use the record's 'date' field, not stream_interval.end_time. Got: {report_dates}"
+        # Daily streams should use 'date' as cursor field, not 'reportDate'
+        dates = [record.record.data["date"] for record in output.records]
+        assert dates == ["2023-01-15", "2023-01-16"]
+        # Verify the cursor state uses 'date' field
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["date"] is not None
 
-    def test_non_daily_stream_report_date_falls_back_to_interval(
+    def test_non_daily_stream_uses_report_date_as_cursor(
         self, requests_mock: requests_mock.Mocker, config: Mapping[str, Any], mock_oauth, mock_profiles
     ):
         """
-        Verify that for non-daily streams where records don't have a 'date' field,
-        reportDate falls back to stream_interval.end_time.
+        Verify that non-daily (SUMMARY) streams continue to use 'reportDate' as the cursor field
+        with the value set from stream_interval.end_time.
         """
-        report_id = "report-id-brands-v3-fallback"
+        report_id = "report-id-brands-v3-summary"
         download_url = f"https://advertising-api.amazon.com/reporting/reports/{report_id}/download"
         requests_mock.post(
             "https://advertising-api.amazon.com/reporting/reports",
@@ -407,6 +406,8 @@ class TestDisplayReportStreams:
         )
         output = self._read(config, "sponsored_brands_v3_report_stream", SyncMode.incremental)
         assert len(output.records) == 1
-        # For records without a 'date' field, reportDate should still be set (fallback to stream_interval.end_time)
+        # SUMMARY streams should still use 'reportDate' as cursor, set from stream_interval.end_time
         assert "reportDate" in output.records[0].record.data
         assert output.records[0].record.data["reportDate"] is not None
+        # Verify cursor state uses 'reportDate' field
+        assert output.most_recent_state.stream_state.states[0]["cursor"]["reportDate"] is not None
