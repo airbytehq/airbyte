@@ -146,16 +146,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -172,16 +163,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -279,16 +261,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -305,16 +278,7 @@ class JdbcPartitionsCreatorTest {
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
                                         sampleSize = 4,
-                                        where =
-                                            Where(
-                                                Or(
-                                                    listOf(
-                                                        And(
-                                                            listOf(Greater(id, IntCodec.encode(22)))
-                                                        )
-                                                    )
-                                                )
-                                            )
+                                        where = Where(Greater(id, IntCodec.encode(22)))
                                     ),
                                     NoWhere,
                                     OrderBy(id)
@@ -327,7 +291,7 @@ class JdbcPartitionsCreatorTest {
                         )
                     ),
             )
-        val expectedFetchSize = 674 // adjust this as needed based on inputs
+        val expectedFetchSize = 681 // adjust this as needed based on inputs
         val factory = sharedState.factory()
         val initialPartition =
             factory.create(stream.bootstrap(opaqueStateValue(pk = 22))).asPartition()
@@ -369,8 +333,8 @@ class JdbcPartitionsCreatorTest {
                 .asPartition()
         factory.assertFailures()
         val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
-        val readerPartition: DefaultJdbcCursorIncrementalPartition =
-            sequentialPartition(stream, readers)
+        val readerPartition: DefaultUnsplittableJdbcCursorIncrementalPartition =
+            unsplittableSequentialPartition(stream, readers)
         Assertions.assertEquals(
             LocalDateCodec.encode(cursorUpperBound),
             readerPartition.streamState.cursorUpperBound,
@@ -407,8 +371,8 @@ class JdbcPartitionsCreatorTest {
         val initialPartition = factory.create(bootstrap).asPartition()
         factory.assertFailures()
         val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
-        val readerPartition: DefaultJdbcCursorIncrementalPartition =
-            sequentialPartition(stream, readers)
+        val readerPartition: DefaultUnsplittableJdbcCursorIncrementalPartition =
+            unsplittableSequentialPartition(stream, readers)
         Assertions.assertEquals(ts, readerPartition.cursor)
         Assertions.assertEquals(
             LocalDateCodec.encode(cursorCheckpoint),
@@ -444,6 +408,19 @@ class JdbcPartitionsCreatorTest {
         Assertions.assertTrue(readers.firstOrNull() is JdbcResumablePartitionReader<*>)
         Assertions.assertNull(readers.getOrNull(1))
         val reader = readers.first() as JdbcResumablePartitionReader<*>
+        Assertions.assertTrue(reader.partition is T)
+        val partition = reader.partition as T
+        Assertions.assertEquals(stream, reader.stream)
+        return partition
+    }
+
+    inline fun <reified T : DefaultJdbcPartition> unsplittableSequentialPartition(
+        stream: Stream,
+        readers: List<PartitionReader>
+    ): T {
+        Assertions.assertTrue(readers.firstOrNull() is JdbcNonResumablePartitionReader<*>)
+        Assertions.assertNull(readers.getOrNull(1))
+        val reader = readers.first() as JdbcNonResumablePartitionReader<*>
         Assertions.assertTrue(reader.partition is T)
         val partition = reader.partition as T
         Assertions.assertEquals(stream, reader.stream)

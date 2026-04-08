@@ -114,6 +114,6 @@
   ],
   "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
   "title": "SSH Tunnel Method",
-  "order": 9,
+  "order": 11,
   "type": "object"
 }

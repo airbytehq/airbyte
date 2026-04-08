@@ -10,8 +10,8 @@ The Slack connector supports the following entities and actions.
 |--------|---------|
 | Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
 | Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Search](#channels-search) |
-| Channel Messages | [List](#channel-messages-list) |
-| Threads | [List](#threads-list) |
+| Channel Messages | [List](#channel-messages-list), [Search](#channel-messages-search) |
+| Threads | [List](#threads-list), [Search](#threads-search) |
 | Messages | [Create](#messages-create), [Update](#messages-update) |
 | Channel Topics | [Create](#channel-topics-create) |
 | Channel Purposes | [Create](#channel-purposes-create) |
@@ -812,6 +812,98 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Channel Messages Search
+
+Search and filter channel messages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await slack.channel_messages.search(
+    query={"filter": {"eq": {"type": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_messages",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"type": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string` | Message type. |
+| `subtype` | `string` | Message subtype. |
+| `ts` | `string` | Message timestamp (unique identifier). |
+| `user` | `string` | User ID who sent the message. |
+| `text` | `string` | Message text content. |
+| `thread_ts` | `string` | Thread parent timestamp. |
+| `reply_count` | `integer` | Number of replies in thread. |
+| `reply_users_count` | `integer` | Number of unique users who replied. |
+| `latest_reply` | `string` | Timestamp of latest reply. |
+| `reply_users` | `array` | User IDs who replied to the thread. |
+| `is_locked` | `boolean` | Whether the thread is locked. |
+| `subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `reactions` | `array` | Reactions to the message. |
+| `attachments` | `array` | Message attachments. |
+| `blocks` | `array` | Block kit blocks. |
+| `bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `bot_profile` | `object` | Bot profile information. |
+| `team` | `string` | Team ID. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].type` | `string` | Message type. |
+| `data[].subtype` | `string` | Message subtype. |
+| `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].user` | `string` | User ID who sent the message. |
+| `data[].text` | `string` | Message text content. |
+| `data[].thread_ts` | `string` | Thread parent timestamp. |
+| `data[].reply_count` | `integer` | Number of replies in thread. |
+| `data[].reply_users_count` | `integer` | Number of unique users who replied. |
+| `data[].latest_reply` | `string` | Timestamp of latest reply. |
+| `data[].reply_users` | `array` | User IDs who replied to the thread. |
+| `data[].is_locked` | `boolean` | Whether the thread is locked. |
+| `data[].subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `data[].reactions` | `array` | Reactions to the message. |
+| `data[].attachments` | `array` | Message attachments. |
+| `data[].blocks` | `array` | Block kit blocks. |
+| `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `data[].bot_profile` | `object` | Bot profile information. |
+| `data[].team` | `string` | Team ID. |
+
+</details>
+
 ## Threads
 
 ### Threads List
@@ -930,6 +1022,94 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 |------------|------|-------------|
 | `next_cursor` | `string \| null` |  |
 | `has_more` | `boolean \| null` |  |
+
+</details>
+
+### Threads Search
+
+Search and filter threads records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### Python SDK
+
+```python
+await slack.threads.search(
+    query={"filter": {"eq": {"type": "<str>"}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "search",
+    "params": {
+        "query": {"filter": {"eq": {"type": "<str>"}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `type` | `string` | Message type. |
+| `subtype` | `string` | Message subtype. |
+| `ts` | `string` | Message timestamp (unique identifier). |
+| `user` | `string` | User ID who sent the message. |
+| `text` | `string` | Message text content. |
+| `thread_ts` | `string` | Thread parent timestamp. |
+| `parent_user_id` | `string` | User ID of the parent message author (present in thread replies). |
+| `reply_count` | `integer` | Number of replies in thread. |
+| `reply_users_count` | `integer` | Number of unique users who replied. |
+| `latest_reply` | `string` | Timestamp of latest reply. |
+| `reply_users` | `array` | User IDs who replied to the thread. |
+| `is_locked` | `boolean` | Whether the thread is locked. |
+| `subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `blocks` | `array` | Block kit blocks. |
+| `bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `team` | `string` | Team ID. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].type` | `string` | Message type. |
+| `data[].subtype` | `string` | Message subtype. |
+| `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].user` | `string` | User ID who sent the message. |
+| `data[].text` | `string` | Message text content. |
+| `data[].thread_ts` | `string` | Thread parent timestamp. |
+| `data[].parent_user_id` | `string` | User ID of the parent message author (present in thread replies). |
+| `data[].reply_count` | `integer` | Number of replies in thread. |
+| `data[].reply_users_count` | `integer` | Number of unique users who replied. |
+| `data[].latest_reply` | `string` | Timestamp of latest reply. |
+| `data[].reply_users` | `array` | User IDs who replied to the thread. |
+| `data[].is_locked` | `boolean` | Whether the thread is locked. |
+| `data[].subscribed` | `boolean` | Whether the user is subscribed to the thread. |
+| `data[].blocks` | `array` | Block kit blocks. |
+| `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
+| `data[].team` | `string` | Team ID. |
 
 </details>
 
