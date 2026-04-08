@@ -1,0 +1,136 @@
+name: Release Block Check
+
+# Checks if any connectors modified in a PR have a block-release.yaml marker.
+# If blocked connectors are found, posts (or updates) a PR comment tagging
+# the author with the list of blocked connectors and their reasons.
+# If all blocks are later removed, updates the comment to say all-clear.
+#
+# See: https://github.com/airbytehq/airbyte-ops-mcp/issues/686
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - "airbyte-integrations/connectors/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-release-blocks:
+    name: Release Block Check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Detect modified connectors with release blocks
+        id: check-blocks
+        shell: bash
+        run: |
+          # Get list of modified connector directories in this PR
+          MODIFIED_CONNECTORS=$(
+            git diff --name-only origin/${{ github.base_ref }}...HEAD \
+              | grep -oP '^airbyte-integrations/connectors/\K[^/]+' \
+              | sort -u
+          )
+
+          if [[ -z "${MODIFIED_CONNECTORS}" ]]; then
+            echo "No connector directories modified in this PR."
+            echo "has-blocked=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Modified connectors:"
+          echo "${MODIFIED_CONNECTORS}"
+
+          # Check each modified connector for block-release.yaml
+          BLOCKED_COUNT=0
+          BLOCKED_TABLE=""
+          while IFS= read -r connector; do
+            BLOCK_FILE="airbyte-integrations/connectors/${connector}/block-release.yaml"
+            if [[ -f "${BLOCK_FILE}" ]]; then
+              REASON=$(yq -r '.reason // "No reason provided"' "${BLOCK_FILE}")
+              YANKED=$(yq -r '.yanked_version // ""' "${BLOCK_FILE}")
+
+              if [[ -n "${YANKED}" && "${YANKED}" != "null" && "${YANKED}" != "" ]]; then
+                BLOCKED_TABLE="${BLOCKED_TABLE}| \`${connector}\` | ${REASON} | \`${YANKED}\` |"$'\n'
+              else
+                BLOCKED_TABLE="${BLOCKED_TABLE}| \`${connector}\` | ${REASON} | — |"$'\n'
+              fi
+              BLOCKED_COUNT=$((BLOCKED_COUNT + 1))
+            fi
+          done <<< "${MODIFIED_CONNECTORS}"
+
+          if [[ ${BLOCKED_COUNT} -gt 0 ]]; then
+            echo "has-blocked=true" >> $GITHUB_OUTPUT
+
+            # Build the full comment body in a file to preserve formatting
+            {
+              echo "<!-- block-release-check -->"
+              echo "## ⚠️ Release Blocked for Modified Connectors"
+              echo ""
+              echo "@${{ github.event.pull_request.user.login }} — the following connector(s) modified in this PR are **blocked from release**. Publishing will be skipped for these connectors when this PR is merged."
+              echo ""
+              echo "| Connector | Reason | Yanked Version |"
+              echo "|-----------|--------|----------------|"
+              printf '%s' "${BLOCKED_TABLE}"
+              echo ""
+              echo "<details>"
+              echo "<summary>What does this mean?</summary>"
+              echo ""
+              echo 'A `block-release.yaml` marker file exists in the connector directory, which prevents the publish pipeline from releasing the connector. This is typically because a previous version was yanked due to a bug, and the broken code still lives on master.'
+              echo ""
+              echo '**To unblock:** Fix the underlying issue, then remove the `block-release.yaml` file (either manually in a PR or via the "unblock-release" workflow).'
+              echo ""
+              echo '**If your PR fixes the issue:** Include the removal of `block-release.yaml` in this PR to unblock publishing.'
+              echo "</details>"
+            } > /tmp/comment-body.md
+          else
+            echo "has-blocked=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Find existing block-release comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "<!-- block-release-check -->"
+
+      # Post or update comment when blocked connectors are found
+      - name: Post blocked-connector warning comment
+        if: steps.check-blocks.outputs.has-blocked == 'true'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body-path: /tmp/comment-body.md
+
+      # If we previously posted a blocked comment but now all blocks are removed,
+      # update the comment to indicate all-clear.
+      - name: Update comment to all-clear
+        if: steps.check-blocks.outputs.has-blocked == 'false' && steps.find-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- block-release-check -->
+            ## ✅ Release Blocks Cleared
+
+            All previously blocked connectors in this PR have been unblocked. Publishing will proceed normally when this PR is merged.
