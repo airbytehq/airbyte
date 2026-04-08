@@ -1634,7 +1634,7 @@ dynamic_streams:
           - ad_analytics_reports
       components_mapping:
         - type: ComponentMappingDefinition
-          field_path: ["**", "name"]
+          field_path: ["name"]
           value: "custom_{{components_values['name']}}"
         - type: ComponentMappingDefinition
           field_path: ["retriever", "requester", "request_parameters", "pivot"]
