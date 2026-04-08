@@ -13,13 +13,13 @@ from unittest.mock import MagicMock, patch
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
+from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
+from source_s3.v4.config import S3FileBasedStreamConfig
+
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, CustomFileBasedException, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_types.parquet_parser import ParquetParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-
-from source_s3.v4.availability_strategy import SourceS3AvailabilityStrategy
-from source_s3.v4.config import S3FileBasedStreamConfig
 
 logger = logging.getLogger("test")
 
@@ -27,6 +27,7 @@ logger = logging.getLogger("test")
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_stream(light_parquet_check: bool = False, parser=None, files=None):
     """Build a mock stream with the minimal surface used by the strategy."""
@@ -120,9 +121,10 @@ def test_uses_light_path_when_enabled_and_parquet():
 
     strategy = _make_strategy()
 
-    with patch.object(strategy, "_check_list_files", return_value=file) as list_mock, patch.object(
-        strategy, "_check_parse_record_light"
-    ) as parse_mock:
+    with (
+        patch.object(strategy, "_check_list_files", return_value=file) as list_mock,
+        patch.object(strategy, "_check_parse_record_light") as parse_mock,
+    ):
         result = strategy.check_availability_and_parsability(stream, logger, None)
 
     list_mock.assert_called_once_with(stream)

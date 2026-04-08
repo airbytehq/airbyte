@@ -82,4 +82,3 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
             raise ate
         except Exception as exc:  # pragma: no cover - defensive
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
-
