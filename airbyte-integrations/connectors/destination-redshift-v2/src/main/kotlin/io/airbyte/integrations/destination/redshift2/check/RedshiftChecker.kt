@@ -13,10 +13,10 @@ import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
-import io.airbyte.integrations.destination.redshift2.client.RedshiftSqlGenerator
-import io.airbyte.integrations.destination.redshift2.client.RedshiftSqlTypes
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlTypes
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
-import io.airbyte.integrations.destination.redshift2.config.RedshiftConnect
+import io.airbyte.integrations.destination.redshift2.connect.S3Connect
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
@@ -50,7 +50,7 @@ private const val CHECK_COLUMN_VALUE = "check-value"
 class RedshiftChecker(
     private val dataSource: DataSource,
     private val configuration: RedshiftConfiguration,
-    private val redshiftConnect: RedshiftConnect,
+    private val s3Connect: S3Connect,
     private val sqlGenerator: RedshiftSqlGenerator,
 ) : DestinationChecker {
 
@@ -131,7 +131,7 @@ class RedshiftChecker(
      */
     private fun testS3WriteAccess(s3Key: String, rawId: String): AmazonS3 {
         log.info { "Step 2: Testing S3 write access..." }
-        val s3Client = redshiftConnect.createS3Client()
+        val s3Client = s3Connect.createS3Client()
         val s3Config = configuration.uploadingMethod!!
 
         val csvBytes = buildGzipCsv(rawId)
@@ -191,7 +191,7 @@ class RedshiftChecker(
             FROM '$s3Path'
             CREDENTIALS 'aws_access_key_id=${s3Config.accessKeyId};aws_secret_access_key=${s3Config.secretAccessKey}'
             CSV GZIP
-            REGION '${s3Config.s3BucketRegion?.ifBlank { RedshiftConnect.DEFAULT_S3_REGION } ?: RedshiftConnect.DEFAULT_S3_REGION}'
+            REGION '${s3Config.s3BucketRegion?.ifBlank { S3Connect.DEFAULT_S3_REGION } ?: S3Connect.DEFAULT_S3_REGION}'
             TIMEFORMAT 'auto'
             STATUPDATE OFF
             IGNOREHEADER 1;

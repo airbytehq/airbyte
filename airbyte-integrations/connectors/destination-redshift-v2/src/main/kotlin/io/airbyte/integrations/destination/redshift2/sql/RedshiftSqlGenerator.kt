@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.redshift2.client
+package io.airbyte.integrations.destination.redshift2.sql
 
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT

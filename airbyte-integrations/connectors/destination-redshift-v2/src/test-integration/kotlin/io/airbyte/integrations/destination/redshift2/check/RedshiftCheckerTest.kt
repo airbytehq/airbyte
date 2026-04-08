@@ -7,10 +7,11 @@ package io.airbyte.integrations.destination.redshift2.check
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariDataSource
-import io.airbyte.integrations.destination.redshift2.client.RedshiftSqlGenerator
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfigurationFactory
-import io.airbyte.integrations.destination.redshift2.config.RedshiftConnect
+import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
+import io.airbyte.integrations.destination.redshift2.connect.S3Connect
 import io.airbyte.integrations.destination.redshift2.config.RedshiftSpecification
 import java.nio.file.Files
 import java.nio.file.Path
@@ -36,10 +37,11 @@ class RedshiftCheckerTest {
         ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-    private val config = mapper.readTree(Files.readString(Path.of("secrets/config.json")))
+    private val config = mapper.readTree(Files.readString(Path.of("secrets/config_staging.json")))
 
     private lateinit var configuration: RedshiftConfiguration
     private lateinit var redshiftConnect: RedshiftConnect
+    private lateinit var s3Connect: S3Connect
     private lateinit var dataSource: HikariDataSource
     private lateinit var sqlGenerator: RedshiftSqlGenerator
     private lateinit var checker: RedshiftChecker
@@ -49,9 +51,10 @@ class RedshiftCheckerTest {
         val spec = mapper.treeToValue(config, RedshiftSpecification::class.java)
         configuration = RedshiftConfigurationFactory().makeWithoutExceptionHandling(spec)
         redshiftConnect = RedshiftConnect(configuration)
+        s3Connect = S3Connect(configuration)
         dataSource = redshiftConnect.createDataSource()
         sqlGenerator = RedshiftSqlGenerator()
-        checker = RedshiftChecker(dataSource, configuration, redshiftConnect, sqlGenerator)
+        checker = RedshiftChecker(dataSource, configuration, s3Connect, sqlGenerator)
     }
 
     @AfterAll

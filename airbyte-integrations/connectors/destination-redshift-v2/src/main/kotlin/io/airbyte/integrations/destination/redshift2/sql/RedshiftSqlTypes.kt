@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.redshift2.client
+package io.airbyte.integrations.destination.redshift2.sql
 
 /**
  * Redshift SQL type constants used by [RedshiftSqlGenerator] for DDL generation.

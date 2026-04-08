@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.redshift2.config
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -54,7 +55,7 @@ class RedshiftBeanFactory {
 
     /**
      * Creates the HikariCP DataSource for Redshift connections,
-     * delegating to [RedshiftConnect] for connection configuration,
+     * delegating to [io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect] for connection configuration,
      * SSH tunnel resolution, and SSL setup.
      */
     @Singleton
