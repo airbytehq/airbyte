@@ -80,11 +80,11 @@ data:
 
           '
         upgradeDeadline: "2024-07-31"
-        4.0.0:
-          message:
-            'TBD
-            '
-          upgradeDeadline: "2024-07-31"
+      4.0.0:
+        message:
+          'TBD
+          '
+        upgradeDeadline: "2024-07-31"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
