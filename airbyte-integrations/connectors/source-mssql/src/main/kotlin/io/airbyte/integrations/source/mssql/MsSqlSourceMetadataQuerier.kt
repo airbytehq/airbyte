@@ -131,9 +131,7 @@ class MsSqlSourceMetadataQuerier(
         if (table !in memoizedColumnMetadata) return listOf()
         val allColumns = memoizedColumnMetadata[table]!!
         val accessibleColumns = filterByPrivileges(table, allColumns)
-        return accessibleColumns.map {
-            Field(it.label, base.fieldTypeMapper.toFieldType(it))
-        }
+        return accessibleColumns.map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
     }
 
     /**
@@ -172,7 +170,7 @@ class MsSqlSourceMetadataQuerier(
         try {
             base.conn.createStatement().use { stmt: Statement ->
                 stmt.fetchSize = 1
-                stmt.executeQuery(sql).use { /* just need it to succeed */ }
+                stmt.executeQuery(sql).use { /* just need it to succeed */}
             }
             return true
         } catch (e: SQLException) {

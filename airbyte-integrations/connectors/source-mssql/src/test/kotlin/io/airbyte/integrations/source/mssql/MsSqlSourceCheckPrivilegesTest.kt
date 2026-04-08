@@ -99,9 +99,7 @@ class MsSqlSourceCheckPrivilegesTest {
                 // Grant SELECT on the table overall
                 stmt.execute("GRANT SELECT ON dbo.$TEST_TABLE TO [$RESTRICTED_USER]")
                 // DENY SELECT on specific columns
-                stmt.execute(
-                    "DENY SELECT ON dbo.$TEST_TABLE (secret_col) TO [$RESTRICTED_USER]"
-                )
+                stmt.execute("DENY SELECT ON dbo.$TEST_TABLE (secret_col) TO [$RESTRICTED_USER]")
                 stmt.execute(
                     "DENY SELECT ON dbo.$TEST_TABLE (another_secret_col) TO [$RESTRICTED_USER]"
                 )
@@ -113,14 +111,11 @@ class MsSqlSourceCheckPrivilegesTest {
      * Creates a [MsSqlServerSourceConfiguration] for the restricted user with the specified
      * checkPrivileges setting.
      */
-    private fun createRestrictedConfig(
-        checkPrivileges: Boolean
-    ): MsSqlServerSourceConfiguration {
+    private fun createRestrictedConfig(checkPrivileges: Boolean): MsSqlServerSourceConfiguration {
         val spec =
             MsSqlServerSourceConfigurationSpecification().apply {
                 host = dbContainer.host
-                port =
-                    dbContainer.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT)
+                port = dbContainer.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT)
                 username = RESTRICTED_USER
                 password = RESTRICTED_PASSWORD
                 jdbcUrlParams = ""
@@ -151,17 +146,13 @@ class MsSqlSourceCheckPrivilegesTest {
     }
 
     @Test
-    @DisplayName(
-        "With checkPrivileges=true, columns with DENY SELECT should be filtered out"
-    )
+    @DisplayName("With checkPrivileges=true, columns with DENY SELECT should be filtered out")
     fun testFieldsFiltersInaccessibleColumnsWhenCheckPrivilegesEnabled() {
         val config = createRestrictedConfig(checkPrivileges = true)
         val querier = createQuerier(config)
 
         val streamId =
-            StreamIdentifier.from(
-                StreamDescriptor().withName(TEST_TABLE).withNamespace("dbo")
-            )
+            StreamIdentifier.from(StreamDescriptor().withName(TEST_TABLE).withNamespace("dbo"))
 
         val fields = querier.fields(streamId)
         val fieldNames = fields.map { it.id }
@@ -184,25 +175,17 @@ class MsSqlSourceCheckPrivilegesTest {
             "Should NOT contain denied column 'another_secret_col'"
         )
 
-        assertEquals(
-            2,
-            fields.size,
-            "Should only have 2 accessible fields (id, public_col)"
-        )
+        assertEquals(2, fields.size, "Should only have 2 accessible fields (id, public_col)")
     }
 
     @Test
-    @DisplayName(
-        "With checkPrivileges=false, all columns should be returned including denied ones"
-    )
+    @DisplayName("With checkPrivileges=false, all columns should be returned including denied ones")
     fun testFieldsReturnsAllColumnsWhenCheckPrivilegesDisabled() {
         val config = createRestrictedConfig(checkPrivileges = false)
         val querier = createQuerier(config)
 
         val streamId =
-            StreamIdentifier.from(
-                StreamDescriptor().withName(TEST_TABLE).withNamespace("dbo")
-            )
+            StreamIdentifier.from(StreamDescriptor().withName(TEST_TABLE).withNamespace("dbo"))
 
         val fields = querier.fields(streamId)
         val fieldNames = fields.map { it.id }
