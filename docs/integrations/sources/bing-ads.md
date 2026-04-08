@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the [Bing Ads](
 
 <!-- env:oss -->
 
-For Airbyte Open Source set up your application to get **Client ID**, **Client Secret**, **Refresh Token**
+For Airbyte Open Source, set up your application to get a **Client ID**, **Client Secret**, and **Refresh Token**:
 
 1. [Register your application](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
 2. [Request user consent](https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13) to get the authorization code.
@@ -23,8 +23,8 @@ For Airbyte Open Source set up your application to get **Client ID**, **Client S
 
 :::note
 
-The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token).
-Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
+The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process is described [here](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token). Authenticate with the email address (personal or work) that you used to sign in to the Microsoft Advertising platform.
+
 :::
 
 <!-- /env:oss -->
@@ -90,7 +90,6 @@ The tenant is used in the authentication URL, for example: `https://login.micros
 13. For _Columns_, add the columns of the Reporting Data Object that you want to see in the custom report.
 14. For _Aggregation_, select the time aggregation. See the [report aggregation](#report-aggregation) section.
 15. (Optional) For _Disable Custom Report Names Camel to Snake Case Conversion_, enable this option if you want to use the exact report name without automatic conversion from camelCase to snake_case. See [custom report name conversion](#custom-report-name-conversion) for details.
-
 16. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -113,25 +112,23 @@ The Bing Ads source connector supports the following streams. For more informati
 
 - [Accounts](https://learn.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13) (Full Refresh)
 - [Ad Groups](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13) (Full Refresh)
-- [Ad Group Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13)
+- [Ad Group Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13) (Incremental)
 - [Ads](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13) (Full Refresh)
-- [App Install Ads](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13)
-- [App Install Ad Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13)
-- [Budget](https://learn.microsoft.com/en-us/advertising/bulk-service/budget?view=bingads-13&viewFallbackFrom=bingads-13)
+- [App Install Ads](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13) (Incremental)
+- [App Install Ad Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13) (Incremental)
+- [Budget](https://learn.microsoft.com/en-us/advertising/bulk-service/budget?view=bingads-13) (Incremental)
 - [Campaigns](https://learn.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13) (Full Refresh)
-- [Campaign Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13)
-- [Keywords](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13)
-- [Keyword Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13)
-- [Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13)
+- [Campaign Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13) (Incremental)
+- [Keywords](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13) (Incremental)
+- [Keyword Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13) (Incremental)
+- [Labels](https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13) (Incremental)
 
 ### Report Streams
 
-:::note
+:::warning
 
-Be careful when removing fields that you don't want to sync in the replication stream settings.
-Reports are generated with all fields in the stream schema. Removing fields in the replication settings does not change the actual API request for the report.
-The results of such a report may be inaccurate due to invisible values in the removed fields.
-If you encounter this issue, use a custom report where you can define only the fields that you want to see in the report. No other fields will be included in the request.
+Removing fields in the replication settings does not change the API request for the report. Reports are always generated with all fields in the stream schema. This means report results may be inaccurate due to invisible grouping by the removed fields. If you need a report with fewer fields, use a [custom report](#custom-reports) instead.
+
 :::
 
 - [Account Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13)
@@ -202,17 +199,13 @@ If you encounter this issue, use a custom report where you can define only the f
 
 :::info
 
-Ad Group Impression Performance Report, Geographic Performance Report, Account Impression Performance Report have user-defined primary key.
-This means that you can define your own primary key in Replication tab in your connection for these streams.
+The following report streams have a user-defined primary key. You can define your own primary key on the **Replication** tab of your connection:
 
-Example pk:
-Ad Group Impression Performance Report: composite pk - [AdGroupId, Status, TimePeriod, AccountId]
-Geographic Performance Report: composite pk - [AdGroupId, Country, State, MetroArea, City]
-Account Impression Performance Report: composite pk - [AccountName, AccountNumber, AccountId, TimePeriod]
+- **Ad Group Impression Performance Report** — example: `[AdGroupId, Status, TimePeriod, AccountId]`
+- **Geographic Performance Report** — example: `[AdGroupId, Country, State, MetroArea, City]`
+- **Account Impression Performance Report** — example: `[AccountName, AccountNumber, AccountId, TimePeriod]`
 
-Note: These are just examples, and you should consider your own data and needs in order to correctly define the primary key.
-
-See more info about user-defined pk [here](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key).
+These are examples only. Choose a primary key that fits your data. See [user-defined primary key](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key) for details.
 
 :::
 
@@ -224,9 +217,8 @@ See more info about user-defined pk [here](https://docs.airbyte.com/understandin
 You can build your own report by providing:
 
 - _Report Name_ - name of the stream
-- _Reporting Data Object_ - Bing Ads reporting data object that you can find [here](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-data-objects?view=bingads-13). All data object with ending ReportRequest can be used as data object in custom reports.
-- _Columns_ - Reporting object columns that you want to sync. You can find it on ReportRequest data object page by clicking the ...ReportColumn link in [Bing Ads docs](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-value-sets?view=bingads-13).
-  The report must include the Required Columns (you can find it under list of all columns of reporting object) at a minimum. As a general rule, each report must include at least one attribute column and at least one non-impression share performance statistics column. Be careful you can't add extra columns that not specified in Bing Ads docs and not all fields can be skipped.
+- _Reporting Data Object_ - Bing Ads reporting data object that you can find [here](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-data-objects?view=bingads-13). Any data object ending in `ReportRequest` can be used as the data object in custom reports.
+- _Columns_ - The reporting object columns that you want to sync. Find available columns on the `ReportRequest` data object page by following the `...ReportColumn` link in the [Bing Ads docs](https://learn.microsoft.com/en-us/advertising/reporting-service/reporting-value-sets?view=bingads-13). The report must include all required columns at a minimum. As a general rule, each report must include at least one attribute column and at least one non-impression-share performance statistics column. You cannot add columns not listed in the Bing Ads docs, and not all columns can be omitted.
 - _Aggregation_ - Hourly, Daily, Weekly, Monthly, DayOfWeek, HourOfDay, WeeklyStartingMonday, Summary. See [report aggregation](#report-aggregation).
 
 #### Custom Report Name Conversion
@@ -271,10 +263,9 @@ For example, if you have an existing custom report named `MyCustomReport` (which
     },
     {
       "name": "AnotherReport",
-      "reporting_object": "AccountPerformanceReportRequest", 
+      "reporting_object": "AccountPerformanceReportRequest",
       "report_columns": ["AccountName", "Impressions", "Clicks"],
       "report_aggregation": "Daily"
-      // This report will use default conversion: another_report
     }
   ]
 }
@@ -290,9 +281,9 @@ All reports synced by this connector can be [aggregated](https://learn.microsoft
 
 For example, if you select a report with daily aggregation, the report will contain a row for each day for the duration of the report. Each row will indicate the number of impressions recorded on that day.
 
-A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Reported aggregated using an hourly window.
+A report's aggregation window is indicated in its name. For example, `account_performance_report_hourly` is the Account Performance Report aggregated using an hourly window.
 
-## Limitations & Troubleshooting
+## Limitations and troubleshooting
 
 <details>
 <summary>
@@ -303,12 +294,15 @@ Expand to see details about Bing Ads connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The Bing Ads API limits the number of requests for all Microsoft Advertising clients. You can find detailed info [here](https://learn.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling). Microsoft does not publish specific rate limits for the Bing Ads API. If you exceed the service call limit, the API returns error code 117 (`CallRateExceeded`). When this occurs, wait 60 seconds before retrying the request.
+The Bing Ads API limits the number of requests for all Microsoft Advertising clients. You can find detailed info [here](https://learn.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling). Microsoft does not publish specific rate limits for the Bing Ads API. If you exceed the service call limit, the API returns error code 117 (`CallRateExceeded`). The connector retries automatically, but persistent throttling may slow down syncs for large accounts.
+
+#### Bulk stream incremental behavior
+
+Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) use the Microsoft Bulk API. In incremental mode, the Bulk API ignores `LastSyncTimeInUTC` for dates more than 30 days ago, which triggers a full download. This means the first sync after a gap of more than 30 days downloads all data regardless of state.
 
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Bing Ads source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
-- Bulk streams (Ad Group Labels, App Install Ads, App Install Ad Labels, Campaign Labels, Keywords, Keyword Labels, Labels, Budget) ignore the `LastSyncTimeInUTC` for dates more than 30 days ago, which triggers a full download request.
 
 </details>
 
