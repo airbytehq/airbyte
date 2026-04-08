@@ -154,13 +154,13 @@ This connector outputs the following incremental streams:
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
-3. Other 19 incremental streams are also incremental but with one difference, they:
+3. The remaining 20 incremental streams are also incremental but with one difference, they:
 
    - read all records;
    - output only new records.
-     Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
+     Consider this behavior when using these streams because it may affect your API call limits.
 
-4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+4. For large streams, specifying a very distant `start_date` in the past may result in repeated errors from GitHub instead of records. A `WARN` log message is output when this occurs. Specifying a more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
 - `assignees`
@@ -193,12 +193,12 @@ All of these requests count towards your personal rate limit of 5,000 requests p
 :::
 
 :::tip
-In the event that limits are reached before all streams have been read, it is recommended to take the following actions:
+If you reach your rate limit before all streams have been read:
 
-1. Utilize Incremental sync mode.
+1. Use Incremental sync mode.
 2. Set a higher sync interval.
 3. Divide the sync into separate connections with a smaller number of streams.
-   :::
+:::
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
@@ -208,17 +208,29 @@ The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per
 
 #### Permissions and scopes
 
-If you use OAuth authentication method, the OAuth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
+If you use OAuth, the OAuth 2.0 application requests the following [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **read:project**, **workflow**. For a [personal access token](https://github.com/settings/tokens), you need to manually select the required scopes.
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
-- For syncing Collaborators, the user which generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about access permissions [here](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
+- For syncing Collaborators, the user who generates the personal access token must be a collaborator. To become a collaborator, they must be invited by an owner. If there are no collaborators, no records will be synced. Read more about [access permissions on GitHub](https://docs.github.com/en/get-started/learning-about-github/access-permissions-on-github).
 - Syncing [Teams](https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams) is only available to authenticated members of a team's [organization](https://docs.github.com/en/rest/orgs). [Personal user accounts](https://docs.github.com/en/get-started/learning-about-github/types-of-github-accounts) and repositories belonging to them don't have access to Teams features. In this case no records will be synced.
 - To sync the Projects stream, the repository must have the Projects feature enabled.
 
 ### Troubleshooting
 
-- Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions)
+#### 403 permission errors
+
+If a sync fails with a 403 "Access denied due to insufficient permissions" error, the token you configured does not have the required scopes for the streams you selected. Verify that your token has the scopes listed in the [Permissions and scopes](#permissions-and-scopes) section. For streams that require organization-level access, ensure the token belongs to a member of that organization.
+
+:::note
+The connector distinguishes between GitHub API rate-limit responses and genuine permission errors. Rate-limit 403 responses include `X-RateLimit-Remaining` or `Retry-After` headers and are retried automatically. A 403 without these headers indicates a permission problem and fails immediately so you can correct the issue.
+:::
+
+#### Contributor Activity returns 202
+
+The Contributor Activity stream uses the GitHub [repository statistics API](https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#a-word-about-caching), which returns HTTP 202 when data has not been cached yet. The connector retries these responses automatically. If the stream consistently returns no data, wait a few minutes and re-sync.
+
+- Check out common troubleshooting issues for the GitHub source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
@@ -229,11 +241,11 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.19 | 2026-04-06 | [76090](https://github.com/airbytehq/airbyte/pull/76090) | Fix 403 permission errors misclassified as retryable, causing infinite retry loops |
+| 2.1.19 | 2026-04-08 | [76090](https://github.com/airbytehq/airbyte/pull/76090) | Fix 403 permission errors misclassified as retryable, causing infinite retry loops |
 | 2.1.18 | 2026-04-07 | [76124](https://github.com/airbytehq/airbyte/pull/76124) | Fix silent error swallowing in exception handlers for ContributorActivity, GithubStreamABC, and Releases streams |
-| 2.1.17 | 2026-04-03 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
-| 2.1.16 | 2026-04-02 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
-| 2.1.15 | 2026-03-27 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
+| 2.1.17 | 2026-04-07 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
+| 2.1.16 | 2026-04-03 | [76038](https://github.com/airbytehq/airbyte/pull/76038) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException |
+| 2.1.15 | 2026-04-01 | [75508](https://github.com/airbytehq/airbyte/pull/75508) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 2.1.14 | 2026-03-09 | [74284](https://github.com/airbytehq/airbyte/pull/74284) | Fix heartbeat timeout for pull_request_stats by using descending sort on incremental syncs |
 | 2.1.13 | 2026-03-03 | [73698](https://github.com/airbytehq/airbyte/pull/73698) | feat(source-github): use GraphQL API for Releases stream to bypass 10k REST limit |
 | 2.1.12 | 2026-03-03 | [74204](https://github.com/airbytehq/airbyte/pull/74204) | Update dependencies |
