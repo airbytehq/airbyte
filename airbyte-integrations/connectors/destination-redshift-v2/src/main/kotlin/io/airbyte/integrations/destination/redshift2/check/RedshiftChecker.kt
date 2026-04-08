@@ -54,35 +54,27 @@ class RedshiftChecker(
     private val sqlGenerator: RedshiftSqlGenerator,
 ) : DestinationChecker {
 
+    private var s3Client: AmazonS3? = null
+    private var s3Key: String? = null
+    private var tableName: TableName? = null
+
     override fun check() {
         val testId = UUID.randomUUID().toString().replace("-", "")
         val rawId = UUID.randomUUID().toString()
-        val tableName =
+        tableName =
             TableName(
                 namespace = configuration.schema,
                 name = "_airbyte_connection_test_$testId",
             )
-        val s3Key = buildS3TestKey(testId)
-        var s3Client: AmazonS3? = null
+        s3Key = buildS3TestKey(testId)
 
         try {
-            // Step 1: Test Redshift connectivity
             testRedshiftConnection()
-
-            // Step 2: Test S3 access and write dummy CSV row
-            s3Client = testS3WriteAccess(s3Key, rawId)
-
-            // Step 3: Create test table in Redshift
-            testCreateTable(tableName)
-
-            // Step 4: COPY from S3 into Redshift
-            testCopyFromS3(tableName, s3Key)
-
-            // Step 5: Verify row count
-            testRowCount(tableName)
-
-            // Step 6: Delete the test row
-            testDeleteRow(tableName, rawId)
+            s3Client = testS3WriteAccess(s3Key!!, rawId)
+            testCreateTable(tableName!!)
+            testCopyFromS3(tableName!!, s3Key!!)
+            testRowCount(tableName!!)
+            testDeleteRow(tableName!!, rawId)
 
             log.info { "Redshift connection check completed successfully" }
         } catch (e: SQLException) {
@@ -92,13 +84,43 @@ class RedshiftChecker(
         } catch (e: Exception) {
             log.error(e) { "Redshift connection check failed with unexpected error" }
             throw e
-        } finally {
-            // Step 7: Cleanup S3 object and Redshift table
-            cleanup(s3Client, s3Key, tableName)
         }
     }
 
-    // ---- Step 1: Redshift Connectivity ----
+    /**
+     * Best-effort cleanup of the S3 test object and Redshift test table.
+     * Called by the CDK after [check] completes (regardless of success or failure).
+     * Failures are logged as warnings but do not propagate.
+     */
+    override fun cleanup() {
+        log.info { "Checker Cleaning up..." }
+
+        // Delete S3 object
+        try {
+            val s3Config = configuration.uploadingMethod
+            val key = s3Key
+            if (s3Client != null && s3Config != null && key != null) {
+                s3Client!!.deleteObject(s3Config.s3BucketName, key)
+                log.info { "Cleaned up S3 object: $key" }
+            }
+        } catch (e: Exception) {
+            log.warn(e) { "Failed to clean up S3 object: $s3Key" }
+        }
+
+        // Drop Redshift table
+        try {
+            val table = tableName
+            if (table != null) {
+                val dropSql = sqlGenerator.dropTable(table)
+                dataSource.connection.use { conn ->
+                    conn.createStatement().use { stmt -> stmt.execute(dropSql) }
+                }
+                log.info { "Cleaned up Redshift table: ${table.namespace}.${table.name}" }
+            }
+        } catch (e: Exception) {
+            log.warn(e) { "Failed to clean up Redshift table" }
+        }
+    }
 
     /**
      * Validates JDBC connectivity by executing a trivial query.
@@ -107,7 +129,7 @@ class RedshiftChecker(
      */
     private fun testRedshiftConnection() {
         log.info {
-            "Step 1: Testing Redshift connectivity to " +
+            "Test 1: Testing Redshift connectivity to " +
                 "${configuration.host}:${configuration.port}/${configuration.database}..."
         }
         dataSource.connection.use { conn ->
@@ -117,10 +139,7 @@ class RedshiftChecker(
                 }
             }
         }
-        log.info { "Step 1: Redshift connection successful" }
     }
-
-    // ---- Step 2: S3 Write Access ----
 
     /**
      * Creates an S3 client and uploads a gzip-compressed CSV file with one test row.
@@ -130,7 +149,7 @@ class RedshiftChecker(
      * @return the [AmazonS3] client for reuse in cleanup.
      */
     private fun testS3WriteAccess(s3Key: String, rawId: String): AmazonS3 {
-        log.info { "Step 2: Testing S3 write access..." }
+        log.info { "Test 2: Testing S3 write access..." }
         val s3Client = s3Connect.createS3Client()
         val s3Config = configuration.uploadingMethod!!
 
@@ -146,18 +165,15 @@ class RedshiftChecker(
             ByteArrayInputStream(csvBytes),
             metadata,
         )
-        log.info { "Step 2: S3 write successful at s3://${s3Config.s3BucketName}/$s3Key" }
         return s3Client
     }
-
-    // ---- Step 3: Create Table ----
 
     /**
      * Creates the test schema (if needed) and table in Redshift using [RedshiftSqlGenerator].
      * The table has the standard Airbyte meta columns plus one user column (`test_key`).
      */
     private fun testCreateTable(tableName: TableName) {
-        log.info { "Step 3: Creating test table ${tableName.namespace}.${tableName.name}..." }
+        log.info { "Test 3: Creating test table ${tableName.namespace}.${tableName.name}..." }
         val createSchemaSql = sqlGenerator.createNamespace(tableName.namespace)
         val createTableSql = sqlGenerator.createTable(tableName, buildCheckTableSchema(tableName))
 
@@ -167,10 +183,7 @@ class RedshiftChecker(
                 stmt.execute(createTableSql)
             }
         }
-        log.info { "Step 3: Table created successfully" }
     }
-
-    // ---- Step 4: COPY from S3 ----
 
     /**
      * Executes the Redshift COPY command to load the gzip CSV from S3 into the test table.
@@ -180,7 +193,7 @@ class RedshiftChecker(
      * Note: The COPY SQL is intentionally NOT logged because it contains S3 credentials.
      */
     private fun testCopyFromS3(tableName: TableName, s3Key: String) {
-        log.info { "Step 4: COPYing data from S3 to Redshift..." }
+        log.info { "Test 4: COPYing data from S3 to Redshift..." }
         val s3Config = configuration.uploadingMethod!!
         val s3Path = "s3://${s3Config.s3BucketName}/$s3Key"
 
@@ -191,7 +204,7 @@ class RedshiftChecker(
             FROM '$s3Path'
             CREDENTIALS 'aws_access_key_id=${s3Config.accessKeyId};aws_secret_access_key=${s3Config.secretAccessKey}'
             CSV GZIP
-            REGION '${s3Config.s3BucketRegion?.ifBlank { S3Connect.DEFAULT_S3_REGION } ?: S3Connect.DEFAULT_S3_REGION}'
+            REGION '${s3Config.s3BucketRegion}'
             TIMEFORMAT 'auto'
             STATUPDATE OFF
             IGNOREHEADER 1;
@@ -201,16 +214,13 @@ class RedshiftChecker(
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt -> stmt.execute(copySql) }
         }
-        log.info { "Step 4: COPY from S3 successful" }
     }
-
-    // ---- Step 5: Verify Row Count ----
 
     /**
      * Queries the test table and verifies that exactly one row was loaded by the COPY command.
      */
     private fun testRowCount(tableName: TableName) {
-        log.info { "Step 5: Verifying row count..." }
+        log.info { "Test 5: Verifying row count..." }
         val countSql = sqlGenerator.countTable(tableName)
 
         dataSource.connection.use { conn ->
@@ -224,17 +234,14 @@ class RedshiftChecker(
                 }
             }
         }
-        log.info { "Step 5: Row count verified (1 row)" }
     }
-
-    // ---- Step 6: Delete Row ----
 
     /**
      * Deletes the test row by its `_airbyte_raw_id` using the parameterized SQL
      * from [RedshiftSqlGenerator.deleteByRawId].
      */
     private fun testDeleteRow(tableName: TableName, rawId: String) {
-        log.info { "Step 6: Deleting test row..." }
+        log.info { "Test 6: Deleting test row..." }
         val deleteSql = sqlGenerator.deleteByRawId(tableName)
 
         dataSource.connection.use { conn ->
@@ -244,42 +251,7 @@ class RedshiftChecker(
                 require(deleted == 1) { "Expected to delete 1 row, deleted $deleted" }
             }
         }
-        log.info { "Step 6: Row deleted successfully" }
     }
-
-    // ---- Step 7: Cleanup ----
-
-    /**
-     * Best-effort cleanup of the S3 test object and Redshift test table.
-     * Failures are logged as warnings but do not propagate.
-     */
-    private fun cleanup(s3Client: AmazonS3?, s3Key: String, tableName: TableName) {
-        log.info { "Step 7: Cleaning up..." }
-
-        // Delete S3 object
-        try {
-            val s3Config = configuration.uploadingMethod
-            if (s3Client != null && s3Config != null) {
-                s3Client.deleteObject(s3Config.s3BucketName, s3Key)
-                log.info { "Cleaned up S3 object: $s3Key" }
-            }
-        } catch (e: Exception) {
-            log.warn(e) { "Failed to clean up S3 object: $s3Key" }
-        }
-
-        // Drop Redshift table
-        try {
-            val dropSql = sqlGenerator.dropTable(tableName)
-            dataSource.connection.use { conn ->
-                conn.createStatement().use { stmt -> stmt.execute(dropSql) }
-            }
-            log.info { "Cleaned up Redshift table: ${tableName.namespace}.${tableName.name}" }
-        } catch (e: Exception) {
-            log.warn(e) { "Failed to clean up Redshift table" }
-        }
-    }
-
-    // ---- Helpers ----
 
     /**
      * Builds the S3 key for the test CSV file, respecting the configured bucket path prefix.
