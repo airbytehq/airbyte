@@ -6,7 +6,7 @@ from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
-from facebook_business.exceptions import FacebookRequestError
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
@@ -298,3 +298,47 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
 
         result = stream._fetch_creative_details("12345")
         assert result == expected_data
+
+
+class TestFetchCreativeDetailsBadObjectRetry:
+    """Tests for FacebookBadObjectError retry logic in _fetch_creative_details (decorator-based backoff)."""
+
+    def test_retries_on_bad_object_error_then_succeeds(self, api, some_config):
+        """Retry on FacebookBadObjectError and return data when a subsequent attempt succeeds."""
+        stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+        expected_data = {"id": "12345", "name": "Test Creative"}
+
+        with (
+            patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_cls,
+            patch("time.sleep"),
+        ):
+            mock_inst = MagicMock()
+            mock_cls.return_value = mock_inst
+            # First call raises, second succeeds
+            mock_inst.api_get.side_effect = [
+                FacebookBadObjectError("Bad data to set object data"),
+                mock_inst,
+            ]
+            mock_inst.export_all_data.return_value = expected_data
+
+            result = stream._fetch_creative_details("12345")
+            assert result == expected_data
+            assert mock_inst.api_get.call_count == 2
+
+    def test_raises_bad_object_error_after_all_retries_exhausted(self, api, some_config):
+        """Re-raise FacebookBadObjectError when all retry attempts are exhausted."""
+        stream = AdCreativesFromAds(api=api, account_ids=some_config["account_ids"])
+
+        with (
+            patch("source_facebook_marketing.streams.streams.FBAdCreative") as mock_cls,
+            patch("time.sleep"),
+        ):
+            mock_inst = MagicMock()
+            mock_cls.return_value = mock_inst
+            mock_inst.api_get.side_effect = FacebookBadObjectError("Bad data to set object data")
+
+            with pytest.raises(FacebookBadObjectError):
+                stream._fetch_creative_details("12345")
+
+            # max_tries=5 means 5 total attempts
+            assert mock_inst.api_get.call_count == 5

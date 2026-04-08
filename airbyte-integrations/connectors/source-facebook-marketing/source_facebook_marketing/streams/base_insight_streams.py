@@ -237,25 +237,50 @@ class AdsInsights(FBMarketingIncrementalStream):
         account_id = stream_slice["account_id"]
 
         try:
-            for obj in job.get_result():
-                data = obj.export_all_data()
-                if self._response_data_is_valid(data):
-                    self._add_account_id(data, account_id)
-                    data = self._transform_breakdown(data)
-                    data = self._transform_objective_results(data)
-                    yield data
-        except FacebookBadObjectError as e:
-            raise AirbyteTracedException(
-                message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
-                f"Please try again later",
-                failure_type=FailureType.system_error,
-            ) from e
+            yield from self._get_job_results(job, account_id)
         except FacebookRequestError as exc:
             raise traced_exception(exc)
 
         self._completed_slices[account_id].add(job.interval.start)
         if job.interval.start == self._next_cursor_values[account_id]:
             self._advance_cursor(account_id)
+
+    def _process_result_objects(self, result_iter: Iterable, account_id: str) -> Iterable[Mapping[str, Any]]:
+        """Transform raw FB SDK objects into output records."""
+        for obj in result_iter:
+            data = obj.export_all_data()
+            if self._response_data_is_valid(data):
+                self._add_account_id(data, account_id)
+                data = self._transform_breakdown(data)
+                data = self._transform_objective_results(data)
+                yield data
+
+    def _get_job_results(self, job: AsyncJob, account_id: str) -> Iterable[Mapping[str, Any]]:
+        """Iterate job results, restarting the job on FacebookBadObjectError.
+
+        On the first attempt, reads from the already-completed job. If
+        FacebookBadObjectError occurs during iteration (corrupted data),
+        restarts the job (creates a new AdReportRun) and reads fresh results.
+        Falls back to AirbyteTracedException(transient_error) if the restart
+        also fails.
+        """
+        try:
+            yield from self._process_result_objects(job.get_result(), account_id)
+        except FacebookBadObjectError as e:
+            logger.warning(
+                "FacebookBadObjectError for job %s, restarting job with fresh AdReportRun: %s",
+                job,
+                e,
+            )
+            try:
+                yield from self._process_result_objects(job.restart_and_get_result(), account_id)
+            except (FacebookBadObjectError, RuntimeError) as restart_err:
+                raise AirbyteTracedException(
+                    internal_message=str(restart_err),
+                    message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {restart_err} "
+                    f"Please try again later",
+                    failure_type=FailureType.transient_error,
+                ) from restart_err
 
     @property
     def state(self) -> MutableMapping[str, Any]:

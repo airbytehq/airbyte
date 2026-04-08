@@ -4,6 +4,9 @@ import logging
 import time
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
+import backoff
+from facebook_business.exceptions import FacebookBadObjectError
+
 from .async_job import AsyncJob, update_in_batch  # ParentAsyncJob not needed here
 
 
@@ -30,6 +33,7 @@ class APILimit:
 
     # --- Throttle ---
 
+    @backoff.on_exception(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5, jitter=None)
     def refresh_throttle(self) -> None:
         """
         Ping the account to refresh the `x-fb-ads-insights-throttle` header and cache the value.

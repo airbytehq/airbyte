@@ -4,6 +4,7 @@
 
 import pytest
 from facebook_business.api import FacebookAdsApiBatch
+from facebook_business.exceptions import FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob
 from source_facebook_marketing.streams.async_job_manager import APILimit, InsightAsyncJobManager
@@ -398,3 +399,35 @@ class TestAPILimit:
 
         # No throttle refresh should have been attempted
         api.get_account.assert_not_called()
+
+    def test_refresh_throttle_retries_on_facebook_bad_object_error(self, mocker, api):
+        """refresh_throttle retries with backoff when FacebookBadObjectError is raised."""
+        acct = mocker.Mock()
+        api.get_account.return_value = acct
+        api.api.ads_insights_throttle = MyFacebookAdsApi.Throttle(10.0, 20.0)
+
+        # First call raises, second succeeds
+        acct.get_insights.side_effect = [
+            FacebookBadObjectError("Bad data to set object data"),
+            None,
+        ]
+
+        limit = APILimit(api=api, account_id="act_retry")
+        limit.refresh_throttle()
+
+        assert acct.get_insights.call_count == 2
+        assert limit.current_throttle == 20.0
+
+    def test_refresh_throttle_raises_after_max_retries(self, mocker, api):
+        """refresh_throttle raises FacebookBadObjectError after exhausting retries."""
+        acct = mocker.Mock()
+        api.get_account.return_value = acct
+
+        acct.get_insights.side_effect = FacebookBadObjectError("Bad data")
+
+        limit = APILimit(api=api, account_id="act_exhaust")
+
+        with pytest.raises(FacebookBadObjectError):
+            limit.refresh_throttle()
+
+        assert acct.get_insights.call_count == 5
