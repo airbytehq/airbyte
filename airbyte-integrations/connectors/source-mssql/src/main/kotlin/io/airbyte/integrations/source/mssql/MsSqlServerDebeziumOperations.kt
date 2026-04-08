@@ -611,6 +611,31 @@ class MsSqlServerDebeziumOperations(
         val messageKeyColumns = buildMessageKeyColumns(streams)
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
 
+        // Forward every JDBC driver property (encrypt, trustServerCertificate,
+        // hostNameInCertificate, trustStore, trustStorePassword, authentication, msiClientId,
+        // and anything else the config factory placed in jdbcProperties) to Debezium as
+        // `database.<key>` entries. Debezium passes every `database.*` connector property to
+        // mssql-jdbc as a java.util.Properties entry on DriverManager.getConnection.
+        //
+        // Reserved keys are excluded from the passthrough and set explicitly below so that:
+        //  - hostname/port are always derived from the SSH tunnel session;
+        //  - dbname/names always match the configured database;
+        //  - user/password always come from the trusted resolved `authentication` mode, not
+        //    from any jdbc_url_params leakage.
+        val debeziumDatabaseProps: Map<String, String> = buildMap {
+            putAll(
+                configuration.jdbcProperties.filterKeys { it !in DEBEZIUM_RESERVED_DB_KEYS }
+            )
+            // Auth keys come from the trusted resolved authentication, never from
+            // jdbcProperties (which can be polluted by jdbc_url_params).
+            putAll(configuration.authentication.toDebeziumDatabaseProperties())
+            // Debezium owns these and they are derived from tunnel session / config.
+            put("hostname", tunnelSession.address.hostName)
+            put("port", tunnelSession.address.port.toString())
+            put("dbname", databaseName)
+            put("names", databaseName)
+        }
+
         return DebeziumPropertiesBuilder()
             .withDefault()
             .withConnector(SqlServerConnector::class.java)
@@ -630,17 +655,7 @@ class MsSqlServerDebeziumOperations(
                     builder
                 }
             }
-            .withDatabase("hostname", tunnelSession.address.hostName)
-            .withDatabase("port", tunnelSession.address.port.toString())
-            .withDatabase("user", configuration.jdbcProperties["user"].toString())
-            .withDatabase("password", configuration.jdbcProperties["password"].toString())
-            .withDatabase("dbname", databaseName)
-            .withDatabase("names", databaseName)
-            .with("database.encrypt", configuration.jdbcProperties["encrypt"] ?: "false")
-            .with(
-                "driver.trustServerCertificate",
-                configuration.jdbcProperties["trustServerCertificate"] ?: "true"
-            )
+            .withDatabase(debeziumDatabaseProps)
             // Register the MSSQL custom converter
             .with("converters", "mssql_converter")
             .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.name)
@@ -715,5 +730,15 @@ class MsSqlServerDebeziumOperations(
         const val MSSQL_CDC_OFFSET = "mssql_cdc_offset"
         const val MSSQL_DB_HISTORY = "mssql_db_history"
         const val MSSQL_IS_COMPRESSED = "is_compressed"
+
+        /**
+         * JDBC property keys that Debezium owns directly and must NOT be set via the bulk
+         * `jdbcProperties` passthrough. `hostname`, `port`, `dbname`, `names`, and `instance` are
+         * derived from the SSH tunnel session and configured database name. `user` and `password`
+         * are pinned to the trusted resolved authentication mode so that a mistyped or malicious
+         * `jdbc_url_params=user=root` cannot silently override the auth identity.
+         */
+        private val DEBEZIUM_RESERVED_DB_KEYS: Set<String> =
+            setOf("hostname", "port", "dbname", "names", "instance", "user", "password")
     }
 }

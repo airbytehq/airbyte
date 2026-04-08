@@ -75,15 +75,21 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
 
     @JsonProperty("username")
     @JsonSchemaTitle("Username")
-    @JsonPropertyDescription("The username which is used to access the database.")
+    @JsonPropertyDescription(
+        "(Legacy) The username which is used to access the database. " +
+            "Prefer using the `authentication` block instead."
+    )
     @JsonSchemaInject(json = """{"order":4}""")
-    lateinit var username: String
+    var username: String? = null
 
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
-    @JsonPropertyDescription("The password associated with the username.")
+    @JsonPropertyDescription(
+        "(Legacy) The password associated with the username. " +
+            "Prefer using the `authentication` block instead."
+    )
     @JsonSchemaInject(json = """{"order":5,"airbyte_secret":true}""")
-    lateinit var password: String
+    var password: String? = null
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
@@ -94,6 +100,28 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     )
     @JsonSchemaInject(json = """{"order":6}""")
     var jdbcUrlParams: String? = null
+
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "authentication")
+    var authentication = MicronautPropertiesFriendlyAuthenticationSpecification()
+
+    @JsonIgnore var authenticationJson: AuthenticationSpecification? = null
+
+    @JsonSetter("authentication")
+    fun setAuthenticationValue(value: AuthenticationSpecification) {
+        authenticationJson = value
+    }
+
+    @JsonGetter("authentication")
+    @JsonSchemaTitle("Authentication")
+    @JsonPropertyDescription(
+        "The authentication method used to connect to the database. " +
+            "Supports SQL Server username/password, Microsoft Entra ID service principal, " +
+            "Managed Identity, or the Azure Default credential chain.",
+    )
+    @JsonSchemaInject(json = """{"order":7}""")
+    fun getAuthenticationValue(): AuthenticationSpecification? =
+        authenticationJson ?: authentication.asAuthentication()
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "ssl_mode")
@@ -346,5 +374,136 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
             "STANDARD" -> UserDefinedCursor()
             "CDC" -> Cdc()
             else -> throw ConfigErrorException("invalid value $method")
+        }
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "auth_type")
+@JsonSubTypes(
+    JsonSubTypes.Type(
+        value = SqlPasswordAuthenticationSpecification::class,
+        name = "sql_password",
+    ),
+    JsonSubTypes.Type(
+        value = ActiveDirectoryServicePrincipalAuthenticationSpecification::class,
+        name = "active_directory_service_principal",
+    ),
+    JsonSubTypes.Type(
+        value = ActiveDirectoryManagedIdentityAuthenticationSpecification::class,
+        name = "active_directory_managed_identity",
+    ),
+    JsonSubTypes.Type(
+        value = ActiveDirectoryDefaultAuthenticationSpecification::class,
+        name = "active_directory_default",
+    ),
+)
+@JsonSchemaTitle("Authentication")
+@JsonSchemaDescription(
+    "Choose how the connector authenticates to SQL Server: a legacy SQL login, a " +
+        "Microsoft Entra ID service principal, a Managed Identity attached to the host, " +
+        "or the Azure Default credential chain.",
+)
+sealed interface AuthenticationSpecification
+
+@JsonSchemaTitle("SQL Server (username & password)")
+@JsonSchemaDescription("Authenticate with a SQL Server login (username and password).")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class SqlPasswordAuthenticationSpecification : AuthenticationSpecification {
+    @JsonProperty("username", required = true)
+    @JsonSchemaTitle("Username")
+    @JsonPropertyDescription("The SQL Server login username.")
+    @JsonSchemaInject(json = """{"order":0}""")
+    lateinit var username: String
+
+    @JsonProperty("password", required = true)
+    @JsonSchemaTitle("Password")
+    @JsonPropertyDescription("The password for the SQL Server login.")
+    @JsonSchemaInject(json = """{"order":1,"airbyte_secret":true}""")
+    lateinit var password: String
+}
+
+@JsonSchemaTitle("Microsoft Entra ID - Service Principal")
+@JsonSchemaDescription(
+    "Authenticate with a Microsoft Entra ID service principal. " +
+        "Provide the application (client) ID and its client secret.",
+)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class ActiveDirectoryServicePrincipalAuthenticationSpecification : AuthenticationSpecification {
+    @JsonProperty("tenant_id", required = false)
+    @JsonSchemaTitle("Tenant ID")
+    @JsonPropertyDescription(
+        "Optional Microsoft Entra tenant ID. Informational only at the currently pinned driver " +
+            "version; multi-tenant service principals require mssql-jdbc 13.x or newer. " +
+            "If omitted, the driver uses the tenant inferred from the service principal.",
+    )
+    @JsonSchemaInject(json = """{"order":0}""")
+    var tenantId: String? = null
+
+    @JsonProperty("client_id", required = true)
+    @JsonSchemaTitle("Client ID")
+    @JsonPropertyDescription("The application (client) ID of the Entra ID service principal.")
+    @JsonSchemaInject(json = """{"order":1}""")
+    lateinit var clientId: String
+
+    @JsonProperty("client_secret", required = true)
+    @JsonSchemaTitle("Client Secret")
+    @JsonPropertyDescription("The client secret issued for the Entra ID service principal.")
+    @JsonSchemaInject(json = """{"order":2,"airbyte_secret":true}""")
+    lateinit var clientSecret: String
+}
+
+@JsonSchemaTitle("Microsoft Entra ID - Managed Identity")
+@JsonSchemaDescription(
+    "Authenticate using a Managed Identity attached to the Azure resource hosting Airbyte. " +
+        "Only works when Airbyte runs on an Azure resource (AKS, App Service, VM, VMSS, Azure Arc, etc.).",
+)
+class ActiveDirectoryManagedIdentityAuthenticationSpecification : AuthenticationSpecification {
+    @JsonProperty("msi_client_id", required = false)
+    @JsonSchemaTitle("User-assigned Managed Identity client ID")
+    @JsonPropertyDescription(
+        "Optional. Leave empty to use the System Assigned Managed Identity. " +
+            "Provide the client ID of a User Assigned Managed Identity to use that instead.",
+    )
+    @JsonSchemaInject(json = """{"order":0}""")
+    var msiClientId: String? = null
+}
+
+@JsonSchemaTitle("Microsoft Entra ID - Default credential chain")
+@JsonSchemaDescription(
+    "Use Azure Identity's DefaultAzureCredential chain (Environment, Workload Identity, " +
+        "Managed Identity, Azure CLI, Azure PowerShell). Picks up credentials from the " +
+        "container environment automatically.",
+)
+class ActiveDirectoryDefaultAuthenticationSpecification : AuthenticationSpecification
+
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.authentication")
+class MicronautPropertiesFriendlyAuthenticationSpecification {
+    var authType: String? = null
+    var username: String? = null
+    var password: String? = null
+    var tenantId: String? = null
+    var clientId: String? = null
+    var clientSecret: String? = null
+    var msiClientId: String? = null
+
+    fun asAuthentication(): AuthenticationSpecification? =
+        when (authType) {
+            null -> null
+            "sql_password" ->
+                SqlPasswordAuthenticationSpecification().also {
+                    it.username = username!!
+                    it.password = password!!
+                }
+            "active_directory_service_principal" ->
+                ActiveDirectoryServicePrincipalAuthenticationSpecification().also {
+                    it.tenantId = tenantId
+                    it.clientId = clientId!!
+                    it.clientSecret = clientSecret!!
+                }
+            "active_directory_managed_identity" ->
+                ActiveDirectoryManagedIdentityAuthenticationSpecification().also {
+                    it.msiClientId = msiClientId
+                }
+            "active_directory_default" -> ActiveDirectoryDefaultAuthenticationSpecification()
+            else -> throw ConfigErrorException("invalid value $authType")
         }
 }

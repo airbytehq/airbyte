@@ -39,6 +39,7 @@ class MsSqlServerSourceConfiguration(
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val incrementalReplicationConfiguration: IncrementalConfiguration,
     val databaseName: String,
+    val authentication: MsSqlServerAuthentication,
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = incrementalReplicationConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration? =
@@ -59,6 +60,75 @@ class MsSqlServerSourceConfiguration(
 }
 
 sealed interface IncrementalConfiguration
+
+/**
+ * Resolved authentication configuration for the MSSQL source. See
+ * [MsSqlServerSourceConfigurationSpecification] for the spec-layer counterparts.
+ */
+sealed interface MsSqlServerAuthentication
+
+data class SqlPasswordAuthentication(
+    val username: String,
+    val password: String,
+) : MsSqlServerAuthentication
+
+data class ActiveDirectoryServicePrincipalAuthentication(
+    val tenantId: String?,
+    val clientId: String,
+    val clientSecret: String,
+) : MsSqlServerAuthentication
+
+data class ActiveDirectoryManagedIdentityAuthentication(
+    val msiClientId: String?,
+) : MsSqlServerAuthentication
+
+class ActiveDirectoryDefaultAuthentication : MsSqlServerAuthentication {
+    override fun equals(other: Any?): Boolean = other is ActiveDirectoryDefaultAuthentication
+    override fun hashCode(): Int = javaClass.hashCode()
+    override fun toString(): String = "ActiveDirectoryDefaultAuthentication"
+}
+
+/**
+ * Translates a resolved authentication mode into the driver properties the Microsoft JDBC driver
+ * expects. These keys are intentionally the exact names mssql-jdbc consumes so the map can be
+ * forwarded as-is to both [JdbcConnectionFactory] (via [MsSqlServerSourceConfiguration.jdbcProperties])
+ * and Debezium's `database.*` passthrough.
+ */
+fun MsSqlServerAuthentication.toJdbcProperties(): Map<String, String> =
+    when (this) {
+        is SqlPasswordAuthentication ->
+            mapOf(
+                "user" to username,
+                "password" to password,
+                "authentication" to "SqlPassword",
+            )
+        is ActiveDirectoryServicePrincipalAuthentication ->
+            // TODO: multi-tenant service principals require mssql-jdbc 13.x or newer; the pinned
+            // driver (12.10) ignores tenantId. We still emit the standard user/password/auth keys
+            // here and log informationally in the factory when tenantId is set.
+            mapOf(
+                "user" to clientId,
+                "password" to clientSecret,
+                "authentication" to "ActiveDirectoryServicePrincipal",
+            )
+        is ActiveDirectoryManagedIdentityAuthentication ->
+            buildMap {
+                put("authentication", "ActiveDirectoryManagedIdentity")
+                if (!msiClientId.isNullOrBlank()) {
+                    put("msiClientId", msiClientId)
+                }
+            }
+        is ActiveDirectoryDefaultAuthentication ->
+            mapOf("authentication" to "ActiveDirectoryDefault")
+    }
+
+/**
+ * Kept as a single source of truth for teammate 2's Debezium wiring. Debezium forwards every
+ * `database.*` connector property to mssql-jdbc as a `java.util.Properties` entry, so the same
+ * key/value shape works in both places.
+ */
+fun MsSqlServerAuthentication.toDebeziumDatabaseProperties(): Map<String, String> =
+    toJdbcProperties()
 
 data class UserDefinedCursorIncrementalConfiguration(val excludeTodaysData: Boolean = false) :
     IncrementalConfiguration
@@ -135,6 +205,58 @@ constructor(
 
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
 
+        // Resolve the authentication mode. If the new `authentication` block is present, use it;
+        // otherwise fall back to the legacy flat `username`/`password` fields (soft back-compat).
+        val resolvedAuth: MsSqlServerAuthentication =
+            when (val authSpec = pojo.getAuthenticationValue()) {
+                is SqlPasswordAuthenticationSpecification ->
+                    SqlPasswordAuthentication(authSpec.username, authSpec.password)
+                is ActiveDirectoryServicePrincipalAuthenticationSpecification -> {
+                    if (!authSpec.tenantId.isNullOrBlank()) {
+                        log.info {
+                            "authentication.tenant_id is informational only at the currently " +
+                                "pinned mssql-jdbc version (12.10); multi-tenant service " +
+                                "principals require driver 13.x or newer."
+                        }
+                    }
+                    ActiveDirectoryServicePrincipalAuthentication(
+                        tenantId = authSpec.tenantId,
+                        clientId = authSpec.clientId,
+                        clientSecret = authSpec.clientSecret,
+                    )
+                }
+                is ActiveDirectoryManagedIdentityAuthenticationSpecification ->
+                    ActiveDirectoryManagedIdentityAuthentication(
+                        msiClientId = authSpec.msiClientId?.takeIf { it.isNotBlank() },
+                    )
+                is ActiveDirectoryDefaultAuthenticationSpecification ->
+                    ActiveDirectoryDefaultAuthentication()
+                null -> {
+                    val legacyUsername = pojo.username
+                    val legacyPassword = pojo.password
+                    if (legacyUsername.isNullOrBlank() || legacyPassword.isNullOrBlank()) {
+                        throw ConfigErrorException(
+                            "Authentication is not configured: provide either the legacy " +
+                                "username/password fields or an `authentication` block."
+                        )
+                    }
+                    SqlPasswordAuthentication(legacyUsername, legacyPassword)
+                }
+            }
+
+        // Hard error: Microsoft Entra ID authentication requires an encrypted connection.
+        val isEntraIdAuth = resolvedAuth !is SqlPasswordAuthentication
+        if (
+            isEntraIdAuth &&
+                pojo.getEncryptionValue() is MsSqlServerEncryptionDisabledConfigurationSpecification
+        ) {
+            throw ConfigErrorException(
+                "Microsoft Entra ID authentication requires an encrypted connection. " +
+                    "Please set ssl_mode to 'encrypted_verify_certificate' or " +
+                    "'encrypted_trust_server_certificate'."
+            )
+        }
+
         // Check if encryption was explicitly set in JSON (encryptionJson != null)
         // vs using the default value (encryptionJson == null).
         // Old connector used "ssl_method" field which was optional, so legacy configs
@@ -205,8 +327,7 @@ constructor(
 
         // Parse JDBC URL parameters
         val jdbcProperties = mutableMapOf<String, String>()
-        jdbcProperties["user"] = pojo.username
-        jdbcProperties["password"] = pojo.password
+        jdbcProperties.putAll(resolvedAuth.toJdbcProperties())
 
         // Parse URL parameters from jdbcUrlParams
         val pattern = "^([^=]+)=(.*)$".toRegex()
@@ -266,7 +387,8 @@ constructor(
                     MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
                 ),
             incrementalReplicationConfiguration = incrementalReplicationConfiguration,
-            databaseName = pojo.database
+            databaseName = pojo.database,
+            authentication = resolvedAuth,
         )
     }
 }
