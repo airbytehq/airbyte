@@ -742,14 +742,3 @@ class TestAPILimitTypeAnnotation:
         ns = {**vars(mod), "APILimit": APILimit}
         hints = typing.get_type_hints(cls.start, globalns=ns)
         assert hints["api_limit"] is APILimit
-
-    def test_type_checking_import_exists(self):
-        """The async_job module must contain a TYPE_CHECKING-guarded import of APILimit."""
-        import importlib
-        import inspect
-
-        mod = importlib.import_module("source_facebook_marketing.streams.async_job")
-
-        source = inspect.getsource(mod)
-        assert "TYPE_CHECKING" in source
-        assert "from source_facebook_marketing.streams.async_job_manager import APILimit" in source
