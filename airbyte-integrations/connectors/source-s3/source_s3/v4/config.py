@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import dpath.util
 from pydantic.v1 import AnyUrl, Field, root_validator
@@ -10,6 +10,21 @@ from pydantic.v1.error_wrappers import ValidationError
 
 from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+
+
+class S3FileBasedStreamConfig(FileBasedStreamConfig):
+    light_parquet_check: bool = Field(
+        title="Lightweight Parquet check (CHECK only)",
+        description=(
+            "When enabled, the connector reads only a tiny sample (one column, one row) during the CHECK operation to"
+            " avoid out-of-memory errors on large Parquet files. Sync and Discover continue to read all columns and all"
+            " row groups, so data corruption in other columns may only be caught during sync."
+        ),
+        default=False,
+        order=11,
+        group="advanced",
+    )
 
 
 class Config(AbstractFileBasedSpec):
@@ -23,6 +38,17 @@ class Config(AbstractFileBasedSpec):
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
 
     bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=0)
+
+    # Override streams to use the extended stream config that carries the lightweight-check flag.
+    streams: List[S3FileBasedStreamConfig] = Field(
+        title="The list of streams to sync",
+        description=(
+            'Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>.'
+            " Use this to define which files belong in the stream, their format, and how they should be parsed and validated."
+            " When sending data to warehouse destinations such as Snowflake or BigQuery, each stream is a separate table."
+        ),
+        order=10,
+    )
 
     aws_access_key_id: Optional[str] = Field(
         title="AWS Access Key ID",
