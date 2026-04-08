@@ -559,6 +559,7 @@ class TestInsightAsyncJob:
             job._split_job()
 
         from airbyte_cdk.models import FailureType
+
         assert exc_info.value.failure_type == FailureType.system_error
 
     @freezegun.freeze_time("2023-10-29")
