@@ -109,9 +109,7 @@ open class RedshiftSpecification : ConfigurationSpecification() {
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 }
 
-/**
- * S3 Staging configuration for Redshift COPY command.
- */
+/** S3 Staging configuration for Redshift COPY command. */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class S3StagingConfig(
     @JsonProperty("method")
@@ -153,9 +151,7 @@ data class S3StagingConfig(
     val purgeStagingData: Boolean? = true
 )
 
-/**
- * Destination specification extension that declares the supported sync modes.
- */
+/** Destination specification extension that declares the supported sync modes. */
 @Singleton
 class RedshiftSpecificationExtension : DestinationSpecificationExtension {
     override val supportedSyncModes =

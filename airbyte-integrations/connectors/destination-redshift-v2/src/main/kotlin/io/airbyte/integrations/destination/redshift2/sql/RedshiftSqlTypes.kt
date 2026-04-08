@@ -6,9 +6,6 @@ package io.airbyte.integrations.destination.redshift2.sql
 
 /**
  * Redshift SQL type constants used by [RedshiftSqlGenerator] for DDL generation.
- *
- * These types match the v1 Redshift destination's type mappings
- * (via JdbcSqlGenerator + RedshiftSqlGenerator).
  */
 object RedshiftSqlTypes {
     /** Semi-structured data type for JSON objects, arrays, and unknown types. */

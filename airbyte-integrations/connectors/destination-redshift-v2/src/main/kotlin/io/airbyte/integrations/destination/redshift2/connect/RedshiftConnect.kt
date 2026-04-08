@@ -87,16 +87,10 @@ class RedshiftConnect(
                 password = configuration.password
                 schema = configuration.schema
 
-                // SSL: always enabled for Redshift connections
                 addDataSourceProperty("ssl", "true")
                 addDataSourceProperty("sslfactory", SSL_FACTORY)
+                addDataSourceProperty("connectTimeout", 30.seconds.inWholeSeconds.toString())
 
-                // Redshift driver-level connect timeout (seconds).
-                // This is distinct from HikariCP's connectionTimeout which governs
-                // how long to wait for a connection from the pool.
-                addDataSourceProperty("connectTimeout", DRIVER_CONNECT_TIMEOUT_SECONDS)
-
-                // Connection validation
                 connectionTestQuery = "SELECT 1"
             }
 
@@ -115,8 +109,5 @@ class RedshiftConnect(
     companion object {
         const val DRIVER_CLASS = "com.amazon.redshift.jdbc42.Driver"
         const val SSL_FACTORY = "com.amazon.redshift.ssl.NonValidatingFactory"
-
-        /** Redshift JDBC driver-level connect timeout in seconds. */
-        const val DRIVER_CONNECT_TIMEOUT_SECONDS = "120"
     }
 }

@@ -7,16 +7,16 @@ package io.airbyte.integrations.destination.redshift2.check
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.load.check.DestinationChecker
-import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlTypes
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.connect.S3Connect
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlTypes
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
@@ -25,7 +25,7 @@ import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
 import java.time.OffsetDateTime
-import java.util.UUID
+import java.util.*
 import java.util.zip.GZIPOutputStream
 import javax.sql.DataSource
 
@@ -70,9 +70,11 @@ class RedshiftChecker(
 
         try {
             testRedshiftConnection()
-            s3Client = testS3WriteAccess(s3Key!!, rawId)
             testCreateTable(tableName!!)
+
+            s3Client = testS3WriteAccess(s3Key!!, rawId)
             testCopyFromS3(tableName!!, s3Key!!)
+
             testRowCount(tableName!!)
             testDeleteRow(tableName!!, rawId)
 
@@ -87,11 +89,7 @@ class RedshiftChecker(
         }
     }
 
-    /**
-     * Best-effort cleanup of the S3 test object and Redshift test table.
-     * Called by the CDK after [check] completes (regardless of success or failure).
-     * Failures are logged as warnings but do not propagate.
-     */
+    /** Best-effort cleanup of the S3 test object and Redshift test table. Called by the CDK after [check] completes (regardless of success or failure). */
     override fun cleanup() {
         log.info { "Checker Cleaning up..." }
 
@@ -123,9 +121,8 @@ class RedshiftChecker(
     }
 
     /**
-     * Validates JDBC connectivity by executing a trivial query.
+     * Validates JDBC connectivity, credentials, and network reachability by executing a query.
      * This exercises the full connection path: SSL, SSH tunnel (if configured),
-     * credentials, and network reachability.
      */
     private fun testRedshiftConnection() {
         log.info {
@@ -141,13 +138,7 @@ class RedshiftChecker(
         }
     }
 
-    /**
-     * Creates an S3 client and uploads a gzip-compressed CSV file with one test row.
-     * The CSV format matches what the Redshift COPY command expects:
-     * header row + one data row with Airbyte meta columns and a test column.
-     *
-     * @return the [AmazonS3] client for reuse in cleanup.
-     */
+    /** Creates an S3 client and uploads a gzip-compressed CSV file with one test row. */
     private fun testS3WriteAccess(s3Key: String, rawId: String): AmazonS3 {
         log.info { "Test 2: Testing S3 write access..." }
         val s3Client = s3Connect.createS3Client()
@@ -168,10 +159,7 @@ class RedshiftChecker(
         return s3Client
     }
 
-    /**
-     * Creates the test schema (if needed) and table in Redshift using [RedshiftSqlGenerator].
-     * The table has the standard Airbyte meta columns plus one user column (`test_key`).
-     */
+    /** Creates the test schema (if needed) and table in Redshift. The table has the standard Airbyte meta columns plus one user column (`test_key`). */
     private fun testCreateTable(tableName: TableName) {
         log.info { "Test 3: Creating test table ${tableName.namespace}.${tableName.name}..." }
         val createSchemaSql = sqlGenerator.createNamespace(tableName.namespace)
@@ -185,19 +173,12 @@ class RedshiftChecker(
         }
     }
 
-    /**
-     * Executes the Redshift COPY command to load the gzip CSV from S3 into the test table.
-     * Uses the same COPY options as the production sync pipeline:
-     * CSV GZIP, TIMEFORMAT 'auto', STATUPDATE OFF.
-     *
-     * Note: The COPY SQL is intentionally NOT logged because it contains S3 credentials.
-     */
+    /** Executes the Redshift COPY command to load the gzip CSV from S3 into the test table. The COPY SQL is intentionally NOT logged because it contains S3 credentials. */
     private fun testCopyFromS3(tableName: TableName, s3Key: String) {
         log.info { "Test 4: COPYing data from S3 to Redshift..." }
         val s3Config = configuration.uploadingMethod!!
         val s3Path = "s3://${s3Config.s3BucketName}/$s3Key"
 
-        // COPY SQL contains credentials -- do NOT log it
         val copySql =
             """
             COPY "${tableName.namespace}"."${tableName.name}"
@@ -211,14 +192,12 @@ class RedshiftChecker(
             """
                 .trimIndent()
 
-        dataSource.connection.use { conn ->
-            conn.createStatement().use { stmt -> stmt.execute(copySql) }
-        }
+            dataSource.connection.use { conn ->
+                conn.createStatement().use { stmt -> stmt.execute(copySql) }
+            }
     }
 
-    /**
-     * Queries the test table and verifies that exactly one row was loaded by the COPY command.
-     */
+    /** Queries the test table and verifies that exactly one row was loaded by the COPY command. */
     private fun testRowCount(tableName: TableName) {
         log.info { "Test 5: Verifying row count..." }
         val countSql = sqlGenerator.countTable(tableName)
@@ -236,10 +215,7 @@ class RedshiftChecker(
         }
     }
 
-    /**
-     * Deletes the test row by its `_airbyte_raw_id` using the parameterized SQL
-     * from [RedshiftSqlGenerator.deleteByRawId].
-     */
+    /** Deletes the test row by its `_airbyte_raw_id` */
     private fun testDeleteRow(tableName: TableName, rawId: String) {
         log.info { "Test 6: Deleting test row..." }
         val deleteSql = sqlGenerator.deleteByRawId(tableName)
@@ -253,9 +229,7 @@ class RedshiftChecker(
         }
     }
 
-    /**
-     * Builds the S3 key for the test CSV file, respecting the configured bucket path prefix.
-     */
+    /** Builds the S3 key for the test CSV file, respecting the configured bucket path prefix. */
     private fun buildS3TestKey(testId: String): String {
         val prefix = configuration.uploadingMethod?.s3BucketPath?.let { path ->
             val trimmed = path.trimEnd('/')
@@ -264,9 +238,7 @@ class RedshiftChecker(
         return "${prefix}_airbyte_check_$testId.csv.gz"
     }
 
-    /**
-     * Builds a [StreamTableSchema] for the check table with one user column (`test_key`).
-     */
+    /** Builds a [StreamTableSchema] for the check table with one user column (`test_key`). */
     private fun buildCheckTableSchema(tableName: TableName): StreamTableSchema =
         StreamTableSchema(
             tableNames =
@@ -308,28 +280,27 @@ class RedshiftChecker(
         return baos.toByteArray()
     }
 
-    /**
-     * Maps [SQLException] state codes to user-friendly error messages.
-     */
+    /** Maps [SQLException] state codes to user-friendly error messages. */
     private fun buildErrorMessage(e: SQLException): String {
         val sqlState = e.sqlState ?: "Unknown"
         val errorCode = e.errorCode
 
         return when {
             sqlState.startsWith("28") ->
-                "Authentication failed. Please verify your username and password. " +
+                "Database authentication failed. Please verify your username and password. " +
                     "State code: $sqlState;"
             sqlState.startsWith("3D") ->
                 "Database '${configuration.database}' does not exist or is not accessible. " +
                     "State code: $sqlState;"
             sqlState.startsWith("08") ->
-                "Failed to connect to Redshift at ${configuration.host}:${configuration.port}. " +
+                "Database connection failed. " +
                     "Please verify the host and port are correct and the server is reachable. " +
                     "State code: $sqlState;"
             sqlState.startsWith("42") ->
-                "Permission denied or invalid operation. ${e.message} State code: $sqlState;"
+                "Database permission denied or invalid operation. ${e.message} " +
+                    "State code: $sqlState;"
             else ->
-                "Connection check failed: ${e.message} " +
+                "Database connection check failed: ${e.message} " +
                     "State code: $sqlState; Error code: $errorCode"
         }
     }

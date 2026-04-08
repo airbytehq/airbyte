@@ -9,9 +9,7 @@ import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
 
-/**
- * Typed configuration for Redshift destination.
- */
+/** Typed configuration for Redshift destination. */
 data class RedshiftConfiguration(
     val host: String,
     val port: Int,
@@ -24,9 +22,7 @@ data class RedshiftConfiguration(
     val tunnelMethod: SshTunnelMethodConfiguration?,
 ) : DestinationConfiguration()
 
-/**
- * Factory for creating RedshiftConfiguration from RedshiftSpecification.
- */
+/** Factory for creating RedshiftConfiguration from RedshiftSpecification. */
 @Singleton
 class RedshiftConfigurationFactory :
     DestinationConfigurationFactory<RedshiftSpecification, RedshiftConfiguration> {

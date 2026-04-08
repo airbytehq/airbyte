@@ -14,46 +14,16 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-/**
- * Generates Redshift-specific SQL strings for table operations.
- *
- * This is a standalone SQL string generator (following the ClickHouse pattern).
- * It does not implement any CDK interface -- CDK integration happens at the
- * client layer (RedshiftAirbyteClient) which delegates SQL generation here.
- *
- * All identifiers are double-quoted per Redshift/PostgreSQL convention.
- */
+/** Generates Redshift-specific SQL strings for table operations. All identifiers are double-quoted per Redshift/PostgreSQL convention. */
 @Singleton
 class RedshiftSqlGenerator {
     private val log = KotlinLogging.logger {}
 
-    // ---- Namespace ----
-
-    /**
-     * Generates SQL to create a schema if it does not already exist.
-     *
-     * ```sql
-     * CREATE SCHEMA IF NOT EXISTS "my_schema"
-     * ```
-     */
+    /** Generates `CREATE SCHEMA IF NOT EXISTS` SQL. */
     fun createNamespace(namespace: String): String =
         """CREATE SCHEMA IF NOT EXISTS "$namespace"""".andLog()
 
-    // ---- Table DDL ----
-
-    /**
-     * Generates a CREATE TABLE IF NOT EXISTS statement with Airbyte meta columns
-     * followed by user-defined columns from the stream schema.
-     *
-     * Meta columns:
-     * - `_airbyte_raw_id`        VARCHAR(36) NOT NULL
-     * - `_airbyte_extracted_at`   TIMESTAMPTZ NOT NULL
-     * - `_airbyte_meta`           SUPER NOT NULL
-     * - `_airbyte_generation_id`  BIGINT NOT NULL
-     *
-     * User columns are derived from [StreamTableSchema.columnSchema.finalSchema],
-     * with types and nullability from [ColumnType].
-     */
+    /** Generates `CREATE TABLE IF NOT EXISTS` with Airbyte meta columns + user columns from [StreamTableSchema]. */
     fun createTable(tableName: TableName, tableSchema: StreamTableSchema): String {
         val userColumns =
             tableSchema.columnSchema.finalSchema
@@ -74,46 +44,17 @@ class RedshiftSqlGenerator {
             .andLog()
     }
 
-    /**
-     * Generates a DROP TABLE IF EXISTS statement.
-     *
-     * ```sql
-     * DROP TABLE IF EXISTS "schema"."table"
-     * ```
-     */
+    /** Generates `DROP TABLE IF EXISTS` SQL. */
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS ${tableName.quoted()}".andLog()
 
-    // ---- Read ----
-
-    /**
-     * Generates a SELECT count query.
-     *
-     * ```sql
-     * SELECT count(1) FROM "schema"."table"
-     * ```
-     *
-     * @param alias Optional column alias for the count result.
-     */
+    /** Generates `SELECT count(1)` SQL. @param alias optional column alias for the count result. */
     fun countTable(tableName: TableName, alias: String = ""): String {
         val aliasClause = if (alias.isNotEmpty()) " $alias" else ""
         return "SELECT count(1)$aliasClause FROM ${tableName.quoted()}".andLog()
     }
 
-    // ---- Write ----
-
-    /**
-     * Generates a parameterized INSERT statement for use with [java.sql.PreparedStatement].
-     *
-     * The column list always starts with the four Airbyte meta columns, followed by
-     * the provided user column names. Values are placeholder `?` markers.
-     *
-     * ```sql
-     * INSERT INTO "schema"."table" ("_airbyte_raw_id", ..., "user_col") VALUES (?, ?, ...)
-     * ```
-     *
-     * @param columnNames User-defined column names (excluding meta columns).
-     */
+    /** Generates a parameterized `INSERT INTO` with Airbyte meta columns + [columnNames]. For use with [java.sql.PreparedStatement]. */
     fun insertRow(tableName: TableName, columnNames: List<String>): String {
         val allColumns =
             listOf(
@@ -130,29 +71,14 @@ class RedshiftSqlGenerator {
             .andLog()
     }
 
-    // ---- Delete ----
-
-    /**
-     * Generates a parameterized DELETE statement that removes a row by its
-     * `_airbyte_raw_id` value. For use with [java.sql.PreparedStatement].
-     *
-     * ```sql
-     * DELETE FROM "schema"."table" WHERE _airbyte_raw_id = ?
-     * ```
-     */
+    /** Generates a parameterized `DELETE` by `_airbyte_raw_id`. For use with [java.sql.PreparedStatement]. */
     fun deleteByRawId(tableName: TableName): String =
         "DELETE FROM ${tableName.quoted()} WHERE $COLUMN_NAME_AB_RAW_ID = ?".andLog()
 
-    // ---- Helpers ----
-
-    /** Quotes a [TableName] as `"namespace"."name"` for Redshift SQL. */
+    /** Quotes a [TableName] as `"namespace"."name"`. */
     private fun TableName.quoted(): String = "\"$namespace\".\"$name\""
 
-    /**
-     * Renders a [ColumnType] as a Redshift type declaration.
-     * Non-nullable columns get a `NOT NULL` constraint; nullable columns
-     * are left unconstrained (Redshift columns are nullable by default).
-     */
+    /** Renders a [ColumnType] as a Redshift type declaration, appending `NOT NULL` for non-nullable columns. */
     private fun ColumnType.typeDecl(): String =
         if (nullable) type else "$type NOT NULL"
 

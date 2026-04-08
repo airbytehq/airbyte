@@ -24,11 +24,7 @@ private val log = KotlinLogging.logger {}
 class S3Connect(private val configuration: RedshiftConfiguration) {
 
     fun createS3Client(): AmazonS3 {
-        val s3Config =
-            configuration.uploadingMethod
-                ?: throw IllegalStateException(
-                    "S3 staging configuration is required but not provided"
-                )
+        val s3Config = configuration.uploadingMethod!!
 
         log.info {
             "Creating S3 client for bucket '${s3Config.s3BucketName}' " +
