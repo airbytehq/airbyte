@@ -558,6 +558,138 @@ class TestInsightAsyncJob:
         with pytest.raises(AirbyteTracedException, match="Cannot split by fields"):
             job._split_job()
 
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_start_failure(self, mocker, api):
+        """
+        When get_insights raises, _collect_child_ids should wrap it in
+        AirbyteTracedException with transient_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+        mocker.patch.object(job._edge_object, "get_insights", side_effect=RuntimeError("API down"))
+
+        with pytest.raises(AirbyteTracedException, match="Failed to start ID-collection job") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_all_attempts_exhausted(self, mocker, api):
+        """
+        When every attempt returns Job Failed, _collect_child_ids should raise
+        AirbyteTracedException with transient_error after exhausting all retries.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Create a mock that always returns Job Failed status
+        failed_run = mocker.MagicMock()
+        failed_run.api_get.return_value = failed_run
+        failed_run.get.side_effect = lambda key: {
+            "async_status": Status.FAILED,
+            "async_percent_completion": 0,
+        }[key]
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=failed_run)
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        with pytest.raises(AirbyteTracedException, match="ID-collection failed for level=campaign") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_result_fetch_failure(self, mocker, api):
+        """
+        When get_result raises FacebookBadObjectError, _collect_child_ids should
+        wrap it in AirbyteTracedException with transient_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Create a mock that completes immediately but fails on get_result
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.side_effect = FacebookBadObjectError("bad object")
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
+
+        with pytest.raises(AirbyteTracedException, match="Failed to fetch ID-collection results") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_timeout(self, mocker, api):
+        """
+        When job polling exceeds the timeout, _collect_child_ids should raise
+        AirbyteTracedException with transient_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(seconds=1),
+        )
+
+        # Create a mock that is always running (never completes)
+        running_run = mocker.MagicMock()
+        running_run.api_get.return_value = running_run
+        running_run.get.side_effect = lambda key: {
+            "async_status": Status.RUNNING,
+            "async_percent_completion": 50,
+        }[key]
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=running_run)
+        # Patch sleep to be a no-op, and advance time past the timeout
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        # Patch ab_datetime_now to advance past timeout on the second call
+        original_now = ab_datetime_now()
+        call_count = [0]
+
+        def advancing_now():
+            call_count[0] += 1
+            if call_count[0] <= 1:
+                return original_now
+            # Return a time well past the 1-second timeout
+            return original_now + timedelta(seconds=10)
+
+        mocker.patch("source_facebook_marketing.streams.async_job.ab_datetime_now", side_effect=advancing_now)
+
+        with pytest.raises(AirbyteTracedException, match="ID-collection timed out") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+
 
 class TestParentAsyncJob:
     def test_start(self, parent_job, grouped_jobs, api_limit):
