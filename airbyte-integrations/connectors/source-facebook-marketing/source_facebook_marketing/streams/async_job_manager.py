@@ -2,10 +2,11 @@
 
 import logging
 import time
+from datetime import timedelta
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
-from .async_job import AsyncJob, update_in_batch  # ParentAsyncJob not needed here
-
+from .async_job import (AsyncJob,  # ParentAsyncJob not needed here
+                        update_in_batch)
 
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
@@ -19,7 +20,22 @@ class APILimit:
     and must call release() exactly once when they finish (success/skip/fail/timeout).
     """
 
-    def __init__(self, api, account_id: str, *, throttle_limit: float = 90.0, max_jobs: int = 100):
+    # Conservative default to avoid exhausting Facebook's ad-account-level API quota.
+    # Previous default of 100 caused rate-limit failures on accounts with many ads.
+    DEFAULT_MAX_JOBS = 10
+
+    # When throttle is high, wait this long before re-checking.
+    THROTTLE_WAIT_INTERVAL = timedelta(minutes=2)
+    MAX_THROTTLE_WAIT = timedelta(minutes=15)
+
+    def __init__(
+        self,
+        api,
+        account_id: str,
+        *,
+        throttle_limit: float = 90.0,
+        max_jobs: int = DEFAULT_MAX_JOBS,
+    ):
         self._api = api
         self._account_id = account_id
         self.throttle_limit = throttle_limit
@@ -33,16 +49,49 @@ class APILimit:
     def refresh_throttle(self) -> None:
         """
         Ping the account to refresh the `x-fb-ads-insights-throttle` header and cache the value.
-        NOTE: This is inexpensive (empty insights call) and safe to perform before scheduling.
+        If the throttle is above the limit, wait with exponential backoff before returning,
+        giving the API quota time to recover.
         """
-        self._api.get_account(account_id=self._account_id).get_insights()
-        t = self._api.api.ads_insights_throttle
-        # Use the stricter of the two numbers.
-        self._current_throttle = max(getattr(t, "per_account", 0.0), getattr(t, "per_application", 0.0))
+        total_waited = timedelta()
+        wait_interval = self.THROTTLE_WAIT_INTERVAL
+
+        while True:
+            self._api.get_account(account_id=self._account_id).get_insights()
+            t = self._api.api.ads_insights_throttle
+            self._current_throttle = max(
+                getattr(t, "per_account", 0.0), getattr(t, "per_application", 0.0)
+            )
+
+            if self._current_throttle < self.throttle_limit:
+                break
+
+            if total_waited >= self.MAX_THROTTLE_WAIT:
+                logger.warning(
+                    "Throttle still at %.1f%% after waiting %s; proceeding without further delay.",
+                    self._current_throttle,
+                    total_waited,
+                )
+                break
+
+            logger.info(
+                "Throttle at %.1f%% (limit %.1f%%); waiting %s for quota recovery.",
+                self._current_throttle,
+                self.throttle_limit,
+                wait_interval,
+            )
+            time.sleep(wait_interval.total_seconds())
+            total_waited += wait_interval
+            wait_interval = min(
+                wait_interval * 2,
+                self.MAX_THROTTLE_WAIT - total_waited + timedelta(seconds=1),
+            )
 
     @property
     def limit_reached(self) -> bool:
-        return self._inflight >= self.max_jobs or self._current_throttle >= self.throttle_limit
+        return (
+            self._inflight >= self.max_jobs
+            or self._current_throttle >= self.throttle_limit
+        )
 
     @property
     def capacity_reached(self) -> bool:
@@ -92,14 +141,25 @@ class InsightAsyncJobManager:
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
 
     def __init__(
-        self, api: "API", jobs: Iterator[AsyncJob], account_id: str, *, throttle_limit: float = 90.0, max_jobs_in_queue: int = 100
+        self,
+        api: "API",
+        jobs: Iterator[AsyncJob],
+        account_id: str,
+        *,
+        throttle_limit: float = 90.0,
+        max_jobs_in_queue: int = APILimit.DEFAULT_MAX_JOBS,
     ):
         self._api = api
         self._account_id = account_id
         self._jobs = iter(jobs)
         self._running_jobs: List[AsyncJob] = []
         self._prefetched_job: Optional[AsyncJob] = None  # look-ahead buffer
-        self._api_limit = APILimit(self._api, self._account_id, throttle_limit=throttle_limit, max_jobs=max_jobs_in_queue)
+        self._api_limit = APILimit(
+            self._api,
+            self._account_id,
+            throttle_limit=throttle_limit,
+            max_jobs=max_jobs_in_queue,
+        )
 
     # --- Public consumption API ---
 
@@ -111,7 +171,9 @@ class InsightAsyncJobManager:
             if completed:
                 yield from completed
             else:
-                logger.info(f"No jobs ready to be consumed, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
+                logger.info(
+                    f"No jobs ready to be consumed, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds"
+                )
                 time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
 
     # --- Internals ---

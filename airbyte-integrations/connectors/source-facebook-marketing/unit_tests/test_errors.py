@@ -8,15 +8,15 @@ from unittest.mock import MagicMock
 
 import freezegun
 import pytest
-from facebook_business import FacebookAdsApi, FacebookSession
-from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
-from source_facebook_marketing.streams.common import traced_exception
-
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from facebook_business import FacebookAdsApi, FacebookSession
+from facebook_business.exceptions import FacebookRequestError
 
+from source_facebook_marketing.api import API
+from source_facebook_marketing.streams import (AdAccount, AdCreatives,
+                                               AdsInsights)
+from source_facebook_marketing.streams.common import traced_exception
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -332,7 +332,11 @@ class TestRealErrors:
                         },
                     },
                     "status_code": 400,
-                    "headers": {"x-app-usage": json.dumps({"call_count": 28, "total_time": 25, "total_cputime": 25})},
+                    "headers": {
+                        "x-app-usage": json.dumps(
+                            {"call_count": 28, "total_time": 25, "total_cputime": 25}
+                        )
+                    },
                 },
             ),
             (
@@ -373,10 +377,14 @@ class TestRealErrors:
             ),
         ],
     )
-    def test_retryable_error(self, some_config, requests_mock, name, retryable_error_response):
+    def test_retryable_error(
+        self, some_config, requests_mock, name, retryable_error_response
+    ):
         """Error once, check that we retry and not fail"""
         requests_mock.reset_mock()
-        requests_mock.register_uri("GET", f"{act_url}", [retryable_error_response, ad_account_response])
+        requests_mock.register_uri(
+            "GET", f"{act_url}", [retryable_error_response, ad_account_response]
+        )
         requests_mock.register_uri(
             "GET",
             f"{act_url}adcreatives",
@@ -396,13 +404,17 @@ class TestRealErrors:
         assert ad_creative_records == ad_creative_data
 
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
-    def test_config_error_during_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
+    def test_config_error_during_account_info_read(
+        self, requests_mock, name, friendly_msg, config_error_response
+    ):
         """Error raised during account info read"""
 
         api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
 
-        requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
+        requests_mock.register_uri(
+            "GET", f"{act_url}", [config_error_response, ad_account_response]
+        )
         try:
             list(
                 stream.read_records(
@@ -418,7 +430,9 @@ class TestRealErrors:
             assert friendly_msg in error.message
 
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
-    def test_config_error_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
+    def test_config_error_during_actual_nodes_read(
+        self, requests_mock, name, friendly_msg, config_error_response
+    ):
         """Error raised during actual nodes read"""
 
         api = API(access_token=some_config["access_token"], page_size=100)
@@ -462,9 +476,12 @@ class TestRealErrors:
             ),
         ],
     )
-    def test_config_error_that_was_retried_when_reading_nodes(self, requests_mock, name, friendly_msg, config_error_response, failure_type):
+    def test_config_error_that_was_retried_when_reading_nodes(
+        self, requests_mock, name, friendly_msg, config_error_response, failure_type
+    ):
         """This test covers errors that have been resolved in the past with a retry strategy, but it could also can fail after retries,
-        then, we need to provide the user with a humanized error explaining what just happened"""
+        then, we need to provide the user with a humanized error explaining what just happened
+        """
         api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
 
@@ -490,7 +507,9 @@ class TestRealErrors:
 
     @freezegun.freeze_time("2011-12-31")
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
-    def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
+    def test_config_error_insights_account_info_read(
+        self, requests_mock, name, friendly_msg, config_error_response
+    ):
         """Error raised during actual nodes read"""
 
         api = API(access_token=some_config["access_token"], page_size=100)
@@ -502,10 +521,18 @@ class TestRealErrors:
             fields=["account_id", "account_currency"],
             insights_lookback_window=28,
         )
-        requests_mock.register_uri("GET", f"{act_url}", [config_error_response, ad_account_response])
+        requests_mock.register_uri(
+            "GET", f"{act_url}", [config_error_response, ad_account_response]
+        )
         try:
-            slice = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}))
+            slice = list(
+                stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={})
+            )[0]
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}
+                )
+            )
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
@@ -513,8 +540,12 @@ class TestRealErrors:
             assert friendly_msg in error.message
 
     @freezegun.freeze_time("2011-12-31")
-    @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[0]])
-    def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
+    @pytest.mark.parametrize(
+        "name, friendly_msg, config_error_response", [CONFIG_ERRORS[0]]
+    )
+    def test_config_error_insights_during_actual_nodes_read(
+        self, requests_mock, name, friendly_msg, config_error_response
+    ):
         """Error raised during actual nodes read"""
 
         api = API(access_token=some_config["access_token"], page_size=100)
@@ -527,11 +558,19 @@ class TestRealErrors:
             insights_lookback_window=28,
         )
         requests_mock.register_uri("GET", f"{act_url}", [ad_account_response])
-        requests_mock.register_uri("GET", f"{act_url}insights", [config_error_response, ad_creative_response])
+        requests_mock.register_uri(
+            "GET", f"{act_url}insights", [config_error_response, ad_creative_response]
+        )
 
         try:
-            slice = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}))
+            slice = list(
+                stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={})
+            )[0]
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}
+                )
+            )
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
@@ -562,11 +601,19 @@ class TestRealErrors:
                 }
             },
         }
-        call_insights = requests_mock.register_uri("GET", f"{act_url}insights", [response])
+        call_insights = requests_mock.register_uri(
+            "GET", f"{act_url}insights", [response]
+        )
 
         try:
-            slice = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))[0]
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}))
+            slice = list(
+                stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={})
+            )[0]
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh, stream_slice=slice, stream_state={}
+                )
+            )
         except Exception:
             assert call_insights.call_count == 5
 
@@ -614,20 +661,28 @@ class TestRealErrors:
             "account_id": account_id,
             "business": {"id": "1", "name": "TEST"},
         }
-        requests_mock.register_uri("GET", f"{base_url}me/business_users", status_code=200, json=business_user)
+        requests_mock.register_uri(
+            "GET", f"{base_url}me/business_users", status_code=200, json=business_user
+        )
 
         assigend_users = {"account_id": account_id, "tasks": ["TASK"]}
-        requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigend_users)
+        requests_mock.register_uri(
+            "GET", f"{act_url}assigned_users", status_code=200, json=assigend_users
+        )
 
         success_response = {"status_code": 200, "json": {"account_id": account_id}}
-        requests_mock.register_uri("GET", f"{act_url}", [failure_response, success_response])
+        requests_mock.register_uri(
+            "GET", f"{act_url}", [failure_response, success_response]
+        )
 
         record_gen = stream.read_records(
             sync_mode=SyncMode.full_refresh,
             stream_slice={"account_id": account_id},
             stream_state={},
         )
-        assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]
+        assert list(record_gen) == [
+            {"account_id": "unknown_account", "id": "act_unknown_account"}
+        ]
 
 
 def test_traced_exception_with_api_error():
@@ -644,19 +699,54 @@ def test_traced_exception_with_api_error():
 
     assert isinstance(result, AirbyteTracedException)
     assert (
-        result.message == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
+        result.message
+        == "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions"
     )
     assert result.failure_type == FailureType.config_error
 
 
 def test_traced_exception_without_api_error():
     error = FacebookRequestError(
-        message="Call was unsuccessful. The Facebook API has imploded", request_context={}, http_status=408, http_headers={}, body="{}"
+        message="Call was unsuccessful. The Facebook API has imploded",
+        request_context={},
+        http_status=408,
+        http_headers={},
+        body="{}",
     )
     error.api_error_message = MagicMock(return_value=None)
 
     result = traced_exception(error)
 
     assert isinstance(result, AirbyteTracedException)
-    assert result.message == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
+    assert (
+        result.message
+        == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
+    )
     assert result.failure_type == FailureType.system_error
+
+
+@pytest.mark.parametrize(
+    "error_code",
+    [4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008],
+)
+def test_traced_exception_rate_limit_error_message(error_code):
+    """Rate-limit errors should produce a concise, guideline-compliant message
+    classified as transient_error."""
+    error = FacebookRequestError(
+        message="Rate limit hit",
+        request_context={},
+        http_status=400,
+        http_headers={},
+        body=json.dumps({"error": {"message": "Too many calls", "code": error_code}}),
+    )
+    error.api_error_message = MagicMock(return_value="Too many calls")
+
+    result = traced_exception(error)
+
+    assert isinstance(result, AirbyteTracedException)
+    assert (
+        result.message == "Rate limit exceeded for Facebook Marketing API ad account."
+    )
+    assert result.failure_type == FailureType.transient_error
+    assert len(result.message) <= 120
+    assert "http" not in result.message.lower()
