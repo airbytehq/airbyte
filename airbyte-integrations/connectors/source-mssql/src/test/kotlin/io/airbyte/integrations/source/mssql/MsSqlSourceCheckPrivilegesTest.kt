@@ -120,7 +120,7 @@ class MsSqlSourceCheckPrivilegesTest {
                 password = RESTRICTED_PASSWORD
                 jdbcUrlParams = ""
                 database = "test"
-                schemas = listOf("dbo")
+                schemas = arrayOf("dbo")
                 checkpointTargetIntervalSeconds = 60
                 concurrency = 1
                 this.checkPrivileges = checkPrivileges
