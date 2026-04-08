@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftTableOperationsClient
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlTypes
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.connect.S3Connect
@@ -51,7 +51,7 @@ class RedshiftChecker(
     private val dataSource: DataSource,
     private val configuration: RedshiftConfiguration,
     private val s3Connect: S3Connect,
-    private val sqlGenerator: RedshiftSqlGenerator,
+    private val tableOpsClient: RedshiftTableOperationsClient,
 ) : DestinationChecker {
 
     override fun check() {
@@ -153,13 +153,13 @@ class RedshiftChecker(
     // ---- Step 3: Create Table ----
 
     /**
-     * Creates the test schema (if needed) and table in Redshift using [RedshiftSqlGenerator].
+     * Creates the test schema (if needed) and table in Redshift using [RedshiftTableOperationsClient].
      * The table has the standard Airbyte meta columns plus one user column (`test_key`).
      */
     private fun testCreateTable(tableName: TableName) {
         log.info { "Step 3: Creating test table ${tableName.namespace}.${tableName.name}..." }
-        val createSchemaSql = sqlGenerator.createNamespace(tableName.namespace)
-        val createTableSql = sqlGenerator.createTable(tableName, buildCheckTableSchema(tableName))
+        val createSchemaSql = tableOpsClient.createNamespaceSql(tableName.namespace)
+        val createTableSql = tableOpsClient.createTable(tableName, buildCheckTableSchema(tableName))
 
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
@@ -211,7 +211,7 @@ class RedshiftChecker(
      */
     private fun testRowCount(tableName: TableName) {
         log.info { "Step 5: Verifying row count..." }
-        val countSql = sqlGenerator.countTable(tableName)
+        val countSql = tableOpsClient.countTableSql(tableName)
 
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
@@ -231,11 +231,11 @@ class RedshiftChecker(
 
     /**
      * Deletes the test row by its `_airbyte_raw_id` using the parameterized SQL
-     * from [RedshiftSqlGenerator.deleteByRawId].
+     * from [RedshiftTableOperationsClient.deleteByRawId].
      */
     private fun testDeleteRow(tableName: TableName, rawId: String) {
         log.info { "Step 6: Deleting test row..." }
-        val deleteSql = sqlGenerator.deleteByRawId(tableName)
+        val deleteSql = tableOpsClient.deleteByRawId(tableName)
 
         dataSource.connection.use { conn ->
             conn.prepareStatement(deleteSql).use { pstmt ->
@@ -269,7 +269,7 @@ class RedshiftChecker(
 
         // Drop Redshift table
         try {
-            val dropSql = sqlGenerator.dropTable(tableName)
+            val dropSql = tableOpsClient.dropTableSql(tableName)
             dataSource.connection.use { conn ->
                 conn.createStatement().use { stmt -> stmt.execute(dropSql) }
             }

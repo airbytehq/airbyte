@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.redshift2.check
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariDataSource
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftTableOperationsClient
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfigurationFactory
 import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
@@ -43,7 +43,7 @@ class RedshiftCheckerTest {
     private lateinit var redshiftConnect: RedshiftConnect
     private lateinit var s3Connect: S3Connect
     private lateinit var dataSource: HikariDataSource
-    private lateinit var sqlGenerator: RedshiftSqlGenerator
+    private lateinit var tableOpsClient: RedshiftTableOperationsClient
     private lateinit var checker: RedshiftChecker
 
     @BeforeAll
@@ -53,8 +53,8 @@ class RedshiftCheckerTest {
         redshiftConnect = RedshiftConnect(configuration)
         s3Connect = S3Connect(configuration)
         dataSource = redshiftConnect.createDataSource()
-        sqlGenerator = RedshiftSqlGenerator()
-        checker = RedshiftChecker(dataSource, configuration, s3Connect, sqlGenerator)
+        tableOpsClient = RedshiftTableOperationsClient(dataSource)
+        checker = RedshiftChecker(dataSource, configuration, s3Connect, tableOpsClient)
     }
 
     @AfterAll
