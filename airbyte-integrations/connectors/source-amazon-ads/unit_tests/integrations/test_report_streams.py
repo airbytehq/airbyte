@@ -374,6 +374,9 @@ class TestDisplayReportStreams:
         # Daily streams should use 'date' as cursor field, not 'reportDate'
         dates = [record.record.data["date"] for record in output.records]
         assert dates == ["2023-01-15", "2023-01-16"]
+        # reportDate should still be populated from the record's date field
+        report_dates = [record.record.data["reportDate"] for record in output.records]
+        assert report_dates == ["2023-01-15", "2023-01-16"]
         # Verify the cursor state uses 'date' field
         assert output.most_recent_state.stream_state.states[0]["cursor"]["date"] is not None
 
