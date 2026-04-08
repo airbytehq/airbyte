@@ -319,7 +319,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.23.15 | 2026-04-08 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Promote 2.23.15-rc.3 to GA — fixes SAS token expiry during report downloads |
+| 2.23.15 | 2026-04-08 | [76165](https://github.com/airbytehq/airbyte/pull/76165) | Promote 2.23.15-rc.3 to GA — fixes SAS token expiry during report downloads |
 | 2.23.15-rc.3 | 2026-04-02 | [76053](https://github.com/airbytehq/airbyte/pull/76053) | Fix SAS token expiry during report downloads by re-polling for fresh URL before each download |
 | 2.23.15-rc.2 | 2026-03-30 | [74885](https://github.com/airbytehq/airbyte/pull/74885) | Fix OOM on large report downloads by using streaming ZIP decoder and reducing concurrency |
 | 2.23.15-rc.1 | 2026-03-12 | [74745](https://github.com/airbytehq/airbyte/pull/74745) | Increase default concurrency from 2 to 40 to test rate limit behavior |
