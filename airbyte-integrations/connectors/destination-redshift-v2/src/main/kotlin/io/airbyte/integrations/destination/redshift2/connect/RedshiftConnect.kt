@@ -35,17 +35,16 @@ class RedshiftConnect(
     /**
      * Resolves the database endpoint, tunneling through SSH if configured.
      *
-     * When an SSH tunnel is configured, this opens a local port-forward to the remote
-     * Redshift host and returns the tunnel's local address. When no tunnel is configured,
-     * the direct host/port from the configuration is returned.
+     * When an SSH tunnel is configured, this opens a local port-forward to the remote Redshift host
+     * and returns the tunnel's local address. When no tunnel is configured, the direct host/port
+     * from the configuration is returned.
      */
     fun resolveEndpoint(): Pair<String, Int> {
         return when (val ssh = configuration.tunnelMethod) {
             is SshKeyAuthTunnelMethod,
             is SshPasswordAuthTunnelMethod -> {
                 val remote = SshdSocketAddress(configuration.host, configuration.port)
-                val sshConnectionOptions =
-                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                val sshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap())
                 val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
                 log.info {
                     "SSH tunnel established: ${configuration.host}:${configuration.port} " +
@@ -71,7 +70,9 @@ class RedshiftConnect(
         val (resolvedHost, resolvedPort) = resolveEndpoint()
         val jdbcUrl = buildJdbcUrl(resolvedHost, resolvedPort)
 
-        log.info { "Creating Redshift DataSource for $resolvedHost:$resolvedPort/${configuration.database}" }
+        log.info {
+            "Creating Redshift DataSource for $resolvedHost:$resolvedPort/${configuration.database}"
+        }
 
         val hikariConfig =
             HikariConfig().apply {

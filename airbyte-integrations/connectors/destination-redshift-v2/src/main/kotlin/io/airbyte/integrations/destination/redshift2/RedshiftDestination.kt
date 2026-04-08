@@ -8,7 +8,7 @@ import io.airbyte.cdk.AirbyteDestinationRunner
 
 /**
  * Main entry point for the Redshift v2 destination connector.
- * 
+ *
  * This connector uses the Bulk CDK with Direct Load pattern.
  */
 fun main(args: Array<String>) {

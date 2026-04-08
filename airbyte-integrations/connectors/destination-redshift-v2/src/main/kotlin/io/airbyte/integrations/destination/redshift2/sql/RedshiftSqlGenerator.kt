@@ -14,7 +14,10 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-/** Generates Redshift-specific SQL strings for table operations. All identifiers are double-quoted per Redshift/PostgreSQL convention. */
+/**
+ * Generates Redshift-specific SQL strings for table operations. All identifiers are double-quoted
+ * per Redshift/PostgreSQL convention.
+ */
 @Singleton
 class RedshiftSqlGenerator {
     private val log = KotlinLogging.logger {}
@@ -23,7 +26,10 @@ class RedshiftSqlGenerator {
     fun createNamespace(namespace: String): String =
         """CREATE SCHEMA IF NOT EXISTS "$namespace"""".andLog()
 
-    /** Generates `CREATE TABLE IF NOT EXISTS` with Airbyte meta columns + user columns from [StreamTableSchema]. */
+    /**
+     * Generates `CREATE TABLE IF NOT EXISTS` with Airbyte meta columns + user columns from
+     * [StreamTableSchema].
+     */
     fun createTable(tableName: TableName, tableSchema: StreamTableSchema): String {
         val userColumns =
             tableSchema.columnSchema.finalSchema
@@ -54,7 +60,10 @@ class RedshiftSqlGenerator {
         return "SELECT count(1)$aliasClause FROM ${tableName.quoted()}".andLog()
     }
 
-    /** Generates a parameterized `INSERT INTO` with Airbyte meta columns + [columnNames]. For use with [java.sql.PreparedStatement]. */
+    /**
+     * Generates a parameterized `INSERT INTO` with Airbyte meta columns + [columnNames]. For use
+     * with [java.sql.PreparedStatement].
+     */
     fun insertRow(tableName: TableName, columnNames: List<String>): String {
         val allColumns =
             listOf(
@@ -67,20 +76,24 @@ class RedshiftSqlGenerator {
         val quotedColumns = allColumns.joinToString(", ") { "\"$it\"" }
         val placeholders = allColumns.joinToString(", ") { "?" }
 
-        return "INSERT INTO ${tableName.quoted()} ($quotedColumns) VALUES ($placeholders)"
-            .andLog()
+        return "INSERT INTO ${tableName.quoted()} ($quotedColumns) VALUES ($placeholders)".andLog()
     }
 
-    /** Generates a parameterized `DELETE` by `_airbyte_raw_id`. For use with [java.sql.PreparedStatement]. */
+    /**
+     * Generates a parameterized `DELETE` by `_airbyte_raw_id`. For use with
+     * [java.sql.PreparedStatement].
+     */
     fun deleteByRawId(tableName: TableName): String =
         "DELETE FROM ${tableName.quoted()} WHERE $COLUMN_NAME_AB_RAW_ID = ?".andLog()
 
     /** Quotes a [TableName] as `"namespace"."name"`. */
     private fun TableName.quoted(): String = "\"$namespace\".\"$name\""
 
-    /** Renders a [ColumnType] as a Redshift type declaration, appending `NOT NULL` for non-nullable columns. */
-    private fun ColumnType.typeDecl(): String =
-        if (nullable) type else "$type NOT NULL"
+    /**
+     * Renders a [ColumnType] as a Redshift type declaration, appending `NOT NULL` for non-nullable
+     * columns.
+     */
+    private fun ColumnType.typeDecl(): String = if (nullable) type else "$type NOT NULL"
 
     /** Logs the SQL string at INFO level and returns it. */
     private fun String.andLog(): String {

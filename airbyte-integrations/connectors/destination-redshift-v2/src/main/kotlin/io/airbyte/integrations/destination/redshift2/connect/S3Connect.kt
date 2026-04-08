@@ -17,8 +17,8 @@ private val log = KotlinLogging.logger {}
 /**
  * Manages S3 client creation for staging operations.
  *
- * Creates an [AmazonS3] client from the S3 staging configuration using
- * static credentials (access key + secret key) and the configured region.
+ * Creates an [AmazonS3] client from the S3 staging configuration using static credentials (access
+ * key + secret key) and the configured region.
  */
 @Singleton
 class S3Connect(private val configuration: RedshiftConfiguration) {

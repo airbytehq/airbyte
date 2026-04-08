@@ -28,8 +28,7 @@ import org.junit.jupiter.api.assertThrows
 class RedshiftCheckerTest {
 
     private val mapper =
-        ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     private val config = mapper.readTree(Files.readString(Path.of("secrets/config_staging.json")))
 
@@ -113,9 +112,10 @@ class RedshiftCheckerTest {
 
     @Test
     fun `check fails with nonexistent S3 bucket`() {
-        val badS3Config = configuration.uploadingMethod!!.copy(
-            s3BucketName = "nonexistent-bucket-xyz-12345",
-        )
+        val badS3Config =
+            configuration.uploadingMethod!!.copy(
+                s3BucketName = "nonexistent-bucket-xyz-12345",
+            )
         val badConfig = configuration.copy(uploadingMethod = badS3Config)
         val checker = buildChecker(badConfig, dataSource)
 
@@ -126,18 +126,17 @@ class RedshiftCheckerTest {
 
     @Test
     fun `check fails with invalid S3 credentials`() {
-        val badS3Config = configuration.uploadingMethod!!.copy(
-            accessKeyId = "AKIAINVALID",
-            secretAccessKey = "invalid_secret_xyz",
-        )
+        val badS3Config =
+            configuration.uploadingMethod!!.copy(
+                accessKeyId = "AKIAINVALID",
+                secretAccessKey = "invalid_secret_xyz",
+            )
         val badConfig = configuration.copy(uploadingMethod = badS3Config)
         val checker = buildChecker(badConfig, dataSource)
 
         val ex = assertThrows<IllegalStateException> { checker.check() }
         assertTrue(
-            ex.message!!.contains(
-                "AWS Access Key Id you provided does not exist in our records."
-            )
+            ex.message!!.contains("AWS Access Key Id you provided does not exist in our records.")
         )
         assertDoesNotThrow { checker.cleanup() }
     }

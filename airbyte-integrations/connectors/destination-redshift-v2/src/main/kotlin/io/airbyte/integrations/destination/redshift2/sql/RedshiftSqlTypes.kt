@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift2.sql
 
-/**
- * Redshift SQL type constants used by [RedshiftSqlGenerator] for DDL generation.
- */
+/** Redshift SQL type constants used by [RedshiftSqlGenerator] for DDL generation. */
 object RedshiftSqlTypes {
     /** Semi-structured data type for JSON objects, arrays, and unknown types. */
     const val SUPER = "SUPER"

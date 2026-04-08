@@ -89,7 +89,10 @@ class RedshiftChecker(
         }
     }
 
-    /** Best-effort cleanup of the S3 test object and Redshift test table. Called by the CDK after [check] completes (regardless of success or failure). */
+    /**
+     * Best-effort cleanup of the S3 test object and Redshift test table. Called by the CDK after
+     * [check] completes (regardless of success or failure).
+     */
     override fun cleanup() {
         log.info { "Checker Cleaning up..." }
 
@@ -121,8 +124,8 @@ class RedshiftChecker(
     }
 
     /**
-     * Validates JDBC connectivity, credentials, and network reachability by executing a query.
-     * This exercises the full connection path: SSL, SSH tunnel (if configured),
+     * Validates JDBC connectivity, credentials, and network reachability by executing a query. This
+     * exercises the full connection path: SSL, SSH tunnel (if configured),
      */
     private fun testRedshiftConnection() {
         log.info {
@@ -159,7 +162,10 @@ class RedshiftChecker(
         return s3Client
     }
 
-    /** Creates the test schema (if needed) and table in Redshift. The table has the standard Airbyte meta columns plus one user column (`test_key`). */
+    /**
+     * Creates the test schema (if needed) and table in Redshift. The table has the standard Airbyte
+     * meta columns plus one user column (`test_key`).
+     */
     private fun testCreateTable(tableName: TableName) {
         log.info { "Test 3: Creating test table ${tableName.namespace}.${tableName.name}..." }
         val createSchemaSql = sqlGenerator.createNamespace(tableName.namespace)
@@ -173,7 +179,10 @@ class RedshiftChecker(
         }
     }
 
-    /** Executes the Redshift COPY command to load the gzip CSV from S3 into the test table. The COPY SQL is intentionally NOT logged because it contains S3 credentials. */
+    /**
+     * Executes the Redshift COPY command to load the gzip CSV from S3 into the test table. The COPY
+     * SQL is intentionally NOT logged because it contains S3 credentials.
+     */
     private fun testCopyFromS3(tableName: TableName, s3Key: String) {
         log.info { "Test 4: COPYing data from S3 to Redshift..." }
         val s3Config = configuration.uploadingMethod!!
@@ -189,8 +198,7 @@ class RedshiftChecker(
             TIMEFORMAT 'auto'
             STATUPDATE OFF
             IGNOREHEADER 1;
-            """
-                .trimIndent()
+            """.trimIndent()
 
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt -> stmt.execute(copySql) }
@@ -207,9 +215,7 @@ class RedshiftChecker(
                 stmt.executeQuery(countSql).use { rs ->
                     require(rs.next()) { "Failed to execute count query" }
                     val count = rs.getLong(1)
-                    require(count == 1L) {
-                        "Expected 1 row in check table, found $count"
-                    }
+                    require(count == 1L) { "Expected 1 row in check table, found $count" }
                 }
             }
         }
@@ -231,10 +237,12 @@ class RedshiftChecker(
 
     /** Builds the S3 key for the test CSV file, respecting the configured bucket path prefix. */
     private fun buildS3TestKey(testId: String): String {
-        val prefix = configuration.uploadingMethod?.s3BucketPath?.let { path ->
-            val trimmed = path.trimEnd('/')
-            if (trimmed.isNotEmpty()) "$trimmed/" else ""
-        } ?: ""
+        val prefix =
+            configuration.uploadingMethod?.s3BucketPath?.let { path ->
+                val trimmed = path.trimEnd('/')
+                if (trimmed.isNotEmpty()) "$trimmed/" else ""
+            }
+                ?: ""
         return "${prefix}_airbyte_check_$testId.csv.gz"
     }
 
@@ -259,8 +267,8 @@ class RedshiftChecker(
     /**
      * Builds a gzip-compressed CSV byte array with a header row and one data row.
      *
-     * The columns match the table created by [buildCheckTableSchema]:
-     * `_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, _airbyte_generation_id, test_key`
+     * The columns match the table created by [buildCheckTableSchema]: `_airbyte_raw_id,
+     * _airbyte_extracted_at, _airbyte_meta, _airbyte_generation_id, test_key`
      */
     private fun buildGzipCsv(rawId: String): ByteArray {
         val header =
