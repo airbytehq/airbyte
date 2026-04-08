@@ -81,9 +81,8 @@ data:
           '
         upgradeDeadline: "2024-07-31"
       4.0.0:
-        message: "TBD
-          "
-        upgradeDeadline: "2024-07-31"
+        message: "Version 4.0.0 is a full rewrite of the Redshift destination using the new CDK architecture with direct final-table writes (no raw tables). The configuration shape is unchanged, enabling seamless migration. Selecting Upgrade will upgrade all connections using this destination at their next sync."
+        upgradeDeadline: "2026-05-08"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
