@@ -1,73 +1,28 @@
 # Destination Redshift v2
 
-This is the Redshift v2 destination connector, built with the Airbyte Bulk CDK using the Direct Load pattern.
+This is the repository for the Redshift Destination v2 Connector.
 
-## Implementation Status
+This connector can run in:
 
-### Phase 0: Build System Setup ✅ COMPLETE
+- S3 Staging: Data files are uploaded to the customer's S3 and a load is done into the database from these files
+  directly. This is a directly
+  supported feature of Redshift. Consult Redshift documentation for more information and permissions.
 
-- ✅ Created `build.gradle.kts` with Bulk CDK configuration
-  - Plugin: `airbyte-bulk-connector` with `core = "load"`
-  - Toolkits: `load-csv`, `load-aws`
-  - Dependencies: Redshift JDBC driver, HikariCP, AWS SDK
-- ✅ Created `gradle.properties` with CDK version 1.0.7
-- ✅ Created `metadata.yaml` with connector metadata
-- ✅ Created main entry point `RedshiftDestination.kt`
-- ✅ Verified build compilation works
+This connector has a capability to query the database via an SSH Tunnel (bastion host). This can be useful for
+environments where Redshift has not
+been exposed to the internet.
 
-### Phase 1: Configuration & Specification Layer ✅ COMPLETE
+## Testing
 
-- ✅ Created `RedshiftSpecification.kt` - Configuration specification with backward compatibility
-  - All required fields: host, port, database, schema, username, password
-  - Optional fields: jdbcUrlParams, uploadingMethod (S3)
-  - `S3StagingConfig` data class for S3 staging configuration
-  - `RedshiftSpecificationExtension` for supported sync modes
-  - Full backward compatibility with `@JsonIgnoreProperties(ignoreUnknown = true)`
-  
-- ✅ Created `RedshiftConfiguration.kt` - Typed configuration object
-  - Data class extending `DestinationConfiguration`
-  - Computed properties: `jdbcUrl`, `hasS3Staging`, S3 config accessors
-  - `RedshiftConfigurationFactory` (simplified to single method)
-  - Clean, minimal configuration surface
-  
-- ✅ Created `RedshiftBeanFactory.kt` - Micronaut dependency injection
-  - `tempTableNameGenerator()` bean
-  - `redshiftConfiguration()` bean
-  - `emptyRedshiftDataSource()` for spec operation
-  - `redshiftDataSource()` with HikariCP connection pooling
-  - `aggregatePublishingConfig()` for batch configuration
+Unit tests are run as usual.
 
-- ✅ Created `LEARNING_GUIDE.md` - Comprehensive Kotlin tutorial
-  - 34 Kotlin lessons with Java comparisons
-  - All lessons embedded as comments in the code
-  - Perfect for Java developers learning Kotlin!
+Integration/Acceptance tests are run via the command line with secrets managed out of Google Cloud Secrets Manager.
+Consult the integration test area for Redshift.
 
-### Next Steps: Phase 2 - Schema & Type Mapping Layer
+## Actual secrets
 
-Will implement:
-- `RedshiftTableSchemaMapper.kt` - Table and column name mapping
-- `RedshiftNamingUtils.kt` - Name sanitization utilities
-- Type mapping (Airbyte types → Redshift types)
+The actual secrets for integration tests can be found in Google Cloud Secrets Manager. Search on redshift for the
+labels:
 
-## Building
-
-From the Airbyte repository root:
-
-```bash
-./gradlew :airbyte-integrations:connectors:destination-redshift-v2:build
-```
-
-## Architecture
-
-This connector follows the Bulk CDK Direct Load pattern:
-- Records written directly to typed final tables (no raw tables by default)
-- S3 staging with COPY command for efficient data loading
-- Micronaut for dependency injection
-- HikariCP for connection pooling
-- Backward compatible with legacy Redshift destination configs
-
-## References
-
-- Primary reference: `destination-postgres` (same SQL dialect)
-- Secondary reference: `destination-snowflake` (S3 staging patterns)
-- Plan document: `../destination-redshift/plan.md`
+- SECRET_DESTINATION-REDSHIFT**CREDS - used for Standard tests. (**config.json\_\_)
+- SECRET_DESTINATION-REDSHIFT_STAGING**CREDS - used for S3 Staging tests. (**config_staging.json\_\_)
