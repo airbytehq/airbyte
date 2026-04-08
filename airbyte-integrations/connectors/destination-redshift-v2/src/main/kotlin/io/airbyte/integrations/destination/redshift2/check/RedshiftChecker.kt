@@ -192,9 +192,9 @@ class RedshiftChecker(
             """
                 .trimIndent()
 
-            dataSource.connection.use { conn ->
-                conn.createStatement().use { stmt -> stmt.execute(copySql) }
-            }
+        dataSource.connection.use { conn ->
+            conn.createStatement().use { stmt -> stmt.execute(copySql) }
+        }
     }
 
     /** Queries the test table and verifies that exactly one row was loaded by the COPY command. */

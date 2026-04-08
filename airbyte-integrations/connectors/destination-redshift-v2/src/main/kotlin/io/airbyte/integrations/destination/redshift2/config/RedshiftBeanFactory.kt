@@ -11,11 +11,6 @@ import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.io.PrintWriter
-import java.nio.charset.StandardCharsets
-import java.sql.Connection
-import java.util.logging.Logger
-import javax.sql.DataSource
 
 /** Micronaut Factory for creating and wiring Redshift destination beans. */
 @Factory

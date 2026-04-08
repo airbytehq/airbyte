@@ -26,7 +26,7 @@ data class RedshiftConfiguration(
 @Singleton
 class RedshiftConfigurationFactory :
     DestinationConfigurationFactory<RedshiftSpecification, RedshiftConfiguration> {
-    
+
     override fun makeWithoutExceptionHandling(pojo: RedshiftSpecification): RedshiftConfiguration {
         return RedshiftConfiguration(
             host = pojo.host,
