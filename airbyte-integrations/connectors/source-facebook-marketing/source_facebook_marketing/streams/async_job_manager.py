@@ -5,8 +5,8 @@ import time
 from datetime import timedelta
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
-from .async_job import (AsyncJob,  # ParentAsyncJob not needed here
-                        update_in_batch)
+from .async_job import AsyncJob, update_in_batch  # ParentAsyncJob not needed here
+
 
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
@@ -58,9 +58,7 @@ class APILimit:
         while True:
             self._api.get_account(account_id=self._account_id).get_insights()
             t = self._api.api.ads_insights_throttle
-            self._current_throttle = max(
-                getattr(t, "per_account", 0.0), getattr(t, "per_application", 0.0)
-            )
+            self._current_throttle = max(getattr(t, "per_account", 0.0), getattr(t, "per_application", 0.0))
 
             if self._current_throttle < self.throttle_limit:
                 break
@@ -88,10 +86,7 @@ class APILimit:
 
     @property
     def limit_reached(self) -> bool:
-        return (
-            self._inflight >= self.max_jobs
-            or self._current_throttle >= self.throttle_limit
-        )
+        return self._inflight >= self.max_jobs or self._current_throttle >= self.throttle_limit
 
     @property
     def capacity_reached(self) -> bool:
@@ -171,9 +166,7 @@ class InsightAsyncJobManager:
             if completed:
                 yield from completed
             else:
-                logger.info(
-                    f"No jobs ready to be consumed, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds"
-                )
+                logger.info(f"No jobs ready to be consumed, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
                 time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
 
     # --- Internals ---
