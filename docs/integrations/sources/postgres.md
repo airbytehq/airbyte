@@ -106,7 +106,7 @@ For CDC, you may connect to primary/master databases or replicas. To use a repli
 
 To configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user created in [step 1 of the quick start](#step-1-create-a-dedicated-read-only-postgres-user):
 
-```
+```sql
 ALTER USER <user_name> REPLICATION;
 ```
 
@@ -139,7 +139,7 @@ AWS Aurora implements a [CDC caching layer](https://aws.amazon.com/blogs/databas
 
 Change the replication mode of your Postgres DB on Azure to `logical` using the replication menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the Azure CLI to run the following command:
 
-```
+```bash
 az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
 az postgres server restart --resource-group group --name server
 ```
@@ -150,7 +150,7 @@ Airbyte requires a replication slot configured only for its use. Only one source
 
 For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
 
-```
+```sql
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
@@ -164,16 +164,15 @@ For each table you want to replicate with CDC, follow the steps below:
 
 1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
 
-```
+```sql
 ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
-In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
-ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
+In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider using replica identity type full instead: `ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
-```
+```sql
 CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;
 ```
 
@@ -203,6 +202,20 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/current/logic
 - Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (`updated_at`).
 
 If your goal is to maintain a snapshot of your table in the destination but the limitations prevent you from using CDC, consider using the xmin replication method.
+</FieldAnchor>
+
+<FieldAnchor field="replication_method[Standard]">
+
+### Standard (cursor-based)
+
+Standard replication uses a user-defined cursor column, such as `updated_at`, to track which rows are new or updated since the last sync. This is the simplest replication method, but it cannot detect deletions and requires a suitable cursor column on each table.
+
+This method is a good fit if:
+
+- Your tables have a reliable cursor column that updates on every row change.
+- You don't need to capture deletions.
+- You want the simplest setup with no additional Postgres configuration.
+
 </FieldAnchor>
 
 <FieldAnchor field="replication_method[Xmin]">
@@ -238,7 +251,9 @@ Here is a breakdown of available SSL connection modes:
 
 ### SSH Tunneling
 
-If you are using SSH tunneling, as Airbyte Cloud requires encrypted communication, select `SSH Key Authentication` or `Password Authentication` if you selected `disable`, `allow`, or `prefer` as the SSL Mode; otherwise, the connection will fail.
+If you are on Airbyte Cloud and selected `disable`, `allow`, or `prefer` as the SSL mode, you must use SSH tunneling (`SSH Key Authentication` or `Password Authentication`) to encrypt the connection. Without SSH tunneling, these SSL modes will fail because Airbyte Cloud requires encrypted communication.
+
+SSH tunneling works with all replication methods, including CDC. The connector routes both standard queries and CDC (Debezium) replication traffic through the SSH tunnel.
 
 For SSH Tunnel Method, select:
 
@@ -268,7 +283,7 @@ To connect to a Postgres instance via an SSH tunnel:
 
 The connector supports any SSH compatible key format such as RSA or Ed25519. To generate an RSA key, for example, run:
 
-```
+```bash
 ssh-keygen -t rsa -m PEM -f myuser_rsa
 ```
 
