@@ -93,7 +93,8 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 
     def is_transient_cannot_include_error(exc: FacebookRequestError) -> bool:
         """After migration to API v19.0, some customers randomly face a BAD_REQUEST error (OAuthException) with the pattern:"Cannot include ..."
-        According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry."""
+        According to the last comment in https://developers.facebook.com/community/threads/286697364476462/, this might be a transient issue that can be solved with a retry.
+        """
         pattern = r"Cannot include .* in summary param because they weren't there while creating the report run."
         return bool(exc.http_status() == http.client.BAD_REQUEST and re.search(pattern, exc.api_error_message()))
 
@@ -206,12 +207,15 @@ def traced_exception(fb_exception: FacebookRequestError):
     elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Please set the start date of your sync to be within the last 3 years."
-    elif (fb_exception.api_error_code(), fb_exception.api_error_subcode()) in FACEBOOK_CONFIG_ERRORS_TO_CATCH:
+    elif (
+        fb_exception.api_error_code(),
+        fb_exception.api_error_subcode(),
+    ) in FACEBOOK_CONFIG_ERRORS_TO_CATCH:
         failure_type = FailureType.config_error
         friendly_msg = msg
     elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
         return AirbyteTracedException(
-            message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",
+            message="Rate limit exceeded for Facebook Marketing API ad account.",
             internal_message=str(fb_exception),
             failure_type=FailureType.transient_error,
             exception=fb_exception,

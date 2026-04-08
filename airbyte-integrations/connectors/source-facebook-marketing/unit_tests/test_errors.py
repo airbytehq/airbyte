@@ -464,7 +464,8 @@ class TestRealErrors:
     )
     def test_config_error_that_was_retried_when_reading_nodes(self, requests_mock, name, friendly_msg, config_error_response, failure_type):
         """This test covers errors that have been resolved in the past with a retry strategy, but it could also can fail after retries,
-        then, we need to provide the user with a humanized error explaining what just happened"""
+        then, we need to provide the user with a humanized error explaining what just happened
+        """
         api = API(access_token=some_config["access_token"], page_size=100)
         stream = AdCreatives(api=api, account_ids=some_config["account_ids"])
 
@@ -651,7 +652,11 @@ def test_traced_exception_with_api_error():
 
 def test_traced_exception_without_api_error():
     error = FacebookRequestError(
-        message="Call was unsuccessful. The Facebook API has imploded", request_context={}, http_status=408, http_headers={}, body="{}"
+        message="Call was unsuccessful. The Facebook API has imploded",
+        request_context={},
+        http_status=408,
+        http_headers={},
+        body="{}",
     )
     error.api_error_message = MagicMock(return_value=None)
 
@@ -660,3 +665,28 @@ def test_traced_exception_without_api_error():
     assert isinstance(result, AirbyteTracedException)
     assert result.message == "Error code 408: Call was unsuccessful. The Facebook API has imploded."
     assert result.failure_type == FailureType.system_error
+
+
+@pytest.mark.parametrize(
+    "error_code",
+    [4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008],
+)
+def test_traced_exception_rate_limit_error_message(error_code):
+    """Rate-limit errors should produce a concise, guideline-compliant message
+    classified as transient_error."""
+    error = FacebookRequestError(
+        message="Rate limit hit",
+        request_context={},
+        http_status=400,
+        http_headers={},
+        body=json.dumps({"error": {"message": "Too many calls", "code": error_code}}),
+    )
+    error.api_error_message = MagicMock(return_value="Too many calls")
+
+    result = traced_exception(error)
+
+    assert isinstance(result, AirbyteTracedException)
+    assert result.message == "Rate limit exceeded for Facebook Marketing API ad account."
+    assert result.failure_type == FailureType.transient_error
+    assert len(result.message) <= 120
+    assert "http" not in result.message.lower()

@@ -398,3 +398,60 @@ class TestAPILimit:
 
         # No throttle refresh should have been attempted
         api.get_account.assert_not_called()
+
+    def test_default_max_jobs_is_conservative(self, api):
+        """Default max_jobs should be 10 (not the old value of 100)."""
+        limit = APILimit(api=api, account_id="act_default")
+        assert limit.max_jobs == 10
+
+    def test_refresh_throttle_waits_when_above_limit(self, mocker, api):
+        """
+        When throttle is above the limit, refresh_throttle should sleep and
+        re-check until throttle drops below the limit.
+        """
+        acct = mocker.Mock()
+        api.get_account.return_value = acct
+
+        # First call: throttle high (95%); second call: throttle low (50%)
+        throttle_values = [
+            MyFacebookAdsApi.Throttle(95.0, 95.0),
+            MyFacebookAdsApi.Throttle(50.0, 50.0),
+        ]
+        call_count = [0]
+
+        def update_throttle():
+            api.api.ads_insights_throttle = throttle_values[min(call_count[0], len(throttle_values) - 1)]
+            call_count[0] += 1
+
+        acct.get_insights.side_effect = lambda: update_throttle()
+
+        time_mock = mocker.patch("source_facebook_marketing.streams.async_job_manager.time")
+
+        limit = APILimit(api=api, account_id="act_throttle", throttle_limit=90.0)
+        limit.refresh_throttle()
+
+        # Should have slept once (first check was high, second was low)
+        time_mock.sleep.assert_called_once()
+        # Final throttle should be the low value
+        assert limit.current_throttle == 50.0
+
+    def test_refresh_throttle_gives_up_after_max_wait(self, mocker, api):
+        """
+        If throttle never drops below the limit, refresh_throttle should give up
+        after MAX_THROTTLE_WAIT and proceed.
+        """
+        acct = mocker.Mock()
+        api.get_account.return_value = acct
+
+        # Throttle stays high forever
+        api.api.ads_insights_throttle = MyFacebookAdsApi.Throttle(95.0, 95.0)
+
+        time_mock = mocker.patch("source_facebook_marketing.streams.async_job_manager.time")
+
+        limit = APILimit(api=api, account_id="act_stuck", throttle_limit=90.0)
+        limit.refresh_throttle()
+
+        # Should have slept multiple times before giving up
+        assert time_mock.sleep.call_count >= 1
+        # Throttle value is still high but function returned
+        assert limit.current_throttle == 95.0
