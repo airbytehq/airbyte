@@ -128,7 +128,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
-| 2.1.24-rc.1 | 2026-04-08 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Increase default_concurrency to 5 (iteration 2 of concurrency tuning) |
+| 2.1.23-rc.2 | 2026-04-08 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Increase default_concurrency to 5 (iteration 2 of concurrency tuning) |
 | 2.1.23-rc.1 | 2026-04-06 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Add concurrency_level and num_workers configuration for concurrency tuning |
 | 2.1.22 | 2026-04-01 | [75576](https://github.com/airbytehq/airbyte/pull/75576) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 2.1.21 | 2026-03-31 | [75803](https://github.com/airbytehq/airbyte/pull/75803) | Update dependencies |
