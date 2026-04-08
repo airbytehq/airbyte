@@ -121,7 +121,7 @@ stateDiagram-v2
     running --> failed
 ```
 
-### Queued state (Cloud only)
+### Queued state (Cloud Pro and Enterprise Flex)
 
 On capacity-based Cloud plans, the `queued` state is used when capacity enforcement is active and all committed data workers are in use. A job transitions from `pending` to `queued` when no capacity is available. The job stays in `queued` until capacity frees up, at which point it transitions to `running`.
 

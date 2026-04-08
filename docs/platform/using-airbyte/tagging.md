@@ -96,7 +96,7 @@ Airbyte deletes the tag and removes it from any connections that use it.
 
 In addition to user-created tags, Airbyte can automatically apply system-generated tags to connections.
 
-### Burst tag (Cloud only)
+### Burst tag (Cloud Pro and Enterprise Flex)
 
 When you enable [on-demand capacity](/platform/cloud/managing-airbyte-cloud/manage-data-workers#on-demand-capacity) for a connection, Airbyte automatically applies a "Burst" tag. This tag has an orange gradient background with a star icon and is visually distinct from user-created tags.
 

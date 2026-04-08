@@ -48,11 +48,11 @@ To view the connection status:
     | ![Failed](./assets/connection_action_required.png) | **Failed**  | The most recent sync for this connection failed                                                      |
     | ![Running](./assets/connection_syncing.png)        | **Running** | The connection is currently actively syncing                                                         |
     | ![Paused](./assets/connection_disabled.png)        | **Paused**  | The connection is disabled and isn't scheduled to run automatically                                  |
-    | ![Queued](./assets/connection_queued.png)          | **Queued**  | The connection's sync is waiting for data worker capacity to become available (Cloud only) |
+    | ![Queued](./assets/connection_queued.png)          | **Queued**  | The connection's sync is waiting for data worker capacity to become available (Cloud Pro and Enterprise Flex only) |
 
 4. On the **Status** tab for a connection, there is a list of associated Streams. To the left of the name for each Stream, there is an icon that displays its status.
 
-### Queued connections (Cloud only)
+### Queued connections (Cloud Pro and Enterprise Flex)
 
 On capacity-based Cloud plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
 
