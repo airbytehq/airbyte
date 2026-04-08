@@ -149,6 +149,13 @@ def _download_document_response(stream_name: str, data_format: Optional[str] = "
     return HttpResponse(body=response_body, status_code=HTTPStatus.OK)
 
 
+def _response_with_rate_limit_header(status_code: HTTPStatus, rate_limit_value: str = "0.0167") -> HttpResponse:
+    """Build a 429 response with the x-amzn-RateLimit-Limit header."""
+    body = json.dumps({"errors": [{"code": "QuotaExceeded", "message": "Rate limit exceeded"}]})
+    headers = {"x-amzn-RateLimit-Limit": rate_limit_value}
+    return HttpResponse(body=body, status_code=status_code, headers=headers)
+
+
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh:
     @staticmethod
@@ -317,6 +324,87 @@ class TestFullRefresh:
                 response_with_status(status_code=HTTPStatus.INTERNAL_SERVER_ERROR),
                 _download_document_response(stream_name, data_format=data_format),
             ],
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_429_then_200_when_create_report_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            [_response_with_rate_limit_header(status_code=HTTPStatus.TOO_MANY_REQUESTS), _create_report_response(_REPORT_ID)],
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_429_then_200_when_retrieve_report_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            [
+                _response_with_rate_limit_header(status_code=HTTPStatus.TOO_MANY_REQUESTS),
+                _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
+        )
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_status_429_then_200_when_get_document_url_then_retry_and_return_records(
+        self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            [
+                _response_with_rate_limit_header(status_code=HTTPStatus.TOO_MANY_REQUESTS),
+                _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+            ],
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=data_format),
         )
 
         output = self._read(stream_name, config())

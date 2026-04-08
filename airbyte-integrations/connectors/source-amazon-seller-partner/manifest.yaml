@@ -236,12 +236,12 @@ spec:
       wait_to_avoid_fatal_errors:
         title: Wait between requests to avoid fatal statuses in reports
         type: boolean
-        description: For report based streams with known amount of requests per time
-          period, this option will use waiting time between requests to avoid fatal
-          statuses in reports. See <a href="https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting"
-          target="_blank">Troubleshooting</a> section for more details
+        description: "[Deprecated] This option is no longer functional and will be
+          removed in a future version. Rate-limit handling is now built into the connector\
+          's retry logic."
         default: false
         order: 13
+        airbyte_hidden: true
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
@@ -3050,11 +3050,13 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
+                  - 429
             backoff_strategies:
               - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                 type: CustomBackoffStrategy
@@ -3073,11 +3075,13 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
+                  - 429
             backoff_strategies:
               - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                 type: CustomBackoffStrategy
@@ -3096,11 +3100,13 @@ definitions:
         type: CompositeErrorHandler
         error_handlers:
           - type: DefaultErrorHandler
+            max_retries: 20
             response_filters:
               - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 403
+                  - 429
             backoff_strategies:
               - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
                 type: CustomBackoffStrategy
