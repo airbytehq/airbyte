@@ -12,7 +12,7 @@ The `DpathFlattenFields` transformation has been replaced with a `RecordExpander
 
 #### Example: `invoice_line_items`
 
-**Before (5.x):** A single Stripe event with an invoice containing 3 line items produced one flattened record:
+**Before (5.x):** A single Stripe event with an invoice containing 3 line items produced 1 flattened record:
 
 ```json
 {
@@ -35,7 +35,7 @@ The `DpathFlattenFields` transformation has been replaced with a `RecordExpander
 
 This event emitted **1 record** containing the top-level event fields. The nested line items inside `data.object.lines.data` were lost.
 
-**After (6.0.0):** The same event now emits **3 records**, one per line item:
+**After (6.0.0):** The same event now emits **3 records**, 1 per line item:
 
 ```json
 {"id": "il_1", "amount": 1000, "invoice_id": "in_abc", "invoice_updated": 1712600000}
