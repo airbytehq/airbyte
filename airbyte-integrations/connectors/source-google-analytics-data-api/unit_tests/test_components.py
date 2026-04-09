@@ -248,8 +248,7 @@ def test_complete_oauth_output_specification_does_not_include_access_token():
     properties = output_spec["properties"]
 
     assert "access_token" not in properties, (
-        "access_token must not appear in complete_oauth_output_specification "
-        "because extract_output only extracts refresh_token"
+        "access_token must not appear in complete_oauth_output_specification " "because extract_output only extracts refresh_token"
     )
     assert "refresh_token" in properties
 
