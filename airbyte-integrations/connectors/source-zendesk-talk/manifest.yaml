@@ -566,6 +566,33 @@ concurrency_level:
   default_concurrency: 12
   max_concurrency: 48
 
+# HTTP API Budget: throttle requests per Zendesk Talk API rate limits
+# Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # Incremental Exports (calls, call_legs): 10 requests per minute
+    - type: FixedWindowCallRatePolicy
+      period: "PT1M"
+      call_limit: 10
+      matchers:
+        - method: GET
+          url_path_pattern: "/stats/incremental/"
+    # Current Queue Activity: 2,500 requests per 5 minutes
+    - type: FixedWindowCallRatePolicy
+      period: "PT5M"
+      call_limit: 2500
+      matchers:
+        - method: GET
+          url_path_pattern: "/stats/current_queue_activity"
+    # All Talk API endpoints (catch-all): 15,000 requests per 5 minutes
+    - type: FixedWindowCallRatePolicy
+      period: "PT5M"
+      call_limit: 15000
+      matchers: []
+  ratelimit_reset_header: "Retry-After"
+  status_codes_for_ratelimit_hit: [429]
+
 spec:
   type: Spec
   connection_specification:
