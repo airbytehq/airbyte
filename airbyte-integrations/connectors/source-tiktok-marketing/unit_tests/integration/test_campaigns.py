@@ -71,15 +71,11 @@ class TestCampaignsStream(TestCase):
             config_to_build = config_to_build.with_include_deleted()
         return config_to_build.build()
 
-    def _mock_campaigns_for_all_buying_types(
-        self, http_mocker: HttpMocker, include_deleted: bool = False
-    ):
+    def _mock_campaigns_for_all_buying_types(self, http_mocker: HttpMocker, include_deleted: bool = False):
         """Register mocked responses for each buying type partition."""
         for buying_type in BUYING_TYPES:
             if include_deleted:
-                filtering = json.dumps(
-                    {"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": [buying_type]}
-                )
+                filtering = json.dumps({"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": [buying_type]})
             else:
                 filtering = json.dumps({"buying_types": [buying_type]})
             response = CAMPAIGNS_RESPONSE if buying_type == "AUCTION" else EMPTY_CAMPAIGNS_RESPONSE
@@ -106,9 +102,7 @@ class TestCampaignsStream(TestCase):
         assert output.records[0].record.data["campaign_id"] == 123456789
 
     @HttpMocker()
-    def test_read_with_include_deleted_sends_status_and_buying_type(
-        self, http_mocker: HttpMocker
-    ):
+    def test_read_with_include_deleted_sends_status_and_buying_type(self, http_mocker: HttpMocker):
         """With include_deleted=True, each request includes secondary_status alongside the
         single buying_type."""
         mock_advertisers_slices(http_mocker, self.config(include_deleted=True))
