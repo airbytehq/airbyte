@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.transform.medium
@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
@@ -39,10 +40,12 @@ class JsonRecordConversionTest {
 
     private lateinit var jsonConverter: JsonConverter
 
+    private val jsonConverterConfig = MediumConverterConfig()
+
     @BeforeEach
     fun setup() {
         validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        jsonConverter = JsonConverter(valueCoercer, validationResultHandler)
+        jsonConverter = JsonConverter(valueCoercer, validationResultHandler, jsonConverterConfig)
     }
 
     @Test

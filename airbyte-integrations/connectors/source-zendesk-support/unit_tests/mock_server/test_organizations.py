@@ -43,6 +43,7 @@ class TestOrganizationsStreamFullRefresh(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
+            .with_any_query_params()
             .build(),
             OrganizationsResponseBuilder.organizations_response().with_record(OrganizationsRecordBuilder.organizations_record()).build(),
         )
@@ -55,7 +56,10 @@ class TestOrganizationsStreamFullRefresh(TestCase):
     def test_given_two_pages_when_read_organizations_then_return_all_records(self, http_mocker):
         api_token_authenticator = self._get_authenticator(self._config)
         first_page_request = (
-            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator).with_start_time(self._config["start_date"]).build()
+            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_any_query_params()
+            .build()
         )
 
         # Build the base URL for cursor-based pagination
@@ -109,6 +113,7 @@ class TestOrganizationsStreamIncremental(TestCase):
         http_mocker.get(
             ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
             .with_start_time(self._config["start_date"])
+            .with_any_query_params()
             .build(),
             OrganizationsResponseBuilder.organizations_response()
             .with_record(OrganizationsRecordBuilder.organizations_record().with_field(FieldPath("updated_at"), cursor_value))
@@ -128,7 +133,10 @@ class TestOrganizationsStreamIncremental(TestCase):
         new_cursor_value = datetime_to_string(state_cursor_value.add(timedelta(days=1)))
 
         http_mocker.get(
-            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator).with_start_time(state_cursor_value).build(),
+            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
+            .with_start_time(state_cursor_value)
+            .with_any_query_params()
+            .build(),
             OrganizationsResponseBuilder.organizations_response()
             .with_record(OrganizationsRecordBuilder.organizations_record().with_field(FieldPath("updated_at"), new_cursor_value))
             .build(),

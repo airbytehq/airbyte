@@ -541,7 +541,7 @@ dynamic_streams:
         - type: ComponentMappingDefinition
           field_path:
             - name
-          value: "{{ stream_slice.extra_fields.name.replace(' ', '_').lower().strip() }}/{{ components_values.name.replace(' ', '_').lower().strip() }}/{{ components_values.id }}"
+          value: "{% if config.get('add_base_id_to_stream_name', false) %}{{ stream_slice.extra_fields.name.replace(' ', '_').lower().strip() }}/{{ stream_slice.base_id }}/{{ components_values.name.replace(' ', '_').lower().strip() }}/{{ components_values.id }}{% else %}{{ stream_slice.extra_fields.name.replace(' ', '_').lower().strip() }}/{{ components_values.name.replace(' ', '_').lower().strip() }}/{{ components_values.id }}{% endif %}"
         - type: ComponentMappingDefinition
           field_path:
             - retriever
@@ -611,7 +611,14 @@ spec:
         default: 5
         minimum: 2
         maximum: 40
+      add_base_id_to_stream_name:
+        title: Add Base ID to Stream Name
+        type: boolean
+        description: When enabled, includes the base ID in stream names to ensure uniqueness. Use this if you have cloned Airtable bases with duplicate table names. Note that enabling this will change stream names and require a full refresh.
+        default: false
+        order: 1
       credentials:
+        order: 0
         title: Authentication
         type: object
         oneOf:

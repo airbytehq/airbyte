@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs_data_lake.dataflow
@@ -32,7 +32,7 @@ class GcsDataLakeAggregateFactory(
             icebergTableWriterFactory.create(
                 table = state.table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
-                importType = stream.importType,
+                importType = stream.tableSchema.importType,
                 schema = state.schema
             )
 

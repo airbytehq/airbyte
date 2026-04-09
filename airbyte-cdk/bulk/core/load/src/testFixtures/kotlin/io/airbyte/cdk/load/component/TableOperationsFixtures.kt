@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.component
@@ -699,11 +699,9 @@ object TableOperationsFixtures {
         DestinationStream(
             unmappedNamespace = namespace,
             unmappedName = name,
-            importType = tableSchema.importType,
             generationId = generationId,
             minimumGenerationId = minimumGenerationId,
             syncId = syncId,
-            schema = ObjectType(LinkedHashMap(tableSchema.columnSchema.inputSchema)),
             namespaceMapper = NamespaceMapper(),
             tableSchema = tableSchema,
         )

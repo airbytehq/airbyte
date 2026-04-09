@@ -84,6 +84,24 @@ def test_stream_slice_step_validation(stream_slice_step: str, expected_error_mes
 
 
 @pytest.mark.parametrize(
+    "lookback_window, expected_internal_message",
+    [
+        pytest.param("2023", "Lookback window should be provided in ISO 8601 duration format.", id="not_a_duration"),
+        pytest.param("invalid", "Unable to parse string", id="invalid_string"),
+    ],
+)
+def test_lookback_window_validation(lookback_window: str, expected_internal_message: str):
+    config = {"lookback_window": lookback_window}
+    source = SourceSalesforce(_ANY_CATALOG, config, _ANY_STATE)
+    logger = logging.getLogger("airbyte")
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check_connection(logger, config)
+    assert expected_internal_message in e.value.internal_message
+    assert "The lookback_window value is invalid" in e.value.message
+    assert expected_internal_message in e.value.message
+
+
+@pytest.mark.parametrize(
     "login_status_code, login_json_resp, expected_error_msg",
     [
         (
@@ -481,6 +499,15 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     bulk_stream = generate_stream("Account", stream_config, stream_api)
     rest_stream = bulk_stream.get_standard_instance()
     assert isinstance(rest_stream, IncrementalRestSalesforceStream)
+
+
+def test_convert_to_standard_instance_full_refresh_falls_back_to_rest(stream_config, stream_api):
+    bulk_stream = generate_stream("Account", stream_config, stream_api)
+    assert isinstance(bulk_stream, BulkIncrementalSalesforceStream)
+    bulk_stream._stream_slicer_cursor = None
+    rest_stream = bulk_stream.get_standard_instance()
+    assert isinstance(rest_stream, RestSalesforceStream)
+    assert not isinstance(rest_stream, IncrementalRestSalesforceStream)
 
 
 def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_too_many_properties):

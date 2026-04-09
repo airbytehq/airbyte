@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data
@@ -87,12 +87,9 @@ class AirbyteValueProxyTest {
         DestinationStream(
             unmappedNamespace = "namespace",
             unmappedName = "name",
-            importType = Append,
             generationId = 1,
             minimumGenerationId = 0,
             syncId = 1,
-            includeFiles = false,
-            schema = ALL_TYPES_SCHEMA,
             namespaceMapper = NamespaceMapper(),
             tableSchema =
                 io.airbyte.cdk.load.schema.model.StreamTableSchema(
