@@ -13,10 +13,9 @@ from .advetiser_slices import mock_advertisers_slices
 from .config_builder import ConfigBuilder
 
 
-BUYING_TYPES_FILTER = '{"buying_types": ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_REACH_FREQUENCY"]}'
-INCLUDE_DELETED_FILTER = (
-    '{"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_REACH_FREQUENCY"]}'
-)
+BUYING_TYPES = ["AUCTION", "RESERVATION_TOP_VIEW", "RESERVATION_RF"]
+
+CAMPAIGNS_URL = "https://business-api.tiktok.com/open_api/v1.3/campaign/get/"
 
 CAMPAIGNS_RESPONSE = {
     "code": 0,
@@ -41,14 +40,23 @@ CAMPAIGNS_RESPONSE = {
     },
 }
 
+EMPTY_CAMPAIGNS_RESPONSE = {
+    "code": 0,
+    "message": "ok",
+    "data": {
+        "list": [],
+        "page_info": {"total_number": 0, "page": 1, "page_size": 1000, "total_page": 1},
+    },
+}
+
 
 class TestCampaignsStream(TestCase):
     """Tests for the campaigns stream buying_types filter.
 
     The TikTok Marketing API's /campaign/get/ endpoint defaults to returning
     only AUCTION buying type campaigns unless an explicit buying_types filter
-    is provided. These tests verify that the connector always sends the
-    buying_types filter to include all campaign types.
+    is provided. RESERVATION_TOP_VIEW cannot be combined with other buying
+    types, so the connector must make separate API calls per buying type.
     """
 
     stream_name = "campaigns"
@@ -63,42 +71,48 @@ class TestCampaignsStream(TestCase):
             config_to_build = config_to_build.with_include_deleted()
         return config_to_build.build()
 
+    def _mock_campaigns_for_all_buying_types(
+        self, http_mocker: HttpMocker, include_deleted: bool = False
+    ):
+        """Register mocked responses for each buying type partition."""
+        for buying_type in BUYING_TYPES:
+            if include_deleted:
+                filtering = json.dumps(
+                    {"secondary_status": "CAMPAIGN_STATUS_ALL", "buying_types": [buying_type]}
+                )
+            else:
+                filtering = json.dumps({"buying_types": [buying_type]})
+            response = CAMPAIGNS_RESPONSE if buying_type == "AUCTION" else EMPTY_CAMPAIGNS_RESPONSE
+            http_mocker.get(
+                HttpRequest(
+                    url=CAMPAIGNS_URL,
+                    query_params={
+                        "page_size": 1000,
+                        "advertiser_id": self.advertiser_id,
+                        "filtering": filtering,
+                    },
+                ),
+                HttpResponse(body=json.dumps(response), status_code=200),
+            )
+
     @HttpMocker()
-    def test_read_sends_buying_types_filter(self, http_mocker: HttpMocker):
-        """Without include_deleted, the filtering param should contain only buying_types."""
+    def test_read_sends_separate_request_per_buying_type(self, http_mocker: HttpMocker):
+        """Each buying type gets its own API call with a single-element buying_types filter."""
         mock_advertisers_slices(http_mocker, self.config())
-        http_mocker.get(
-            HttpRequest(
-                url="https://business-api.tiktok.com/open_api/v1.3/campaign/get/",
-                query_params={
-                    "page_size": 1000,
-                    "advertiser_id": self.advertiser_id,
-                    "filtering": BUYING_TYPES_FILTER,
-                },
-            ),
-            HttpResponse(body=json.dumps(CAMPAIGNS_RESPONSE), status_code=200),
-        )
+        self._mock_campaigns_for_all_buying_types(http_mocker, include_deleted=False)
 
         output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
         assert len(output.records) == 1
         assert output.records[0].record.data["campaign_id"] == 123456789
 
     @HttpMocker()
-    def test_read_with_include_deleted_sends_buying_types_and_status_filter(self, http_mocker: HttpMocker):
-        """With include_deleted=True, the filtering param should contain both
-        secondary_status and buying_types."""
+    def test_read_with_include_deleted_sends_status_and_buying_type(
+        self, http_mocker: HttpMocker
+    ):
+        """With include_deleted=True, each request includes secondary_status alongside the
+        single buying_type."""
         mock_advertisers_slices(http_mocker, self.config(include_deleted=True))
-        http_mocker.get(
-            HttpRequest(
-                url="https://business-api.tiktok.com/open_api/v1.3/campaign/get/",
-                query_params={
-                    "page_size": 1000,
-                    "advertiser_id": self.advertiser_id,
-                    "filtering": INCLUDE_DELETED_FILTER,
-                },
-            ),
-            HttpResponse(body=json.dumps(CAMPAIGNS_RESPONSE), status_code=200),
-        )
+        self._mock_campaigns_for_all_buying_types(http_mocker, include_deleted=True)
 
         output = read(
             get_source(config=self.config(include_deleted=True), state=None),
