@@ -14716,6 +14716,536 @@ streams:
   primary_key:
   - "recording_id"
   - "sequence_number"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      path: "/phone/call_history"
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 30
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "call_logs"
+      type: RecordSelector
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        id:
+          type:
+          - 'null'
+          - string
+          description: "Unique identifier for the call log entry"
+        call_id:
+          type:
+          - 'null'
+          - string
+          description: "The call ID"
+        direction:
+          type:
+          - 'null'
+          - string
+          description: "Call direction: inbound or outbound"
+        caller_name:
+          type:
+          - 'null'
+          - string
+          description: "Name of the caller"
+        caller_did_number:
+          type:
+          - 'null'
+          - string
+          description: "Direct inward dialing number of the caller"
+        caller_number:
+          type:
+          - 'null'
+          - string
+          description: "Phone number of the caller"
+        caller_number_type:
+          type:
+          - 'null'
+          - integer
+          description: "Type of caller number (1=Extension, 2=External)"
+        callee_name:
+          type:
+          - 'null'
+          - string
+          description: "Name of the callee"
+        callee_did_number:
+          type:
+          - 'null'
+          - string
+          description: "Direct inward dialing number of the callee"
+        callee_number:
+          type:
+          - 'null'
+          - string
+          description: "Phone number of the callee"
+        callee_number_type:
+          type:
+          - 'null'
+          - integer
+          description: "Type of callee number (1=Extension, 2=External)"
+        callee_ext_type:
+          type:
+          - 'null'
+          - string
+          description: "Extension type of the callee"
+        duration:
+          type:
+          - 'null'
+          - integer
+          description: "Call duration in seconds"
+        start_time:
+          type:
+          - 'null'
+          - string
+          description: "Start time of the call"
+        end_time:
+          type:
+          - 'null'
+          - string
+          description: "End time of the call"
+        call_result:
+          type:
+          - 'null'
+          - string
+          description: "Result of the call (e.g., answered, missed)"
+        result_reason:
+          type:
+          - 'null'
+          - string
+          description: "Reason for the call result"
+        department:
+          type:
+          - 'null'
+          - string
+          description: "Department of the user"
+        cost_center:
+          type:
+          - 'null'
+          - string
+          description: "Cost center associated with the call"
+        site_id:
+          type:
+          - 'null'
+          - string
+          description: "Site ID where the call was made"
+        site_name:
+          type:
+          - 'null'
+          - string
+          description: "Site name where the call was made"
+        recording_status:
+          type:
+          - 'null'
+          - string
+          description: "Recording status of the call"
+        segment:
+          type:
+          - 'null'
+          - integer
+          description: "Call segment number"
+        node:
+          type:
+          - 'null'
+          - integer
+          description: "Call node number"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "start_time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2020-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "from"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "to"
+      inject_into: "request_parameter"
+    cursor_granularity: "P1D"
+    step: "P1M"
+  type: DeclarativeStream
+  name: "phone_call_history"
+  primary_key: "id"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      path: "/phone/recordings"
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 300
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_path:
+        - "recordings"
+      type: RecordSelector
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        id:
+          type:
+          - 'null'
+          - string
+          description: "Unique identifier for the recording"
+        call_log_id:
+          type:
+          - 'null'
+          - string
+          description: "Associated call log ID"
+        call_id:
+          type:
+          - 'null'
+          - string
+          description: "The call ID"
+        caller_number:
+          type:
+          - 'null'
+          - string
+          description: "Phone number of the caller"
+        caller_number_type:
+          type:
+          - 'null'
+          - integer
+          description: "Type of caller number (1=Extension, 2=External)"
+        caller_name:
+          type:
+          - 'null'
+          - string
+          description: "Name of the caller"
+        callee_number:
+          type:
+          - 'null'
+          - string
+          description: "Phone number of the callee"
+        callee_number_type:
+          type:
+          - 'null'
+          - integer
+          description: "Type of callee number (1=Extension, 2=External)"
+        callee_name:
+          type:
+          - 'null'
+          - string
+          description: "Name of the callee"
+        direction:
+          type:
+          - 'null'
+          - string
+          description: "Call direction: inbound or outbound"
+        duration:
+          type:
+          - 'null'
+          - integer
+          description: "Recording duration in seconds"
+        date_time:
+          type:
+          - 'null'
+          - string
+          description: "Date and time of the recording"
+        end_time:
+          type:
+          - 'null'
+          - string
+          description: "End time of the recording"
+        download_url:
+          type:
+          - 'null'
+          - string
+          description: "URL to download the recording file"
+        file_url:
+          type:
+          - 'null'
+          - string
+          description: "URL to the recording file"
+        recording_type:
+          type:
+          - 'null'
+          - string
+          description: "Type of recording (e.g., Automatic)"
+        disclaimer_status:
+          type:
+          - 'null'
+          - string
+          description: "Status of recording disclaimer"
+        owner:
+          type:
+          - 'null'
+          - object
+          description: "Owner of the recording"
+          properties:
+            type:
+              type:
+              - 'null'
+              - string
+            id:
+              type:
+              - 'null'
+              - string
+            name:
+              type:
+              - 'null'
+              - string
+            extension_number:
+              type:
+              - 'null'
+              - string
+        site:
+          type:
+          - 'null'
+          - object
+          description: "Site information"
+          properties:
+            id:
+              type:
+              - 'null'
+              - string
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "date_time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2020-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "from"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "to"
+      inject_into: "request_parameter"
+    cursor_granularity: "P1D"
+    step: "P1M"
+  type: DeclarativeStream
+  name: "phone_recordings"
+  primary_key: "id"
+- retriever:
+    requester:
+      url_base: "https://api.zoom.us/v2"
+      http_method: "GET"
+      authenticator:
+        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
+        client_id: "{{ config['client_id'] }}"
+        account_id: "{{ config['account_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
+        grant_type: "account_credentials"
+        type: CustomAuthenticator
+      path: "/phone/recordings"
+      type: HttpRequester
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.next_page_token }}"
+        stop_condition: "{{ response.next_page_token == '' }}"
+        page_size: 300
+      page_size_option:
+        field_name: "page_size"
+        inject_into: "request_parameter"
+        type: RequestOption
+      page_token_option:
+        type: RequestOption
+        field_name: "next_page_token"
+        inject_into: "request_parameter"
+    record_selector:
+      extractor:
+        class_name: source_declarative_manifest.components.PhoneTranscriptContentExtractor
+        type: CustomRecordExtractor
+      type: RecordSelector
+    type: SimpleRetriever
+  schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        recording_id:
+          type:
+          - 'null'
+          - string
+          description: "The unique identifier of the phone recording"
+        call_id:
+          type:
+          - 'null'
+          - string
+          description: "The call ID"
+        call_log_id:
+          type:
+          - 'null'
+          - string
+          description: "The call log ID"
+        caller_name:
+          type:
+          - 'null'
+          - string
+          description: "Name of the caller"
+        caller_number:
+          type:
+          - 'null'
+          - string
+          description: "Phone number of the caller"
+        callee_name:
+          type:
+          - 'null'
+          - string
+          description: "Name of the callee"
+        callee_number:
+          type:
+          - 'null'
+          - string
+          description: "Phone number of the callee"
+        direction:
+          type:
+          - 'null'
+          - string
+          description: "Call direction: inbound or outbound"
+        call_date_time:
+          type:
+          - 'null'
+          - string
+          description: "Date and time of the call"
+        call_duration:
+          type:
+          - 'null'
+          - integer
+          description: "Duration of the call in seconds"
+        owner_id:
+          type:
+          - 'null'
+          - string
+          description: "ID of the recording owner"
+        owner_name:
+          type:
+          - 'null'
+          - string
+          description: "Name of the recording owner"
+        sequence_number:
+          type:
+          - 'null'
+          - integer
+          description: "The sequence number of this transcript segment"
+        timestamp_start:
+          type:
+          - 'null'
+          - string
+          description: "Start timestamp of the transcript segment (HH:MM:SS.mmm)"
+        timestamp_end:
+          type:
+          - 'null'
+          - string
+          description: "End timestamp of the transcript segment (HH:MM:SS.mmm)"
+        speaker:
+          type:
+          - 'null'
+          - string
+          description: "The name of the speaker (if identified in the transcript)"
+        text:
+          type:
+          - 'null'
+          - string
+          description: "The transcribed text content"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "call_date_time"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "2020-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "from"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "to"
+      inject_into: "request_parameter"
+    cursor_granularity: "P1D"
+    step: "P1M"
+  type: DeclarativeStream
+  name: "phone_recording_transcripts"
+  primary_key:
+  - "recording_id"
+  - "sequence_number"
 check:
   stream_names:
   - "users"

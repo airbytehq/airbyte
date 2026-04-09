@@ -29,6 +29,9 @@ Currently this source supports the following output streams/endpoints from Zoom:
 - [Report Webinar Participants](https://marketplace.zoom.us/docs/api-reference/zoom-api/reports/reportwebinarparticipants)
 - [Recordings](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Cloud recordings including video, audio, and transcript files (supports incremental sync)
   - [Recording Transcript Content](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/recordingsList) - Parsed transcript content from VTT files with timestamps and speaker identification (supports incremental sync)
+- [Phone Call History](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/accountCallHistory) - Zoom Phone call logs (supports incremental sync on `start_time`)
+- [Phone Recordings](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/getPhoneRecordings) - Zoom Phone call recordings (supports incremental sync on `date_time`)
+  - [Phone Recording Transcripts](https://developers.zoom.us/docs/api/rest/reference/phone/methods/#operation/phoneDownloadRecordingTranscript) - Parsed Zoom Phone recording transcripts, flattened to one row per utterance (supports incremental sync on `call_date_time`)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -43,7 +46,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 | Namespaces                    | No          |
 
 :::note Incremental Sync
-Incremental sync is supported for the `recordings` and `recording_transcript_content` streams using the meeting start time as the cursor field. Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
+Incremental sync is supported for the `recordings`, `recording_transcript_content`, `phone_call_history`, `phone_recordings`, and `phone_recording_transcripts` streams. Due to Zoom API limitations, date filtering is at day-level granularity, which may result in some duplicate records at date boundaries.
 :::
 
 ### Performance considerations
@@ -68,6 +71,15 @@ To sync cloud recordings and transcripts, the following requirements must be met
 
 Without these prerequisites, the `recordings` and `recording_transcript_content` streams will return empty results.
 
+### Prerequisites for Phone Streams
+
+To sync Zoom Phone data, the following requirements must be met:
+
+- **Zoom Phone License**: A Zoom Phone license must be enabled on the account
+- **API Scopes**: The Server-to-Server OAuth app must have the `phone:read:admin` scope
+
+Without these prerequisites, the `phone_call_history`, `phone_recordings`, and `phone_recording_transcripts` streams will return empty results.
+
 ### Setup guide
 
 Please read [How to generate your Server-to-Server OAuth app ](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
@@ -85,7 +97,7 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 1.3.0 | 2026-02-03 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings stream with transcript support |
+| 1.3.0 | 2026-02-03 | [72784](https://github.com/airbytehq/airbyte/pull/72784) | Add recordings, phone call history, phone recordings, and phone recording transcripts streams |
 | 1.2.40 | 2026-01-14 | [71380](https://github.com/airbytehq/airbyte/pull/71380) | Update dependencies |
 | 1.2.39 | 2025-12-18 | [70796](https://github.com/airbytehq/airbyte/pull/70796) | Update dependencies |
 | 1.2.38 | 2025-11-25 | [70145](https://github.com/airbytehq/airbyte/pull/70145) | Update dependencies |

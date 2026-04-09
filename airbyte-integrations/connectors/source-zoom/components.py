@@ -299,3 +299,149 @@ class TranscriptContentExtractor(RecordExtractor):
                         **record,
                     }
                     yield enriched_record
+
+
+@dataclass
+class PhoneTranscriptContentExtractor(RecordExtractor):
+    """
+    Custom record extractor that fetches and parses Zoom Phone recording transcripts.
+
+    This extractor:
+    1. Gets the phone recordings from the /phone/recordings API response
+    2. For each recording, fetches the transcript from /phone/recording_transcript/download/{recordingId}
+    3. Parses the transcript content (VTT or plain text)
+    4. Yields enriched records with call metadata
+    """
+
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._parameters = parameters
+        self._logger = logging.getLogger("airbyte.PhoneTranscriptContentExtractor")
+        self._authenticator: Optional[ServerToServerOauthAuthenticator] = None
+
+    def _get_authenticator(self) -> ServerToServerOauthAuthenticator:
+        """Get or create the authenticator instance."""
+        if self._authenticator is None:
+            self._authenticator = ServerToServerOauthAuthenticator(
+                config=self.config,
+                account_id=self.config.get("account_id", ""),
+                client_id=self.config.get("client_id", ""),
+                client_secret=self.config.get("client_secret", ""),
+                authorization_endpoint=self.config.get("authorization_endpoint", "https://zoom.us/oauth/token"),
+                parameters={},
+            )
+        return self._authenticator
+
+    def _fetch_transcript(self, recording_id: str) -> Optional[str]:
+        """Fetch transcript content from the phone recording transcript download endpoint."""
+        try:
+            auth = self._get_authenticator()
+            if auth.token is None or ((time.time() - auth._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
+                auth._access_token = auth.generate_access_token()
+                auth._generate_token_time = time.time()
+
+            headers = {"Authorization": f"Bearer {auth.token}"}
+            url = f"https://api.zoom.us/v2/phone/recording_transcript/download/{recording_id}"
+            response = requests.get(url, headers=headers, timeout=60)
+
+            if response.status_code == 404:
+                return None
+
+            response.raise_for_status()
+
+            # Check if the response is a JSON error
+            try:
+                json_response = response.json()
+                if "code" in json_response:
+                    self._logger.debug(
+                        f"Transcript not available for recording {recording_id}: {json_response.get('message', 'Unknown error')}"
+                    )
+                    return None
+            except (ValueError, Exception):
+                pass  # Not JSON, which is expected for transcript content
+
+            return response.text
+        except Exception as e:
+            self._logger.warning(f"Failed to fetch transcript for recording {recording_id}: {e}")
+            return None
+
+    def extract_records(
+        self,
+        response: requests.Response,
+        stream_slice: Optional[StreamSlice] = None,
+        **kwargs: Any,
+    ) -> Iterable[MutableMapping[str, Any]]:
+        """
+        Extract transcript records from the phone recordings API response.
+
+        For each recording, this method fetches the transcript and yields structured records.
+        """
+        try:
+            response_json = response.json()
+        except Exception:
+            return
+
+        recordings = response_json.get("recordings", [])
+
+        for recording in recordings:
+            recording_id = recording.get("id", "")
+            if not recording_id:
+                continue
+
+            call_id = recording.get("call_id", "")
+            call_log_id = recording.get("call_log_id", "")
+            caller_name = recording.get("caller_name", "")
+            caller_number = recording.get("caller_number", "")
+            callee_name = recording.get("callee_name", "")
+            callee_number = recording.get("callee_number", "")
+            direction = recording.get("direction", "")
+            date_time = recording.get("date_time", "")
+            duration = recording.get("duration", 0)
+            owner = recording.get("owner", {})
+
+            transcript_content = self._fetch_transcript(recording_id)
+            if not transcript_content:
+                continue
+
+            # Check if VTT format and parse accordingly
+            if transcript_content.strip().startswith("WEBVTT"):
+                transcript_records = parse_vtt_content(transcript_content)
+                for record in transcript_records:
+                    yield {
+                        "recording_id": recording_id,
+                        "call_id": call_id,
+                        "call_log_id": call_log_id,
+                        "caller_name": caller_name,
+                        "caller_number": caller_number,
+                        "callee_name": callee_name,
+                        "callee_number": callee_number,
+                        "direction": direction,
+                        "call_date_time": date_time,
+                        "call_duration": duration,
+                        "owner_id": owner.get("id", "") if isinstance(owner, dict) else "",
+                        "owner_name": owner.get("name", "") if isinstance(owner, dict) else "",
+                        **record,
+                    }
+            else:
+                # Return as a single text record for non-VTT transcripts
+                yield {
+                    "recording_id": recording_id,
+                    "call_id": call_id,
+                    "call_log_id": call_log_id,
+                    "caller_name": caller_name,
+                    "caller_number": caller_number,
+                    "callee_name": callee_name,
+                    "callee_number": callee_number,
+                    "direction": direction,
+                    "call_date_time": date_time,
+                    "call_duration": duration,
+                    "owner_id": owner.get("id", "") if isinstance(owner, dict) else "",
+                    "owner_name": owner.get("name", "") if isinstance(owner, dict) else "",
+                    "sequence_number": 1,
+                    "timestamp_start": None,
+                    "timestamp_end": None,
+                    "speaker": None,
+                    "text": transcript_content.strip(),
+                }
