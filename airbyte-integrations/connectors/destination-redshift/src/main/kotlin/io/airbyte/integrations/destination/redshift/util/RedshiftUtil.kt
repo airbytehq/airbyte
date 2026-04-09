@@ -28,9 +28,7 @@ object RedshiftUtil {
     @JvmStatic
     fun anyOfS3FieldsAreNullOrEmpty(jsonNode: JsonNode): Boolean {
         return (isNullOrEmpty(jsonNode["s3_bucket_name"]) &&
-            isNullOrEmpty(jsonNode["s3_bucket_region"]) &&
-            isNullOrEmpty(jsonNode["access_key_id"]) &&
-            isNullOrEmpty(jsonNode["secret_access_key"]))
+            isNullOrEmpty(jsonNode["s3_bucket_region"]))
     }
 
     private fun isNullOrEmpty(jsonNode: JsonNode?): Boolean {
