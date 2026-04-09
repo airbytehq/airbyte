@@ -69,11 +69,23 @@ class ObjectLoaderUploadCompleter<T : RemoteObject<*>>(val objectLoader: ObjectL
                     )
                 state.partBookkeeper.add(part)
                 if (state.partBookkeeper.isComplete) {
-                    log.info {
-                        "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey}, finishing (state $state)"
+                    if (state.partBookkeeper.isEmpty) {
+                        // All parts were empty (no data was ever uploaded).
+                        // Skip completing the upload to avoid creating a 0-byte
+                        // object which would lack valid file headers/footers
+                        // (e.g. Parquet magic bytes), causing schema mismatch
+                        // errors in downstream readers.
+                        log.info {
+                            "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey} but all parts were empty, skipping upload (state $state)"
+                        }
+                        FinalOutput(UploadResult(objectLoader.stateAfterUpload, null))
+                    } else {
+                        log.info {
+                            "Loaded part ${input.partIndex} (isFinal=${input.isFinal}) completes ${state.objectKey}, finishing (state $state)"
+                        }
+                        val obj = input.upload.await().complete()
+                        FinalOutput(UploadResult(objectLoader.stateAfterUpload, obj))
                     }
-                    val obj = input.upload.await().complete()
-                    FinalOutput(UploadResult(objectLoader.stateAfterUpload, obj))
                 } else {
                     log.debug {
                         "After loaded part ${input.partIndex} (isFinal=${input.isFinal}), ${state.objectKey} still incomplete, not finishing (state $state)"
