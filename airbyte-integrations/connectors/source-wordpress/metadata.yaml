@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c71d6f95-a912-432b-ad96-73ded4be7b9c
-  dockerImageTag: 0.0.48
+  dockerImageTag: 0.0.49
   dockerRepository: airbyte/source-wordpress
   githubIssueLabel: source-wordpress
   icon: icon.svg
