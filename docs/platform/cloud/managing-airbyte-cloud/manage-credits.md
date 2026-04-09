@@ -89,10 +89,6 @@ In the Invoices section, you can review any past invoices. All invoices have an 
 
 You can view more details about an individual invoice by clicking **View Invoice**.
 
-## On-demand capacity credits
-
-If your organization uses [on-demand capacity](./manage-data-workers.md#on-demand-capacity), syncs that run when committed data worker capacity is exhausted consume organization credits at a premium rate.
-
 ## Billing notifications
 
 By default, all customers automatically review upcoming invoice notifications 3 and 7 days before the invoice is finalized. All billing notifications are sent to the billing email on file.
