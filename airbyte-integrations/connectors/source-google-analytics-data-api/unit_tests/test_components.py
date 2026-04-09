@@ -2,9 +2,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
 from typing import Dict, List, Union
 
 import pytest
+import yaml
 
 
 _CONFIG = {
@@ -225,3 +227,30 @@ def test_not_expression_dimension_filter_config_transformation(components_module
     }
 
     assert config["custom_reports_array"][0]["dimensionFilter"] == expected_dimension_filter
+
+
+def test_complete_oauth_output_specification_only_contains_refresh_token():
+    """Verify that complete_oauth_output_specification only declares refresh_token.
+
+    access_token must NOT be listed because the oauth_connector_input_specification
+    uses extract_output: [refresh_token].  If access_token were present, the platform
+    would try to merge a null access_token into the connector config when users create
+    sources via the public API with secretId, causing a 422 schema-validation error.
+
+    Regression test for https://github.com/airbytehq/oncall/issues/11935
+    """
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text())
+
+    oauth_spec = manifest["spec"]["advanced_auth"]["oauth_config_specification"]
+
+    # extract_output should only list refresh_token
+    assert oauth_spec["oauth_connector_input_specification"]["extract_output"] == ["refresh_token"]
+
+    # complete_oauth_output_specification must match extract_output
+    output_props = oauth_spec["complete_oauth_output_specification"]["properties"]
+    assert "refresh_token" in output_props, "refresh_token must be in complete_oauth_output_specification"
+    assert "access_token" not in output_props, (
+        "access_token must NOT be in complete_oauth_output_specification "
+        "because it is not in extract_output and would cause a 422 when merging a null value"
+    )
