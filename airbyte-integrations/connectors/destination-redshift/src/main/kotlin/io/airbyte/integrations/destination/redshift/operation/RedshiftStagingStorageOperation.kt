@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
+import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialType
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.integrations.base.destination.operation.StorageOperation
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
@@ -36,6 +37,7 @@ class RedshiftStagingStorageOperation(
     private val sqlGenerator: RedshiftSqlGenerator,
     private val destinationHandler: RedshiftDestinationHandler,
     private val dropCascade: Boolean,
+    private val iamRoleArn: String? = null,
 ) : StorageOperation<SerializableBuffer> {
     private val connectionId: UUID = UUID.randomUUID()
     private val writeDatetime: ZonedDateTime = Instant.now().atZone(ZoneOffset.UTC)
@@ -241,23 +243,55 @@ class RedshiftStagingStorageOperation(
         tableName: String,
         suffix: String,
     ) {
-        val accessKeyId =
-            s3Config.s3CredentialConfig!!.s3CredentialsProvider.credentials.awsAccessKeyId
-        val secretAccessKey =
-            s3Config.s3CredentialConfig!!.s3CredentialsProvider.credentials.awsSecretKey
+        val credentialClause = buildCredentialClause()
 
         val copyQuery =
             """
             COPY $schemaName.$tableName$suffix FROM '${getFullS3Path(s3Config.bucketName!!, manifestPath)}'
-            CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'
+            $credentialClause
             CSV GZIP
             REGION '${s3Config.bucketRegion}' TIMEFORMAT 'auto'
             STATUPDATE OFF
             MANIFEST;
             """.trimIndent()
 
-        // Disable statement logging. The statement contains a plaintext S3 secret+access key.
+        // Disable statement logging. The statement may contain plaintext credentials.
         destinationHandler.execute(Sql.of(copyQuery), logStatements = false)
+    }
+
+    internal fun buildCredentialClause(): String {
+        val credentialType = s3Config.s3CredentialConfig!!.credentialType
+        return when (credentialType) {
+            S3CredentialType.ACCESS_KEY -> {
+                val accessKeyId =
+                    s3Config.s3CredentialConfig!!.s3CredentialsProvider.credentials.awsAccessKeyId
+                val secretAccessKey =
+                    s3Config.s3CredentialConfig!!.s3CredentialsProvider.credentials.awsSecretKey
+                "CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'"
+            }
+            S3CredentialType.ASSUME_ROLE -> {
+                val creds = s3Config.s3CredentialConfig!!.s3CredentialsProvider.credentials
+                val accessKeyId = creds.awsAccessKeyId
+                val secretAccessKey = creds.awsSecretKey
+                val sessionToken =
+                    (creds as? com.amazonaws.auth.BasicSessionCredentials)?.sessionToken
+                if (sessionToken != null) {
+                    "CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey;token=$sessionToken'"
+                } else {
+                    "CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'"
+                }
+            }
+            S3CredentialType.DEFAULT_PROFILE -> {
+                if (iamRoleArn != null) {
+                    require(iamRoleArn.matches(Regex("arn:aws[a-zA-Z-]*:iam::\\d{12}:role/.+"))) {
+                        "Invalid IAM role ARN format: $iamRoleArn"
+                    }
+                    "IAM_ROLE '$iamRoleArn'"
+                } else {
+                    "IAM_ROLE default"
+                }
+            }
+        }
     }
 
     companion object {
