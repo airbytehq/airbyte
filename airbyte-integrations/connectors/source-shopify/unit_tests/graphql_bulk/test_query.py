@@ -42,6 +42,7 @@ def test_bulk_query_prepare() -> None:
                     query: """
                     {some_query}
                     """
+                    groupObjects: true
                 ) {
                     bulkOperation {
                         id
@@ -59,6 +60,25 @@ def test_bulk_query_prepare() -> None:
     input_query_from_slice = "{some_query}"
     template = ShopifyBulkTemplates.prepare(input_query_from_slice)
     assert repr(template) == repr(expected)
+
+
+def test_bulk_query_prepare_includes_group_objects() -> None:
+    """
+    Verify that the bulkOperationRunQuery mutation explicitly sets groupObjects: true.
+
+    Starting with Shopify API version 2025-10, the groupObjects parameter defaults to false
+    instead of true. Without explicit groupObjects: true, the JSONL output from bulk operations
+    is not grouped by parent, causing the record composition logic in ShopifyBulkRecord to
+    accumulate unbounded buffers and eventually OOM.
+
+    See: https://shopify.dev/changelog/bulk-operations-group-objects-default-changed-to-false
+    """
+    query = "{products { edges { node { id } } } }"
+    result = ShopifyBulkTemplates.prepare(query)
+    assert "groupObjects: true" in result, (
+        "bulkOperationRunQuery mutation must include 'groupObjects: true' to ensure "
+        "grouped JSONL output for record composition (required since API version 2025-10)"
+    )
 
 
 def test_bulk_query_cancel() -> None:
