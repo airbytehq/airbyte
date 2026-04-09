@@ -67,8 +67,8 @@ class AirbyteConnectorRunnable : Runnable {
 
     companion object {
         /**
-         * Walks the cause chain of [e] looking for a [ConnectorErrorException]. Returns the
-         * deepest one found so the most specific message is preserved, or null if none exists.
+         * Walks the cause chain of [e] looking for a [ConnectorErrorException]. Returns the deepest
+         * one found so the most specific message is preserved, or null if none exists.
          */
         fun unwrapConnectorError(e: Throwable): ConnectorErrorException? {
             var result: ConnectorErrorException? = null
