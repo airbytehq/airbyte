@@ -187,12 +187,12 @@ definitions:
           http_codes: [400]
           action: FAIL
           failure_type: config_error
-          error_message: "GA4 API request contains invalid report parameters. Verify that custom report dimensions and metrics are correctly categorized per the GA4 API schema."
+          error_message: "{{ response.error.message }}"
         - type: HttpResponseFilter
           http_codes: [403]
           action: FAIL
           failure_type: config_error
-          error_message: "Access denied to the configured GA4 property. Verify the property ID and account permissions."
+          error_message: "{{ response.error.message }}"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
