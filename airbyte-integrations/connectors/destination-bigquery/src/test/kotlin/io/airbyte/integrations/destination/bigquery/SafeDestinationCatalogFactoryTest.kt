@@ -6,7 +6,12 @@ package io.airbyte.integrations.destination.bigquery
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryRegion
+import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -62,10 +67,43 @@ class SafeDestinationCatalogFactoryTest {
         val factory = SafeDestinationCatalogFactory()
         val namespaceMapper = mockk<NamespaceMapper>(relaxed = true)
 
-        val destCatalog = factory.checkCatalog(namespaceMapper, "custom_check_ns")
+        val destCatalog = factory.checkCatalog(namespaceMapper, "custom_check_ns", config())
 
         assertEquals(1, destCatalog.streams.size)
         assertEquals("custom_check_ns", destCatalog.streams.first().unmappedNamespace)
         assert(destCatalog.streams.first().unmappedName.startsWith("test"))
     }
+
+    @Test
+    fun `test checkCatalog adds default partitioning field to check stream schema`() {
+        val factory = SafeDestinationCatalogFactory()
+        val namespaceMapper = mockk<NamespaceMapper>(relaxed = true)
+
+        val destCatalog =
+            factory.checkCatalog(
+                namespaceMapper,
+                "custom_check_ns",
+                config(defaultPartitioningField = "created_at"),
+            )
+
+        val schema = destCatalog.streams.first().schema as ObjectType
+        assert(schema.properties.containsKey("created_at"))
+    }
+
+    private fun config(defaultPartitioningField: String? = null): BigqueryConfiguration =
+        BigqueryConfiguration(
+            projectId = "test-project",
+            datasetLocation = BigqueryRegion.US,
+            datasetId = "test_dataset",
+            loadingMethod = BatchedStandardInsertConfiguration,
+            credentialsJson = null,
+            cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+            internalTableDataset = "airbyte_internal",
+            legacyRawTablesOnly = false,
+            defaultPartitioningField = defaultPartitioningField,
+            defaultClusteringField = null,
+            defaultTableSuffix = null,
+            defaultPartitioningGranularity = null,
+            streamConfigMap = emptyMap(),
+        )
 }

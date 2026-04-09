@@ -18,7 +18,9 @@ import io.airbyte.cdk.load.config.CHECK_STREAM_NAMESPACE
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.Factory
@@ -80,19 +82,27 @@ class SafeDestinationCatalogFactory {
     fun checkCatalog(
         namespaceMapper: NamespaceMapper,
         @Named("checkNamespace") checkNamespace: String?,
+        config: BigqueryConfiguration,
     ): DestinationCatalog {
         // Copied from DefaultDestinationCatalogFactory to maintain behavior
         val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
         val random = RandomStringUtils.randomAlphabetic(5).lowercase()
         val namespace = checkNamespace ?: "${CHECK_STREAM_NAMESPACE}_$date$random"
+        val schemaFields = linkedMapOf("test" to FieldType(IntegerType, nullable = true))
+        if (
+            !config.defaultPartitioningField.isNullOrBlank() &&
+                config.defaultPartitioningField != "_airbyte_extracted_at"
+        ) {
+            schemaFields[config.defaultPartitioningField] =
+                FieldType(TimestampTypeWithTimezone, nullable = true)
+        }
         return DestinationCatalog(
             listOf(
                 DestinationStream(
                     unmappedNamespace = namespace,
                     unmappedName = "test$date$random",
                     importType = Append,
-                    schema =
-                        ObjectType(linkedMapOf("test" to FieldType(IntegerType, nullable = true))),
+                    schema = ObjectType(schemaFields),
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
