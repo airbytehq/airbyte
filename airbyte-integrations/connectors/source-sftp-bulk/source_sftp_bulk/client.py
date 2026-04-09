@@ -5,6 +5,7 @@
 
 import io
 import logging
+import struct
 from typing import Optional
 
 import backoff
@@ -27,7 +28,7 @@ def _parse_private_key(private_key: str) -> paramiko.PKey:
     for key_class in _KEY_CLASSES:
         try:
             return key_class.from_private_key(io.StringIO(private_key))
-        except (paramiko.SSHException, ValueError):
+        except (paramiko.SSHException, ValueError, struct.error):
             continue
     raise AirbyteTracedException(
         failure_type=FailureType.config_error,
