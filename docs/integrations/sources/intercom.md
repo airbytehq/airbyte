@@ -65,7 +65,7 @@ To authenticate the connector in **Airbyte Open Source**, you need an access tok
 
 6. For **Start date**, use the provided datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`. Only data created on or after this date is replicated.
 7. Optionally, configure **Lookback window** to re-sync records updated within the specified number of days before the current cursor position. This helps capture late-arriving updates. The default is `0` (no lookback).
-8. Optionally, configure **Activity logs stream slice step size** to control how many days of activity log data the connector fetches per request. The default is `30` days. Lower this value if you experience timeouts on the Activity Logs stream.
+8. Optionally, configure **Activity logs stream slice step size** to control how many days of activity log data the connector fetches per request. Valid values range from `1` to `91` days, with a default of `30`. Lower this value if you experience timeouts on the Activity Logs stream.
 9. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -74,6 +74,8 @@ The Intercom source connector supports the following [sync modes](https://docs.a
 
 - Full Refresh
 - Incremental
+
+This connector uses [Intercom API v2.11](https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io). Stream schemas and available fields reflect this API version.
 
 ## Supported streams
 
@@ -116,6 +118,10 @@ To prevent conflicts, the connector blocks simultaneous reads from the Companies
 ### Recommendation for reducing sync times
 
 Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams.
+
+### Lookback window does not apply to the Tickets stream
+
+The **Lookback window** configuration applies to all incremental streams except Tickets. The Tickets stream uses server-side filtering through the Intercom search API and does not re-sync records within the lookback period.
 
 ## Changelog
 
@@ -204,7 +210,7 @@ Because these streams must read all records on every sync, syncing Companies and
 | 0.3.1        | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                                      |
 | 0.3.0        | 2023-05-25 | [29598](https://github.com/airbytehq/airbyte/pull/29598) | Update custom components to make them compatible with latest cdk version, simplify logic, update schemas                             |
 | 0.2.1        | 2023-05-25 | [26571](https://github.com/airbytehq/airbyte/pull/26571) | Remove authSpecification from spec.json in favour of advancedAuth                                                                    |
-| 0.2.0        | 2023-04-05 | [23013](https://github.com/airbytehq/airbyte/pull/23013) | Migrated to Low-code (YAML Frramework)                                                                                               |
+| 0.2.0        | 2023-04-05 | [23013](https://github.com/airbytehq/airbyte/pull/23013) | Migrated to Low-code (YAML Framework)                                                                                               |
 | 0.1.33       | 2023-03-20 | [22980](https://github.com/airbytehq/airbyte/pull/22980) | Specified date formatting in specification                                                                                           |
 | 0.1.32       | 2023-02-27 | [22095](https://github.com/airbytehq/airbyte/pull/22095) | Extended `Contacts` schema adding `opted_out_subscription_types` property                                                            |
 | 0.1.31       | 2023-02-17 | [23152](https://github.com/airbytehq/airbyte/pull/23152) | Add `TypeTransformer` to stream `companies`                                                                                          |
