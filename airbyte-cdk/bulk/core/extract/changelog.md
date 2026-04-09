@@ -9,6 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                              |
 |---------|------------|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.3   | 2026-04-09 | [76175](https://github.com/airbytehq/airbyte/pull/76175)  | Preserve original ConnectorErrorException in SourceConfigurationFactory instead of wrapping with generic message.                                    |
 | 1.1.2   | 2026-03-31 | [74124](https://github.com/airbytehq/airbyte/pull/74124)  | Change the default implementation of JDBC incremental partition to non splittable                                                                    |
 | 1.1.1   | 2026-04-02 | [76054](https://github.com/airbytehq/airbyte/pull/76054)  | Clarified CDC termination condition. Ensure querySingleValue returns one result or throws.                                                           |
 | 1.1.0   | 2026-03-30 | [75636](https://github.com/airbytehq/airbyte/pull/75636)  | CDC positions are partially ordered. Added optional CDC startup hook. Field is now EmittedField.                                                     |
