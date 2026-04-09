@@ -10,7 +10,7 @@ The WordPress connector enables seamless data synchronization between your WordP
 | `password`   | `string` | Placeholder Password. Placeholder for basic HTTP auth password - should be set to empty string | x             |
 | `username`   | `string` | Placeholder Username. Placeholder for basic HTTP auth username - should be set to empty string | x             |
 | `start_date` | `string` | Start Date. Minimal Date to Retrieve Records when stream allow incremental.                    |               |
-| `lookback_window` | `integer` | Lookback Window (hours). Hours of previously synced data to re-fetch on each sync for incremental streams (editor_blocks, comments, pages, media) to prevent data loss during DST transitions. | 0 |
+| `lookback_window` | `integer` | Lookback Window (hours). Hours of previously synced data to re-fetch on each sync for incremental streams (editor_blocks, comments, pages, media) to prevent data loss. | 0 |
 
 ## Streams
 

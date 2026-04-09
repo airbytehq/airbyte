@@ -590,9 +590,9 @@ spec:
         description: >-
           Lookback window in hours for incremental streams (editor_blocks,
           comments, pages, media). Specifies how many hours of previously
-          synced data to re-fetch on each sync to prevent data loss during
-          DST transitions. Duplicates are handled by destination
-          deduplication. Set to 0 to disable.
+          synced data to re-fetch on each sync to prevent data loss.
+          Duplicates are handled by destination deduplication. Set to 0 to
+          disable.
         title: Lookback Window (hours)
         minimum: 0
         default: 0
