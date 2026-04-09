@@ -10692,3 +10692,8 @@ schemas:
           - "null"
           - number
         description: Total time viewers spend on viewing content in milliseconds.
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 10
