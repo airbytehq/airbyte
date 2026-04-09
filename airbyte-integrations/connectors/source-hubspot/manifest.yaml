@@ -2029,25 +2029,13 @@ definitions:
       from_object: ""
       to_object: ""
 
+  # Custom object association stream - extends base_association_stream with error handling for invalid custom object names
   base_custom_object_association_stream:
-    type: DeclarativeStream
-    primary_key:
-      - from_id
-      - to_id
-      - association_type_id
+    $ref: "#/definitions/base_association_stream"
     retriever:
-      type: SimpleRetriever
+      $ref: "#/definitions/base_association_stream/retriever"
       requester:
-        $ref: "#/definitions/base_requester"
-        path: "/crm/v4/associations/{{ parameters['from_object'] }}/{{ parameters['to_object'] }}/batch/read"
-        http_method: POST
-        request_body_json:
-          inputs: >-
-            {% set transformed = [] -%}
-            {%- for id in stream_partition['id'] -%}
-            {%- set _ = transformed.append({'id': id}) -%}
-            {%- endfor -%}
-            {{ transformed }}
+        $ref: "#/definitions/base_association_stream/retriever/requester"
         error_handler:
           type: DefaultErrorHandler
           backoff_strategies:
@@ -2084,38 +2072,6 @@ definitions:
               error_message: >-
                 Access denied (403). The authenticated user does not have permissions to access the custom object associations.
                 Ensure the 'crm.objects.custom.read' scope is granted for your OAuth or Private App credentials.
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_declarative_manifest.components.HubspotAssociationStreamExtractor
-          from_object: "{{ parameters['from_object'] }}"
-          to_object: "{{ parameters['to_object'] }}"
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: GroupingPartitionRouter
-        group_size: 1000
-        underlying_partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - stream:
-                $ref: "#/definitions/base_crm_search_incremental_parent_stream"
-                $parameters:
-                  entity: from_object_name # e.g. p_my_custom_object, will be set by components resolver
-                  cursor_filter_property_field: hs_lastmodifieddate # custom objects always use hs_lastmodifieddate
-                name: stream_name # will be set by components resolver
-              parent_key: id
-              partition_field: id
-              incremental_dependency: true
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/base_association"
-    $parameters:
-      name: ""
-      from_object: ""
-      to_object: ""
 
   properties_stream:
     type: DeclarativeStream
