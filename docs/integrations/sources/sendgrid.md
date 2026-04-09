@@ -105,6 +105,7 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.28-rc.3 | 2026-04-08 | [74713](https://github.com/airbytehq/airbyte/pull/74713) | Add concurrency_level for parallel stream processing |
 | 1.3.27 | 2026-03-24 | [75331](https://github.com/airbytehq/airbyte/pull/75331) | Update dependencies |
 | 1.3.26 | 2026-02-24 | [73950](https://github.com/airbytehq/airbyte/pull/73950) | Update dependencies |
 | 1.3.25 | 2026-02-10 | [73157](https://github.com/airbytehq/airbyte/pull/73157) | Update dependencies |
