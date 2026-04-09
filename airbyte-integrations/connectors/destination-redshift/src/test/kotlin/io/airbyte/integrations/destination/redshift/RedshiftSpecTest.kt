@@ -81,6 +81,44 @@ class RedshiftSpecTest {
         Assertions.assertNotNull(spec.connectionSpecification["properties"]["jdbc_url_params"])
     }
 
+    @Test
+    fun testS3CredentialsMissing() {
+        // Credentials are now optional for IRSA / instance profile auth
+        val configWithS3 = deserialize("""{
+            "host": "localhost",
+            "port": 5439,
+            "username": "redshift",
+            "password": "password",
+            "database": "db",
+            "schema": "public",
+            "uploading_method": {
+                "method": "S3 Staging",
+                "s3_bucket_name": "test-bucket",
+                "s3_bucket_region": "us-east-1"
+            }
+        }""")
+        Assertions.assertTrue(validator!!.test(schema!!, configWithS3))
+    }
+
+    @Test
+    fun testS3WithIamRoleArn() {
+        val configWithIamRole = deserialize("""{
+            "host": "localhost",
+            "port": 5439,
+            "username": "redshift",
+            "password": "password",
+            "database": "db",
+            "schema": "public",
+            "uploading_method": {
+                "method": "S3 Staging",
+                "s3_bucket_name": "test-bucket",
+                "s3_bucket_region": "us-east-1",
+                "iam_role_arn": "arn:aws:iam::123456789012:role/redshift-s3-read"
+            }
+        }""")
+        Assertions.assertTrue(validator!!.test(schema!!, configWithIamRole))
+    }
+
     companion object {
         private var schema: JsonNode? = null
         private var config: JsonNode? = null
