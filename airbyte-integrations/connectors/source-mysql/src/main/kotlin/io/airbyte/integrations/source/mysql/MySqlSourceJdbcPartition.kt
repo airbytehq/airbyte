@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -37,6 +36,7 @@ import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectColumnMaxValue
 import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQuery
+import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.Stream
@@ -44,6 +44,7 @@ import io.airbyte.cdk.read.Where
 import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -216,10 +217,10 @@ class MySqlSourceJdbcRfrSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -241,10 +242,10 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
                     checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -268,10 +269,10 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -289,10 +290,10 @@ class MySqlSourceJdbcCdcSnapshotPartition(
     override val completeState: OpaqueStateValue
         get() = MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -348,10 +349,10 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
                 stream,
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             stream,
         )
@@ -374,10 +375,10 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
         cursor,
         cursorUpperBound
     ) {
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             checkpointColumns,
-            checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             stream,
         )
@@ -433,10 +434,10 @@ class MySqlSourceJdbcCursorIncrementalPartition(
                 stream,
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
-            cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
+            cursorCheckpoint = lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode(),
             stream,
         )
 }
@@ -484,10 +485,10 @@ class MySqlJdbcConcurrentPartitionsCreator<
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
         // Sample the table for partition split boundaries and for record byte sizes.
-        val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: ObjectNode ->
+        val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: SelectQuerier.ResultRow ->
             val boundary: OpaqueStateValue? =
                 (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
-            val rowByteSize: Long = sharedState.rowByteSizeEstimator().apply(record)
+            val rowByteSize: Long = sharedState.rowByteSizeEstimator().apply(record.data.toJson())
             boundary to rowByteSize
         }
         if (sample.kind == Sample.Kind.EMPTY) {
