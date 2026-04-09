@@ -489,9 +489,7 @@ class MySqlSourceDebeziumOperations(
                 .withDatabase("include.list", databaseName)
                 .withOffset()
                 .withSchemaHistory()
-                .withConverters(
-                    MySqlSourceCdcTemporalConverter::class
-                )
+                .withConverters(MySqlSourceCdcTemporalConverter::class)
 
         cdcIncrementalConfiguration.serverTimezone
             ?.takeUnless { it.isBlank() }
