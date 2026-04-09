@@ -1,0 +1,15 @@
+[
+  {
+    "name": "EVENTS",
+    "namespace": "PUBLIC",
+    "metadata": {
+      "columns": {
+        "ID": "io.airbyte.cdk.discover.StringFieldType",
+        "TS": "io.airbyte.cdk.discover.OffsetDateTimeFieldType",
+        "MSG": "io.airbyte.cdk.discover.StringFieldType",
+        "TAGS": "io.airbyte.cdk.discover.JsonbFieldType"
+      },
+      "primaryKeys": [["ID"]]
+    }
+  }
+]
