@@ -490,7 +490,6 @@ class MySqlSourceDebeziumOperations(
                 .withOffset()
                 .withSchemaHistory()
                 .withConverters(
-                    MySqlSourceCdcBooleanConverter::class,
                     MySqlSourceCdcTemporalConverter::class
                 )
 

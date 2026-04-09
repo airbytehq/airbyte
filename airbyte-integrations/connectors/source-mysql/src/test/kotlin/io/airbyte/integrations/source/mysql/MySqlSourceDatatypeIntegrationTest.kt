@@ -195,6 +195,13 @@ object MySqlSourceDatatypeTestOperations :
             "NULL" to """"2020-03-30T10:30:00.000000Z"""",
         )
 
+    val tinyint1Values =
+        mapOf(
+            "10" to "10",
+            "4" to "4",
+            "2" to "2",
+        )
+
     val booleanValues =
         mapOf(
             "TRUE" to "true",
@@ -221,6 +228,14 @@ object MySqlSourceDatatypeTestOperations :
                     "BOOLEAN",
                     booleanValues,
                     LeafAirbyteSchemaType.BOOLEAN,
+                    // In CDC mode, MySQL BOOLEAN is indistinguishable from TINYINT(1)
+                    // and maps to integer. Only test in non-CDC (cursor-based) mode.
+                    isGlobal = false,
+                ),
+                MySqlSourceDatatypeTestCase(
+                    "TINYINT(1)",
+                    tinyint1Values,
+                    LeafAirbyteSchemaType.INTEGER,
                 ),
                 MySqlSourceDatatypeTestCase(
                     "VARCHAR(10)",
