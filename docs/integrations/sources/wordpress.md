@@ -8,11 +8,11 @@ This page contains the setup guide and reference information for the [WordPress]
 
 ## Prerequisites
 
-- A self-hosted WordPress site (WordPress.org) with the [REST API](https://developer.wordpress.org/rest-api/) enabled. The REST API is enabled by default on WordPress 4.7 and later.
-- The site's domain name — for example, `my-site.example.com`.
+- A self-hosted WordPress site (WordPress.org) with the [REST API](https://developer.wordpress.org/rest-api/) enabled (default on WordPress 4.7 and later).
+- The site's domain name—for example, `my-site.example.com`.
 
 :::note
-This connector reads data from the public WordPress REST API. Most read endpoints for posts, pages, comments, categories, tags, and media are accessible without authentication. Endpoints that expose private data — such as plugins, themes, settings, and users with full details — require authentication.
+This connector reads data from the public WordPress REST API. Most read endpoints for posts, pages, comments, categories, tags, and media are accessible without authentication. Endpoints that expose private data—such as plugins, themes, settings, and users with full details—require authentication.
 :::
 
 ### Authentication
@@ -28,9 +28,9 @@ To access authenticated endpoints such as plugins, themes, and settings, provide
 
 ## Setup guide
 
-1. Enter the **Domain** of your WordPress site without the protocol — for example, `my-site.example.com`.
+1. Enter the **Domain** of your WordPress site without the protocol—for example, `my-site.example.com`.
 2. Enter your **Username** and **Password**. Leave the default values if you only need to sync public data.
-3. Optionally, set a **Start Date** to limit incremental streams to records modified after that date. Use the format `YYYY-MM-DDTHH:MM:SSZ` — for example, `2024-01-01T00:00:00Z`.
+3. Optionally, set a **Start Date** to limit incremental streams to records modified after that date. Use the format `YYYY-MM-DDTHH:MM:SSZ`—for example, `2024-01-01T00:00:00Z`.
 4. Optionally, set a **Lookback Window** (in hours) for incremental streams. This re-fetches the specified number of hours of previously synced data on each sync to guard against data loss. Set to `0` to disable. Duplicates are handled by destination deduplication.
 
 <HideInUI>
