@@ -26,9 +26,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ObjectLoaderUploadCompleterTest<T> {
-    inner class MockRemoteObject(override val key: String, override val storageConfig: T) :
-        RemoteObject<T>
+class ObjectLoaderUploadCompleterTest {
+    class MockRemoteObject(override val key: String, override val storageConfig: Any) :
+        RemoteObject<Any>
 
     private val streamDescriptor = DestinationStream.Descriptor("test", "stream")
 
@@ -60,7 +60,7 @@ class ObjectLoaderUploadCompleterTest<T> {
     @Test
     fun `test completing upload with non-empty parts`() = runTest {
         val upload: StreamingUpload<MockRemoteObject> = mockk(relaxed = true)
-        val remoteObject = MockRemoteObject("key1", mockk())
+        val remoteObject = MockRemoteObject("key1", Any())
         coEvery { upload.complete() } returns remoteObject
 
         val state = completer.start(ObjectKey(streamDescriptor, "key1"), 0)
@@ -131,15 +131,13 @@ class ObjectLoaderUploadCompleterTest<T> {
         completer.accept(part, state)
 
         // finish() should throw because there's unfinished work
-        assertThrows<IllegalStateException> {
-            completer.finish(state)
-        }
+        assertThrows<IllegalStateException> { completer.finish(state) }
     }
 
     @Test
     fun `test mixed empty and non-empty parts completes upload`() = runTest {
         val upload: StreamingUpload<MockRemoteObject> = mockk(relaxed = true)
-        val remoteObject = MockRemoteObject("key1", mockk())
+        val remoteObject = MockRemoteObject("key1", Any())
         coEvery { upload.complete() } returns remoteObject
 
         val state = completer.start(ObjectKey(streamDescriptor, "key1"), 0)
