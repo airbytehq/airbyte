@@ -81,6 +81,34 @@ class TestSubscriptionWithScheduledChangesStream(TestCase):
         assert output.is_in_logs("No scheduled changes for subscription.")
 
     @HttpMocker()
+    def test_parent_stream_sends_has_scheduled_changes_filter(self, http_mocker: HttpMocker) -> None:
+        """Test that the parent stream request includes has_scheduled_changes[is]=true filter parameter.
+
+        This verifies the performance optimization: instead of fetching ALL subscriptions
+        and calling retrieve_with_scheduled_changes for each one, the parent stream
+        pre-filters to only subscriptions that actually have scheduled changes.
+        """
+        # Mock parent subscription endpoint with exact query params including has_scheduled_changes filter
+        http_mocker.get(
+            RequestBuilder.subscriptions_endpoint()
+            .with_sort_by_asc("updated_at")
+            .with_include_deleted("true")
+            .with_updated_at_between(1704067200, 1705320000)  # Frozen time window
+            .with_has_scheduled_changes("true")
+            .with_limit(100)
+            .build(),
+            subscription_response(),
+        )
+        http_mocker.get(
+            RequestBuilder.subscription_scheduled_changes_endpoint("sub_001").with_any_query_params().build(),
+            subscription_with_scheduled_changes_response(),
+        )
+
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "sub_001"
+
+    @HttpMocker()
     def test_both_transformations(self, http_mocker: HttpMocker) -> None:
         """
         Test that BOTH transformations work together:

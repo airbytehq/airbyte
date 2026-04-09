@@ -1324,7 +1324,83 @@ definitions:
               parent_key: id
               partition_field: subscription_id
               stream:
-                $ref: "#/definitions/streams/subscription"
+                type: DeclarativeStream
+                name: subscription_with_scheduled_changes_parent
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    $ref: "#/definitions/base_requester"
+                    path: /subscriptions
+                    http_method: GET
+                    request_parameters:
+                      sort_by[asc]: updated_at
+                      include_deleted: "true"
+                      updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+                      has_scheduled_changes[is]: "true"
+                    error_handler:
+                      type: CompositeErrorHandler
+                      error_handlers:
+                        - type: DefaultErrorHandler
+                          response_filters:
+                            - type: HttpResponseFilter
+                              http_codes:
+                                - 404
+                              action: IGNORE
+                              error_message: Entity unavailable. Subscription may have been deleted.
+                            - type: HttpResponseFilter
+                              predicate: "{{ 'api_error_code' in response and response['api_error_code'] == 'configuration_incompatible' }}"
+                              action: IGNORE
+                              error_message: Stream is available only for Product Catalog 1.0
+                        - type: DefaultErrorHandler
+                          max_retries: 10
+                          backoff_strategies:
+                            - type: WaitTimeFromHeader
+                              header: Retry-After
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - list
+                        - "*"
+                        - subscription
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: limit
+                    pagination_strategy:
+                      type: CursorPagination
+                      page_size: 100
+                      cursor_value: "{{ response.get('next_offset')|tojson() }}"
+                      stop_condition: "{{ not response.next_offset }}"
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  cursor_field: updated_at
+                  cursor_datetime_formats:
+                    - "%s"
+                  datetime_format: "%s"
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ format_datetime(config['start_date'], '%s') }}"
+                    datetime_format: "%s"
+                  end_datetime:
+                    type: MinMaxDatetime
+                    datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+                  step: P1M
+                  cursor_granularity: PT1S
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $ref: "#/schemas/subscription"
       transformations:
         - type: CustomTransformation
           class_name: source_declarative_manifest.components.CustomFieldTransformation
