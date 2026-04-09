@@ -33,8 +33,10 @@ data:
   connectorIPCOptions:
     dataChannel:
       version: "0.0.2"
-      supportedSerialization: ["JSONL", "PROTOBUF"]
-      supportedTransport: ["SOCKET", "STDIO"]
+      #supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedSerialization: ["JSONL"]
+      #supportedTransport: ["SOCKET", "STDIO"]
+      supportedTransport: ["STDIO"]
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
