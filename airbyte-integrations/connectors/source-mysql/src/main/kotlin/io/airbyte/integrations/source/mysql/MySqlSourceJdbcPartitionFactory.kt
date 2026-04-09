@@ -12,7 +12,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -61,7 +61,10 @@ class MySqlSourceJdbcPartitionFactory(
             DefaultJdbcStreamState(sharedState, streamFeedBootstrap)
         }
 
-    private fun findPkUpperBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+    private fun findPkUpperBound(
+        stream: Stream,
+        pkChosenFromCatalog: List<EmittedField>
+    ): JsonNode {
         // find upper bound using maxPk query
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
@@ -82,7 +85,10 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
+    private fun findPkLowerBound(
+        stream: Stream,
+        pkChosenFromCatalog: List<EmittedField>
+    ): JsonNode {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
         jdbcConnectionFactory.get().use { connection ->
@@ -106,7 +112,7 @@ class MySqlSourceJdbcPartitionFactory(
 
     private fun coldStart(streamState: DefaultJdbcStreamState): MySqlSourceJdbcPartition {
         val stream: Stream = streamState.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
 
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
             if (pkChosenFromCatalog.isEmpty()) {
@@ -145,8 +151,8 @@ class MySqlSourceJdbcPartitionFactory(
             )
         }
 
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: EmittedField =
+            stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
 
         if (pkChosenFromCatalog.isEmpty()) {
             return MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
@@ -205,7 +211,7 @@ class MySqlSourceJdbcPartitionFactory(
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
 
         if (
             pkChosenFromCatalog.isEmpty() &&
@@ -304,8 +310,9 @@ class MySqlSourceJdbcPartitionFactory(
                 val pkField = pkChosenFromCatalog.first()
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkValue)
 
-                val cursorChosenFromCatalog: Field =
-                    stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+                val cursorChosenFromCatalog: EmittedField =
+                    stream.configuredCursor as? EmittedField
+                        ?: throw ConfigErrorException("no cursor")
 
                 // in a state where it's still in primary_key read part.
                 return MySqlSourceJdbcSnapshotWithCursorPartition(
@@ -318,7 +325,8 @@ class MySqlSourceJdbcPartitionFactory(
                 )
             }
             // resume back to cursor based increment.
-            val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
+            val cursor: EmittedField =
+                stream.fields.find { it.id == sv.cursorField.first() } as EmittedField
             val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursors)
 
             // Compose a jsonnode of cursor label to cursor value to fit in
@@ -343,7 +351,7 @@ class MySqlSourceJdbcPartitionFactory(
     }
 
     // visible for testing
-    fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    fun stateValueToJsonNode(field: EmittedField, stateValue: String?): JsonNode {
         when (field.type.airbyteSchemaType) {
             is LeafAirbyteSchemaType ->
                 return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
@@ -426,7 +434,7 @@ class MySqlSourceJdbcPartitionFactory(
     ): List<MySqlSourceJdbcPartition> {
 
         val stream: Stream = unsplitPartition.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: emptyList()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: emptyList()
 
         if (pkChosenFromCatalog.isEmpty()) {
             return listOf(unsplitPartition)
