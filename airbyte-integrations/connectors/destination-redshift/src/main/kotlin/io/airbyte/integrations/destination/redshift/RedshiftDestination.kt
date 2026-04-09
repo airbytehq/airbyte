@@ -107,8 +107,7 @@ class RedshiftDestination : BaseConnector(), Destination {
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val s3Options = RedshiftUtil.findS3Options(config)
-        val s3Config: S3DestinationConfig =
-            S3DestinationConfig.getS3DestinationConfig(s3Options)
+        val s3Config: S3DestinationConfig = S3DestinationConfig.getS3DestinationConfig(s3Options)
         val iamRoleArn = s3Options.get("iam_role_arn")?.asText()
         val encryptionConfig =
             if (config.has(RedshiftDestinationConstants.UPLOADING_METHOD))

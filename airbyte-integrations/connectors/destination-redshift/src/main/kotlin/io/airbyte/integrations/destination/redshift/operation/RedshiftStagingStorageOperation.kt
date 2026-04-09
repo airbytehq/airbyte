@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.redshift.operation
 
+import com.amazonaws.auth.BasicSessionCredentials
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
-import com.amazonaws.auth.BasicSessionCredentials
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialType
@@ -282,8 +282,7 @@ class RedshiftStagingStorageOperation(
                 val creds = s3Config.s3CredentialConfig!!.s3CredentialsProvider.credentials
                 val accessKeyId = creds.awsAccessKeyId
                 val secretAccessKey = creds.awsSecretKey
-                val sessionToken =
-                    (creds as? BasicSessionCredentials)?.sessionToken
+                val sessionToken = (creds as? BasicSessionCredentials)?.sessionToken
                 if (sessionToken != null) {
                     "CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey;token=$sessionToken'"
                 } else {

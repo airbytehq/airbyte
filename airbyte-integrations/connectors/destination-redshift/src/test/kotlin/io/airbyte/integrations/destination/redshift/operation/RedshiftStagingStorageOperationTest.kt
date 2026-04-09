@@ -43,10 +43,11 @@ class RedshiftStagingStorageOperationTest {
 
     @Test
     fun testBuildCredentialClauseWithAccessKey() {
-        val credentialConfig = S3AccessKeyCredentialConfig(
-            "AKIAIOSFODNN7EXAMPLE",
-            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-        )
+        val credentialConfig =
+            S3AccessKeyCredentialConfig(
+                "AKIAIOSFODNN7EXAMPLE",
+                "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+            )
         val operation = createOperation(credentialConfig)
 
         val clause = operation.buildCredentialClause()
@@ -74,10 +75,11 @@ class RedshiftStagingStorageOperationTest {
         val credentialConfig = mock(S3CredentialConfig::class.java)
         `when`(credentialConfig.credentialType).thenReturn(S3CredentialType.DEFAULT_PROFILE)
 
-        val operation = createOperation(
-            credentialConfig,
-            iamRoleArn = "arn:aws:iam::123456789012:role/redshift-s3-read"
-        )
+        val operation =
+            createOperation(
+                credentialConfig,
+                iamRoleArn = "arn:aws:iam::123456789012:role/redshift-s3-read"
+            )
 
         val clause = operation.buildCredentialClause()
 
@@ -90,18 +92,13 @@ class RedshiftStagingStorageOperationTest {
         `when`(credentialConfig.credentialType).thenReturn(S3CredentialType.DEFAULT_PROFILE)
 
         assertThrows(IllegalArgumentException::class.java) {
-            createOperation(
-                credentialConfig,
-                iamRoleArn = "not-a-valid-arn"
-            )
+            createOperation(credentialConfig, iamRoleArn = "not-a-valid-arn")
         }
     }
 
     @Test
     fun testBuildCredentialClauseWithAssumeRoleAndSessionToken() {
-        val sessionCreds = BasicSessionCredentials(
-            "ASIATEMP", "tempSecret", "sessionToken123"
-        )
+        val sessionCreds = BasicSessionCredentials("ASIATEMP", "tempSecret", "sessionToken123")
         val provider: AWSCredentialsProvider = AWSStaticCredentialsProvider(sessionCreds)
 
         val credentialConfig = mock(S3CredentialConfig::class.java)
@@ -137,14 +134,16 @@ class RedshiftStagingStorageOperationTest {
 
     @Test
     fun testBuildCredentialClauseAccessKeyTakesPrecedenceOverIamRoleArn() {
-        val credentialConfig = S3AccessKeyCredentialConfig(
-            "AKIAIOSFODNN7EXAMPLE",
-            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-        )
-        val operation = createOperation(
-            credentialConfig,
-            iamRoleArn = "arn:aws:iam::123456789012:role/should-be-ignored"
-        )
+        val credentialConfig =
+            S3AccessKeyCredentialConfig(
+                "AKIAIOSFODNN7EXAMPLE",
+                "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+            )
+        val operation =
+            createOperation(
+                credentialConfig,
+                iamRoleArn = "arn:aws:iam::123456789012:role/should-be-ignored"
+            )
 
         val clause = operation.buildCredentialClause()
 
