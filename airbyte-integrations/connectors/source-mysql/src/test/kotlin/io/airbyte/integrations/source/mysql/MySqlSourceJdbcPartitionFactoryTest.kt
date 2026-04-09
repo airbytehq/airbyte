@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
@@ -53,7 +53,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
         val mysqlCdcJdbcPartitionFactory =
             MySqlSourceJdbcPartitionFactory(cdcSharedState, selectQueryGenerator, config)
 
-        val fieldId = Field("id", IntFieldType)
+        val fieldId = EmittedField("id", IntFieldType)
         val stream =
             Stream(
                 id =
@@ -65,7 +65,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
             )
-        val timestampFieldId = Field("id2", OffsetDateTimeFieldType)
+        val timestampFieldId = EmittedField("id2", OffsetDateTimeFieldType)
 
         val timestampStream =
             Stream(
@@ -79,7 +79,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredCursor = timestampFieldId,
             )
 
-        val binaryFieldId = Field("id3", BinaryStreamFieldType)
+        val binaryFieldId = EmittedField("id3", BinaryStreamFieldType)
 
         val binaryStream =
             Stream(
@@ -93,7 +93,7 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredCursor = binaryFieldId,
             )
 
-        val datetimeFieldId = Field("id4", LocalDateTimeFieldType)
+        val datetimeFieldId = EmittedField("id4", LocalDateTimeFieldType)
 
         val datetimeStream =
             Stream(
