@@ -30,7 +30,8 @@ class AirbyteConnectorRunnable : Runnable {
             try {
                 operation = operationProvider.get()!!
             } catch (e: Throwable) {
-                throw ConfigErrorException("Failed to initialize connector operation", e)
+                throw unwrapConnectorError(e)
+                    ?: ConfigErrorException("Failed to initialize connector operation.", e)
             }
             log.info { "Executing ${operation::class} operation." }
             operation.execute()
@@ -54,15 +55,31 @@ class AirbyteConnectorRunnable : Runnable {
         if (operationName == "check") {
             // During check, we don't fail the command on uncaught error. We assume the check as
             // failed and return a trace + a connection status message.
-            val exception: Throwable? =
-                if (e.message == "Failed to initialize connector operation") e.cause else e
             val (errorTraceMessage, connectionStatusMessage) =
-                exceptionHandler.handleCheckFailure(exception ?: e)
+                exceptionHandler.handleCheckFailure(e)
             outputConsumer.accept(errorTraceMessage)
             outputConsumer.accept(connectionStatusMessage)
         } else {
             outputConsumer.accept(exceptionHandler.handle(e))
             throw e
+        }
+    }
+
+    companion object {
+        /**
+         * Walks the cause chain of [e] looking for a [ConnectorErrorException]. Returns the
+         * deepest one found so the most specific message is preserved, or null if none exists.
+         */
+        fun unwrapConnectorError(e: Throwable): ConnectorErrorException? {
+            var result: ConnectorErrorException? = null
+            var current: Throwable? = e
+            while (current != null) {
+                if (current is ConnectorErrorException) {
+                    result = current
+                }
+                current = current.cause
+            }
+            return result
         }
     }
 }

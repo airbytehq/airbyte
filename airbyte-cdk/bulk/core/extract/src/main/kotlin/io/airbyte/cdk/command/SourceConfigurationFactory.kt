@@ -2,6 +2,7 @@
 package io.airbyte.cdk.command
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.ConnectorErrorException
 
 /**
  * Each connector contains an implementation of this interface in a stateless class which maps the
@@ -15,6 +16,8 @@ interface SourceConfigurationFactory<I : ConfigurationSpecification, O : SourceC
     fun make(spec: I): O =
         try {
             makeWithoutExceptionHandling(spec)
+        } catch (e: ConnectorErrorException) {
+            throw e
         } catch (e: Exception) {
             // Wrap NPEs (mostly) in ConfigErrorException.
             throw ConfigErrorException("Failed to build ConnectorConfiguration.", e)

@@ -14,6 +14,7 @@ import io.mockk.every
 import io.mockk.mockk
 import jakarta.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -59,5 +60,28 @@ class AirbyteConnectorRunnableTest {
         assertEquals(AirbyteTraceMessage.Type.ERROR, outputConsumer.traces()[0].type)
         assertEquals(1, outputConsumer.statuses().size)
         assertEquals(AirbyteConnectionStatus.Status.FAILED, outputConsumer.statuses()[0].status)
+    }
+
+    @Test
+    fun `unwrapConnectorError returns deepest ConnectorErrorException`() {
+        val root = ConfigErrorException("SSL required.")
+        val mid = ConfigErrorException("Failed to build ConnectorConfiguration.", root)
+        val outer = RuntimeException("bean instantiation failed", mid)
+
+        val result = AirbyteConnectorRunnable.unwrapConnectorError(outer)
+        assertEquals("SSL required.", result?.message)
+    }
+
+    @Test
+    fun `unwrapConnectorError returns null when no ConnectorErrorException in chain`() {
+        val e = RuntimeException("generic", IllegalStateException("inner"))
+        assertNull(AirbyteConnectorRunnable.unwrapConnectorError(e))
+    }
+
+    @Test
+    fun `unwrapConnectorError returns single ConnectorErrorException`() {
+        val e = ConfigErrorException("direct error")
+        val result = AirbyteConnectorRunnable.unwrapConnectorError(e)
+        assertEquals("direct error", result?.message)
     }
 }
