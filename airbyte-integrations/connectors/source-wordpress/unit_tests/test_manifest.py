@@ -42,9 +42,8 @@ def test_incremental_stream_has_lookback_window(manifest, stream_name):
     inc = stream.get("incremental_sync", {})
     lookback = inc.get("lookback_window")
     assert lookback is not None, f"Stream '{stream_name}' is missing lookback_window"
-    assert "config.get('lookback_window'" in lookback or "config.get(\"lookback_window\"" in lookback, (
-        f"Stream '{stream_name}' lookback_window should reference config.get('lookback_window', ...), "
-        f"got {lookback!r}"
+    assert "config.get('lookback_window'" in lookback or 'config.get("lookback_window"' in lookback, (
+        f"Stream '{stream_name}' lookback_window should reference config.get('lookback_window', ...), " f"got {lookback!r}"
     )
 
 
