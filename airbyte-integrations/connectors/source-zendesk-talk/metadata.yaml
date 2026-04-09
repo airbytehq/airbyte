@@ -32,10 +32,8 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 2.0.10
     oss:
       enabled: true
-      dockerImageTag: 2.0.10
   releaseStage: generally_available
   supportLevel: certified
   releases:
