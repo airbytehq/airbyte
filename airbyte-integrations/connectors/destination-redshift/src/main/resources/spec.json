@@ -78,11 +78,7 @@
           {
             "title": "AWS S3 Staging",
             "description": "<i>(recommended)</i> Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\">AWS docs</a> for more details.",
-            "required": [
-              "method",
-              "s3_bucket_name",
-              "s3_bucket_region"
-            ],
+            "required": ["method", "s3_bucket_name", "s3_bucket_region"],
             "properties": {
               "method": {
                 "type": "string",
