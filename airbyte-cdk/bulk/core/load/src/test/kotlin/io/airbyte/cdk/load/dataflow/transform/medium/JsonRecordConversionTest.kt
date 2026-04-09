@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.dataflow.config.model.JsonConverterConfig
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
@@ -40,7 +40,7 @@ class JsonRecordConversionTest {
 
     private lateinit var jsonConverter: JsonConverter
 
-    private val jsonConverterConfig = JsonConverterConfig()
+    private val jsonConverterConfig = MediumConverterConfig()
 
     @BeforeEach
     fun setup() {

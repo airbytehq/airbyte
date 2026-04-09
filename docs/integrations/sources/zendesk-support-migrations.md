@@ -2,6 +2,32 @@
 
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
+## Upgrading to 5.2.0
+
+This is not a breaking change. No stream reset is required, and existing state is migrated automatically. This guide is provided because the behavioral change to the `tickets` stream may affect downstream pipelines that depend on deleted ticket data.
+
+Version 5.2.0 switches the `tickets` stream from the Zendesk Incremental Export API to the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint. This improves sync performance by enabling concurrent time-range partitioning.
+
+### What changed
+
+- The `tickets` stream no longer returns deleted tickets. Zendesk's Export Search Results endpoint excludes deleted tickets from the search index.
+- A new `deleted_tickets` stream is available. This stream uses the [List Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/deleted_tickets/#list-deleted-tickets) endpoint and syncs in full refresh mode.
+- The cursor field for the `tickets` stream changed from `generated_timestamp` to `updated_at`. Existing state is migrated automatically.
+
+### Who is affected
+
+Users who rely on the `tickets` stream to identify deleted tickets by filtering for `status`==`deleted` records. After upgrading, deleted tickets no longer appear in the `tickets` stream.
+
+### Migration steps
+
+1. Enable the `deleted_tickets` stream in your connection to continue syncing deleted ticket data.
+2. Update any downstream pipelines that filter for `status`==`deleted` in the `tickets` stream to read from the `deleted_tickets` stream instead.
+3. No stream reset is required. The connector automatically migrates existing state from the old cursor format to the new one.
+
+:::note
+The `deleted_tickets` stream requires the `view_deleted_tickets` permission in Zendesk. If your account lacks this permission, the stream is automatically skipped without failing the sync.
+:::
+
 ## Upgrading to 5.0.0
 
 This version adds OAuth2.0 with refresh token support. Users who authenticate via OAuth must re-authenticate to use the new flow with rotating refresh tokens.

@@ -174,7 +174,7 @@ class ClickhouseDataDumper : DestinationDataDumper {
         val config = Utils.specToConfig(spec)
         val client = Utils.getClickhouseClient(config)
 
-        val isDedup = stream.importType is Dedupe
+        val isDedup = stream.tableSchema.importType is Dedupe
 
         val output = mutableListOf<OutputRecord>()
 

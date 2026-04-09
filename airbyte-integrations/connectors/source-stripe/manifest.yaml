@@ -1,4 +1,4 @@
-version: 6.42.1
+version: 6.42.3
 
 type: DeclarativeSource
 
@@ -319,6 +319,7 @@ definitions:
 
     customers:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'customers' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: customers
       full_refresh_stream:
@@ -345,6 +346,7 @@ definitions:
 
     subscriptions:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'subscriptions' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: subscriptions
       full_refresh_stream:
@@ -375,6 +377,7 @@ definitions:
 
     invoices:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'invoices' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: invoices
       full_refresh_stream:
@@ -405,6 +408,7 @@ definitions:
 
     transfers:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'transfers' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: transfers
       full_refresh_stream:
@@ -431,6 +435,7 @@ definitions:
 
     refunds:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'refunds' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: refunds
       full_refresh_stream:
@@ -457,6 +462,7 @@ definitions:
 
     authorizations:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'authorizations' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: authorizations
       full_refresh_stream:
@@ -483,6 +489,7 @@ definitions:
 
     cardholders:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'cardholders' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: cardholders
       full_refresh_stream:
@@ -509,6 +516,7 @@ definitions:
 
     charges:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'charges' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: charges
       full_refresh_stream:
@@ -539,6 +547,7 @@ definitions:
 
     coupons:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'coupons' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: coupons
       full_refresh_stream:
@@ -565,6 +574,7 @@ definitions:
 
     disputes:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'disputes' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: disputes
       full_refresh_stream:
@@ -591,6 +601,7 @@ definitions:
 
     application_fees:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'application_fees' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: application_fees
       full_refresh_stream:
@@ -617,6 +628,7 @@ definitions:
 
     invoice_items:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'invoice_items' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: invoice_items
       full_refresh_stream:
@@ -643,6 +655,7 @@ definitions:
 
     payouts:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'payouts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: payouts
       full_refresh_stream:
@@ -669,6 +682,7 @@ definitions:
 
     plans:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'plans' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: plans
       full_refresh_stream:
@@ -699,6 +713,7 @@ definitions:
 
     prices:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'prices' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: prices
       full_refresh_stream:
@@ -725,6 +740,7 @@ definitions:
 
     products:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'products' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: products
       full_refresh_stream:
@@ -751,6 +767,7 @@ definitions:
 
     reviews:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'reviews' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: reviews
       full_refresh_stream:
@@ -777,6 +794,7 @@ definitions:
 
     subscription_schedule:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'subscription_schedule' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: subscription_schedule
       full_refresh_stream:
@@ -803,6 +821,7 @@ definitions:
 
     payment_intents:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'payment_intents' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: payment_intents
       full_refresh_stream:
@@ -829,6 +848,7 @@ definitions:
 
     promotion_codes:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'promotion_codes' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: promotion_codes
       full_refresh_stream:
@@ -855,6 +875,7 @@ definitions:
 
     setup_intents:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'setup_intents' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: setup_intents
       full_refresh_stream:
@@ -881,6 +902,7 @@ definitions:
 
     cards:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'cards' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: cards
       full_refresh_stream:
@@ -907,6 +929,7 @@ definitions:
 
     transactions:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'transactions' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: transactions
       full_refresh_stream:
@@ -933,6 +956,7 @@ definitions:
 
     top_ups:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'top_ups' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: top_ups
       full_refresh_stream:
@@ -959,6 +983,7 @@ definitions:
 
     accounts:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'accounts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: accounts
       full_refresh_stream:
@@ -985,6 +1010,7 @@ definitions:
 
     checkout_sessions:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'checkout_sessions' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: checkout_sessions
       full_refresh_stream:
@@ -1011,6 +1037,7 @@ definitions:
 
     external_account_cards:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'external_account_cards' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: external_account_cards
       full_refresh_stream:
@@ -1043,6 +1070,7 @@ definitions:
 
     external_account_bank_accounts:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'external_account_bank_accounts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: external_account_bank_accounts
       full_refresh_stream:
@@ -1075,6 +1103,7 @@ definitions:
 
     credit_notes:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'credit_notes' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: credit_notes
       full_refresh_stream:
@@ -1101,6 +1130,7 @@ definitions:
 
     early_fraud_warnings:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'early_fraud_warnings' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: early_fraud_warnings
       full_refresh_stream:
@@ -1289,6 +1319,7 @@ definitions:
 
     payment_methods:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'payment_methods' in config.get('api_retention_streams', []) else '' }}"
       name: payment_methods
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
@@ -1327,6 +1358,7 @@ definitions:
 
     persons:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'persons' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: persons
       full_refresh_stream:
@@ -1364,6 +1396,7 @@ definitions:
 
     invoice_line_items:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'invoice_line_items' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: invoice_line_items
       full_refresh_stream:
@@ -1465,6 +1498,7 @@ definitions:
 
     application_fees_refunds:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'application_fees_refunds' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: application_fees_refunds
       full_refresh_stream:
@@ -1525,6 +1559,7 @@ definitions:
 
     subscription_items:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'subscription_items' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: subscription_items
       full_refresh_stream:
@@ -1614,6 +1649,7 @@ definitions:
 
     bank_accounts:
       type: StateDelegatingStream
+      api_retention_period: "{{ 'P30D' if 'bank_accounts' in config.get('api_retention_streams', []) else '' }}"
       $parameters:
         name: bank_accounts
       full_refresh_stream:
@@ -1648,6 +1684,7 @@ definitions:
                 lazy_read_pointer: ["sources"]
                 stream:
                   type: StateDelegatingStream
+                  api_retention_period: "{{ 'P30D' if 'customers' in config.get('api_retention_streams', []) else '' }}"
                   $parameters:
                     name: customers
                   full_refresh_stream:
@@ -1882,10 +1919,10 @@ spec:
       num_workers:
         type: integer
         title: Number of concurrent workers
-        minimum: 1
-        maximum: 20
+        minimum: 2
+        maximum: 100
         default: 10
-        examples: [1, 2, 3]
+        examples: [ 2, 3, 4]
         description: >-
           The number of worker thread to use for the sync.
           The performance upper boundary depends on call_rate_limit setting and type of account.
@@ -1896,8 +1933,74 @@ spec:
         examples: [25, 100]
         description: >-
           The number of API calls per second that you allow connector to make. This value can not be bigger than real
-          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25 and 100
-          calls per second for test and production tokens respectively.
+          API call rate limit (https://stripe.com/docs/rate-limits). If not specified the default maximum is 25
+          calls per second for test/sandbox tokens and 100 for production tokens.
+      api_retention_streams:
+        type: array
+        title: Streams with API Data Retention Validation
+        description: >-
+          Select streams where cursor age is validated against the Stripe API 30-day event retention period.
+          When a selected stream's cursor is older than 30 days, the connector performs a full refresh
+          to avoid missing data. Streams not selected here will always use incremental sync regardless of cursor age.
+        items:
+          type: string
+          enum:
+            - accounts
+            - application_fees
+            - application_fees_refunds
+            - authorizations
+            - bank_accounts
+            - cardholders
+            - charges
+            - checkout_sessions
+            - coupons
+            - credit_notes
+            - customers
+            - disputes
+            - early_fraud_warnings
+            - external_account_bank_accounts
+            - external_account_cards
+            - invoice_items
+            - invoice_line_items
+            - invoices
+            - payment_intents
+            - payment_methods
+            - payouts
+            - persons
+            - plans
+            - prices
+            - products
+            - promotion_codes
+            - refunds
+            - reviews
+            - setup_intents
+            - subscription_items
+            - subscription_schedule
+            - subscriptions
+            - top_ups
+            - transactions
+            - transfers
+        uniqueItems: true
+        default: []
+        order: 7
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate num_workers from 1 to 2 as the new minimum value
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["num_workers"]
+                value: "2"
+            condition: "{{ config.get('num_workers', 25) == 1 }}"
+# Concurrency level controls how many partition slices are processed in parallel.
+# Each worker handles a different time slice, preventing overlap.
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4 if 'sk_test_' in config['client_secret'] else 10) }}"
+  max_concurrency: 100
 
 api_budget:
   type: HTTPAPIBudget
@@ -1914,9 +2017,14 @@ api_budget:
 
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 100 if 'sk_test_' in config['client_secret'] else 25 }}"
+        # Use call_rate_limit from config if provided, otherwise default to 25 (test/sandbox) or 100 (live)
+        # Per Stripe docs: Live mode = 100 ops/sec, Sandbox = 25 ops/sec
+        # Sandbox secret keys begin with 'sk_test_', this is how we check which limit to use if live or sandbox account.
+        - limit: "{{ config.get('call_rate_limit', 25 if 'sk_test_' in config['client_secret'] else 100) }}"
           interval: PT1S
       matchers: []
+  # Tell the CDK to recognize 429 as rate limit hit and back off accordingly
+  status_codes_for_ratelimit_hit: [429]
 schemas:
   accounts:
     $schema: https://json-schema.org/draft-07/schema#

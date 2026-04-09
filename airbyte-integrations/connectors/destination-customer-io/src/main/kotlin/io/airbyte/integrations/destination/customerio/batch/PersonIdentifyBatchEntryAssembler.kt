@@ -27,7 +27,7 @@ class PersonIdentifyBatchEntryAssembler : BatchEntryAssembler {
         batchEntry.putObject("identifiers").put("email", personEmail)
 
         val attributes = batchEntry.putObject("attributes")
-        (recordAsJson as ObjectNode).fields().forEach { (key, value) ->
+        (recordAsJson as ObjectNode).properties().forEach { (key, value) ->
             if (key !in EXPECTED_PROPERTIES) {
                 attributes.replace(key, value)
             }

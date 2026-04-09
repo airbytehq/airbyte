@@ -362,6 +362,13 @@ abstract class BasicFunctionalityIntegrationTest(
     val updatedConfig = configUpdater.update(configContents)
     val parsedConfig = ValidatedJsonUtils.parseOne(configSpecClass, updatedConfig)
 
+    /**
+     * When true, dedup tests will send all records over a single socket to preserve message
+     * ordering. This is needed for destinations that rely on record order for deduplication when
+     * using proto socket mode.
+     */
+    open val useSingleSocketForDedup: Boolean = false
+
     @Test
     open fun testOutOfOrderStateMessages() {
         if (
@@ -3137,6 +3144,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 1000,
                 ),
             ),
+            useSingleSocket = useSingleSocketForDedup,
         )
         dumpAndDiffRecords(
             parsedConfig,
@@ -3210,6 +3218,7 @@ abstract class BasicFunctionalityIntegrationTest(
                     extractedAt = 2000,
                 ),
             ),
+            useSingleSocket = useSingleSocketForDedup,
         )
         val deletedRecords =
             when (dedupBehavior!!.cdcDeletionMode) {

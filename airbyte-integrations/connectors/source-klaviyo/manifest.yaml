@@ -784,6 +784,61 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/metrics"
+    metrics_for_reporting:
+      type: DeclarativeStream
+      name: metrics_for_reporting
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: metrics
+          http_method: GET
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ not config.get('metric_ids') or record['id'] in (config.get('metric_ids', '').split(',') | map('trim') | list) }}"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/metrics"
     lists:
       type: DeclarativeStream
       name: lists
@@ -922,6 +977,282 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/lists_detailed"
+    flow_series_reports:
+      type: DeclarativeStream
+      name: flow_series_reports
+      primary_key:
+        - date
+        - flow_id
+        - flow_message_id
+        - send_channel
+        - conversion_metric_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: flow-series-reports
+          http_method: POST
+          request_parameters: {}
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+            Content-Type: application/json
+          request_body_json:
+            data:
+              type: "flow-series-report"
+              attributes:
+                statistics:
+                  - opens
+                  - opens_unique
+                  - clicks
+                  - clicks_unique
+                  - delivered
+                  - bounced
+                  - bounced_or_failed
+                  - bounced_or_failed_rate
+                  - failed
+                  - failed_rate
+                  - conversions
+                  - conversion_value
+                  - conversion_rate
+                  - conversion_uniques
+                  - click_rate
+                  - open_rate
+                  - click_to_open_rate
+                  - delivery_rate
+                  - bounce_rate
+                  - recipients
+                  - revenue_per_recipient
+                  - average_order_value
+                timeframe:
+                  start: "{{ stream_interval.start_time }}"
+                  end: "{{ stream_interval.end_time }}"
+                interval: daily
+                conversion_metric_id: "{{ stream_partition['metric_id'] }}"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - attributes
+              - results
+              - "*"
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: metric_id
+              stream:
+                $ref: "#/definitions/streams/metrics_for_reporting"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P30D
+        cursor_granularity: PT1S
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ stream_interval.end_time }}"
+            - path:
+                - flow_id
+              value: "{{ record.get('groupings', {}).get('flow_id') }}"
+            - path:
+                - flow_message_id
+              value: "{{ record.get('groupings', {}).get('flow_message_id') }}"
+            - path:
+                - send_channel
+              value: "{{ record.get('groupings', {}).get('send_channel') }}"
+            - path:
+                - conversion_metric_id
+              value: "{{ stream_partition['metric_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/flow_series_reports"
+    campaign_values_reports:
+      type: DeclarativeStream
+      name: campaign_values_reports
+      primary_key:
+        - date
+        - campaign_id
+        - campaign_message_id
+        - send_channel
+        - conversion_metric_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: campaign-values-reports
+          http_method: POST
+          request_parameters: {}
+          request_headers:
+            Accept: application/json
+            Revision: "2024-10-15"
+            Content-Type: application/json
+          request_body_json:
+            data:
+              type: "campaign-values-report"
+              attributes:
+                statistics:
+                  - average_order_value
+                  - bounce_rate
+                  - bounced
+                  - bounced_or_failed
+                  - bounced_or_failed_rate
+                  - click_rate
+                  - click_to_open_rate
+                  - clicks
+                  - clicks_unique
+                  - conversion_rate
+                  - conversion_uniques
+                  - conversion_value
+                  - conversions
+                  - delivered
+                  - delivery_rate
+                  - failed
+                  - failed_rate
+                  - message_segment_count_sum
+                  - open_rate
+                  - opens
+                  - opens_unique
+                  - recipients
+                  - revenue_per_recipient
+                  - spam_complaint_rate
+                  - spam_complaints
+                  - text_message_credit_usage_amount
+                  - text_message_roi
+                  - text_message_spend
+                  - unsubscribe_rate
+                  - unsubscribe_uniques
+                  - unsubscribes
+                timeframe:
+                  start: "{{ stream_interval.start_time }}"
+                  end: "{{ stream_interval.end_time }}"
+                conversion_metric_id: "{{ stream_partition['metric_id'] }}"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: >-
+              source_declarative_manifest.components.KlaviyoErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+            response_filters:
+              - type: HttpResponseFilter
+                action: RATE_LIMITED
+                http_codes:
+                  - 429
+              - type: HttpResponseFilter
+                action: FAIL
+                http_codes:
+                  - 401
+                  - 403
+                failure_type: config_error
+                error_message: >-
+                  Please provide a valid API key and make sure it has
+                  permissions to read specified streams.
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - attributes
+              - results
+              - "*"
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('links', {}).get('next') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: metric_id
+              stream:
+                $ref: "#/definitions/streams/metrics_for_reporting"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: date
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d %H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        step: P30D
+        cursor_granularity: PT1S
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ stream_interval.end_time }}"
+            - path:
+                - campaign_id
+              value: "{{ record.get('groupings', {}).get('campaign_id') }}"
+            - path:
+                - campaign_message_id
+              value: "{{ record.get('groupings', {}).get('campaign_message_id') }}"
+            - path:
+                - send_channel
+              value: "{{ record.get('groupings', {}).get('send_channel') }}"
+            - path:
+                - conversion_metric_id
+              value: "{{ stream_partition['metric_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/campaign_values_reports"
   base_requester:
     type: HttpRequester
     url_base: https://a.klaviyo.com/api/
@@ -947,6 +1278,9 @@ streams:
   - $ref: "#/definitions/streams/metrics"
   - $ref: "#/definitions/streams/lists"
   - $ref: "#/definitions/streams/lists_detailed"
+  # Analytics streams
+  - $ref: "#/definitions/streams/flow_series_reports"
+  - $ref: "#/definitions/streams/campaign_values_reports"
 
 spec:
   type: Spec
@@ -1017,6 +1351,24 @@ spec:
           - 0
           - 7
         order: 4
+      metric_ids:
+        type: string
+        title: Report Stream Conversion Metric IDs
+        description: >-
+          OPTIONAL: Comma-separated list of specific metric IDs to use for
+          flow_series_reports and campaign_values_reports streams. If left empty,
+          the connector will automatically fetch reports for ALL available metrics
+          in your account. Due to Klaviyo's strict API rate limits
+          - see [Klaviyo's API docs](https://developers.klaviyo.com/en/reference/query_campaign_values),
+          syncing all metrics can be extremely slow and may take hours to complete.
+          RECOMMENDED: Specify only the conversion metrics you need (e.g., "RESQ6t"
+          for Placed Order) to avoid slow syncs. Find metric IDs in your Klaviyo
+          account under Analytics > Metrics, or use the metrics stream to list all
+          available metrics and their IDs.
+        order: 5
+        examples:
+          - "RESQ6t"
+          - "RESQ6t,ABC123,XYZ789"
     additionalProperties: true
 
 metadata:
@@ -1032,6 +1384,8 @@ metadata:
     metrics: false
     lists: false
     lists_detailed: false
+    flow_series_reports: false
+    campaign_values_reports: false
   yamlComponents:
     streams:
       profiles:
@@ -1061,6 +1415,10 @@ metadata:
       lists_detailed:
         - errorHandler
         - incrementalSync
+      flow_series_reports:
+        - errorHandler
+      campaign_values_reports:
+        - errorHandler
     global:
       - authenticator
   testedStreams:
@@ -3390,6 +3748,435 @@ schemas:
           - "null"
           - string
         format: date-time
+  flow_series_reports:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+        format: date-time
+        description: End date of the reporting period (used as cursor field)
+      flow_id:
+        type:
+          - "null"
+          - string
+        description: Flow ID
+      flow_message_id:
+        type:
+          - "null"
+          - string
+        description: Flow message ID
+      send_channel:
+        type:
+          - "null"
+          - string
+        description: Send channel (e.g., email, sms)
+      conversion_metric_id:
+        type:
+          - "null"
+          - string
+        description: The metric ID used for conversion tracking in this report
+      groupings:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: Grouping dimensions for this flow message
+        properties:
+          flow_id:
+            type:
+              - "null"
+              - string
+            description: Flow ID
+          flow_message_id:
+            type:
+              - "null"
+              - string
+            description: Flow message ID
+          send_channel:
+            type:
+              - "null"
+              - string
+            description: Send channel (e.g., email, sms)
+      statistics:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: Time-series statistics (arrays of values, one per day in the reporting period)
+        properties:
+          opens:
+            type:
+              - "null"
+              - array
+            description: Number of opens per day
+            items:
+              type: number
+          opens_unique:
+            type:
+              - "null"
+              - array
+            description: Number of unique opens per day
+            items:
+              type: number
+          clicks:
+            type:
+              - "null"
+              - array
+            description: Number of clicks per day
+            items:
+              type: number
+          clicks_unique:
+            type:
+              - "null"
+              - array
+            description: Number of unique clicks per day
+            items:
+              type: number
+          delivered:
+            type:
+              - "null"
+              - array
+            description: Number of delivered messages per day
+            items:
+              type: number
+          bounced:
+            type:
+              - "null"
+              - array
+            description: Number of bounces per day
+            items:
+              type: number
+          bounced_or_failed:
+            type:
+              - "null"
+              - array
+            description: Number of bounced or failed messages per day
+            items:
+              type: number
+          bounced_or_failed_rate:
+            type:
+              - "null"
+              - array
+            description: Bounce or failure rate per day
+            items:
+              type: number
+          failed:
+            type:
+              - "null"
+              - array
+            description: Number of failed messages per day
+            items:
+              type: number
+          failed_rate:
+            type:
+              - "null"
+              - array
+            description: Failure rate per day
+            items:
+              type: number
+          conversions:
+            type:
+              - "null"
+              - array
+            description: Number of conversions per day
+            items:
+              type: number
+          conversion_value:
+            type:
+              - "null"
+              - array
+            description: Conversion value per day
+            items:
+              type: number
+          conversion_rate:
+            type:
+              - "null"
+              - array
+            description: Conversion rate per day
+            items:
+              type: number
+          conversion_uniques:
+            type:
+              - "null"
+              - array
+            description: Unique conversions per day
+            items:
+              type: number
+          click_rate:
+            type:
+              - "null"
+              - array
+            description: Click rate per day
+            items:
+              type: number
+          open_rate:
+            type:
+              - "null"
+              - array
+            description: Open rate per day
+            items:
+              type: number
+          click_to_open_rate:
+            type:
+              - "null"
+              - array
+            description: Click-to-open rate per day
+            items:
+              type: number
+          delivery_rate:
+            type:
+              - "null"
+              - array
+            description: Delivery rate per day
+            items:
+              type: number
+          bounce_rate:
+            type:
+              - "null"
+              - array
+            description: Bounce rate per day
+            items:
+              type: number
+          recipients:
+            type:
+              - "null"
+              - array
+            description: Number of recipients per day
+            items:
+              type: number
+          revenue_per_recipient:
+            type:
+              - "null"
+              - array
+            description: Revenue per recipient per day
+            items:
+              type: number
+          average_order_value:
+            type:
+              - "null"
+              - array
+            description: Average order value per day
+            items:
+              type: number
+  campaign_values_reports:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - "null"
+          - string
+        format: date-time
+        description: End date of the reporting period (used as cursor field)
+      campaign_id:
+        type:
+          - "null"
+          - string
+        description: Campaign ID
+      campaign_message_id:
+        type:
+          - "null"
+          - string
+        description: Campaign message ID
+      send_channel:
+        type:
+          - "null"
+          - string
+        description: Send channel (e.g., email, sms)
+      conversion_metric_id:
+        type:
+          - "null"
+          - string
+        description: The metric ID used for conversion tracking in this report
+      groupings:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: Grouping dimensions for this campaign
+        properties:
+          campaign_id:
+            type:
+              - "null"
+              - string
+            description: Campaign ID
+          campaign_message_id:
+            type:
+              - "null"
+              - string
+            description: Campaign message ID
+          send_channel:
+            type:
+              - "null"
+              - string
+            description: Send channel (e.g., email, sms)
+      statistics:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: Aggregated statistics for the reporting period
+        properties:
+          average_order_value:
+            type:
+              - "null"
+              - number
+            description: Average order value
+          bounce_rate:
+            type:
+              - "null"
+              - number
+            description: Bounce rate
+          bounced:
+            type:
+              - "null"
+              - number
+            description: Number of bounces
+          bounced_or_failed:
+            type:
+              - "null"
+              - number
+            description: Number of bounced or failed messages
+          bounced_or_failed_rate:
+            type:
+              - "null"
+              - number
+            description: Bounce or failure rate
+          click_rate:
+            type:
+              - "null"
+              - number
+            description: Click rate
+          click_to_open_rate:
+            type:
+              - "null"
+              - number
+            description: Click-to-open rate
+          clicks:
+            type:
+              - "null"
+              - number
+            description: Number of clicks
+          clicks_unique:
+            type:
+              - "null"
+              - number
+            description: Number of unique clicks
+          conversion_rate:
+            type:
+              - "null"
+              - number
+            description: Conversion rate
+          conversion_uniques:
+            type:
+              - "null"
+              - number
+            description: Unique conversions
+          conversion_value:
+            type:
+              - "null"
+              - number
+            description: Total conversion value
+          conversions:
+            type:
+              - "null"
+              - number
+            description: Number of conversions
+          delivered:
+            type:
+              - "null"
+              - number
+            description: Number of delivered messages
+          delivery_rate:
+            type:
+              - "null"
+              - number
+            description: Delivery rate
+          failed:
+            type:
+              - "null"
+              - number
+            description: Number of failed messages
+          failed_rate:
+            type:
+              - "null"
+              - number
+            description: Failure rate
+          message_segment_count_sum:
+            type:
+              - "null"
+              - number
+            description: Sum of message segment counts
+          open_rate:
+            type:
+              - "null"
+              - number
+            description: Open rate
+          opens:
+            type:
+              - "null"
+              - number
+            description: Number of opens
+          opens_unique:
+            type:
+              - "null"
+              - number
+            description: Number of unique opens
+          recipients:
+            type:
+              - "null"
+              - number
+            description: Number of recipients
+          revenue_per_recipient:
+            type:
+              - "null"
+              - number
+            description: Revenue per recipient
+          spam_complaint_rate:
+            type:
+              - "null"
+              - number
+            description: Spam complaint rate
+          spam_complaints:
+            type:
+              - "null"
+              - number
+            description: Number of spam complaints
+          text_message_credit_usage_amount:
+            type:
+              - "null"
+              - number
+            description: Text message credit usage amount
+          text_message_roi:
+            type:
+              - "null"
+              - number
+            description: Text message return on investment
+          text_message_spend:
+            type:
+              - "null"
+              - number
+            description: Text message spend
+          unsubscribe_rate:
+            type:
+              - "null"
+              - number
+            description: Unsubscribe rate
+          unsubscribe_uniques:
+            type:
+              - "null"
+              - number
+            description: Unique unsubscribes
+          unsubscribes:
+            type:
+              - "null"
+              - number
+            description: Number of unsubscribes
 
 api_budget:
   type: HTTPAPIBudget
@@ -3477,7 +4264,27 @@ api_budget:
         - method: GET
           url_path_pattern: "^/api/lists/" # matches any path beginning with '/lists/' (e.g. '/lists/123')
           params:
-            "additional-fields[list]": "profile_count" # Other API budget settings:
+            "additional-fields[list]": "profile_count"
+    # Flow Series Reports (XS tier)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1 # burst: 1 call per second
+          interval: PT1S
+        - limit: 2 # steady: 2 calls per minute
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "^/api/flow-series-reports($|\\?)"
+    # Campaign Values Reports (XS tier)
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 1 # burst: 1 call per second
+          interval: PT1S
+        - limit: 2 # steady: 2 calls per minute
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "^/api/campaign-values-reports($|\\?)"
   status_codes_for_ratelimit_hit: [429]
 
 # Klaviyo's rate limiting is different by endpoints:
@@ -3507,3 +4314,4 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 25) }}"
   max_concurrency: 50
+
