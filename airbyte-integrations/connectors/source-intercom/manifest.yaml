@@ -893,19 +893,19 @@ spec:
       api_rate_limit:
         type: integer
         description: >-
-          The maximum number of API requests per minute allowed by your Intercom
-          plan. The default of 10000 matches the standard Intercom rate limit.
-          If your workspace has a higher rate limit (e.g. 150000/min), set this
-          to that value to allow the connector to use your full API throughput.
-          The connector will use 95% of this value as the effective budget and
-          derive a per-10-second window automatically.
+          The effective API request budget per minute. The default of 9500 is
+          95% of the standard Intercom rate limit (10,000/min), leaving headroom
+          for occasional bursts. If your workspace has a higher rate limit
+          (e.g. 150,000/min), set this to ~95% of that value (e.g. 142500) to
+          leverage your full API throughput. A per-10-second window is derived
+          automatically as api_rate_limit / 6.
         order: 7
         title: API Rate Limit (requests per minute)
-        default: 10000
+        default: 9500
         minimum: 100
         examples:
-          - 10000
-          - 150000
+          - 9500
+          - 142500
     additionalProperties: true
   advanced_auth:
       auth_flow_type: "oauth2.0"
@@ -1074,20 +1074,20 @@ metadata:
 # Intercom API rate limits:
 # - Both private and public apps: 10,000 API calls/min per app, 25,000/min per workspace
 # - Rate limit headers: X-RateLimit-Limit (per 10s window), X-RateLimit-Remaining, X-RateLimit-Reset
-# The api_rate_limit config option (default: 10,000 req/min) controls the budget.
-# Two rate windows are derived at 95% of the configured limit:
-#   - Per-minute: api_rate_limit * 0.95
-#   - Per-10s: api_rate_limit * 0.95 / 6  (derived from per-minute)
-# For customers with higher limits (e.g. 150k/min), set api_rate_limit in the connector config.
+# The api_rate_limit config option (default: 9,500 req/min) controls the budget directly.
+# Two rate windows are used:
+#   - Per-minute: api_rate_limit (default 9500, i.e. 95% of 10,000/min per-app limit)
+#   - Per-10s: api_rate_limit / 6 (default ~1583, derived from per-minute)
+# For customers with higher limits (e.g. 150k/min), set api_rate_limit to ~95% of their limit.
 # The ErrorHandlerWithRateLimiter custom component also proactively throttles based on remaining capacity headers.
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ (config.get('api_rate_limit', 10000) * 0.95) | int }}"
+        - limit: "{{ config.get('api_rate_limit', 9500) }}"
           interval: PT1M
-        - limit: "{{ (config.get('api_rate_limit', 10000) * 0.95 / 6) | int }}"
+        - limit: "{{ (config.get('api_rate_limit', 9500) / 6) | int }}"
           interval: PT10S
       matchers: []
   status_codes_for_ratelimit_hit: [429]
