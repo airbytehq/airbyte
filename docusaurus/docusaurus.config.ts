@@ -13,6 +13,7 @@ const getRemarkPlugins = () => ({
   docsHeaderDecoration: require("./src/remark/docsHeaderDecoration"),
   enterpriseDocsHeaderInformation: require("./src/remark/enterpriseDocsHeaderInformation"),
   productInformation: require("./src/remark/productInformation"),
+  planInformation: require("./src/remark/planInformation"),
   connectorList: require("./src/remark/connectorList"),
   specDecoration: require("./src/remark/specDecoration"),
   docMetaTags: require("./src/remark/docMetaTags"),
@@ -184,6 +185,7 @@ const config: Config = {
           return replaceApiReferenceCategory(sidebarItems, agentEngineApiItems);
         },
         remarkPlugins: [
+          plugins.planInformation,
           plugins.agentConnectorHeaderDecoration,
           plugins.addButtonToTitle,
           [plugins.npm2yarn, { sync: true }],
