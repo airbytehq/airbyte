@@ -13,13 +13,11 @@ class AirbyteBulkConnectorExtension {
     String core // 'extract' or 'load'
     List<String> toolkits = []  // 'extract-jdbc', etc...
     boolean useLegacyTaskLoader = false // when true, adds legacy-task-loader toolkit and excludes core-load
-    private boolean isDestination
     private String cdk
     private Project project
 
     AirbyteBulkConnectorExtension(Project project) {
         this.project = project
-        isDestination = project.name.startsWith('destination-')
 
         this.cdk = project.findProperty("cdkVersion")
         if (cdk == null) {
@@ -130,19 +128,16 @@ class AirbyteBulkConnectorExtension {
     void addDependency(dep) {
         // Copy the field, so that we can access it from within the closure
         // (because the closure runs within a DefaultDependencyHandler scope)
-        final boolean isDestination = this.isDestination
         project.dependencies {
             implementation dep
             testFixturesImplementation dep
             testFixturesImplementation testFixtures(dep)
             testImplementation dep
             testImplementation testFixtures(dep)
-            if (isDestination) {
                 integrationTestImplementation dep
                 integrationTestImplementation testFixtures(dep)
                 integrationTestLegacyImplementation dep
                 integrationTestLegacyImplementation testFixtures(dep)
-            }
         }
     }
 }
@@ -162,7 +157,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             ]
         }
 
-        if (project.name.startsWith('destination-')) {
             project.sourceSets {
                 // This is the source set where most of our integration tests should live.
                 integrationTest {
@@ -183,7 +177,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                         srcDir 'src/test-integration-legacy/resources'
                     }
                 }
-            }
 
             // This task exists solely so that we can run the "modern" integration tests
             // in non-docker mode on our laptops.
@@ -210,8 +203,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 outputs.upToDateWhen { false }
             }
 
-            // For historical reasons (i.e. airbyte-ci), this task is called integrationTestJava.
-            // airbyte-ci only wants to run a task with exactly that name.
+            // For historical reasons, this task is called integrationTestJava.
             // There's intentionally no equivalent to run integrationTestNonDocker + integrationTestLegacy.
             // It's an actual Test task (rather than just depending on two sub-tasks integrationTestDocker + integrationTestLegacy)
             // so that gradle args (e.g. `--tests`) work as expected.

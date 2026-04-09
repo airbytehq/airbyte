@@ -119,6 +119,12 @@
         "default": 100000,
         "minimum": 15000,
         "maximum": 1000000
+      },
+      "fulfillment_orders_include_closed": {
+        "type": "boolean",
+        "title": "Include Closed Fulfillment Orders",
+        "description": "If enabled, the `Fulfillment Orders` stream includes closed fulfillment orders. Shopify excludes closed orders by default.",
+        "default": false
       }
     }
   },

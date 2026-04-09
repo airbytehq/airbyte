@@ -90,7 +90,40 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     return await connector.execute(entity, action, params or {})
 ```
 
+### Download files
 
+Some connectors support a `download` action that returns file content as a binary stream instead of JSON. This is for entities like attachments, audio recordings, and documents. To check whether a connector supports downloads, see that connector's [reference documentation](/ai-agents/connectors).
+
+Download operations return an `AsyncIterator[bytes]` for memory-efficient streaming. Use `async for` to process chunks as they arrive. To save a file, you can either stream the chunks directly or use the `download_local()` convenience method.
+
+Typically, you first need to discover which files are available before downloading them. For example, you might list ticket comments to find attachment IDs, then download a specific attachment:
+
+```python title="agent.py"
+comments = await zendesk_support.ticket_comments.list(ticket_id="456")
+for comment in comments.data:
+    for attachment in comment.attachments or []:
+        print(f"Attachment: {attachment['id']} - {attachment['file_name']}")
+```
+
+Once you have the attachment ID, you can download the file.
+
+You can stream the file content and write it to disk:
+
+```python title="agent.py"
+stream = await zendesk_support.attachments.download(attachment_id="12345")
+with open("./downloads/ticket_attachment.pdf", "wb") as f:
+    async for chunk in stream:
+        f.write(chunk)
+```
+
+Or use `download_local()` to save to a path in one step:
+
+```python title="agent.py"
+file_path = await zendesk_support.attachments.download_local(
+    attachment_id="12345",
+    path="./downloads/ticket_attachment.pdf",
+)
+```
 
 ### Introspection
 
@@ -197,6 +230,64 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
       "limit": 100
     }
   }'
+```
+
+### Download files
+
+Some connectors support a `download` action for entities like attachments and media files. Unlike other actions that return JSON, download responses return raw binary content with a `Content-Disposition` header.
+
+To find downloadable files, first list the relevant entity to discover IDs. For example, list a ticket's comments to find attachment metadata, then download a specific attachment.
+
+```bash title="Step 1: Discover attachments"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
+  --header 'Authorization: Bearer <your_application_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "entity": "ticket_comments",
+    "action": "list",
+    "params": {
+      "ticket_id": "<ticket_id>"
+    }
+  }'
+```
+
+ The response includes attachment metadata (IDs, filenames, content types) within each comment. Use the attachment ID to download the file:
+
+```bash title="Step 2: Download the file"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
+  --header 'Authorization: Bearer <your_application_token>' \
+  --header 'Content-Type: application/json' \
+  --output attachment.pdf \
+  --data '{
+    "entity": "attachments",
+    "action": "download",
+    "params": {
+      "attachment_id": "<attachment_id>"
+    }
+  }'
+```
+
+You can also stream the response in your app code. For example, using JavaScript with `fetch`:
+
+```javascript title="download.js"
+const response = await fetch(
+  `https://api.airbyte.ai/api/v1/integrations/connectors/${connectorId}/execute`,
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${applicationToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      entity: "attachments",
+      action: "download",
+      params: { attachment_id: attachmentId },
+    }),
+  }
+);
+
+const blob = await response.blob();
+const url = URL.createObjectURL(blob);
 ```
 
 ### Response format

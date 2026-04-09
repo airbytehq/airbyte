@@ -1,6 +1,6 @@
 ---
 sidebar_label: "Hosted connectors"
-sidebar_position: 3
+sidebar_position: 5
 ---
 
 import Tabs from '@theme/Tabs';
@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Hosted agent connectors in the Agent Engine
 
-When you run connector operations with the [Python SDK](tutorial-python), you store API credentials locally and provide them directly to the API through agent connectors. This approach, while viable at first, reaches limits quickly. You may find yourself dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and or store them at all.
+When you run connector operations with the [Python SDK](tutorial-pydantic), you store API credentials locally and provide them directly to the API through agent connectors. This approach, while viable at first, reaches limits quickly. You may find yourself dealing with large numbers of customers who have their own environments and credentials. You may not want to manage these credentials and or store them at all.
 
 With hosted execution, sensitive API credentials never leave Airbyte, multiple end-users can have separate credentials managed centrally, and Airbyte handles credential lifecycle (refresh, rotation) automatically.
 
@@ -72,7 +72,7 @@ curl --location 'https://api.airbyte.ai/api/v1/account/applications/scoped-token
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
   --data '{
-    "external_user_id": "<your_external_user_id>"
+    "customer_name": "<your_customer_name>"
   }'
 ```
 
@@ -82,7 +82,7 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
 - `connector_type`: The case-insensitive name or ID of the source template for the connector type. For example, `GitHub` or `github`. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
 
-- `external_user_id`: Retrieve this by calling `GET /api/v1/account/applications/scoped-token/info` with your scoped token.
+- `customer_name`: Retrieve this by calling `GET /api/v1/account/applications/scoped-token/info` with your scoped token.
 
 - Additional configuration fields that may or may not be mandatory, depending on the source. If applicable, these fields are explained in the reference docs for your connector.
 
@@ -98,7 +98,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -H "Content-Type: application/json" \
     -d '{      
       "connector_type": "github",
-      "external_user_id": "<your_external_user_id",
+      "customer_name": "<your_customer_name>",
       "replication_config": {
         "repositories": ["airbytehq/airbyte"],
         "credentials": {
@@ -187,7 +187,7 @@ The response contains the operation result.
 
 ### No connector found for this user
 
-- Ensure you've created a connector for the right external user ID.
+- Ensure you've created a connector for the right customer name.
 
 ### Authentication errors (401/403)
 

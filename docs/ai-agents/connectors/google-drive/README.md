@@ -4,8 +4,8 @@ The Google-Drive agent connector is a Python package that equips AI agents to in
 
 Google Drive is a cloud-based file storage and synchronization service that allows users
 to store files, share content, and collaborate on documents. This connector provides
-read-only access to files, shared drives, permissions, comments, replies, revisions,
-and change tracking for data analysis and integration workflows.
+access to files, shared drives, permissions, comments, replies, revisions,
+and change tracking, including the ability to create, update, delete, and upload files.
 
 
 ## Example questions
@@ -26,6 +26,10 @@ The Google-Drive connector is optimized to handle prompts like these.
 - Show revision history for a recent file
 - Get my Drive storage quota and user info
 - List files in a folder I have access to
+- Create a new file in Google Drive
+- Upload a document to Drive
+- Delete a file from Drive
+- Move a file to a different folder
 - Show me files modified in the last week
 - What changes have been made since my last sync?
 
@@ -33,12 +37,8 @@ The Google-Drive connector is optimized to handle prompts like these.
 
 The Google-Drive connector isn't currently able to handle prompts like these.
 
-- Create a new file in Google Drive
-- Upload a document to Drive
-- Delete a file from Drive
 - Update file permissions
 - Add a comment to a file
-- Move a file to a different folder
 
 ## Installation
 
@@ -106,7 +106,8 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Download](./REFERENCE.md#files-download) |
+| Files | [List](./REFERENCE.md#files-list), [Get](./REFERENCE.md#files-get), [Create](./REFERENCE.md#files-create), [Update](./REFERENCE.md#files-update), [Delete](./REFERENCE.md#files-delete), [Download](./REFERENCE.md#files-download) |
+| Files Upload | [Create](./REFERENCE.md#files-upload-create) |
 | Files Export | [Download](./REFERENCE.md#files-export-download) |
 | Drives | [List](./REFERENCE.md#drives-list), [Get](./REFERENCE.md#drives-get) |
 | Permissions | [List](./REFERENCE.md#permissions-list), [Get](./REFERENCE.md#permissions-get) |
@@ -128,7 +129,7 @@ See the official [Google-Drive API reference](https://developers.google.com/work
 
 ## Version information
 
-- **Package version:** 0.1.76
-- **Connector version:** 0.1.8
-- **Generated with Connector SDK commit SHA:** cb4380e76ac5cbc67b9089f94522be1bbe9f8d73
+- **Package version:** 0.1.93
+- **Connector version:** 0.2.2
+- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-drive/CHANGELOG.md)

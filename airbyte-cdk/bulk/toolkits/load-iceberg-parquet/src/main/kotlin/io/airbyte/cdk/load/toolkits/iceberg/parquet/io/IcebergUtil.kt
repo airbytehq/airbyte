@@ -149,7 +149,6 @@ class IcebergUtil(private val tableIdGenerator: TableIdGenerator) {
                         StringValue(element.serializeToString()),
                         changeDescription = null,
                     )
-
                 // otherwise, don't change anything
                 else -> null
             }
