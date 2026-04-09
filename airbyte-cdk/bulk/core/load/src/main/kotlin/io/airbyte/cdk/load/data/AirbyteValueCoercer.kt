@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -15,7 +16,6 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.time.DateTimeException
 import java.time.format.DateTimeFormatter
 
 /**
@@ -124,9 +124,7 @@ object AirbyteValueCoercer {
                     // Reject years outside the ISO 8601 range 0001-9999, since the
                     // DATE_TIME_FORMATTER pattern can parse multi-digit years in SMART mode.
                     if (parsed.year < 1 || parsed.year > 9999) {
-                        throw DateTimeException(
-                            "Year ${parsed.year} is outside the supported range 0001-9999"
-                        )
+                        throw DateTimeException("Year ${parsed.year} is outside the supported range 0001-9999")
                     }
                     DateValue(parsed)
                 }
@@ -187,9 +185,7 @@ object AirbyteValueCoercer {
         // so reject out-of-range years here to prevent invalid data from reaching
         // downstream systems.
         if (odt.year < 1 || odt.year > 9999) {
-            throw DateTimeException(
-                "Year ${odt.year} is outside the supported range 0001-9999"
-            )
+            throw DateTimeException("Year ${odt.year} is outside the supported range 0001-9999")
         }
         return odt
     }
