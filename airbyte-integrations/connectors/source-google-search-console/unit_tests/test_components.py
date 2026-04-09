@@ -1,8 +1,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
+from pathlib import Path
 
 import pytest
+import yaml
 
 
 @pytest.mark.parametrize(
@@ -205,3 +207,43 @@ class TestSanitizeNumericFields:
             component.transform(record=record)
 
         assert any("Complex value encountered for field 'clicks'" in msg for msg in caplog.messages)
+
+
+def _load_manifest():
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    return yaml.safe_load(manifest_path.read_text())
+
+
+def test_complete_oauth_output_specification_does_not_include_access_token():
+    """Verify that complete_oauth_output_specification only maps refresh_token.
+
+    extract_output only extracts refresh_token from the OAuth token exchange,
+    so access_token would always be null. Mapping it in the output spec causes
+    a schema validation failure (null found, string expected) when creating a
+    source via the API with a secretId.
+    """
+    manifest = _load_manifest()
+    oauth_config = manifest["spec"]["advanced_auth"]["oauth_config_specification"]
+    output_spec = oauth_config["complete_oauth_output_specification"]
+    properties = output_spec["properties"]
+
+    assert "access_token" not in properties, (
+        "access_token must not appear in complete_oauth_output_specification "
+        "because extract_output only extracts refresh_token"
+    )
+    assert "refresh_token" in properties
+
+
+def test_extract_output_and_oauth_output_spec_are_consistent():
+    """Verify every field in complete_oauth_output_specification is also in extract_output."""
+    manifest = _load_manifest()
+    oauth_config = manifest["spec"]["advanced_auth"]["oauth_config_specification"]
+    oauth_input = oauth_config["oauth_connector_input_specification"]
+    extract_output = set(oauth_input["extract_output"])
+    output_spec = oauth_config["complete_oauth_output_specification"]
+    output_properties = set(output_spec["properties"].keys())
+
+    assert output_properties.issubset(extract_output), (
+        f"complete_oauth_output_specification maps {output_properties - extract_output} "
+        f"which are not in extract_output {extract_output}"
+    )

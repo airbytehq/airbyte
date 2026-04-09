@@ -280,6 +280,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.30 | 2026-04-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Remove stale `access_token` from `complete_oauth_output_specification` to fix OAuth source creation via API |
 | 2.9.29 | 2026-04-01 | [75580](https://github.com/airbytehq/airbyte/pull/75580) | Add `oauth_connector_input_specification` with granular scopes |
 | 2.9.28 | 2026-03-31 | [75678](https://github.com/airbytehq/airbyte/pull/75678) | Update dependencies |
 | 2.9.27 | 2026-03-24 | [74568](https://github.com/airbytehq/airbyte/pull/74568) | Update dependencies |
