@@ -85,17 +85,15 @@ class RedshiftStagingStorageOperationTest {
     }
 
     @Test
-    fun testBuildCredentialClauseRejectsInvalidArn() {
+    fun testRejectsInvalidArnAtConstructionTime() {
         val credentialConfig = mock(S3CredentialConfig::class.java)
         `when`(credentialConfig.credentialType).thenReturn(S3CredentialType.DEFAULT_PROFILE)
 
-        val operation = createOperation(
-            credentialConfig,
-            iamRoleArn = "not-a-valid-arn"
-        )
-
         assertThrows(IllegalArgumentException::class.java) {
-            operation.buildCredentialClause()
+            createOperation(
+                credentialConfig,
+                iamRoleArn = "not-a-valid-arn"
+            )
         }
     }
 

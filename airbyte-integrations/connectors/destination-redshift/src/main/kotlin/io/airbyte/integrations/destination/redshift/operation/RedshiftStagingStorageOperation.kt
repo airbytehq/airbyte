@@ -7,9 +7,10 @@ package io.airbyte.integrations.destination.redshift.operation
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
+import com.amazonaws.auth.BasicSessionCredentials
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
-import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialType
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
+import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialType
 import io.airbyte.integrations.base.destination.operation.StorageOperation
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
@@ -39,6 +40,14 @@ class RedshiftStagingStorageOperation(
     private val dropCascade: Boolean,
     private val iamRoleArn: String? = null,
 ) : StorageOperation<SerializableBuffer> {
+    init {
+        if (iamRoleArn != null) {
+            require(iamRoleArn.matches(IAM_ROLE_ARN_PATTERN)) {
+                "Invalid IAM role ARN format: $iamRoleArn"
+            }
+        }
+    }
+
     private val connectionId: UUID = UUID.randomUUID()
     private val writeDatetime: ZonedDateTime = Instant.now().atZone(ZoneOffset.UTC)
     private val objectMapper = ObjectMapper()
@@ -274,7 +283,7 @@ class RedshiftStagingStorageOperation(
                 val accessKeyId = creds.awsAccessKeyId
                 val secretAccessKey = creds.awsSecretKey
                 val sessionToken =
-                    (creds as? com.amazonaws.auth.BasicSessionCredentials)?.sessionToken
+                    (creds as? BasicSessionCredentials)?.sessionToken
                 if (sessionToken != null) {
                     "CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey;token=$sessionToken'"
                 } else {
@@ -283,9 +292,6 @@ class RedshiftStagingStorageOperation(
             }
             S3CredentialType.DEFAULT_PROFILE -> {
                 if (iamRoleArn != null) {
-                    require(iamRoleArn.matches(Regex("arn:aws[a-zA-Z-]*:iam::\\d{12}:role/.+"))) {
-                        "Invalid IAM role ARN format: $iamRoleArn"
-                    }
                     "IAM_ROLE '$iamRoleArn'"
                 } else {
                     "IAM_ROLE default"
@@ -295,6 +301,7 @@ class RedshiftStagingStorageOperation(
     }
 
     companion object {
+        private val IAM_ROLE_ARN_PATTERN = Regex("arn:aws[a-zA-Z-]*:iam::\\d{12}:role/.+")
         private val nameTransformer = RedshiftSQLNameTransformer()
 
         private fun createRawTableQuery(streamId: StreamId, suffix: String): String {
