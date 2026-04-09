@@ -7,10 +7,10 @@ import TabItem from '@theme/TabItem';
 
 # Upgrading Airbyte
 
-Upgrades require temporarily turning off Airbyte. During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded: 
+Upgrades require temporarily turning off Airbyte. During upgrades, Airbyte will attempt to upgrade some connector versions. The following rules determine which connectors may be automatically upgraded:
 
    1. If you're not using a connector, Airbyte upgrades it to the latest version.
-   
+
    2. If you're using a connector, Airbyte does not upgrade it, to avoid disrupting your work. If you want to upgrade a specific connector, do so from the settings page.
 
 Refer to [Managing Connector Updates](/platform/managing-airbyte/connector-updates) for more details about keeping connectors updated.
@@ -27,25 +27,12 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
 
 4. Run the following command to upgrade.
 
-   <Tabs groupId="helm-chart-version">
-   <TabItem value='helm-1' label='Helm chart V1' default>
-
    ```bash
-   helm upgrade --install <RELEASE-NAME> airbyte/airbyte --values <VALUES.YAML> --version <HELM-APP-VERSION>
-   ```
-
-   </TabItem>
-   <TabItem value='helm-2' label='Helm chart V2' default>
-
-   ```bash
-   helm upgrade airbyte airbyte-v2/airbyte \
-   --namespace airbyte-v2 \       # Target Kubernetes namespace
+   helm upgrade airbyte airbyte/airbyte \
+   --namespace airbyte \           # Target Kubernetes namespace
    --values ./values.yaml \       # Custom configuration values
    --version 2.x.x                # Helm chart version to use
    ```
-
-   </TabItem>
-   </Tabs>
 
    After 5 minutes, Helm prints a message showing how to port-forward Airbyte. This may take longer on Kubernetes clusters with slow internet connections. In general the message is as follows:
 
