@@ -709,7 +709,7 @@ def build_associations_retriever(
             ],
             response_filters=[
                 HttpResponseFilter(
-                    action="RETRY",
+                    action="RATE_LIMITED",
                     http_codes={429},
                     error_message="HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.",
                     config=config,

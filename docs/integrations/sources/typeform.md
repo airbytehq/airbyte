@@ -81,6 +81,10 @@ Skip this step. Airbyte Cloud uses OAuth to authenticate with Typeform.
 | Images     | id          | No          | https://developer.typeform.com/create/reference/retrieve-images-collection/ |
 | Themes     | id          | No          | https://developer.typeform.com/create/reference/retrieve-themes/            |
 
+## Limitations
+
+This connector uses the Typeform US API endpoint (`api.typeform.com`). If your Typeform account stores responses in the [EU Data Center](https://www.typeform.com/developers/get-started/responses-data-center/), the Responses stream returns empty results. The Forms, Webhooks, Workspaces, Images, and Themes streams work regardless of data center region.
+
 ## Performance considerations
 
 The Typeform API enforces a rate limit of 2 requests per second per account. The connector respects this limit automatically. For more information, see the [Typeform API rate limits documentation](https://developer.typeform.com/get-started/#rate-limits).
@@ -89,8 +93,11 @@ Page size limits per stream:
 
 - Forms: 200
 - Responses: 1000
+- Workspaces: 200
+- Images: 200
+- Themes: 200
 
-The connector makes an additional API call per sync to fetch the list of form IDs in your account using the [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/).
+The Forms, Responses, and Webhooks streams make separate API calls for each form in your account. The connector first fetches the list of form IDs using the [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/), then queries each form individually. If you have many forms, consider using the **Form IDs** configuration option to limit the sync to only the forms you need.
 
 ## Changelog
 
@@ -99,6 +106,8 @@ The connector makes an additional API call per sync to fetch the list of form ID
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.7 | 2026-04-02 | [76030](https://github.com/airbytehq/airbyte/pull/76030) | Promoted release candidate to GA |
+| 1.4.7-rc.2 | 2026-03-31 | [75898](https://github.com/airbytehq/airbyte/pull/75898) | Update CDK to 7.15.0 |
 | 1.4.7-rc.1 | 2026-03-26 | [75506](https://github.com/airbytehq/airbyte/pull/75506) | Upgrade CDK version to 7.13.0 |
 | 1.4.6 | 2026-03-03 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |
 | 1.4.5 | 2026-01-22 | [72261](https://github.com/airbytehq/airbyte/pull/72261) | Update CDK version from 7.0.1 to 7.6.5 |

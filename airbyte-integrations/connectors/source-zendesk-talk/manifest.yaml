@@ -712,6 +712,12 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false

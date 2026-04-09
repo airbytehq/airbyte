@@ -114,8 +114,8 @@ This connector supports the following entities and actions. For more details, se
 |--------|---------|
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
 | Channels | [List](./REFERENCE.md#channels-list), [Get](./REFERENCE.md#channels-get), [Create](./REFERENCE.md#channels-create), [Update](./REFERENCE.md#channels-update), [Search](./REFERENCE.md#channels-search) |
-| Channel Messages | [List](./REFERENCE.md#channel-messages-list) |
-| Threads | [List](./REFERENCE.md#threads-list) |
+| Channel Messages | [List](./REFERENCE.md#channel-messages-list), [Search](./REFERENCE.md#channel-messages-search) |
+| Threads | [List](./REFERENCE.md#threads-list), [Search](./REFERENCE.md#threads-search) |
 | Messages | [Create](./REFERENCE.md#messages-create), [Update](./REFERENCE.md#messages-update) |
 | Channel Topics | [Create](./REFERENCE.md#channel-topics-create) |
 | Channel Purposes | [Create](./REFERENCE.md#channel-purposes-create) |
@@ -132,7 +132,7 @@ See the official [Slack API reference](https://api.slack.com/methods).
 
 ## Version information
 
-- **Package version:** 0.1.86
-- **Connector version:** 0.1.16
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
+- **Package version:** 0.1.87
+- **Connector version:** 0.1.17
+- **Generated with Connector SDK commit SHA:** f07b3c8f134cf5c31405771d57ff2d95748d241b
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/slack/CHANGELOG.md)
