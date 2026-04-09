@@ -20,15 +20,17 @@ The Airbyte Redshift destination allows you to sync data to Redshift. Airbyte re
     create an S3 bucket.
 - **S3 Bucket Region**
   - Place the S3 bucket and the Redshift cluster in the same region to save on networking costs.
-- **Access Key Id**
+- **Access Key Id** _(optional when using IAM role auth)_
   - See
     [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
     on how to generate an access key.
   - We recommend creating an Airbyte-specific user. This user will require
     [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html)
     to objects in the staging bucket.
-- **Secret Access Key**
+  - Not required if using IAM role-based authentication (IRSA / instance profile).
+- **Secret Access Key** _(optional when using IAM role auth)_
   - Corresponding key to the above key id.
+  - Not required if using IAM role-based authentication (IRSA / instance profile).
 
 Optional parameters:
 
@@ -40,6 +42,12 @@ Optional parameters:
   - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: `{date}`, `{date:yyyy_MM}`, `{timestamp}`,
     `{timestamp:millis}`, `{timestamp:micros}`, `{part_number}`, `{sync_id}`, `{format_extension}`.
     The pattern you supply will apply to anything under the Bucket Path. If this field is left blank, everything syncs under the Bucket Path. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+- **Redshift IAM Role ARN**
+  - The ARN of the IAM role attached to your Redshift cluster or serverless workgroup that has read
+    access to the S3 staging bucket. Required when not using static AWS credentials. If omitted,
+    `IAM_ROLE default` is used in the COPY command. See
+    [AWS docs](https://docs.aws.amazon.com/redshift/latest/mgmt/authorizing-redshift-service.html) on
+    associating IAM roles with Redshift.
 - **Purge Staging Data**
   - Whether to delete the staging files from S3 after completing the sync. Specifically, the
     connector will create CSV files named
@@ -95,6 +103,27 @@ This connector supports the use of a Bastion host as a gateway to a private Reds
 Tunneling. Setup of the host is beyond the scope of this document but several tutorials are
 available online to facilitate this task. Enter the bastion host, port and credentials in the
 destination configuration.
+
+### Using IAM Role-Based Authentication (IRSA / Instance Profile)
+
+If you're running Airbyte on AWS (EKS, EC2, or ECS), you can use IAM role-based authentication
+instead of static access keys. This eliminates the need to manage and rotate long-lived credentials.
+
+**Prerequisites:**
+
+1. The Airbyte pod or instance must have an IAM role with read/write access to the S3 staging bucket.
+   On EKS, this is typically configured via
+   [IRSA (IAM Roles for Service Accounts)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html).
+2. Your Redshift cluster or serverless workgroup must have an
+   [associated IAM role](https://docs.aws.amazon.com/redshift/latest/mgmt/authorizing-redshift-service.html)
+   with read access to the same S3 staging bucket.
+
+**Configuration:**
+
+- Leave **Access Key Id** and **Secret Access Key** blank.
+- Set **Redshift IAM Role ARN** to the ARN of the IAM role attached to your Redshift cluster
+  (e.g., `arn:aws:iam::123456789012:role/redshift-s3-read`). If your cluster has a single default
+  role, you can leave this blank and the connector will use `IAM_ROLE default`.
 
 ## Step 2: Set up the destination connector in Airbyte
 
