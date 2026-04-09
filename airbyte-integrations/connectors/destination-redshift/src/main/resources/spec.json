@@ -81,9 +81,7 @@
             "required": [
               "method",
               "s3_bucket_name",
-              "s3_bucket_region",
-              "access_key_id",
-              "secret_access_key"
+              "s3_bucket_region"
             ],
             "properties": {
               "method": {
@@ -149,17 +147,24 @@
               },
               "access_key_id": {
                 "type": "string",
-                "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
+                "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. Not required if using IAM role-based authentication (IRSA / instance profile). See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
                 "title": "S3 Access Key Id",
                 "airbyte_secret": true,
                 "order": 3
               },
               "secret_access_key": {
                 "type": "string",
-                "description": "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
+                "description": "The corresponding secret to the above access key id. Not required if using IAM role-based authentication (IRSA / instance profile). See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
                 "title": "S3 Secret Access Key",
                 "airbyte_secret": true,
                 "order": 4
+              },
+              "iam_role_arn": {
+                "type": "string",
+                "description": "The ARN of the IAM role attached to your Redshift cluster or serverless workgroup that has read access to the S3 staging bucket. Required when not using static AWS credentials. If omitted, 'IAM_ROLE default' is used in the COPY command. See <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/authorizing-redshift-service.html\">AWS docs</a> on associating IAM roles with Redshift.",
+                "title": "Redshift IAM Role ARN",
+                "examples": ["arn:aws:iam::123456789012:role/redshift-s3-read"],
+                "order": 5
               },
               "file_name_pattern": {
                 "type": "string",
@@ -172,14 +177,14 @@
                   "{part_number}",
                   "{sync_id}"
                 ],
-                "order": 5
+                "order": 6
               },
               "purge_staging_data": {
                 "title": "Purge Staging Files and Tables",
                 "type": "boolean",
                 "description": "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details.",
                 "default": true,
-                "order": 6
+                "order": 7
               }
             }
           }
