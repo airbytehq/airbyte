@@ -193,6 +193,7 @@ class FlexibleDecoder(Decoder):
                 "application/x-jsonlines",
                 "application/x-jsonl+json",
                 "application/jsonl",
+                "application/octet-stream",
             )
         )
 
