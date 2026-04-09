@@ -15,7 +15,6 @@ import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguratio
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import org.apache.sshd.common.util.net.SshdSocketAddress
 
 private val log = KotlinLogging.logger {}
@@ -76,12 +75,8 @@ class RedshiftConnect(
 
         val hikariConfig =
             HikariConfig().apply {
-                connectionTimeout = 1.minutes.inWholeMilliseconds
-                maximumPoolSize = 10
-                minimumIdle = 0
-                initializationFailTimeout = -1
+                connectionTimeout = 2.minutes.inWholeMilliseconds
                 leakDetectionThreshold = 5.minutes.inWholeMilliseconds
-                keepaliveTime = 30.seconds.inWholeMilliseconds
                 driverClassName = DRIVER_CLASS
                 this.jdbcUrl = jdbcUrl
                 username = configuration.username
@@ -90,8 +85,6 @@ class RedshiftConnect(
 
                 addDataSourceProperty("ssl", "true")
                 addDataSourceProperty("sslfactory", SSL_FACTORY)
-                addDataSourceProperty("connectTimeout", 30.seconds.inWholeSeconds.toString())
-
                 connectionTestQuery = "SELECT 1"
             }
 

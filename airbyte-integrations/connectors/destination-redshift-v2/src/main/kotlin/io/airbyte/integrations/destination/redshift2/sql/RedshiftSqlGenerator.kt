@@ -60,31 +60,33 @@ class RedshiftSqlGenerator {
         return "SELECT count(1)$aliasClause FROM ${tableName.quoted()}".andLog()
     }
 
-    /**
-     * Generates a parameterized `INSERT INTO` with Airbyte meta columns + [columnNames]. For use
-     * with [java.sql.PreparedStatement].
-     */
-    fun insertRow(tableName: TableName, columnNames: List<String>): String {
-        val allColumns =
-            listOf(
-                COLUMN_NAME_AB_RAW_ID,
-                COLUMN_NAME_AB_EXTRACTED_AT,
-                COLUMN_NAME_AB_META,
-                COLUMN_NAME_AB_GENERATION_ID,
-            ) + columnNames
-
-        val quotedColumns = allColumns.joinToString(", ") { "\"$it\"" }
-        val placeholders = allColumns.joinToString(", ") { "?" }
-
-        return "INSERT INTO ${tableName.quoted()} ($quotedColumns) VALUES ($placeholders)".andLog()
-    }
-
-    /**
-     * Generates a parameterized `DELETE` by `_airbyte_raw_id`. For use with
-     * [java.sql.PreparedStatement].
-     */
+    /** Generates a parameterized `DELETE` by `_airbyte_raw_id` */
     fun deleteByRawId(tableName: TableName): String =
         "DELETE FROM ${tableName.quoted()} WHERE $COLUMN_NAME_AB_RAW_ID = ?".andLog()
+
+    /**
+     * Generates a Redshift COPY command to load gzip CSV data from S3.
+     *
+     * NOTE: The returned SQL contains plaintext S3 credentials and is intentionally NOT logged.
+     * Callers must not log this statement.
+     */
+    fun copyFromS3(
+        tableName: TableName,
+        s3Path: String,
+        accessKeyId: String,
+        secretAccessKey: String,
+        region: String,
+    ): String =
+        """
+        |COPY ${tableName.quoted()}
+        |FROM '$s3Path'
+        |CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'
+        |CSV GZIP
+        |REGION '$region'
+        |TIMEFORMAT 'auto'
+        |STATUPDATE OFF
+        |IGNOREHEADER 1;
+        """.trimMargin()
 
     /** Quotes a [TableName] as `"namespace"."name"`. */
     private fun TableName.quoted(): String = "\"$namespace\".\"$name\""

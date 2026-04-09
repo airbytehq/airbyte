@@ -44,7 +44,8 @@ private const val CHECK_COLUMN_VALUE = "check-value"
  * 4. [testCopyFromS3] -- Redshift COPY command from S3
  * 5. [testRowCount] -- verify exactly 1 row was loaded
  * 6. [testDeleteRow] -- delete the test row
- * 7. [cleanup] -- drop Redshift table + delete S3 object
+ * 7. [testS3Cleanup] -- delete the S3 test object
+ * 8. [cleanup] -- drop Redshift table (called by CDK after check)
  */
 @Singleton
 class RedshiftChecker(
@@ -77,6 +78,7 @@ class RedshiftChecker(
 
             testRowCount(tableName!!)
             testDeleteRow(tableName!!, rawId)
+            testS3Cleanup(s3Key!!)
 
             log.info { "Redshift connection check completed successfully" }
         } catch (e: SQLException) {
@@ -95,18 +97,6 @@ class RedshiftChecker(
      */
     override fun cleanup() {
         log.info { "Checker Cleaning up..." }
-
-        // Delete S3 object
-        try {
-            val s3Config = configuration.uploadingMethod
-            val key = s3Key
-            if (s3Client != null && s3Config != null && key != null) {
-                s3Client!!.deleteObject(s3Config.s3BucketName, key)
-                log.info { "Cleaned up S3 object: $key" }
-            }
-        } catch (e: Exception) {
-            log.warn(e) { "Failed to clean up S3 object: $s3Key" }
-        }
 
         // Drop Redshift table
         try {
@@ -189,16 +179,13 @@ class RedshiftChecker(
         val s3Path = "s3://${s3Config.s3BucketName}/$s3Key"
 
         val copySql =
-            """
-            COPY "${tableName.namespace}"."${tableName.name}"
-            FROM '$s3Path'
-            CREDENTIALS 'aws_access_key_id=${s3Config.accessKeyId};aws_secret_access_key=${s3Config.secretAccessKey}'
-            CSV GZIP
-            REGION '${s3Config.s3BucketRegion}'
-            TIMEFORMAT 'auto'
-            STATUPDATE OFF
-            IGNOREHEADER 1;
-            """.trimIndent()
+            sqlGenerator.copyFromS3(
+                tableName = tableName,
+                s3Path = s3Path,
+                accessKeyId = s3Config.accessKeyId,
+                secretAccessKey = s3Config.secretAccessKey,
+                region = s3Config.s3BucketRegion!!,
+            )
 
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt -> stmt.execute(copySql) }
@@ -232,6 +219,16 @@ class RedshiftChecker(
                 val deleted = pstmt.executeUpdate()
                 require(deleted == 1) { "Expected to delete 1 row, deleted $deleted" }
             }
+        }
+    }
+
+    /** Deletes the test S3 object to verify S3 delete permissions. */
+    private fun testS3Cleanup(s3Key: String) {
+        log.info { "Test 7: Cleaning up S3 test object..." }
+        val s3Config = configuration.uploadingMethod
+        if (s3Client != null && s3Config != null) {
+            s3Client!!.deleteObject(s3Config.s3BucketName, s3Key)
+            log.info { "Cleaned up S3 object: $s3Key" }
         }
     }
 
