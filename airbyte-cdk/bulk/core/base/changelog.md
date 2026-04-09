@@ -1,3 +1,7 @@
+## Version 1.0.3
+
+Preserve original ConnectorErrorException message through wrapping chain instead of replacing it with generic text. Users now see the actual root cause (e.g., "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.") instead of "Failed to initialize connector operation."
+
 ## Version 1.0.2
 
 Improved null handling for array types.
