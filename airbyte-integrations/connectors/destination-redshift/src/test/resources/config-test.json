@@ -5,5 +5,12 @@
   "password": "password",
   "database": "db",
   "schema": "public",
-  "jdbc_url_params": "property1=pValue1&property2=pValue2"
+  "jdbc_url_params": "property1=pValue1&property2=pValue2",
+  "uploading_method": {
+    "method": "S3 Staging",
+    "s3_bucket_name": "test-bucket",
+    "s3_bucket_region": "us-east-1",
+    "access_key_id": "test-access-key",
+    "secret_access_key": "test-secret-key"
+  }
 }

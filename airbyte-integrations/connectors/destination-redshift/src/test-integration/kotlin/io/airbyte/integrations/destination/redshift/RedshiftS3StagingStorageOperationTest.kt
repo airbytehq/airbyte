@@ -243,6 +243,7 @@ class RedshiftS3StagingStorageOperationTest {
             RedshiftSqlGenerator(RedshiftSQLNameTransformer(), config),
             RedshiftDestinationHandler(databaseName, jdbcDatabase, streamId.rawNamespace),
             dropCascade,
+            iamRoleArn = null,
         )
     }
 

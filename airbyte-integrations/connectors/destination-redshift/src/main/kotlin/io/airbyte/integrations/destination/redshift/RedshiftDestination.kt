@@ -106,8 +106,9 @@ class RedshiftDestination : BaseConnector(), Destination {
     }
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
-        val s3Config: S3DestinationConfig =
-            S3DestinationConfig.getS3DestinationConfig(RedshiftUtil.findS3Options(config))
+        val s3Options = RedshiftUtil.findS3Options(config)
+        val s3Config: S3DestinationConfig = S3DestinationConfig.getS3DestinationConfig(s3Options)
+        val iamRoleArn = s3Options.get("iam_role_arn")?.asText()
         val encryptionConfig =
             if (config.has(RedshiftDestinationConstants.UPLOADING_METHOD))
                 fromJson(
@@ -165,6 +166,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                     sqlGenerator,
                     destinationHandler,
                     RedshiftSqlGenerator.isDropCascade(config),
+                    iamRoleArn,
                 )
 
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
@@ -378,6 +380,7 @@ class RedshiftDestination : BaseConnector(), Destination {
         else NoEncryption()
         val s3Options = RedshiftUtil.findS3Options(config)
         val s3Config: S3DestinationConfig = S3DestinationConfig.getS3DestinationConfig(s3Options)
+        val iamRoleArn = s3Options.get("iam_role_arn")?.asText()
         val defaultNamespace = config["schema"].asText()
 
         val sqlGenerator = RedshiftSqlGenerator(namingResolver, config)
@@ -411,6 +414,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 sqlGenerator,
                 redshiftDestinationHandler,
                 RedshiftSqlGenerator.isDropCascade(config),
+                iamRoleArn,
             )
         val syncOperation =
             DefaultSyncOperation(

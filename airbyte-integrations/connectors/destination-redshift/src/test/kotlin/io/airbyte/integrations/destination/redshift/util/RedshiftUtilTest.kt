@@ -43,8 +43,6 @@ class RedshiftUtilTest {
         val jsonNode = Mockito.mock(JsonNode::class.java)
         Mockito.`when`(jsonNode["s3_bucket_name"]).thenReturn(null)
         Mockito.`when`(jsonNode["s3_bucket_region"]).thenReturn(null)
-        Mockito.`when`(jsonNode["access_key_id"]).thenReturn(null)
-        Mockito.`when`(jsonNode["secret_access_key"]).thenReturn(null)
 
         Assertions.assertTrue(anyOfS3FieldsAreNullOrEmpty(jsonNode))
     }
@@ -57,10 +55,6 @@ class RedshiftUtilTest {
         Mockito.`when`(jsonNode["s3_bucket_name"].asText()).thenReturn("test")
         Mockito.`when`(jsonNode["s3_bucket_region"]).thenReturn(Mockito.mock(JsonNode::class.java))
         Mockito.`when`(jsonNode["s3_bucket_region"].asText()).thenReturn("test")
-        Mockito.`when`(jsonNode["access_key_id"]).thenReturn(Mockito.mock(JsonNode::class.java))
-        Mockito.`when`(jsonNode["access_key_id"].asText()).thenReturn("test")
-        Mockito.`when`(jsonNode["secret_access_key"]).thenReturn(Mockito.mock(JsonNode::class.java))
-        Mockito.`when`(jsonNode["secret_access_key"].asText()).thenReturn("test")
 
         Assertions.assertFalse(anyOfS3FieldsAreNullOrEmpty(jsonNode))
     }
