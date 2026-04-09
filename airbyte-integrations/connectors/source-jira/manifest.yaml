@@ -14852,8 +14852,10 @@ spec:
           Content-Type: "application/json"
         access_token_params:
           grant_type: "authorization_code"
-          code: "{{auth_code_param}}"
-          redirect_uri: "{{redirect_uri_param}}"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
         extract_output:
           - refresh_token
       complete_oauth_output_specification:
