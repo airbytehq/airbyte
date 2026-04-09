@@ -349,34 +349,41 @@ class FeedReader(
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
-    // Acquires resources for the OutputMessageRouter and executes the provided action with it
-    private fun attemptWithMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
-        val acquiredSocket: SocketResource.AcquiredSocket? =
-            resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET)
-                as? SocketResource.AcquiredSocket
-
-        acquiredSocket?.use {
-            OutputMessageRouter(
-                    feedBootstrap.dataChannelMedium,
-                    feedBootstrap.dataChannelFormat,
-                    feedBootstrap.outputConsumer,
-                    emptyMap(),
-                    feedBootstrap,
-                    mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
-                )
-                .use { doWithRouter(it) }
+    // Acquires resources for the OutputMessageRouter and executes the provided action with it.
+    // Blocks until a socket resource is available, to guarantee the action is always executed.
+    private suspend fun withMessageRouter(doWithRouter: (OutputMessageRouter) -> Unit) {
+        while (true) {
+            val acquiredSocket: SocketResource.AcquiredSocket? =
+                resourceAcquirer.tryAcquireResource(ResourceType.RESOURCE_OUTPUT_SOCKET)
+                    as? SocketResource.AcquiredSocket
+            if (acquiredSocket != null) {
+                acquiredSocket.use {
+                    OutputMessageRouter(
+                            feedBootstrap.dataChannelMedium,
+                            feedBootstrap.dataChannelFormat,
+                            feedBootstrap.outputConsumer,
+                            emptyMap(),
+                            feedBootstrap,
+                            mapOf(ResourceType.RESOURCE_OUTPUT_SOCKET to acquiredSocket),
+                        )
+                        .use { doWithRouter(it) }
+                }
+                return
+            }
+            // No socket available yet; suspend until one is released.
+            root.waitForResourceAvailability()
         }
     }
 
     // In STDIO mode (legacy) we emit state messages to standard output.
-    // In SOCKET mode we emil state messages to stadard output and also states and stream statuses
-    // are sent over sockets,
-    // According to the configured format (json or protobuf).
-    // This function emit to stdout and also uses running partition readers to emit pending states
+    // In SOCKET mode we emit state messages to standard output and also states and stream statuses
+    // are sent over sockets, according to the configured format (json or protobuf).
+    // This function emits to stdout and also uses running partition readers to emit pending states
     // and stream statuses.
-    // Finally when all readers are done, it acquires socket resource and use it to emit the pending
-    // states and stream statuses.
-    private fun maybeCheckpoint(finalCheckpoint: Boolean) {
+    // Finally when all readers are done, it acquires a socket resource and uses it to emit the
+    // pending states and stream statuses. The final checkpoint blocks until a socket is available
+    // to guarantee that the stream COMPLETE status is always delivered.
+    private suspend fun maybeCheckpoint(finalCheckpoint: Boolean) {
         val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
         if (stateMessages.isEmpty() && PartitionReader.pendingStates.isEmpty()) {
             return
@@ -414,7 +421,7 @@ class FeedReader(
         // If this is the final checkpoint, we initialize the OutputMessageRouter and emit all
         // pending messages through it
         if (finalCheckpoint) {
-            attemptWithMessageRouter {
+            withMessageRouter {
                 while (PartitionReader.pendingStates.isNotEmpty()) {
                     val message: Any = PartitionReader.pendingStates.poll() ?: break
                     when (message) {
