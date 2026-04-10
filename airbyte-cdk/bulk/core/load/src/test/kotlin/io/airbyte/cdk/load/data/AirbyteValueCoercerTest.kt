@@ -81,8 +81,7 @@ class AirbyteValueCoercerTest {
                     .toOffsetDateTime(),
             // Z suffix
             "2021-01-01T01:01:01Z" to
-                ZonedDateTime.parse("2021-01-01T01:01:01Z", DATE_TIME_FORMATTER)
-                    .toOffsetDateTime(),
+                ZonedDateTime.parse("2021-01-01T01:01:01Z", DATE_TIME_FORMATTER).toOffsetDateTime(),
             // Negative offsets
             "2021-01-01T01:01:01-01:00" to
                 ZonedDateTime.parse("2021-01-01T01:01:01-01:00", DATE_TIME_FORMATTER)
@@ -124,10 +123,11 @@ class AirbyteValueCoercerTest {
     @Test
     fun testCoerceTimestampWithTimezone() {
         timestampPairs.forEach { (input, expectedOdt) ->
-            val result = AirbyteValueCoercer.coerce(
-                StringValue(input),
-                TimestampTypeWithTimezone,
-            )
+            val result =
+                AirbyteValueCoercer.coerce(
+                    StringValue(input),
+                    TimestampTypeWithTimezone,
+                )
             assertEquals(
                 TimestampWithTimezoneValue(expectedOdt),
                 result,
@@ -139,10 +139,11 @@ class AirbyteValueCoercerTest {
     @Test
     fun testCoerceTimestampWithoutTimezone() {
         timestampPairs.forEach { (input, expectedOdt) ->
-            val result = AirbyteValueCoercer.coerce(
-                StringValue(input),
-                TimestampTypeWithoutTimezone,
-            )
+            val result =
+                AirbyteValueCoercer.coerce(
+                    StringValue(input),
+                    TimestampTypeWithoutTimezone,
+                )
             assertEquals(
                 TimestampWithoutTimezoneValue(expectedOdt.toLocalDateTime()),
                 result,
@@ -169,25 +170,23 @@ class AirbyteValueCoercerTest {
     @Test
     fun testCoerceTimeWithTimezone() {
         timePairs.forEach { (input, expectedOt) ->
-            val result = AirbyteValueCoercer.coerce(
-                StringValue(input),
-                TimeTypeWithTimezone,
-            )
-            assertEquals(
-                TimeWithTimezoneValue(expectedOt),
-                result,
-                "Failed for input: $input"
-            )
+            val result =
+                AirbyteValueCoercer.coerce(
+                    StringValue(input),
+                    TimeTypeWithTimezone,
+                )
+            assertEquals(TimeWithTimezoneValue(expectedOt), result, "Failed for input: $input")
         }
     }
 
     @Test
     fun testCoerceTimeWithoutTimezone() {
         timePairs.forEach { (input, expectedOt) ->
-            val result = AirbyteValueCoercer.coerce(
-                StringValue(input),
-                TimeTypeWithoutTimezone,
-            )
+            val result =
+                AirbyteValueCoercer.coerce(
+                    StringValue(input),
+                    TimeTypeWithoutTimezone,
+                )
             assertEquals(
                 TimeWithoutTimezoneValue(expectedOt.toLocalTime()),
                 result,
@@ -201,59 +200,45 @@ class AirbyteValueCoercerTest {
     @Test
     fun testCoerceDate() {
         listOf(
-            "2021-1-1",
-            "2021-01-01",
-            "2021/01/02",
-            "2021.01.03",
-            "2021 Jan 04",
-            "2021-1-1 BC",
-        ).forEach { input ->
-            val expected = LocalDate.parse(input, DATE_TIME_FORMATTER)
-            val result = AirbyteValueCoercer.coerce(StringValue(input), DateType)
-            assertEquals(
-                DateValue(expected),
-                result,
-                "Failed for input: $input"
+                "2021-1-1",
+                "2021-01-01",
+                "2021/01/02",
+                "2021.01.03",
+                "2021 Jan 04",
+                "2021-1-1 BC",
             )
-        }
+            .forEach { input ->
+                val expected = LocalDate.parse(input, DATE_TIME_FORMATTER)
+                val result = AirbyteValueCoercer.coerce(StringValue(input), DateType)
+                assertEquals(DateValue(expected), result, "Failed for input: $input")
+            }
     }
 
     // ==================== Edge cases ====================
 
     @Test
     fun testCoerceNullValue() {
-        assertEquals(
-            NullValue,
-            AirbyteValueCoercer.coerce(NullValue, TimestampTypeWithTimezone)
-        )
+        assertEquals(NullValue, AirbyteValueCoercer.coerce(NullValue, TimestampTypeWithTimezone))
     }
 
     @Test
     fun testCoerceAlreadyTypedTimestamp() {
         val odt = OffsetDateTime.parse("2024-01-23T01:23:45Z")
         val value = TimestampWithTimezoneValue(odt)
-        assertEquals(
-            value,
-            AirbyteValueCoercer.coerce(value, TimestampTypeWithTimezone)
-        )
+        assertEquals(value, AirbyteValueCoercer.coerce(value, TimestampTypeWithTimezone))
     }
 
     @Test
     fun testCoerceAlreadyTypedTime() {
         val ot = OffsetTime.parse("01:23:45Z")
         val value = TimeWithTimezoneValue(ot)
-        assertEquals(
-            value,
-            AirbyteValueCoercer.coerce(value, TimeTypeWithTimezone)
-        )
+        assertEquals(value, AirbyteValueCoercer.coerce(value, TimeTypeWithTimezone))
     }
 
     @Test
     fun testCoerceWrongTypeReturnsNull() {
         // IntegerValue can't be coerced to a timestamp
-        assertNull(
-            AirbyteValueCoercer.coerce(IntegerValue(12345), TimestampTypeWithTimezone)
-        )
+        assertNull(AirbyteValueCoercer.coerce(IntegerValue(12345), TimestampTypeWithTimezone))
     }
 
     @Test
