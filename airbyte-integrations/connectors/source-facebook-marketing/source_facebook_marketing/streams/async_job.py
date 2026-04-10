@@ -19,7 +19,7 @@ from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.streams.common import retry_pattern, traced_exception
 
 from ..utils import DateInterval
@@ -461,7 +461,7 @@ class InsightAsyncJob(AsyncJob):
                 raise AirbyteTracedException(
                     message="Facebook Insights API request failed during data retrieval.",
                     internal_message=f"Failed to start ID-collection job at level={level}: {e}",
-                    failure_type=FailureType.transient_error,
+                    failure_type=FailureType.system_error,
                 ) from e
 
             start_ts = ab_datetime_now()

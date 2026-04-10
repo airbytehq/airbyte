@@ -566,7 +566,7 @@ class TestInsightAsyncJob:
     def test_collect_child_ids_start_failure_generic(self, mocker, api):
         """
         When get_insights raises a non-FacebookRequestError exception,
-        _collect_child_ids should wrap it in AirbyteTracedException with transient_error.
+        _collect_child_ids should wrap it in AirbyteTracedException with system_error.
         """
         from airbyte_cdk.models import FailureType
 
@@ -582,7 +582,7 @@ class TestInsightAsyncJob:
         with pytest.raises(AirbyteTracedException, match="Failed to start ID-collection job") as exc_info:
             job._collect_child_ids(pk_name="campaign_id", level="campaign")
 
-        assert exc_info.value.failure_type == FailureType.transient_error
+        assert exc_info.value.failure_type == FailureType.system_error
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_start_failure_facebook_request_error(self, mocker, api):
