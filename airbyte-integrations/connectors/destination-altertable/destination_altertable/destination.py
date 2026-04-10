@@ -1,9 +1,14 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import io
 from dataclasses import dataclass
 from logging import getLogger
 from typing import Any, Iterable, Mapping, Union, cast
 
 import orjson
+from serpyco_rs import Serializer
+from typing_extensions import override
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import (
@@ -15,10 +20,9 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.models.airbyte_protocol_serializers import custom_type_resolver
-from serpyco_rs import Serializer
-from typing_extensions import override
 
 from .altertable_writer import AltertableWriter
+
 
 # The patches below are needed for the Python CDK to work with the V2 protocol
 # See https://github.com/airbytehq/airbyte/issues/57588
@@ -91,9 +95,7 @@ class DestinationAltertable(Destination):
             )
 
     @override
-    def _parse_input_stream(
-        self, input_stream: io.TextIOWrapper
-    ) -> Iterable[AirbyteMessage]:
+    def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
         """Reads from stdin, converting to Airbyte messages.
 
         Includes overrides that should be in the CDK but we need to test it in the wild first.
@@ -106,6 +108,4 @@ class DestinationAltertable(Destination):
             try:
                 yield PatchedAirbyteMessageSerializer.load(orjson.loads(line))
             except orjson.JSONDecodeError:
-                logger.info(
-                    f"ignoring input which can't be deserialized as Airbyte Message: {line}"
-                )
+                logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")

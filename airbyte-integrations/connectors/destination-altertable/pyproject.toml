@@ -17,7 +17,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_altertable"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.10,<3.14"
 airbyte-cdk = ">=6.51.0"
 altertable-flightsql = ">=0.2.2"
 orjson = ">=3.10.7"
@@ -30,7 +30,7 @@ destination-altertable = "destination_altertable.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0"
 pytest-mock = ">=3.6"
-ruff = ">=0.14"
+ruff = "0.8.3"
 testcontainers = ">=4.0"
 
 [tool.poe]

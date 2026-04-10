@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """
 Integration tests for DestinationAltertable using testcontainers.
 
@@ -18,6 +20,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+
 
 JSON_SCHEMA = {
     "type": "object",
@@ -59,9 +62,7 @@ def make_configured_catalog(
     )
 
 
-def make_record_message(
-    stream: str, data: dict, emitted_at: int = 1000
-) -> AirbyteMessage:
+def make_record_message(stream: str, data: dict, emitted_at: int = 1000) -> AirbyteMessage:
     """Helper to create an AirbyteMessage with a record."""
     return AirbyteMessage(
         type=Type.RECORD,
@@ -118,9 +119,7 @@ class TestCheck:
 class TestOverwriteSyncMode:
     """Test the overwrite destination sync mode."""
 
-    def test_overwrite_replaces_all_data(
-        self, destination, altertable_service, client, data
-    ):
+    def test_overwrite_replaces_all_data(self, destination, altertable_service, client, data):
         """Test that overwrite mode replaces all existing data."""
         catalog_name, schema_name, table_name = data
         test_config = {
@@ -153,9 +152,7 @@ class TestOverwriteSyncMode:
         assert results[0]["id"] == 10
         assert results[0]["name"] == "New Person"
 
-    def test_overwrite_multiple_batches_preserves_all_records(
-        self, destination, altertable_service, client, data
-    ):
+    def test_overwrite_multiple_batches_preserves_all_records(self, destination, altertable_service, client, data):
         """Test that overwrite mode keeps records from all batches, not just the last one.
 
         Airbyte sends data in multiple batches separated by state messages.
@@ -218,9 +215,7 @@ class TestOverwriteSyncMode:
 class TestAppendSyncMode:
     """Test the append destination sync mode."""
 
-    def test_append_adds_to_existing_data(
-        self, destination, altertable_service, client, data
-    ):
+    def test_append_adds_to_existing_data(self, destination, altertable_service, client, data):
         """Test that append mode adds new records without replacing existing ones."""
         catalog_name, schema_name, table_name = data
         test_config = {
@@ -272,9 +267,7 @@ class TestAppendSyncMode:
 class TestAppendDedupSyncMode:
     """Test the append_dedup destination sync mode with primary key and cursor."""
 
-    def test_append_dedup_upserts_by_primary_key(
-        self, destination, altertable_service, client, data
-    ):
+    def test_append_dedup_upserts_by_primary_key(self, destination, altertable_service, client, data):
         """Test that append_dedup mode deduplicates by primary key using cursor field."""
         catalog_name, schema_name, table_name = data
         test_config = {

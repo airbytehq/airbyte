@@ -1,6 +1,10 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
+
+from destination_altertable.destination import DestinationAltertable
 
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -16,8 +20,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-
-from destination_altertable.destination import DestinationAltertable
 
 
 CONFIG = {
@@ -65,9 +67,7 @@ def test_check_succeeds(mock_writer_class) -> None:
 
 @patch("destination_altertable.destination.AltertableWriter")
 def test_check_fails_on_connection_error(mock_writer_class) -> None:
-    mock_writer_class.return_value.__enter__.side_effect = Exception(
-        "connection refused"
-    )
+    mock_writer_class.return_value.__enter__.side_effect = Exception("connection refused")
 
     destination = DestinationAltertable()
     result = destination.check(logger=MagicMock(), config=CONFIG)

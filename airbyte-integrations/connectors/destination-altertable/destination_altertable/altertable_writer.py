@@ -1,10 +1,13 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 import altertable_flightsql
-from altertable_flightsql.client import IngestIncrementalOptions, IngestTableMode
 import pyarrow as pa
+from altertable_flightsql.client import IngestIncrementalOptions, IngestTableMode
+
 from airbyte_cdk.models import (
     AirbyteRecordMessage,
     ConfiguredAirbyteCatalog,
@@ -69,12 +72,8 @@ class AltertableWriter:
                     name=stream.stream.name,
                     properties=stream.stream.json_schema["properties"],
                     sync_mode=stream.destination_sync_mode,
-                    primary_key=self._get_primary_key(
-                        stream.primary_key or stream.stream.source_defined_primary_key
-                    ),
-                    cursor_field=stream.cursor_field
-                    or stream.stream.source_defined_cursor
-                    or [],
+                    primary_key=self._get_primary_key(stream.primary_key or stream.stream.source_defined_primary_key),
+                    cursor_field=stream.cursor_field or stream.stream.source_defined_cursor or [],
                 )
                 for stream in catalog.streams
             }
@@ -94,9 +93,7 @@ class AltertableWriter:
             raise NotImplementedError("Nested primary keys are not supported yet")
         return [pkey[0] for pkey in primary_key]
 
-    def _convert_records_to_pyarrow_table(
-        self, stream: str, records: list[AirbyteRecordMessage]
-    ) -> pa.Table:
+    def _convert_records_to_pyarrow_table(self, stream: str, records: list[AirbyteRecordMessage]) -> pa.Table:
         properties = self.streams[stream].properties
 
         fields = []
@@ -105,11 +102,7 @@ class AltertableWriter:
         for field_name, prop in properties.items():
             # Get the first non-null value to determine type (or use None)
             sample_value = next(
-                (
-                    r.data.get(field_name)
-                    for r in records
-                    if r.data.get(field_name) is not None
-                ),
+                (r.data.get(field_name) for r in records if r.data.get(field_name) is not None),
                 None,
             )
             pa_type, _ = convert_to_arrow(sample_value, prop)
@@ -135,9 +128,7 @@ class AltertableWriter:
         else:
             return len(table)
 
-    def _get_incremental_options(
-        self, stream_config: AirbyteStream
-    ) -> Optional[IngestIncrementalOptions]:
+    def _get_incremental_options(self, stream_config: AirbyteStream) -> Optional[IngestIncrementalOptions]:
         if stream_config.sync_mode not in (
             DestinationSyncMode.append_dedup,
             DestinationSyncMode.update,
@@ -145,18 +136,14 @@ class AltertableWriter:
             return None
 
         if not stream_config.primary_key:
-            raise ValueError(
-                f"Stream {stream_config.name} has no primary key but {stream_config.sync_mode} requires one"
-            )
+            raise ValueError(f"Stream {stream_config.name} has no primary key but {stream_config.sync_mode} requires one")
 
         return IngestIncrementalOptions(
             primary_key=stream_config.primary_key,
             cursor_field=stream_config.cursor_field,
         )
 
-    def _get_ingest_mode(
-        self, stream: str, sync_mode: DestinationSyncMode
-    ) -> IngestTableMode:
+    def _get_ingest_mode(self, stream: str, sync_mode: DestinationSyncMode) -> IngestTableMode:
         if sync_mode != DestinationSyncMode.overwrite:
             return IngestTableMode.CREATE_APPEND
         if stream in self._replaced_streams:

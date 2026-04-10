@@ -1,9 +1,10 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Unit tests for type conversion utilities."""
 
 from datetime import date, datetime, time
 
 import pyarrow as pa
-
 from destination_altertable.type_conversion import (
     convert_to_arrow,
     parse_date,

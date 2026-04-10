@@ -1,12 +1,13 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 import os
-from typing import Generator
 import uuid
+from typing import Generator
 
-import pytest
 import altertable_flightsql
-from testcontainers.core.container import DockerContainer, LogMessageWaitStrategy
-
+import pytest
 from destination_altertable.destination import DestinationAltertable
+from testcontainers.core.container import DockerContainer, LogMessageWaitStrategy
 
 
 ALTERTABLE_MOCK_IMAGE = "ghcr.io/altertable-ai/altertable-mock"
@@ -134,8 +135,6 @@ def data(client: altertable_flightsql.Client):
 
     yield catalog_name, schema_name, test_table_name
 
-    client.execute(
-        f"DROP TABLE IF EXISTS {catalog_name}.{schema_name}.{test_table_name}"
-    )
+    client.execute(f"DROP TABLE IF EXISTS {catalog_name}.{schema_name}.{test_table_name}")
     client.execute(f"DROP SCHEMA IF EXISTS {catalog_name}.{schema_name}")
     client.execute(f"DETACH {catalog_name}")
