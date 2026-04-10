@@ -1,4 +1,4 @@
-name: OSS Issue and Discussion Triage
+name: OSS Unpin
 
 # This workflow automatically triggers AI triage for issues and discussions opened by
 # community members (users without write access to the repository). It helps provide
@@ -8,36 +8,36 @@ on:
   pull_request:
     types: [closed]
 
-  workflow_dispatch:
-    inputs:
-      connectors:
-        description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
-        default: "--name=source-pokeapi"
-        type: string
-      with-semver-suffix:
-        description: |
-          Semver suffix to apply ephemerally (not committed back to the repo):
-          - default: Resolves to 'none' on push to master, 'preview' on manual trigger
-          - none: Use exact version from metadata.yaml (for production releases)
-          - preview: Append '-preview.{sha}' suffix (for development builds)
-          - rc: Append '-rc1' suffix (for release candidates)
-        default: default
-        type: choice
-        options:
-          - default
-          - none
-          - preview
-          - rc
-      publish-java-tars:
-        description: "Whether to publish Java connector tar files."
-        required: false
-        default: false
-        type: boolean
-      dry-run:
-        description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
-        required: false
-        default: false
-        type: boolean
+#  workflow_dispatch:
+#    inputs:
+#      connectors:
+#        description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
+#        default: "--name=source-pokeapi"
+#        type: string
+#      with-semver-suffix:
+#        description: |
+#          Semver suffix to apply ephemerally (not committed back to the repo):
+#          - default: Resolves to 'none' on push to master, 'preview' on manual trigger
+#          - none: Use exact version from metadata.yaml (for production releases)
+#          - preview: Append '-preview.{sha}' suffix (for development builds)
+#          - rc: Append '-rc1' suffix (for release candidates)
+#        default: default
+#        type: choice
+#        options:
+#          - default
+#          - none
+#          - preview
+#          - rc
+#      publish-java-tars:
+#        description: "Whether to publish Java connector tar files."
+#        required: false
+#        default: false
+#        type: boolean
+#      dry-run:
+#        description: "Dry run mode: run all logic but skip actual uploads (Docker, GCS, registry). Useful for testing workflow changes."
+#        required: false
+#        default: false
+#        type: boolean
 
 permissions:
   issues: write
