@@ -66,7 +66,9 @@ To authenticate the connector in **Airbyte Open Source**, you need an access tok
 6. For **Start date**, use the provided datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`. Only data created on or after this date is replicated.
 7. Optionally, configure **Lookback window** to re-sync records updated within the specified number of days before the current cursor position. This helps capture late-arriving updates. The default is `0` (no lookback).
 8. Optionally, configure **Activity logs stream slice step size** to control how many days of activity log data the connector fetches per request. The default is `30` days. Lower this value if you experience timeouts on the Activity Logs stream.
-9. Click **Set up source** and wait for the tests to complete.
+9. Optionally, configure **Num Workers** to set the number of worker threads for concurrent stream processing. The default is `10` (max `40`). Increase this to speed up syncs for workspaces with large volumes of conversations.
+10. Optionally, configure **API Rate Limit** to set the effective API request budget per minute. The default is `9500` (95% of the standard 10,000/min Intercom limit). If your workspace has a higher rate limit (e.g. 150,000/min), set this to ~95% of that value to leverage your full API throughput.
+11. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -97,6 +99,10 @@ The Intercom source connector supports the following streams:
 
 The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default rate limit is 1,000 API calls per minute for public apps and 10,000 API calls per minute for private apps, with a workspace-level cap of 25,000 API calls per minute. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
 
+The connector uses an **API Rate Limit** setting (default: `9500` requests per minute) to control its request budget. A per-10-second window is derived automatically (`api_rate_limit / 6`). If your Intercom workspace has an elevated rate limit (e.g. 150,000/min), increase this value to allow the connector to use your full API throughput.
+
+The connector also supports configurable **concurrency** via the **Num Workers** setting (default: `10`, max: `40`). This controls how many partition slices are processed in parallel, which is especially beneficial for substream-based streams like `conversation_parts` and `company_segments`.
+
 The connector should not run into rate limit issues under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit errors that are not automatically retried.
 
 ## Troubleshooting and limitations
@@ -124,6 +130,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.20-rc.1 | 2026-04-09 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency (`num_workers`), configurable API rate limit (`api_rate_limit`), HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
 | 0.13.19 | 2026-04-09 | [76182](https://github.com/airbytehq/airbyte/pull/76182) | Promote 0.13.19-rc.1 to stable and disable progressive rollout |
 | 0.13.19-rc.1 | 2026-04-07 | [76122](https://github.com/airbytehq/airbyte/pull/76122) | Increase HTTP connection pool size |
 | 0.13.18 | 2026-03-31 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |

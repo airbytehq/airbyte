@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-gong
   documentationUrl: https://docs.airbyte.com/integrations/sources/gong
   githubIssueLabel: source-gong
@@ -31,6 +31,7 @@ data:
           stream after upgrading. For more information, see the
           [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
         upgradeDeadline: "2026-04-13"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
