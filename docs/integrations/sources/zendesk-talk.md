@@ -6,7 +6,7 @@
 - Your Zendesk subdomain (for example, if your Zendesk URL is `https://mycompany.zendesk.com`, the subdomain is `mycompany`)
 - One of the following authentication methods:
   - **API Token**: A Zendesk API token and the email address associated with the token
-  - **OAuth2.0**: A Zendesk OAuth client with a client ID, client secret, and refresh token
+  - **OAuth 2.0**: A Zendesk OAuth client with a client ID, client secret, and refresh token
 
 ## Setup guide
 
@@ -18,7 +18,7 @@ Choose one of the following authentication methods:
 
 Generate an API token in your Zendesk Admin Center under **Apps and integrations > APIs > Zendesk API**. For details, see [Generating a new API token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-) in the Zendesk documentation. We recommend creating a token specifically for Airbyte access.
 
-**OAuth2.0**
+**OAuth 2.0**
 
 Register an OAuth client in your Zendesk Admin Center under **Apps and integrations > APIs > OAuth Clients**. For details, see [Using OAuth authentication with your application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) in the Zendesk documentation. Zendesk uses rotating refresh tokens, so each token refresh returns a new refresh token and invalidates the previous one.
 
@@ -32,7 +32,7 @@ Register an OAuth client in your Zendesk Admin Center under **Apps and integrati
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Select **Zendesk Talk** from the Source type dropdown.
 4. Enter your **Subdomain**.
-5. Choose your **Authentication** method (API Token or OAuth2.0) and enter the required credentials.
+5. Choose your **Authentication** method (API Token or OAuth 2.0) and enter the required credentials.
 6. Set a **Start Date** for incremental streams. Data created or updated after this date is replicated.
 7. Click **Set up source**.
 
@@ -68,7 +68,7 @@ This connector syncs the following streams:
 The connector respects the [Zendesk Talk API rate limits](https://developer.zendesk.com/api-reference/voice/talk-api/introduction/#rate-limits). The Talk API enforces the following limits in addition to the standard Zendesk Support API limits:
 
 | Endpoint | Rate limit |
-|:---|:---|
+|:--|:--|
 | All Talk API endpoints | 15,000 requests per 5 minutes |
 | Current Queue Activity | 2,500 requests per 5 minutes |
 | Incremental Exports (Calls, Call Legs) | 10 requests per minute |
@@ -78,7 +78,7 @@ The connector automatically handles rate limiting by respecting `429` responses 
 ## Data type map
 
 | Integration Type | Airbyte Type |
-|:---|:---|
+|:--|:--|
 | `string` | `string` |
 | `number` | `number` |
 | `array` | `array` |
@@ -90,7 +90,7 @@ The connector automatically handles rate limiting by respecting `429` responses 
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-|:---|:---|:---|:---|
+|:--|:--|:--|:--|
 | 2.0.11-rc.1 | 2026-04-10 | [76203](https://github.com/airbytehq/airbyte/pull/76203) | Add concurrency support with default_concurrency of 12 |
 | 2.0.10 | 2026-04-07 | [76106](https://github.com/airbytehq/airbyte/pull/76106) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
 | 2.0.9 | 2026-03-31 | [75808](https://github.com/airbytehq/airbyte/pull/75808) | Update dependencies |
