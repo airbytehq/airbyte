@@ -344,6 +344,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.5.0 | 2026-04-10 | [71259](https://github.com/airbytehq/airbyte/pull/71259) | Add association streams for standard and custom objects |
 | 6.4.2 | 2026-04-06 | [76096](https://github.com/airbytehq/airbyte/pull/76096) | Remove registry version overrides pinning to 6.3.1, fix stream count test assertions |
 | 6.4.1 | 2026-04-03 | [75574](https://github.com/airbytehq/airbyte/pull/75574) | Add `oauth_connector_input_specification` with granular scopes and optional_scopes |
 | 6.4.0 | 2026-04-01 | [70920](https://github.com/airbytehq/airbyte/pull/70920) | Add new stream Users |

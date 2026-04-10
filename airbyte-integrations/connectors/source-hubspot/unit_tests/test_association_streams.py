@@ -382,7 +382,6 @@ class TestCustomObjectAssociationCursorField:
         dynamic_streams = resolved_manifest.get("dynamic_streams", [])
         custom_dynamic = None
         for ds in dynamic_streams:
-            template = ds.get("stream_template", {})
             # After resolution, we can't check $ref directly. Check if the components_resolver
             # reads from custom_object_association_streams config pointer
             resolver = ds.get("components_resolver", {})
