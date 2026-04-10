@@ -83,6 +83,4 @@ def test_all_streams_use_post_method(manifest, stream_name):
     """All Ashby API streams use POST requests. Verify this convention is maintained."""
     stream = manifest["definitions"]["streams"][stream_name]
     http_method = stream["retriever"]["requester"].get("http_method", "GET")
-    assert http_method == "POST", (
-        f"Stream '{stream_name}' should use POST method, got {http_method}"
-    )
+    assert http_method == "POST", f"Stream '{stream_name}' should use POST method, got {http_method}"
