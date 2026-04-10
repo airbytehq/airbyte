@@ -54,9 +54,7 @@ def test_users_schema_contains_all_expected_fields():
     for field_name, expected_type in EXPECTED_FIELDS.items():
         assert field_name in properties, f"Missing field: {field_name}"
         field_type = properties[field_name]["type"]
-        assert expected_type in field_type, (
-            f"Field '{field_name}' should include type '{expected_type}', got {field_type}"
-        )
+        assert expected_type in field_type, f"Field '{field_name}' should include type '{expected_type}', got {field_type}"
         assert "null" in field_type, f"Field '{field_name}' should be nullable"
 
 
