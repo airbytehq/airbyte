@@ -1,0 +1,36 @@
+name: OSS Issue and Discussion Triage
+
+# This workflow automatically triggers AI triage for issues and discussions opened by
+# community members (users without write access to the repository). It helps provide
+# quick initial responses and escalates actionable items to the internal oncall team.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  discussions: write
+
+jobs:
+  ai-unpin:
+    name: Unpin previously pinned versions
+    if: if_merged == false
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Run AI Triage
+        uses: aaronsteers/devin-action@main
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          playbook-macro: "!oss_connector_unpin"
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          start-message: |
+            **AI Unpinning Starting...**
+            Rodi Rodi
+            [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/oss_issue_triage.md)
+          tags: |
+            oss-issue-triage
+            community-issue
