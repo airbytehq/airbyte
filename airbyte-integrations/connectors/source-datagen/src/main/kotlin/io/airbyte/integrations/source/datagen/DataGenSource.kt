@@ -6,6 +6,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val log = KotlinLogging.logger {}
 
+// DataGenSource is the entry point for the data generator connector.
 object DataGenSource {
     @JvmStatic
     fun main(args: Array<String>) {
