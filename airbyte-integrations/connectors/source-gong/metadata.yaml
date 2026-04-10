@@ -31,6 +31,7 @@ data:
           stream after upgrading. For more information, see the
           [Gong migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations)."
         upgradeDeadline: "2026-04-13"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
