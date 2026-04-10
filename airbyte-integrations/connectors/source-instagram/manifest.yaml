@@ -824,6 +824,24 @@ spec:
   advanced_auth:
     auth_flow_type: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://www.facebook.com/dialog/oauth?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&response_type=code"
+        access_token_url: "https://graph.facebook.com/oauth/access_token"
+        scopes:
+          - scope: "instagram_basic"
+          - scope: "instagram_manage_insights"
+          - scope: "pages_show_list"
+          - scope: "pages_read_engagement"
+          - scope: "ads_read"
+          - scope: "business_management"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:
