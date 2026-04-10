@@ -1,0 +1,9 @@
+{
+  "host": "flight.altertable.ai",
+  "port": 443,
+  "username": "my_username",
+  "password": "my_password",
+  "catalog": "my_catalog",
+  "schema": "main",
+  "tls": true
+}
