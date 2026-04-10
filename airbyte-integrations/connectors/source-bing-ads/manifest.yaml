@@ -2531,17 +2531,18 @@ definitions:
       request_body_json:
         ReportRequestId: "'{{ creation_response['ReportRequestId'] }}'"
     download_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.BingAdsReportDownloadRequester
       url_base: "{{download_target}}"
       http_method: GET
+      report_poll_authenticator: "#/definitions/authenticator"
     download_decoder:
-      type: ZipfileDecoder
-      decoder:
-        type: CsvDecoder
-        encoding: "utf-8-sig"
-        set_values_to_none:
-          - ""
-          - "--"
+      type: CustomDecoder
+      class_name: source_declarative_manifest.components.BingAdsReportZipCsvDecoder
+      encoding: "utf-8-sig"
+      set_values_to_none:
+        - ""
+        - "--"
     creation_requester:
       type: HttpRequester
       url_base: https://reporting.api.bingads.microsoft.com/
@@ -17473,8 +17474,8 @@ schemas:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 2
-  max_concurrency: 10
+  default_concurrency: 10
+  max_concurrency: 20
 
 spec:
   type: Spec

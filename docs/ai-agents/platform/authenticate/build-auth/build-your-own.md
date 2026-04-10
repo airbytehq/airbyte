@@ -80,6 +80,29 @@ Requires a bearer token.
 
 ### Example
 
+<Tabs>
+<TabItem value="python" label="Python SDK" default>
+
+```python title="agent.py"
+from airbyte_hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_hubspot.models import HubspotOAuthCredentials
+
+# Set your own OAuth app credentials
+await HubspotConnector.configure_oauth_app_parameters(
+    airbyte_config=AirbyteAuthConfig(
+        airbyte_client_id="<your_airbyte_client_id>",
+        airbyte_client_secret="<your_airbyte_client_secret>",
+    ),
+    credentials=HubspotOAuthCredentials(
+        client_id="<your_hubspot_oauth_client_id>",
+        client_secret="<your_hubspot_oauth_client_secret>",
+    ),
+)
+```
+
+</TabItem>
+<TabItem value="api" label="API">
+
 ```bash title="Request"
 curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
   -H 'Authorization: Bearer <operator_token>' \
@@ -105,7 +128,38 @@ curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
 }
 ```
 
+</TabItem>
+</Tabs>
+
 The configuration schema varies by connector. To get the required fields for a specific connector, call `GET /api/v1/oauth/credentials/spec?connector_type=<connector_type>`.
+
+### Removing an override
+
+To revert to the default Airbyte-managed OAuth app, remove the override:
+
+<Tabs>
+<TabItem value="python" label="Python SDK" default>
+
+```python title="agent.py"
+await HubspotConnector.configure_oauth_app_parameters(
+    airbyte_config=AirbyteAuthConfig(
+        airbyte_client_id="<your_airbyte_client_id>",
+        airbyte_client_secret="<your_airbyte_client_secret>",
+    ),
+    credentials=None,
+)
+```
+
+</TabItem>
+<TabItem value="api" label="API">
+
+```bash title="Request"
+curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/hubspot" \
+  -H "Authorization: Bearer <operator_token>"
+```
+
+</TabItem>
+</Tabs>
 
 ## Part 2: Initiate the OAuth flow
 

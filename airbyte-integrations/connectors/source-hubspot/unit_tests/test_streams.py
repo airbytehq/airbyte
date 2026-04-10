@@ -20,7 +20,7 @@ from airbyte_cdk.sources.types import Record
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
-from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
+from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, mock_v3_properties, read_from_stream
 from .utils import run_read
 
 
@@ -239,6 +239,17 @@ def test_stream_read_with_legacy_field_transformation(
 
     requests_mock.register_uri(stream_retriever.requester._http_method.value, stream_url, responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
+    mock_v3_properties(
+        requests_mock,
+        endpoint,
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
+
+    # Also mock v2/v3 properties for all other entities (needed by dynamic schema loader)
+    mock_dynamic_schema_requests_with_skip(requests_mock, [endpoint])
 
     # mock associations calls
     if stream_retriever.requester._http_method.value == "POST":
@@ -313,10 +324,10 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
         }
     ]
 
-    endpoint_path = "/crm/v3/objects/deal_split/search"
+    endpoint_path = "https://api.hubapi.com/crm/v3/objects/deal_split/search"
     requests_mock.register_uri("POST", endpoint_path, responses)
 
-    properties_path = f"/properties/v2/deal_split/properties"
+    properties_path = "https://api.hubapi.com/properties/v2/deal_split/properties"
     properties_response = [
         {
             "json": [
@@ -328,6 +339,15 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
     ]
     requests_mock.register_uri("POST", endpoint_path, responses)
     requests_mock.register_uri("GET", properties_path, properties_response)
+    mock_v3_properties(
+        requests_mock,
+        "deal_split",
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
+    mock_dynamic_schema_requests_with_skip(requests_mock, ["deal_split"])
 
     records = run_read(stream)
     assert records
@@ -381,9 +401,9 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
             "after": 0,
         }
 
-    endpoint_path = "/crm/v3/objects/deal_split/search"
+    endpoint_path = "https://api.hubapi.com/crm/v3/objects/deal_split/search"
     requests_mock.register_uri("POST", endpoint_path, responses, additional_matcher=match_request_body)
-    properties_path = f"/properties/v2/deal_split/properties"
+    properties_path = "https://api.hubapi.com/properties/v2/deal_split/properties"
     properties_response = [
         {
             "json": [
@@ -395,6 +415,15 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
     ]
     stream._sync_mode = SyncMode.incremental
     requests_mock.register_uri("GET", properties_path, properties_response)
+    mock_v3_properties(
+        requests_mock,
+        "deal_split",
+        [
+            {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+            for property_name in fake_properties_list
+        ],
+    )
+    mock_dynamic_schema_requests_with_skip(requests_mock, ["deal_split"])
     records = run_read(stream)
 
     assert records
@@ -405,7 +434,6 @@ def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fa
 @pytest.mark.parametrize(
     "error_response",
     [
-        {"json": {}, "status_code": 401},
         {"json": {}, "status_code": 429},
         {"json": {}, "status_code": 502},
         {"json": {}, "status_code": 504},

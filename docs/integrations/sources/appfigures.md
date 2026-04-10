@@ -39,6 +39,9 @@ Refer `https://docs.appfigures.com/api/reference/v2/authentication` for more det
 
 | Version | Date | Pull Request | Subject |
 |---------| ----------- | -- | ---------------- |
+| 0.0.41 | 2026-03-31 | [75894](https://github.com/airbytehq/airbyte/pull/75894) | Update dependencies |
+| 0.0.40 | 2026-03-17 | [75007](https://github.com/airbytehq/airbyte/pull/75007) | Update dependencies |
+| 0.0.39 | 2026-03-10 | [74499](https://github.com/airbytehq/airbyte/pull/74499) | Update dependencies |
 | 0.0.38 | 2026-02-24 | [73798](https://github.com/airbytehq/airbyte/pull/73798) | Update dependencies |
 | 0.0.37 | 2026-02-17 | [73406](https://github.com/airbytehq/airbyte/pull/73406) | Update dependencies |
 | 0.0.36 | 2026-02-10 | [73031](https://github.com/airbytehq/airbyte/pull/73031) | Update dependencies |
