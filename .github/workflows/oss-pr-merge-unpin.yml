@@ -46,6 +46,10 @@ permissions:
 jobs:
   ai-unpin:
     name: Unpin previously pinned versions
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
 #    if: if_merged == false
     runs-on: ubuntu-24.04
     steps:
