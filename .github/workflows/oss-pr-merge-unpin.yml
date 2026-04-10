@@ -53,26 +53,26 @@ jobs:
 #    if: if_merged == false
     runs-on: ubuntu-24.04
     steps:
-      - name: Post comment
-        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: "Your comment text here."
-
-#      - name: Render template
-#        id: template
-#        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
-#        with:
-#          # Use a different template for internal vs forks (community)
-#          template: ${{ github.event.pull_request.head.repo.fork == true && '.github/pr-fork-permission-warning.md' || '.github/pr-fork-permission-warning.md' }}
-#          vars: |
-#            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
-#
-#      - name: Create comment
+#      - name: Post comment
 #        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
 #        with:
 #          issue-number: ${{ github.event.pull_request.number }}
-#          body: ${{ steps.template.outputs.result }}
+#          body: "Your comment text here."
+
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
+        with:
+          # Use a different template for internal vs forks (community)
+          template: ${{ github.event.pull_request.head.repo.fork == true && '.github/pr-fork-permission-warning.md' || '.github/pr-fork-permission-warning.md' }}
+          vars: |
+            repo_name: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.template.outputs.result }}
 
 #      - name: Run AI Triage
 #        uses: aaronsteers/devin-action@main
