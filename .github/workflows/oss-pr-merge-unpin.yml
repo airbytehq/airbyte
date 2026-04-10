@@ -5,7 +5,7 @@ name: OSS Unpin
 # quick initial responses and escalates actionable items to the internal oncall team.
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
 
 #  workflow_dispatch:
@@ -52,7 +52,7 @@ jobs:
       - name: Post comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+#          issue-number: ${{ github.event.pull_request.number }}
           body: "Your comment text here."
 
 #      - name: Render template
