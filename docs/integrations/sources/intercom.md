@@ -97,11 +97,13 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default rate limit is 1,000 API calls per minute for public apps and 10,000 API calls per minute for private apps, with a workspace-level cap of 25,000 API calls per minute. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
+The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default Intercom rate limit is 10,000 API calls per minute per app, with a workspace-level cap of 25,000 API calls per minute. Although the per-minute limit is 10,000, Intercom distributes it across 10-second windows, so the effective limit is approximately 1,667 requests per 10-second period.
 
-The connector uses an **API Rate Limit** setting (default: `9500` requests per minute) to control its request budget. A per-10-second window is derived automatically (`api_rate_limit / 6`). If your Intercom workspace has an elevated rate limit (e.g. 150,000/min), increase this value to allow the connector to use your full API throughput.
+The connector uses the **API Rate Limit** setting (default: `9500` requests per minute) to control its request budget. This default is 95% of the standard 10,000/min limit, leaving headroom for occasional bursts. If your Intercom workspace has an elevated rate limit, set this to approximately 95% of your actual limit to use your full API throughput. The connector automatically derives a per-10-second window from this value.
 
-The connector also supports configurable **concurrency** via the **Num Workers** setting (default: `10`, max: `40`). This controls how many partition slices are processed in parallel, which is especially beneficial for substream-based streams like `conversation_parts` and `company_segments`.
+The connector monitors the `X-RateLimit-Remaining` response header and proactively throttles requests before reaching the limit. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
+
+The connector supports configurable **concurrency** through the **Num Workers** setting (default: `10`, max: `40`). This controls how many stream partitions are processed in parallel, which is especially beneficial for substream-based streams like Conversation Parts and Company Segments that make a separate API call per parent record.
 
 The connector should not run into rate limit issues under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit errors that are not automatically retried.
 
@@ -130,9 +132,9 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.20-rc.1 | 2026-04-09 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency (`num_workers`), configurable API rate limit (`api_rate_limit`), HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
+| 0.13.20-rc.1 | 2026-04-10 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency (`num_workers`), configurable API rate limit (`api_rate_limit`), HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
 | 0.13.19 | 2026-04-09 | [76182](https://github.com/airbytehq/airbyte/pull/76182) | Promote 0.13.19-rc.1 to stable and disable progressive rollout |
-| 0.13.19-rc.1 | 2026-04-07 | [76122](https://github.com/airbytehq/airbyte/pull/76122) | Increase HTTP connection pool size |
+| 0.13.19-rc.1 | 2026-04-08 | [76122](https://github.com/airbytehq/airbyte/pull/76122) | Increase HTTP connection pool size |
 | 0.13.18 | 2026-03-31 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |
 | 0.13.17 | 2026-03-30 | [75575](https://github.com/airbytehq/airbyte/pull/75575) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 0.13.16 | 2026-03-24 | [75419](https://github.com/airbytehq/airbyte/pull/75419) | Promote 0.13.16-rc.6 to GA — includes CDK 7.13.0 upgrade, block_simultaneous_read for companies, rate limiter fix, step size/end_datetime for incremental streams, and heartbeat timeout bump |
