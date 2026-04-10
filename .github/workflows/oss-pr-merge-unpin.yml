@@ -35,7 +35,7 @@ permissions:
 jobs:
   ai-unpin:
     name: Unpin previously pinned versions
-    if: if_merged == false
+#    if: if_merged == false
     runs-on: ubuntu-24.04
     steps:
       - name: Run AI Triage
