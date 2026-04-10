@@ -76,6 +76,7 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 0.3.6 | 2026-04-10 | [](https://github.com/airbytehq/airbyte/pull/) | Fix connection check to use jobs stream instead of users to avoid 403 errors for users without Organization permissions |
 | 0.3.5 | 2026-03-31 | [75881](https://github.com/airbytehq/airbyte/pull/75881) | Update dependencies |
 | 0.3.4 | 2026-03-24 | [75325](https://github.com/airbytehq/airbyte/pull/75325) | Update dependencies |
 | 0.3.3 | 2026-03-10 | [74490](https://github.com/airbytehq/airbyte/pull/74490) | Update dependencies |
