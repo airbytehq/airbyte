@@ -128,6 +128,20 @@ class ShopifyBulkQuery:
         return self.sort_key == "UPDATED_AT"
 
     @property
+    def supports_component_streaming(self) -> bool:
+        """Whether components can be partially flushed independently of the parent.
+
+        When `True`, `ShopifyBulkRecord` may emit partial batches of
+        components mid-parent to bound memory.  Only safe for queries
+        whose `record_process_components` yields each component as a
+        standalone record (e.g. metafield streams).
+
+        Default is `False` — components are kept together until the
+        full parent is flushed.
+        """
+        return False
+
+    @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
         """
         Defines the fields for final graph selection.
@@ -254,6 +268,7 @@ class Metafield(ShopifyBulkQuery):
 
     sort_key = "UPDATED_AT"
     record_composition = {"new_record": "Metafield"}
+    supports_component_streaming = True
 
     metafield_fields: List[Field] = [
         "__typename",

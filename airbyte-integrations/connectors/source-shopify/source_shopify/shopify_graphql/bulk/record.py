@@ -213,11 +213,11 @@ class ShopifyBulkRecord:
         return sum(len(items) for items in record_components.values())
 
     def _should_flush_components(self) -> bool:
+        """Returns `True` when the current parent's buffered component count
+        has reached the streaming threshold **and** the query supports
+        component streaming.
         """
-        Returns True if the current parent's buffered component count has reached the streaming threshold.
-        This prevents unbounded memory growth when a single parent has a very large number of components.
-        """
-        return self._component_count() >= self._component_streaming_threshold
+        return self.query.supports_component_streaming and self._component_count() >= self._component_streaming_threshold
 
     def component_prepare(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """

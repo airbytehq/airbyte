@@ -212,9 +212,13 @@ def test_record_compose(basic_config, records_from_jsonl, record_composition, ex
 class TestComponentStreamingCap:
     """Tests for the 500-component streaming cap that prevents OOM on parents with many components."""
 
-    def _make_record_instance(self, basic_config, threshold=5):
+    def _make_record_instance(self, basic_config, threshold=5, supports_component_streaming=True):
         """Helper to create a ShopifyBulkRecord with a low threshold for testing."""
-        query = ShopifyBulkQuery(basic_config)
+        _Query = type("_Query", (ShopifyBulkQuery,), {
+            "supports_component_streaming": supports_component_streaming,
+            "query_name": "customers",
+        })
+        query = _Query(basic_config)
         record_instance = ShopifyBulkRecord(query)
         record_instance.composition = {"new_record": "Customer", "record_components": ["Metafield"]}
         record_instance.components = ["Metafield"]
@@ -350,3 +354,24 @@ class TestComponentStreamingCap:
         query = ShopifyBulkQuery(basic_config)
         record_instance = ShopifyBulkRecord(query)
         assert record_instance._component_streaming_threshold == 500
+
+    def test_no_partial_flush_when_component_streaming_disabled(self, basic_config):
+        """When `supports_component_streaming` is False, no partial flush should occur even above threshold."""
+        record_instance = self._make_record_instance(basic_config, threshold=2, supports_component_streaming=False)
+
+        # register parent
+        list(record_instance.record_compose({"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}))
+
+        # add 4 components — exceeds threshold of 2, but streaming is disabled
+        all_flushed = []
+        for i in range(4):
+            flushed = list(
+                record_instance.record_compose({"__typename": "Metafield", "id": f"gid://shopify/Metafield/{i}", "value": f"v{i}"})
+            )
+            all_flushed.extend(flushed)
+
+        # no partial flushes should have occurred
+        assert all_flushed == []
+        # all 4 components should still be buffered under the single parent
+        assert len(record_instance.buffer) == 1
+        assert len(record_instance.buffer[0]["record_components"]["Metafield"]) == 4
