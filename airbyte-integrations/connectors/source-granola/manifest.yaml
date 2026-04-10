@@ -6,6 +6,19 @@ description: >-
   Granola is an AI-powered meeting notes tool. This connector reads meeting
   notes from your Granola workspace using the Granola Enterprise API.
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 3
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1S
+      call_limit: 5
+      matchers:
+        - type: HttpRequestRegexMatcher
+
 check:
   type: CheckStream
   stream_names:
@@ -44,29 +57,19 @@ definitions:
             stop_condition: "{{ not response.get('cursor') or not response.get('hasMore', False) }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: created_at
+        cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%d')) }}"
-          datetime_format: "%Y-%m-%d"
+          datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: created_after
-        end_time_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: created_before
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-          datetime_format: "%Y-%m-%d"
-        step: P30D
-        cursor_granularity: P1D
+          field_name: updated_after
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -96,6 +99,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: note_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/notes"
       schema_loader:
@@ -184,6 +188,10 @@ schemas:
       created_at:
         type: string
         description: The creation time of the note in ISO 8601 format.
+        format: date-time
+      updated_at:
+        type: string
+        description: The last update time of the note in ISO 8601 format.
         format: date-time
     additionalProperties: true
     required:

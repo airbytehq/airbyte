@@ -51,7 +51,7 @@ The Granola source connector supports the following stream:
 
 The `notes` stream retrieves meeting notes from your Granola workspace using the [`GET /v1/notes`](https://docs.granola.ai/api-reference/list-notes) endpoint. Each record includes the note ID, title, object type, owner name and email, and creation timestamp. The API may return additional fields beyond those listed here, and the connector captures them automatically.
 
-For incremental syncs, the connector uses `created_at` as the cursor field and fetches notes in 30-day time windows.
+For incremental syncs, the connector uses `updated_at` as the cursor field, ensuring that edited notes are captured during incremental syncs.
 
 The Granola Enterprise API only provides access to notes that have been shared in workspace-wide folders. Private notes are not accessible through the API. For more information, refer to the [Granola Enterprise API documentation](https://docs.granola.ai/help-center/sharing/integrations/enterprise-api).
 
@@ -76,6 +76,7 @@ The connector handles rate limiting automatically by retrying requests when a `4
 
 | Version | Date       | Pull Request | Subject         |
 | :------ | :--------- | :----------- | :-------------- |
+| 0.2.0 | 2026-04-10 | [](https://github.com/airbytehq/airbyte/pull/) | Switch incremental cursor from `created_at` to `updated_at`, add `updated_at` to notes schema, add `incremental_dependency` on detailed_notes substream, add concurrency and rate limiting |
 | 0.1.2 | 2026-03-31 | [75737](https://github.com/airbytehq/airbyte/pull/75737) | Update dependencies |
 | 0.1.1 | 2026-03-24 | [75353](https://github.com/airbytehq/airbyte/pull/75353) | Update dependencies |
 | 0.1.0 | 2026-02-25 | [74033](https://github.com/airbytehq/airbyte/pull/74033) | Add detailed_notes substream with full note content via SubstreamPartitionRouter |
