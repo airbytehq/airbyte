@@ -251,23 +251,19 @@ class TestComponentStreamingCap:
         record_instance = self._make_record_instance(basic_config, threshold=3)
 
         # register parent — no output expected
-        result = list(record_instance.record_compose(
-            {"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}
-        ))
+        result = list(record_instance.record_compose({"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}))
         assert result == []
         assert len(record_instance.buffer) == 1
 
         # add components 0, 1 — below threshold, no flush
         for i in range(2):
-            result = list(record_instance.record_compose(
-                {"__typename": "Metafield", "id": f"gid://shopify/Metafield/{i}", "value": f"val{i}"}
-            ))
+            result = list(
+                record_instance.record_compose({"__typename": "Metafield", "id": f"gid://shopify/Metafield/{i}", "value": f"val{i}"})
+            )
             assert result == []
 
         # add component 2 — hits threshold (3), should partial flush
-        flushed = list(record_instance.record_compose(
-            {"__typename": "Metafield", "id": "gid://shopify/Metafield/2", "value": "val2"}
-        ))
+        flushed = list(record_instance.record_compose({"__typename": "Metafield", "id": "gid://shopify/Metafield/2", "value": "val2"}))
         # buffer_flush yields records via record_process_components (default: yield record as-is)
         assert len(flushed) == 1
         # the flushed record should contain the 3 metafields
@@ -284,23 +280,15 @@ class TestComponentStreamingCap:
         record_instance = self._make_record_instance(basic_config, threshold=2)
 
         # register parent
-        list(record_instance.record_compose(
-            {"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}
-        ))
+        list(record_instance.record_compose({"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}))
 
         # add 2 components → triggers partial flush
-        list(record_instance.record_compose(
-            {"__typename": "Metafield", "id": "gid://shopify/Metafield/0", "value": "v0"}
-        ))
-        flushed1 = list(record_instance.record_compose(
-            {"__typename": "Metafield", "id": "gid://shopify/Metafield/1", "value": "v1"}
-        ))
+        list(record_instance.record_compose({"__typename": "Metafield", "id": "gid://shopify/Metafield/0", "value": "v0"}))
+        flushed1 = list(record_instance.record_compose({"__typename": "Metafield", "id": "gid://shopify/Metafield/1", "value": "v1"}))
         assert len(flushed1) == 1
 
         # add 1 more component — should attach to re-registered parent
-        result = list(record_instance.record_compose(
-            {"__typename": "Metafield", "id": "gid://shopify/Metafield/2", "value": "v2"}
-        ))
+        result = list(record_instance.record_compose({"__typename": "Metafield", "id": "gid://shopify/Metafield/2", "value": "v2"}))
         # below threshold again, so no flush
         assert result == []
         assert len(record_instance.buffer) == 1
@@ -312,16 +300,14 @@ class TestComponentStreamingCap:
         record_instance = self._make_record_instance(basic_config, threshold=2)
 
         # register parent
-        list(record_instance.record_compose(
-            {"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}
-        ))
+        list(record_instance.record_compose({"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}))
 
         all_flushed = []
         # add 6 components total → should trigger 3 partial flushes at indices 1, 3, 5
         for i in range(6):
-            flushed = list(record_instance.record_compose(
-                {"__typename": "Metafield", "id": f"gid://shopify/Metafield/{i}", "value": f"v{i}"}
-            ))
+            flushed = list(
+                record_instance.record_compose({"__typename": "Metafield", "id": f"gid://shopify/Metafield/{i}", "value": f"v{i}"})
+            )
             all_flushed.extend(flushed)
 
         # 3 partial flushes, each with 2 metafields
@@ -338,18 +324,12 @@ class TestComponentStreamingCap:
         record_instance = self._make_record_instance(basic_config, threshold=5)
 
         # register parent 1 and add 3 components (below threshold)
-        list(record_instance.record_compose(
-            {"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}
-        ))
+        list(record_instance.record_compose({"__typename": "Customer", "id": "gid://shopify/Customer/1", "name": "Alice"}))
         for i in range(3):
-            list(record_instance.record_compose(
-                {"__typename": "Metafield", "id": f"gid://shopify/Metafield/{i}", "value": f"v{i}"}
-            ))
+            list(record_instance.record_compose({"__typename": "Metafield", "id": f"gid://shopify/Metafield/{i}", "value": f"v{i}"}))
 
         # new parent 2 should flush parent 1's buffer
-        flushed = list(record_instance.record_compose(
-            {"__typename": "Customer", "id": "gid://shopify/Customer/2", "name": "Bob"}
-        ))
+        flushed = list(record_instance.record_compose({"__typename": "Customer", "id": "gid://shopify/Customer/2", "name": "Bob"}))
         assert len(flushed) == 1
         assert len(flushed[0]["record_components"]["Metafield"]) == 3
 

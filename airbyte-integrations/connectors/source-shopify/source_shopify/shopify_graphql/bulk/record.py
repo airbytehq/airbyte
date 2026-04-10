@@ -300,10 +300,7 @@ class ShopifyBulkRecord:
             if self._should_flush_components():
                 # save parent record fields before flushing so we can re-register it
                 # for subsequent components belonging to the same parent
-                parent_cursor_fields = {
-                    k: v for k, v in self.buffer[-1].items()
-                    if k != "record_components"
-                }
+                parent_cursor_fields = {k: v for k, v in self.buffer[-1].items() if k != "record_components"}
                 yield from self.buffer_flush()
                 # re-register a fresh parent placeholder for remaining components
                 self.buffer.append(self.component_prepare(parent_cursor_fields))
