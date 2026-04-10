@@ -3,12 +3,13 @@
 #
 
 
+import os
 from dataclasses import dataclass, field
 from functools import cached_property
 from io import TextIOWrapper
 from json import loads
 from os import remove
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, ClassVar, Final, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from source_shopify.utils import LOGGER
 
@@ -54,6 +55,11 @@ class ShopifyBulkRecord:
         read_file(filename, remove_file): Reads a file and produces records from it.
     """
 
+    # Default maximum number of components to buffer per parent record before a partial flush.
+    # This bounds memory usage for parents with very large component counts (e.g. customers with thousands of metafields).
+    # Override via the BULK_COMPONENT_STREAMING_THRESHOLD environment variable.
+    _DEFAULT_COMPONENT_STREAMING_THRESHOLD: ClassVar[int] = 500
+
     query: ShopifyBulkQuery
     parent_stream_name: Optional[str] = None
     parent_stream_cursor: Optional[str] = None
@@ -70,6 +76,10 @@ class ShopifyBulkRecord:
         self._parent_stream_cursor_value: Optional[str | int] = None
         # how many records composed
         self.record_composed: int = 0
+        # component streaming threshold (configurable via env var)
+        self._component_streaming_threshold: int = int(
+            os.environ.get("BULK_COMPONENT_STREAMING_THRESHOLD", self._DEFAULT_COMPONENT_STREAMING_THRESHOLD)
+        )
 
     @cached_property
     def tools(self) -> BulkTools:
@@ -193,6 +203,22 @@ class ShopifyBulkRecord:
         # add component to its placeholder in the components list
         self.buffer[-1]["record_components"][component].append(record)
 
+    def _component_count(self) -> int:
+        """
+        Returns the total number of component records currently buffered for the last parent record.
+        """
+        if not self.buffer:
+            return 0
+        record_components = self.buffer[-1].get("record_components", {})
+        return sum(len(items) for items in record_components.values())
+
+    def _should_flush_components(self) -> bool:
+        """
+        Returns True if the current parent's buffered component count has reached the streaming threshold.
+        This prevents unbounded memory growth when a single parent has a very large number of components.
+        """
+        return self._component_count() >= self._component_streaming_threshold
+
     def component_prepare(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Prepares the given record by initializing a "record_components" dictionary.
@@ -254,6 +280,8 @@ class ShopifyBulkRecord:
            - If it matches, it yields any buffered records from previous iterations and registers the new record.
         2. Checks if the record matches any of the specified components.
            - If it matches, it registers the new component record.
+           - If the component count exceeds the streaming threshold, a partial flush is triggered
+             to bound memory usage per parent.
 
         Step 1: register the new record by it's `__typename`
         Step 2: check for `components` by their `__typename` and add to the placeholder
@@ -268,6 +296,17 @@ class ShopifyBulkRecord:
         # components check
         elif self.check_type(record, self.components):
             self.record_new_component(record)
+            # partial flush when component count exceeds threshold to prevent OOM
+            if self._should_flush_components():
+                # save parent record fields before flushing so we can re-register it
+                # for subsequent components belonging to the same parent
+                parent_cursor_fields = {
+                    k: v for k, v in self.buffer[-1].items()
+                    if k != "record_components"
+                }
+                yield from self.buffer_flush()
+                # re-register a fresh parent placeholder for remaining components
+                self.buffer.append(self.component_prepare(parent_cursor_fields))
 
     def process_line(self, jsonl_file: TextIOWrapper) -> Iterable[MutableMapping[str, Any]]:
         """
