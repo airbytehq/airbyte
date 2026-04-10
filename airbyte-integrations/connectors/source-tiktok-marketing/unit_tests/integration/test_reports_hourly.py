@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import copy
 import json
 from unittest import TestCase
 
@@ -137,7 +138,7 @@ class TestAdsReportHourly(TestCase):
             .build()
         )
 
-    def mock_response(self, http_mocker: HttpMocker, include_deleted=False):
+    def mock_response(self, http_mocker: HttpMocker, include_deleted=False, include_advertiser_id=True):
         query_params = {
             "service_type": "AUCTION",
             "report_type": "BASIC",
@@ -151,12 +152,16 @@ class TestAdsReportHourly(TestCase):
         }
         if include_deleted:
             query_params["filtering"] = '[{"field_name": "ad_status", "filter_type": "IN", "filter_value": "[\\"STATUS_ALL\\"]"}]'
+        response = copy.deepcopy(find_template(self.stream_name, __file__))
+        if not include_advertiser_id:
+            for record in response["data"]["list"]:
+                record.pop("advertiser_id", None)
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
                 query_params=query_params,
             ),
-            HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
+            HttpResponse(body=json.dumps(response), status_code=200),
         )
         query_params["start_date"] = query_params["end_date"] = self.config()["end_date"]
 
@@ -177,6 +182,16 @@ class TestAdsReportHourly(TestCase):
         assert len(output.records) == 2
         assert output.records[0].record.data.get("ad_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
+
+    @HttpMocker()
+    def test_basic_read_injects_advertiser_id_from_partition(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+        self.mock_response(http_mocker, include_advertiser_id=False)
+
+        output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
+
+        assert len(output.records) == 2
+        assert {record.record.data.get("advertiser_id") for record in output.records} == {int(self.advertiser_id)}
 
     @HttpMocker()
     def test_read_with_state(self, http_mocker: HttpMocker):
