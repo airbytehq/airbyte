@@ -57,13 +57,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
-        body: |
-          ## AI Unpinning 
-          
-          The following live connections will be unpinned upon approval:
-            XXXXX
-            XXXXX
-           
+          body: "** AI Unpinning of live connections"
 
 #      - name: Render template
 #        id: template
