@@ -461,7 +461,7 @@ class InsightAsyncJob(AsyncJob):
                 raise AirbyteTracedException(
                     message="Facebook Insights API request failed during data retrieval.",
                     internal_message=f"Failed to start ID-collection job at level={level}: {e}",
-                    failure_type=FailureType.system_error,
+                    failure_type=FailureType.transient_error,
                 ) from e
 
             start_ts = ab_datetime_now()
