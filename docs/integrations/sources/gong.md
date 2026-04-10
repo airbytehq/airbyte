@@ -9,9 +9,8 @@ This page contains the setup guide and reference information for the [Gong](http
 ## Prerequisites
 
 - A Gong account with technical administrator permissions
-- For API Key authentication: an access key and access key secret generated from the Gong API settings
 - For OAuth 2.0 authentication: the following API scopes must be granted: `api:calls:read:basic`, `api:calls:read:extensive`, `api:calls:read:transcript`, `api:users:read`, `api:stats:scorecards`, `api:stats:interaction`, `api:settings:scorecards:read`
-- For API Key authentication: the API key must have the same scopes listed above granted in the Gong API settings
+- For API Key authentication: an access key and access key secret generated from the Gong API page. API keys inherit the permissions of the technical administrator who creates them.
 
 ## Setup guide
 
@@ -29,8 +28,8 @@ You can authenticate to Gong using one of two methods:
 
 - **API Key**. Authenticate using an access key and access key secret. To generate credentials:
   1. Log in to your Gong account as a technical administrator.
-  2. Navigate to **Company Settings** > **Ecosystem** > **API**.
-  3. Click **Create** to generate an access key and access key secret.
+  2. Navigate to **Admin center** > **Settings** > **Ecosystem** > **API**.
+  3. Click **Get API Key** to generate an access key and access key secret.
   4. Copy both values immediately. The access key secret is only displayed once.
 
   For more details, see the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api).
@@ -58,12 +57,12 @@ This source syncs the following streams:
 
 | Stream | Sync Mode | Description |
 | :----- | :-------- | :---------- |
-| [answered scorecards](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
-| [calls](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps |
-| [call transcripts](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences |
-| [extensive calls](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, and media |
-| [scorecards](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
-| [users](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
+| [`answeredScorecards`](https://gong.app.gong.io/settings/api/documentation#post-/v2/stats/activity/scorecards) | Incremental | Scorecard responses with review timestamps |
+| [`calls`](https://gong.app.gong.io/settings/api/documentation#get-/v2/calls) | Incremental | Call metadata including participants, duration, and timestamps |
+| [`callTranscripts`](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/transcript) | Incremental | Call transcript segments with speaker identification and timestamped sentences |
+| [`extensiveCalls`](https://gong.app.gong.io/settings/api/documentation#post-/v2/calls/extensive) | Incremental | Detailed call data including topics, key points, trackers, interaction stats, and media |
+| [`scorecards`](https://gong.app.gong.io/settings/api/documentation#get-/v2/settings/scorecards) | Full Refresh | Scorecard definitions and configurations |
+| [`users`](https://gong.app.gong.io/settings/api/documentation#get-/v2/users) | Full Refresh | User profiles and settings |
 
 ### Performance considerations
 
