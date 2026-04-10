@@ -14,6 +14,7 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
+from source_github.errors_handlers import is_conflict_with_empty_repository
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -196,6 +197,65 @@ def test_rate_limit_403_retries(response_headers):
     result = stream.get_error_handler().interpret_response(response_mock)
     assert result.response_action == ResponseAction.RATE_LIMITED
     assert result.failure_type == FailureType.transient_error
+
+
+def test_graphql_error_handler_empty_body_no_json_decode_error():
+    """
+    When the GitHub API returns an empty or non-JSON response body, the
+    GitHubGraphQLErrorHandler should NOT crash with a JSONDecodeError.
+    Instead it should fall through to the parent error handler.
+
+    Regression test for https://github.com/airbytehq/oncall/issues/11357
+    """
+    stream = PullRequestStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {}
+    response_mock.text = ""
+    response_mock.ok = True
+    response_mock.json = MagicMock(side_effect=requests.exceptions.JSONDecodeError("Expecting value", "", 0))
+
+    # Must not raise; should fall through to the parent handler
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result is not None
+
+
+def test_graphql_rate_limit_check_empty_body_no_json_decode_error():
+    """
+    When a GraphQL rate-limit response has an empty body, the
+    GithubStreamABCErrorHandler should NOT crash with a JSONDecodeError.
+    It should skip the GraphQL rate-limit branch and continue to other checks.
+
+    Regression test for https://github.com/airbytehq/oncall/issues/11357
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {"X-RateLimit-Resource": "graphql"}
+    response_mock.text = ""
+    response_mock.ok = True
+    response_mock.json = MagicMock(side_effect=requests.exceptions.JSONDecodeError("Expecting value", "", 0))
+
+    # Must not raise JSONDecodeError
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result is not None
+    # Should NOT be rate-limited since the JSON body could not be parsed
+    assert result.response_action != ResponseAction.RATE_LIMITED
+
+
+def test_conflict_empty_repo_empty_body_no_json_decode_error():
+    """
+    When a 409 response has an empty body, is_conflict_with_empty_repository
+    should return False instead of crashing with a JSONDecodeError.
+
+    Regression test for https://github.com/airbytehq/oncall/issues/11357
+    """
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.CONFLICT
+    response_mock.json = MagicMock(side_effect=requests.exceptions.JSONDecodeError("Expecting value", "", 0))
+
+    # Must not raise; should return False
+    assert is_conflict_with_empty_repository(response_mock) is False
 
 
 @patch("time.sleep")
