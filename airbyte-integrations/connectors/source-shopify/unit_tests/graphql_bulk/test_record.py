@@ -1,8 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 
-import os
-
 import pytest
 from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery
 from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord

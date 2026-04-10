@@ -9,7 +9,7 @@ from functools import cached_property
 from io import TextIOWrapper
 from json import loads
 from os import remove
-from typing import Any, Callable, ClassVar, Final, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, ClassVar, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from source_shopify.utils import LOGGER
 
