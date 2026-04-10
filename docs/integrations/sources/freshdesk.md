@@ -1,23 +1,28 @@
 # Freshdesk
 
-This page guides you through the process of setting up the Freshdesk source connector.
+This page guides you through setting up the Freshdesk source connector.
 
 ## Prerequisites
 
-To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) and the [API key](https://support.freshdesk.com/support/solutions/articles/215517).
+To set up the Freshdesk source connector, you need:
+
+- Your Freshdesk [domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) in the format `youraccount.freshdesk.com`.
+- A Freshdesk [API key](https://support.freshdesk.com/support/solutions/articles/215517). To find your API key, log in to Freshdesk, click your profile picture, select **Profile Settings**, and click **View API key**.
 
 ## Set up the Freshdesk connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to your Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Freshdesk** from the Source type dropdown.
-4. Enter the name for the Freshdesk connector.
-5. For **Domain**, enter your [Freshdesk domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url).
+3. On the Set up the source page, select **Freshdesk** from the **Source type** dropdown.
+4. Enter a name for the Freshdesk connector.
+5. For **Domain**, enter your Freshdesk domain in the format `youraccount.freshdesk.com`.
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
-7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-8. For **Requests per minute**, enter the number of requests per minute that this source allowed to use. The Freshdesk rate limit is 50 requests per minute per app per account.
-9. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. However, keep in mind that records updated before (stream_state - lookback_window) won't be synced. To ensure no data loss, we recommend using a full refresh. The default lookback window is set to 14 days.
-10. Click **Set up source**.
+7. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The connector replicates data created on and after this date. If not set, the connector retrieves only the last 30 days of ticket data.
+8. For **Requests per minute**, optionally enter the number of requests per minute to allow. See [Performance considerations](#performance-considerations) for rate limits by plan.
+9. For **Rate Limit Plan**, optionally select your Freshdesk plan to apply plan-specific rate limits for the Tickets and Contacts endpoints. If you select **Custom Plan**, enter your custom rate limits. If not set, the connector uses a default of 50 requests per minute.
+10. For **Lookback Window**, optionally specify a number of days to re-read data from the current stream state for the **Satisfaction Ratings** stream. This captures updates to existing ratings after their initial creation. Records updated before the lookback window are not re-synced. The default is 14 days.
+11. For **Number of Concurrent Workers**, optionally set the number of concurrent threads for syncing. Higher values speed up syncs but increase API rate limit usage. The default is 4, with a minimum of 2 and maximum of 16. Adjust based on your Freshdesk plan's rate limits.
+12. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -26,16 +31,16 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
-Several output streams are available from this source:
+This source outputs the following streams:
 
 - [Agents](https://developers.freshdesk.com/api/#agents)
 - [Business Hours](https://developers.freshdesk.com/api/#business-hours)
 - [Canned Responses](https://developers.freshdesk.com/api/#canned-responses)
 - [Canned Response Folders](https://developers.freshdesk.com/api/#list_all_canned_response_folders)
 - [Companies](https://developers.freshdesk.com/api/#companies)
-- [Contacts](https://developers.freshdesk.com/api/#contacts) \(Native Incremental Sync\)
+- [Contacts](https://developers.freshdesk.com/api/#contacts) (incremental)
 - [Conversations](https://developers.freshdesk.com/api/#conversations)
 - [Discussion Categories](https://developers.freshdesk.com/api/#category_attributes)
 - [Discussion Comments](https://developers.freshdesk.com/api/#comment_attributes)
@@ -55,15 +60,28 @@ Several output streams are available from this source:
 - [Solution Categories](https://developers.freshdesk.com/api/#solution_category_attributes)
 - [Solution Folders](https://developers.freshdesk.com/api/#solution_folder_attributes)
 - [Surveys](https://developers.freshdesk.com/api/#surveys)
-- [Tickets](https://developers.freshdesk.com/api/#tickets) \(Native Incremental Sync\)
+- [Tickets](https://developers.freshdesk.com/api/#tickets) (incremental)
 - [Ticket Fields](https://developers.freshdesk.com/api/#ticket-fields)
 - [Time Entries](https://developers.freshdesk.com/api/#time-entries)
 
 ## Performance considerations
 
-The Freshdesk connector should not run into Freshdesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+Freshdesk API rate limits depend on your plan. The connector automatically retries rate-limited requests using the `Retry-After` header.
 
-If you don't use the start date Freshdesk will retrieve only the last 30 days. More information [here](https://developers.freshdesk.com/api/#list_all_tickets).
+| Plan | Calls per minute | Tickets list | Contacts list |
+| :--------- | :--------------- | :----------- | :------------ |
+| Free | 50 | 50 | 50 |
+| Growth | 200 | 20 | 20 |
+| Pro | 400 | 100 | 100 |
+| Enterprise | 700 | 200 | 200 |
+
+For more details, see [Freshdesk API rate limits](https://support.freshdesk.com/support/solutions/articles/225439-what-are-the-rate-limits-for-the-api-calls-to-freshdesk-).
+
+To optimize sync performance, select your **Rate Limit Plan** in the connector configuration and adjust the **Number of Concurrent Workers** setting. Higher concurrency speeds up syncs but consumes more of your rate limit budget. If you experience rate limit errors, reduce the number of concurrent workers or select a plan with higher limits.
+
+If you don't set a **Start Date**, the connector retrieves only the last 30 days of ticket data. For more information, see the [Freshdesk API ticket listing documentation](https://developers.freshdesk.com/api/#list_all_tickets).
+
+Some streams require specific Freshdesk subscription plans. If a stream is unavailable on your plan, the connector skips it during sync.
 
 ## Changelog
 
@@ -89,7 +107,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 | 3.2.0 | 2025-10-14 | [68089](https://github.com/airbytehq/airbyte/pull/68089) | Complete progressive rollout |
 | 3.2.0-rc.2 | 2025-10-09 | [67109](https://github.com/airbytehq/airbyte/pull/67109) | Migrate to CDK v7 |
 | 3.2.0-rc.1 | 2025-03-12 | [54687](https://github.com/airbytehq/airbyte/pull/54687) | Migrate to Manifest-only |
-| 3.1.3 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb |
+| 3.1.3 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency version |
 | 3.1.2 | 2025-01-11 | [43887](https://github.com/airbytehq/airbyte/pull/43887) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 3.1.1 | 2024-06-06 | [39231](https://github.com/airbytehq/airbyte/pull/39231) | [autopull] Upgrade base image to v1.2.2 |
 | 3.1.0 | 2024-03-12 | [35699](https://github.com/airbytehq/airbyte/pull/35699) | Migrate to low-code |
