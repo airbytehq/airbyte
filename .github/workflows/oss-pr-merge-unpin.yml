@@ -53,14 +53,17 @@ jobs:
         uses: aaronsteers/devin-action@main
         with:
           issue-number: ${{ github.event.issue.number }}
-          playbook-macro: "!oss_connector_unpin"
+#          playbook-macro: "!oss_connector_unpin"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
           api-version: v3
           org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           start-message: |
             **AI Unpinning Starting...**
-            Rodi Rodi
+            Please approve the unpinning of the following connections:
+            XXXX
+            XXXX
+            
             [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/oss_issue_triage.md)
           tags: |
             oss-issue-triage
