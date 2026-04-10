@@ -18,7 +18,6 @@ In open source mode, you provide API credentials directly to the connector.
 | `client_id` | `str` | Yes | OAuth 2.0 Client ID from Zoho Developer Console |
 | `client_secret` | `str` | Yes | OAuth 2.0 Client Secret from Zoho Developer Console |
 | `refresh_token` | `str` | Yes | OAuth 2.0 Refresh Token (does not expire) |
-| `access_token` | `str` | No | OAuth 2.0 Access Token (auto-refreshed) |
 
 Example request:
 
@@ -30,8 +29,7 @@ connector = ZohoCrmConnector(
     auth_config=ZohoCrmAuthConfig(
         client_id="<OAuth 2.0 Client ID from Zoho Developer Console>",
         client_secret="<OAuth 2.0 Client Secret from Zoho Developer Console>",
-        refresh_token="<OAuth 2.0 Refresh Token (does not expire)>",
-        access_token="<OAuth 2.0 Access Token (auto-refreshed)>"
+        refresh_token="<OAuth 2.0 Refresh Token (does not expire)>"
     )
 )
 ```
@@ -54,7 +52,6 @@ Create a connector with OAuth credentials.
 | `client_id` | `str` | Yes | OAuth 2.0 Client ID from Zoho Developer Console |
 | `client_secret` | `str` | Yes | OAuth 2.0 Client Secret from Zoho Developer Console |
 | `refresh_token` | `str` | Yes | OAuth 2.0 Refresh Token (does not expire) |
-| `access_token` | `str` | No | OAuth 2.0 Access Token (auto-refreshed) |
 
 Example request:
 
@@ -69,8 +66,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     "credentials": {
       "client_id": "<OAuth 2.0 Client ID from Zoho Developer Console>",
       "client_secret": "<OAuth 2.0 Client Secret from Zoho Developer Console>",
-      "refresh_token": "<OAuth 2.0 Refresh Token (does not expire)>",
-      "access_token": "<OAuth 2.0 Access Token (auto-refreshed)>"
+      "refresh_token": "<OAuth 2.0 Refresh Token (does not expire)>"
     }
   }'
 ```

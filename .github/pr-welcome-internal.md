@@ -12,14 +12,17 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - 🛠️ Quick Fixes
   - `/format-fix` - Fixes most formatting issues.
   - `/bump-version` - Bumps connector versions, scraping `changelog` description from the PR title.
+    - Bump types: `patch` (default), `minor`, `major`, `major_rc`, `rc`, `promote`.
+    - The `rc` type is a smart default: applies `minor_rc` if stable, or bumps the RC number if already RC.
+    - The `promote` type strips the RC suffix to finalize a release.
+    - Example: `/bump-version type=rc` or `/bump-version type=minor`
+  - `/bump-progressive-rollout-version` - Alias for `/bump-version type=rc`. Bumps with an RC suffix and enables progressive rollout.
 - ❇️ AI Testing and Review (internal link: [AI-SDLC Docs](https://github.com/airbytehq/ai-skills/blob/main/docs/hydra/)):
   - `/ai-prove-fix` - Runs prerelease readiness checks, including testing against customer connections.
   - `/ai-canary-prerelease` - Rolls out prerelease to 5-10 connections for canary testing.
   - `/ai-review` - AI-powered PR review for connector safety and quality gates.
 - 🚀 Connector Releases:
   - `/publish-connectors-prerelease` - Publishes pre-release connector builds (tagged as `{version}-preview.{git-sha}`) for all modified connectors in the PR.
-  - `/bump-progressive-rollout-version` - Bumps connector version with an RC suffix (`2.16.10-rc.1`) for progressive rollouts (`enableProgressiveRollout: true`).
-    - Example: `/bump-progressive-rollout-version changelog="Add new feature for progressive rollout"`
 - ☕️ JVM connectors:
   - `/update-connector-cdk-version connector=<CONNECTOR_NAME>` - Updates the specified connector to the latest CDK version.
     Example: `/update-connector-cdk-version connector=destination-bigquery`

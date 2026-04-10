@@ -10,6 +10,7 @@ The WordPress connector enables seamless data synchronization between your WordP
 | `password`   | `string` | Placeholder Password. Placeholder for basic HTTP auth password - should be set to empty string | x             |
 | `username`   | `string` | Placeholder Username. Placeholder for basic HTTP auth username - should be set to empty string | x             |
 | `start_date` | `string` | Start Date. Minimal Date to Retrieve Records when stream allow incremental.                    |               |
+| `lookback_window` | `integer` | Lookback Window (hours). Hours of previously synced data to re-fetch on each sync for incremental streams (editor_blocks, comments, pages, media) to prevent data loss. | 0 |
 
 ## Streams
 
@@ -38,6 +39,9 @@ The WordPress connector enables seamless data synchronization between your WordP
 
 | Version | Date       | Pull Request | Subject                                                                               |
 | ------- | ---------- | ------------ | ------------------------------------------------------------------------------------- |
+| 0.0.49 | 2026-04-03 | [76063](https://github.com/airbytehq/airbyte/pull/76063) | Add 1-hour lookback window to incremental streams to prevent data loss during DST transitions; fix tab character in pages stream request parameter |
+| 0.0.48 | 2026-03-31 | [75861](https://github.com/airbytehq/airbyte/pull/75861) | Update dependencies |
+| 0.0.47 | 2026-03-24 | [74691](https://github.com/airbytehq/airbyte/pull/74691) | Update dependencies |
 | 0.0.46 | 2026-03-03 | [74149](https://github.com/airbytehq/airbyte/pull/74149) | Update dependencies |
 | 0.0.45 | 2026-02-17 | [73511](https://github.com/airbytehq/airbyte/pull/73511) | Update dependencies |
 | 0.0.44 | 2026-01-27 | [72050](https://github.com/airbytehq/airbyte/pull/72050) | Update dependencies |

@@ -54,8 +54,8 @@ from source_github.utils import read_full_refresh
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, ResponseAction
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import ProjectsResponsesAPI, read_incremental
 
@@ -71,8 +71,8 @@ def test_internal_server_error_retry(time_mock, requests_mock):
 
     time_mock.reset_mock()
     requests_mock.get("https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions", status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
-    # http client raises MessageRepresentationAirbyteTracedErrors when BaseBackoffException occurs
-    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    # http client raises AirbyteTracedException when BaseBackoffException occurs
+    with pytest.raises(AirbyteTracedException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
 
     sleep_delays = [delay[0][0] for delay in time_mock.call_args_list]
@@ -155,8 +155,54 @@ def test_error_handler(http_status, response_headers, text, response_action, err
     assert stream.get_error_handler().interpret_response(response_mock) == expected
 
 
+def test_permission_403_fails_immediately():
+    """
+    Verify that a 403 response without rate-limit headers (i.e. a genuine permission error)
+    results in ResponseAction.FAIL rather than RETRY, preventing infinite retry loops.
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {}
+    response_mock.text = '{"message": "Resource not accessible by personal access token"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert result.error_message == "Access denied due to insufficient permissions."
+
+
+@pytest.mark.parametrize(
+    ("response_headers",),
+    [
+        pytest.param({"X-RateLimit-Remaining": "0"}, id="rate_limit_remaining_zero"),
+        pytest.param({"Retry-After": "30"}, id="retry_after_header"),
+    ],
+)
+def test_rate_limit_403_retries(response_headers):
+    """
+    Verify that 403 responses WITH rate-limit headers are still handled as RATE_LIMITED
+    (handled upstream by GithubStreamABCErrorHandler before the error mapping is reached).
+    """
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = response_headers
+    response_mock.text = ""
+    response_mock.ok = False
+
+    result = stream.get_error_handler().interpret_response(response_mock)
+    assert result.response_action == ResponseAction.RATE_LIMITED
+    assert result.failure_type == FailureType.transient_error
+
+
 @patch("time.sleep")
-def test_retry_after(time_mock, requests_mock):
+def test_retry_after_rate_limit(time_mock, requests_mock):
+    """
+    A 403 with a Retry-After header is a rate-limit and should be retried.
+    """
     first_request = True
 
     def request_callback(request, context):
@@ -164,7 +210,7 @@ def test_retry_after(time_mock, requests_mock):
         if first_request:
             first_request = False
             context.status_code = HTTPStatus.FORBIDDEN
-            context.headers = {}
+            context.headers = {"Retry-After": "0"}
             context.text = ""
             return ""
         context.status_code = HTTPStatus.OK
@@ -182,6 +228,25 @@ def test_retry_after(time_mock, requests_mock):
     assert requests_mock.call_count == 2
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/airbytehq?per_page=100"
     assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/airbytehq?per_page=100"
+
+
+@patch("time.sleep")
+def test_permission_403_raises_error(time_mock, requests_mock):
+    """
+    A bare 403 (no rate-limit headers) is a permission error and should fail immediately,
+    not retry indefinitely.
+    """
+    requests_mock.get(
+        "https://api.github.com/orgs/airbytehq",
+        status_code=HTTPStatus.FORBIDDEN,
+        json={"message": "Resource not accessible by personal access token"},
+    )
+
+    stream = Organizations(organizations=["airbytehq"])
+    with pytest.raises((AirbyteTracedException, AttributeError)):
+        list(read_full_refresh(stream))
+    # Should fail on first attempt, not retry
+    assert requests_mock.call_count == 1
 
 
 @patch("time.sleep")
@@ -322,7 +387,7 @@ def test_stream_repositories_401(time_mock, caplog, requests_mock):
         json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
     )
 
-    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    with pytest.raises(AirbyteTracedException):
         assert list(read_full_refresh(stream)) == []
 
     assert requests_mock.call_count == 6
@@ -1613,7 +1678,7 @@ def test_stream_projects_v2_graphql_retry(time_mock, rate_limit_mock_response, r
 
     backoff_strategy = GithubStreamABCBackoffStrategy(stream)
 
-    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(MessageRepresentationAirbyteTracedErrors):
+    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(AirbyteTracedException):
         read_incremental(stream, stream_state={})
     assert requests_mock.call_count == stream.max_retries + 1
 
@@ -1763,3 +1828,115 @@ def test_pull_request_stats(requests_mock):
 
     list(read_full_refresh(stream))
     assert query == expected_query
+
+
+# === Tests for error-swallowing bug fixes (oncall/issues/11907) ===
+
+
+@patch("time.sleep")
+def test_github_stream_abc_read_records_reraises_when_no_exception_attr(time_mock):
+    """Bug fix: GithubStreamABC.read_records() guard clause uses `or` so that when
+    AirbyteTracedException has no _exception attribute, the exception is re-raised
+    immediately. With the old `and`, the second hasattr would raise AttributeError."""
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
+
+    # Construct an AirbyteTracedException WITHOUT _exception attribute
+    exc = AirbyteTracedException(message="bare error", failure_type=FailureType.system_error)
+    # CDK sets _exception=None by default; delete it to simulate the case where it's truly absent
+    delattr(exc, "_exception")
+    assert not hasattr(exc, "_exception"), "Test precondition: exception must lack _exception attr"
+
+    # Patch HttpStream.read_records (the super() target) to raise our bare exception
+    with patch("airbyte_cdk.sources.streams.http.http.HttpStream.read_records", side_effect=exc):
+        with pytest.raises(AirbyteTracedException):
+            list(stream.read_records(stream_slice={"organization": "org_name"}))
+
+
+@patch("time.sleep")
+def test_github_stream_abc_read_records_reraises_when_no_response_attr(time_mock):
+    """Bug fix: GithubStreamABC.read_records() guard clause uses `or` so that when
+    AirbyteTracedException has _exception but _exception lacks response attribute,
+    the exception is re-raised. With the old `and`, this case was silently swallowed."""
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
+
+    # Construct an AirbyteTracedException WITH _exception but WITHOUT response
+    exc = AirbyteTracedException(message="missing response", failure_type=FailureType.system_error)
+    inner = Exception("inner error")
+    exc._exception = inner
+    assert hasattr(exc, "_exception"), "Test precondition: exception must have _exception attr"
+    assert not hasattr(exc._exception, "response"), "Test precondition: _exception must lack response attr"
+
+    # Patch HttpStream.read_records (the super() target) to raise our exception
+    with patch("airbyte_cdk.sources.streams.http.http.HttpStream.read_records", side_effect=exc):
+        with pytest.raises(AirbyteTracedException):
+            list(stream.read_records(stream_slice={"organization": "org_name"}))
+
+
+@patch("time.sleep")
+def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit_mock_response, requests_mock):
+    """Bug fix: ContributorActivity.read_records() should re-raise when the exception has
+    a valid _exception.response but the status code is NOT 202 ACCEPTED. Previously, the
+    `else: raise e` was paired with the outer `if` instead of the inner `if`, causing
+    non-ACCEPTED errors to be silently swallowed."""
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte"},
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        json={},
+        status_code=200,
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/test_airbyte/stats/contributors?per_page=100",
+        json={"message": "Unauthorized"},
+        status_code=401,
+    )
+
+    source = SourceGithub()
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+
+    # The 401 error should be re-raised, not silently swallowed
+    with pytest.raises(AirbyteTracedException):
+        list(source.read(config=config, logger=MagicMock(), catalog=catalog, state={}))
+
+
+def test_releases_extract_database_id_does_not_catch_type_error():
+    """Bug fix: _extract_database_id_from_node_id() should only catch ValueError,
+    struct.error, and binascii.Error — not all exceptions. A TypeError (or other
+    unexpected exception) should propagate instead of being silently swallowed."""
+
+    # Passing a non-string type that has an underscore representation but causes
+    # TypeError during string operations
+    class BadNodeId:
+        """Object that contains underscore but causes TypeError on split."""
+
+        def __contains__(self, item):
+            return True  # "_" in BadNodeId() returns True
+
+        def split(self, *args, **kwargs):
+            raise TypeError("split not supported")
+
+    with pytest.raises(TypeError):
+        Releases._extract_database_id_from_node_id(BadNodeId())
+
+
+@pytest.mark.parametrize(
+    "node_id,expected_id",
+    [
+        pytest.param("RA_####", None, id="invalid_base64_caught_by_binascii_error"),
+        pytest.param("RA_ab", None, id="short_decoded_data"),
+    ],
+)
+def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
+    """Verify that expected decode/unpack errors still return None after narrowing the except."""
+    assert Releases._extract_database_id_from_node_id(node_id) == expected_id

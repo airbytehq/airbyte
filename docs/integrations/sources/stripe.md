@@ -313,6 +313,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.15.23 | 2026-03-31 | [75864](https://github.com/airbytehq/airbyte/pull/75864) | Update dependencies |
 | 5.15.22 | 2026-03-12 | [74770](https://github.com/airbytehq/airbyte/pull/74770) | Upgrade CDK to 7.13.0 |
 | 5.15.21 | 2026-03-06 | [74342](https://github.com/airbytehq/airbyte/pull/74342) | Promoting release candidate 5.15.21-rc.5 to a main version. |
 | 5.15.21-rc.5 | 2026-03-06 | [74337](https://github.com/airbytehq/airbyte/pull/74337) | Make API data retention validation optional per stream via new `api_retention_streams` config field, upgrade CDK to 7.8.1.post54 |
