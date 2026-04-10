@@ -53,7 +53,10 @@ data object TypesFlavor : Flavor {
                     EmittedField(FieldNames.DATE, DateFieldType),
                     EmittedField(FieldNames.TIME_WITH_TIME_ZONE, TimeWithTimeZoneFieldType),
                     EmittedField(FieldNames.TIME_WITHOUT_TIME_ZONE, TimeWithoutTimeZoneFieldType),
-                    EmittedField(FieldNames.TIMESTAMP_WITH_TIME_ZONE, TimestampWithTimeZoneFieldType),
+                    EmittedField(
+                        FieldNames.TIMESTAMP_WITH_TIME_ZONE,
+                        TimestampWithTimeZoneFieldType
+                    ),
                     EmittedField(
                         FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE,
                         TimestampWithoutTimeZoneFieldType
