@@ -1788,7 +1788,7 @@ class ContributorActivity(GithubStream):
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        return ContributorActivityErrorHandler(logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
+        return ContributorActivityErrorHandler(stream=self, logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         return ContributorActivityBackoffStrategy()
