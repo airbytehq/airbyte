@@ -317,7 +317,7 @@ class TestCustomObjectAssociationDynamicStreams:
 
     def test_custom_association_stream_created_from_config(self, requests_mock, config_with_custom_associations):
         """A custom object association stream should be created when custom_object_association_streams is in the config."""
-        from conftest import get_source
+        from .conftest import get_source
 
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
         streams = get_source(config_with_custom_associations).streams(config_with_custom_associations)
@@ -326,7 +326,7 @@ class TestCustomObjectAssociationDynamicStreams:
 
     def test_custom_association_stream_default_name(self, requests_mock, config_with_custom_associations):
         """Default stream name should be associations_<from_object>_<to_object>."""
-        from conftest import get_source
+        from .conftest import get_source
 
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
         streams = get_source(config_with_custom_associations).streams(config_with_custom_associations)
@@ -335,7 +335,7 @@ class TestCustomObjectAssociationDynamicStreams:
 
     def test_custom_association_stream_custom_name(self, requests_mock, config_with_custom_stream_name):
         """When stream_name is provided, it should be used instead of the default."""
-        from conftest import get_source
+        from .conftest import get_source
 
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
         streams = get_source(config_with_custom_stream_name).streams(config_with_custom_stream_name)
@@ -345,7 +345,7 @@ class TestCustomObjectAssociationDynamicStreams:
 
     def test_multiple_custom_association_streams(self, requests_mock, config_with_multiple_custom_associations):
         """Multiple custom association streams should all be created."""
-        from conftest import get_source
+        from .conftest import get_source
 
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
         streams = get_source(config_with_multiple_custom_associations).streams(config_with_multiple_custom_associations)
@@ -356,7 +356,7 @@ class TestCustomObjectAssociationDynamicStreams:
 
     def test_no_custom_streams_without_config(self, requests_mock):
         """Without custom_object_association_streams in config, no custom association streams should be created."""
-        from conftest import get_source
+        from .conftest import get_source
 
         config = {
             "start_date": "2021-01-10T00:00:00Z",
