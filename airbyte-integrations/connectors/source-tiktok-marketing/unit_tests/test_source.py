@@ -11,6 +11,7 @@ from airbyte_cdk.models import ConnectorSpecification, Status
 
 from .conftest import get_source
 
+
 EXPECTED_REPORT_PRIMARY_KEYS = {
     "ads_reports_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"]],
     "ads_reports_by_country_daily": [["advertiser_id"], ["ad_id"], ["stat_time_day"], ["country_code"]],
