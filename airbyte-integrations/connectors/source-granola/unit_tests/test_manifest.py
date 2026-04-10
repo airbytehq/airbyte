@@ -2,12 +2,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 import yaml
+
 
 CONNECTOR_DIR = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = CONNECTOR_DIR / "manifest.yaml"
