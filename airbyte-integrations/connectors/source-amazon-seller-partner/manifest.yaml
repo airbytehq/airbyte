@@ -327,6 +327,17 @@ spec:
     - auth_type
     predicate_value: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://sellercentral.amazon.com/apps/authorize/consent?application_id={{app_id}}&{{redirect_uri_param}}&{{state_param}}&version=beta"
+        access_token_url: "https://api.amazon.com/auth/o2/token"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
       oauth_user_input_from_connector_config_specification:
         type: object
         properties:
@@ -338,6 +349,10 @@ spec:
             type: string
             path_in_connector_config:
             - account_type
+          app_id:
+            type: string
+            path_in_connector_config:
+            - app_id
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
