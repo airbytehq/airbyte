@@ -58,7 +58,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            > ## AI Unpinning
+            ## AI Unpinning
             >
             > The following live connections will be unpinned upon approval:
             > - XXXXX
