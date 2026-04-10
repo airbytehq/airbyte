@@ -184,7 +184,9 @@ class TestCustomObjectAssociationStreamRefResolution:
     def test_custom_stream_inherits_record_selector(self, resolved_manifest):
         """Custom association stream should use the same custom extractor as the base."""
         base_extractor = resolved_manifest["definitions"]["base_association_stream"]["retriever"]["record_selector"]["extractor"]
-        custom_extractor = resolved_manifest["definitions"]["base_custom_object_association_stream"]["retriever"]["record_selector"]["extractor"]
+        custom_extractor = resolved_manifest["definitions"]["base_custom_object_association_stream"]["retriever"]["record_selector"][
+            "extractor"
+        ]
         assert custom_extractor["type"] == base_extractor["type"]
         assert custom_extractor["class_name"] == base_extractor["class_name"]
 
