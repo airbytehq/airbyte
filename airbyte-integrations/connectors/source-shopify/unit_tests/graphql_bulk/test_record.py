@@ -214,10 +214,14 @@ class TestComponentStreamingCap:
 
     def _make_record_instance(self, basic_config, threshold=5, supports_component_streaming=True):
         """Helper to create a ShopifyBulkRecord with a low threshold for testing."""
-        _Query = type("_Query", (ShopifyBulkQuery,), {
-            "supports_component_streaming": supports_component_streaming,
-            "query_name": "customers",
-        })
+        _Query = type(
+            "_Query",
+            (ShopifyBulkQuery,),
+            {
+                "supports_component_streaming": supports_component_streaming,
+                "query_name": "customers",
+            },
+        )
         query = _Query(basic_config)
         record_instance = ShopifyBulkRecord(query)
         record_instance.composition = {"new_record": "Customer", "record_components": ["Metafield"]}
