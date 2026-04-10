@@ -18,8 +18,8 @@ from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookB
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from source_facebook_marketing.streams.common import retry_pattern, traced_exception
 
 from ..utils import DateInterval
