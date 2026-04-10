@@ -5,7 +5,7 @@ name: OSS Unpin
 # quick initial responses and escalates actionable items to the internal oncall team.
 
 on:
-  pull_request_target:
+  pull_request:
     types: [closed]
 
 #  workflow_dispatch:
