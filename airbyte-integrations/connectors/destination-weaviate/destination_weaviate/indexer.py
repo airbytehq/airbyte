@@ -31,7 +31,6 @@ class WeaviatePartialBatchError(Exception):
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
-
 class WeaviateIndexer(Indexer):
     config: WeaviateIndexingConfigModel
 
@@ -40,10 +39,7 @@ class WeaviateIndexer(Indexer):
         self.client: Optional[weaviate.WeaviateClient] = None
 
     def _create_client(self):
-        headers = {
-            header.header_key: header.value
-            for header in self.config.additional_headers
-        }
+        headers = {header.header_key: header.value for header in self.config.additional_headers}
 
         auth_credentials = None
         if self.config.auth.mode == "username_password":

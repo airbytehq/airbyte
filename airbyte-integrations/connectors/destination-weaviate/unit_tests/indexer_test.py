@@ -15,9 +15,7 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, Destinatio
 
 class TestWeaviateIndexer(unittest.TestCase):
     def setUp(self):
-        self.config = WeaviateIndexingConfigModel(
-            host="https://test-host:12345", auth=TokenAuth(mode="token", token="abc")
-        )
+        self.config = WeaviateIndexingConfigModel(host="https://test-host:12345", auth=TokenAuth(mode="token", token="abc"))
         self.indexer = WeaviateIndexer(self.config)
         mock_catalog = Mock()
         mock_stream = Mock()
