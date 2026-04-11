@@ -26,12 +26,12 @@ This page contains the setup guide and reference information for the [Intercom](
 
 ### Obtain an Intercom access token (Airbyte Open Source)
 
-To authenticate the connector in **Airbyte Open Source**, you will need to obtain an access token. You can follow the setup steps below to create an Intercom app and generate the token. For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/building-apps/docs/authentication-types).
+To authenticate the connector in **Airbyte Open Source**, you need an access token. Follow the steps below to create an Intercom app and generate the token. For more information on Intercom's authentication flow, refer to the [official documentation](https://developers.intercom.com/docs/build-an-integration/learn-more/authentication).
 
 1. Log in to your Intercom account and navigate to the [Developer Hub](https://developers.intercom.com/).
 2. Click **Your apps** in the top-right corner, then click **New app**.
 3. Choose an **App name**, select your Workspace from the dropdown, and click **Create app**.
-4. To set the appropriate permissions, from the **Authentication** tab, click **Edit** in the top right corner and check the permissions you want to grant to the app. We recommend only granting **read** permissions (not **write**). Click **Save** when you are finished.
+4. To set the appropriate permissions, from the **Authentication** tab, click **Edit** in the top right corner and check the permissions you want to grant to the app. Grant only **read** permissions (not **write**). Click **Save** when you are finished.
 5. Under the **Access token** header, you will be prompted to regenerate your access token. Follow the instructions to do so, and copy the new token.
 
 <!-- /env:oss -->
@@ -41,19 +41,19 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 #### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Intercom from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Intercom** from the Source type dropdown.
 4. Enter a name for the Intercom connector.
 5. To authenticate:
 
 <!-- env:cloud -->
 
 <!-- env:oss -->
-### For Airbyte Open Source:
+#### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Click Sources and then click + New source.
-3. On the Set up the source page, select Intercom from the Source type dropdown.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Intercom** from the Source type dropdown.
 4. Enter a name for the Intercom connector.
 <!-- /env:oss -->
 
@@ -65,7 +65,10 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 6. For **Start date**, use the provided datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ`. Only data created on or after this date is replicated.
 7. Optionally, configure **Lookback window** to re-sync records updated within the specified number of days before the current cursor position. This helps capture late-arriving updates. The default is `0` (no lookback).
-8. Click **Set up source** and wait for the tests to complete.
+8. Optionally, configure **Activity logs stream slice step size** to control how many days of activity log data the connector fetches per request. The default is `30` days. Lower this value if you experience timeouts on the Activity Logs stream.
+9. Optionally, configure **Num Workers** to set the number of worker threads for concurrent stream processing. The default is `10` (max `40`). Increase this to speed up syncs for workspaces with large volumes of conversations.
+10. Optionally, configure **API Rate Limit** to set the effective API request budget per minute. The default is `9500` (95% of the standard 10,000/min Intercom limit). If your workspace has a higher rate limit (e.g. 150,000/min), set this to ~95% of that value to leverage your full API throughput.
+11. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -74,7 +77,7 @@ The Intercom source connector supports the following [sync modes](https://docs.a
 - Full Refresh
 - Incremental
 
-## Supported Streams
+## Supported streams
 
 The Intercom source connector supports the following streams:
 
@@ -94,7 +97,11 @@ The Intercom source connector supports the following streams:
 
 ## Performance considerations
 
-The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default rate limit is 1,000 requests per minute for public apps and 10,000 requests per minute for private apps. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
+The connector is restricted by normal Intercom [rate limits](https://developers.intercom.com/docs/references/rest-api/errors/rate-limiting). The default rate limit is 1,000 API calls per minute for public apps and 10,000 API calls per minute for private apps, with a workspace-level cap of 25,000 API calls per minute. The connector monitors the `X-RateLimit-Remaining` header and proactively throttles itself before hitting the API rate limit, trading sync speed for stability. If the API returns a `429 Too Many Requests` response, the connector retries automatically.
+
+The connector uses an **API Rate Limit** setting (default: `9500` requests per minute) to control its request budget. A per-10-second window is derived automatically (`api_rate_limit / 6`). If your Intercom workspace has an elevated rate limit (e.g. 150,000/min), increase this value to allow the connector to use your full API throughput.
+
+The connector also supports configurable **concurrency** via the **Num Workers** setting (default: `10`, max: `40`). This controls how many partition slices are processed in parallel, which is especially beneficial for substream-based streams like `conversation_parts` and `company_segments`.
 
 The connector should not run into rate limit issues under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see rate limit errors that are not automatically retried.
 
@@ -123,6 +130,11 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.20-rc.1 | 2026-04-09 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency (`num_workers`), configurable API rate limit (`api_rate_limit`), HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
+| 0.13.19 | 2026-04-09 | [76182](https://github.com/airbytehq/airbyte/pull/76182) | Promote 0.13.19-rc.1 to stable and disable progressive rollout |
+| 0.13.19-rc.1 | 2026-04-07 | [76122](https://github.com/airbytehq/airbyte/pull/76122) | Increase HTTP connection pool size |
+| 0.13.18 | 2026-03-31 | [75899](https://github.com/airbytehq/airbyte/pull/75899) | Update CDK to 7.15.0 |
+| 0.13.17 | 2026-03-30 | [75575](https://github.com/airbytehq/airbyte/pull/75575) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 0.13.16 | 2026-03-24 | [75419](https://github.com/airbytehq/airbyte/pull/75419) | Promote 0.13.16-rc.6 to GA — includes CDK 7.13.0 upgrade, block_simultaneous_read for companies, rate limiter fix, step size/end_datetime for incremental streams, and heartbeat timeout bump |
 | 0.13.16-rc.6 | 2026-03-19 | [75216](https://github.com/airbytehq/airbyte/pull/75216) | Bump CDK base image to 7.13.0 (includes block_simultaneous_read support and cursor field fix) |
 | 0.13.16-rc.5 | 2026-03-11 | [71141](https://github.com/airbytehq/airbyte/pull/71141) | Block simultaneous reading from companies endpoint |

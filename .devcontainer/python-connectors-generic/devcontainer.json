@@ -49,8 +49,8 @@
   // Mark the root directory as 'safe' for git.
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
 
-  // Setup airbyte-ci on the container:
-  "postCreateCommand": "make tools.airbyte-ci-dev.install",
+  // Install the Airbyte CDK:
+  "postCreateCommand": "uv tool install airbyte-cdk",
 
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`
