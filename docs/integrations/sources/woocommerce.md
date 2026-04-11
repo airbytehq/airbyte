@@ -122,6 +122,7 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.35-rc.1 | 2026-04-09 | [76205](https://github.com/airbytehq/airbyte/pull/76205) | Add concurrency_level and num_workers for concurrent stream syncing |
 | 0.5.34 | 2026-03-31 | [75853](https://github.com/airbytehq/airbyte/pull/75853) | Update dependencies |
 | 0.5.33 | 2026-03-24 | [75380](https://github.com/airbytehq/airbyte/pull/75380) | Update dependencies |
 | 0.5.32 | 2026-03-10 | [74674](https://github.com/airbytehq/airbyte/pull/74674) | Update dependencies |
