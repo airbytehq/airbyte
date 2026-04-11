@@ -6,10 +6,6 @@ sidebar_position: 4
 
 In Agent Engine, a **workspace** represents an end-user of your service who connects their own data sources. Each workspace gets an isolated environment that stores their credentials, connectors, and data separately from other workspaces.
 
-:::info Terminology change
-The Agent Engine API previously used the term "customer" for this concept. The API now uses `workspace_name` as the primary field name. For backward compatibility, the API still accepts `customer_name` in request bodies and query parameters, but API responses return `workspace_name`. Update your code to read `workspace_name` from responses.
-:::
-
 The `workspace_name` you provide when creating scoped tokens serves as the unique workspace identifier within your organization. Use any string that makes sense for your service, like an internal user ID or company name.
 
 ## Why workspaces exist
