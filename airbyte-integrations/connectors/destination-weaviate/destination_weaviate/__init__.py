@@ -5,4 +5,5 @@
 
 from .destination import DestinationWeaviate
 
+
 __all__ = ["DestinationWeaviate"]

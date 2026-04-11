@@ -452,8 +452,8 @@
           "tenant_id": {
             "title": "Tenant ID",
             "description": "The tenant ID to use for multi tenancy",
-            "airbyte_secret": true,
             "default": "",
+            "airbyte_secret": true,
             "type": "string"
           },
           "default_vectorizer": {
@@ -465,12 +465,18 @@
               "text2vec-cohere",
               "text2vec-huggingface",
               "text2vec-openai",
-              "text2vec-palm",
+              "text2vec-google",
               "text2vec-contextionary",
               "text2vec-transformers",
               "text2vec-gpt4all"
             ],
             "type": "string"
+          },
+          "grpc_port": {
+            "title": "gRPC Port",
+            "description": "Port for gRPC calls to a self-hosted Weaviate instance. Only used for HTTP (non-cloud) deployments. Defaults to 50051, which is the Weaviate default. Can be overridden when the server is started with a custom GRPC_PORT environment variable. Not applicable for Weaviate Cloud \u2014 cloud always uses port 443 automatically.",
+            "examples": [50051],
+            "type": "integer"
           },
           "additional_headers": {
             "title": "Additional headers",

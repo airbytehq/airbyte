@@ -5,12 +5,12 @@
 import json
 import logging
 import time
+from urllib.parse import urlparse
 
 import docker
 import weaviate
+import weaviate.classes.query as wvc_query
 from destination_weaviate.destination import DestinationWeaviate
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Weaviate
 from pytest_docker.plugin import get_docker_ip
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
@@ -19,6 +19,7 @@ from airbyte_cdk.models import DestinationSyncMode, Status
 
 
 WEAVIATE_CONTAINER_NAME = "weaviate-test-container-will-get-deleted"
+WEAVIATE_IMAGE = "semitechnologies/weaviate:latest"
 
 
 class WeaviateIntegrationTest(BaseIntegrationTest):
@@ -29,6 +30,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             "DEFAULT_VECTORIZER_MODULE": "none",
             "CLUSTER_HOSTNAME": "node1",
             "PERSISTENCE_DATA_PATH": "./data",
+            "ENABLE_MODULES": "",
         }
         self.docker_client = docker.from_env()
         try:
@@ -37,23 +39,35 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             pass
 
         self.docker_client.containers.run(
-            "semitechnologies/weaviate:1.21.2",
+            WEAVIATE_IMAGE,
             detach=True,
             environment=env_vars,
             name=WEAVIATE_CONTAINER_NAME,
-            ports={8080: ("0.0.0.0", 8081)},
+            ports={8080: ("0.0.0.0", 8081), 50051: ("0.0.0.0", 50052)},
         )
         time.sleep(0.5)
         docker_ip = get_docker_ip()
         self.config["indexing"]["host"] = f"http://{docker_ip}:8081"
+        self.config["indexing"]["grpc_port"] = 50052
+        # Docker container runs with anonymous access — no auth token needed
+        self.config["indexing"]["auth"] = {"mode": "no_auth"}
+        # BaseIntegrationTest._record() generates str_col/int_col fields
+        self.config["processing"]["text_fields"] = ["str_col"]
 
         retries = 10
         while retries > 0:
             try:
-                self.client = weaviate.Client(url=self.config["indexing"]["host"])
+                self.client = weaviate.connect_to_custom(
+                    http_host=docker_ip,
+                    http_port=8081,
+                    http_secure=False,
+                    grpc_host=docker_ip,
+                    grpc_port=50052,
+                    grpc_secure=False,
+                )
                 break
             except Exception as e:
-                logging.info(f"error connecting to weaviate with indexer. Retrying in 1 second. Exception: {e}")
+                logging.info(f"error connecting to weaviate. Retrying in 1 second. Exception: {e}")
                 time.sleep(1)
                 retries -= 1
 
@@ -63,6 +77,8 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         self._init_weaviate()
 
     def tearDown(self) -> None:
+        if hasattr(self, "client"):
+            self.client.close()
         self.docker_client.containers.get(WEAVIATE_CONTAINER_NAME).remove(force=True)
 
     def test_check_valid_config(self):
@@ -77,8 +93,9 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         assert outcome.status == Status.FAILED
 
     def count_objects(self, class_name: str) -> int:
-        result = self.client.query.aggregate(class_name).with_fields("meta { count }").do()
-        return result["data"]["Aggregate"][class_name][0]["meta"]["count"]
+        collection = self.client.collections.get(class_name)
+        result = collection.aggregate.over_all(total_count=True)
+        return result.total_count
 
     def test_write_overwrite(self):
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
@@ -103,30 +120,33 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
         assert self.count_objects("Mystream") == 5
 
-        # incrementalally update a doc
+        # incrementally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        result = (
-            self.client.query.get("Mystream", ["text"])
-            .with_near_vector({"vector": [0] * OPEN_AI_VECTOR_SIZE})
-            .with_where({"path": ["_ab_record_id"], "operator": "Equal", "valueText": "mystream_2"})
-            .do()
+
+        collection = self.client.collections.get("Mystream")
+        result = collection.query.near_vector(
+            near_vector=[0] * OPEN_AI_VECTOR_SIZE,
+            filters=wvc_query.Filter.by_property("_ab_record_id").equal("mystream_2"),
+            return_properties=["text", "_ab_record_id"],
         )
 
-        assert len(result["data"]["Get"]["Mystream"]) == 1
+        assert len(result.objects) == 1
         assert self.count_objects("Mystream") == 5
-        assert result["data"]["Get"]["Mystream"][0]["text"] == "str_col: Cats are nice"
+        assert result.objects[0].properties["text"] == "str_col: Cats are nice"
 
         # test langchain integration
+        from langchain_openai import OpenAIEmbeddings
+        from langchain_weaviate.vectorstores import WeaviateVectorStore
+
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        vs = Weaviate(
-            embedding=embeddings,
-            by_text=False,
+        vs = WeaviateVectorStore(
             client=self.client,
-            text_key="text",
             index_name="Mystream",
+            text_key="text",
+            embedding=embeddings,
             attributes=["_ab_record_id"],
         )
 
-        result = vs.similarity_search("feline animals", 1)
+        result = vs.similarity_search("feline animals", k=1)
         assert result[0].metadata["_ab_record_id"] == "mystream_2"

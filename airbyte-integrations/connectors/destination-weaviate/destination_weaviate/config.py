@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Literal, Union
+from typing import List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
@@ -76,11 +76,23 @@ class WeaviateIndexingConfigModel(BaseModel):
             "text2vec-cohere",
             "text2vec-huggingface",
             "text2vec-openai",
-            "text2vec-palm",
+            "text2vec-google",
             "text2vec-contextionary",
             "text2vec-transformers",
             "text2vec-gpt4all",
         ],
+    )
+    grpc_port: Optional[int] = Field(
+        title="gRPC Port",
+        description=(
+            "Port for gRPC calls to a self-hosted Weaviate instance. "
+            "Only used for HTTP (non-cloud) deployments. "
+            "Defaults to 50051, which is the Weaviate default. "
+            "Can be overridden when the server is started with a custom GRPC_PORT environment variable. "
+            "Not applicable for Weaviate Cloud — cloud always uses port 443 automatically."
+        ),
+        default=None,
+        examples=[50051],
     )
     additional_headers: List[Header] = Field(
         title="Additional headers",
@@ -116,4 +128,4 @@ class ConfigModel(VectorDBConfigModel):
         FromFieldEmbeddingConfigModel,
         FakeEmbeddingConfigModel,
         OpenAICompatibleEmbeddingConfigModel,
-    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
+    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")  # type: ignore[assignment]

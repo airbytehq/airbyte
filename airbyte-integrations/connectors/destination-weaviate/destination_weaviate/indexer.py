@@ -10,14 +10,17 @@ import re
 import uuid
 from collections import defaultdict
 from typing import Optional
+from urllib.parse import urlparse
 
 import weaviate
+import weaviate.classes.config as wvc_config
+import weaviate.classes.query as wvc_query
+import weaviate.classes.tenants as wvc_tenants
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_weaviate.config import WeaviateIndexingConfigModel
 
 
@@ -28,35 +31,61 @@ class WeaviatePartialBatchError(Exception):
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
+
 class WeaviateIndexer(Indexer):
     config: WeaviateIndexingConfigModel
 
     def __init__(self, config: WeaviateIndexingConfigModel):
         super().__init__(config)
+        self.client: Optional[weaviate.WeaviateClient] = None
 
     def _create_client(self):
         headers = {
-            self.config.additional_headers[i].header_key: self.config.additional_headers[i].value
-            for i in range(len(self.config.additional_headers))
+            header.header_key: header.value
+            for header in self.config.additional_headers
         }
-        if self.config.auth.mode == "username_password":
-            credentials = weaviate.auth.AuthClientPassword(self.config.auth.username, self.config.auth.password)
-            self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
-        elif self.config.auth.mode == "token":
-            credentials = weaviate.auth.AuthApiKey(self.config.auth.token)
-            self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
-        else:
-            self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
-        # disable dynamic batching because it's handled asynchroniously in the client
-        self.client.batch.configure(
-            batch_size=None, dynamic=False, weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5)
-        )
+        auth_credentials = None
+        if self.config.auth.mode == "username_password":
+            auth_credentials = weaviate.auth.AuthClientPassword(
+                username=self.config.auth.username,
+                password=self.config.auth.password,
+            )
+        elif self.config.auth.mode == "token":
+            auth_credentials = weaviate.auth.AuthApiKey(api_key=self.config.auth.token)
+
+        parsed = urlparse(self.config.host)
+        is_secure = parsed.scheme == "https"
+
+        if is_secure:
+            # Weaviate Cloud and HTTPS deployments where HTTP and gRPC share port 443
+            self.client = weaviate.connect_to_weaviate_cloud(
+                cluster_url=self.config.host,
+                auth_credentials=auth_credentials,
+                headers=headers,
+            )
+        else:
+            # Local, Docker, k8s — HTTP on parsed port, gRPC on configured or default 50051
+            hostname = parsed.hostname
+            http_port = parsed.port or 80
+            grpc_port = self.config.grpc_port or 50051
+            self.client = weaviate.connect_to_custom(
+                http_host=hostname,
+                http_port=http_port,
+                http_secure=False,
+                grpc_host=hostname,
+                grpc_port=grpc_port,
+                grpc_secure=False,
+                auth_credentials=auth_credentials,
+                headers=headers,
+            )
 
     def _add_tenant_to_class_if_missing(self, class_name: str):
-        class_tenants = self.client.schema.get_class_tenants(class_name=class_name)
-        if class_tenants is not None and self.config.tenant_id not in [tenant.name for tenant in class_tenants]:
-            self.client.schema.add_class_tenants(class_name=class_name, tenants=[weaviate.Tenant(name=self.config.tenant_id)])
+        assert self.client is not None
+        collection = self.client.collections.get(class_name)
+        existing_tenants = collection.tenants.get()
+        if self.config.tenant_id not in existing_tenants:
+            collection.tenants.create([wvc_tenants.Tenant(name=self.config.tenant_id)])
             logging.info(f"Added tenant {self.config.tenant_id} to class {class_name}")
         else:
             logging.info(f"Tenant {self.config.tenant_id} already exists in class {class_name}")
@@ -76,66 +105,66 @@ class WeaviateIndexer(Indexer):
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
-        classes = {c["class"]: c for c in self.client.schema.get().get("classes", [])}
+        assert self.client is not None
+        all_collections = self.client.collections.list_all(simple=False)
+        existing_names = set(all_collections.keys())
         self.has_record_id_metadata = defaultdict(lambda: False)
 
         if self.config.tenant_id.strip():
-            for class_name in classes.keys():
-                self._add_tenant_to_class_if_missing(class_name)
+            for name in existing_names:
+                self._add_tenant_to_class_if_missing(name)
 
         for stream in catalog.streams:
             class_name = self._stream_to_class_name(stream.stream.name)
-            schema = classes[class_name] if class_name in classes else None
-            if stream.destination_sync_mode == DestinationSyncMode.overwrite and schema is not None:
-                self.client.schema.delete_class(class_name=class_name)
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite and class_name in existing_names:
+                config_dict = self.client.collections.export_config(class_name).to_dict()
+                self.client.collections.delete(class_name)
                 logging.info(f"Deleted class {class_name}")
-                self.client.schema.create_class(schema)
+                self.client.collections.create_from_dict(config_dict)
                 logging.info(f"Recreated class {class_name}")
-            elif class_name not in classes:
-                config = {
-                    "class": class_name,
-                    "vectorizer": self.config.default_vectorizer,
-                    "properties": [
-                        {
-                            # Record ID is used for bookkeeping, not for searching
-                            "name": METADATA_RECORD_ID_FIELD,
-                            "dataType": ["text"],
-                            "description": "Record ID, used for bookkeeping.",
-                            "indexFilterable": True,
-                            "indexSearchable": False,
-                            "tokenization": "field",
-                        }
-                    ],
-                }
-                if self.config.tenant_id.strip():
-                    config["multiTenancyConfig"] = {"enabled": True}
+            elif class_name not in existing_names:
+                vector_config = (
+                    wvc_config.Configure.Vectors.self_provided()
+                    if self.config.default_vectorizer == "none"
+                    else wvc_config.Configure.Vectors.custom(module_name=self.config.default_vectorizer)
+                )
+                mt_config = wvc_config.Configure.multi_tenancy(enabled=True) if self.config.tenant_id.strip() else None
 
-                self.client.schema.create_class(config)
+                self.client.collections.create(
+                    name=class_name,
+                    vector_config=vector_config,
+                    properties=[
+                        wvc_config.Property(
+                            name=METADATA_RECORD_ID_FIELD,
+                            data_type=wvc_config.DataType.TEXT,
+                            description="Record ID, used for bookkeeping.",
+                            index_filterable=True,
+                            index_searchable=False,
+                            tokenization=wvc_config.Tokenization.FIELD,
+                        )
+                    ],
+                    multi_tenancy_config=mt_config,
+                )
                 logging.info(f"Created class {class_name}")
 
                 if self.config.tenant_id.strip():
                     self._add_tenant_to_class_if_missing(class_name)
             else:
-                self.has_record_id_metadata[class_name] = schema is not None and any(
-                    prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
+                config = all_collections[class_name]
+                self.has_record_id_metadata[class_name] = config is not None and any(
+                    prop.name == METADATA_RECORD_ID_FIELD for prop in (config.properties or [])
                 )
 
     def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
             class_name = self._stream_to_class_name(stream)
             if self.has_record_id_metadata[class_name]:
-                where_filter = {"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids}
+                collection = self.client.collections.get(class_name)
+                where_filter = wvc_query.Filter.by_property(METADATA_RECORD_ID_FIELD).contains_any(delete_ids)
                 if self.config.tenant_id.strip():
-                    self.client.batch.delete_objects(
-                        class_name=class_name,
-                        tenant=self.config.tenant_id,
-                        where=where_filter,
-                    )
+                    collection.with_tenant(self.config.tenant_id).data.delete_many(where=where_filter)
                 else:
-                    self.client.batch.delete_objects(
-                        class_name=class_name,
-                        where=where_filter,
-                    )
+                    collection.data.delete_many(where=where_filter)
 
     def index(self, document_chunks, namespace, stream):
         if len(document_chunks) == 0:
@@ -143,21 +172,26 @@ class WeaviateIndexer(Indexer):
 
         # As a single record can be split into lots of documents, break them into batches as configured to not overwhelm the cluster
         batches = create_chunks(document_chunks, batch_size=self.config.batch_size)
-        for batch in batches:
-            for i in range(len(batch)):
-                chunk = batch[i]
-                weaviate_object = {**self._normalize(chunk.metadata)}
-                if chunk.page_content is not None:
-                    weaviate_object[self.config.text_field] = chunk.page_content
-                object_id = str(uuid.uuid4())
-                class_name = self._stream_to_class_name(chunk.record.stream)
-                if self.config.tenant_id.strip():
-                    self.client.batch.add_data_object(
-                        weaviate_object, class_name, object_id, vector=chunk.embedding, tenant=self.config.tenant_id
+        for batch_docs in batches:
+            with self.client.batch.fixed_size(batch_size=len(batch_docs)) as batch:
+                for chunk in batch_docs:
+                    weaviate_object = {**self._normalize(chunk.metadata)}
+                    if chunk.page_content is not None:
+                        weaviate_object[self.config.text_field] = chunk.page_content
+                    object_id = str(uuid.uuid4())
+                    class_name = self._stream_to_class_name(chunk.record.stream)
+                    batch.add_object(
+                        properties=weaviate_object,
+                        collection=class_name,
+                        uuid=object_id,
+                        vector=chunk.embedding,
+                        tenant=self.config.tenant_id if self.config.tenant_id.strip() else None,
                     )
-                else:
-                    self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
-            self._flush()
+
+            failed = self.client.batch.failed_objects
+            if failed:
+                error_msg = "Errors while loading: " + ", ".join([str(e) for e in failed])
+                raise WeaviatePartialBatchError(error_msg)
 
     def _stream_to_class_name(self, stream_name: str) -> str:
         pattern = "[^0-9A-Za-z_]+"
@@ -194,16 +228,3 @@ class WeaviateIndexer(Indexer):
                 result[normalized_key] = json.dumps(value)
 
         return result
-
-    def _flush(self, retries: int = 3):
-        results = self.client.batch.create_objects()
-        all_errors = []
-
-        for result in results:
-            errors = result.get("result", {}).get("errors", [])
-            if errors:
-                all_errors.extend(errors)
-
-        if len(all_errors) > 0:
-            error_msg = "Errors while loading: " + ", ".join([str(error) for error in all_errors])
-            raise WeaviatePartialBatchError(error_msg)
