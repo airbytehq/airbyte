@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9e1fe63c-80ad-44fe-8927-10e66c9e209b
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-nexus-datasets
   githubIssueLabel: source-nexus-datasets
   icon: nexus-datasets.svg
