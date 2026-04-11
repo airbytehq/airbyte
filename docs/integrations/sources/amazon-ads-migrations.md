@@ -1,3 +1,5 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Amazon Ads Migration Guide
 
 ## Upgrading to 8.0.0
@@ -33,6 +35,10 @@ All daily report streams are affected:
 
 Non-daily (SUMMARY) report streams are **not affected** and continue to use `reportDate`.
 
+:::note
+The `reportDate` field is still present on daily stream records but is no longer used as the primary key or cursor. After this upgrade, `reportDate` on daily streams reflects the stream interval end date rather than the actual report date. Use the `date` field instead for accurate daily date values. Downstream queries or dashboards that reference `reportDate` on daily streams should be updated to use `date`.
+:::
+
 ### Refresh affected schemas and reset data
 
 1. Select **Connections** in the main nav bar.
@@ -60,6 +66,9 @@ This will reset the data in your destination and initiate a fresh sync.
 
 For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
+## Connector upgrade guide
+
+<MigrationGuide />
 
 ## Upgrading to 7.0.0
 
