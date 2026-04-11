@@ -66,10 +66,6 @@ This will reset the data in your destination and initiate a fresh sync.
 
 For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
-## Connector upgrade guide
-
-<MigrationGuide />
-
 ## Upgrading to 7.0.0
 
 - The stream SponsoredDisplayReportStream is split into five:
@@ -235,3 +231,7 @@ For more information on resetting your data in Airbyte, see [this page](/platfor
 
 A major update of attribution report stream schemas.
 For a smooth migration, a data reset and a schema refresh are needed.
+
+## Connector upgrade guide
+
+<MigrationGuide />
