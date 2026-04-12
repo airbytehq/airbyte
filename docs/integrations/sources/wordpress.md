@@ -46,23 +46,23 @@ The WordPress source connector supports the following [sync modes](https://docs.
 
 The connector syncs data from the following [WordPress REST API](https://developer.wordpress.org/rest-api/reference/) endpoints:
 
-| Stream | API Endpoint | Sync Mode | Primary Key | Description |
-| --- | --- | --- | --- | --- |
-| [users](https://developer.wordpress.org/rest-api/reference/users/) | `/wp/v2/users` | Full Refresh | `id` | Site authors and contributors. |
-| [posts](https://developer.wordpress.org/rest-api/reference/posts/) | `/wp/v2/posts` | Full Refresh | `id` | Blog posts. |
-| [categories](https://developer.wordpress.org/rest-api/reference/categories/) | `/wp/v2/categories` | Full Refresh | `id` | Post categories. |
-| [tags](https://developer.wordpress.org/rest-api/reference/tags/) | `/wp/v2/tags` | Full Refresh | `id` | Post tags. |
-| [pages](https://developer.wordpress.org/rest-api/reference/pages/) | `/wp/v2/pages` | Incremental | `id` | Static pages. Cursor field: `modified`. |
-| [page_revisions](https://developer.wordpress.org/rest-api/reference/page-revisions/) | `/wp/v2/pages/{id}/revisions` | Full Refresh | `id` | Revision history for each page. |
-| [comments](https://developer.wordpress.org/rest-api/reference/comments/) | `/wp/v2/comments` | Incremental | `id` | Comments on posts and pages. Cursor field: `date`. |
-| [media](https://developer.wordpress.org/rest-api/reference/media/) | `/wp/v2/media` | Incremental | `id` | Uploaded images, videos, and other media files. Cursor field: `modified`. |
-| [editor_blocks](https://developer.wordpress.org/rest-api/reference/blocks/) | `/wp/v2/blocks` | Incremental | `id` | Reusable block patterns (synced patterns). Cursor field: `modified`. |
-| [plugins](https://developer.wordpress.org/rest-api/reference/plugins/) | `/wp/v2/plugins` | Full Refresh | `plugin` | Installed plugins. Requires authentication. |
-| [taxonomies](https://developer.wordpress.org/rest-api/reference/taxonomies/) | `/wp/v2/taxonomies` | Full Refresh | `category` | Registered taxonomies (for example, categories and tags). |
-| [types](https://developer.wordpress.org/rest-api/reference/post-types/) | `/wp/v2/types` | Full Refresh | — | Registered post types (for example, post, page, attachment). |
-| [themes](https://developer.wordpress.org/rest-api/reference/themes/) | `/wp/v2/themes` | Full Refresh | `stylesheet` | Installed themes. Requires authentication. |
-| [statuses](https://developer.wordpress.org/rest-api/reference/post-statuses/) | `/wp/v2/statuses` | Full Refresh | — | Available post statuses (for example, publish, draft, private). |
-| [settings](https://developer.wordpress.org/rest-api/reference/settings/) | `/wp/v2/settings` | Full Refresh | — | Site-wide settings such as title, description, and timezone. Requires authentication. |
+| Stream | API Endpoint | Sync Mode | Pagination | Primary Key | Description |
+| --- | --- | --- | --- | --- | --- |
+| [users](https://developer.wordpress.org/rest-api/reference/users/) | `/wp/v2/users` | Full Refresh | Yes | `id` | Site authors and contributors. |
+| [posts](https://developer.wordpress.org/rest-api/reference/posts/) | `/wp/v2/posts` | Full Refresh | Yes | `id` | Blog posts. |
+| [categories](https://developer.wordpress.org/rest-api/reference/categories/) | `/wp/v2/categories` | Full Refresh | Yes | `id` | Post categories. |
+| [tags](https://developer.wordpress.org/rest-api/reference/tags/) | `/wp/v2/tags` | Full Refresh | Yes | `id` | Post tags. |
+| [pages](https://developer.wordpress.org/rest-api/reference/pages/) | `/wp/v2/pages` | Incremental | Yes | `id` | Static pages. Cursor field: `modified`. |
+| [page_revisions](https://developer.wordpress.org/rest-api/reference/page-revisions/) | `/wp/v2/pages/{id}/revisions` | Full Refresh | Yes | `id` | Revision history for each page. |
+| [comments](https://developer.wordpress.org/rest-api/reference/comments/) | `/wp/v2/comments` | Incremental | Yes | `id` | Comments on posts and pages. Cursor field: `date`. |
+| [media](https://developer.wordpress.org/rest-api/reference/media/) | `/wp/v2/media` | Incremental | Yes | `id` | Uploaded images, videos, and other media files. Cursor field: `modified`. |
+| [editor_blocks](https://developer.wordpress.org/rest-api/reference/blocks/) | `/wp/v2/blocks` | Incremental | Yes | `id` | Reusable block patterns (synced patterns). Cursor field: `modified`. |
+| [plugins](https://developer.wordpress.org/rest-api/reference/plugins/) | `/wp/v2/plugins` | Full Refresh | No | `plugin` | Installed plugins. Requires authentication. |
+| [taxonomies](https://developer.wordpress.org/rest-api/reference/taxonomies/) | `/wp/v2/taxonomies` | Full Refresh | No | `category` | Registered taxonomies (for example, categories and tags). |
+| [types](https://developer.wordpress.org/rest-api/reference/post-types/) | `/wp/v2/types` | Full Refresh | No | — | Registered post types (for example, post, page, attachment). |
+| [themes](https://developer.wordpress.org/rest-api/reference/themes/) | `/wp/v2/themes` | Full Refresh | No | `stylesheet` | Installed themes. Requires authentication. |
+| [statuses](https://developer.wordpress.org/rest-api/reference/post-statuses/) | `/wp/v2/statuses` | Full Refresh | No | — | Available post statuses (for example, publish, draft, private). |
+| [settings](https://developer.wordpress.org/rest-api/reference/settings/) | `/wp/v2/settings` | Full Refresh | No | — | Site-wide settings such as title, description, and timezone. Requires authentication. |
 
 ### Incremental sync details
 
