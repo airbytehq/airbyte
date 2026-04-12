@@ -26,6 +26,8 @@ For more details, see the [WooCommerce REST API authentication documentation](ht
 
 ### Step 2: Set up the WooCommerce connector in Airbyte
 
+<!-- env:cloud -->
+
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -35,6 +37,8 @@ For more details, see the [WooCommerce REST API authentication documentation](ht
 5. Enter the **Shop Name**. For `https://EXAMPLE.com`, the shop name is `EXAMPLE.com`.
 6. Choose the **Start Date** to begin syncing data from.
 7. (Optional) Adjust the **Number of Concurrent Workers** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
+
+<!-- /env:cloud -->
 <!-- env:oss -->
 
 ### For Airbyte Open Source:
