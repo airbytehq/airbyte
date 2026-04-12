@@ -995,7 +995,7 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 12
 
 spec:
@@ -1045,7 +1045,7 @@ spec:
           speed up syncs but may hit rate limits. WooCommerce API rate limits
           depend on the hosting provider. More info at
           https://woocommerce.github.io/woocommerce-rest-api-docs/
-        default: 4
+        default: 5
         minimum: 2
         maximum: 12
         order: 4
