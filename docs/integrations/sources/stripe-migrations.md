@@ -8,7 +8,7 @@ Version 6.0.0 fixes a bug where the `invoice_line_items` and `subscription_items
 
 ### What changed
 
-The `DpathFlattenFields` transformation has been replaced with a `RecordExpander` component for the `invoice_line_items` and `subscription_items` incremental streams. This ensures that nested arrays (`data.object.lines.data` for invoices and `data.object.items.data` for subscriptions) are properly expanded into individual records.
+We changed how records are extracted from the API response for the `invoice_line_items` and `subscription_items` streams to ensure nested data is properly treated as individual records.
 
 #### Example: `invoice_line_items`
 
