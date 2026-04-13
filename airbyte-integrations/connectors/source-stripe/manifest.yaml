@@ -2119,7 +2119,7 @@ spec:
           client_secret: "{{ client_secret_value }}"
           redirect_uri: "{{ redirect_uri_value }}"
         scopes:
-          - scope: "read_only"
+          - scope: "read_write"
         extract_output:
           - access_token
           - refresh_token
