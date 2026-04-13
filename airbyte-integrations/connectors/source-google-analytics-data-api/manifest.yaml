@@ -189,9 +189,13 @@ definitions:
           failure_type: config_error
           error_message: "{{ response.error.message }}"
         - type: HttpResponseFilter
-          http_codes: [403]
+          predicate: "{{ response.error.status == 'PERMISSION_DENIED' }}"
           action: FAIL
           failure_type: config_error
+          error_message: "{{ response.error.message }}"
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: RETRY
           error_message: "{{ response.error.message }}"
 
 dynamic_streams:
