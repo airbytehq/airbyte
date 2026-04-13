@@ -33,7 +33,7 @@ ConvexState = TypedDict(
     },
 )
 
-CONVEX_CLIENT_VERSION = "0.4.0"
+CONVEX_CLIENT_VERSION = "0.5.0"
 
 
 # Source
@@ -41,7 +41,8 @@ class SourceConvex(AbstractSource):
     def _json_schemas(self, config: ConvexConfig) -> requests.Response:
         deployment_url = config["deployment_url"]
         access_key = config["access_key"]
-        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=json"
+        # Use byComponent=true to get schemas organized by component
+        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=json&byComponent=true"
         headers = {
             "Authorization": f"Convex {access_key}",
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
@@ -63,6 +64,24 @@ class SourceConvex(AbstractSource):
         else:
             return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp)
 
+    def _is_component_response(self, data: Dict[str, Any]) -> bool:
+        """Detect if response is component-organized or legacy flat format.
+
+        Component format: { "": { "table": {schema} }, "component": { "table": {schema} } }
+        Legacy format: { "table": {schema}, "table2": {schema} }
+
+        We detect by checking if any top-level value is a dict containing "type" or "properties"
+        (which indicates it's a JSON schema, meaning legacy format).
+        """
+        if not data:
+            return False
+        first_value = next(iter(data.values()))
+        if not isinstance(first_value, dict):
+            return False
+        # If the first value has "type" or "properties", it's a JSON schema (legacy format)
+        # If it doesn't, it's a component -> tables mapping (new format)
+        return "type" not in first_value and "properties" not in first_value
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
@@ -71,18 +90,38 @@ class SourceConvex(AbstractSource):
         resp = self._json_schemas(config)
         if resp.status_code != 200:
             raise Exception(format_http_error("Failed request to json_schemas", resp))
-        json_schemas = resp.json()
-        table_names = list(json_schemas.keys())
-        return [
-            ConvexStream(
-                config["deployment_url"],
-                config["access_key"],
-                "json",  # Use `json` export format
-                table_name,
-                json_schemas[table_name],
-            )
-            for table_name in table_names
-        ]
+
+        data = resp.json()
+        streams = []
+
+        if self._is_component_response(data):
+            # New format: { "": { "table": schema }, "betterAuth": { "table": schema } }
+            for component, tables in data.items():
+                for table_name, json_schema in tables.items():
+                    streams.append(
+                        ConvexStream(
+                            config["deployment_url"],
+                            config["access_key"],
+                            "json",
+                            table_name,
+                            json_schema,
+                            component,  # Component name (empty string for root)
+                        )
+                    )
+        else:
+            # Legacy flat format: { "table": schema }
+            for table_name, json_schema in data.items():
+                streams.append(
+                    ConvexStream(
+                        config["deployment_url"],
+                        config["access_key"],
+                        "json",
+                        table_name,
+                        json_schema,
+                        "",  # Root component (legacy has no components)
+                    )
+                )
+        return streams
 
 
 class ConvexStream(HttpStream, IncrementalMixin):
@@ -93,13 +132,15 @@ class ConvexStream(HttpStream, IncrementalMixin):
         fmt: str,
         table_name: str,
         json_schema: Dict[str, Any],
+        component: str = "",
     ):
         self.deployment_url = deployment_url
         self.fmt = fmt
         self.table_name = table_name
+        self.component = component  # Component name (empty string for root)
         if json_schema:
             json_schema["additionalProperties"] = True
-            json_schema["properties"]["_ab_cdc_lsn"] = {"type": "number"}
+            json_schema.setdefault("properties", {})["_ab_cdc_lsn"] = {"type": "number"}
             json_schema["properties"]["_ab_cdc_updated_at"] = {"type": "string"}
             json_schema["properties"]["_ab_cdc_deleted_at"] = {"anyOf": [{"type": "string"}, {"type": "null"}]}
         else:
@@ -114,6 +155,11 @@ class ConvexStream(HttpStream, IncrementalMixin):
     @property
     def name(self) -> str:
         return self.table_name
+
+    @property
+    def namespace(self) -> Optional[str]:
+        """Use component as namespace for proper Airbyte destination handling."""
+        return self.component if self.component != "" else None
 
     @property
     def url_base(self) -> str:
@@ -189,6 +235,9 @@ class ConvexStream(HttpStream, IncrementalMixin):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params: Dict[str, Any] = {"tableName": self.table_name, "format": self.fmt}
+        # Include component parameter for component-based tables (explicit check for non-empty)
+        if self.component != "":
+            params["component"] = self.component
         if self._snapshot_has_more:
             if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
