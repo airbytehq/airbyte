@@ -28,7 +28,7 @@ All Chargebee sites created after May 5, 2021 use [Product Catalog 2.0](https://
 6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date is replicated.
 7. For **API Key**, enter your [Chargebee API key](https://apidocs.chargebee.com/docs/api/auth).
 8. For **Product Catalog**, select your Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2). The connector defaults to Product Catalog 2.0.
-9. Optionally, adjust the **Number of concurrent workers** to control how many worker threads the connector uses during syncs. The default is 3. Higher values increase throughput but consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
+9. Optionally, adjust the **Number of concurrent threads** to control how many worker threads the connector uses during syncs. The default is 3. Higher values increase throughput but consume more of your [Chargebee API rate limit](https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits).
 10. Click **Set up source**.
 
 <HideInUI>

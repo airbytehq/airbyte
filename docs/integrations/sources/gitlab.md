@@ -50,7 +50,7 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group IDs, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Workers** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 8. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
 
 **Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector retrieves a list of all groups accessible to the configured token and ingests as normal.
@@ -123,7 +123,7 @@ GitLab.com enforces per-endpoint rate limits on its REST API. The following defa
 
 Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector automatically retries requests that receive HTTP 429 responses. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
-You can adjust the **Number of Concurrent Workers** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
+You can adjust the **Number of Concurrent Threads** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
 
 ### Inaccessible resources
 

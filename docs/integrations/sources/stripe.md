@@ -70,7 +70,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
    Streams like `customers`, `subscriptions`, `products`, and `plans` may not need validation because some accounts legitimately have no new records in 30+ days, and forcing a full refresh would be unnecessary.
 
-11. (Optional) For **Number of Concurrent Workers**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
+11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
 
 12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
 

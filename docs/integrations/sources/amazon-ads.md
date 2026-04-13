@@ -120,7 +120,7 @@ Report data synchronization only covers the last 60 days - [details](https://adv
 :::note
 Report streams use `timeUnit=SUMMARY` by default. Each report stream also has a `_daily` variant with `timeUnit=DAILY` for more granular data. For more information, see [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-**Important limitation**: Amazon may incorrectly detect duplicate report requests when syncing both summary and daily versions of the same report type simultaneously (e.g., `sponsored_brands_v3_report_stream` and `sponsored_brands_v3_report_stream_daily`). If you encounter this issue, create a separate source with only the needed report streams and set the **Number of concurrent workers** to 2 to ensure sequential processing.
+**Important limitation**: Amazon may incorrectly detect duplicate report requests when syncing both summary and daily versions of the same report type simultaneously (e.g., `sponsored_brands_v3_report_stream` and `sponsored_brands_v3_report_stream_daily`). If you encounter this issue, create a separate source with only the needed report streams and set the **Number of concurrent threads** to 2 to ensure sequential processing.
 :::
 
 ## Performance considerations
@@ -133,9 +133,9 @@ The Amazon Ads API uses dynamic rate limiting that varies by region and system l
 
 **Adjusting Concurrency Settings:**
 
-If you experience rate limiting errors (429 status codes) during syncs, decrease the "Number of concurrent workers" setting in your connector configuration to reduce the load on the API.
+If you experience rate limiting errors (429 status codes) during syncs, decrease the "Number of concurrent threads" setting in your connector configuration to reduce the load on the API.
 
-If you need better sync performance and are not experiencing rate limiting errors, you can increase the "Number of concurrent workers" setting (up to a maximum of 20) to improve throughput.
+If you need better sync performance and are not experiencing rate limiting errors, you can increase the "Number of concurrent threads" setting (up to a maximum of 20) to improve throughput.
 
 ### Data type map
 

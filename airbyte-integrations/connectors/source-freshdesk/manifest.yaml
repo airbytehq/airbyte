@@ -1687,7 +1687,7 @@ spec:
         default: 14
       num_workers:
         type: integer
-        title: Number of Concurrent Workers
+        title: Number of Concurrent Threads
         description: >-
           Number of concurrent threads for syncing. Higher values can speed up
           syncs but may increase API rate limit usage. Adjust based on your
