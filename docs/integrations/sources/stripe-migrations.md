@@ -121,7 +121,7 @@ The `Refunds` stream previously did not sync incrementally correctly. Incrementa
 1. Upgrade the Stripe connector by pressing the upgrade button and following the instructions on the screen.
 
 :::info
-The following migration steps are relevant for those who would like to sync `Refunds` incrementally. These migration steps can be skipped if you prefer to sync using `Full Refresh`. 
+The following migration steps are relevant for those who would like to sync `Refunds` incrementally. These migration steps can be skipped if you prefer to sync using `Full Refresh`.
 :::
 
 The stream `Refunds` will need to be synced historically again to ensure the connection continues syncing smoothly. If available for your destination, we recommend initiating a `Refresh` for the stream, which will pull in all historical data for the stream without removing the existing data first and update your destination with all data once complete. To initiate a `Refresh`:
