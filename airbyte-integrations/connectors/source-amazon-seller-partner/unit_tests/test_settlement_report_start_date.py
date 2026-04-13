@@ -69,8 +69,7 @@ def test_manifest_settlement_definitions_use_p89d_not_p90d(definition_path):
     start_datetime_expr = stream_def["incremental_sync"]["start_datetime"]["datetime"]
 
     assert "P89D" in start_datetime_expr, (
-        f"Definition '{'/'.join(definition_path)}' should use P89D in start_datetime, "
-        f"but the expression is: {start_datetime_expr}"
+        f"Definition '{'/'.join(definition_path)}' should use P89D in start_datetime, " f"but the expression is: {start_datetime_expr}"
     )
     assert "P90D" not in start_datetime_expr, (
         f"Definition '{'/'.join(definition_path)}' should NOT use P90D in start_datetime (race condition risk), "
