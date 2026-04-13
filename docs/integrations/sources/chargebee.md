@@ -107,6 +107,7 @@ Some streams are only available on a specific Product Catalog version. If you at
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.10.33 | 2026-04-08 | [76150](https://github.com/airbytehq/airbyte/pull/76150) | Improve subscription_with_scheduled_changes stream performance by filtering parent subscriptions with has_scheduled_changes parameter |
 | 0.10.32 | 2026-03-25 | [75476](https://github.com/airbytehq/airbyte/pull/75476) | Handle 404 errors in subscription stream to prevent sync failures when Chargebee returns not found for deleted resources |
 | 0.10.31 | 2026-03-24 | [74459](https://github.com/airbytehq/airbyte/pull/74459) | Update dependencies |
 | 0.10.30 | 2026-03-03 | [74228](https://github.com/airbytehq/airbyte/pull/74228) | Update dependencies |
