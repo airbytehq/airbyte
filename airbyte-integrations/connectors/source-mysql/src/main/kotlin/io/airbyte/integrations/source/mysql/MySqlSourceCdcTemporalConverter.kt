@@ -178,10 +178,12 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                         val offsetDateTime: OffsetDateTime = it.toOffsetDateTime()
                         Converted(offsetDateTime.format(OffsetDateTimeCodec.formatter))
                     } else if (it is Timestamp) {
-                        val offsetDateTime: OffsetDateTime = it.toLocalDateTime().atOffset(ZoneOffset.UTC)
+                        val offsetDateTime: OffsetDateTime =
+                            it.toLocalDateTime().atOffset(ZoneOffset.UTC)
                         Converted(offsetDateTime.format(OffsetDateTimeCodec.formatter))
                     } else if (it is Instant) {
-                        val offsetDateTime: OffsetDateTime = OffsetDateTime.ofInstant(it, ZoneOffset.UTC)
+                        val offsetDateTime: OffsetDateTime =
+                            OffsetDateTime.ofInstant(it, ZoneOffset.UTC)
                         Converted(offsetDateTime.format(OffsetDateTimeCodec.formatter))
                     } else {
                         NoConversion

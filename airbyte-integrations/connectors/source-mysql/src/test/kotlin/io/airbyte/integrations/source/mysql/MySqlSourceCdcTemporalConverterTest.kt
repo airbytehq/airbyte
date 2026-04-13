@@ -17,10 +17,11 @@ class MySqlSourceCdcTemporalConverterTest {
     @Test
     fun `timestamp handler converts snapshot mode sql timestamp`() {
         val converter =
-            ConverterFactory(MySqlSourceCdcTemporalConverter::class.java).build(
-                relationalColumn("TIMESTAMP"),
-                MySqlSourceCdcTemporalConverter.TimestampHandler.partialConverters
-            )
+            ConverterFactory(MySqlSourceCdcTemporalConverter::class.java)
+                .build(
+                    relationalColumn("TIMESTAMP"),
+                    MySqlSourceCdcTemporalConverter.TimestampHandler.partialConverters
+                )
 
         val result = converter.convert(Timestamp.from(Instant.parse("2026-03-17T11:05:01Z")))
 
@@ -30,10 +31,11 @@ class MySqlSourceCdcTemporalConverterTest {
     @Test
     fun `timestamp handler converts instant values`() {
         val converter =
-            ConverterFactory(MySqlSourceCdcTemporalConverter::class.java).build(
-                relationalColumn("TIMESTAMP"),
-                MySqlSourceCdcTemporalConverter.TimestampHandler.partialConverters
-            )
+            ConverterFactory(MySqlSourceCdcTemporalConverter::class.java)
+                .build(
+                    relationalColumn("TIMESTAMP"),
+                    MySqlSourceCdcTemporalConverter.TimestampHandler.partialConverters
+                )
 
         val result = converter.convert(Instant.parse("2026-03-17T11:05:01.123456Z"))
 
