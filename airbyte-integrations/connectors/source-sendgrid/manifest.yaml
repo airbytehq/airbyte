@@ -679,18 +679,18 @@ concurrency_level:
   default_concurrency: 6
   max_concurrency: 20
 
-# api_budget:  # Commented out for Phase 1 concurrency tuning - will be added in Phase 2
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 50
-#           interval: PT1S
-#       matchers: []
-#   ratelimit_reset_header: X-RateLimit-Reset
-#   ratelimit_remaining_header: X-RateLimit-Remaining
-#   status_codes_for_ratelimit_hit:
-#     - 429
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT1S
+      matchers: []
+  ratelimit_reset_header: X-RateLimit-Reset
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  status_codes_for_ratelimit_hit:
+    - 429
 
 spec:
   type: Spec
