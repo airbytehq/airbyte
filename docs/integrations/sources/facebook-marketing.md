@@ -59,13 +59,13 @@ Follow these five key steps:
 
 A Meta Developer account is your gateway to the App Dashboard, SDKs, APIs, development tools, and documentation.
 
-To register, follow the official instructions: 🔗 [Register as a Meta Developer](https://developers.facebook.com/docs/development/register/)
+To register, follow the official instructions: [Register as a Meta Developer](https://developers.facebook.com/docs/development/register/)
 
 ### 2. Create a New App
 
 Your Meta app serves as a container for your API credentials and permissions. Meta uses it to monitor API usage, enforce rate limits, and ensure application security.
 
-- Go to the 🔗 [Meta for Developers App Dashboard](https://developers.facebook.com/apps/) and click **Create App**.
+- Go to the [Meta for Developers App Dashboard](https://developers.facebook.com/apps/) and click **Create App**.
 
 - **Important:**
   During the setup process, at the **"Use case"** step, select:
@@ -83,7 +83,7 @@ After creating your app, you’ll need to enable the Marketing API to begin maki
 - Click **Add Product**.
 - Find and select **Marketing API** from the list of available products.
 
-📚 **Further Reading:** For an overview of the Marketing API, see: [Facebook Developer Marketing API Docs](https://developers.facebook.com/docs/marketing-apis)
+For an overview of the Marketing API, see the [Facebook Developer Marketing API Docs](https://developers.facebook.com/docs/marketing-apis).
 
 
 ### 4. Generate an Access Token
@@ -104,7 +104,7 @@ To authorize your application to interact with the Facebook Marketing API, you'l
   Use this Access Token to authenticate your API calls when using the “Service Account Key Authentication” method.
 
 :::tip
-You can always view your existing access tokens, their permissions, and lifecycles using the 🔗 [Access Token Tool](https://developers.facebook.com/tools/accesstoken).
+You can always view your existing access tokens, their permissions, and lifecycles using the [Access Token Tool](https://developers.facebook.com/tools/accesstoken).
 :::
 
 ### 5. Request Increased Rate Limits
@@ -133,12 +133,12 @@ To ensure reliable performance, you'll need to request "Advanced Access."
   - Monitor the status in the dashboard as Facebook reviews your application.
 
 - **Meet Rate Limit Requirements**
-	- Once you’ve been granted advanced access, you must consistently make at least 1,500 Marketing API calls within any rolling 15-day window to [maintain your status](https://developers.facebook.com/docs/marketing-api/get-started/authorization/#permissions-and-features).
-	- Facebook continuously evaluates your API activity based on the past 15 days, not just immediately after approval.
-	- Falling below the 1,500 call threshold during any 15-day period may result in your advanced access being revoked.
+  - Once you’ve been granted advanced access, you must consistently make at least 1,500 Marketing API calls within any rolling 15-day window to [maintain your status](https://developers.facebook.com/docs/marketing-api/get-started/authorization/#permissions-and-features).
+  - Facebook continuously evaluates your API activity based on the past 15 days, not just immediately after approval.
+  - Falling below the 1,500 call threshold during any 15-day period may result in your advanced access being revoked.
 
 
-📚 **Guidance:** Refer to Facebook's official documentation on [Access Levels and Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization/) for detailed instructions on requesting Advanced Access.
+For detailed instructions on requesting Advanced Access, refer to Facebook's official documentation on [Access Levels and Authorization](https://developers.facebook.com/docs/marketing-api/get-started/authorization/).
 
 <!-- /env:oss -->
 
@@ -151,7 +151,7 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If the start date is not set, then all data will be replicated except for `Insight` data, which only pulls data for the last 37 months.
 
    :::info
-   Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will not succeed for those streams.
+   Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, those streams will fail.
    :::
 
 </FieldAnchor>
@@ -446,10 +446,10 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.6 | 2026-04-09 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
-| 5.2.5 | 2026-04-07 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
-| 5.2.4 | 2026-04-01 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |
-| 5.2.3 | 2026-03-24 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
+| 5.2.6 | 2026-04-13 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
+| 5.2.5 | 2026-04-08 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
+| 5.2.4 | 2026-04-02 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |
+| 5.2.3 | 2026-04-02 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
 | 5.2.2 | 2026-03-17 | [75130](https://github.com/airbytehq/airbyte/pull/75130) | Extend upgrade deadline for version 5.0.0 breaking changes to 2026-04-10 |
 | 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
 | 5.2.0 | 2026-03-09 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
