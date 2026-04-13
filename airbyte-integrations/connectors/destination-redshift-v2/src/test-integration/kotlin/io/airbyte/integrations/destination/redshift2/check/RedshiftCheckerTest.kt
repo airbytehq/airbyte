@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguratio
 import io.airbyte.integrations.destination.redshift2.config.RedshiftSpecification
 import io.airbyte.integrations.destination.redshift2.connect.RedshiftConnect
 import io.airbyte.integrations.destination.redshift2.connect.S3Connect
+import io.airbyte.integrations.destination.redshift2.schema.RedshiftColumnManager
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import java.nio.file.Files
 import java.nio.file.Path
@@ -41,7 +42,7 @@ class RedshiftCheckerTest {
         val spec = mapper.treeToValue(config, RedshiftSpecification::class.java)
         configuration = RedshiftConfigurationFactory().makeWithoutExceptionHandling(spec)
         dataSource = RedshiftConnect(configuration).createDataSource()
-        sqlGenerator = RedshiftSqlGenerator()
+        sqlGenerator = RedshiftSqlGenerator(RedshiftColumnManager())
     }
 
     @Test

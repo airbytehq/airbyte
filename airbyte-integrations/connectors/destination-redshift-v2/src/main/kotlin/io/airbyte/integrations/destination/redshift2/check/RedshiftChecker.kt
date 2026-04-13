@@ -15,8 +15,8 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.connect.S3Connect
+import io.airbyte.integrations.destination.redshift2.sql.RedshiftDataType
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
-import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlTypes
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
@@ -159,7 +159,9 @@ class RedshiftChecker(
     private fun testCreateTable(tableName: TableName) {
         log.info { "Test 3: Creating test table ${tableName.namespace}.${tableName.name}..." }
         val createSchemaSql = sqlGenerator.createNamespace(tableName.namespace)
-        val createTableSql = sqlGenerator.createTable(tableName, buildCheckTableSchema(tableName))
+        // TODO claude: use createTable, with replace as false
+        val createTableSql =
+            sqlGenerator.createTableForCheck(tableName, buildCheckTableSchema(tableName))
 
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
@@ -255,7 +257,9 @@ class RedshiftChecker(
                 ColumnSchema(
                     inputToFinalColumnNames = mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
                     finalSchema =
-                        mapOf(CHECK_COLUMN_NAME to ColumnType(RedshiftSqlTypes.VARCHAR_MAX, true)),
+                        mapOf(
+                            CHECK_COLUMN_NAME to ColumnType(RedshiftDataType.VARCHAR.typeName, true)
+                        ),
                     inputSchema = emptyMap(),
                 ),
             importType = Append,

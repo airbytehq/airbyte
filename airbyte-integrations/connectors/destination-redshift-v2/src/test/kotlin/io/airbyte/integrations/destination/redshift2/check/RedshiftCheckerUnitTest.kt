@@ -76,8 +76,8 @@ class RedshiftCheckerUnitTest {
 
         // SQL generator: return dummy SQL strings
         every { sqlGenerator.createNamespace(any()) } returns "CREATE SCHEMA sql"
-        every { sqlGenerator.createTable(any(), any()) } returns "CREATE TABLE sql"
-        every { sqlGenerator.countTable(any(), any()) } returns "SELECT count sql"
+        every { sqlGenerator.createTableForCheck(any(), any()) } returns "CREATE TABLE sql"
+        every { sqlGenerator.countTable(any()) } returns "SELECT count sql"
         every { sqlGenerator.deleteByRawId(any()) } returns "DELETE sql"
         every { sqlGenerator.dropTable(any()) } returns "DROP TABLE sql"
         every { sqlGenerator.copyFromS3(any(), any(), any(), any(), any()) } returns "COPY sql"
@@ -101,10 +101,10 @@ class RedshiftCheckerUnitTest {
 
         // Verify DDL (createNamespace + createTable)
         verify { sqlGenerator.createNamespace(any()) }
-        verify { sqlGenerator.createTable(any(), any()) }
+        verify { sqlGenerator.createTableForCheck(any(), any()) }
 
         // Verify count query
-        verify { sqlGenerator.countTable(any(), any()) }
+        verify { sqlGenerator.countTable(any()) }
 
         // Verify delete
         verify { sqlGenerator.deleteByRawId(any()) }
