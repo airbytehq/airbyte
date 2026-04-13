@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.jdbc
@@ -31,6 +31,8 @@ data class DefaultJdbcConstants(
     /** Whether the namespace field denotes a JDBC schema or a JDBC catalog. */
     val namespaceKind: NamespaceKind = NamespaceKind.SCHEMA,
     val maxSequentialQueryLimit: Long? = MAX_SEQUENTIAL_QUERY_LIMIT_NULL,
+    /** Whether to fetch pseudo-columns when querying column metadata. */
+    val includePseudoColumns: Boolean = true,
 ) {
 
     enum class NamespaceKind {

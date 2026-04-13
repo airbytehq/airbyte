@@ -1,4 +1,4 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.jdbc
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
@@ -23,7 +23,7 @@ private val log = KotlinLogging.logger {}
  * SSH tunnel session is shared by many connections.
  */
 @Singleton
-class JdbcConnectionFactory(
+open class JdbcConnectionFactory(
     val config: JdbcSourceConfiguration,
 ) : Supplier<Connection> {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.table.directload
@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.cdk.load.write.StreamLoader
@@ -64,7 +63,7 @@ class DirectLoadTableAppendStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(realTableName))
     }
 
-    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
+    override suspend fun teardown(completedSuccessfully: Boolean) {
         // do nothing
     }
 }
@@ -107,7 +106,7 @@ class DirectLoadTableDedupStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
     }
 
-    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
+    override suspend fun teardown(completedSuccessfully: Boolean) {
         if (initialStatus.realTable != null) {
             schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
         } else {
@@ -234,11 +233,13 @@ class DirectLoadTableAppendTruncateStreamLoader(
         )
     }
 
-    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (streamFailure == null && isWritingToTemporaryTable) {
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully && isWritingToTemporaryTable) {
             logger.info {
                 "Overwriting ${tempTableName.toPrettyString()} with ${realTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
             }
+            // overwriteTable consumes the source table (drops/renames it),
+            // so temp table is already gone after this call.
             tableOperationsClient.overwriteTable(
                 sourceTableName = tempTableName,
                 targetTableName = realTableName,
@@ -329,8 +330,8 @@ class DirectLoadTableDedupTruncateStreamLoader(
         streamStateStore.put(stream.mappedDescriptor, DirectLoadTableExecutionConfig(tempTableName))
     }
 
-    override suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed?) {
-        if (streamFailure == null) {
+    override suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully) {
             if (shouldCheckRealTableGeneration && shouldUpsertDirectly()) {
                 // Direct upsert path for simpler cases
                 logger.info {
@@ -409,5 +410,12 @@ class DirectLoadTableDedupTruncateStreamLoader(
             sourceTableName = tempTempTable,
             targetTableName = realTableName,
         )
+
+        // Clean up the original temp table to prevent duplicate records on the next sync.
+        // Note: overwriteTable above consumed tempTempTable (not tempTableName), so
+        // tempTableName still exists with all its data. Without this drop, the next
+        // sync's start() would find a non-empty temp table with matching generation ID
+        // and reuse it, causing old records to accumulate alongside new ones.
+        tableOperationsClient.dropTable(tempTableName)
     }
 }

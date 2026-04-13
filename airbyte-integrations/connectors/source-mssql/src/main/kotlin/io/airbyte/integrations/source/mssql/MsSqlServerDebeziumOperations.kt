@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql
@@ -74,7 +74,7 @@ class MsSqlServerDebeziumOperations(
     // Generates globally unique cursor values for CDC records by combining
     // current timestamp with an incrementing counter. This ensures monotonically
     // increasing values across sync restarts and avoids collisions.
-    val cdcCursorGenerator = AtomicLong(Instant.now().toEpochMilli() * 10_000_000 + 1)
+    val cdcCursorGenerator = AtomicLong(Instant.now().epochSecond * 100_000_000 + 1)
 
     private val log = KotlinLogging.logger {}
 
@@ -358,6 +358,14 @@ class MsSqlServerDebeziumOperations(
                         .map { HistoryRecord(DocumentReader.defaultReader().read(it)) }
                 DebeziumSchemaHistory(schemaHistoryList)
             }
+        // If the schema history is empty or null, we want to abort the sync
+        // and run a recovery snapshot.
+        if (schemaHistory == null || schemaHistory.wrapped.isEmpty()) {
+            return AbortDebeziumWarmStartState(
+                "Schema history missing with existing offset. " +
+                    "Previous snapshot was incomplete, please refresh the connection."
+            )
+        }
 
         // Store the loaded offset for heartbeat sanitization comparison
         lastLoadedOffset = offset
@@ -452,8 +460,9 @@ class MsSqlServerDebeziumOperations(
                 val query =
                     """
                     SELECT
-                        sys.fn_cdc_get_min_lsn('') AS min_lsn,
-                        sys.fn_cdc_get_max_lsn() AS max_lsn
+                        MIN(sys.fn_cdc_get_min_lsn(capture_instance)) as min_lsn,
+                        sys.fn_cdc_get_max_lsn() as max_lsn
+                    FROM cdc.change_tables
                 """.trimIndent()
 
                 statement.executeQuery(query).use { resultSet ->
@@ -468,6 +477,18 @@ class MsSqlServerDebeziumOperations(
 
                         val minLsn = Lsn.valueOf(minLsnBytes)
                         val maxLsn = Lsn.valueOf(maxLsnBytes)
+
+                        log.info { "LSN range parsed - min: $minLsn, max: $maxLsn, saved: $lsn" }
+
+                        // Lsn.ZERO indicates no valid CDC data is available (e.g., no capture
+                        // instances exist or insufficient permissions).
+                        if (minLsn == Lsn.ZERO) {
+                            log.warn {
+                                "Min LSN is zero, no CDC capture instances found or insufficient permissions. " +
+                                    "Treating saved LSN as invalid."
+                            }
+                            return false
+                        }
 
                         // Check if saved LSN is within the valid range
                         val isValid = lsn.compareTo(minLsn) >= 0 && lsn.compareTo(maxLsn) <= 0

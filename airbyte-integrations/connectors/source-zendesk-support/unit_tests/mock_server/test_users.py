@@ -42,6 +42,7 @@ class TestUserIdentitiesStream(TestCase):
             ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
             .with_include("identities")
             .with_start_time(_START_DATE)
+            .with_any_query_params()
             .build(),
             UsersResponseBuilder.identities_response()
             .with_record(UsersRecordBuilder.record())
@@ -61,6 +62,7 @@ class TestUserIdentitiesStream(TestCase):
             ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
             .with_include("identities")
             .with_start_time(_START_DATE)
+            .with_any_query_params()
             .build(),
             UsersResponseBuilder.identities_response(
                 ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").build(), _A_CURSOR
@@ -70,6 +72,8 @@ class TestUserIdentitiesStream(TestCase):
             .with_pagination()
             .build(),
         )
+        # The connector uses RequestPath pagination, meaning it uses the full URL from after_url
+        # The after_url only includes the cursor, not per_page
         http_mocker.get(
             ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator).with_include("identities").with_cursor(_A_CURSOR).build(),
             UsersResponseBuilder.identities_response().with_record(UsersRecordBuilder.record()).build(),
@@ -88,6 +92,7 @@ class TestUserIdentitiesStream(TestCase):
             ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
             .with_include("identities")
             .with_start_time(_START_DATE)
+            .with_any_query_params()
             .build(),
             UsersResponseBuilder.identities_response()
             .with_record(UsersRecordBuilder.record().with_cursor(datetime_to_string(most_recent_cursor_value)))
@@ -107,6 +112,7 @@ class TestUserIdentitiesStream(TestCase):
             ZendeskSupportRequestBuilder.users_endpoint(api_token_authenticator)
             .with_include("identities")
             .with_start_time(state_cursor_value)
+            .with_any_query_params()
             .build(),
             UsersResponseBuilder.identities_response().with_record(UsersRecordBuilder.record()).build(),
         )

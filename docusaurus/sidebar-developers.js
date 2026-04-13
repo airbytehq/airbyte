@@ -10,7 +10,17 @@ module.exports = {
       },
       items: [
         "api-documentation",
-        "terraform-documentation",
+        {
+          type: "category",
+          label: "Terraform Provider",
+          link: {
+            type: "doc",
+            id: "terraform-documentation",
+          },
+          items: [
+            "terraform-provider-pre-1.0",
+          ],
+        },
         {
           type: "category",
           label: "PyAirbyte",
@@ -43,6 +53,7 @@ module.exports = {
             id: 'mcp-servers/readme',
           },
           items: [
+            'mcp-servers/airbyte-knowledge-mcp',
             'mcp-servers/pyairbyte-mcp',
             // 'mcp-servers/connector-builder-mcp',
           ],

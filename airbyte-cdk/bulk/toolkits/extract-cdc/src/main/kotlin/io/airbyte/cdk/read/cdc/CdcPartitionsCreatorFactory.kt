@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read.cdc
@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 @Singleton
 @Order(10)
 /** [PartitionsCreatorFactory] implementation for CDC with Debezium. */
-class CdcPartitionsCreatorFactory<T : Comparable<T>>(
+class CdcPartitionsCreatorFactory<T : PartiallyOrdered<T>>(
     val concurrencyResource: ConcurrencyResource,
     val resourceAcquirer: ResourceAcquirer,
     val cdcPartitionsCreatorDbzOps: CdcPartitionsCreatorDebeziumOperations<T>,
@@ -60,8 +60,8 @@ class CdcPartitionsCreatorFactory<T : Comparable<T>>(
 }
 
 @Singleton
-class CdcPartitionsCreatorFactorySupplier<T : CdcPartitionsCreatorFactory<C>, C : Comparable<C>>(
-    val factory: T
-) : PartitionsCreatorFactorySupplier<T> {
-    override fun get(): T = factory
+class CdcPartitionsCreatorFactorySupplier<
+    F : CdcPartitionsCreatorFactory<P>, P : PartiallyOrdered<P>>(val factory: F) :
+    PartitionsCreatorFactorySupplier<F> {
+    override fun get(): F = factory
 }

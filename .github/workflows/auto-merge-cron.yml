@@ -1,0 +1,386 @@
+name: Auto merge connector PRs Cron
+# Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
+# Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
+# In dry-run mode, PRs are still approved and promoted from draft, but merges are skipped.
+# Manage at: https://github.com/organizations/airbytehq/settings/variables/actions
+
+on:
+  schedule:
+    # Every 2 hours on the hour.
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+# All repo operations use GitHub App tokens, not GITHUB_TOKEN.
+permissions: {}
+
+jobs:
+  # ---------- Job 1: Discover candidate PRs ----------
+  list-candidates:
+    name: List eligible PRs
+    runs-on: ubuntu-24.04
+    steps:
+      # ---------- Authentication ----------
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-hoard-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      # ---------- Find candidate PRs ----------
+      - name: Find force-merge PRs (bypass-ci-checks label)
+        id: force-prs
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          gh pr list \
+            --repo airbytehq/airbyte \
+            --label "auto-merge/bypass-ci-checks" \
+            --state open \
+            --base master \
+            --json number,title \
+            --limit 100 > /tmp/force.json
+          count=$(jq length /tmp/force.json)
+          echo "force-matrix=$(cat /tmp/force.json)" | tee -a $GITHUB_OUTPUT
+          echo "force-count=$count" | tee -a $GITHUB_OUTPUT
+
+      - name: Find normal-merge PRs (auto-merge label, excluding force-merge)
+        id: normal-prs
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          gh pr list \
+            --repo airbytehq/airbyte \
+            --label "auto-merge" \
+            --state open \
+            --base master \
+            --json number,title \
+            --limit 100 > /tmp/auto-merge.json
+          # Exclude PRs already in the force-merge set
+          jq -c --argjson force '${{ steps.force-prs.outputs.force-matrix }}' \
+            '[.[] | select(.number as $n | $force | map(.number) | index($n) | not)]' \
+            /tmp/auto-merge.json > /tmp/normal.json
+          count=$(jq length /tmp/normal.json)
+          echo "normal-matrix=$(cat /tmp/normal.json)" | tee -a $GITHUB_OUTPUT
+          echo "normal-count=$count" | tee -a $GITHUB_OUTPUT
+
+      # ---------- Fetch required checks ----------
+      - name: Fetch required checks for master branch
+        id: required-checks
+        if: fromJSON(steps.normal-prs.outputs.normal-count) > 0
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const { data: rules } = await github.request(
+              'GET /repos/{owner}/{repo}/rules/branches/{branch}',
+              { owner: 'airbytehq', repo: 'airbyte', branch: 'master' }
+            );
+            const checks = [];
+            for (const rule of rules) {
+              if (rule.type === 'required_status_checks') {
+                for (const check of (rule.parameters?.required_status_checks || [])) {
+                  checks.push(check.context);
+                }
+              }
+            }
+            core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
+            core.setOutput('checks', JSON.stringify(checks));
+    outputs:
+      normal-matrix: ${{ steps.normal-prs.outputs.normal-matrix }}
+      normal-count: ${{ steps.normal-prs.outputs.normal-count }}
+      force-matrix: ${{ steps.force-prs.outputs.force-matrix }}
+      force-count: ${{ steps.force-prs.outputs.force-count }}
+      required-checks: ${{ steps.required-checks.outputs.checks }}
+
+  # ---------- Job 2: Normal merge (verify CI first) ----------
+  normal-merge:
+    name: "Merge #${{ matrix.pr.number }}"
+    needs: list-candidates
+    if: fromJSON(needs.list-candidates.outputs.normal-count) > 0
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.list-candidates.outputs.normal-matrix) }}
+    env:
+      PR_NUMBER: ${{ matrix.pr.number }}
+      PR_TITLE: ${{ matrix.pr.title }}
+    steps:
+      # ---------- Authentication ----------
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-hoard-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      # ---------- Validation ----------
+      - name: Check PR is still open
+        id: check-open
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          state=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state --jq '.state')
+          echo "state=$state" | tee -a $GITHUB_OUTPUT
+
+      - name: Validate connector-only file paths
+        if: steps.check-open.outputs.state == 'OPEN'
+        id: validate-paths
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -e
+          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
+          valid=true
+          while IFS= read -r file; do
+            case "$file" in
+              airbyte-integrations/connectors/*) ;;
+              docs/integrations/sources/*) ;;
+              docs/integrations/destinations/*) ;;
+              docs/ai-agents/connectors/*) ;;
+              docs/developers/pyairbyte/*) ;;
+              docusaurus/src/data/*) ;;
+              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
+            esac
+          done < /tmp/changed-files.txt
+          echo "valid=$valid" | tee -a $GITHUB_OUTPUT
+
+      - name: Verify required status checks pass
+        if: steps.check-open.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
+        id: verify-checks
+        uses: actions/github-script@v7
+        env:
+          REQUIRED_CHECKS_JSON: ${{ needs.list-candidates.outputs.required-checks }}
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const prNum = Number(process.env.PR_NUMBER);
+            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: 'airbytehq', repo: 'airbyte', pull_number: prNum,
+            });
+            const sha = pr.head.sha;
+
+            const statuses = await github.paginate(
+              github.rest.repos.listCommitStatusesForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
+            );
+            const successStatuses = new Set(
+              statuses.filter(s => s.state === 'success').map(s => s.context)
+            );
+
+            const checkRuns = await github.paginate(
+              github.rest.checks.listForRef,
+              { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
+              (response) => response.data
+            );
+            const successChecks = new Set(
+              checkRuns
+                .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
+                .map(cr => cr.name)
+            );
+
+            const allPassing = new Set([...successStatuses, ...successChecks]);
+            const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+
+            if (missing.length > 0) {
+              core.info(`Missing checks: ${missing.join(', ')}`);
+              core.setOutput('ready', 'false');
+            } else {
+              core.info('All required checks passing');
+              core.setOutput('ready', 'true');
+            }
+
+      # ---------- Eligibility gate ----------
+      - name: Determine merge eligibility
+        id: eligible
+        run: >
+          echo "result=${{
+            steps.check-open.outputs.state == 'OPEN'
+            && steps.validate-paths.outputs.valid == 'true'
+            && steps.verify-checks.outputs.ready == 'true'
+          }}" | tee -a $GITHUB_OUTPUT
+
+      # ---------- Prepare PR for merge ----------
+      - name: Check if PR is a draft
+        if: steps.eligible.outputs.result == 'true'
+        id: check-draft
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          is_draft=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json isDraft --jq '.isDraft')
+          echo "is_draft=$is_draft" | tee -a $GITHUB_OUTPUT
+
+      - name: Mark draft PR as ready for review
+        if: steps.eligible.outputs.result == 'true' && steps.check-draft.outputs.is_draft == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
+
+      # ---------- Approve and merge ----------
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: steps.eligible.outputs.result == 'true'
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      - name: Approve PR with admin bot
+        if: steps.eligible.outputs.result == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "$PR_NUMBER"
+          --repo airbytehq/airbyte
+          --approve
+          --body "Auto-approved by auto-merge workflow."
+
+      - name: Squash merge PR
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
+              echo "::notice::Merged PR ${PR_NUMBER}: ${PR_TITLE}"
+              exit 0
+            fi
+            echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
+            sleep 60
+          done
+          echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
+          exit 1
+
+      - name: Dry-run notice
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
+        run: echo "::notice::DRY RUN -- would merge PR ${PR_NUMBER}"
+
+  # ---------- Job 3: Force merge (bypass CI checks) ----------
+  force-merge:
+    name: "Force-merge #${{ matrix.pr.number }}"
+    needs: list-candidates
+    if: fromJSON(needs.list-candidates.outputs.force-count) > 0
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.list-candidates.outputs.force-matrix) }}
+    env:
+      PR_NUMBER: ${{ matrix.pr.number }}
+      PR_TITLE: ${{ matrix.pr.title }}
+    steps:
+      # ---------- Authentication ----------
+      - name: Authenticate as 'octavia-bot-hoard' GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-hoard-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
+
+      # ---------- Validation ----------
+      - name: Check PR is still open
+        id: check-open
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          state=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json state --jq '.state')
+          echo "state=$state" | tee -a $GITHUB_OUTPUT
+
+      - name: Validate connector-only file paths
+        if: steps.check-open.outputs.state == 'OPEN'
+        id: validate-paths
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -e
+          gh pr diff "$PR_NUMBER" --repo airbytehq/airbyte --name-only > /tmp/changed-files.txt
+          valid=true
+          while IFS= read -r file; do
+            case "$file" in
+              airbyte-integrations/connectors/*) ;;
+              docs/integrations/sources/*) ;;
+              docs/integrations/destinations/*) ;;
+              docs/ai-agents/connectors/*) ;;
+              docs/developers/pyairbyte/*) ;;
+              docusaurus/src/data/*) ;;
+              *) valid=false; echo "::warning::Non-connector file: $file"; break ;;
+            esac
+          done < /tmp/changed-files.txt
+          echo "valid=$valid" | tee -a $GITHUB_OUTPUT
+
+      # ---------- Eligibility gate ----------
+      - name: Determine merge eligibility
+        id: eligible
+        run: >
+          echo "result=${{
+            steps.check-open.outputs.state == 'OPEN'
+            && steps.validate-paths.outputs.valid == 'true'
+          }}" | tee -a $GITHUB_OUTPUT
+
+      # ---------- Prepare PR for merge ----------
+      - name: Check if PR is a draft
+        if: steps.eligible.outputs.result == 'true'
+        id: check-draft
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          is_draft=$(gh pr view "$PR_NUMBER" --repo airbytehq/airbyte --json isDraft --jq '.isDraft')
+          echo "is_draft=$is_draft" | tee -a $GITHUB_OUTPUT
+
+      - name: Mark draft PR as ready for review
+        if: steps.eligible.outputs.result == 'true' && steps.check-draft.outputs.is_draft == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
+
+      # ---------- Approve and merge ----------
+      - name: Authenticate as 'octavia-bot-admin' GitHub App
+        if: steps.eligible.outputs.result == 'true'
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-admin-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
+
+      - name: Approve PR with admin bot
+        if: steps.eligible.outputs.result == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
+        run: >
+          gh pr review "$PR_NUMBER"
+          --repo airbytehq/airbyte
+          --approve
+          --body "Auto-approved by auto-merge workflow (bypass-ci)."
+
+      - name: Force squash merge PR
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          for attempt in 1 2 3; do
+            if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
+              echo "::notice::Force-merged PR ${PR_NUMBER}: ${PR_TITLE}"
+              exit 0
+            fi
+            echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
+            sleep 60
+          done
+          echo "::error::Failed to force-merge PR #$PR_NUMBER after 3 attempts"
+          exit 1
+
+      - name: Dry-run notice
+        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
+        run: echo "::notice::DRY RUN -- would force-merge PR ${PR_NUMBER}"

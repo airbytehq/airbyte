@@ -33,7 +33,7 @@ jobs:
     steps:
       # Step 1: Get the pushed code
       - name: Checkout pushed code
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0 # Full history needed for comprehensive analysis
 
@@ -102,12 +102,14 @@ jobs:
         if: steps.check-connector.outputs.connector_changed == 'true'
         env:
           PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to master and may contain connector changes that need documentation updates."
-        uses: aaronsteers/devin-action@98d15ae93d1848914f5ab8e9ce45341182958d27 # v0.1.7 - Pinned to specific commit for security
+        uses: aaronsteers/devin-action@main
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           playbook-macro: "!connectordocs" # Use the connector documentation playbook
           prompt-text: ${{ env.PROMPT_TEXT }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           tags: |
             area/documentation
             team/documentation

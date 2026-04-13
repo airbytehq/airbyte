@@ -656,8 +656,7 @@ def metafield_jsonl_content_example():
 
 @pytest.fixture
 def filfillment_order_jsonl_content_example():
-    return """{"__typename":"Order","id":"gid:\/\/shopify\/Order\/1"}
-{"__typename":"FulfillmentOrder","id":"gid:\/\/shopify\/FulfillmentOrder\/2","fulfillAt":"2023-04-24T18:00:00Z","fulfillBy":null,"createdAt":"2023-04-24T18:00:09Z","updatedAt":"2023-04-24T18:00:09Z","requestStatus":"UNSUBMITTED","status":"CLOSED","channelId":null,"assignedLocation":{"address1":"Heroiv UPA 72","address2":null,"city":"Lviv","countryCode":"UA","name":"Heroiv UPA 72","phone":"","province":null,"zip":"30100","location":{"locationId":"gid:\/\/shopify\/Location\/63590301885"}},"destination":null,"deliveryMethod":{"id":"gid:\/\/shopify\/DeliveryMethod\/442031046845","methodType":"SHIPPING","minDeliveryDateTime":null,"maxDeliveryDateTime":null},"internationalDuties":null,"fulfillmentHolds":[],"supportedActions":[],"__parentId":"gid:\/\/shopify\/Order\/1"}
+    return """{"__typename":"FulfillmentOrder","id":"gid:\/\/shopify\/FulfillmentOrder\/2","fulfillAt":"2023-04-24T18:00:00Z","fulfillBy":null,"createdAt":"2023-04-24T18:00:09Z","updatedAt":"2023-04-24T18:00:09Z","requestStatus":"UNSUBMITTED","status":"CLOSED","channelId":null,"order":{"id":"gid:\/\/shopify\/Order\/1"},"assignedLocation":{"address1":"Heroiv UPA 72","address2":null,"city":"Lviv","countryCode":"UA","name":"Heroiv UPA 72","phone":"","province":null,"zip":"30100","location":{"locationId":"gid:\/\/shopify\/Location\/63590301885"}},"destination":null,"deliveryMethod":{"id":"gid:\/\/shopify\/DeliveryMethod\/442031046845","methodType":"SHIPPING","minDeliveryDateTime":null,"maxDeliveryDateTime":null},"internationalDuties":null,"fulfillmentHolds":[],"supportedActions":[]}
 {"__typename":"FulfillmentOrderLineItem","id":"gid:\/\/shopify\/FulfillmentOrderLineItem\/3","inventoryItemId":"gid:\/\/shopify\/InventoryItem\/43653688524989","lineItem":{"lineItemId":"gid:\/\/shopify\/LineItem\/12247585521853","fulfillableQuantity":0,"quantity":1,"variant":{"variantId":"gid:\/\/shopify\/ProductVariant\/41561961824445"}},"__parentId":"gid:\/\/shopify\/FulfillmentOrder\/2"}
 {"__typename":"FulfillmentOrderMerchantRequest","id":"gid:\/\/shopify\/FulfillmentOrderMerchantRequest\/333","message":null,"kind":"FULFILLMENT_REQUEST","requestOptions":{"notify_customer":true},"__parentId":"gid:\/\/shopify\/FulfillmentOrder\/2"}\n"""
 
@@ -737,6 +736,15 @@ def collections_jsonl_content_example():
 {"__typename":"CollectionPublication","publishedAt":"2021-07-19T14:02:54Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2021-08-18T09:39:34Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}
 {"__typename":"CollectionPublication","publishedAt":"2023-04-20T11:12:24Z","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}\n"""
+
+
+@pytest.fixture
+def collection_products_jsonl_content_example():
+    return """{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/270889287869","handle":"frontpage","updatedAt":"2023-09-05T14:06:59Z"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/6796220989629","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/6796825198781","__parentId":"gid:\/\/shopify\/Collection\/270889287869"}
+{"__typename":"Collection","id":"gid:\/\/shopify\/Collection\/273278566589","handle":"test-collection","updatedAt":"2023-09-05T14:12:04Z"}
+{"__typename":"Product","id":"gid:\/\/shopify\/Product\/7654321098765","__parentId":"gid:\/\/shopify\/Collection\/273278566589"}\n"""
 
 
 @pytest.fixture
@@ -1491,6 +1499,39 @@ def collections_response_expected_result():
             "products_count": 26,
             "admin_graphql_api_id": "gid://shopify/Collection/273278566589",
             "published_at": "2021-07-19T14:02:54+00:00",
+            "shop_url": "test_shop",
+        },
+    ]
+
+
+@pytest.fixture
+def collection_products_response_expected_result():
+    return [
+        {
+            "collection_id": 270889287869,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/270889287869",
+            "collection_handle": "frontpage",
+            "collection_updated_at": "2023-09-05T14:06:59+00:00",
+            "product_id": 6796220989629,
+            "product_admin_graphql_api_id": "gid://shopify/Product/6796220989629",
+            "shop_url": "test_shop",
+        },
+        {
+            "collection_id": 270889287869,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/270889287869",
+            "collection_handle": "frontpage",
+            "collection_updated_at": "2023-09-05T14:06:59+00:00",
+            "product_id": 6796825198781,
+            "product_admin_graphql_api_id": "gid://shopify/Product/6796825198781",
+            "shop_url": "test_shop",
+        },
+        {
+            "collection_id": 273278566589,
+            "collection_admin_graphql_api_id": "gid://shopify/Collection/273278566589",
+            "collection_handle": "test-collection",
+            "collection_updated_at": "2023-09-05T14:12:04+00:00",
+            "product_id": 7654321098765,
+            "product_admin_graphql_api_id": "gid://shopify/Product/7654321098765",
             "shop_url": "test_shop",
         },
     ]

@@ -1,5 +1,20 @@
 version: 4.3.2
 type: DeclarativeSource
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 4
+  max_concurrency: 8
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1S
+      call_limit: 2
+      matchers:
+        - {}
+
 check:
   type: CheckStream
   stream_names:

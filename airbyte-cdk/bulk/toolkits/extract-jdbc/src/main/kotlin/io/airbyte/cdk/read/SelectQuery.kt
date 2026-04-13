@@ -1,8 +1,8 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 
 /**
@@ -11,7 +11,7 @@ import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
  */
 data class SelectQuery(
     val sql: String,
-    val columns: List<Field>,
+    val columns: List<DataField>,
     val bindings: List<Binding>,
 ) {
     data class Binding(

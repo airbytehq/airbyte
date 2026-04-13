@@ -9,6 +9,7 @@ import logging
 
 import pytest
 
+from airbyte_cdk.models import Status
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 from .conftest import get_source
@@ -56,14 +57,15 @@ def test_check(response, status_code, check_passed):
             HttpRequest("https://sandbox.zendesk.com/api/v2/tags?page%5Bsize%5D=100"),
             HttpResponse(body=json.dumps(response), status_code=status_code),
         )
-        ok, _ = get_source(config=config, state=None).check_connection(logger=logging.Logger(name="airbyte"), config=config)
+        result = get_source(config=config, state=None).check(logger=logging.Logger(name="airbyte"), config=config)
+        ok = result.status == Status.SUCCEEDED
         assert check_passed == ok
 
 
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        pytest.param('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 41, [], None, id="forms_accessible"),
+        pytest.param('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 42, [], None, id="forms_accessible"),
         # todo: Filtering inaccessible streams based on an API request is not supported in the low-code CDK
         #  at this moment, once this is supported, these tests can be added back
         # pytest.param(

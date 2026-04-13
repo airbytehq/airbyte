@@ -4,7 +4,11 @@ This page contains the setup guide and reference information for the Harvest sou
 
 ## Prerequisites
 
-To set up the Harvest source connector, you'll need the [Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+- A Harvest account
+- Your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/)
+- One of the following authentication methods:
+  - **OAuth** (Airbyte Cloud): A Harvest developer application with a Client ID, Client Secret, and Refresh Token
+  - **Personal Access Token** (Airbyte Open Source): A [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens) created in the Developers section of Harvest ID
 
 ## Setup guide
 
@@ -38,14 +42,14 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 
 ## Supported sync modes
 
-The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Supported Streams
+## Supported streams
 
 - [Client Contacts](https://help.getharvest.com/api-v2/clients-api/clients/contacts/) \(Incremental\)
 - [Clients](https://help.getharvest.com/api-v2/clients-api/clients/clients/) \(Incremental\)
@@ -82,7 +86,13 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
+The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting). Harvest limits API requests to 100 calls per 15 seconds. If the rate limit is exceeded, the connector automatically waits and retries using the `Retry-After` header provided by the API.
+
+Report streams (Expense Reports, Time Reports, Uninvoiced Report, and Project Budget Report) retrieve data in 365-day date windows. For accounts with a long history, initial syncs of these streams may take longer.
+
+## Limitations and troubleshooting
+
+This connector uses Harvest's granular permission model. If your credentials lack access to a specific resource, the corresponding stream produces zero records instead of failing the sync. If a stream returns no data, verify that your Harvest user has the required permissions for that resource.
 
 ## Changelog
 
@@ -91,13 +101,22 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.25 | 2025-12-16 | [70496](https://github.com/airbytehq/airbyte/pull/70496) | Update dependencies |
+| 1.2.32 | 2026-04-10 | [76247](https://github.com/airbytehq/airbyte/pull/76247) | Promoted release candidate to GA |
+| 1.2.32-rc.4 | 2026-03-27 | [75543](https://github.com/airbytehq/airbyte/pull/75543) | Added configurable concurrency level with `num_workers` parameter and HTTP API budget rate limiting |
+| 1.2.32-rc.1 | 2026-03-24 | [75409](https://github.com/airbytehq/airbyte/pull/75409) | Test dev image of source-declarative-manifest (7.13.0.post6.dev23497311155) |
+| 1.2.31 | 2026-03-10 | [74687](https://github.com/airbytehq/airbyte/pull/74687) | Update dependencies |
+| 1.2.30 | 2026-02-24 | [73930](https://github.com/airbytehq/airbyte/pull/73930) | Update dependencies |
+| 1.2.29 | 2026-02-10 | [73113](https://github.com/airbytehq/airbyte/pull/73113) | Update dependencies |
+| 1.2.28 | 2026-02-03 | [72645](https://github.com/airbytehq/airbyte/pull/72645) | Update dependencies |
+| 1.2.27 | 2026-01-20 | [71880](https://github.com/airbytehq/airbyte/pull/71880) | Update dependencies |
+| 1.2.26 | 2026-01-14 | [71693](https://github.com/airbytehq/airbyte/pull/71693) | Update dependencies |
+| 1.2.25 | 2025-12-18 | [70496](https://github.com/airbytehq/airbyte/pull/70496) | Update dependencies |
 | 1.2.24 | 2025-11-25 | [70061](https://github.com/airbytehq/airbyte/pull/70061) | Update dependencies |
 | 1.2.23 | 2025-11-18 | [69372](https://github.com/airbytehq/airbyte/pull/69372) | Update dependencies |
 | 1.2.22 | 2025-10-29 | [68814](https://github.com/airbytehq/airbyte/pull/68814) | Update dependencies |
 | 1.2.21 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
 | 1.2.20 | 2025-10-21 | [61157](https://github.com/airbytehq/airbyte/pull/61157) | Update dependencies |
-| 1.2.19 | 2025-09-10 | [66013](https://github.com/airbytehq/airbyte/pull/66013) | Update to CDK v7 |
+| 1.2.19 | 2025-10-14 | [66013](https://github.com/airbytehq/airbyte/pull/66013) | Update to CDK v7 |
 | 1.2.18 | 2025-05-24 | [60670](https://github.com/airbytehq/airbyte/pull/60670) | Update dependencies |
 | 1.2.17 | 2025-05-10 | [59910](https://github.com/airbytehq/airbyte/pull/59910) | Update dependencies |
 | 1.2.16 | 2025-05-05 | [59215](https://github.com/airbytehq/airbyte/pull/59215) | Fix missing schema for `time_team`, `users`, `time_entries`, `company`, & `project_assignments` streams. |
@@ -168,7 +187,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 | 0.1.8 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                                                                                                                                         |
 | 0.1.6 | 2021-11-14 | [7952](https://github.com/airbytehq/airbyte/pull/7952)   | Implement OAuth 2.0 support                                                                                                                                            |
 | 0.1.5 | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747)   | Update schema date-time fields                                                                                                                                         |
-| 0.1.4   | 2021-06-22 | [5701](https://github.com/airbytehq/airbyte/pull/5071)   | Harvest normalization failure: fixing the schemas                                                                                                                      |
+| 0.1.4   | 2021-06-22 | [5071](https://github.com/airbytehq/airbyte/pull/5071)   | Harvest normalization failure: fixing the schemas                                                                                                                      |
 | 0.1.3   | 2021-06-22 | [4274](https://github.com/airbytehq/airbyte/pull/4274)   | Fix wrong data type on `statement_key` in `clients` stream                                                                                                             |
 | 0.1.2   | 2021-06-07 | [4222](https://github.com/airbytehq/airbyte/pull/4222)   | Correct specification parameter name                                                                                                                                   |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                                        |
