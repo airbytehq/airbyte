@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.redshift2.check
 
 import com.amazonaws.services.s3.AmazonS3
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
-import io.airbyte.integrations.destination.redshift2.config.S3StagingConfig
+import io.airbyte.integrations.destination.redshift2.config.S3StagingConfiguration
 import io.airbyte.integrations.destination.redshift2.connect.S3Connect
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.mockk.every
@@ -72,6 +72,7 @@ class RedshiftCheckerUnitTest {
         // S3 client: putObject and deleteObject succeed
         every { s3Connect.createS3Client() } returns mockS3Client
         every { mockS3Client.putObject(any<String>(), any(), any(), any()) } returns mockk()
+        every { mockS3Client.deleteObject(any<String>(), any<String>()) } returns Unit
 
         // SQL generator: return dummy SQL strings
         every { sqlGenerator.createNamespace(any()) } returns "CREATE SCHEMA sql"
@@ -79,6 +80,7 @@ class RedshiftCheckerUnitTest {
         every { sqlGenerator.countTable(any(), any()) } returns "SELECT count sql"
         every { sqlGenerator.deleteByRawId(any()) } returns "DELETE sql"
         every { sqlGenerator.dropTable(any()) } returns "DROP TABLE sql"
+        every { sqlGenerator.copyFromS3(any(), any(), any(), any(), any()) } returns "COPY sql"
 
         checker = RedshiftChecker(dataSource, Fixtures.configuration(), s3Connect, sqlGenerator)
     }
@@ -167,7 +169,7 @@ class RedshiftCheckerUnitTest {
     // ================================================================
 
     @Test
-    fun `cleanup deletes S3 object and drops Redshift table after check`() {
+    fun `cleanup drops Redshift table after check`() {
         // Run check first to populate s3Client, s3Key, tableName
         checker.check()
 
@@ -175,9 +177,6 @@ class RedshiftCheckerUnitTest {
         io.mockk.clearMocks(mockS3Client, mockStatement, answers = false, recordedCalls = true)
 
         checker.cleanup()
-
-        // Verify S3 object deleted
-        verify { mockS3Client.deleteObject(any<String>(), any<String>()) }
 
         // Verify table dropped
         verify { sqlGenerator.dropTable(any()) }
@@ -232,7 +231,7 @@ class RedshiftCheckerUnitTest {
                 password = password,
                 jdbcUrlParams = null,
                 uploadingMethod =
-                    S3StagingConfig(
+                    S3StagingConfiguration(
                         s3BucketName = "test-bucket",
                         s3BucketPath = "test-path",
                         s3BucketRegion = "us-east-1",

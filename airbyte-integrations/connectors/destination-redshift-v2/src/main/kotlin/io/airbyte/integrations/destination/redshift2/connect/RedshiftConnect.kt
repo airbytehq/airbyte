@@ -6,16 +6,12 @@ package io.airbyte.integrations.destination.redshift2.connect
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.airbyte.cdk.ssh.SshConnectionOptions
-import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
-import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
-import io.airbyte.cdk.ssh.createTunnelSession
+import io.airbyte.cdk.ssh.startTunnelAndGetEndpoint
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
-import org.apache.sshd.common.util.net.SshdSocketAddress
 
 private val log = KotlinLogging.logger {}
 
@@ -32,51 +28,27 @@ class RedshiftConnect(
 ) {
 
     /**
-     * Resolves the database endpoint, tunneling through SSH if configured.
-     *
-     * When an SSH tunnel is configured, this opens a local port-forward to the remote Redshift host
-     * and returns the tunnel's local address. When no tunnel is configured, the direct host/port
-     * from the configuration is returned.
+     * Resolves the database endpoint, tunneling through SSH if configured. When an SSH tunnel is
+     * configured, this opens a local port-forward and returns the tunnel's local address.
+     * Otherwise, the direct host/port is used.
      */
-    fun resolveEndpoint(): Pair<String, Int> {
-        return when (val ssh = configuration.tunnelMethod) {
-            is SshKeyAuthTunnelMethod,
-            is SshPasswordAuthTunnelMethod -> {
-                val remote = SshdSocketAddress(configuration.host, configuration.port)
-                val sshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap())
-                val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
-                log.info {
-                    "SSH tunnel established: ${configuration.host}:${configuration.port} " +
-                        "-> ${tunnel.address.hostName}:${tunnel.address.port}"
-                }
-                tunnel.address.hostName to tunnel.address.port
-            }
-            is SshNoTunnelMethod,
-            null -> configuration.host to configuration.port
-        }
+    fun resolveEndpoint(): String {
+        val ssh = configuration.tunnelMethod ?: SshNoTunnelMethod
+        return startTunnelAndGetEndpoint(ssh, configuration.host, configuration.port)
     }
 
-    /**
-     * Creates a fully configured [HikariDataSource] for Redshift.
-     *
-     * The DataSource is configured with:
-     * - SSL enabled with non-validating factory (standard for Redshift)
-     * - Redshift driver-level connect timeout of 120 seconds
-     * - Connection keepalive at 30-second intervals
-     * - Pool sizing: max 10, min idle 0 (connections created on demand)
-     */
+    /** Creates a fully configured [HikariDataSource] for Redshift */
     fun createDataSource(): HikariDataSource {
-        val (resolvedHost, resolvedPort) = resolveEndpoint()
-        val jdbcUrl = buildJdbcUrl(resolvedHost, resolvedPort)
+        val endpoint = resolveEndpoint()
+        val jdbcUrl = buildJdbcUrl(endpoint)
 
-        log.info {
-            "Creating Redshift DataSource for $resolvedHost:$resolvedPort/${configuration.database}"
-        }
+        log.info { "Creating Redshift DataSource for $endpoint/${configuration.database}" }
 
         val hikariConfig =
             HikariConfig().apply {
                 connectionTimeout = 2.minutes.inWholeMilliseconds
-                leakDetectionThreshold = 5.minutes.inWholeMilliseconds
+                minimumIdle = 0
+                initializationFailTimeout = -1
                 driverClassName = DRIVER_CLASS
                 this.jdbcUrl = jdbcUrl
                 username = configuration.username
@@ -85,20 +57,14 @@ class RedshiftConnect(
 
                 addDataSourceProperty("ssl", "true")
                 addDataSourceProperty("sslfactory", SSL_FACTORY)
-                connectionTestQuery = "SELECT 1"
             }
 
         return HikariDataSource(hikariConfig)
     }
 
-    private fun buildJdbcUrl(resolvedHost: String, resolvedPort: Int): String {
-        val baseUrl = "jdbc:redshift://$resolvedHost:$resolvedPort/${configuration.database}"
-        return if (configuration.jdbcUrlParams.isNullOrBlank()) {
-            baseUrl
-        } else {
-            "$baseUrl?${configuration.jdbcUrlParams}"
-        }
-    }
+    private fun buildJdbcUrl(endpoint: String): String =
+        "jdbc:redshift://$endpoint/${configuration.database}" +
+            (configuration.jdbcUrlParams?.takeIf { it.isNotBlank() }?.let { "?$it" } ?: "")
 
     companion object {
         const val DRIVER_CLASS = "com.amazon.redshift.jdbc42.Driver"

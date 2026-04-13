@@ -152,7 +152,7 @@ class RedshiftCheckerTest {
      * tests.
      */
     private fun createTestDataSource(config: RedshiftConfiguration): HikariDataSource {
-        val (host, port) = RedshiftConnect(config).resolveEndpoint()
+        val endpoint = RedshiftConnect(config).resolveEndpoint()
         return HikariDataSource(
             HikariConfig().apply {
                 connectionTimeout = 10_000
@@ -160,13 +160,13 @@ class RedshiftCheckerTest {
                 minimumIdle = 0
                 initializationFailTimeout = -1
                 driverClassName = RedshiftConnect.DRIVER_CLASS
-                jdbcUrl = "jdbc:redshift://$host:$port/${config.database}"
+                jdbcUrl = "jdbc:redshift://$endpoint/${config.database}"
                 username = config.username
                 password = config.password
                 addDataSourceProperty("ssl", "true")
                 addDataSourceProperty("sslfactory", RedshiftConnect.SSL_FACTORY)
                 addDataSourceProperty("connectTimeout", "10")
-            }
+            },
         )
     }
 }

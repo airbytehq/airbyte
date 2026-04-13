@@ -18,7 +18,7 @@ data class RedshiftConfiguration(
     val username: String,
     val password: String,
     val jdbcUrlParams: String?,
-    val uploadingMethod: S3StagingConfig?,
+    val uploadingMethod: S3StagingConfiguration?,
     val tunnelMethod: SshTunnelMethodConfiguration?,
 ) : DestinationConfiguration()
 

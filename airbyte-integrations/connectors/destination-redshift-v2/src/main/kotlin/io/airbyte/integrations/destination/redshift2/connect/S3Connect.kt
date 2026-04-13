@@ -4,8 +4,10 @@
 
 package io.airbyte.integrations.destination.redshift2.connect
 
+import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.retry.RetryMode
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
@@ -34,9 +36,10 @@ class S3Connect(private val configuration: RedshiftConfiguration) {
         return AmazonS3ClientBuilder.standard()
             .withCredentials(
                 AWSStaticCredentialsProvider(
-                    BasicAWSCredentials(s3Config.accessKeyId, s3Config.secretAccessKey)
-                )
+                    BasicAWSCredentials(s3Config.accessKeyId, s3Config.secretAccessKey),
+                ),
             )
+            .withClientConfiguration(ClientConfiguration().withRetryMode(RetryMode.STANDARD))
             .withRegion(s3Config.s3BucketRegion)
             .build()
     }
