@@ -9,11 +9,7 @@ package io.airbyte.integrations.destination.redshift2.check
 import io.airbyte.cdk.load.check.DestinationChecker
 import jakarta.inject.Singleton
 
-/**
- * Redshift connection checker placeholder.
- *
- * TBD: Will validate the full S3 staging → COPY → Redshift pipeline.
- */
+/** Redshift connection checker placeholder. */
 @Singleton
 class RedshiftChecker : DestinationChecker {
     override fun check() {
