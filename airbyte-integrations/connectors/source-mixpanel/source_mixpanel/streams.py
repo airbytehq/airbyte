@@ -456,7 +456,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             # convert timestamp to datetime string
             # The Mixpanel Export API normally returns "time" as a Unix epoch integer,
             # but some accounts return it as an ISO datetime string instead.
-            raw_time = properties.get("time") or properties.get("$time")
+            raw_time = properties.get("time")
             if isinstance(raw_time, (int, float)):
                 item["time"] = pendulum.from_timestamp(int(raw_time), tz="UTC").to_iso8601_string()
             else:
