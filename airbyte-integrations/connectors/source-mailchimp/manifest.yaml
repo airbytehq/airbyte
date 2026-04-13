@@ -13,16 +13,15 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 10
 
-# HTTPAPIBudget commented out for Phase 1 concurrency tuning (will be re-enabled in Phase 2)
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 10
-#           interval: PT1S
-#       matchers: []  # Catch-all for all endpoints
-#   status_codes_for_ratelimit_hit: [429, 403]
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+      matchers: []  # Catch-all for all endpoints
+  status_codes_for_ratelimit_hit: [429, 403]
 
 definitions:
   bearer_authenticator:
