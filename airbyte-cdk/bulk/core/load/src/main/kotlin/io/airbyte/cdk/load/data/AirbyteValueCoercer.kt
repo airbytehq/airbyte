@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.util.serializeToString
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -119,7 +120,15 @@ object AirbyteValueCoercer {
             is DateValue -> value
             else ->
                 requireType<StringValue, DateValue>(value) {
-                    DateValue(LocalDate.parse(it.value, DATE_TIME_FORMATTER))
+                    val parsed = LocalDate.parse(it.value, DATE_TIME_FORMATTER)
+                    // Reject years outside the ISO 8601 range 0001-9999, since the
+                    // DATE_TIME_FORMATTER pattern can parse multi-digit years in SMART mode.
+                    if (parsed.year < 1 || parsed.year > 9999) {
+                        throw DateTimeException(
+                            "Year ${parsed.year} is outside the supported range 0001-9999"
+                        )
+                    }
+                    DateValue(parsed)
                 }
         }
 
@@ -172,6 +181,16 @@ object AirbyteValueCoercer {
             } catch (e: Exception) {
                 LocalDateTime.parse(it.value, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
             }
+        // The DATE_TIME_FORMATTER pattern [yyyy][yy] in SMART mode can parse years with
+        // more than 4 digits (e.g. "22026-12-06T00:00:00Z" parses as year 22026).
+        // Most destinations only support years in the range 0001-9999 (the ISO 8601 range),
+        // so reject out-of-range years here to prevent invalid data from reaching
+        // downstream systems.
+        if (odt.year < 1 || odt.year > 9999) {
+            throw DateTimeException(
+                "Year ${odt.year} is outside the supported range 0001-9999"
+            )
+        }
         return odt
     }
 
