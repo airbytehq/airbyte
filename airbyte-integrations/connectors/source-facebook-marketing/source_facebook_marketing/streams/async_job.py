@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
 
 import backoff
 from facebook_business.adobjects.ad import Ad
@@ -20,6 +20,10 @@ from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from source_facebook_marketing.streams.common import retry_pattern
 
 from ..utils import DateInterval
+
+
+if TYPE_CHECKING:
+    from source_facebook_marketing.streams.async_job_manager import APILimit
 
 
 logger = logging.getLogger("airbyte")
