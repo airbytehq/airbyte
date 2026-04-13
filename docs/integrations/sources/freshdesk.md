@@ -72,6 +72,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.2.14-rc.1 | 2026-04-10 | [76202](https://github.com/airbytehq/airbyte/pull/76202) | Add concurrency_level and num_workers for concurrency tuning |
 | 3.2.13 | 2026-03-31 | [75719](https://github.com/airbytehq/airbyte/pull/75719) | Update dependencies |
 | 3.2.12 | 2026-03-24 | [74647](https://github.com/airbytehq/airbyte/pull/74647) | Update dependencies |
 | 3.2.11 | 2026-03-03 | [74188](https://github.com/airbytehq/airbyte/pull/74188) | Update dependencies |
