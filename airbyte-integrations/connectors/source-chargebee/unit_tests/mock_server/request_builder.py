@@ -175,6 +175,11 @@ class RequestBuilder:
         self._query_params["created_at[between]"] = f"[{start_time}, {end_time}]"
         return self
 
+    def with_has_scheduled_changes(self, value: str = "true") -> "RequestBuilder":
+        """Add has_scheduled_changes[is] parameter for subscription filtering."""
+        self._query_params["has_scheduled_changes[is]"] = value
+        return self
+
     def build(self) -> HttpRequest:
         query_params = ANY_QUERY_PARAMS if self._any_query_params else (self._query_params if self._query_params else None)
         return HttpRequest(
