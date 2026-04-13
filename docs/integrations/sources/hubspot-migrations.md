@@ -88,15 +88,15 @@ For more information on resetting your data in Airbyte, see [this page](/platfor
 ## Upgrading to 4.0.0
 
 :::note
-This change is only breaking if you are syncing streams `Deals Property History` or `Companies Peoperty History`.
+This change is only breaking if you are syncing streams `Deals Property History` or `Companies Property History`.
 :::
 
-This update brings extended schema with data type changes for the Marketing Emails stream.
+This update brings extended schema with data type changes for the `Deals Property History` and `Companies Property History` streams.
 
 Users should:
 
-- Refresh the source schema for the Marketing Emails stream.
-- Reset the stream after upgrading to ensure uninterrupted syncs.
+- Refresh the source schema for the `Deals Property History` and `Companies Property History` streams.
+- Reset the affected streams after upgrading to ensure uninterrupted syncs.
 
 ### Refresh affected schemas and reset data
 
