@@ -707,3 +707,38 @@ class TestParentAsyncJob:
 
     def test_str(self, parent_job, grouped_jobs):
         assert str(parent_job) == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"
+
+
+class TestAPILimitTypeAnnotation:
+    """Verify that the APILimit forward reference in async_job.py resolves correctly.
+
+    async_job_manager imports from async_job, so a runtime import would be
+    circular.  The fix adds a TYPE_CHECKING-guarded import so that static
+    analysis tools (mypy, pyflakes) can resolve the ``"APILimit"`` string
+    annotation.  At runtime we supply the namespace explicitly to
+    ``typing.get_type_hints`` — the same thing type-checkers do internally.
+    """
+
+    @pytest.mark.parametrize(
+        "cls_name",
+        [
+            pytest.param("AsyncJob", id="abstract_base"),
+            pytest.param("InsightAsyncJob", id="leaf_job"),
+            pytest.param("ParentAsyncJob", id="parent_job"),
+        ],
+    )
+    def test_start_method_apilimit_annotation_resolves(self, cls_name):
+        """The 'APILimit' string annotation on <cls>.start() must resolve
+        to the real class when the proper namespace is provided."""
+        import importlib
+        import typing
+
+        from source_facebook_marketing.streams.async_job_manager import APILimit
+
+        mod = importlib.import_module("source_facebook_marketing.streams.async_job")
+        cls = getattr(mod, cls_name)
+        # Provide the module globals + APILimit so get_type_hints can resolve the forward ref,
+        # mirroring what static type-checkers do with the TYPE_CHECKING import.
+        ns = {**vars(mod), "APILimit": APILimit}
+        hints = typing.get_type_hints(cls.start, globalns=ns)
+        assert hints["api_limit"] is APILimit
