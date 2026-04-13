@@ -676,7 +676,7 @@ streams:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 9
+  default_concurrency: 6
   max_concurrency: 20
 
 # api_budget:  # Commented out for Phase 1 concurrency tuning - will be added in Phase 2

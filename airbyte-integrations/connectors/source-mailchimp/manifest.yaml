@@ -10,7 +10,7 @@ check:
 # Mailchimp has a limit of 10 simultaneous connections
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 10
 
 # HTTPAPIBudget commented out for Phase 1 concurrency tuning (will be re-enabled in Phase 2)
