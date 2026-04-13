@@ -655,6 +655,33 @@ def test_export_stream(requests_mock, export_response, config):
     assert records_length == 1
 
 
+@pytest.mark.parametrize(
+    "time_value,expected_time",
+    [
+        pytest.param(1623860880, "2021-06-16T16:28:00Z", id="unix_epoch_integer"),
+        pytest.param("2025-07-20T05:52:45", "2025-07-20T05:52:45Z", id="iso_datetime_string"),
+        pytest.param("2025-07-20T05:52:45+03:00", "2025-07-20T02:52:45Z", id="iso_datetime_string_with_tz"),
+        pytest.param(1623860880.5, "2021-06-16T16:28:00Z", id="unix_epoch_float"),
+    ],
+)
+def test_export_stream_time_parsing(requests_mock, config, time_value, expected_time):
+    """Test that Export.process_response handles both integer and datetime string time values."""
+    stream = Export(authenticator=MagicMock(), **config)
+    response_body = {
+        "event": "Test Event",
+        "properties": {
+            "time": time_value,
+            "distinct_id": "user-1",
+            "$browser": "Chrome",
+        },
+    }
+    requests_mock.register_uri("GET", get_url_to_mock(stream), setup_response(200, response_body))
+    stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+    assert len(records) == 1
+    assert records[0]["time"] == expected_time
+
+
 def test_export_stream_fail(requests_mock, export_response, config):
     stream = Export(authenticator=MagicMock(), **config)
     error_message = ""

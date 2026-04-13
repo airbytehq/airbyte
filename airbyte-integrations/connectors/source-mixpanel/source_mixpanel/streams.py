@@ -454,7 +454,13 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
-            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
+            # The Mixpanel Export API normally returns "time" as a Unix epoch integer,
+            # but some accounts return it as an ISO datetime string instead.
+            raw_time = properties.get("time") or properties.get("$time")
+            if isinstance(raw_time, (int, float)):
+                item["time"] = pendulum.from_timestamp(int(raw_time), tz="UTC").to_iso8601_string()
+            else:
+                item["time"] = pendulum.parse(str(raw_time)).in_tz("UTC").to_iso8601_string()
 
             yield item
 
