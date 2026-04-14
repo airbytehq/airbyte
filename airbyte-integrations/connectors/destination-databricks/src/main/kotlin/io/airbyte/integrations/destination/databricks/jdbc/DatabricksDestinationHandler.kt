@@ -154,7 +154,7 @@ class DatabricksDestinationHandler(
             val infoSchemaQuery =
                 """
                 |SELECT table_schema, table_name, column_name, data_type, is_nullable
-                |FROM ${databaseName.lowercase()}.information_schema.columns
+                |FROM `${databaseName.lowercase()}`.information_schema.columns
                 |WHERE
                 |   table_catalog = ?
                 |   AND table_schema IN ($paramHolder)
@@ -242,7 +242,7 @@ class DatabricksDestinationHandler(
 
     private fun isFinalTableEmpty(id: StreamId): Boolean {
         return !jdbcDatabase.queryBoolean(
-            "SELECT EXISTS (SELECT 1 from $databaseName.${
+            "SELECT EXISTS (SELECT 1 from `$databaseName`.${
                 id.finalTableId(
                     DatabricksSqlGenerator.QUOTE,
                 )
@@ -295,13 +295,13 @@ class DatabricksDestinationHandler(
         val minExtractedAtLoadedNotNullQuery =
             """
             |SELECT min(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
-            |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
+            |FROM `$databaseName`.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
             |WHERE ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} IS NULL
             |""".trimMargin()
         val maxExtractedAtQuery =
             """
             |SELECT max(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
-            |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
+            |FROM `$databaseName`.${id.rawTableId(DatabricksSqlGenerator.QUOTE, suffix)}
         """.trimMargin()
 
         findLastLoadedTs(minExtractedAtLoadedNotNullQuery)

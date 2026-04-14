@@ -115,7 +115,7 @@ class DatabricksSqlGenerator(
             }
         return Sql.of(
             """
-                $createStatement $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName}$suffix (
+                $createStatement `$unityCatalogName`.${streamId.rawNamespace}.${streamId.rawName}$suffix (
                     $AB_RAW_ID STRING,
                     $AB_EXTRACTED_AT TIMESTAMP,
                     $AB_LOADED_AT TIMESTAMP,
@@ -129,7 +129,7 @@ class DatabricksSqlGenerator(
 
     fun truncateRawTable(streamId: StreamId): Sql {
         return Sql.of(
-            "TRUNCATE TABLE $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName}"
+            "TRUNCATE TABLE `$unityCatalogName`.${streamId.rawNamespace}.${streamId.rawName}"
         )
     }
 
@@ -139,7 +139,7 @@ class DatabricksSqlGenerator(
 
         return Sql.of(
             """
-            | UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
+            | UPDATE `$unityCatalogName`.${streamId.rawTableId(QUOTE)}
             | SET $AB_LOADED_AT = CURRENT_TIMESTAMP
             | WHERE $AB_LOADED_AT IS NULL
             | $extractedAtCondition
@@ -159,7 +159,7 @@ class DatabricksSqlGenerator(
         val finalTableIdentifier = stream.id.finalName + namingTransformer.applyDefaultCase(suffix)
         return Sql.of(
             """
-            CREATE ${if (force) "OR REPLACE" else ""} TABLE $unityCatalogName.`${stream.id.finalNamespace}`.`$finalTableIdentifier`(
+            CREATE ${if (force) "OR REPLACE" else ""} TABLE `$unityCatalogName`.`${stream.id.finalNamespace}`.`$finalTableIdentifier`(
                 $columnNameTypeMapping
             )
         """.trimIndent(),
@@ -167,7 +167,7 @@ class DatabricksSqlGenerator(
     }
 
     override fun createSchema(schema: String): Sql {
-        return Sql.of("CREATE SCHEMA IF NOT EXISTS $unityCatalogName.`$schema`")
+        return Sql.of("CREATE SCHEMA IF NOT EXISTS `$unityCatalogName`.`$schema`")
     }
 
     override fun updateTable(
@@ -242,7 +242,7 @@ class DatabricksSqlGenerator(
 
         val upsertSql =
             """
-            |MERGE INTO $unityCatalogName.${stream.id.finalTableId(QUOTE, finalSuffix)} as target_table
+            |MERGE INTO `$unityCatalogName`.${stream.id.finalTableId(QUOTE, finalSuffix)} as target_table
             |USING (
             |${selectTypedRecordsFromRawTable(stream, minRawTimestamp, finalColumnNames, safeCast, true).replaceIndent("   ")}
             |) deduped_records
@@ -271,7 +271,7 @@ class DatabricksSqlGenerator(
                 .joinToString(", \n") { it.name(QUOTE) }
 
         val insertSql =
-            """INSERT INTO $unityCatalogName.${stream.id.finalTableId(QUOTE, finalSuffix)}
+            """INSERT INTO `$unityCatalogName`.${stream.id.finalTableId(QUOTE, finalSuffix)}
                            |(
                            |${finalColumnNames.replaceIndent("    ")},
                            |    $AB_META
@@ -390,7 +390,7 @@ class DatabricksSqlGenerator(
             |   from_json($AB_META, 'STRUCT<`sync_id` : BIGINT, `changes` : ARRAY<STRUCT<`field`: STRING, `change`: STRING, `reason`: STRING>>>') as `_airbyte_meta`,
             |${typeCastErrorsArray.replaceIndent("   ")} as `_airbyte_type_errors`
             |FROM
-            |   $unityCatalogName.${stream.id.rawTableId(QUOTE)}
+            |   `$unityCatalogName`.${stream.id.rawTableId(QUOTE)}
             |WHERE
             |   $rawTableSelectionCondition""".trimMargin()
 
@@ -445,11 +445,11 @@ class DatabricksSqlGenerator(
         return Sql.concat(
             Sql.of(
                 """
-                CREATE OR REPLACE TABLE $unityCatalogName.${stream.finalTableId(QUOTE)}
-                AS SELECT * FROM $unityCatalogName.${stream.finalTableId(QUOTE, finalSuffix)}
+                CREATE OR REPLACE TABLE `$unityCatalogName`.${stream.finalTableId(QUOTE)}
+                AS SELECT * FROM `$unityCatalogName`.${stream.finalTableId(QUOTE, finalSuffix)}
             """.trimIndent(),
             ),
-            Sql.of("DROP TABLE $unityCatalogName.${stream.finalTableId(QUOTE, finalSuffix)}"),
+            Sql.of("DROP TABLE `$unityCatalogName`.${stream.finalTableId(QUOTE, finalSuffix)}"),
         )
     }
 
@@ -462,7 +462,7 @@ class DatabricksSqlGenerator(
     override fun clearLoadedAt(streamId: StreamId): Sql {
         return Sql.of(
             """
-            UPDATE $unityCatalogName.${streamId.rawTableId(QUOTE)}
+            UPDATE `$unityCatalogName`.${streamId.rawTableId(QUOTE)}
             SET $AB_LOADED_AT = NULL
         """.trimIndent(),
         )
