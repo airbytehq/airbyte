@@ -53,7 +53,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
 ```
 
 6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using bot token authentication.
-7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**. 
+7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**.
 8. Search for your newly created app. (If you are using the desktop version of Slack, you may need to restart Slack for it to pick up the new App). Add the App to all channels you want to sync data from.
 
 :::note
