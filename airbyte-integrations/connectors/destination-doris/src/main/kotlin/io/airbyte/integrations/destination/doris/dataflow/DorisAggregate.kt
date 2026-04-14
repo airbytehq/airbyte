@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.doris.dataflow
 
-import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanValue
@@ -18,21 +17,21 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.util.serializeToString
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.doris.write.DorisStreamLoadClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import java.io.ByteArrayOutputStream
-import java.nio.charset.StandardCharsets
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 private val log = KotlinLogging.logger {}
 private val DORIS_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
@@ -81,8 +80,8 @@ class DorisAggregate(
      * Special handling for Airbyte internal columns:
      * - _airbyte_meta: ObjectValue must be serialized to JSON string (Doris column is STRING)
      * - _airbyte_extracted_at: IntegerValue (epoch millis) is passed as-is (Doris handles it)
-     * - ObjectValue/ArrayValue: serialized to JSON string for STRING columns,
-     *   or kept as nested structure for JSON columns
+     * - ObjectValue/ArrayValue: serialized to JSON string for STRING columns, or kept as nested
+     * structure for JSON columns
      */
     private fun toJsonValue(fieldName: String, value: AirbyteValue): Any? {
         return when (value) {
@@ -94,11 +93,11 @@ class DorisAggregate(
             is DateValue -> value.value.toString()
             is TimestampWithTimezoneValue -> {
                 // Convert to UTC and format without timezone suffix for Doris DATETIME
-                val utcDateTime = value.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime()
+                val utcDateTime =
+                    value.value.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime()
                 utcDateTime.format(DORIS_DATETIME_FORMATTER)
             }
-            is TimestampWithoutTimezoneValue ->
-                value.value.format(DORIS_DATETIME_FORMATTER)
+            is TimestampWithoutTimezoneValue -> value.value.format(DORIS_DATETIME_FORMATTER)
             is TimeWithTimezoneValue -> value.value.toString()
             is TimeWithoutTimezoneValue -> value.value.toString()
             is ObjectValue -> {

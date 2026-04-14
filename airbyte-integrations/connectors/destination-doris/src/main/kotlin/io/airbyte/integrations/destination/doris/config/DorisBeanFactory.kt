@@ -87,11 +87,12 @@ class DorisBeanFactory {
     @Named("dorisJdbcConnection")
     fun jdbcConnection(config: DorisConfiguration): Connection {
         Class.forName("com.mysql.cj.jdbc.Driver")
-        val conn = DriverManager.getConnection(
-            config.jdbcUrl,
-            config.username,
-            config.password,
-        )
+        val conn =
+            DriverManager.getConnection(
+                config.jdbcUrl,
+                config.username,
+                config.password,
+            )
         conn.createStatement().use { it.execute("SET time_zone = '+00:00'") }
         return conn
     }

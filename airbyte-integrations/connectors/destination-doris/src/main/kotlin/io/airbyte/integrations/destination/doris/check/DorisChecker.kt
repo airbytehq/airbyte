@@ -52,8 +52,7 @@ class DorisChecker(
                 DUPLICATE KEY(`test_col`)
                 DISTRIBUTED BY HASH(`test_col`) BUCKETS AUTO
                 PROPERTIES ("replication_num" = "1")
-                """
-                    .trimIndent()
+                """.trimIndent()
             )
         }
     }

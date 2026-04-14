@@ -90,8 +90,7 @@ object DorisContainerHelper {
 
     fun getPassword(): String = PASSWORD
 
-    fun getJdbcUrl(): String =
-        String.format(JDBC_URL_TEMPLATE, getHost(), getQueryPort())
+    fun getJdbcUrl(): String = String.format(JDBC_URL_TEMPLATE, getHost(), getQueryPort())
 
     fun getConnection(): Connection {
         Class.forName("com.mysql.cj.jdbc.Driver")
@@ -108,8 +107,8 @@ object DorisContainerHelper {
     }
 
     /**
-     * Wait for the Backend node to be alive and have capacity. This is the same approach used by the
-     * Flink Doris Connector.
+     * Wait for the Backend node to be alive and have capacity. This is the same approach used by
+     * the Flink Doris Connector.
      */
     private fun waitForBackendReady() {
         log.info { "Waiting for Doris Backend to be ready..." }
@@ -125,8 +124,7 @@ object DorisContainerHelper {
                             val alive = rs.getString("Alive").trim()
                             val totalCapacity = rs.getString("TotalCapacity").trim()
                             if (
-                                alive.equals("true", ignoreCase = true) &&
-                                    totalCapacity != "0.000"
+                                alive.equals("true", ignoreCase = true) && totalCapacity != "0.000"
                             ) {
                                 log.info {
                                     "Doris Backend is ready. Alive=$alive, TotalCapacity=$totalCapacity"

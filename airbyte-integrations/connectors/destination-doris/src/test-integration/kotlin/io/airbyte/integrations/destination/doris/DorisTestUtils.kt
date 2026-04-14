@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.doris
 
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.integrations.destination.doris.spec.DorisConfiguration
 import io.airbyte.integrations.destination.doris.spec.DorisConfigurationFactory
 import io.airbyte.integrations.destination.doris.spec.DorisSpecification
@@ -45,7 +44,6 @@ object DorisTestUtils {
                 "username": "${DorisContainerHelper.getUsername()}",
                 "password": "${DorisContainerHelper.getPassword()}"
             }
-            """
-            .trimIndent()
+            """.trimIndent()
     }
 }

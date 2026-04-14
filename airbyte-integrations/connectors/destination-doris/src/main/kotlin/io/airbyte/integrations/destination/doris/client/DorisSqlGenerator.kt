@@ -69,8 +69,7 @@ class DorisSqlGenerator {
             $keyModel
             $distributeBy
             PROPERTIES ("replication_num" = "1")
-            """
-                .trimIndent()
+            """.trimIndent()
         )
 
         return statements.toString().andLog()
@@ -80,8 +79,7 @@ class DorisSqlGenerator {
         "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`".andLog()
 
     fun renameTable(sourceTableName: TableName, targetTableName: TableName): String =
-        "ALTER TABLE `${sourceTableName.namespace}`.`${sourceTableName.name}` RENAME `${targetTableName.name}`"
-            .andLog()
+        "ALTER TABLE `${sourceTableName.namespace}`.`${sourceTableName.name}` RENAME `${targetTableName.name}`".andLog()
 
     fun copyTable(
         columnNames: Set<String>,
@@ -114,8 +112,7 @@ class DorisSqlGenerator {
         "SELECT count(1) $alias FROM `${tableName.namespace}`.`${tableName.name}`".andLog()
 
     fun getGenerationId(tableName: TableName, alias: String = ""): String =
-        "SELECT `$COLUMN_NAME_AB_GENERATION_ID` $alias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1"
-            .andLog()
+        "SELECT `$COLUMN_NAME_AB_GENERATION_ID` $alias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1".andLog()
 
     fun alterTable(alterationSummary: ColumnChangeset, tableName: TableName): String {
         val statements = mutableListOf<String>()

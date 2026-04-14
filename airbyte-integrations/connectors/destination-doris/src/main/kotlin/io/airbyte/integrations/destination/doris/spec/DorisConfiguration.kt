@@ -52,8 +52,8 @@ class DorisConfigurationFactory :
             password = pojo.password,
             batchMaxRows = pojo.batchMaxRows ?: DorisConfiguration.Defaults.BATCH_MAX_ROWS,
             batchMaxBytes = pojo.batchMaxBytes ?: DorisConfiguration.Defaults.BATCH_MAX_BYTES,
-            batchFlushIntervalMs =
-                pojo.batchFlushIntervalMs ?: DorisConfiguration.Defaults.BATCH_FLUSH_INTERVAL_MS,
+            batchFlushIntervalMs = pojo.batchFlushIntervalMs
+                    ?: DorisConfiguration.Defaults.BATCH_FLUSH_INTERVAL_MS,
             flushQueueSize = pojo.flushQueueSize ?: DorisConfiguration.Defaults.FLUSH_QUEUE_SIZE,
             enableGzip = pojo.enableGzip ?: false,
         )
@@ -72,8 +72,8 @@ class DorisConfigurationFactory :
             password = overrides.getOrDefault("password", spec.password),
             batchMaxRows = spec.batchMaxRows ?: DorisConfiguration.Defaults.BATCH_MAX_ROWS,
             batchMaxBytes = spec.batchMaxBytes ?: DorisConfiguration.Defaults.BATCH_MAX_BYTES,
-            batchFlushIntervalMs =
-                spec.batchFlushIntervalMs ?: DorisConfiguration.Defaults.BATCH_FLUSH_INTERVAL_MS,
+            batchFlushIntervalMs = spec.batchFlushIntervalMs
+                    ?: DorisConfiguration.Defaults.BATCH_FLUSH_INTERVAL_MS,
             flushQueueSize = spec.flushQueueSize ?: DorisConfiguration.Defaults.FLUSH_QUEUE_SIZE,
             enableGzip = spec.enableGzip ?: false,
         )

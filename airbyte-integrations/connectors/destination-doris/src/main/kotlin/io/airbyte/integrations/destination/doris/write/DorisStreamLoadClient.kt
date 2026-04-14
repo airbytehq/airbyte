@@ -117,9 +117,7 @@ class DorisStreamLoadClient(
                                 "errorDetail=$errorDetail"
                         }
                     } else {
-                        log.error {
-                            "Stream load HTTP error: code=$statusCode, body=$responseBody"
-                        }
+                        log.error { "Stream load HTTP error: code=$statusCode, body=$responseBody" }
                     }
                 }
             } catch (e: IOException) {

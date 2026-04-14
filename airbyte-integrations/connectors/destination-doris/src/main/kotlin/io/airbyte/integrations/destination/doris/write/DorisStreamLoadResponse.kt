@@ -22,8 +22,7 @@ data class DorisStreamLoadResponse(
     @JsonProperty("Label") val label: String? = null,
     @JsonProperty("ExistingJobStatus") val existingJobStatus: String? = null,
 ) {
-    fun isSuccess(): Boolean =
-        status == LoadStatus.SUCCESS || status == LoadStatus.PUBLISH_TIMEOUT
+    fun isSuccess(): Boolean = status == LoadStatus.SUCCESS || status == LoadStatus.PUBLISH_TIMEOUT
 
     fun isLabelAlreadyExists(): Boolean = status == LoadStatus.LABEL_ALREADY_EXISTS
 

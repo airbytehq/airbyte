@@ -180,7 +180,8 @@ class DorisAirbyteClient(
     override suspend fun namespaceExists(namespace: String): Boolean {
         return try {
             connection.createStatement().use { stmt ->
-                stmt.executeQuery(
+                stmt
+                    .executeQuery(
                         "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '$namespace'"
                     )
                     .use { rs -> rs.next() }
@@ -193,7 +194,8 @@ class DorisAirbyteClient(
     override suspend fun tableExists(table: TableName): Boolean {
         return try {
             connection.createStatement().use { stmt ->
-                stmt.executeQuery(
+                stmt
+                    .executeQuery(
                         "SELECT TABLE_NAME FROM information_schema.TABLES " +
                             "WHERE TABLE_SCHEMA = '${table.namespace}' AND TABLE_NAME = '${table.name}'"
                     )

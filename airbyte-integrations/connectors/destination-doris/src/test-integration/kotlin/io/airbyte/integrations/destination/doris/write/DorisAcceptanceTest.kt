@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.doris.write
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
@@ -17,8 +16,6 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.DedupBehavior
-import java.util.Calendar
-import java.util.TimeZone
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
@@ -29,6 +26,8 @@ import io.airbyte.integrations.destination.doris.fixtures.DorisExpectedRecordMap
 import io.airbyte.integrations.destination.doris.schema.toDorisCompatibleName
 import io.airbyte.integrations.destination.doris.spec.DorisSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import java.util.Calendar
+import java.util.TimeZone
 import org.junit.jupiter.api.BeforeAll
 
 class DorisAcceptanceTest :
@@ -83,8 +82,7 @@ class DorisDataDumper : DestinationDataDumper {
             conn.createStatement().use { stmt ->
                 val rs = stmt.executeQuery("SELECT * FROM `$cleanedStreamName`")
                 val metaData = rs.metaData
-                val columnNames =
-                    (1..metaData.columnCount).map { metaData.getColumnName(it) }
+                val columnNames = (1..metaData.columnCount).map { metaData.getColumnName(it) }
 
                 while (rs.next()) {
                     val dataMap = linkedMapOf<String, AirbyteValue>()
@@ -140,9 +138,7 @@ object DorisDataCleaner : DestinationCleaner {
                     while (rs.next()) {
                         databases.add(rs.getString("SCHEMA_NAME"))
                     }
-                    databases.forEach { db ->
-                        stmt.execute("DROP DATABASE IF EXISTS `$db`")
-                    }
+                    databases.forEach { db -> stmt.execute("DROP DATABASE IF EXISTS `$db`") }
                 }
             }
         } catch (_: Exception) {
