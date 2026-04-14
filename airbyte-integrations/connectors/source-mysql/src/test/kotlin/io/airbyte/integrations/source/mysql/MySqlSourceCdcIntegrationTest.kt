@@ -159,7 +159,7 @@ class MySqlSourceCdcIntegrationTest {
                     "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
                     "SET @@GLOBAL.GTID_MODE = 'ON';"
             val grant =
-                "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
+                "GRANT SELECT, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
                     "ON *.* TO '${targetContainer.username}'@'%';"
             targetContainer.execAsRoot(gtidOn)
             targetContainer.execAsRoot(grant)
