@@ -34,7 +34,7 @@ def _make_stream(light_parquet_check: bool = False, parser=None, files=None):
     """Build a mock stream with the minimal surface used by the strategy."""
     stream = MagicMock()
     stream.name = "test_stream"
-    stream.config = MagicMock()
+    stream.config = MagicMock(spec=S3FileBasedStreamConfig)
     stream.config.light_parquet_check = light_parquet_check
 
     if parser is None:
