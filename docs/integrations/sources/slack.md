@@ -95,7 +95,7 @@ If you are using a bot token to authenticate to Slack, a refresh token is not re
 
 **For Airbyte Open Source:**
 
-1. In the navigation bar, click **Sources**. 
+1. In the navigation bar, click **Sources**.
 2. Click **New source**.
 3. Find and click **Slack**.
 4. Click **Sign in via Slack (OAuth)**. Enter the Access Token, Client ID, and Client Secret. Alternatively, enter the Bot Token from Step 1.
