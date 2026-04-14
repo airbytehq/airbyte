@@ -343,7 +343,8 @@ class JdbcAccessorTest {
         h2.execute("DELETE FROM time_precision_test")
         val valueWithMicros = LocalTime.of(14, 30, 45, 123456000)
         h2.createConnection().use { conn ->
-            conn.prepareStatement("INSERT INTO time_precision_test (col_time) VALUES (?)").use { stmt ->
+            conn.prepareStatement("INSERT INTO time_precision_test (col_time) VALUES (?)").use {
+                stmt ->
                 TimeAccessor.set(stmt, 1, valueWithMicros)
                 stmt.execute()
             }
