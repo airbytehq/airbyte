@@ -5,8 +5,11 @@
 import io
 import json
 import logging
+import queue as queue_module
 import re
+import socket
 import threading
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import groupby
@@ -578,9 +581,32 @@ class GoogleAdsRetriever(SimpleRetriever):
         may be re-emitted on retry. This is acceptable because all Google Ads streams have
         primary keys and destinations deduplicate accordingly.
         """
+        retriever_logger = logging.getLogger("airbyte.google_ads.retriever")
+        slice_desc = {
+            "start_time": stream_slice.cursor_slice.get("start_time"),
+            "end_time": stream_slice.cursor_slice.get("end_time"),
+            "partition": str(stream_slice.partition)[:100],
+        }
+        retriever_logger.info(
+            "Retriever _read_pages START: stream=%s, slice=%s, retry=%d",
+            self.name,
+            slice_desc,
+            retry_count,
+        )
+        page_start = time.monotonic()
         try:
-            yield from super()._read_pages(records_generator_fn, stream_slice)
-        except requests.exceptions.ChunkedEncodingError:
+            record_count = 0
+            for record in super()._read_pages(records_generator_fn, stream_slice):
+                record_count += 1
+                yield record
+            retriever_logger.info(
+                "Retriever _read_pages COMPLETED: stream=%s, records=%d, elapsed=%.1fs, slice=%s",
+                self.name,
+                record_count,
+                time.monotonic() - page_start,
+                slice_desc,
+            )
+        except (requests.exceptions.ChunkedEncodingError, socket.timeout):
             sub_slices = self._split_slice(stream_slice)
 
             if sub_slices is None:
@@ -1067,44 +1093,257 @@ class GoogleAdsStreamingDecoder(Decoder):
     def is_stream_response(self) -> bool:
         return True
 
+    # Read timeout (seconds) for iter_content() to prevent indefinite blocking
+    # when the HTTP response stream never terminates in Cloud environments.
+    # This is an application-level timeout: if no chunk arrives within this
+    # window, socket.timeout is raised to trigger retry / slice-splitting.
+    stream_read_timeout: float = 300.0  # 5 minutes
+
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
-        data, complete = self._buffer_up_to_limit(response)
+        decode_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
+        decode_start = time.monotonic()
+        resp_id = f"{id(response):x}"[-8:]
+        decode_logger.info(
+            "Decoder START [resp=%s]: url=%s, status=%s",
+            resp_id,
+            response.url[:120] if response.url else "N/A",
+            response.status_code,
+        )
+        # Use application-level timeout wrapper around iter_content().
+        # Socket-level timeouts do not work in Cloud because a sidecar proxy
+        # keeps the local socket alive while the upstream connection hangs.
+        timeout_stream = self._iter_content_with_timeout(response, self.chunk_size, self.stream_read_timeout, resp_id)
+        data, complete = self._buffer_up_to_limit(timeout_stream, resp_id)
+        buffer_elapsed = time.monotonic() - decode_start
         if complete:
+            decode_logger.info(
+                "Decoder [resp=%s]: buffered complete response (%d bytes) in %.1fs, decoding via fast path",
+                resp_id,
+                len(data) if isinstance(data, (bytes, bytearray)) else -1,
+                buffer_elapsed,
+            )
             yield from self.parser.parse(io.BytesIO(data))
+            decode_logger.info(
+                "Decoder DONE [resp=%s] (fast path) in %.1fs",
+                resp_id,
+                time.monotonic() - decode_start,
+            )
             return
 
+        decode_logger.info(
+            "Decoder [resp=%s]: response exceeds %d bytes after %.1fs, switching to streaming path",
+            resp_id,
+            self.max_direct_decode_bytes,
+            buffer_elapsed,
+        )
         records_batch: List[Dict[str, Any]] = []
-        for record in self._parse_records_from_stream(data):
+        total_records = 0
+        last_progress_log = time.monotonic()
+        for record in self._parse_records_from_stream(data, resp_id=resp_id):
             records_batch.append(record)
+            total_records += 1
             if len(records_batch) >= 100:
                 yield {"results": records_batch}
                 records_batch = []
+                now = time.monotonic()
+                if now - last_progress_log >= 30.0:
+                    decode_logger.info(
+                        "Decoder [resp=%s] streaming progress: %d records yielded so far, elapsed=%.1fs",
+                        resp_id,
+                        total_records,
+                        now - decode_start,
+                    )
+                    last_progress_log = now
 
         if records_batch:
             yield {"results": records_batch}
+        decode_logger.info(
+            "Decoder DONE [resp=%s] (streaming path): %d records in %.1fs",
+            resp_id,
+            total_records,
+            time.monotonic() - decode_start,
+        )
 
-    def _buffer_up_to_limit(self, response: requests.Response) -> Tuple[Union[bytes, Iterable[bytes]], bool]:
+    def _buffer_up_to_limit(self, response_stream: Iterable[bytes], resp_id: str = "") -> Tuple[Union[bytes, Iterable[bytes]], bool]:
+        buf_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
         buf = bytearray()
-        response_stream = response.iter_content(chunk_size=self.chunk_size)
+        chunk_count = 0
+        buf_start = time.monotonic()
 
-        while chunk := next(response_stream, None):
+        while True:
+            chunk_start = time.monotonic()
+            chunk = next(response_stream, None)
+            chunk_elapsed = time.monotonic() - chunk_start
+            if chunk is None:
+                buf_logger.info(
+                    "Buffer [resp=%s]: stream ended after %d chunks, total_bytes=%d, total_time=%.1fs",
+                    resp_id,
+                    chunk_count,
+                    len(buf),
+                    time.monotonic() - buf_start,
+                )
+                break
+            chunk_count += 1
             buf.extend(chunk)
+            if chunk_elapsed > 5.0 or chunk_count <= 2:
+                buf_logger.info(
+                    "Buffer [resp=%s]: chunk #%d received, chunk_bytes=%d, total_bytes=%d, chunk_wait=%.1fs",
+                    resp_id,
+                    chunk_count,
+                    len(chunk),
+                    len(buf),
+                    chunk_elapsed,
+                )
             if len(buf) >= self.max_direct_decode_bytes:
+                buf_logger.info(
+                    "Buffer [resp=%s]: exceeded limit (%d bytes) after %d chunks in %.1fs, switching to streaming",
+                    resp_id,
+                    len(buf),
+                    chunk_count,
+                    time.monotonic() - buf_start,
+                )
                 return (self._chain_prefix_and_stream(bytes(buf), response_stream), False)
         return (bytes(buf), True)
+
+    @staticmethod
+    def _iter_content_with_timeout(
+        response: requests.Response,
+        chunk_size: int,
+        timeout: float,
+        resp_id: str = "",
+    ) -> Generator[bytes, None, None]:
+        """Wrap response.iter_content() with an application-level read timeout.
+
+        A background daemon thread reads chunks from the HTTP response into a
+        bounded queue.  The caller consumes from the queue with a timeout.  If
+        no chunk arrives within *timeout* seconds, ``socket.timeout`` is raised
+        so that the existing retry / slice-splitting logic can kick in.
+
+        This is necessary in Cloud because a sidecar proxy keeps the local
+        socket alive even when the upstream connection to Google hangs, which
+        means socket-level ``settimeout()`` never fires.
+        """
+        chunk_queue: queue_module.Queue = queue_module.Queue(maxsize=20)
+        _DONE = None  # sentinel: stream finished normally
+
+        to_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
+
+        def _reader() -> None:
+            reader_chunks = 0
+            reader_bytes = 0
+            try:
+                to_logger.info("ReaderThread [resp=%s]: started, reading iter_content(chunk_size=%d)", resp_id, chunk_size)
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    reader_chunks += 1
+                    reader_bytes += len(chunk)
+                    chunk_queue.put(("chunk", chunk))
+                to_logger.info(
+                    "ReaderThread [resp=%s]: iter_content() completed normally, total_chunks=%d, total_bytes=%d",
+                    resp_id,
+                    reader_chunks,
+                    reader_bytes,
+                )
+                chunk_queue.put(("done", _DONE))
+            except Exception as exc:
+                to_logger.warning(
+                    "ReaderThread [resp=%s]: iter_content() raised %s after %d chunks (%d bytes): %s",
+                    resp_id,
+                    type(exc).__name__,
+                    reader_chunks,
+                    reader_bytes,
+                    exc,
+                )
+                chunk_queue.put(("error", exc))
+
+        reader_thread = threading.Thread(target=_reader, daemon=True, name=f"iter-content-{resp_id}")
+        reader_thread.start()
+
+        consumer_chunks = 0
+        consumer_bytes = 0
+        consumer_start = time.monotonic()
+        last_consumer_log = consumer_start
+        while True:
+            try:
+                msg_type, payload = chunk_queue.get(timeout=timeout)
+            except queue_module.Empty:
+                to_logger.warning(
+                    "Timeout [resp=%s]: no data received for %.0fs, raising socket.timeout",
+                    resp_id,
+                    timeout,
+                )
+                raise socket.timeout(f"iter_content() produced no data for {timeout}s [resp={resp_id}]")
+
+            if msg_type == "done":
+                to_logger.info(
+                    "Consumer [resp=%s]: stream done, consumed %d chunks (%d bytes) in %.1fs",
+                    resp_id,
+                    consumer_chunks,
+                    consumer_bytes,
+                    time.monotonic() - consumer_start,
+                )
+                return
+            if msg_type == "error":
+                to_logger.warning(
+                    "Consumer [resp=%s]: received error after %d chunks (%d bytes): %s",
+                    resp_id,
+                    consumer_chunks,
+                    consumer_bytes,
+                    payload,
+                )
+                raise payload  # type: ignore[misc]
+            # msg_type == "chunk"
+            consumer_chunks += 1
+            consumer_bytes += len(payload)
+            now = time.monotonic()
+            if consumer_chunks <= 2 or now - last_consumer_log >= 30.0:
+                to_logger.info(
+                    "Consumer [resp=%s]: yielding chunk #%d (%d bytes, total=%d bytes, qsize=%d, elapsed=%.1fs)",
+                    resp_id,
+                    consumer_chunks,
+                    len(payload),
+                    consumer_bytes,
+                    chunk_queue.qsize(),
+                    now - consumer_start,
+                )
+                last_consumer_log = now
+            yield payload  # type: ignore[misc]
 
     @staticmethod
     def _chain_prefix_and_stream(prefix: bytes, rest_stream: Iterable[bytes]) -> Iterable[bytes]:
         yield prefix
         yield from rest_stream
 
-    def _parse_records_from_stream(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
+    def _parse_records_from_stream(
+        self, byte_iter: Iterable[bytes], encoding: str = "utf-8", resp_id: str = ""
+    ) -> Generator[Dict[str, Any], None, None]:
+        parse_logger = logging.getLogger("airbyte.google_ads.streaming_decoder")
         string_state = StringParseState()
         results_state = ResultsArrayState()
         record_state = RecordParseState()
         top_level_state = TopLevelObjectState()
 
+        chunk_idx = 0
+        total_bytes_parsed = 0
+        total_records_parsed = 0
+        parse_start = time.monotonic()
+        last_chunk_log = parse_start
         for chunk in byte_iter:
+            chunk_idx += 1
+            chunk_len = len(chunk)
+            total_bytes_parsed += chunk_len
+            chunk_parse_start = time.monotonic()
+            now = time.monotonic()
+            if chunk_idx <= 2 or now - last_chunk_log >= 30.0:
+                parse_logger.info(
+                    "StreamParser [resp=%s]: processing chunk #%d (%d bytes, total_parsed=%d bytes, records_so_far=%d, elapsed=%.1fs)",
+                    resp_id,
+                    chunk_idx,
+                    chunk_len,
+                    total_bytes_parsed,
+                    total_records_parsed,
+                    now - parse_start,
+                )
+                last_chunk_log = now
             for char in chunk.decode(encoding, errors="replace"):
                 self._append_to_current_record_if_any(char, record_state)
 
@@ -1124,8 +1363,28 @@ class GoogleAdsStreamingDecoder(Decoder):
 
                 record = self._parse_record_structure(char, results_state, record_state)
                 if record is not None:
+                    total_records_parsed += 1
                     yield record
+            # Log after each chunk is fully parsed
+            chunk_parse_elapsed = time.monotonic() - chunk_parse_start
+            if chunk_parse_elapsed > 5.0 or chunk_idx <= 2:
+                parse_logger.info(
+                    "StreamParser [resp=%s]: chunk #%d parsed in %.1fs (%d bytes), total_records=%d",
+                    resp_id,
+                    chunk_idx,
+                    chunk_parse_elapsed,
+                    chunk_len,
+                    total_records_parsed,
+                )
 
+        parse_logger.info(
+            "StreamParser [resp=%s]: all chunks processed, total_chunks=%d, total_bytes=%d, total_records=%d, elapsed=%.1fs",
+            resp_id,
+            chunk_idx,
+            total_bytes_parsed,
+            total_records_parsed,
+            time.monotonic() - parse_start,
+        )
         # EOF validation
         if (
             string_state.inside_string
