@@ -62,12 +62,14 @@ class StateManagerFactory(
         configuredCatalog: ConfiguredAirbyteCatalog,
         inputState: InputState,
     ): StateManager {
+        val droppedStreamIDs = mutableListOf<StreamIdentifier>()
         val allStreams: List<Stream> =
             metadataQuerierFactory.session(config).use { mq ->
                 configuredCatalog.streams.mapNotNull { configuredStream ->
                     val streamID = StreamIdentifier.from(configuredStream.stream)
                     toStream(mq, configuredStream)
                         ?: run {
+                            droppedStreamIDs += streamID
                             outputConsumer.accept(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
@@ -82,6 +84,14 @@ class StateManagerFactory(
                         }
                 }
             }
+        if (config.global && droppedStreamIDs.isNotEmpty()) {
+            throw ConfigErrorException(
+                "CDC sync aborted: streams ${droppedStreamIDs.map { it.toString() }} could not be " +
+                    "read due to catalog validation errors. Advancing the global CDC position " +
+                    "would cause permanent data loss for these streams. Please resolve the " +
+                    "errors above and retry.",
+            )
+        }
         return if (config.global) {
             when (inputState) {
                 is StreamInputState ->
