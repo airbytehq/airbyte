@@ -210,7 +210,10 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
                     _build_search_analytics_response(
                         [
                             _build_search_analytics_row(
-                                "2024-01-01", "usa", "DESKTOP", "test query",
+                                "2024-01-01",
+                                "usa",
+                                "DESKTOP",
+                                "test query",
                             ),
                         ]
                     )
@@ -228,9 +231,7 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
 
         search_appearances = {r.record.data["search_appearance"] for r in records if "search_appearance" in r.record.data}
 
-        assert len(search_appearances) >= 1, (
-            f"Expected records with distinct search_appearance values, got: {search_appearances}"
-        )
+        assert len(search_appearances) >= 1, f"Expected records with distinct search_appearance values, got: {search_appearances}"
         for sa in search_appearances:
             assert sa in ("AMP_TOP_STORIES", "RICH_RESULT"), f"Unexpected search_appearance: {sa}"
 

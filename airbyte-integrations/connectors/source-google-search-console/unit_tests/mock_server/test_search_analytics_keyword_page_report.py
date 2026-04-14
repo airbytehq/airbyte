@@ -212,7 +212,11 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
                     _build_search_analytics_response(
                         [
                             _build_search_analytics_row(
-                                "2024-01-01", "usa", "DESKTOP", "test query", "https://example.com/page1",
+                                "2024-01-01",
+                                "usa",
+                                "DESKTOP",
+                                "test query",
+                                "https://example.com/page1",
                             ),
                         ]
                     )
@@ -232,9 +236,7 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         search_appearances = {r.record.data["search_appearance"] for r in records if "search_appearance" in r.record.data}
 
         # Should have records from at least one search appearance type
-        assert len(search_appearances) >= 1, (
-            f"Expected records with distinct search_appearance values, got: {search_appearances}"
-        )
+        assert len(search_appearances) >= 1, f"Expected records with distinct search_appearance values, got: {search_appearances}"
         # Verify all search_appearance values come from the parent stream
         for sa in search_appearances:
             assert sa in ("AMP_TOP_STORIES", "RICH_RESULT"), f"Unexpected search_appearance: {sa}"
