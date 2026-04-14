@@ -244,6 +244,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.11.0 | 2026-04-14 | [](https://github.com/airbytehq/airbyte/pull/) | Add `search_appearance` field to keyword report streams to distinguish records by search appearance type |
 | 1.10.30 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.10.29 | 2026-04-01 | [75582](https://github.com/airbytehq/airbyte/pull/75582) | Add `oauth_connector_input_specification` with granular scopes |
 | 1.10.28 | 2026-03-31 | [75699](https://github.com/airbytehq/airbyte/pull/75699) | Update dependencies |

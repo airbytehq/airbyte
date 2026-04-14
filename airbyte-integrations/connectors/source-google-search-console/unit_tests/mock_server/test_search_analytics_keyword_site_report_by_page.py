@@ -167,13 +167,72 @@ class TestSearchAnalyticsKeywordSiteReportByPageStream(TestCase):
         assert records[0].record.data["date"] == "2024-01-01", "Expected specific date in record"
         assert records[0].record.data["country"] == "usa", "Expected specific country in record"
 
-        # Verify transformations added site_url
+        # Verify transformations added site_url and search_appearance
         for record in records:
             assert record.record.data["site_url"] == "https://example.com/"
             assert "date" in record.record.data
             assert "country" in record.record.data
             assert "device" in record.record.data
             assert "query" in record.record.data
+            assert "search_appearance" in record.record.data, "search_appearance field should be present in record"
+            assert record.record.data["search_appearance"] in (
+                "AMP_TOP_STORIES",
+                "INSTANT_APP",
+            ), f"Unexpected search_appearance value: {record.record.data['search_appearance']}"
+
+    @HttpMocker()
+    def test_search_appearance_distinguishes_records(self, http_mocker: HttpMocker) -> None:
+        """Test that records from different search appearance types are distinguishable.
+
+        This verifies the fix: before this change, search_appearance was not added to
+        the output records, making records from different search appearance types
+        indistinguishable.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [
+                            {"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["RICH_RESULT"], "clicks": 20, "impressions": 200, "ctr": 0.1, "position": 2.0},
+                        ]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query"]:
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [
+                            _build_search_analytics_row(
+                                "2024-01-01", "usa", "DESKTOP", "test query",
+                            ),
+                        ]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        search_appearances = {r.record.data["search_appearance"] for r in records if "search_appearance" in r.record.data}
+
+        assert len(search_appearances) >= 1, (
+            f"Expected records with distinct search_appearance values, got: {search_appearances}"
+        )
+        for sa in search_appearances:
+            assert sa in ("AMP_TOP_STORIES", "RICH_RESULT"), f"Unexpected search_appearance: {sa}"
 
     @HttpMocker()
     def test_error_handler_ignore_permission_error(self, http_mocker: HttpMocker) -> None:

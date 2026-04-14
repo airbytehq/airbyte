@@ -1,4 +1,4 @@
-version: 6.44.0
+version: 6.45.0
 
 type: DeclarativeSource
 
@@ -1112,6 +1112,7 @@ definitions:
       - query
       - page
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
@@ -1121,6 +1122,9 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          - path:
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
       - type: AddFields
         fields:
           - path:
@@ -1166,6 +1170,7 @@ definitions:
       - device
       - query
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
@@ -1175,6 +1180,9 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          - path:
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
       - type: AddFields
         fields:
           - path:
@@ -1216,6 +1224,7 @@ definitions:
       - device
       - query
       - search_type
+      - search_appearance
     transformations:
       - type: AddFields
         fields:
@@ -1225,6 +1234,9 @@ definitions:
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
+          - path:
+              - search_appearance
+            value: "{{ stream_partition.get('search_appearance') }}"
       - type: AddFields
         fields:
           - path:
@@ -1908,6 +1920,11 @@ schemas:
         type:
           - "null"
           - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
+        type:
+          - "null"
+          - string
       date:
         description: The date of the search data collected.
         type:
@@ -1974,6 +1991,11 @@ schemas:
         type:
           - "null"
           - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
+        type:
+          - "null"
+          - string
       date:
         description: The date when the search data was recorded.
         type:
@@ -2032,6 +2054,11 @@ schemas:
         description: >-
           The type of search (e.g., web search, image search) that generated the
           analytics data.
+        type:
+          - "null"
+          - string
+      search_appearance:
+        description: "The type of search appearance (e.g., AMP_BLUE_LINK, RICH_RESULT)."
         type:
           - "null"
           - string
