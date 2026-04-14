@@ -72,6 +72,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.2.14-rc.3 | 2026-04-14 | | Concurrency tuning iteration 3: increase default_concurrency from 5 to 6 |
 | 3.2.14-rc.2 | 2026-04-13 | [76272](https://github.com/airbytehq/airbyte/pull/76272) | Concurrency tuning iteration 2: increase default_concurrency from 4 to 5 |
 | 3.2.14-rc.1 | 2026-04-10 | [76202](https://github.com/airbytehq/airbyte/pull/76202) | Add concurrency_level and num_workers for concurrency tuning |
 | 3.2.13 | 2026-03-31 | [75719](https://github.com/airbytehq/airbyte/pull/75719) | Update dependencies |
