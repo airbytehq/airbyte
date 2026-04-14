@@ -29,7 +29,7 @@ If you are using a Slack Bot Token, you can skip this section.
 If you authenticate using a **Bot Token**, this OAuth-specific limit does **not** apply.
 :::
 
-To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions. 
+To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions.
 
 1. Go to your [Apps](https://api.slack.com/apps)
 2. Click **Create New App**. Select **From Scratch**.
