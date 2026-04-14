@@ -97,11 +97,32 @@ constructor(
             var allocatableThreads =
                 threadPoolExecutor.maximumPoolSize - threadPoolExecutor.activeCount
 
+            // Track streams already dispatched in this scheduling cycle to prevent
+            // assigning multiple workers to the same stream. Without this guard,
+            // a just-dispatched worker that has not yet called bufferDequeue.take()
+            // may not fully penalise the queue size estimate, causing
+            // DetectStreamToFlush to select the same stream again. Concurrent
+            // workers on the same stream can produce identical S3 object keys
+            // (last-writer-wins), leading to silent data loss.
+            // See: https://github.com/airbytehq/airbyte/issues/76263
+            val dispatchedStreamsInCycle = mutableSetOf<StreamDescriptor>()
+
             while (allocatableThreads > 0) {
                 val next = detectStreamToFlush.nextStreamToFlush
 
                 if (next.isPresent) {
                     val desc = next.get()
+                    if (!dispatchedStreamsInCycle.add(desc)) {
+                        // This stream was already dispatched in the current cycle.
+                        // The detection logic still considers it eligible because the
+                        // previously dispatched worker has not yet dequeued its batch.
+                        // Break out — the next 1-second cycle will re-evaluate once
+                        // the in-flight worker has registered its batch size.
+                        logger.debug {
+                            "Retrieve Work -- Stream ${desc.namespace}:${desc.name} already dispatched in this cycle, ending cycle."
+                        }
+                        break
+                    }
                     val flushWorkerId = UUID.randomUUID()
                     runningFlushWorkers.trackFlushWorker(desc, flushWorkerId)
                     allocatableThreads--
