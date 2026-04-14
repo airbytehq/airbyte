@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Slack](htt
 
 ## Prerequisites
 
-Before you begin, have the following ready: 
+Before you begin, have the following ready:
 
 - Administrator access to an active Slack Workspace
 - Slack App OAuth (preferred) or Bot Token
