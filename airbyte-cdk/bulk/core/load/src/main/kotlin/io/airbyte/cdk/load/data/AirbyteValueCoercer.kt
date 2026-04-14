@@ -6,8 +6,11 @@ package io.airbyte.cdk.load.data
 
 import com.ethlo.time.ITU
 import com.ethlo.time.ParseConfig
+import io.airbyte.cdk.load.data.TemporalFormatters.DATE_TIME_FORMATTER
 import io.airbyte.cdk.load.data.json.JsonToAirbyteValue
 import io.airbyte.cdk.load.util.serializeToString
+import io.micronaut.context.annotation.Property
+import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.text.ParsePosition
@@ -18,7 +21,6 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalQueries
 
 /**
@@ -27,8 +29,21 @@ import java.time.temporal.TemporalQueries
  * More specifically: This class coerces the output of [JsonToAirbyteValue] to strongly-typed
  * [AirbyteValue]. In particular, this class will parse temporal types, and performs some
  * common-sense conversions among numeric types, as well as upcasting any value to StringValue.
+ *
+ * The [useFastTimestampParsing] flag controls timestamp parsing behavior:
+ * - When false (default): uses the original try-ZonedDateTime/catch-fallback-to-LocalDateTime
+ * pattern. Safe but slow due to exception-as-control-flow.
+ * - When true: uses ethlo/itu for fast ISO-8601 parsing (~25x faster) with a JDK TemporalQueries
+ * fallback for exotic formats. No exceptions on the hot path.
+ *
+ * Destinations opt in via the Micronaut property
+ * `airbyte.destination.core.coercion.use-fast-timestamp-parsing`.
  */
-object AirbyteValueCoercer {
+@Singleton
+class AirbyteValueCoercer(
+    @Property(name = "airbyte.destination.core.coercion.use-fast-timestamp-parsing")
+    private val useFastTimestampParsing: Boolean = false,
+) {
     fun coerce(
         value: AirbyteValue,
         type: AirbyteType,
@@ -68,7 +83,7 @@ object AirbyteValueCoercer {
                 // leave it unchanged.
                 is UnknownType -> value
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -123,7 +138,7 @@ object AirbyteValueCoercer {
             is DateValue -> value
             else ->
                 requireType<StringValue, DateValue>(value) {
-                    DateValue(LocalDate.parse(it.value, DATE_TIME_FORMATTER))
+                    DateValue(LocalDate.parse(it.value, TemporalFormatters.DATE_TIME_FORMATTER))
                 }
         }
 
@@ -132,17 +147,26 @@ object AirbyteValueCoercer {
             is TimeWithTimezoneValue -> value
             else ->
                 requireType<StringValue, TimeWithTimezoneValue>(value) {
-                    // Single parse + temporal query to detect timezone, avoiding the old
-                    // try-OffsetTime.parse/catch-fallback-to-LocalTime pattern.
-                    val parsed = TIME_FORMATTER.parse(it.value)
-                    val offset = parsed.query(TemporalQueries.offset())
                     val ot =
-                        if (offset != null) {
-                            // Has timezone offset (e.g. "12:00:00+01:00") — use it directly
-                            OffsetTime.from(parsed)
+                        if (useFastTimestampParsing) {
+                            // Single parse + temporal query to detect timezone, avoiding the
+                            // try-OffsetTime.parse/catch-fallback-to-LocalTime pattern.
+                            val parsed = TemporalFormatters.TIME_FORMATTER.parse(it.value)
+                            val offset = parsed.query(TemporalQueries.offset())
+                            if (offset != null) {
+                                // Has timezone offset (e.g. "12:00:00+01:00") — use it directly
+                                OffsetTime.from(parsed)
+                            } else {
+                                // No timezone (e.g. "12:00:00") — assume UTC
+                                LocalTime.from(parsed).atOffset(ZoneOffset.UTC)
+                            }
                         } else {
-                            // No timezone (e.g. "12:00:00") — assume UTC
-                            LocalTime.from(parsed).atOffset(ZoneOffset.UTC)
+                            try {
+                                OffsetTime.parse(it.value, TemporalFormatters.TIME_FORMATTER)
+                            } catch (_: Exception) {
+                                LocalTime.parse(it.value, TemporalFormatters.TIME_FORMATTER)
+                                    .atOffset(ZoneOffset.UTC)
+                            }
                         }
                     TimeWithTimezoneValue(ot)
                 }
@@ -153,7 +177,9 @@ object AirbyteValueCoercer {
             is TimeWithoutTimezoneValue -> value
             else ->
                 requireType<StringValue, TimeWithoutTimezoneValue>(value) {
-                    TimeWithoutTimezoneValue(LocalTime.parse(it.value, TIME_FORMATTER))
+                    TimeWithoutTimezoneValue(
+                        LocalTime.parse(it.value, TemporalFormatters.TIME_FORMATTER)
+                    )
                 }
         }
 
@@ -176,7 +202,27 @@ object AirbyteValueCoercer {
         }
 
     private fun offsetDateTime(it: StringValue): OffsetDateTime {
-        val s = it.value
+        return if (useFastTimestampParsing) {
+            offsetDateTimeFast(it.value)
+        } else {
+            offsetDateTimeLegacy(it.value)
+        }
+    }
+
+    /** Legacy path: try ZonedDateTime.parse, catch, fall back to LocalDateTime.parse. */
+    private fun offsetDateTimeLegacy(s: String): OffsetDateTime {
+        return try {
+            ZonedDateTime.parse(s, DATE_TIME_FORMATTER).toOffsetDateTime()
+        } catch (e: Exception) {
+            LocalDateTime.parse(s, DATE_TIME_FORMATTER).atOffset(ZoneOffset.UTC)
+        }
+    }
+
+    /**
+     * Fast path: uses ethlo/itu for ISO-8601 (~25x faster, no exceptions), with a JDK
+     * TemporalQueries fallback for non-ISO formats.
+     */
+    private fun offsetDateTimeFast(s: String): OffsetDateTime {
         if (looksLikeIso8601(s)) {
             // Fast path: ITU handles ISO-8601/RFC-3339 ~25x faster than JDK DateTimeFormatter,
             // and determines with/without timezone via position-based parsing (no exceptions).
@@ -256,13 +302,4 @@ object AirbyteValueCoercer {
             null
         }
     }
-
-    val DATE_TIME_FORMATTER: DateTimeFormatter =
-        DateTimeFormatter.ofPattern(
-            "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d][[' '][G]][[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][[' '][G]]]]"
-        )
-    val TIME_FORMATTER: DateTimeFormatter =
-        DateTimeFormatter.ofPattern(
-            "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
-        )
 }
