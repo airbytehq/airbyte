@@ -674,6 +674,23 @@ streams:
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/contacts"
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 6
+  max_concurrency: 20
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 50
+          interval: PT1S
+      matchers: []
+  ratelimit_reset_header: X-RateLimit-Reset
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  status_codes_for_ratelimit_hit:
+    - 429
 
 spec:
   type: Spec
@@ -702,6 +719,16 @@ spec:
         order: 1
         title: API Key
         airbyte_secret: true
+      # num_workers:  # Commented out for Phase 1 - using fixed default_concurrency=12
+      #   type: integer
+      #   title: Number of concurrent threads
+      #   minimum: 2
+      #   maximum: 20
+      #   default: 12
+      #   description: >-
+      #     The number of worker threads to use for the sync. More workers may
+      #     improve performance but will use more API quota.
+      #   order: 2
     additionalProperties: true
 
 metadata:
