@@ -236,6 +236,11 @@ spec:
       complete_oauth_output_specification:
         type: object
         properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+            - authorization
+            - access_token
           refresh_token:
             type: string
             path_in_connector_config:
