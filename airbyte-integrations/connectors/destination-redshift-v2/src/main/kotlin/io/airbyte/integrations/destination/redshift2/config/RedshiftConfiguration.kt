@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.redshift2.config
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.load.spec.S3StagingConfiguration
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
 
