@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
@@ -49,6 +50,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class DestinationMessageTest {
+    private val coercer = AirbyteValueCoercer(useFastTimestampParsing = true)
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
@@ -551,14 +553,14 @@ internal class DestinationMessageTest {
             1234,
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .emittedAtMs
         )
         assertEquals(
             1,
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["id"]
                 ?.let { (it.abValue as IntegerValue).value.toInt() }
         )
@@ -566,7 +568,7 @@ internal class DestinationMessageTest {
             "test",
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["name"]
                 ?.let { (it.abValue as StringValue).value }
         )

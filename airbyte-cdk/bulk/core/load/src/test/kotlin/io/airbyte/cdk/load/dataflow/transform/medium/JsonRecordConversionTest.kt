@@ -51,7 +51,7 @@ class JsonRecordConversionTest {
                 valueCoercer,
                 validationResultHandler,
                 jsonConverterConfig,
-                AirbyteValueCoercer()
+                AirbyteValueCoercer(useFastTimestampParsing = true),
             )
     }
 
@@ -135,7 +135,10 @@ class JsonRecordConversionTest {
         // just validate we call the coercing logic here
         // if we refactor to do the coercing directly here, we need more comprehensive tests
         verify {
-            input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
+            input.asEnrichedDestinationRecordAirbyteValue(
+                any(),
+                extractedAtAsTimestampWithTimezone = true
+            )
         }
         nonUnionUserFields.forEach { verify { valueCoercer.validate(it.value) } }
         // the stringified field is also validated
