@@ -232,6 +232,7 @@ spec:
         access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
         extract_output:
           - refresh_token
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:
