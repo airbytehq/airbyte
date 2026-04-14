@@ -32,29 +32,32 @@ sealed interface CatalogValidationFailure {
             .withMessage(message)
 }
 
+private val StreamIdentifier.label: String
+    get() = if (namespace == null) "'$name'" else "'$namespace.$name'"
+
 data class StreamNotFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
-    override val message = "Stream not found or not accessible in source."
+    override val message = "Stream ${streamID.label} not found or not accessible in source."
 }
 
 data class MultipleStreamsFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
-    override val message = "Multiple matching streams found in source."
+    override val message = "Multiple matching streams found for ${streamID.label} in source."
 }
 
 data class StreamHasNoFields(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
-    override val message = "Stream has no accessible data fields."
+    override val message = "Stream ${streamID.label} has no accessible data fields."
 }
 
 data class FieldNotFound(
     override val streamID: StreamIdentifier,
     val fieldName: String,
 ) : CatalogValidationFailure {
-    override val message = "Field '$fieldName' not found in source."
+    override val message = "Field '$fieldName' not found in stream ${streamID.label}."
 }
 
 data class FieldTypeMismatch(
@@ -64,34 +67,34 @@ data class FieldTypeMismatch(
     val actual: AirbyteSchemaType,
 ) : CatalogValidationFailure {
     override val message =
-        "Field '$fieldName' has type $actual in source but catalog expects $expected."
+        "Field '$fieldName' in stream ${streamID.label} has type $actual in source but catalog expects $expected."
 }
 
 data class InvalidPrimaryKey(
     override val streamID: StreamIdentifier,
     val primaryKey: List<String>,
 ) : CatalogValidationFailure {
-    override val message = "Primary key $primaryKey not found in source."
+    override val message = "Primary key $primaryKey not found in stream ${streamID.label}."
 }
 
 data class InvalidCursor(
     override val streamID: StreamIdentifier,
     val cursor: String,
 ) : CatalogValidationFailure {
-    override val message = "Cursor '$cursor' not found in source."
+    override val message = "Cursor '$cursor' not found in stream ${streamID.label}."
 }
 
 data class InvalidIncrementalSyncMode(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "No cursor configured for incremental sync; falling back to full refresh."
+        "Stream ${streamID.label} has no cursor configured for incremental sync; falling back to full refresh."
 }
 
 data class ResetStream(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
-    override val message = "Resetting stream."
+    override val message = "Resetting stream ${streamID.label}."
     override fun asErrorTrace(): AirbyteErrorTraceMessage? = null
 }
 
@@ -102,14 +105,7 @@ private class LoggingCatalogValidationFailureHandler(
     val outputConsumer: OutputConsumer,
 ) : CatalogValidationFailureHandler {
     override fun accept(f: CatalogValidationFailure) {
-        log.warn { "${f.prettyName()}: ${f.message}" }
+        log.warn { f.message }
         f.asErrorTrace()?.let { outputConsumer.accept(it) }
     }
-
-    private fun CatalogValidationFailure.prettyName(): String =
-        if (streamID.namespace == null) {
-            "'${streamID.name}' in unspecified namespace"
-        } else {
-            "'${streamID.name}' in namespace '${streamID.namespace}'"
-        }
 }
