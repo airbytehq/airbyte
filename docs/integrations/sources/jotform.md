@@ -32,6 +32,8 @@ To get started, you need a valid API key.
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.46 | 2026-03-31 | [75680](https://github.com/airbytehq/airbyte/pull/75680) | Update dependencies |
+| 0.0.45 | 2026-03-24 | [74519](https://github.com/airbytehq/airbyte/pull/74519) | Update dependencies |
 | 0.0.44 | 2026-03-03 | [73929](https://github.com/airbytehq/airbyte/pull/73929) | Update dependencies |
 | 0.0.43 | 2026-02-17 | [73482](https://github.com/airbytehq/airbyte/pull/73482) | Update dependencies |
 | 0.0.42 | 2026-02-10 | [73073](https://github.com/airbytehq/airbyte/pull/73073) | Update dependencies |

@@ -46,7 +46,7 @@ If you're using the Python SDK, you also need:
 
 ## Authentication
 
-Before you can run connectors in hosted mode, you need a scoped token for authentication. This stores your API credentials securely and associates them with a customer.
+Before you can run connectors in hosted mode, you need a scoped token for authentication. This stores your API credentials securely and associates them with a workspace.
 
 ### Step 1: Get an application token
 
@@ -65,14 +65,14 @@ Save the returned token for the next step.
 
 ### Step 2: Get a scoped token
 
-Create a scoped token for your customer. A scoped token supports certain customer-level operations, and you need it later when you create a connector.
+Create a scoped token for your workspace. A scoped token supports certain workspace-level operations, and you need it later when you create a connector.
 
 ```bash title="Request"
 curl --location 'https://api.airbyte.ai/api/v1/account/applications/scoped-token' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
   --data '{
-    "customer_name": "<your_customer_name>"
+    "workspace_name": "<your_workspace_name>"
   }'
 ```
 
@@ -82,7 +82,7 @@ Once you have a scoped token, create a connector with your API credentials. Airb
 
 - `connector_type`: The case-insensitive name or ID of the source template for the connector type. For example, `GitHub` or `github`. List available templates by calling `GET /api/v1/integrations/templates/sources` with your scoped token.
 
-- `customer_name`: Retrieve this by calling `GET /api/v1/account/applications/scoped-token/info` with your scoped token.
+- `workspace_name`: Retrieve this by calling `GET /api/v1/account/applications/scoped-token/info` with your scoped token.
 
 - Additional configuration fields that may or may not be mandatory, depending on the source. If applicable, these fields are explained in the reference docs for your connector.
 
@@ -98,7 +98,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     -H "Content-Type: application/json" \
     -d '{      
       "connector_type": "github",
-      "customer_name": "<your_customer_name>",
+      "workspace_name": "<your_workspace_name>",
       "replication_config": {
         "repositories": ["airbytehq/airbyte"],
         "credentials": {
@@ -187,7 +187,7 @@ The response contains the operation result.
 
 ### No connector found for this user
 
-- Ensure you've created a connector for the right customer name.
+- Ensure you've created a connector for the right workspace name.
 
 ### Authentication errors (401/403)
 

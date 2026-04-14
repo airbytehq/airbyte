@@ -1061,7 +1061,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/links_next_paginator"
+        $ref: "#/definitions/end_of_stream_paginator"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1543,7 +1543,7 @@ spec:
         airbyte_hidden: true
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 3
@@ -1591,6 +1591,12 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false

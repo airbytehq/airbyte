@@ -53,6 +53,8 @@ Visit `https://apidoc.factorialhr.com/reference` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.48 | 2026-03-31 | [75809](https://github.com/airbytehq/airbyte/pull/75809) | Update dependencies |
+| 0.0.47 | 2026-03-24 | [74467](https://github.com/airbytehq/airbyte/pull/74467) | Update dependencies |
 | 0.0.46 | 2026-03-03 | [74190](https://github.com/airbytehq/airbyte/pull/74190) | Update dependencies |
 | 0.0.45 | 2026-02-17 | [73483](https://github.com/airbytehq/airbyte/pull/73483) | Update dependencies |
 | 0.0.44 | 2026-01-20 | [71873](https://github.com/airbytehq/airbyte/pull/71873) | Update dependencies |

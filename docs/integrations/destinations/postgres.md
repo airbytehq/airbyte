@@ -298,6 +298,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.12  | 2026-03-25 | | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert |
 | 3.0.11  | 2026-02-25 | | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches |
 | 3.0.10  | 2026-02-04 | [72858](https://github.com/airbytehq/airbyte/pull/72858)   | Upgrade CDK to 0.2.8                                                                                                                                                                   |
 | 3.0.9   | 2026-01-28 | [72292](https://github.com/airbytehq/airbyte/pull/72292)   | Upgrade CDK to 0.2.0                                                                                                                                                                   |

@@ -182,7 +182,9 @@ namespace with `n` for converted namespaces.
 | OBJECT                              | JSON          |
 | ARRAY                               | JSON          |
 
-## Troubleshooting permission issues
+## Troubleshooting
+
+### Permission errors
 
 The service account does not have the proper permissions.
 
@@ -196,6 +198,36 @@ The HMAC key is wrong.
 
 - Make sure the HMAC key is created for the BigQuery service account, and the service account has
   permission to access the GCS bucket and path.
+
+### HTTP 400 "Request had invalid euc header" during upload
+
+If your sync fails with `BigQueryException: 400 Bad Request` and the message
+`Request had invalid euc header`:
+
+- This error originates from the Google BigQuery resumable-upload API. It is usually transient.
+- **Retry the sync.** In most cases the error resolves on the next attempt.
+- If the error recurs on every sync, the underlying causes can be complex. Google does not
+  publicly document this specific error. The following steps may help narrow the issue:
+  - If you self-manage Airbyte, check whether a proxy, VPN, or firewall is modifying HTTP
+    headers on requests to `bigquery.googleapis.com`.
+  - Verify the service account key has not been rotated or revoked since the connection was
+    configured.
+  - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
+    smaller value (for example, 5 MiB).
+  - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
+    possible contributing factor.
+
+### Load job timeouts
+
+If your sync fails with `Fail to complete a load job in big query`:
+
+- BigQuery load jobs have a 30-minute wait timeout. Very large batches or high BigQuery queue
+  contention can exceed this limit.
+- Running concurrent syncs that load into the same BigQuery table is not supported and can
+  also trigger this timeout. See [Stream uniqueness](https://docs.airbyte.com/platform/using-airbyte/configuring-schema#stream-uniqueness)
+  for details.
+- Try reducing the volume per sync by using incremental sync mode or reducing the number of
+  streams per connection.
 
 ## Tutorials
 
@@ -218,94 +250,96 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.17      | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0                                                                                                                                                     |
+| 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
+| 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
+| 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |
 | 3.0.17-rc.1 | 2026-01-26 | [72296](https://github.com/airbytehq/airbyte/pull/72296) | Upgrade CDK to 0.2.0 |
 | 3.0.16 | 2025-11-25 | [67401](https://github.com/airbytehq/airbyte/pull/67401) | Add backticks to column names in SQL generation to prevent syntax errors. |
 | 3.0.15 | 2025-11-13 | [69307](https://github.com/airbytehq/airbyte/pull/69307) | Handle out-of-range timestamps/times. |
 | 3.0.14 | 2025-11-11 | [69231](https://github.com/airbytehq/airbyte/pull/69231) | Upgrade to Bulk CDK 0.1.74. |
 | 3.0.13 | 2025-11-05 | [69126](https://github.com/airbytehq/airbyte/pull/69126) | Upgrade to Bulk CDK 0.1.61. |
-| 3.0.12      | 2025-10-31 | [69083](https://github.com/airbytehq/airbyte/pull/69083) | Fail loudly if Bigquery detects bad records. |
-| 3.0.11      | 2025-10-28 | [68671](https://github.com/airbytehq/airbyte/pull/68671) | Log record count per load job. |
-| 3.0.10      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
-| 3.0.9       | 2025-10-17 | [68152](https://github.com/airbytehq/airbyte/pull/68152) | Update to new TableOperationsClient interface.                                                                                                                                    |
-| 3.0.8       | 2025-10-06 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization.                                                                                                |
-| 3.0.7       | 2025-09-03 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version.                                                                                                                         |
-| 3.0.7-rc.1  | 2025-08-27 | [65114](https://github.com/airbytehq/airbyte/pull/65114)   | Implement SOCKET+PROTO mode support.                                                                                                                                              |
-| 3.0.6       | 2025-07-24 | [63700](https://github.com/airbytehq/airbyte/pull/63700)   | Improve error reporting for Billing errors.                                                                                                                                       |
-| 3.0.5       | 2025-07-15 | [63312](https://github.com/airbytehq/airbyte/pull/63312)   | Pull in upstream fix to support null chars in GCS staging mode.                                                                                                                   |
-| 3.0.4       | 2025-07-15 | [63327](https://github.com/airbytehq/airbyte/pull/63327)   | Improve error reporting for Billing errors.                                                                                                                                       |
-| 3.0.3       | 2025-07-02 | [62495](https://github.com/airbytehq/airbyte/pull/62495)   | Improve error reporting for misconfigured connections; improve support for complex types.                                                                                         |
-| 3.0.2       | 2025-06-26 | [62106](https://github.com/airbytehq/airbyte/pull/62106)   | Improve error reporting during schema evolution.                                                                                                                                  |
-| 3.0.1       | 2025-06-26 | [62085](https://github.com/airbytehq/airbyte/pull/62085)   | Correctly handle stream names/namespaces and column names which start with a digit.                                                                                               |
-| 3.0.0       | 2025-06-25 | [59752](https://github.com/airbytehq/airbyte/pull/59752)   | Upgrade to direct-load tables; add option for soft CDC deletes.                                                                                                                   |
-| 2.12.4      | 2025-06-24 | [62045](https://github.com/airbytehq/airbyte/pull/62045)   | Promoting release candidate 2.12.4-rc.6 to a main version.                                                                                                                        |
-| 2.12.4-rc.6 | 2025-06-24 | [62041](https://github.com/airbytehq/airbyte/pull/62041)   | 2.12.4 RC 6 More retries is better retries                                                                                                                                        |
-| 2.12.4-rc.5 | 2025-06-23 | [62016](https://github.com/airbytehq/airbyte/pull/62016)   | 2.12.4 RC 5 Handle records up to 20MiB                                                                                                                                            |
-| 2.12.4-rc.4 | 2025-06-23 | [62014](https://github.com/airbytehq/airbyte/pull/62014)   | 2.12.4 RC 4 Improve JSON schema parser's behavior on invalid source schemas                                                                                                       |
-| 2.12.4-rc.3 | 2025-06-18 | [61702](https://github.com/airbytehq/airbyte/pull/61702)   | 2.12.4 RC 3 Fix an issue with streams with special chars on bulk loader                                                                                                           |
-| 2.12.4-rc.2 | 2025-06-18 | [61700](https://github.com/airbytehq/airbyte/pull/61700)   | 2.12.4 RC 2 (throw more informative error on invalid catalog)                                                                                                                     |
-| 2.12.4-rc.1 | 2025-06-16 | [61637](https://github.com/airbytehq/airbyte/pull/61637)   | 2.12.4 RC 1 (theoretically equivalent to 2.12.0, but with fixed global state handling in CDK)                                                                                     |
-| 2.12.3      | 2025-06-16 | [61648](https://github.com/airbytehq/airbyte/pull/61648)   | This is not the release you are looking for. identical to 2.10.2                                                                                                                  |
-| 2.12.1      | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE.                                                   |
-| 2.12.0      | 2025-06-06 | [61432](https://github.com/airbytehq/airbyte/pull/61432)   | Improve performance in GCS staging mode by writing GZIP-compressed files.                                                                                                         |
-| 2.11.4      | 2025-05-30 | [61018](https://github.com/airbytehq/airbyte/pull/61018)   | Always emit a useful error message when erroring during sync startup.                                                                                                             |
-| 2.11.3      | 2025-06-02 | [61321](https://github.com/airbytehq/airbyte/pull/61321)   | CHECK operation doesn't need to drop the dataset anymore.                                                                                                                         |
-| 2.11.2      | 2025-05-29 | [60986](https://github.com/airbytehq/airbyte/pull/60986)   | CHECK operation uses configured default dataset instead of `airbyte_internal_test`.                                                                                               |
-| 2.11.1      | 2025-05-29 | [60973](https://github.com/airbytehq/airbyte/pull/60973)   | Improve error recovery when a stream's sync mode and schema are both changed and the previous sync exited uncleanly.                                                              |
-| 2.11.0      | 2025-05-27 | [60922](https://github.com/airbytehq/airbyte/pull/60922)   | Promoting release candidate 2.11.0-rc.7 to a main version.                                                                                                                        |
-| 2.11.0-rc.7 | 2025-05-22 | [60865](https://github.com/airbytehq/airbyte/pull/60865)   | Add a random element to the check sync namespace                                                                                                                                  |
-| 2.11.0-rc.6 | 2025-05-22 | [60859](https://github.com/airbytehq/airbyte/pull/60859)   | Improve bigquery quota usage in standard inserts for streams with heavy load                                                                                                      |
-| 2.11.0-rc.5 | 2025-05-21 | [60841](https://github.com/airbytehq/airbyte/pull/60841)   | Improve behavior in syncs with many state messages                                                                                                                                |
-| 2.11.0-rc.4 | 2025-05-19 | [60791](https://github.com/airbytehq/airbyte/pull/60791)   | Fix bug in detecting schema change when stream has no columns                                                                                                                     |
-| 2.11.0-rc.3 | 2025-05-16 | [60324](https://github.com/airbytehq/airbyte/pull/60324)   | Fix bug in syncs with many state message                                                                                                                                          |
-| 2.11.0-rc.2 | 2025-05-15 | [60302](https://github.com/airbytehq/airbyte/pull/60302)   | Fix bugs in handling special characters / uppercase characters in column names                                                                                                    |
-| 2.11.0-rc.1 | 2025-05-08 | [59729](https://github.com/airbytehq/airbyte/pull/59729)   | Version 2.11.0 RC 1                                                                                                                                                               |
-| 2.10.2      | 2025-04-29 | [59142](https://github.com/airbytehq/airbyte/pull/59142)   | Add `europe-north2` region.                                                                                                                                                       |
-| 2.10.1      | 2025-04-14 | [57569](https://github.com/airbytehq/airbyte/pull/57569)   | Remove StringSubstitutor usage                                                                                                                                                    |
-| 2.10.0      | 2025-04-02 | [56982](https://github.com/airbytehq/airbyte/pull/56982)   | Change default raw table partitioning scheme to be on `_airbyte_extracted_at`; upgrade CDK                                                                                        |
-| 2.9.3       | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355)   | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible.                                                                                                                 |
-| 2.9.2       | 2025-01-10 | [51482](https://github.com/airbytehq/airbyte/pull/51482)   | Use a non root base image                                                                                                                                                         |
-| 2.9.1       | 2024-12-18 | [49902](https://github.com/airbytehq/airbyte/pull/49902)   | Use a base image: airbyte/java-connector-base:1.0.0                                                                                                                               |
-| 2.9.0       | 2024-09-18 | [45433](https://github.com/airbytehq/airbyte/pull/45433)   | upgrade all dependencies                                                                                                                                                          |
-| 2.8.9       | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476)   | Increase message parsing limit to 100mb                                                                                                                                           |
-| 2.8.8       | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526)   | Revert protocol compliance fix                                                                                                                                                    |
-| 2.8.7       | 2024-08-15 | [42504](https://github.com/airbytehq/airbyte/pull/42504)   | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance)                                                                                       |
-| 2.8.6       | 2024-07-30 | [42511](https://github.com/airbytehq/airbyte/pull/42511)   | Added a copy operation to validate copy permissions in the check function                                                                                                         |
-| 2.8.5       | 2024-07-22 | [42407](https://github.com/airbytehq/airbyte/pull/42407)   | Batched Standard Inserts is default loading mode                                                                                                                                  |
-| 2.8.4       | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                        |
-| 2.8.3       | 2024-07-12 | [41674](https://github.com/airbytehq/airbyte/pull/41674)   | Upgrade to latest CDK                                                                                                                                                             |
-| 2.8.2       | 2024-07-08 | [41041](https://github.com/airbytehq/airbyte/pull/41041)   | Fix resume logic in truncate refreshes to prevent data loss                                                                                                                       |
-| 2.8.1       | 2024-06-25 | [39379](https://github.com/airbytehq/airbyte/pull/39379)   | Removing requirement of a redundant permission bigquery.datasets.create permission                                                                                                |
-| 2.8.0       | 2024-06-21 | [39904](https://github.com/airbytehq/airbyte/pull/39904)   | Convert all production code to kotlin                                                                                                                                             |
-| 2.7.1       | 2024-06-17 | [39526](https://github.com/airbytehq/airbyte/pull/39526)   | Internal code change for improved error reporting in case of source/platform failure (`INCOMPLETE` stream status / empty ConfiguredCatalog).                                      |
-| 2.7.0       | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713)   | Support for [refreshes](/platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
-| 2.6.3       | 2024-06-10 | [38331](https://github.com/airbytehq/airbyte/pull/38331)   | Internal code changes in preparation for future feature release                                                                                                                   |
-| 2.6.2       | 2024-06-07 | [38764](https://github.com/airbytehq/airbyte/pull/38764)   | Increase message length limit to 50MiB                                                                                                                                            |
-| 2.6.1       | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770)   | Internal code change (switch to CDK artifact)                                                                                                                                     |
-| 2.6.0       | 2024-05-28 | [38359](https://github.com/airbytehq/airbyte/pull/38359)   | Propagate airbyte_meta from sources; add generation_id column                                                                                                                     |
-| 2.5.1       | 2024-05-22 | [38591](https://github.com/airbytehq/airbyte/pull/38591)   | Bugfix to include forward-slash when cleaning up stage                                                                                                                            |
-| 2.5.0       | 2024-05-22 | [38132](https://github.com/airbytehq/airbyte/pull/38132)   | Major rewrite of existing code, Adapting to CDK changes introduced in [38107](https://github.com/airbytehq/airbyte/pull/38107)                                                    |
-| 2.4.20      | 2024-05-13 | [38131](https://github.com/airbytehq/airbyte/pull/38131)   | Cleanup `BigQueryWriteConfig` and reuse `StreamConfig`; Adapt to `StreamConfig` signature changes                                                                                 |
-| 2.4.19      | 2024-05-10 | [38125](https://github.com/airbytehq/airbyte/pull/38125)   | adopt latest CDK code                                                                                                                                                             |
-| 2.4.18      | 2024-05-10 | [38111](https://github.com/airbytehq/airbyte/pull/38111)   | No functional changes, deleting unused code                                                                                                                                       |
-| 2.4.17      | 2024-05-09 | [38098](https://github.com/airbytehq/airbyte/pull/38098)   | Internal build structure change                                                                                                                                                   |
-| 2.4.16      | 2024-05-08 | [37714](https://github.com/airbytehq/airbyte/pull/37714)   | Adopt CDK 0.34.0                                                                                                                                                                  |
-| 2.4.15      | 2024-05-07 | [34611](https://github.com/airbytehq/airbyte/pull/34611)   | Adopt CDK 0.33.2                                                                                                                                                                  |
-| 2.4.14      | 2024-02-25 | [37584](https://github.com/airbytehq/airbyte/pull/37584)   | Remove unused insecure dependencies from CDK                                                                                                                                      |
-| 2.4.13      | 2024-02-25 | [36899](https://github.com/airbytehq/airbyte/pull/36899)   | adopt latest CDK                                                                                                                                                                  |
-| 2.4.12      | 2024-03-04 | [35315](https://github.com/airbytehq/airbyte/pull/35315)   | Adopt CDK 0.23.11                                                                                                                                                                 |
-| 2.4.11      | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug.                                                                                                                                                                  |
-| 2.4.10      | 2024-02-15 | [35240](https://github.com/airbytehq/airbyte/pull/35240)   | Adopt CDK 0.20.9                                                                                                                                                                  |
-| 2.4.9       | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285)   | Adopt CDK 0.20.8                                                                                                                                                                  |
-| 2.4.8       | 2024-02-12 | [35144](https://github.com/airbytehq/airbyte/pull/35144)   | Adopt CDK 0.20.2                                                                                                                                                                  |
-| 2.4.7       | 2024-02-12 | [35111](https://github.com/airbytehq/airbyte/pull/35111)   | Adopt CDK 0.20.1                                                                                                                                                                  |
-| 2.4.6       | 2024-02-09 | [34575](https://github.com/airbytehq/airbyte/pull/34575)   | Adopt CDK 0.20.0                                                                                                                                                                  |
-| 2.4.5       | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745)   | Adopt CDK 0.19.0                                                                                                                                                                  |
-| 2.4.4       | 2024-02-08 | [35027](https://github.com/airbytehq/airbyte/pull/35027)   | Upgrade CDK to 0.17.1                                                                                                                                                             |
-| 2.4.3       | 2024-02-01 | [34728](https://github.com/airbytehq/airbyte/pull/34728)   | Upgrade CDK to 0.16.4; Notable changes from 0.14.2, 0.15.1 and 0.16.3                                                                                                             |
-| 2.4.2       | 2024-01-24 | [34451](https://github.com/airbytehq/airbyte/pull/34451)   | Improve logging for unparseable input                                                                                                                                             |
-| 2.4.1       | 2024-01-24 | [34458](https://github.com/airbytehq/airbyte/pull/34458)   | Improve error reporting                                                                                                                                                           |
-| 2.4.0       | 2024-01-24 | [34468](https://github.com/airbytehq/airbyte/pull/34468)   | Upgrade CDK to 0.14.0                                                                                                                                                             |
+| 3.0.12 | 2025-10-31 | [69083](https://github.com/airbytehq/airbyte/pull/69083) | Fail loudly if Bigquery detects bad records. |
+| 3.0.11 | 2025-10-28 | [68671](https://github.com/airbytehq/airbyte/pull/68671) | Log record count per load job. |
+| 3.0.10 | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
+| 3.0.9 | 2025-10-17 | [68152](https://github.com/airbytehq/airbyte/pull/68152) | Update to new TableOperationsClient interface. |
+| 3.0.8 | 2025-10-06 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization. |
+| 3.0.7 | 2025-09-03 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version. |
+| 3.0.7-rc.1 | 2025-08-27 | [65114](https://github.com/airbytehq/airbyte/pull/65114) | Implement SOCKET+PROTO mode support. |
+| 3.0.6 | 2025-07-24 | [63700](https://github.com/airbytehq/airbyte/pull/63700) | Improve error reporting for Billing errors. |
+| 3.0.5 | 2025-07-15 | [63312](https://github.com/airbytehq/airbyte/pull/63312) | Pull in upstream fix to support null chars in GCS staging mode. |
+| 3.0.4 | 2025-07-15 | [63327](https://github.com/airbytehq/airbyte/pull/63327) | Improve error reporting for Billing errors. |
+| 3.0.3 | 2025-07-02 | [62495](https://github.com/airbytehq/airbyte/pull/62495) | Improve error reporting for misconfigured connections; improve support for complex types. |
+| 3.0.2 | 2025-06-26 | [62106](https://github.com/airbytehq/airbyte/pull/62106) | Improve error reporting during schema evolution. |
+| 3.0.1 | 2025-06-26 | [62085](https://github.com/airbytehq/airbyte/pull/62085) | Correctly handle stream names/namespaces and column names which start with a digit. |
+| 3.0.0 | 2025-06-25 | [59752](https://github.com/airbytehq/airbyte/pull/59752) | Upgrade to direct-load tables; add option for soft CDC deletes. |
+| 2.12.4 | 2025-06-24 | [62045](https://github.com/airbytehq/airbyte/pull/62045) | Promoting release candidate 2.12.4-rc.6 to a main version. |
+| 2.12.4-rc.6 | 2025-06-24 | [62041](https://github.com/airbytehq/airbyte/pull/62041) | 2.12.4 RC 6 More retries is better retries |
+| 2.12.4-rc.5 | 2025-06-23 | [62016](https://github.com/airbytehq/airbyte/pull/62016) | 2.12.4 RC 5 Handle records up to 20MiB |
+| 2.12.4-rc.4 | 2025-06-23 | [62014](https://github.com/airbytehq/airbyte/pull/62014) | 2.12.4 RC 4 Improve JSON schema parser's behavior on invalid source schemas |
+| 2.12.4-rc.3 | 2025-06-18 | [61702](https://github.com/airbytehq/airbyte/pull/61702) | 2.12.4 RC 3 Fix an issue with streams with special chars on bulk loader |
+| 2.12.4-rc.2 | 2025-06-18 | [61700](https://github.com/airbytehq/airbyte/pull/61700) | 2.12.4 RC 2 (throw more informative error on invalid catalog) |
+| 2.12.4-rc.1 | 2025-06-16 | [61637](https://github.com/airbytehq/airbyte/pull/61637) | 2.12.4 RC 1 (theoretically equivalent to 2.12.0, but with fixed global state handling in CDK) |
+| 2.12.3 | 2025-06-16 | [61648](https://github.com/airbytehq/airbyte/pull/61648) | This is not the release you are looking for. identical to 2.10.2 |
+| 2.12.1 | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588) | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE. |
+| 2.12.0 | 2025-06-06 | [61432](https://github.com/airbytehq/airbyte/pull/61432) | Improve performance in GCS staging mode by writing GZIP-compressed files. |
+| 2.11.4 | 2025-05-30 | [61018](https://github.com/airbytehq/airbyte/pull/61018) | Always emit a useful error message when erroring during sync startup. |
+| 2.11.3 | 2025-06-02 | [61321](https://github.com/airbytehq/airbyte/pull/61321) | CHECK operation doesn't need to drop the dataset anymore. |
+| 2.11.2 | 2025-05-29 | [60986](https://github.com/airbytehq/airbyte/pull/60986) | CHECK operation uses configured default dataset instead of `airbyte_internal_test`. |
+| 2.11.1 | 2025-05-29 | [60973](https://github.com/airbytehq/airbyte/pull/60973) | Improve error recovery when a stream's sync mode and schema are both changed and the previous sync exited uncleanly. |
+| 2.11.0 | 2025-05-27 | [60922](https://github.com/airbytehq/airbyte/pull/60922) | Promoting release candidate 2.11.0-rc.7 to a main version. |
+| 2.11.0-rc.7 | 2025-05-22 | [60865](https://github.com/airbytehq/airbyte/pull/60865) | Add a random element to the check sync namespace |
+| 2.11.0-rc.6 | 2025-05-22 | [60859](https://github.com/airbytehq/airbyte/pull/60859) | Improve bigquery quota usage in standard inserts for streams with heavy load |
+| 2.11.0-rc.5 | 2025-05-21 | [60841](https://github.com/airbytehq/airbyte/pull/60841) | Improve behavior in syncs with many state messages |
+| 2.11.0-rc.4 | 2025-05-19 | [60791](https://github.com/airbytehq/airbyte/pull/60791) | Fix bug in detecting schema change when stream has no columns |
+| 2.11.0-rc.3 | 2025-05-16 | [60324](https://github.com/airbytehq/airbyte/pull/60324) | Fix bug in syncs with many state message |
+| 2.11.0-rc.2 | 2025-05-15 | [60302](https://github.com/airbytehq/airbyte/pull/60302) | Fix bugs in handling special characters / uppercase characters in column names |
+| 2.11.0-rc.1 | 2025-05-08 | [59729](https://github.com/airbytehq/airbyte/pull/59729) | Version 2.11.0 RC 1 |
+| 2.10.2 | 2025-04-29 | [59142](https://github.com/airbytehq/airbyte/pull/59142) | Add `europe-north2` region. |
+| 2.10.1 | 2025-04-14 | [57569](https://github.com/airbytehq/airbyte/pull/57569) | Remove StringSubstitutor usage |
+| 2.10.0 | 2025-04-02 | [56982](https://github.com/airbytehq/airbyte/pull/56982) | Change default raw table partitioning scheme to be on `_airbyte_extracted_at`; upgrade CDK |
+| 2.9.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
+| 2.9.2 | 2025-01-10 | [51482](https://github.com/airbytehq/airbyte/pull/51482) | Use a non root base image |
+| 2.9.1 | 2024-12-18 | [49902](https://github.com/airbytehq/airbyte/pull/49902) | Use a base image: airbyte/java-connector-base:1.0.0 |
+| 2.9.0 | 2024-09-18 | [45433](https://github.com/airbytehq/airbyte/pull/45433) | upgrade all dependencies |
+| 2.8.9 | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476) | Increase message parsing limit to 100mb |
+| 2.8.8 | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526) | Revert protocol compliance fix |
+| 2.8.7 | 2024-08-15 | [42504](https://github.com/airbytehq/airbyte/pull/42504) | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance) |
+| 2.8.6 | 2024-07-30 | [42511](https://github.com/airbytehq/airbyte/pull/42511) | Added a copy operation to validate copy permissions in the check function |
+| 2.8.5 | 2024-07-22 | [42407](https://github.com/airbytehq/airbyte/pull/42407) | Batched Standard Inserts is default loading mode |
+| 2.8.4 | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968) | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status |
+| 2.8.3 | 2024-07-12 | [41674](https://github.com/airbytehq/airbyte/pull/41674) | Upgrade to latest CDK |
+| 2.8.2 | 2024-07-08 | [41041](https://github.com/airbytehq/airbyte/pull/41041) | Fix resume logic in truncate refreshes to prevent data loss |
+| 2.8.1 | 2024-06-25 | [39379](https://github.com/airbytehq/airbyte/pull/39379) | Removing requirement of a redundant permission bigquery.datasets.create permission |
+| 2.8.0 | 2024-06-21 | [39904](https://github.com/airbytehq/airbyte/pull/39904) | Convert all production code to kotlin |
+| 2.7.1 | 2024-06-17 | [39526](https://github.com/airbytehq/airbyte/pull/39526) | Internal code change for improved error reporting in case of source/platform failure (`INCOMPLETE` stream status / empty ConfiguredCatalog). |
+| 2.7.0 | 2024-06-17 | [38713](https://github.com/airbytehq/airbyte/pull/38713) | Support for [refreshes](/platform/operator-guides/refreshes) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
+| 2.6.3 | 2024-06-10 | [38331](https://github.com/airbytehq/airbyte/pull/38331) | Internal code changes in preparation for future feature release |
+| 2.6.2 | 2024-06-07 | [38764](https://github.com/airbytehq/airbyte/pull/38764) | Increase message length limit to 50MiB |
+| 2.6.1 | 2024-05-29 | [38770](https://github.com/airbytehq/airbyte/pull/38770) | Internal code change (switch to CDK artifact) |
+| 2.6.0 | 2024-05-28 | [38359](https://github.com/airbytehq/airbyte/pull/38359) | Propagate airbyte_meta from sources; add generation_id column |
+| 2.5.1 | 2024-05-22 | [38591](https://github.com/airbytehq/airbyte/pull/38591) | Bugfix to include forward-slash when cleaning up stage |
+| 2.5.0 | 2024-05-22 | [38132](https://github.com/airbytehq/airbyte/pull/38132) | Major rewrite of existing code, Adapting to CDK changes introduced in [38107](https://github.com/airbytehq/airbyte/pull/38107) |
+| 2.4.20 | 2024-05-13 | [38131](https://github.com/airbytehq/airbyte/pull/38131) | Cleanup `BigQueryWriteConfig` and reuse `StreamConfig`; Adapt to `StreamConfig` signature changes |
+| 2.4.19 | 2024-05-10 | [38125](https://github.com/airbytehq/airbyte/pull/38125) | adopt latest CDK code |
+| 2.4.18 | 2024-05-10 | [38111](https://github.com/airbytehq/airbyte/pull/38111) | No functional changes, deleting unused code |
+| 2.4.17 | 2024-05-09 | [38098](https://github.com/airbytehq/airbyte/pull/38098) | Internal build structure change |
+| 2.4.16 | 2024-05-08 | [37714](https://github.com/airbytehq/airbyte/pull/37714) | Adopt CDK 0.34.0 |
+| 2.4.15 | 2024-05-07 | [34611](https://github.com/airbytehq/airbyte/pull/34611) | Adopt CDK 0.33.2 |
+| 2.4.14 | 2024-02-25 | [37584](https://github.com/airbytehq/airbyte/pull/37584) | Remove unused insecure dependencies from CDK |
+| 2.4.13 | 2024-02-25 | [36899](https://github.com/airbytehq/airbyte/pull/36899) | adopt latest CDK |
+| 2.4.12 | 2024-03-04 | [35315](https://github.com/airbytehq/airbyte/pull/35315) | Adopt CDK 0.23.11 |
+| 2.4.11 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
+| 2.4.10 | 2024-02-15 | [35240](https://github.com/airbytehq/airbyte/pull/35240) | Adopt CDK 0.20.9 |
+| 2.4.9 | 2024-02-15 | [35285](https://github.com/airbytehq/airbyte/pull/35285) | Adopt CDK 0.20.8 |
+| 2.4.8 | 2024-02-12 | [35144](https://github.com/airbytehq/airbyte/pull/35144) | Adopt CDK 0.20.2 |
+| 2.4.7 | 2024-02-12 | [35111](https://github.com/airbytehq/airbyte/pull/35111) | Adopt CDK 0.20.1 |
+| 2.4.6 | 2024-02-09 | [34575](https://github.com/airbytehq/airbyte/pull/34575) | Adopt CDK 0.20.0 |
+| 2.4.5 | 2024-02-08 | [34745](https://github.com/airbytehq/airbyte/pull/34745) | Adopt CDK 0.19.0 |
+| 2.4.4 | 2024-02-08 | [35027](https://github.com/airbytehq/airbyte/pull/35027) | Upgrade CDK to 0.17.1 |
+| 2.4.3 | 2024-02-01 | [34728](https://github.com/airbytehq/airbyte/pull/34728) | Upgrade CDK to 0.16.4; Notable changes from 0.14.2, 0.15.1 and 0.16.3 |
+| 2.4.2 | 2024-01-24 | [34451](https://github.com/airbytehq/airbyte/pull/34451) | Improve logging for unparseable input |
+| 2.4.1 | 2024-01-24 | [34458](https://github.com/airbytehq/airbyte/pull/34458) | Improve error reporting |
+| 2.4.0 | 2024-01-24 | [34468](https://github.com/airbytehq/airbyte/pull/34468) | Upgrade CDK to 0.14.0 |
 | 2.3.31      | 2024-01-22 | [\#34023](https://github.com/airbytehq/airbyte/pull/34023) | Combine DDL operations into a single execution                                                                                                                                    |
 | 2.3.30      | 2024-01-12 | [\#34226](https://github.com/airbytehq/airbyte/pull/34226) | Upgrade CDK to 0.12.0; Cleanup dependencies                                                                                                                                       |
 | 2.3.29      | 2024-01-09 | [\#34003](https://github.com/airbytehq/airbyte/pull/34003) | Fix loading credentials from GCP Env                                                                                                                                              |

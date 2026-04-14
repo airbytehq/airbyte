@@ -1,4 +1,4 @@
-version: 6.51.0
+version: 6.52.0
 
 type: DeclarativeSource
 
@@ -40,7 +40,8 @@ definitions:
       $ref: "#/definitions/base_error_handler"
 
   base_error_handler:
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -48,7 +49,7 @@ definitions:
       - type: ExponentialBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
-        action: RETRY
+        action: RATE_LIMITED
         http_codes:
           - 429
         error_message: >-
@@ -61,7 +62,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -91,7 +92,8 @@ definitions:
   error_handler_ignore_403:
     # Same as the base error handler, but ignores 403 errors
     # to avoid failing the sync when fetching dynamic streams.
-    type: DefaultErrorHandler
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
     backoff_strategies:
       - type: WaitTimeFromHeader
         header: Retry-After
@@ -99,7 +101,7 @@ definitions:
       - type: ExponentialBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
-        action: RETRY
+        action: RATE_LIMITED
         http_codes:
           - 429
         error_message: >-
@@ -112,7 +114,7 @@ definitions:
         error_message: >-
           HubSpot server error (5xx). Retrying with exponential backoff...
       - type: HttpResponseFilter
-        action: RETRY
+        action: REFRESH_TOKEN_THEN_RETRY
         http_codes:
           - 401
         error_message: >-
@@ -993,6 +995,33 @@ definitions:
       schema:
         $ref: "#/schemas/owners_archived"
 
+  users_stream:
+    primary_key:
+      - id
+    $ref: "#/definitions/stream_base"
+    name: users
+    $parameters:
+      name: users
+      required_scopes: >-
+        crm.objects.users.read, settings.users.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /settings/v3/users
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
+
   ticket_pipelines_stream:
     primary_key:
       - id
@@ -1167,6 +1196,45 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/contact_lists"
+
+  list_memberships_stream:
+    $ref: "#/definitions/stream_base"
+    name: list_memberships
+    primary_key:
+      - recordId
+      - listId
+    $parameters:
+      name: list_memberships
+      required_scopes: crm.lists.read
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/crm/v3/lists/{{ stream_partition['list_id'] }}/memberships"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/contact_lists_stream"
+            parent_key: "listId"
+            partition_field: "list_id"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["listId"]
+            value: "{{ stream_partition['list_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/list_memberships"
 
   deal_pipelines_stream:
     $ref: "#/definitions/stream_base"
@@ -1972,6 +2040,7 @@ streams:
   - "#/definitions/companies_property_history_stream"
   - "#/definitions/contact_lists_stream"
   - "#/definitions/contacts_stream"
+  - "#/definitions/list_memberships_stream"
   - "#/definitions/contacts_property_history_stream"
   - "#/definitions/deal_pipelines_stream"
   - "#/definitions/deal_splits_stream"
@@ -1994,6 +2063,7 @@ streams:
   - "#/definitions/marketing_emails_stream"
   - "#/definitions/owners_archived_stream"
   - "#/definitions/owners_stream"
+  - "#/definitions/users_stream"
   - "#/definitions/products_stream"
   - "#/definitions/subscription_changes_stream"
   - "#/definitions/ticket_pipelines_stream"
@@ -2280,7 +2350,7 @@ spec:
         default: false
       num_worker:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 10
@@ -2293,6 +2363,46 @@ spec:
       - credentials_title
     predicate_value: OAuth Credentials
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://app.hubspot.com/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}&{{optional_scopes_param}}"
+        access_token_url: "https://api.hubapi.com/oauth/v1/token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          code: "{{ auth_code_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+          grant_type: "authorization_code"
+        scopes:
+          - scope: "crm.schemas.contacts.read"
+          - scope: "crm.objects.contacts.read"
+          - scope: "oauth"
+        optional_scopes:
+          - scope: "content"
+          - scope: "automation"
+          - scope: "e-commerce"
+          - scope: "files"
+          - scope: "files.ui_hidden.read"
+          - scope: "forms"
+          - scope: "forms-uploaded-files"
+          - scope: "sales-email-read"
+          - scope: "tickets"
+          - scope: "crm.lists.read"
+          - scope: "crm.objects.companies.read"
+          - scope: "crm.objects.custom.read"
+          - scope: "crm.objects.deals.read"
+          - scope: "crm.objects.feedback_submissions.read"
+          - scope: "crm.objects.goals.read"
+          - scope: "crm.objects.owners.read"
+          - scope: "crm.schemas.companies.read"
+          - scope: "crm.schemas.custom.read"
+          - scope: "crm.schemas.deals.read"
+          - scope: "crm.objects.leads.read"
+          - scope: "crm.objects.users.read"
+          - scope: "settings.users.read"
+        extract_output:
+          - refresh_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
@@ -2483,6 +2593,27 @@ schemas:
           - "null"
           - string
       updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+
+  list_memberships:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      recordId:
+        type:
+          - "null"
+          - string
+      listId:
+        type:
+          - "null"
+          - string
+      membershipTimestamp:
         type:
           - "null"
           - string
@@ -5591,6 +5722,75 @@ schemas:
               type:
                 - "null"
                 - string
+
+  users:
+    $schema: http://json-schema.org/schema#
+    type:
+      - "null"
+      - object
+    additionalProperties: true
+    properties:
+      id:
+        description: The user's unique ID.
+        type:
+          - "null"
+          - string
+      email:
+        description: The user's email.
+        type:
+          - "null"
+          - string
+      firstName:
+        description: The user's first name.
+        type:
+          - "null"
+          - string
+      lastName:
+        description: The user's last name.
+        type:
+          - "null"
+          - string
+      primaryTeamId:
+        description: The user's primary team.
+        type:
+          - "null"
+          - string
+      roleId:
+        description: The user's role.
+        type:
+          - "null"
+          - string
+      roleIds:
+        description: A list of role IDs assigned to the user.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      secondaryTeamIds:
+        description: The user's additional teams.
+        type:
+          - "null"
+          - array
+        items:
+          type: 
+            - "null"
+            - string
+      sendWelcomeEmail:
+        description:
+          Whether a welcome email was sent to the user.
+          This value will only be populated in response to a provisioning request.
+          Subsequent queries will be false.
+        type:
+          - "null"
+          - boolean
+      superAdmin:
+        description: Whether the user has super admin privileges.
+        type:
+          - "null"
+          - boolean
 
   workflows:
     $schema: "http://json-schema.org/draft-07/schema#"

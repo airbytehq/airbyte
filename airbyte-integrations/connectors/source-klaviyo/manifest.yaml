@@ -1329,7 +1329,7 @@ spec:
           upper boundary is based on the limit of your Klaviyo plan. More info
           about the rate limit plan tiers can be found on Klaviyo's API <a
           href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 50
         default: 10
