@@ -235,6 +235,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.0.0 | 2026-04-08 | [76168](https://github.com/airbytehq/airbyte/pull/76168) | V2 rewrite: new CDK architecture with direct final-table writes, aggressive connection checker, improved error messages |
 | 3.5.4 | 2026-03-23 | [75286](https://github.com/airbytehq/airbyte/pull/75286) | Fix misleading SSH error when SQLException has null sqlState during connection check |
 | 3.5.3 | 2025-03-24 | [56355](https://github.com/airbytehq/airbyte/pull/56355) | Upgrade to airbyte/java-connector-base:2.0.1 to be M4 compatible. |
 | 3.5.2 | 2025-01-14 | [51500](https://github.com/airbytehq/airbyte/pull/51500) | Use a non root base image |
