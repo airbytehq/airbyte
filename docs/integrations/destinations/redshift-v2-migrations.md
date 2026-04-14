@@ -20,8 +20,8 @@ Version 4.0.0 is a full rewrite of the Redshift destination using the new CDK ar
 
 This version removes support for standard inserts. Although this loading method is easier to set up than S3 staging, it has two major disadvantages:
 
-* Standard inserts is significantly slower
-* Standard inserts is significantly more expensive
+- Standard inserts is significantly slower
+- Standard inserts is significantly more expensive
 
 [Redshift's documentation](https://docs.aws.amazon.com/redshift/latest/dg/r_INSERT_30.html#r_INSERT_30_usage_notes) states:
 > We strongly encourage you to use the COPY command to load large amounts of data. Using individual INSERT statements to populate a table might be prohibitively slow.
@@ -34,9 +34,9 @@ This version introduces [Destinations V2](/release_notes/upgrading_to_destinatio
 
 Worthy of specific mention, this version includes:
 
-* Per-record error handling
-* Clearer table structure
-* Removal of sub-tables for nested properties
-* Removal of SCD tables
+- Per-record error handling
+- Clearer table structure
+- Removal of sub-tables for nested properties
+- Removal of SCD tables
 
 Learn more about what's new in Destinations V2 [here](/platform/using-airbyte/core-concepts/typing-deduping).
