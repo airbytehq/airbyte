@@ -38,6 +38,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
+import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
@@ -108,6 +109,7 @@ class PostgresSourceDebeziumOperations(
     }
 
     val commonPropertiesBuilder by lazy {
+        val tunnelSession: TunnelSession = connectionFactory.ensureTunnelSession()
         DebeziumPropertiesBuilder()
             .withDefault()
             // TODO: could be moved to withDefault()? Seems all connectors need this...
@@ -116,8 +118,8 @@ class PostgresSourceDebeziumOperations(
             .withDebeziumName(config.database)
             .withHeartbeats(config.debeziumHeartbeatInterval)
             .withDatabase(config.jdbcProperties)
-            .withDatabase("hostname", config.realHost)
-            .withDatabase("port", config.realPort.toString())
+            .withDatabase("hostname", tunnelSession.address.hostName)
+            .withDatabase("port", tunnelSession.address.port.toString())
             .withDatabase("dbname", config.database)
             .with("snapshot.mode", "initial")
             .with("publication.autocreate.mode", "disabled")

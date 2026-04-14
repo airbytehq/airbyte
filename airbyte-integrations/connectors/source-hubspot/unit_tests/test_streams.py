@@ -720,6 +720,7 @@ def test_cast_record_fields_if_needed(
             "POST",
         ),
         ("tickets", "tickets", "https://api.hubapi.com/crm/v3/objects/ticket/search", "POST"),
+        ("users", "crm.objects.users.read, settings.users.read", "https://api.hubapi.com/settings/v3/users", "GET"),
     ],
 )
 def test_streams_raise_error_message_if_scopes_missing(stream, scopes, url, method, requests_mock, config, mock_dynamic_schema_requests):

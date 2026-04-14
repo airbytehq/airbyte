@@ -2350,7 +2350,7 @@ spec:
         default: false
       num_worker:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 10
@@ -2399,6 +2399,8 @@ spec:
           - scope: "crm.schemas.custom.read"
           - scope: "crm.schemas.deals.read"
           - scope: "crm.objects.leads.read"
+          - scope: "crm.objects.users.read"
+          - scope: "settings.users.read"
         extract_output:
           - refresh_token
       complete_oauth_output_specification:

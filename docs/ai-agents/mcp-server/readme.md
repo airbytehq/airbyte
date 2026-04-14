@@ -142,10 +142,8 @@ Add the MCP server to your Codex command line tool.
 
 ChatGPT supports remote MCP servers through its [Developer Mode](https://platform.openai.com/docs/guides/developer-mode) feature. Developer Mode is available on Pro, Plus, Business, Enterprise, and Education plans. It's not available on Free plans.
 
-:::note Business and Enterprise plans
-On Business plans, apps are enabled by default. Workspace owners can restrict them from **Workspace Settings** > **Apps**.
-
-On Enterprise and Education plans, apps are disabled by default. A workspace admin must go to **Workspace Settings** > **Apps** > **Directory**, find the app, and click **Enable** before workspace members can use it.
+:::note Admin access required for Business and Enterprise/Education plans
+On Business, Enterprise, and Education plans, you must be a workspace owner or admin to enable Developer Mode and create apps. On Enterprise and Education plans, admins can also use RBAC to authorize specific users as developers.
 :::
 
 1. Open [ChatGPT](https://chatgpt.com) on the web.
@@ -349,7 +347,7 @@ Once a connector is created, the agent uses it for all subsequent queries to tha
 
 - Confirm the server URL is exactly `https://mcp.airbyte.ai/mcp` with no trailing slash or extra path.
 - If the OAuth flow doesn't complete, try deleting the app in **Settings** > **Apps** and creating it again.
-- On Enterprise or Education plans, a workspace admin must enable the app before members can use it. Check with your admin if you see a permissions error.
+- On Business, Enterprise, and Education plans, you must be a workspace owner or admin to create apps. On Pro and Plus plans, any user can enable Developer Mode directly.
 
 ### ChatGPT doesn't use the MCP server tools
 
