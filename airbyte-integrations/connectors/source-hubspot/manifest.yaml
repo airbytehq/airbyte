@@ -87,7 +87,7 @@ definitions:
         http_codes:
           - 400
         error_message: >-
-          Bad request (400). Please verify your credentials and try again.
+          HubSpot API request rejected (400).
 
   error_handler_ignore_403:
     # Same as the base error handler, but ignores 403 errors
@@ -137,7 +137,65 @@ definitions:
         http_codes:
           - 400
         error_message: >-
-          Bad request (400). Please verify your credentials and try again.
+          HubSpot API request rejected (400).
+
+  error_handler_list_memberships:
+    # Same as the base error handler, but ignores 400 errors caused by
+    # INVALID_OBJECT_TYPE_FOR_LIST. The list_memberships stream iterates
+    # over all contact lists and some lists have objectTypeId values that
+    # are not valid for the portal. HubSpot returns a deterministic 400
+    # for these lists, so we skip them instead of failing the sync.
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). The authenticated user does not have permissions to access the resource.
+          Verify your scopes: {{ parameters.required_scopes }} to access stream {{ parameters.name }}.
+          See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only
+      - type: HttpResponseFilter
+        action: IGNORE
+        error_message_contains: "INVALID_OBJECT_TYPE_FOR_LIST"
+        error_message: >-
+          HubSpot list has an unsupported object type for this portal. Skipping.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: >-
+          HubSpot API request rejected (400).
 
   offset_paginator:
     type: DefaultPaginator
@@ -1211,6 +1269,8 @@ definitions:
       requester:
         $ref: "#/definitions/base_requester"
         path: "/crm/v3/lists/{{ stream_partition['list_id'] }}/memberships"
+        error_handler:
+          $ref: "#/definitions/error_handler_list_memberships"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
