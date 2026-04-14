@@ -36,8 +36,12 @@ CREATE USER <user_name> IDENTIFIED BY 'your_password_here';
 Now, provide this user with read-only access to relevant schemas and tables:
 
 ```roomsql
-GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO <user_name>;
+GRANT SELECT, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO <user_name>;
 ```
+
+:::note
+The `RELOAD` privilege is **not required**. The connector uses `snapshot.locking.mode=none` in its Debezium configuration, which avoids the `FLUSH TABLES WITH READ LOCK` command that would otherwise need `RELOAD`. This makes the connector compatible with managed MySQL services (OCI HeatWave, Amazon Aurora, Google Cloud SQL, DigitalOcean Managed MySQL, etc.) that restrict granting `RELOAD` to non-admin users.
+:::
 
 If choosing to run using the `STANDARD` replication method (not recommended), only the `SELECT` permission is required.
 
