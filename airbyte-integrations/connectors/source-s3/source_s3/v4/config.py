@@ -39,16 +39,8 @@ class Config(AbstractFileBasedSpec):
 
     bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=0)
 
-    # Override streams to use the extended stream config that carries the lightweight-check flag.
-    streams: List[S3FileBasedStreamConfig] = Field(
-        title="The list of streams to sync",
-        description=(
-            'Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>.'
-            " Use this to define which files belong in the stream, their format, and how they should be parsed and validated."
-            " When sending data to warehouse destinations such as Snowflake or BigQuery, each stream is a separate table."
-        ),
-        order=10,
-    )
+    # Use the extended stream config type but keep parent field metadata via schema patching.
+    streams: List[S3FileBasedStreamConfig]
 
     aws_access_key_id: Optional[str] = Field(
         title="AWS Access Key ID",
@@ -124,6 +116,14 @@ class Config(AbstractFileBasedSpec):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
+
+        # Keep parent streams metadata to avoid drift, then inject the S3-specific flag.
+        parent_schema = AbstractFileBasedSpec.schema()
+        schema["properties"]["streams"] = parent_schema["properties"]["streams"]
+
+        light_prop = S3FileBasedStreamConfig.schema(*args, **kwargs)["properties"]["light_parquet_check"]
+        stream_item_props = schema["properties"]["streams"]["items"]["properties"]
+        stream_item_props["light_parquet_check"] = light_prop
 
         # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
         processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")

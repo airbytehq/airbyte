@@ -7,6 +7,7 @@ import logging
 import traceback
 from typing import Optional, Tuple
 
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from airbyte_cdk import AirbyteTracedException
@@ -20,6 +21,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
 )
 from airbyte_cdk.sources.file_based.file_types.parquet_parser import ParquetParser
+from source_s3.v4.config import S3FileBasedStreamConfig
 
 
 class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
@@ -35,7 +37,11 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
         source: Optional[Source],
     ) -> Tuple[bool, Optional[str]]:
         parser = stream.get_parser()
-        use_light_check = getattr(stream.config, "light_parquet_check", False) and isinstance(parser, ParquetParser)
+        use_light_check = (
+            isinstance(parser, ParquetParser)
+            and isinstance(getattr(stream, "config", None), S3FileBasedStreamConfig)
+            and stream.config.light_parquet_check
+        )
 
         if not use_light_check:
             return super().check_availability_and_parsability(stream, logger, source)
@@ -73,12 +79,13 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
                     # Empty file is still OK for availability; align with default behavior.
                     return
 
-                # Materialize one row to ensure decoding succeeds.
+                # Materialize one row to ensure decoding succeeds. Note: we intentionally skip full schema validation
+                # here to avoid loading entire row groups; schema mismatches will surface during sync.
                 _ = batch.to_pylist()[0]
 
         except CustomFileBasedException as exc:
             raise CheckAvailabilityError(str(exc), stream=stream.name) from exc
         except AirbyteTracedException as ate:
             raise ate
-        except Exception as exc:  # pragma: no cover - defensive
+        except (pa.ArrowInvalid, OSError, ValueError) as exc:  # pragma: no cover - expected read/parse failures
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
