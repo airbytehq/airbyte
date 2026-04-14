@@ -46,7 +46,7 @@ class DockerProcessFactory(
         jobType: String?,
         jobId: String,
         attempt: Int,
-        jobRoot: Path,
+        jobPath: Path,
         imageName: String,
         usesIsolatedPool: Boolean,
         usesStdin: Boolean,
@@ -56,7 +56,7 @@ class DockerProcessFactory(
         allowedHosts: AllowedHosts?,
         labels: Map<String?, String?>?,
         jobMetadata: Map<String, String>,
-        internalToExternalPorts: Map<Int?, Int?>?,
+        portMapping: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
         vararg args: String
     ): Process {
@@ -65,12 +65,12 @@ class DockerProcessFactory(
                 throw TestHarnessException("Could not find image: $imageName")
             }
 
-            if (!jobRoot.toFile().exists()) {
-                Files.createDirectory(jobRoot)
+            if (!jobPath.toFile().exists()) {
+                Files.createDirectory(jobPath)
             }
 
             for ((key, value) in files) {
-                IOs.writeFile(jobRoot, key, value)
+                IOs.writeFile(jobPath, key, value)
             }
 
             val cmd: MutableList<String> =
@@ -81,7 +81,7 @@ class DockerProcessFactory(
                     "--init",
                     "-i",
                     "-w",
-                    rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
+                    rebasePath(jobPath).toString(), // rebases the job root on the job data mount
                     "--log-driver",
                     "none"
                 )
@@ -93,12 +93,9 @@ class DockerProcessFactory(
                     attempt,
                     DOCKER_NAME_LEN_LIMIT
                 )
-            LOGGER.info(
-                "Creating docker container = {} with resources {} and allowedHosts {}",
-                containerName,
-                resourceRequirements,
-                allowedHosts
-            )
+            LOGGER.info {
+                "Creating docker container = $containerName with resources $resourceRequirements and allowedHosts $allowedHosts"
+            }
             cmd.add("--name")
             cmd.add(containerName)
             cmd.addAll(localDebuggingOptions(containerName))
@@ -159,7 +156,7 @@ class DockerProcessFactory(
             cmd.add(imageName)
             cmd.addAll(args)
 
-            LOGGER.info("Preparing command: {}", Joiner.on(" ").join(cmd))
+            LOGGER.info { "Preparing command: ${Joiner.on(" ").join(cmd)}" }
 
             return ProcessBuilder(cmd).start()
         } catch (e: IOException) {
@@ -177,8 +174,8 @@ class DockerProcessFactory(
     fun checkImageExists(imageName: String?): Boolean {
         try {
             val process = ProcessBuilder(imageExistsScriptPath.toString(), imageName).start()
-            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
-            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error { msg } })
+            LineGobbler.gobble(process.inputStream, { msg: String -> LOGGER.info { msg } })
 
             TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES)
 
@@ -241,7 +238,7 @@ class DockerProcessFactory(
                     .map<Boolean>(
                         Function<String, Boolean> { imageName: String ->
                             ProcessFactory.Companion.extractShortImageName(containerName)
-                                .startsWith(imageName!!)
+                                .startsWith(imageName)
                         }
                     )
                     .orElse(false) &&

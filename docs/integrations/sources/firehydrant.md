@@ -58,6 +58,8 @@ The Airbyte connector for FireHydrant enables seamless data integration between 
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 1.0.3 | 2026-03-31 | [75721](https://github.com/airbytehq/airbyte/pull/75721) | Update dependencies |
+| 1.0.2 | 2026-03-17 | [74945](https://github.com/airbytehq/airbyte/pull/74945) | Update dependencies |
 | 1.0.1 | 2026-03-03 | [73781](https://github.com/airbytehq/airbyte/pull/73781) | Update dependencies |
 | 1.0.0 | 2026-02-24 | [74008](https://github.com/airbytehq/airbyte/pull/74008) | Rename `enviroments` stream to `environments` |
 | 0.0.45 | 2026-02-17 | [73410](https://github.com/airbytehq/airbyte/pull/73410) | Update dependencies |

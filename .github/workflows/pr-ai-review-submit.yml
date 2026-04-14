@@ -47,7 +47,7 @@ jobs:
 
       - name: Authenticate as GitHub App
         if: steps.parse-marker.outputs.result == 'FAIL' || steps.parse-marker.outputs.result == 'APPROVE'
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"

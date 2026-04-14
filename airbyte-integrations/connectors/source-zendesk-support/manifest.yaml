@@ -15,7 +15,21 @@ api_budget:
         - limit: 10
           interval: PT1M
       matchers:
-        - url_path_pattern: "^/api/v2/incremental/*"
+        - url_path_pattern: "^/api/v2/incremental/.*"
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/search/export$"
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/deleted_tickets$"
 
 definitions:
   bearer_authenticator:
@@ -277,6 +291,33 @@ definitions:
     $parameters:
       name: "categories"
       path: "help_center/categories"
+      primary_key: "id"
+
+  deleted_tickets_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - http_codes: [403]
+              action: IGNORE
+              failure_type: config_error
+              error_message: "Unable to read deleted tickets. The authenticated user may not have the 'view_deleted_tickets' permission. You can disable the deleted_tickets stream on the Schema Tab. Error: {{ response.get('error') }}"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/deleted_tickets"
+    $parameters:
+      name: "deleted_tickets"
+      path: "deleted_tickets"
       primary_key: "id"
 
   sections_stream:
@@ -1020,7 +1061,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        $ref: "#/definitions/links_next_paginator"
+        $ref: "#/definitions/end_of_stream_paginator"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1053,23 +1094,63 @@ definitions:
       cursor_field: "updated_at"
       primary_key: "id"
 
+  # Export Search Results paginator: uses cursor-based pagination via links.next
+  export_search_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response.get('links', {}).get('next', '') }}"
+      stop_condition: "{{ not response.get('meta', {}).get('has_more', False) }}"
+      page_size: 100
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      type: RequestOption
+      field_name: "page[size]"
+      inject_into: request_parameter
+
   tickets_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    type: DeclarativeStream
+    name: "tickets"
+    primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        path: "search/export"
+        request_parameters:
+          query: "updated_at>={{ format_datetime(stream_interval['start_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }} updated_at<={{ format_datetime(stream_interval['end_time']|int, '%Y-%m-%dT%H:%M:%SZ', '%s') }}"
+          "filter[type]": "ticket"
       paginator:
-        $ref: "#/definitions/after_url_paginator"
+        $ref: "#/definitions/export_search_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["results"]
+        schema_normalization: Default
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%s"
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%s"
+      cursor_field: "updated_at"
+      start_datetime:
+        datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%s') }}"
+      step: "P30D"
+      cursor_granularity: "PT1S"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.TicketsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/tickets"
-    $parameters:
-      name: "tickets"
-      path: "incremental/tickets/cursor.json"
-      cursor_field: "generated_timestamp"
-      cursor_filter: "start_time"
-      primary_key: "id"
 
   ticket_metrics_stream:
     type: StateDelegatingStream
@@ -1163,7 +1244,7 @@ definitions:
               parent_key: "id"
               partition_field: "ticket_id"
               extra_fields:
-                - ["generated_timestamp"]
+                - ["updated_at"]
               stream:
                 $ref: "#/definitions/tickets_stream"
               incremental_dependency: true
@@ -1172,7 +1253,7 @@ definitions:
           fields:
             - path:
                 - "_ab_updated_at"
-              value: "{{ record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'] }}"
+              value: "{{ format_datetime(record['updated_at'], '%s') if 'updated_at' in record else format_datetime(stream_slice.extra_fields['updated_at'], '%s') }}"
               value_type: "integer"
 
   topics_stream:
@@ -1246,6 +1327,7 @@ definitions:
 
 streams:
   # Full refresh streams
+  - $ref: "#/definitions/deleted_tickets_stream"
   - $ref: "#/definitions/account_attributes_stream"
   - $ref: "#/definitions/attribute_definitions_stream"
   - $ref: "#/definitions/brands_stream"
@@ -1461,7 +1543,7 @@ spec:
         airbyte_hidden: true
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 3
@@ -1509,6 +1591,12 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false
@@ -1540,9 +1628,10 @@ spec:
             path_in_connector_config:
               - subdomain
       oauth_connector_input_specification:
-        consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}"
-        scope: read
-        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scope_param}}"
+        consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}"
+        scopes:
+          - scope: read
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}"
         extract_output:
           - access_token
           - refresh_token
@@ -5729,6 +5818,11 @@ schemas:
         type:
           - "null"
           - boolean
+      result_type:
+        description: The type of search result (added by Export Search Results endpoint).
+        type:
+          - "null"
+          - string
   groups:
     $schema: https://json-schema.org/draft-07/schema#
     type:

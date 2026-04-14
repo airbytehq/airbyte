@@ -6,11 +6,11 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.8.1.post54.dev22766674468@sha256:6c4b86e15bf1e99ef9e5eaccdef933ba7e5777493d1a64ce5ada1250eeef0ce6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.0@sha256:85621b892f41ad06b1c00ca1e5bbfbc506e6961a8d6293e5e60c31050ace3b33
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.15.21
+  dockerImageTag: 6.0.1
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -45,6 +45,12 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["refunds"]
+      6.0.0:
+        message: "Version 6.0.0 fixes a bug where the `invoice_line_items` and `subscription_items` incremental streams emitted only one record per event instead of expanding nested line items. Previously synced data for these streams may be incomplete. Users can run a full refresh to recapture the correct values. If choosing Full Refresh, decide between Refresh and Retain (keeps existing destination data) or Refresh and Clear (replaces destination data but may lose events older than 30 days due to the Stripe Events API retention limit). See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-600) for details."
+        upgradeDeadline: "2026-05-12"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["invoice_line_items", "subscription_items"]
   suggestedStreams:
     streams:
       - customers

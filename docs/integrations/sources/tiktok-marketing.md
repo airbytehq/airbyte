@@ -155,6 +155,9 @@ For information on breaking changes and migration steps, see the [TikTok Marketi
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.5 | 2026-03-31 | [75063](https://github.com/airbytehq/airbyte/pull/75063) | Update dependencies |
+| 5.0.4 | 2026-03-23 | [74376](https://github.com/airbytehq/airbyte/pull/74376) | Handle TikTok API error 60001 (service maintenance) as retryable instead of fatal; ignore error 40002 (resource not accessible or does not exist) |
+| 5.0.3 | 2026-03-12 | [74762](https://github.com/airbytehq/airbyte/pull/74762) | Promoting release candidate 5.0.3-rc.1 to a main version. |
 | 5.0.3-rc.1 | 2026-03-05 | [74085](https://github.com/airbytehq/airbyte/pull/74085) | Add missing video engagement metrics to audience report streams |
 | 5.0.2 | 2026-03-03 | [73111](https://github.com/airbytehq/airbyte/pull/73111) | Update dependencies |
 | 5.0.1 | 2026-02-24 | [73633](https://github.com/airbytehq/airbyte/pull/73633) | Fix UTC timezone mismatch causing data loss for ahead-of-UTC accounts |

@@ -6,11 +6,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.4@sha256:2f551a3fb5d580b34f4253aa1904d26c309364b09538f0b0fef3d8a98546f795
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
   connectorSubtype: api
   connectorType: source
   definitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
-  dockerImageTag: 1.1.24
+  dockerImageTag: 1.1.25
   dockerRepository: airbyte/source-mailerlite
   githubIssueLabel: source-mailerlite
   icon: mailerlite.svg

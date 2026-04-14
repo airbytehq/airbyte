@@ -552,6 +552,48 @@ streams:
   - $ref: "#/definitions/streams/ivr_menus"
   - $ref: "#/definitions/streams/ivr_routes"
 
+# Zendesk Talk API rate limits:
+# - Support API base limits vary by plan: Team (200 req/min), Growth (400), Professional (400),
+#   Enterprise (700), Enterprise Plus (2500)
+# - Talk API additional limits: All endpoints (15,000 reqs/5 min = 50 req/sec),
+#   Current Queue Activity (2,500 reqs/5 min), Incremental Exports (10 req/min)
+#
+# Concurrency calculated using highest rate limit across all endpoints:
+# highest = 50 req/sec (Talk API all endpoints), initial = floor(50 / 4) = 12
+# Tuning iteration 2: decreased to 9 after Phase 1 showed +6% duration regression
+# Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 9
+  max_concurrency: 36
+
+# HTTP API Budget: throttle requests per Zendesk Talk API rate limits
+# Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # Incremental Exports (calls, call_legs): 10 requests per minute
+    - type: FixedWindowCallRatePolicy
+      period: "PT1M"
+      call_limit: 10
+      matchers:
+        - method: GET
+          url_path_pattern: "/stats/incremental/"
+    # Current Queue Activity: 2,500 requests per 5 minutes
+    - type: FixedWindowCallRatePolicy
+      period: "PT5M"
+      call_limit: 2500
+      matchers:
+        - method: GET
+          url_path_pattern: "/stats/current_queue_activity"
+    # All Talk API endpoints (catch-all): 15,000 requests per 5 minutes
+    - type: FixedWindowCallRatePolicy
+      period: "PT5M"
+      call_limit: 15000
+      matchers: []
+  ratelimit_reset_header: "Retry-After"
+  status_codes_for_ratelimit_hit: [429]
+
 spec:
   type: Spec
   connection_specification:
@@ -712,6 +754,12 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false
@@ -743,9 +791,10 @@ spec:
             path_in_connector_config:
               - subdomain
       oauth_connector_input_specification:
-        consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scope_param}}&{{state_param}}"
-        scope: read
-        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scope_param}}"
+        consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}"
+        scopes:
+          - scope: read
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}"
         extract_output:
           - access_token
           - refresh_token

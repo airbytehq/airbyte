@@ -105,6 +105,10 @@ If you encounter 403 errors, check the following:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.28 | 2026-04-14 | [76335](https://github.com/airbytehq/airbyte/pull/76335) | Promoted release candidate to GA |
+| 1.3.28-rc.5 | 2026-04-13 | [74713](https://github.com/airbytehq/airbyte/pull/74713) | Add HTTPAPIBudget rate limiting (Phase 2) with concurrency=6 |
+| 1.3.28-rc.4 | 2026-04-12 | [74713](https://github.com/airbytehq/airbyte/pull/74713) | Add concurrency_level for parallel stream processing (concurrency=6) |
+| 1.3.27 | 2026-03-24 | [75331](https://github.com/airbytehq/airbyte/pull/75331) | Update dependencies |
 | 1.3.26 | 2026-02-24 | [73950](https://github.com/airbytehq/airbyte/pull/73950) | Update dependencies |
 | 1.3.25 | 2026-02-10 | [73157](https://github.com/airbytehq/airbyte/pull/73157) | Update dependencies |
 | 1.3.24 | 2026-02-03 | [72566](https://github.com/airbytehq/airbyte/pull/72566) | Update dependencies |

@@ -16,6 +16,7 @@ from facebook_business.exceptions import FacebookRequestError
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
@@ -141,6 +142,11 @@ class AdCreativesFromAds(FBMarketingStream):
         except (FacebookRequestError, TypeError) as e:
             logger.warning(f"Failed to fetch creative {creative_id}: {e}")
             return None
+        except AirbyteTracedException as e:
+            if isinstance(e._exception, FacebookRequestError) and e._exception.http_status() == 500:
+                logger.warning(f"Failed to fetch creative {creative_id}: {e}")
+                return None
+            raise
 
     def read_records(
         self,

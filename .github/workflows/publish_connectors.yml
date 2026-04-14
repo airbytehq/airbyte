@@ -35,10 +35,14 @@ on:
         required: false
         default: false
         type: boolean
+      pr:
+        description: "Pull request number that triggered this workflow (used for Slack notifications and run URL linking)."
+        required: false
+        type: string
     outputs:
       docker-image-tag:
         description: "Docker image tag used when publishing. For single-connector callers only; multi-connector callers should not rely on this output."
-        value: ${{ jobs.publish_connector_registry_entries.outputs.docker-image-tag }}
+        value: ${{ jobs.publish_connectors.outputs.docker-image-tag }}
   workflow_dispatch:
     inputs:
       connectors:
@@ -76,7 +80,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         # v4
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
@@ -143,9 +147,11 @@ jobs:
       max-parallel: 5
       # Allow all jobs to run, even if one fails
       fail-fast: false
+    outputs:
+      docker-image-tag: ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -156,7 +162,7 @@ jobs:
 
       - name: Checkout Airbyte
         # v4
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.gitref || '' }}
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
@@ -167,21 +173,21 @@ jobs:
         shell: bash
         run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
 
-      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Set up Python
         # v5
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: "3.11"
           check-latest: true
@@ -196,15 +202,17 @@ jobs:
           version: 1.8.5
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
           # We pass a token with dedicated GH rate limit
           github-token: ${{ steps.get-app-token.outputs.token }}
 
-      - name: Install Poe
+      - name: Install Poe and Ops CLI
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
+          # Install the ops CLI for version resolution:
+          uv tool install airbyte-internal-ops
 
       - name: Get connector metadata
         id: connector-metadata
@@ -214,58 +222,90 @@ jobs:
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
 
-      # We're intentionally not using the `google-github-actions/auth` action.
-      # The upload-connector-metadata step runs a script which handles auth manually.
-      # This is because we're writing files to multiple buckets, using different credentials
-      # for each bucket.
-      # (it's unclear whether that's actually necessary)
-      - name: Install gcloud
-        # v2.1.5
-        uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
+      - name: Resolve ephemeral version tag (preview)
+        id: resolve-ephemeral-version
+        if: needs.publish_options.outputs.with-semver-suffix == 'preview'
+        run: |
+          RESOLVED_TAG=$(
+            airbyte-ops local connector get-version \
+              --name "${{ matrix.connector }}" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --next --prerelease
+          )
+          echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
 
-      - name: Install metadata_service
-        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+      - name: Resolve ephemeral version tag (rc)
+        id: resolve-ephemeral-version-rc
+        if: needs.publish_options.outputs.with-semver-suffix == 'rc'
+        run: |
+          RESOLVED_TAG=$(
+            airbyte-ops local connector get-version \
+              --name "${{ matrix.connector }}" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --next --bump-type rc
+          )
+          echo "connector-version-tag=${RESOLVED_TAG}" | tee -a $GITHUB_OUTPUT
 
-      - name: Validate connector metadata
-        id: validate-connector-metadata
-        shell: bash
-        run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
+      - name: Resolve connector version tag
+        id: resolve-version
+        run: |
+          echo "connector-version-tag=${{
+            steps.resolve-ephemeral-version.outputs.connector-version-tag
+            || steps.resolve-ephemeral-version-rc.outputs.connector-version-tag
+            || steps.connector-metadata.outputs.connector-version
+          }}" | tee -a $GITHUB_OUTPUT
+
+      - name: Resolve docker image tag
+        id: resolve-docker-image-tag
+        env:
+          # Disable Segment.io Telemetry in PyAirbyte
+          DO_NOT_TRACK: "1"
+        run: |
+          set -euo pipefail
+          CONNECTOR_VERSION="${{ steps.connector-metadata.outputs.connector-version }}"
+          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+
+          # Generate docker image tag based on semver suffix mode
+          case "$SEMVER_SUFFIX" in
+            preview)
+              DOCKER_TAG=$(airbyte-ops registry connector-version next \
+                --name "${{ matrix.connector }}" \
+                --sha "$(git rev-parse HEAD)" \
+                --base-version "${CONNECTOR_VERSION}")
+              echo "docker-image-tag=${DOCKER_TAG}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
+              ;;
+            rc)
+              echo "docker-image-tag=${CONNECTOR_VERSION}-rc1" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+              ;;
+            none|*)
+              echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+              ;;
+          esac
 
       - name: Publish to Python Registry
         id: publish-python-registry
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
 
       - name: "[DRY-RUN] Skip Publish to Python Registry"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
+        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true' && needs.publish_options.outputs.with-semver-suffix == 'none'
         run: |
           echo "DRY-RUN: Skipping Python Registry publish for ${{ matrix.connector }}"
-
-      - name: Upload Python Dependencies to GCS
-        id: upload-python-dependencies-master
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run != 'true'
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        run: |
-          ./poe-tasks/upload-python-dependencies.sh \
-            --name ${{ matrix.connector }} \
-            --bucket prod-airbyte-cloud-connector-metadata-service \
-            --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
-
-      - name: "[DRY-RUN] Skip Upload Python Dependencies to GCS"
-        if: steps.connector-metadata.outputs.connector-language == 'python' && needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping Python Dependencies upload for ${{ matrix.connector }}"
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
         if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run != 'true'
         shell: bash
+        env:
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         run: |
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }} --publish
 
@@ -273,6 +313,8 @@ jobs:
         id: build-JVM-connectors-images-dry-run
         if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.dry-run == 'true'
         shell: bash
+        env:
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         run: |
           echo "DRY-RUN: Building JVM connector without publishing..."
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
@@ -284,6 +326,7 @@ jobs:
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          CONNECTOR_VERSION_TAG: ${{ steps.resolve-version.outputs.connector-version-tag }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
@@ -298,92 +341,13 @@ jobs:
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
+          tag-override: ${{ steps.resolve-version.outputs.connector-version-tag }}
           with-semver-suffix: ${{ needs.publish_options.outputs.with-semver-suffix }}
           dry-run: ${{ needs.publish_options.outputs.dry-run }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Upload connector metadata
-        id: upload-connector-metadata
-        if: needs.publish_options.outputs.dry-run != 'true'
-        shell: bash
-        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --with-semver-suffix ${{ needs.publish_options.outputs.with-semver-suffix }}
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-
-      - name: "[DRY-RUN] Skip Upload connector metadata"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping connector metadata upload for ${{ matrix.connector }}"
-
-  # The connector registries are generated from the spec cache,
-  # and in some cases, there are cross-connector dependencies.
-  # Specifically, connectors with a strict-encrypt variant need the strict-encrypt's spec cache
-  # to generate their registry entry.
-  # For example, generating destination-postgres's cloud.json will read from
-  # destination-postgres-strict-encrypt's spec cache.
-  # As a result, we need publish_connector_registry_entries to run after publish_connectors is fully completed.
-  # Once strict-encrypt connectors are all gone, we can merge these steps together
-  # (i.e. move the generate-XYZ-registry-entry steps to the bottom of publish_connectors).
-  publish_connector_registry_entries:
-    name: Publish connector registry entries
-    needs: [publish_options, publish_connectors]
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
-      max-parallel: 5
-      # Allow all jobs to run, even if one fails
-      fail-fast: false
-    outputs:
-      docker-image-tag: ${{ steps.connector-metadata.outputs.docker-image-tag }}
-    steps:
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          # Use dynamic repo name since this workflow is also called from airbyte-enterprise
-          repositories: ${{ github.event.repository.name }}
-          app-id: ${{ secrets.OCTAVIA_PUBLISH_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_PUBLISH_BOT_PRIVATE_KEY }}
-
-      - name: Checkout Airbyte
-        # v4
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
-        with:
-          ref: ${{ inputs.gitref || '' }}
-          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
-          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
-
-      - name: Set up Python
-        # v5
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
-
-      - name: Install and configure Poetry
-        # v1
-        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
-        with:
-          version: 1.8.5
-
-      - name: Install metadata_service
-        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
-
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
-        with:
-          # We pass a token with dedicated GH rate limit
-          github-token: ${{ steps.get-app-token.outputs.token }}
-
-      - name: Install Poe
-        run: |
-          # Install Poe so we can run the connector tasks:
-          uv tool install poethepoet
+      # --- Registry artifact generation and publishing ---
 
       - name: Enable progressive rollout for RC builds
         if: needs.publish_options.outputs.with-semver-suffix == 'rc'
@@ -398,93 +362,166 @@ jobs:
           grep -n "enableProgressiveRollout" metadata.yaml
           echo "Progressive rollout enabled in metadata.yaml"
 
-      - name: Get connector metadata
-        id: connector-metadata
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+      # --- Ephemeral version bump for pre-release builds ---
+      # For preview builds, the metadata.yaml still contains the base version (e.g. 3.2.3)
+      # but the actual published tag is the preview version (e.g. 3.2.3-preview.820ce48).
+      # The artifact generator reads dockerImageTag from metadata.yaml, so we need to
+      # bump it in-place before generating artifacts. This is ephemeral — not committed.
+      # See: https://github.com/airbytehq/airbyte-ops-mcp/issues/604
+      - name: Ephemeral version bump for pre-release
+        if: needs.publish_options.outputs.with-semver-suffix == 'preview'
         run: |
-          set -euo pipefail
-          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
-          echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
-          CONNECTOR_VERSION=$(poe -qq get-version)
+          echo "Bumping metadata.yaml version to ${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          airbyte-ops local connector bump-version \
+            --name "${{ matrix.connector }}" \
+            --repo-path "$GITHUB_WORKSPACE" \
+            --new-version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
+            --no-changelog \
+            --progressive-rollout-enabled=false
+
+      # --- Registry artifact generation and publishing ---
+      - name: Generate Registry Artifacts
+        id: generate-registry-artifacts
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: |
+          echo "Generating registry artifacts for ${{ matrix.connector }}"
+          DOCKER_REPOSITORY=$(yq -r '.data.dockerRepository' "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml")
+          DOCKER_IMAGE="${DOCKER_REPOSITORY}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
+          airbyte-ops \
+            registry connector-version artifacts generate \
+            --metadata-file "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --docker-image "${DOCKER_IMAGE}" \
+            --output-dir ./registry-artifacts/${{ matrix.connector }} \
+            --with-validate \
+            --with-sbom \
+            --with-dependency-dump
+
+      - name: Upload Registry CI Artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: registry-artifacts-${{ matrix.connector }}-${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}
+          path: ./registry-artifacts/${{ matrix.connector }}/
+          retention-days: 7
+
+      - name: Publish Registry Artifacts
+        id: publish-registry-artifacts
+        if: needs.publish_options.outputs.dry-run != 'true' && steps.generate-registry-artifacts.outcome == 'success'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: |
+          echo "Publishing registry artifacts for ${{ matrix.connector }}"
+          airbyte-ops \
+            registry connector-version artifacts publish \
+            --name "${{ matrix.connector }}" \
+            --version "${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}" \
+            --artifacts-dir ./registry-artifacts/${{ matrix.connector }} \
+            --store "${REGISTRY_STORE}" \
+            --with-validate
+
+      # Create the release_candidate/ metadata marker in GCS so the
+      # platform knows an RC is active for this connector.  The marker
+      # is read by the compile step and injected into the compiled
+      # registry JSON as `releases.releaseCandidates`.
+      #
+      # Condition: the on-disk metadata.yaml version must contain
+      # "-rc." (path 1: RC version committed to master).  The
+      # `--with-semver-suffix rc` path (path 2) uses a different
+      # suffix format and is handled separately (used for -preview).
+      - name: Create RC metadata marker
+        if: >-
+          needs.publish_options.outputs.dry-run != 'true'
+          && steps.publish-registry-artifacts.outcome == 'success'
+          && contains(steps.resolve-docker-image-tag.outputs.docker-image-tag, '-rc.')
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          REGISTRY_STORE: "coral:prod"
+        run: |
+          echo "Creating RC metadata marker for ${{ matrix.connector }}"
+          airbyte-ops \
+            registry progressive-rollout create \
+            --name "${{ matrix.connector }}" \
+            --store "${REGISTRY_STORE}"
+
+      - name: Build success notification context
+        id: success-context
+        if: success() && needs.publish_options.outputs.dry-run != 'true'
+        run: |
+          CONNECTOR="${{ matrix.connector }}"
+          DOCKER_TAG="${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}"
           SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+          PR_NUMBER="${{ inputs.pr }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          # Generate docker image tag based on semver suffix mode
-          case "$SEMVER_SUFFIX" in
-            preview)
-              hash=$(git rev-parse --short=7 HEAD)
-              echo "docker-image-tag=${CONNECTOR_VERSION}-preview.${hash}" | tee -a $GITHUB_OUTPUT
-              echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
-              ;;
-            rc)
-              echo "docker-image-tag=${CONNECTOR_VERSION}-rc1" | tee -a $GITHUB_OUTPUT
-              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
-              ;;
-            none|*)
-              echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
-              echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
-              ;;
-          esac
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
+          fi
 
-      - name: Generate OSS Registry Entry
-        id: generate-oss-registry-entry
-        if: needs.publish_options.outputs.dry-run != 'true'
-        shell: bash
-        run: |
-          echo "Generating OSS registry entry for ${{ matrix.connector }}"
-          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
-            metadata_service generate-registry-entry \
-            --bucket-name prod-airbyte-cloud-connector-metadata-service \
-            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            --registry-type oss \
-            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
-            ${{ steps.connector-metadata.outputs.release-type-flag }}
+          # Determine release type label and emoji
+          if [[ "$SEMVER_SUFFIX" == "none" || -z "$SEMVER_SUFFIX" ]]; then
+            RELEASE_TYPE="GA"
+            EMOJI="🟢"
+          else
+            RELEASE_TYPE="Pre-release"
+            EMOJI="🔵"
+          fi
+
+          # Build URLs for hyperlinks
+          DOCKERHUB_URL="https://hub.docker.com/r/airbyte/${CONNECTOR}/tags?name=${DOCKER_TAG}"
+          CLOUD_REGISTRY_URL="https://connectors.airbyte.com/files/metadata/airbyte/${CONNECTOR}/${DOCKER_TAG}/cloud.json"
+          OSS_REGISTRY_URL="https://connectors.airbyte.com/files/metadata/airbyte/${CONNECTOR}/${DOCKER_TAG}/oss.json"
+
+          # Build PR text
+          PR_TEXT=""
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            PR_TEXT="\nPR: <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
+          fi
+
+          echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "emoji=$EMOJI" >> $GITHUB_OUTPUT
+          echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
+          echo "dockerhub-url=$DOCKERHUB_URL" >> $GITHUB_OUTPUT
+          echo "cloud-registry-url=$CLOUD_REGISTRY_URL" >> $GITHUB_OUTPUT
+          echo "oss-registry-url=$OSS_REGISTRY_URL" >> $GITHUB_OUTPUT
+          echo "pr-text=$PR_TEXT" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack on connector publish success
+        if: success() && needs.publish_options.outputs.dry-run != 'true' && steps.success-context.outcome == 'success'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
+        with:
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "${{ steps.success-context.outputs.emoji }} *${{ steps.success-context.outputs.release-type }} Publish SUCCESS:*\nConnector: <${{ steps.success-context.outputs.dockerhub-url }}|airbyte/${{ matrix.connector }}:${{ steps.resolve-docker-image-tag.outputs.docker-image-tag }}>\nReference: <${{ steps.success-context.outputs.cloud-registry-url }}|cloud.json> · <${{ steps.success-context.outputs.oss-registry-url }}|oss.json> · <${{ steps.success-context.outputs.run-url }}|CI Logs>${{ steps.success-context.outputs.pr-text }}"
+            }
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-      - name: "[DRY-RUN] Skip Generate OSS Registry Entry"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping OSS registry entry generation for ${{ matrix.connector }}"
-
-      - name: Generate Cloud Registry Entry
-        id: generate-cloud-registry-entry
-        if: needs.publish_options.outputs.dry-run != 'true'
-        shell: bash
-        run: |
-          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
-          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
-            metadata_service generate-registry-entry \
-            --bucket-name prod-airbyte-cloud-connector-metadata-service \
-            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            --registry-type cloud \
-            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
-            ${{ steps.connector-metadata.outputs.release-type-flag }}
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-      - name: "[DRY-RUN] Skip Generate Cloud Registry Entry"
-        if: needs.publish_options.outputs.dry-run == 'true'
-        run: |
-          echo "DRY-RUN: Skipping Cloud registry entry generation for ${{ matrix.connector }}"
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
   generate_connector_registry:
     name: Generate connector registry
-    needs: [publish_options, publish_connector_registry_entries]
+    needs: [publish_options, publish_connectors]
     if: needs.publish_options.outputs.dry-run != 'true'
     uses: ./.github/workflows/generate-connector-registries.yml
+    with:
+      pr: ${{ inputs.pr }}
     secrets: inherit
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connector_registry_entries
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+      - publish_connectors
+      - publish_options
+    if: ${{ always() && needs.publish_connectors.result == 'failure' }}
     steps:
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -495,16 +532,62 @@ jobs:
 
       - name: Checkout Airbyte
         # v4
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ inputs.gitref || '' }}
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
+        continue-on-error: true
         uses: ./.github/actions/match-github-to-slack-user
         env:
           AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
           GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
+      - name: Build notification context
+        id: context
+        run: |
+          PR_NUMBER="${{ inputs.pr }}"
+          SEMVER_SUFFIX="${{ needs.publish_options.outputs.with-semver-suffix }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          # Append ?pr=N for "Back to pull request" link in GitHub Actions UI
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
+          fi
+
+          # Determine release type label
+          if [[ "$SEMVER_SUFFIX" == "none" || -z "$SEMVER_SUFFIX" ]]; then
+            RELEASE_TYPE="GA"
+          else
+            RELEASE_TYPE="Pre-release (${SEMVER_SUFFIX})"
+          fi
+
+          # Extract connector names from the matrix JSON
+          CONNECTORS_JSON='${{ needs.publish_options.outputs.connectors-to-publish }}'
+          CONNECTOR_NAMES=$(echo "$CONNECTORS_JSON" | jq -r '.connector | join(", ")')
+          if [[ -n "$CONNECTOR_NAMES" ]]; then
+            CONNECTOR_TEXT="\nConnector(s): \`${CONNECTOR_NAMES}\`"
+          else
+            CONNECTOR_TEXT=""
+          fi
+
+          # Build trigger description
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            TRIGGER_TEXT="triggered from PR <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>"
+          elif [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            TRIGGER_TEXT="merged to master"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TRIGGER_TEXT="triggered via workflow_dispatch"
+          elif [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+            TRIGGER_TEXT="triggered via workflow_call"
+          else
+            TRIGGER_TEXT="triggered via ${{ github.event_name }}"
+          fi
+
+          echo "run-url=$RUN_URL" >> $GITHUB_OUTPUT
+          echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "trigger-text=$TRIGGER_TEXT" >> $GITHUB_OUTPUT
+          echo "connector-text=$CONNECTOR_TEXT" >> $GITHUB_OUTPUT
       - name: Send publish failures to connector-publish-failures channel
         id: slack
         uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
@@ -514,30 +597,7 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
+              "text": "🚨 ${{ steps.context.outputs.release-type }} publish workflow failed:${{ steps.context.outputs.connector-text }}\n <${{ steps.context.outputs.run-url }}|View workflow run>\n ${{ steps.context.outputs.trigger-text }} by ${{ github.actor }}${{ steps.match-github-to-slack-user.outputs.slack_user_ids && format(' (<@{0}>)', steps.match-github-to-slack-user.outputs.slack_user_ids) || '' }}."
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-
-  notify-failure-pager-duty:
-    name: "Notify PagerDuty on Publish Failures"
-    runs-on: ubuntu-24.04
-    needs:
-      - publish_connector_registry_entries
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Checkout Airbyte
-        # v4
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
-        with:
-          ref: ${{ inputs.gitref || '' }}
-          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
-      - name: Notify PagerDuty
-        id: pager-duty
-        uses: ./.github/actions/send-pager-duty-event
-        with:
-          # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
-          integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
-          summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
-          severity: "critical"
-          source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

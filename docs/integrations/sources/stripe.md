@@ -70,7 +70,11 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
    Streams like `customers`, `subscriptions`, `products`, and `plans` may not need validation because some accounts legitimately have no new records in 30+ days, and forcing a full refresh would be unnecessary.
 
-11. Click **Set up source** and wait for the tests to complete.
+11. (Optional) For **Number of Concurrent Threads**, enter the number of worker threads to use for the sync. The default is 10. You can set this to any value between 2 and 100. Higher values increase throughput but also increase API usage. The effective upper bound depends on your Stripe account's rate limits.
+
+12. (Optional) For **Max Number of API Calls per Second**, enter the maximum number of API requests per second the connector is allowed to make. If not specified, the connector defaults to 25 calls per second for test and sandbox API keys and 100 calls per second for live API keys. This value cannot exceed Stripe's actual [rate limits](https://stripe.com/docs/rate-limits).
+
+13. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -145,6 +149,10 @@ The Stripe source connector supports the following streams:
 ### Data type map
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
+
+### Stripe API version
+
+This connector uses Stripe API version `2022-11-15`. Stripe returns data shaped according to this version regardless of the version configured in your Stripe dashboard. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
 
 ## Limitations & Troubleshooting
 
@@ -305,6 +313,10 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.1 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 6.0.0 | 2026-04-13 | [76095](https://github.com/airbytehq/airbyte/pull/76095) | Fix missing records in `invoice_line_items` and `subscription_items` incremental streams by replacing `DpathFlattenFields` with `RecordExpander` to correctly expand nested line items from Stripe events. This is a breaking change — previously synced data for these streams may be incomplete. See the [migration guide](https://docs.airbyte.com/integrations/sources/stripe-migrations#upgrading-to-600) for details. |
+| 5.15.23 | 2026-03-31 | [75864](https://github.com/airbytehq/airbyte/pull/75864) | Update dependencies |
+| 5.15.22 | 2026-03-12 | [74770](https://github.com/airbytehq/airbyte/pull/74770) | Upgrade CDK to 7.13.0 |
 | 5.15.21 | 2026-03-06 | [74342](https://github.com/airbytehq/airbyte/pull/74342) | Promoting release candidate 5.15.21-rc.5 to a main version. |
 | 5.15.21-rc.5 | 2026-03-06 | [74337](https://github.com/airbytehq/airbyte/pull/74337) | Make API data retention validation optional per stream via new `api_retention_streams` config field, upgrade CDK to 7.8.1.post54 |
 | 5.15.21-rc.4 | 2026-03-04 | [74290](https://github.com/airbytehq/airbyte/pull/74290) | Lower default concurrency from 25 to 10 and increase default data request time increment from 30 to 365 days to reduce rate limiting |
@@ -333,29 +345,29 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 5.15.2 | 2025-08-03 | [64439](https://github.com/airbytehq/airbyte/pull/64439) | Update dependencies |
 | 5.15.1 | 2025-07-26 | [60561](https://github.com/airbytehq/airbyte/pull/60561) | Update dependencies |
 | 5.15.0 | 2025-07-23 | [63743](https://github.com/airbytehq/airbyte/pull/63743) | Promoting release candidate 5.15.0-rc.1 to a main version. |
-| 5.15.0-rc.1 | 2025-07-21 | [63370](https://github.com/airbytehq/airbyte/pull/63370)     | Migrate to manifest-only format.                                                                                                                                                                                              |
-| 5.14.1      | 2025-07-15 | [62893](https://github.com/airbytehq/airbyte/pull/62893)     | Increase the timeout for syncs that fail without any records to one day.                                                                                                                                                      |
-| 5.14.0      | 2025-07-15 | [63303](https://github.com/airbytehq/airbyte/pull/63303)     | Promoting release candidate 5.14.0-rc.1 to a main version.                                                                                                                                                                    |
-| 5.14.0-rc.1 | 2025-06-12 | [60846](https://github.com/airbytehq/airbyte/pull/60846)     | Rollback Low Code per partition streams; update slicer for invoice_line_items and normalization for events based streams                                                                                                      |
-| 5.13.0      | 2025-05-22 | [60846](https://github.com/airbytehq/airbyte/pull/60846)     | Update subscription_items and usage_records stream to python implementation                                                                                                                                                   |
-| 5.12.0      | 2025-05-12 | [59743](https://github.com/airbytehq/airbyte/pull/59743)     | Update invoice_line_items stream to python implementation                                                                                                                                                                     |
-| 5.11.3      | 2025-05-10 | [60053](https://github.com/airbytehq/airbyte/pull/60053)     | Update dependencies                                                                                                                                                                                                           |
-| 5.11.2      | 2025-05-04 | [59645](https://github.com/airbytehq/airbyte/pull/59645)     | Update dependencies                                                                                                                                                                                                           |
-| 5.11.1      | 2025-04-27 | [58979](https://github.com/airbytehq/airbyte/pull/58979)     | Update dependencies                                                                                                                                                                                                           |
-| 5.11.0      | 2025-04-24 | [58637](https://github.com/airbytehq/airbyte/pull/58637)     | Promoting release candidate 5.11.0-rc.2 to a main version.                                                                                                                                                                    |
-| 5.11.0-rc.2 | 2025-04-18 | [58136](https://github.com/airbytehq/airbyte/pull/58136)     | Enable progressive rollout                                                                                                                                                                                                    |
-| 5.11.0-rc.1 | 2025-04-18 | [54162](https://github.com/airbytehq/airbyte/pull/54162)     | Migrate to low-code                                                                                                                                                                                                           |
-| 5.10.1      | 2025-04-17 | [58124](https://github.com/airbytehq/airbyte/pull/58124)     | Extend safe state to support nested states                                                                                                                                                                                    |
-| 5.10.0      | 2025-04-17 | [58117](https://github.com/airbytehq/airbyte/pull/58117)     | Promoting release candidate 5.10.0-rc.1 to a main version.                                                                                                                                                                    |
-| 5.10.0-rc.1 | 2025-04-13 | [58060](https://github.com/airbytehq/airbyte/pull/58060)     | Migrate application_fees, authorizations, cardholders, cards, early_fraud_warnings, external_account_bank_accounts and external_account_cards to low-code                                                                     |
-| 5.9.2       | 2025-04-15 | [58072](https://github.com/airbytehq/airbyte/pull/58072)     | Add safe state data type handling                                                                                                                                                                                             |
-| 5.9.1       | 2025-04-15 | [58068](https://github.com/airbytehq/airbyte/pull/58068)     | Add documentation url back in spec                                                                                                                                                                                            |
-| 5.9.0       | 2025-04-14 | [58065](https://github.com/airbytehq/airbyte/pull/58065)     | Promoting release candidate 5.9.0-rc.1 to a main version.                                                                                                                                                                     |
-| 5.9.0-rc.1  | 2025-03-04 | [54162](https://github.com/airbytehq/airbyte/pull/54162)     | Migrate events, shipping_rates, balance_transactions, files and file_links to low-code                                                                                                                                        |
-| 5.8.14      | 2025-03-29 | [56871](https://github.com/airbytehq/airbyte/pull/56871)     | Update dependencies                                                                                                                                                                                                           |
-| 5.8.13      | 2025-03-22 | [56276](https://github.com/airbytehq/airbyte/pull/56276)     | Update dependencies                                                                                                                                                                                                           |
-| 5.8.12      | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682)     | Promoting release candidate 5.8.10-rc.1 to a main version.                                                                                                                                                                    |
-| 5.8.11      | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598)     | Update dependencies                                                                                                                                                                                                           |
+| 5.15.0-rc.1 | 2025-07-21 | [63370](https://github.com/airbytehq/airbyte/pull/63370) | Migrate to manifest-only format. |
+| 5.14.1 | 2025-07-15 | [62893](https://github.com/airbytehq/airbyte/pull/62893) | Increase the timeout for syncs that fail without any records to one day. |
+| 5.14.0 | 2025-07-15 | [63303](https://github.com/airbytehq/airbyte/pull/63303) | Promoting release candidate 5.14.0-rc.1 to a main version. |
+| 5.14.0-rc.1 | 2025-06-12 | [60846](https://github.com/airbytehq/airbyte/pull/60846) | Rollback Low Code per partition streams; update slicer for invoice_line_items and normalization for events based streams |
+| 5.13.0 | 2025-05-22 | [60846](https://github.com/airbytehq/airbyte/pull/60846) | Update subscription_items and usage_records stream to python implementation |
+| 5.12.0 | 2025-05-12 | [59743](https://github.com/airbytehq/airbyte/pull/59743) | Update invoice_line_items stream to python implementation |
+| 5.11.3 | 2025-05-10 | [60053](https://github.com/airbytehq/airbyte/pull/60053) | Update dependencies |
+| 5.11.2 | 2025-05-04 | [59645](https://github.com/airbytehq/airbyte/pull/59645) | Update dependencies |
+| 5.11.1 | 2025-04-27 | [58979](https://github.com/airbytehq/airbyte/pull/58979) | Update dependencies |
+| 5.11.0 | 2025-04-24 | [58637](https://github.com/airbytehq/airbyte/pull/58637) | Promoting release candidate 5.11.0-rc.2 to a main version. |
+| 5.11.0-rc.2 | 2025-04-18 | [58136](https://github.com/airbytehq/airbyte/pull/58136) | Enable progressive rollout |
+| 5.11.0-rc.1 | 2025-04-18 | [54162](https://github.com/airbytehq/airbyte/pull/54162) | Migrate to low-code |
+| 5.10.1 | 2025-04-17 | [58124](https://github.com/airbytehq/airbyte/pull/58124) | Extend safe state to support nested states |
+| 5.10.0 | 2025-04-17 | [58117](https://github.com/airbytehq/airbyte/pull/58117) | Promoting release candidate 5.10.0-rc.1 to a main version. |
+| 5.10.0-rc.1 | 2025-04-13 | [58060](https://github.com/airbytehq/airbyte/pull/58060) | Migrate application_fees, authorizations, cardholders, cards, early_fraud_warnings, external_account_bank_accounts and external_account_cards to low-code |
+| 5.9.2 | 2025-04-15 | [58072](https://github.com/airbytehq/airbyte/pull/58072) | Add safe state data type handling |
+| 5.9.1 | 2025-04-15 | [58068](https://github.com/airbytehq/airbyte/pull/58068) | Add documentation url back in spec |
+| 5.9.0 | 2025-04-14 | [58065](https://github.com/airbytehq/airbyte/pull/58065) | Promoting release candidate 5.9.0-rc.1 to a main version. |
+| 5.9.0-rc.1 | 2025-03-04 | [54162](https://github.com/airbytehq/airbyte/pull/54162) | Migrate events, shipping_rates, balance_transactions, files and file_links to low-code |
+| 5.8.14 | 2025-03-29 | [56871](https://github.com/airbytehq/airbyte/pull/56871) | Update dependencies |
+| 5.8.13 | 2025-03-22 | [56276](https://github.com/airbytehq/airbyte/pull/56276) | Update dependencies |
+| 5.8.12 | 2025-03-10 | [55682](https://github.com/airbytehq/airbyte/pull/55682) | Promoting release candidate 5.8.10-rc.1 to a main version. |
+| 5.8.11 | 2025-03-08 | [55598](https://github.com/airbytehq/airbyte/pull/55598) | Update dependencies |
 | 5.8.10-rc1  | 2025-02-22 | [53670](https://github.com/airbytehq/airbyte/pull/53670)     | Update pritbuffer logic                                                                                                                                                                                                       |
 | 5.8.9       | 2025-03-01 | [55117](https://github.com/airbytehq/airbyte/pull/55117)     | Update dependencies                                                                                                                                                                                                           |
 | 5.8.8       | 2025-02-28 | [54711](https://github.com/airbytehq/airbyte/pull/54711)     | Add retry error handler for `requests.exceptions.InvalidURL'                                                                                                                                                                  |

@@ -30,6 +30,7 @@ API reference: https://docs.alpaca.markets/reference/getallaccounts
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2026-03-24 | [74986](https://github.com/airbytehq/airbyte/pull/74986) | Update dependencies |
 | 0.0.21 | 2026-02-24 | [73749](https://github.com/airbytehq/airbyte/pull/73749) | Update dependencies |
 | 0.0.20 | 2026-02-17 | [72372](https://github.com/airbytehq/airbyte/pull/72372) | Update dependencies |
 | 0.0.19 | 2026-01-14 | [71520](https://github.com/airbytehq/airbyte/pull/71520) | Update dependencies |
