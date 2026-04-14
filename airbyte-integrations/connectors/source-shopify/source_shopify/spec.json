@@ -128,6 +128,7 @@
         "minimum": 0,
         "maximum": 30,
         "order": 7
+      },
       "fulfillment_orders_include_closed": {
         "type": "boolean",
         "title": "Include Closed Fulfillment Orders",
