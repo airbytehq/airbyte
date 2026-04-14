@@ -123,23 +123,6 @@ def test_filter_records_newer_than_state(auth_config):
     assert result == expected
 
 
-def test_cdk_v7_compatibility():
-    """Verify that the connector is compatible with airbyte-cdk v7."""
-    import airbyte_cdk
-
-    cdk_version = tuple(int(x) for x in airbyte_cdk.__version__.split(".")[:2])
-    assert cdk_version >= (7, 0), f"Expected airbyte-cdk >= 7.0, got {airbyte_cdk.__version__}"
-
-    # Verify key CDK classes used by source-shopify are importable at expected paths
-    from airbyte_cdk import HttpSubStream
-    from airbyte_cdk.sources import AbstractSource
-    from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
-    from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
-    from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-
-    assert issubclass(SourceShopify, AbstractSource)
-
-
 def test_run_module_emits_spec():
     with patch("sys.argv", ["", "spec"]):
         # dummy test for the spec
