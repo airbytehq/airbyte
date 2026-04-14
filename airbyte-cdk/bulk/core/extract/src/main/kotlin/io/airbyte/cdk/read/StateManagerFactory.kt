@@ -34,8 +34,9 @@ import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
-import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
@@ -63,7 +64,23 @@ class StateManagerFactory(
     ): StateManager {
         val allStreams: List<Stream> =
             metadataQuerierFactory.session(config).use { mq ->
-                configuredCatalog.streams.mapNotNull { toStream(mq, it) }
+                configuredCatalog.streams.mapNotNull { configuredStream ->
+                    val streamID = StreamIdentifier.from(configuredStream.stream)
+                    toStream(mq, configuredStream)
+                        ?: run {
+                            outputConsumer.accept(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
+                                    .withStatus(AirbyteStreamStatus.STARTED),
+                            )
+                            outputConsumer.accept(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
+                                    .withStatus(AirbyteStreamStatus.INCOMPLETE),
+                            )
+                            null
+                        }
+                }
             }
         return if (config.global) {
             when (inputState) {
@@ -168,27 +185,14 @@ class StateManagerFactory(
         val streamID: StreamIdentifier = StreamIdentifier.from(configuredStream.stream)
         val name: String = streamID.name
         val namespace: String? = streamID.namespace
-        val streamLabel: String = streamID.toString()
         when (metadataQuerier.streamNames(namespace).filter { it.name == name }.size) {
             0 -> {
                 handler.accept(StreamNotFound(streamID))
-                outputConsumer.accept(
-                    AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                        .withMessage("Stream '$streamLabel' not found or not accessible in source.")
-                )
                 return null
             }
             1 -> Unit
             else -> {
                 handler.accept(MultipleStreamsFound(streamID))
-                outputConsumer.accept(
-                    AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                        .withMessage("Multiple streams '$streamLabel' found in source.")
-                )
                 return null
             }
         }
@@ -232,12 +236,6 @@ class StateManagerFactory(
             }
         if (streamFields.isEmpty()) {
             handler.accept(StreamHasNoFields(streamID))
-            outputConsumer.accept(
-                AirbyteErrorTraceMessage()
-                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                    .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                    .withMessage("Stream '$streamLabel' has no accessible fields.")
-            )
             return null
         }
 
