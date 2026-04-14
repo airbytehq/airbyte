@@ -131,9 +131,9 @@ def test_cdk_v7_compatibility():
     assert cdk_version >= (7, 0), f"Expected airbyte-cdk >= 7.0, got {airbyte_cdk.__version__}"
 
     # Verify key CDK classes used by source-shopify are importable at expected paths
-    from airbyte_cdk.sources import AbstractSource
-    from airbyte_cdk.sources.streams.http import HttpStream, HttpClient
     from airbyte_cdk import HttpSubStream
+    from airbyte_cdk.sources import AbstractSource
+    from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
     from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
     from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
