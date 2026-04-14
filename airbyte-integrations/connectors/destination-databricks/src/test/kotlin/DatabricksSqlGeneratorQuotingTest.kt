@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Tests that catalog names containing special characters (e.g., hyphens) are
- * properly backtick-quoted in all generated SQL statements.
+ * Tests that catalog names containing special characters (e.g., hyphens) are properly
+ * backtick-quoted in all generated SQL statements.
  *
  * Regression test for https://github.com/airbytehq/airbyte/issues/76307
  */
@@ -73,8 +73,8 @@ class DatabricksSqlGeneratorQuotingTest {
         )
 
     /**
-     * Asserts that the catalog name appears backtick-quoted in the SQL and never
-     * appears unquoted (which would cause PARSE_SYNTAX_ERROR for hyphenated names).
+     * Asserts that the catalog name appears backtick-quoted in the SQL and never appears unquoted
+     * (which would cause PARSE_SYNTAX_ERROR for hyphenated names).
      */
     private fun assertCatalogQuoted(sql: String, catalog: String) {
         assertTrue(
@@ -90,7 +90,9 @@ class DatabricksSqlGeneratorQuotingTest {
         )
     }
 
-    private fun sqlToString(sql: io.airbyte.integrations.base.destination.typing_deduping.Sql): String {
+    private fun sqlToString(
+        sql: io.airbyte.integrations.base.destination.typing_deduping.Sql
+    ): String {
         return sql.transactions.flatten().joinToString("\n")
     }
 
@@ -128,14 +130,17 @@ class DatabricksSqlGeneratorQuotingTest {
 
     @Test
     fun testUpdateTableAppendQuotesCatalog() {
-        val sql = sqlToString(sqlGeneratorHyphen.updateTable(streamConfig, "", Optional.empty(), false))
+        val sql =
+            sqlToString(sqlGeneratorHyphen.updateTable(streamConfig, "", Optional.empty(), false))
         assertCatalogQuoted(sql, catalogWithHyphen)
     }
 
     @Test
     fun testUpdateTableDedupeQuotesCatalog() {
         val sql =
-            sqlToString(sqlGeneratorHyphen.updateTable(dedupeStreamConfig, "", Optional.empty(), false))
+            sqlToString(
+                sqlGeneratorHyphen.updateTable(dedupeStreamConfig, "", Optional.empty(), false)
+            )
         assertCatalogQuoted(sql, catalogWithHyphen)
     }
 
