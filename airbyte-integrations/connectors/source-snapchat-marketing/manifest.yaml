@@ -10706,5 +10706,5 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 4
+  default_concurrency: 5
   max_concurrency: 10
