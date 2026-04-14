@@ -78,44 +78,24 @@ class DorisAirbyteClient(
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columns = mutableMapOf<String, ColumnType>()
+        val allColumnNames = mutableSetOf<String>()
 
         connection.createStatement().use { stmt ->
-            stmt.executeQuery(
-                    "SELECT COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE " +
-                        "FROM information_schema.COLUMNS " +
-                        "WHERE TABLE_SCHEMA = '${tableName.namespace}' " +
-                        "AND TABLE_NAME = '${tableName.name}' " +
-                        "ORDER BY ORDINAL_POSITION"
-                )
-                .use { rs ->
-                    while (rs.next()) {
-                        val colName = rs.getString("COLUMN_NAME")
-                        val colType = rs.getString("COLUMN_TYPE").uppercase()
-                        val nullable = rs.getString("IS_NULLABLE") == "YES"
+            stmt.executeQuery("DESC `${tableName.namespace}`.`${tableName.name}`").use { rs ->
+                while (rs.next()) {
+                    val colName = rs.getString("Field")
+                    val colType = rs.getString("Type").uppercase()
+                    val nullable = rs.getString("Null") == "Yes"
 
-                        if (colName !in COLUMN_NAMES) {
-                            columns[colName] = ColumnType(mapDorisTypeToInternal(colType), nullable)
-                        }
+                    allColumnNames.add(colName)
+                    if (colName !in COLUMN_NAMES) {
+                        columns[colName] = ColumnType(mapDorisTypeToInternal(colType), nullable)
                     }
                 }
+            }
         }
 
-        val hasAllAirbyteColumns =
-            connection.createStatement().use { stmt ->
-                val rs =
-                    stmt.executeQuery(
-                        "SELECT COLUMN_NAME FROM information_schema.COLUMNS " +
-                            "WHERE TABLE_SCHEMA = '${tableName.namespace}' " +
-                            "AND TABLE_NAME = '${tableName.name}'"
-                    )
-                val existingColumns = mutableSetOf<String>()
-                while (rs.next()) {
-                    existingColumns.add(rs.getString("COLUMN_NAME"))
-                }
-                existingColumns.containsAll(COLUMN_NAMES)
-            }
-
-        if (!hasAllAirbyteColumns) {
+        if (!allColumnNames.containsAll(COLUMN_NAMES)) {
             throw ConfigErrorException(
                 "The target table ($tableName) already exists but does not contain Airbyte's internal columns."
             )
@@ -149,7 +129,7 @@ class DorisAirbyteClient(
         if (anyNullabilityChange) {
             log.info { "Detected deduplication change for table $tableName, recreating table" }
             applyDeduplicationChanges(stream, tableName, columnChangeset)
-        } else {
+        } else if (!columnChangeset.isNoop()) {
             // Doris ALTER TABLE only supports one operation per statement
             val sql = sqlGenerator.alterTable(columnChangeset, tableName)
             sql.split(";\n").filter { it.isNotBlank() }.forEach { execute(it.trim()) }
@@ -234,12 +214,12 @@ class DorisAirbyteClient(
             dorisType.startsWith("DECIMAL") -> DorisSqlTypes.DECIMAL
             dorisType.startsWith("VARCHAR") || dorisType == "TEXT" || dorisType == "STRING" ->
                 DorisSqlTypes.STRING
-            dorisType == "BIGINT" || dorisType == "INT" || dorisType == "LARGEINT" ->
+            dorisType.startsWith("BIGINT") || dorisType == "INT" || dorisType == "LARGEINT" ->
                 DorisSqlTypes.BIGINT
-            dorisType == "BOOLEAN" || dorisType == "TINYINT" -> DorisSqlTypes.BOOLEAN
+            dorisType == "BOOLEAN" || dorisType.startsWith("TINYINT") -> DorisSqlTypes.BOOLEAN
             dorisType == "DATE" -> DorisSqlTypes.DATE
-            dorisType == "JSON" || dorisType == "JSONB" -> DorisSqlTypes.JSON
-            dorisType == "DOUBLE" || dorisType == "FLOAT" -> DorisSqlTypes.DECIMAL
+            dorisType.startsWith("JSON") -> DorisSqlTypes.JSON
+            dorisType.startsWith("DOUBLE") || dorisType.startsWith("FLOAT") -> DorisSqlTypes.DECIMAL
             else -> DorisSqlTypes.STRING
         }
     }
