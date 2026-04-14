@@ -22,15 +22,16 @@ data class DorisConfiguration(
     val enableGzip: Boolean,
 ) : DestinationConfiguration() {
 
-    /** Stream Load URL prefix: http://{host}:{httpPort} */
+    /** Stream Load URL prefix */
     val feHttpUrl: String
-        get() = "http://$host:$httpPort"
+        get() = "${Defaults.HTTP_PROTOCOL}://$host:$httpPort"
 
     /** JDBC URL for DDL operations via MySQL protocol */
     val jdbcUrl: String
         get() = "jdbc:mysql://$host:$queryPort"
 
     object Defaults {
+        const val HTTP_PROTOCOL = "http"
         const val BATCH_MAX_ROWS = 100_000L
         const val BATCH_MAX_BYTES = 50_000_000L
         const val BATCH_FLUSH_INTERVAL_MS = 10_000L

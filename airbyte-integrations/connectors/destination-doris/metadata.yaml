@@ -18,7 +18,7 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/doris
   tags:
-    - language:kotlin
+    - language:java
   ab_internal:
     sl: 100
     ql: 100
