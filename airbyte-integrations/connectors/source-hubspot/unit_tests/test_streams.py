@@ -939,3 +939,71 @@ def test_list_memberships_multiple_parent_lists(requests_mock, config, mock_dyna
     assert len(records) == 2
     list_ids = {r["listId"] for r in records}
     assert list_ids == {10, 20}
+
+
+def test_list_memberships_ignores_400_invalid_object_type(requests_mock, config, mock_dynamic_schema_requests):
+    """Test that list_memberships ignores HTTP 400 errors with invalid objectTypeId and continues syncing valid lists."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    # Mock parent stream with two lists: one valid, one with invalid objectTypeId
+    contact_lists_response = {
+        "lists": [
+            {"listId": "100", "createdAt": "2022-01-01T00:00:00Z", "updatedAt": "2022-01-01T00:00:00Z"},
+            {"listId": "200", "createdAt": "2022-01-01T00:00:00Z", "updatedAt": "2022-01-01T00:00:00Z"},
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    # Mock memberships for list 100 - returns valid data
+    requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/100/memberships",
+        json={"results": [{"recordId": "r1", "membershipTimestamp": "2023-01-01T00:00:00Z"}]},
+    )
+    # Mock memberships for list 200 - returns 400 with invalid object type error
+    requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/200/memberships",
+        json={
+            "status": "error",
+            "message": "ObjectTypeId 0-35 is not valid for this portal. Valid object types are: [...]",
+            "category": "VALIDATION_ERROR",
+            "subCategory": "ListError.INVALID_OBJECT_TYPE_FOR_LIST",
+        },
+        status_code=400,
+    )
+
+    stream = find_stream("list_memberships", config)
+    records = run_read(stream)
+    # Should only get records from list 100; list 200's 400 error should be ignored
+    assert len(records) == 1
+    assert records[0]["recordId"] == "r1"
+    assert records[0]["listId"] == 100
+
+
+def test_list_memberships_fails_on_other_400_errors(requests_mock, config, mock_dynamic_schema_requests):
+    """Test that list_memberships still fails on non-object-type 400 errors."""
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    contact_lists_response = {
+        "lists": [
+            {"listId": "300", "createdAt": "2022-01-01T00:00:00Z", "updatedAt": "2022-01-01T00:00:00Z"},
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    # Mock memberships for list 300 - returns 400 with a different error (not invalid object type)
+    requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/300/memberships",
+        json={
+            "status": "error",
+            "message": "Some other bad request error",
+            "category": "VALIDATION_ERROR",
+        },
+        status_code=400,
+    )
+
+    stream = find_stream("list_memberships", config)
+    with pytest.raises(Exception):
+        run_read(stream)
