@@ -28,9 +28,9 @@ The following built-in JSON formats will be mapped to Avro logical types.
 
 | JSON Type | JSON Built-in Format | Avro Type | Avro Logical Type  | Meaning                                                                                                                                                 |
 | --------- | -------------------- | --------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `string`  | `date`               | `int`     | `date`             | Number of epoch days from 1970-01-01 ([reference](https://avro.apache.org/docs/current/spec.html#Date)).                                                |
-| `string`  | `time`               | `long`    | `time-micros`      | Number of microseconds after midnight ([reference](https://avro.apache.org/docs/current/spec.html#Time+%28microsecond+precision%29)).                   |
-| `string`  | `date-time`          | `long`    | `timestamp-micros` | Number of microseconds from `1970-01-01T00:00:00Z` ([reference](https://avro.apache.org/docs/current/spec.html#Timestamp+%28microsecond+precision%29)). |
+| `string`  | `date`               | `int`     | `date`             | Number of epoch days from 1970-01-01 ([reference](https://avro.apache.org/docs/1.12.0/specification/#date)).                                                |
+| `string`  | `time`               | `long`    | `time-micros`      | Number of microseconds after midnight ([reference](https://avro.apache.org/docs/1.12.0/specification/#time-microsecond-precision)).                   |
+| `string`  | `date-time`          | `long`    | `timestamp-micros` | Number of microseconds from `1970-01-01T00:00:00Z` ([reference](https://avro.apache.org/docs/1.12.0/specification/#timestamp-microsecond-precision)). |
 
 In the final Avro schema, these logical type fields will be typed as a union of null and the logical type. The logical type will be stored as UTC, respecting timezone as/applicable. If the incoming data cannot be converted, the field will be nulled, and the failure will be captured in `_airbyte_meta.changes[]`.
 
@@ -405,8 +405,8 @@ Three Airbyte specific fields will be added to each Avro record:
 
 | Field                            | Schema             |                                          Document                                           |
 | :------------------------------- | :----------------- | :-----------------------------------------------------------------------------------------: |
-| `_airbyte_raw_id`                | `uuid`             |                 [link](http://avro.apache.org/docs/current/spec.html#UUID)                  |
-| `_airbyte_extracted_at`          | `timestamp-millis` | [link](http://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
+| `_airbyte_raw_id`                | `uuid`             |                 [link](https://avro.apache.org/docs/1.12.0/specification/#uuid)                  |
+| `_airbyte_extracted_at`          | `timestamp-millis` | [link](https://avro.apache.org/docs/1.12.0/specification/#timestamp-millisecond-precision) |
 | `_airbyte_generation_id`         | `long`             |                     https://github.com/airbytehq/airbyte/issues/17011                       |
 | `_airbyte_meta`                  | `record`           |                                                                                             |
 
