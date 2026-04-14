@@ -22,32 +22,32 @@
     }
   },
   {
-    "type":"TRACE",
-    "trace":{
-      "type":"STREAM_STATUS",
-      "emitted_at":3.1336416E12,
-      "stream_status":{
-        "stream_descriptor":{
-          "name":"FOO",
-          "namespace":"PUBLIC"
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "FOO",
+          "namespace": "PUBLIC"
         },
-        "status":"STARTED",
-        "reasons":[]
+        "status": "STARTED",
+        "reasons": []
       }
     }
   },
   {
-    "type":"TRACE",
-    "trace":{
-      "type":"STREAM_STATUS",
-      "emitted_at":3.1336416E12,
-      "stream_status":{
-        "stream_descriptor":{
-          "name":"FOO",
-          "namespace":"PUBLIC"
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "FOO",
+          "namespace": "PUBLIC"
         },
-        "status":"INCOMPLETE",
-        "reasons":[]
+        "status": "INCOMPLETE",
+        "reasons": []
       }
     }
   }
