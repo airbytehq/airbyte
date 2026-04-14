@@ -36,7 +36,7 @@ For more details, see the [WooCommerce REST API authentication documentation](ht
 4. Enter the **Consumer key** and **Consumer secret** from Step 1.
 5. Enter the **Shop Name**. For `https://EXAMPLE.com`, the shop name is `EXAMPLE.com`.
 6. Choose the **Start Date** to begin syncing data from.
-7. (Optional) Adjust the **Number of Concurrent Workers** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
+7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
 
 <!-- /env:cloud -->
 <!-- env:oss -->
@@ -49,7 +49,7 @@ For more details, see the [WooCommerce REST API authentication documentation](ht
 4. Enter the **Consumer key** and **Consumer secret** from Step 1.
 5. Enter the **Shop Name**. For `https://EXAMPLE.com`, the shop name is `EXAMPLE.com`.
 6. Choose the **Start Date** to begin syncing data from.
-7. (Optional) Adjust the **Number of Concurrent Workers** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
+7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -98,7 +98,7 @@ Expand to see details about WooCommerce connector limitations and troubleshootin
 
 The WooCommerce REST API does not enforce built-in rate limits. Actual rate limits depend on your hosting provider. Shared hosting environments typically allow 2-5 requests per second. The connector applies a default rate budget of 5 requests per second and handles HTTP 429 responses automatically.
 
-If your hosting environment supports higher throughput, you can increase the **Number of Concurrent Workers** setting (up to 12) in the connector configuration to speed up syncs. If you experience rate limiting errors, reduce this value.
+If your hosting environment supports higher throughput, you can increase the **Number of Concurrent Threads** setting (up to 12) in the connector configuration to speed up syncs. If you experience rate limiting errors, reduce this value.
 
 </details>
 
