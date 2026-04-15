@@ -303,8 +303,8 @@ internal class IcebergTableWriterFactoryTest {
     }
 
     /**
-     * Same as above but for a partitioned table: Append mode with residual identifier fields
-     * in the schema should still produce a PartitionedAppendWriter.
+     * Same as above but for a partitioned table: Append mode with residual identifier fields in the
+     * schema should still produce a PartitionedAppendWriter.
      */
     @Test
     fun testPartitionedAppendWriterWithSchemaIdentifierFieldsIgnoresIdentifiers() {

@@ -67,8 +67,7 @@ class IcebergTableWriterFactory {
             )
         // Only use identifier fields for Dedupe mode. For Append/Overwrite, pass null
         // to ensure no equality-delete capability is configured on the appender factory.
-        val identifierFieldIds =
-            if (importType is Dedupe) schema.identifierFieldIds() else null
+        val identifierFieldIds = if (importType is Dedupe) schema.identifierFieldIds() else null
         val appenderFactory =
             createAppenderFactory(
                 table = table,
