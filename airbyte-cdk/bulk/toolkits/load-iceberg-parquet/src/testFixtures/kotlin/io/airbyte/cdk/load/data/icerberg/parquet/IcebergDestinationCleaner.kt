@@ -27,7 +27,8 @@ class IcebergDestinationCleaner(private val catalog: Catalog) : DestinationClean
             }
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
-        val tableCleaner = IcebergTableCleaner(IcebergUtil(SimpleTableIdGenerator(), AirbyteValueCoercer()))
+        val tableCleaner =
+            IcebergTableCleaner(IcebergUtil(SimpleTableIdGenerator(), AirbyteValueCoercer()))
 
         runBlocking(Dispatchers.IO) {
             namespaces.forEach { namespace ->
