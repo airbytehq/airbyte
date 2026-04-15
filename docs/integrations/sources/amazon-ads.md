@@ -58,7 +58,7 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, yesterday's date is used. The date is treated in the timezone of the processed profile.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, today's date is used. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 10. Click **Set up source**.
@@ -113,9 +113,9 @@ As of connector version 5.0.0, the `Sponsored Products Ad Group Bid Recommendati
 
 All the reports are generated relative to the target profile's timezone.
 
-Campaign reports may sometimes have no data or may not appear in records. This can occur when there are no clicks or views associated with the campaigns on the requested day. For details, see [Why is my report empty?](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v2/faq#why-is-my-report-empty)
+Campaign reports may sometimes have no data or may not appear in records. This can occur when there are no clicks or views associated with the campaigns on the requested day. For details, see [Why is my report empty?](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#why-is-my-report-empty)
 
-Report data synchronization only covers the last 60 days - [details](https://advertising.amazon.com/API/docs/en-us/reference/1/reports#parameters).
+Report data synchronization only covers the last 60 days. For details, see [Get started with v3 reporting](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started).
 
 :::note
 Report streams use `timeUnit=SUMMARY` by default. Each report stream also has a `_daily` variant with `timeUnit=DAILY` for more granular data. For more information, see [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
