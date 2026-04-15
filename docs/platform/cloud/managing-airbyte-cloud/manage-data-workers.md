@@ -8,16 +8,9 @@ If you are on a capacity-based plan, you can monitor your data worker usage acro
 
 ## How data workers map to syncs
 
-Each running sync consumes a fraction of one data worker. The amount varies by source type and may change over time as resource profiles are updated. The following table shows approximate defaults:
+Each running sync consumes a fraction of one data worker. The exact amount is derived from the job's resolved CPU requirements and divided by a platform-defined factor. Different source types have different resource profiles, so database syncs typically consume more capacity per sync than API syncs. The capacity per sync may also vary if your organization has custom resource overrides.
 
-| Source type    | Approximate data workers per sync |
-| -------------- | --------------------------------- |
-| Database       | ~0.5                              |
-| File           | ~0.5                              |
-| API            | ~0.2                              |
-| Custom         | ~0.2                              |
-
-These values are derived from the job's resolved CPU requirements and may differ if your organization has custom resource overrides. As a rough guide, an organization with 2 data workers can run approximately 4 database syncs or 10 API syncs concurrently.
+Because resource profiles can change over time, use the [usage chart](#open-the-usage-chart) to understand your actual capacity consumption rather than planning around fixed numbers.
 
 ## Open the usage chart
 
@@ -39,7 +32,7 @@ Hover on a day to see more details about it.
 
 ## Workspace-level data worker usage
 
-On capacity-based plans with data worker entitlements, the workspace Usage page shows data worker usage instead of credit usage. Workspace editors can view data worker usage for their workspace.
+On capacity-based plans with data worker entitlements, the workspace Usage page shows data worker usage instead of credit usage. Users with access to workspace settings can view data worker usage for their workspace.
 
 1. Click **Workspace Settings** > **Usage**.
 
