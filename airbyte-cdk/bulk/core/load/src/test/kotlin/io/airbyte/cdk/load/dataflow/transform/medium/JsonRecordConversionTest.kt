@@ -118,7 +118,10 @@ class JsonRecordConversionTest {
 
         val input =
             mockk<DestinationRecordRaw>(relaxed = true) {
-                every { asEnrichedDestinationRecordAirbyteValue(any(), any(), any()) } answers { coerced }
+                every { asEnrichedDestinationRecordAirbyteValue(any(), any(), any()) } answers
+                    {
+                        coerced
+                    }
                 every { schemaFields } returns
                     linkedMapOf(
                         "user_field_1" to FieldType(StringType, false),
