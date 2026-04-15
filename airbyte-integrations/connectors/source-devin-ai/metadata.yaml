@@ -23,9 +23,9 @@ data:
       packageName: airbyte-source-devin-ai
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   releaseStage: alpha
   suggestedStreams:
     streams:
