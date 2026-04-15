@@ -35,10 +35,10 @@ const plugin = () => {
     const iconUrl = `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`;
     const connectorName = formatConnectorName(slug);
 
-    let inserted = false;
+    let headingTransformed = false;
 
-    visit(ast, "heading", (node, index, parent) => {
-      if (inserted) return;
+    visit(ast, "heading", (node) => {
+      if (headingTransformed) return;
       if (node.depth !== 1 || node.children.length !== 1) return;
 
       const originalTitle = node.children[0].value;
@@ -49,23 +49,35 @@ const plugin = () => {
       node.name = "AgentConnectorTitle";
       node.attributes = toAttributes({ iconUrl, originalTitle });
 
-      // Insert banner immediately after the heading in its parent
-      if (parent && typeof index === "number") {
-        const bannerNode = {
-          type: "mdxJsxFlowElement",
-          name: "ConnectorTypeBanner",
-          attributes: toAttributes({
-            connectorType: "agent",
-            counterpartUrl: `/integrations/sources/${slug}`,
-            connectorName,
-          }),
-          children: [],
-        };
-        parent.children.splice(index + 1, 0, bannerNode);
-      }
-
-      inserted = true;
+      headingTransformed = true;
     });
+
+    if (!headingTransformed) return;
+
+    // Insert banner at the root level, after the heading node.
+    // The heading may be wrapped by Docusaurus (e.g. in a <header> element),
+    // so we find it by looking for the transformed AgentConnectorTitle or
+    // any wrapper that contains it.
+    const headingIdx = ast.children.findIndex(
+      (ch) =>
+        (ch.type === "mdxJsxFlowElement" && ch.name === "AgentConnectorTitle") ||
+        (ch.type === "mdxJsxFlowElement" && ch.name === "header") ||
+        (ch.type === "heading" && ch.depth === 1),
+    );
+
+    if (headingIdx !== -1) {
+      const bannerNode = {
+        type: "mdxJsxFlowElement",
+        name: "ConnectorTypeBanner",
+        attributes: toAttributes({
+          connectorType: "agent",
+          counterpartUrl: `/integrations/sources/${slug}`,
+          connectorName,
+        }),
+        children: [],
+      };
+      ast.children.splice(headingIdx + 1, 0, bannerNode);
+    }
   };
   return transformer;
 };
