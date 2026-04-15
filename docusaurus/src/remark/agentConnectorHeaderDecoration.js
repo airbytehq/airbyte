@@ -35,39 +35,37 @@ const plugin = () => {
     const iconUrl = `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`;
     const connectorName = formatConnectorName(slug);
 
-    let firstHeading = true;
+    let inserted = false;
 
-    visit(ast, "heading", (node) => {
-      if (firstHeading && node.depth === 1 && node.children.length === 1) {
-        const originalTitle = node.children[0].value;
+    visit(ast, "heading", (node, index, parent) => {
+      if (inserted) return;
+      if (node.depth !== 1 || node.children.length !== 1) return;
 
-        firstHeading = false;
-        node.children = [];
-        node.type = "mdxJsxFlowElement";
-        node.name = "AgentConnectorTitle";
-        node.attributes = toAttributes({ iconUrl, originalTitle });
+      const originalTitle = node.children[0].value;
+
+      // Transform heading into AgentConnectorTitle
+      node.children = [];
+      node.type = "mdxJsxFlowElement";
+      node.name = "AgentConnectorTitle";
+      node.attributes = toAttributes({ iconUrl, originalTitle });
+
+      // Insert banner immediately after the heading in its parent
+      if (parent && typeof index === "number") {
+        const bannerNode = {
+          type: "mdxJsxFlowElement",
+          name: "ConnectorTypeBanner",
+          attributes: toAttributes({
+            connectorType: "agent",
+            counterpartUrl: `/integrations/sources/${slug}`,
+            connectorName,
+          }),
+          children: [],
+        };
+        parent.children.splice(index + 1, 0, bannerNode);
       }
+
+      inserted = true;
     });
-
-    const headingIndex = ast.children.findIndex(
-      (ch) =>
-        ch.type === "mdxJsxFlowElement" && ch.name === "AgentConnectorTitle",
-    );
-
-    if (headingIndex === -1) return;
-
-    const bannerNode = {
-      type: "mdxJsxFlowElement",
-      name: "ConnectorTypeBanner",
-      attributes: toAttributes({
-        connectorType: "agent",
-        counterpartUrl: `/integrations/sources/${slug}`,
-        connectorName,
-      }),
-      children: [],
-    };
-
-    ast.children.splice(headingIndex + 1, 0, bannerNode);
   };
   return transformer;
 };
