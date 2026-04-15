@@ -12,6 +12,21 @@ definitions:
     http_method: GET
     authenticator:
       $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
 
   cursor_paginator:
     type: DefaultPaginator
