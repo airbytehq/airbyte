@@ -8,9 +8,15 @@ If you are on a capacity-based plan, you can monitor your data worker usage acro
 
 ## How data workers map to syncs
 
-Each running sync consumes a fraction of one data worker. The exact amount is derived from the job's resolved CPU requirements and divided by a platform-defined factor. Different source types have different resource profiles, so database syncs typically consume more capacity per sync than API syncs. The capacity per sync may also vary if your organization has custom resource overrides.
+Each running sync consumes a fraction of one data worker. The exact amount is derived from the job's resolved CPU requirements and divided by a platform-defined factor. Different source types have different resource profiles, so the capacity consumed per sync varies. The capacity per sync may also differ if your organization has custom resource overrides.
 
-Because resource profiles can change over time, use the [usage chart](#open-the-usage-chart) to understand your actual capacity consumption rather than planning around fixed numbers.
+The following table shows approximate data worker consumption based on current default resource profiles. These values are not contractual and may change as resource profiles are updated. Use the [usage chart](#open-the-usage-chart) as the authoritative view of your actual capacity consumption.
+
+| Source type              | Approximate data workers per sync |
+| ------------------------ | --------------------------------- |
+| Database                 | ~0.5                              |
+| Default / File / Custom  | ~0.25                             |
+| API                      | ~0.18                             |
 
 ## Open the usage chart
 
