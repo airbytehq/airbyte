@@ -44,6 +44,7 @@ jobs:
       # GitHub Actions' 256-job matrix limit.
       - name: Resolve batch offset from cron schedule
         id: resolve-batch
+        if: github.event_name == 'schedule'
         run: |
           BATCH_LIMIT=200
           case "${{ github.event.schedule }}" in
