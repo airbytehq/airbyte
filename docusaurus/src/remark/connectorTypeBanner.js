@@ -1,5 +1,3 @@
-const { select } = require("unist-util-select");
-const { u } = require("unist-builder");
 const { toAttributes } = require("../helpers/objects");
 const { isDocsPage } = require("./utils");
 
@@ -45,31 +43,27 @@ const plugin = () => {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
 
-    // Find the first heading (which may already be transformed to an mdxJsxFlowElement by docsHeaderDecoration)
-    const heading =
-      select("root > mdxJsxFlowElement[name='HeaderDecoration']", ast) ||
-      select("root > heading[depth='1']", ast);
-
-    if (!heading) return;
-
-    const headingIndex = ast.children.findIndex((ch) => ch === heading);
-    if (headingIndex === -1) return;
-
-    const bannerNode = u(
-      "mdxJsxFlowElement",
-      {
-        name: "ConnectorTypeBanner",
-        attributes: toAttributes({
-          connectorType: "data-replication",
-          counterpartUrl: `/ai-agents/connectors/${slug}/`,
-          connectorName,
-        }),
-      },
-      [],
+    // Find the first heading — may be a transformed HeaderDecoration or a plain H1
+    const headingIndex = ast.children.findIndex(
+      (ch) =>
+        (ch.type === "mdxJsxFlowElement" && ch.name === "HeaderDecoration") ||
+        (ch.type === "heading" && ch.depth === 1),
     );
 
-    // Insert after the heading (and after any ProductInformation that may have been added)
-    // Find the right insertion point: after heading and any immediately following mdxJsxFlowElement nodes
+    if (headingIndex === -1) return;
+
+    const bannerNode = {
+      type: "mdxJsxFlowElement",
+      name: "ConnectorTypeBanner",
+      attributes: toAttributes({
+        connectorType: "data-replication",
+        counterpartUrl: `/ai-agents/connectors/${slug}/`,
+        connectorName,
+      }),
+      children: [],
+    };
+
+    // Insert after the heading and any ProductInformation that may follow it
     let insertIdx = headingIndex + 1;
     while (
       insertIdx < ast.children.length &&

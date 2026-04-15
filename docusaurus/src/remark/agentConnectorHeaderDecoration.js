@@ -1,5 +1,4 @@
 const visit = require("unist-util-visit").visit;
-const { u } = require("unist-builder");
 const { toAttributes } = require("../helpers/objects");
 
 const ICON_BASE_URL =
@@ -36,40 +35,35 @@ const plugin = () => {
     const iconUrl = `${ICON_BASE_URL}/source-${slug}/latest/icon.svg`;
     const connectorName = formatConnectorName(slug);
 
+    let firstHeading = true;
     let headingIndex = -1;
 
-    ast.children.forEach((node, idx) => {
-      if (
-        headingIndex === -1 &&
-        node.type === "heading" &&
-        node.depth === 1 &&
-        node.children.length === 1
-      ) {
+    visit(ast, "heading", (node) => {
+      if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
 
+        firstHeading = false;
         node.children = [];
         node.type = "mdxJsxFlowElement";
         node.name = "AgentConnectorTitle";
         node.attributes = toAttributes({ iconUrl, originalTitle });
 
-        headingIndex = idx;
+        headingIndex = ast.children.indexOf(node);
       }
     });
 
     if (headingIndex === -1) return;
 
-    const bannerNode = u(
-      "mdxJsxFlowElement",
-      {
-        name: "ConnectorTypeBanner",
-        attributes: toAttributes({
-          connectorType: "agent",
-          counterpartUrl: `/integrations/sources/${slug}`,
-          connectorName,
-        }),
-      },
-      [],
-    );
+    const bannerNode = {
+      type: "mdxJsxFlowElement",
+      name: "ConnectorTypeBanner",
+      attributes: toAttributes({
+        connectorType: "agent",
+        counterpartUrl: `/integrations/sources/${slug}`,
+        connectorName,
+      }),
+      children: [],
+    };
 
     ast.children.splice(headingIndex + 1, 0, bannerNode);
   };
