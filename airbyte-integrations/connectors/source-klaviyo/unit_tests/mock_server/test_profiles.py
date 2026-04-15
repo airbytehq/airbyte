@@ -592,3 +592,82 @@ class TestProfilesStream(TestCase):
 
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "profile_no_analytics"
+
+    @HttpMocker()
+    def test_profiles_include_subscription_data(self, http_mocker: HttpMocker):
+        """
+        Test that subscription data is present in profile records when returned by the API.
+
+        Since Klaviyo API Revision 2024-10-15, the subscriptions field must be explicitly
+        requested via additional-fields[profile]=subscriptions. This test verifies that
+        when the API returns subscription/consent data, it is correctly passed through
+        to the output records.
+
+        Given: A Klaviyo API response containing profiles with subscription data
+        When: Running a full refresh sync
+        Then: The output records should contain the subscriptions field with nested consent data
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+
+        subscriptions_data = {
+            "email": {
+                "marketing": {
+                    "can_receive_email_marketing": True,
+                    "consent": "SUBSCRIBED",
+                    "consent_timestamp": "2024-03-01T10:00:00+00:00",
+                }
+            },
+            "sms": {
+                "marketing": {
+                    "can_receive_sms_marketing": False,
+                    "consent": "UNSUBSCRIBED",
+                }
+            },
+        }
+
+        http_mocker.get(
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions,predictive_analytics",
+                    "page[size]": "100",
+                }
+            )
+            .build(),
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "profile",
+                                "id": "profile_with_subs",
+                                "attributes": {
+                                    "email": "subscriber@example.com",
+                                    "first_name": "Jane",
+                                    "last_name": "Doe",
+                                    "updated": "2024-05-31T14:00:00+00:00",
+                                    "subscriptions": subscriptions_data,
+                                },
+                                "links": {"self": "https://a.klaviyo.com/api/profiles/profile_with_subs"},
+                            }
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        record = output.records[0].record.data
+        assert record["id"] == "profile_with_subs"
+        assert "subscriptions" in record["attributes"]
+        assert record["attributes"]["subscriptions"] == subscriptions_data
+        assert record["attributes"]["subscriptions"]["email"]["marketing"]["consent"] == "SUBSCRIBED"
+        assert record["attributes"]["subscriptions"]["sms"]["marketing"]["can_receive_sms_marketing"] is False
