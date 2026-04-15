@@ -1104,7 +1104,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "'{{ response.cursorId }}'"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
@@ -1187,7 +1187,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "'{{ response.cursorId }}'"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
@@ -1270,7 +1270,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "'{{ response.cursorId }}'"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
@@ -1352,7 +1352,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "'{{ response.cursorId }}'"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
             stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
