@@ -10,10 +10,12 @@ api_budget:
   type: HTTPAPIBudget
   policies:
     - type: FixedWindowCallRatePolicy
-      period: PT1S
-      call_limit: 2
+      period: PT60S
+      call_limit: 120
       matchers:
         - {}
+  status_codes_for_ratelimit_hit:
+    - 429
 
 check:
   type: CheckStream
