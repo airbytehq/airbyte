@@ -1,12 +1,17 @@
 name: Connectors up-to-date
 concurrency:
-  group: ${{ github.workflow }}
+  # Each cron schedule gets its own concurrency group so batches run in parallel.
+  # workflow_dispatch runs share a single group to avoid conflicts.
+  group: ${{ github.workflow }}-${{ github.event.schedule || 'dispatch' }}
   cancel-in-progress: false
 
 on:
   schedule:
-    # Runs every Tuesday at 03:00 UTC (8 PM Pacific Monday evening)
-    - cron: "0 3 * * 2"
+    # Batched runs — each cron triggers a different slice of the full connector list.
+    # See the "Resolve batch offset from cron schedule" step for the mapping.
+    - cron: "0 3 * * 2"   # Batch 1/3: offset=0   (connectors 1–200)
+    - cron: "0 5 * * 2"   # Batch 2/3: offset=200 (connectors 201–400)
+    - cron: "0 7 * * 2"   # Batch 3/3: offset=400 (connectors 401+)
   workflow_dispatch:
     inputs:
       connectors-options:
@@ -32,6 +37,24 @@ jobs:
 
       - name: Install airbyte-ops CLI
         run: uv tool install airbyte-internal-ops
+
+      # Resolve batch offset from cron schedule.
+      # Each cron expression above maps to a (offset, limit) pair so the
+      # full connector set is split across multiple runs, staying under
+      # GitHub Actions' 256-job matrix limit.
+      - name: Resolve batch offset from cron schedule
+        id: resolve-batch
+        run: |
+          BATCH_LIMIT=200
+          case "${{ github.event.schedule }}" in
+            "0 3 * * 2") BATCH_OFFSET=0   ;;
+            "0 5 * * 2") BATCH_OFFSET=200 ;;
+            "0 7 * * 2") BATCH_OFFSET=400 ;;
+            *)           BATCH_OFFSET=0   ;;
+          esac
+          echo "batch_offset=$BATCH_OFFSET" >> "$GITHUB_OUTPUT"
+          echo "batch_limit=$BATCH_LIMIT"   >> "$GITHUB_OUTPUT"
+          echo "Batch: offset=$BATCH_OFFSET, limit=$BATCH_LIMIT"
 
       # --- Connector selection ---
       # When connectors-options is provided, use it directly as an override.
@@ -84,14 +107,24 @@ jobs:
           echo "Destinations: $DESTINATIONS"
           echo "destinations=$DESTINATIONS" | tee -a $GITHUB_OUTPUT
 
-      # Default path — Call 3: Combine both sets into GH Actions matrix
+      # Default path — Call 3: Combine both sets into GH Actions matrix.
+      # On scheduled runs, apply --sort-by / --offset / --limit so each
+      # cron batch processes a distinct, deterministic slice.
       - name: Generate matrix from source + destination lists
         id: list-default
         if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
+        env:
+          BATCH_OFFSET: ${{ steps.resolve-batch.outputs.batch_offset }}
+          BATCH_LIMIT: ${{ steps.resolve-batch.outputs.batch_limit }}
         run: |
+          BATCH_ARGS=""
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            BATCH_ARGS="--sort-by=name --offset=$BATCH_OFFSET --limit=$BATCH_LIMIT"
+          fi
           airbyte-ops local connector list \
             --repo-path "$GITHUB_WORKSPACE" \
             --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
+            $BATCH_ARGS \
             --output-format=json-gh-matrix \
             > "$RUNNER_TEMP/matrix.json"
           echo "Matrix entry count: $(jq '.include | length' "$RUNNER_TEMP/matrix.json")"
