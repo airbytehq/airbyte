@@ -49,8 +49,8 @@ jobs:
             --repo-path "$GITHUB_WORKSPACE" \
             $CONNECTOR_OPTIONS \
             --output-format=json-gh-matrix \
-            > "$RUNNER_TEMP/matrix-override.json"
-          echo "Matrix entry count: $(jq '.include | length' "$RUNNER_TEMP/matrix-override.json")"
+            > "$RUNNER_TEMP/matrix.json"
+          echo "Matrix entry count: $(jq '.include | length' "$RUNNER_TEMP/matrix.json")"
 
       # Default path — Call 1: Sources (all support levels)
       - name: List source connectors
@@ -93,23 +93,20 @@ jobs:
             --repo-path "$GITHUB_WORKSPACE" \
             --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
             --output-format=json-gh-matrix \
-            > "$RUNNER_TEMP/matrix-default.json"
-          echo "Matrix entry count: $(jq '.include | length' "$RUNNER_TEMP/matrix-default.json")"
+            > "$RUNNER_TEMP/matrix.json"
+          echo "Matrix entry count: $(jq '.include | length' "$RUNNER_TEMP/matrix.json")"
 
       # Merge: pick whichever path ran, and validate non-empty.
       # IMPORTANT: We write the matrix JSON to a file and use `cat` to
-      # pipe it into $GITHUB_OUTPUT. Passing large JSON (~300 KB for
-      # 1000+ connectors) through environment variables or shell
-      # expansion hits Linux's ARG_MAX limit and causes:
+      # pipe it into $GITHUB_OUTPUT.  Passing ~155 KB of JSON through
+      # an environment variable exceeds Linux's per-string execve()
+      # limit (MAX_ARG_STRLEN = 128 KB) and causes:
       #   "Argument list too long"
       - name: Set final matrix output
         id: generate_matrix
         run: |
-          if [ -f "$RUNNER_TEMP/matrix-override.json" ]; then
-            MATRIX_FILE="$RUNNER_TEMP/matrix-override.json"
-          elif [ -f "$RUNNER_TEMP/matrix-default.json" ]; then
-            MATRIX_FILE="$RUNNER_TEMP/matrix-default.json"
-          else
+          MATRIX_FILE="$RUNNER_TEMP/matrix.json"
+          if [ ! -f "$MATRIX_FILE" ]; then
             echo "::error::No matrix file found. Check CLI commands above for errors."
             exit 1
           fi
@@ -118,9 +115,9 @@ jobs:
             echo "::error::Matrix generation produced empty output (0 entries)."
             exit 1
           fi
-          echo "Using $MATRIX_FILE ($ENTRY_COUNT connectors)"
+          echo "Matrix: $MATRIX_FILE ($ENTRY_COUNT connectors)"
           # Stream file contents into GITHUB_OUTPUT via heredoc + cat
-          # to avoid shell variable expansion hitting ARG_MAX.
+          # to avoid shell variable expansion hitting MAX_ARG_STRLEN.
           {
             echo 'generated_matrix<<MATRIX_EOF'
             cat "$MATRIX_FILE"
