@@ -72,9 +72,9 @@ class HubSpotState(
     }
 
     /**
-     * Sends a batch upsert request to HubSpot. On a 409 Conflict response, the batch is split
-     * in half and each half is retried recursively. This isolates the problematic record(s) that
-     * cause the conflict while allowing the unaffected records to be loaded successfully.
+     * Sends a batch upsert request to HubSpot. On a 409 Conflict response, the batch is split in
+     * half and each half is retried recursively. This isolates the problematic record(s) that cause
+     * the conflict while allowing the unaffected records to be loaded successfully.
      *
      * When a single-record batch still results in a 409, that record is the root cause of the
      * conflict and is returned as a rejected record for the dead letter queue.
@@ -105,8 +105,7 @@ class HubSpotState(
                 200 -> emptyList()
                 207 -> emptyList() // FIXME generate dlq record with error from hubspot
                 409 -> {
-                    val responseBody =
-                        response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()
+                    val responseBody = response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()
 
                     if (inputs.size == 1) {
                         logger.warn {
@@ -125,13 +124,10 @@ class HubSpotState(
                     val firstHalfInputs = inputs.subList(0, mid)
                     val secondHalfInputs = inputs.subList(mid, inputs.size)
                     val firstHalfRecords = associatedRecords.subList(0, mid)
-                    val secondHalfRecords =
-                        associatedRecords.subList(mid, associatedRecords.size)
+                    val secondHalfRecords = associatedRecords.subList(mid, associatedRecords.size)
 
-                    val rejectedFromFirst =
-                        sendWithSplitRetry(firstHalfInputs, firstHalfRecords)
-                    val rejectedFromSecond =
-                        sendWithSplitRetry(secondHalfInputs, secondHalfRecords)
+                    val rejectedFromFirst = sendWithSplitRetry(firstHalfInputs, firstHalfRecords)
+                    val rejectedFromSecond = sendWithSplitRetry(secondHalfInputs, secondHalfRecords)
 
                     rejectedFromFirst + rejectedFromSecond
                 }

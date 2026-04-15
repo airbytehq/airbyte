@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.hubspot
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.http.HttpClient
@@ -16,8 +15,6 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.hubspot.io.airbyte.integrations.destination.hubspot.http.HubSpotObjectTypeIdMapper
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import java.io.InputStream
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -110,24 +107,26 @@ class HubSpotLoaderTest {
         val badRecord = aRecord()
         val goodRecord2 = aRecord()
         val records = listOf(goodRecord1, badRecord, goodRecord2)
-        val inputs = listOf(
-            anInput("good1@example.com"),
-            anInput("bad@example.com"),
-            anInput("good2@example.com")
-        )
+        val inputs =
+            listOf(
+                anInput("good1@example.com"),
+                anInput("bad@example.com"),
+                anInput("good2@example.com")
+            )
 
         // First call: full batch of 3 -> 409
         // Second call: first half [good1] -> 200
         // Third call: second half [bad, good2] -> 409
         // Fourth call: [bad] -> 409 (single record, rejected)
         // Fifth call: [good2] -> 200
-        every { httpClient.send(any<Request>()) } returnsMany listOf(
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(200),
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(200)
-        )
+        every { httpClient.send(any<Request>()) } returnsMany
+            listOf(
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(200),
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(200)
+            )
 
         val rejected = state.sendWithSplitRetry(inputs, records)
 
@@ -140,19 +139,17 @@ class HubSpotLoaderTest {
         val badRecord1 = aRecord()
         val badRecord2 = aRecord()
         val records = listOf(badRecord1, badRecord2)
-        val inputs = listOf(
-            anInput("bad1@example.com"),
-            anInput("bad2@example.com")
-        )
+        val inputs = listOf(anInput("bad1@example.com"), anInput("bad2@example.com"))
 
         // Full batch of 2 -> 409
         // First half [bad1] -> 409 (single, rejected)
         // Second half [bad2] -> 409 (single, rejected)
-        every { httpClient.send(any<Request>()) } returnsMany listOf(
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(409, """{"message":"Conflict"}""")
-        )
+        every { httpClient.send(any<Request>()) } returnsMany
+            listOf(
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(409, """{"message":"Conflict"}""")
+            )
 
         val rejected = state.sendWithSplitRetry(inputs, records)
 
@@ -175,15 +172,16 @@ class HubSpotLoaderTest {
         // Batch [4] -> 200
         // Batch [5] -> 409 (single bad record, rejected)
         // Batch [6..7] -> 200
-        every { httpClient.send(any<Request>()) } returnsMany listOf(
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(200),
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(200),
-            aResponse(409, """{"message":"Conflict"}"""),
-            aResponse(200)
-        )
+        every { httpClient.send(any<Request>()) } returnsMany
+            listOf(
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(200),
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(200),
+                aResponse(409, """{"message":"Conflict"}"""),
+                aResponse(200)
+            )
 
         val rejected = state.sendWithSplitRetry(inputs, records)
 
