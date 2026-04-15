@@ -57,6 +57,7 @@ class TimeoutHTTPAdapter(HTTPAdapter):
         kwargs.setdefault("timeout", self.timeout)
         return super().send(request, **kwargs)
 
+
 REPORT_MAPPING = {
     "account_performance_report": "customer",
     "ad_group_ad_legacy": "ad_group_ad",
