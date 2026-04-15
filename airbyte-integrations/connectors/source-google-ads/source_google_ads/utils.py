@@ -112,7 +112,8 @@ def traced_exception(
             query_label = f'"{query_name}" ' if query_name else ""
             message = (
                 f"Custom query {query_label}references an unrecognized field for the queried resource."
-                ' The connector auto-injects "segments.date" for incremental sync, which may be incompatible with this resource.'
+                " Verify all selected fields are valid for the resource."
+                ' Note: the connector auto-injects "segments.date" for incremental sync, which some resources do not support.'
             )
             logger.error(message)
 
