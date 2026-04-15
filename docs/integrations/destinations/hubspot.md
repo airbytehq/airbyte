@@ -103,7 +103,7 @@ To create a unique value property in HubSpot:
 
 ### App verification
 
-HubSpot requires [more than 60 installations](https://developers.hubspot.com/docs/guides/apps/marketplace/certification-requirements#value) to verify an application. When installing the app, you might see the message "You're connecting to an unverified app". This is expected and does not affect functionality.
+HubSpot requires [more than 60 installations](https://developers.hubspot.com/docs/guides/apps/marketplace/certification-requirements#value) to verify an app. When installing the app, you might see the message "You're connecting to an unverified app." This is expected and doesn't affect functionality.
 
 ### Scopes for unsupported objects
 
@@ -117,17 +117,17 @@ HubSpot requires specific [OAuth scopes](https://developers.hubspot.com/docs/api
 
 The connector maps the following HubSpot property types:
 
-| HubSpot type | Mapped type |
-|:---|:---|
-| `string` | String |
-| `enumeration` | String |
-| `phone_number` | String |
-| `number` | Number |
-| `bool` | Boolean |
-| `date` | Date |
-| `datetime` | Timestamp with timezone |
+| HubSpot type   | Mapped type             |
+| :------------- | :---------------------- |
+| `string`       | String                  |
+| `enumeration`  | String                  |
+| `phone_number` | String                  |
+| `number`       | Number                  |
+| `bool`         | Boolean                 |
+| `date`         | Date                    |
+| `datetime`     | Timestamp with timezone |
 
-Properties with types not listed above, such as `object_coordinates`, read-only properties, and calculated properties, are excluded from the sync.
+Properties with types not in the preceding table, such as `object_coordinates`, read-only properties, and calculated properties, are excluded from the sync.
 
 ## Namespace support
 
@@ -138,18 +138,18 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                    | Subject                                   |
-|:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
-| 0.0.11  | 2026-04-15 | [76336](https://github.com/airbytehq/airbyte/pull/76336) | Upgrade Bulk CDK to 1.0.8 (OAuth token expiry fix) |
-| 0.0.10  | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975) | Upgrade CDK to 1.0.1                      |
-| 0.0.9   | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304) | Upgrade CDK to 0.2.0                      |
-| 0.0.8   | 2025-11-05 | [69131](https://github.com/airbytehq/airbyte/pull/69131) | Upgrade to Bulk CDK 0.1.61.               |
-| 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                       |
-| 0.0.6   | 2025-09-10 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
-| 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
-| 0.0.4   | 2025-07-31 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                               |
-| 0.0.3   | 2025-07-18 | [205](https://github.com/airbytehq/airbyte-enterprise/pull/205) | Forcing new release                       |
-| 0.0.2   | 2025-07-18 | [204](https://github.com/airbytehq/airbyte-enterprise/pull/204) | Fixing auth                               |
-| 0.0.1   | 2025-07-18 | [201](https://github.com/airbytehq/airbyte-enterprise/pull/201) | First iteration internally                |
+| Version | Date       | Pull Request                                                    | Subject                                             |
+|:--------|:-----------|:----------------------------------------------------------------|:----------------------------------------------------|
+| 0.0.11  | 2026-04-15 | [76336](https://github.com/airbytehq/airbyte/pull/76336)        | Upgrade Bulk CDK to 1.0.8 (OAuth token expiry fix)  |
+| 0.0.10  | 2026-02-09 | [72975](https://github.com/airbytehq/airbyte/pull/72975)        | Upgrade CDK to 1.0.1                                |
+| 0.0.9   | 2026-01-26 | [72304](https://github.com/airbytehq/airbyte/pull/72304)        | Upgrade CDK to 0.2.0                                |
+| 0.0.8   | 2025-11-05 | [69131](https://github.com/airbytehq/airbyte/pull/69131)        | Upgrade to Bulk CDK 0.1.61.                         |
+| 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                                 |
+| 0.0.6   | 2025-09-10 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                               |
+| 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec           |
+| 0.0.4   | 2025-07-31 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                                         |
+| 0.0.3   | 2025-07-18 | [205](https://github.com/airbytehq/airbyte-enterprise/pull/205) | Forcing new release                                 |
+| 0.0.2   | 2025-07-18 | [204](https://github.com/airbytehq/airbyte-enterprise/pull/204) | Fixing auth                                         |
+| 0.0.1   | 2025-07-18 | [201](https://github.com/airbytehq/airbyte-enterprise/pull/201) | First iteration internally                          |
 
 </details>
