@@ -41,7 +41,7 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-DEVIN-AI__CREDS
+        - name: SECRET_SOURCE_DEVIN_AI__CREDS
           fileName: config.json
           secretStore:
             type: GSM
