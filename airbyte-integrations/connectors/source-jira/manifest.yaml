@@ -12395,7 +12395,7 @@ definitions:
             "{{ ('and project in ' + '(' + stream_slice.project_id + ') ') if stream_slice.project_id
             else '' }}"
             "ORDER BY updated asc"
-          expand: "renderedFields,transitions,changelog"
+          expand: "{{ ','.join(config.get('issues_stream_expand_with', [])) }}"
         error_handler:
           $ref: "#/definitions/error_handler"
           response_filters:

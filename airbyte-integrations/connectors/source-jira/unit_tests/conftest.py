@@ -348,16 +348,21 @@ def mock_projects_responses_additional_project(config, projects_response):
 
 @fixture
 def mock_issues_responses_with_date_filter(config, issues_response):
+    expand_value = ",".join(config.get("issues_stream_expand_with", []))
+    base_params = {
+        "maxResults": 50,
+        "fields": "*all",
+    }
+    if expand_value:
+        base_params["expand"] = expand_value
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
-                    "maxResults": 50,
-                    "fields": "*all",
+                    **base_params,
                     "jql": "updated >= 1609459200000 and project in (1) ORDER BY updated asc",
-                    "expand": "renderedFields,transitions,changelog",
                 }
             )
         ],
@@ -369,10 +374,8 @@ def mock_issues_responses_with_date_filter(config, issues_response):
         match=[
             matchers.query_param_matcher(
                 {
-                    "maxResults": 50,
-                    "fields": "*all",
+                    **base_params,
                     "jql": "updated >= 1609459200000 and project in (2) ORDER BY updated asc",
-                    "expand": "renderedFields,transitions,changelog",
                 }
             )
         ],
@@ -384,10 +387,8 @@ def mock_issues_responses_with_date_filter(config, issues_response):
         match=[
             matchers.query_param_matcher(
                 {
-                    "maxResults": 50,
-                    "fields": "*all",
+                    **base_params,
                     "jql": "updated >= 1609459200000 and project in (3) ORDER BY updated asc",
-                    "expand": "renderedFields,transitions,changelog",
                 }
             )
         ],
@@ -400,10 +401,8 @@ def mock_issues_responses_with_date_filter(config, issues_response):
         match=[
             matchers.query_param_matcher(
                 {
-                    "maxResults": 50,
-                    "fields": "*all",
+                    **base_params,
                     "jql": "updated >= 1609459200000 and project in (4) ORDER BY updated asc",
-                    "expand": "renderedFields,transitions,changelog",
                 }
             )
         ],

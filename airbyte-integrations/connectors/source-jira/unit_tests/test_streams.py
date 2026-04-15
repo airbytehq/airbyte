@@ -593,6 +593,56 @@ def test_declarative_issues_stream(config, mock_projects_responses_additional_pr
 
 
 @responses.activate
+def test_issues_stream_expand_with_config(config, issues_response):
+    """Test that the expand parameter respects the issues_stream_expand_with config option."""
+    config_with_expand = {
+        **config,
+        "issues_stream_expand_with": ["renderedFields", "transitions", "changelog"],
+    }
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json={"values": [{"id": "1", "key": "Project1"}]},
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search/jql",
+        json=issues_response,
+    )
+    stream = find_stream("issues", config_with_expand)
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+
+    # Verify the expand parameter was sent with the configured values
+    search_call = [c for c in responses.calls if "/search/jql" in c.request.url][0]
+    assert "expand=renderedFields%2Ctransitions%2Cchangelog" in search_call.request.url
+
+
+@responses.activate
+def test_issues_stream_no_expand_by_default(config, issues_response):
+    """Test that the expand parameter is empty when issues_stream_expand_with is not configured (default)."""
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json={"values": [{"id": "1", "key": "Project1"}]},
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search/jql",
+        json=issues_response,
+    )
+    stream = find_stream("issues", config)
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+
+    # Verify the expand parameter is empty (not hardcoded)
+    search_call = [c for c in responses.calls if "/search/jql" in c.request.url][0]
+    assert "expand=renderedFields" not in search_call.request.url
+    assert "expand=transitions" not in search_call.request.url
+    assert "expand=changelog" not in search_call.request.url
+
+
+@responses.activate
 def test_python_issue_comments_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_comments_response):
     responses.add(
         responses.GET,
