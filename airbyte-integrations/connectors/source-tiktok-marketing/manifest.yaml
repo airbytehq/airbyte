@@ -5984,6 +5984,16 @@ spec:
       - auth_type
     predicate_value: oauth2.0
     oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://business-api.tiktok.com/portal/auth?app_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&state={{state_value}}&response_type=code"
+        access_token_url: "https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/"
+        access_token_params:
+          grant_type: "authorization_code"
+          auth_code: "{{ auth_code_value }}"
+          app_id: "{{ client_id_value }}"
+          secret: "{{ client_secret_value }}"
+        extract_output:
+          - access_token
       complete_oauth_output_specification:
         title: CompleteOauthOutputSpecification
         type: object
