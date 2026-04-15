@@ -57,7 +57,7 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
 8. Search for your newly created app. (If you are using the desktop version of Slack, you may need to restart Slack for it to pick up the new App). Add the App to all channels you want to sync data from.
 
 :::note
-If you are using an API key to authenticate to Slack, a refresh token is not required, as acccess tokens never expire. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
+If you are using an API key to authenticate to Slack, a refresh token is not required, as access tokens never expire. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 :::
 
 ### Step 2: Set up the Slack connector in Airbyte
@@ -71,19 +71,19 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 3. Find and click **Slack**.
 4. Click **Authenticate your Slack account**. Log in and authorize Airbyte to access your Slack account.
 <FieldAnchor field="join_channels">
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+5. Toggle **Join all channels** to control whether the bot automatically joins all public channels. When enabled, the bot joins every public channel and syncs data from all of them. When disabled, the connector only syncs data from channels the bot is already a member of, and skips non-member channels entirely. If disabled, you must manually add the bot to each channel you want to sync.
 </FieldAnchor>
 <FieldAnchor field="start_date">
-6. **Start Date**: Any data before this date will not be extracted.
+6. **Start Date**: Any data before this date will not be replicated.
 </FieldAnchor>
 <FieldAnchor field="lookback_window">
-7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
+7. **Threads Lookback window (Days)**: The number of days to look back from the current date when syncing the Threads stream.
+</FieldAnchor>
+<FieldAnchor field="channel_filter">
+8. (Optional) **Channel filter**: A list of channel names (without the leading '#') to sync. If empty, the connector syncs all channels.
 </FieldAnchor>
 <FieldAnchor field="include_private_channels">
-8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
-</FieldAnchor>
-<FieldAnchor field="include_private_channels">
-9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
+9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is enabled.
 </FieldAnchor>
 <FieldAnchor field="threads_ignore_no_replies">
 10. (Optional) **Ignore messages with no replies in threads stream** Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default to make the Threads stream contain unthreaded messages in its records.
@@ -99,11 +99,11 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 2. Click **New source**.
 3. Find and click **Slack**.
 4. Click **Sign in via Slack (OAuth)**. Enter the Access Token, Client ID, and Client Secret. Alternatively, enter the API Token from Step 1.
-5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
-6. **Start Date**: Any data before this date will not be extracted.
-7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
-8. (Optional) **Channel filter** the list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate data from all channels.
-9. (Optional) **Include_private_channels** Toggle on to sync data from private channels. You will need to manually add the bot to private channels even if `join_channels` is toggled on.
+5. Toggle **Join all channels** to control whether the bot automatically joins all public channels. When enabled, the bot joins every public channel and syncs data from all of them. When disabled, the connector only syncs data from channels the bot is already a member of, and skips non-member channels entirely. If disabled, you must manually add the bot to each channel you want to sync.
+6. **Start Date**: Any data before this date will not be replicated.
+7. **Threads Lookback window (Days)**: The number of days to look back from the current date when syncing the Threads stream.
+8. (Optional) **Channel filter**: A list of channel names (without the leading '#') to sync. If empty, the connector syncs all channels.
+9. (Optional) **Include private channels**: Toggle on to sync data from private channels. You must manually add the bot to private channels even if **Join all channels** is enabled.
 10. (Optional) **Ignore messages with no replies in threads stream** Toggle on to skip messages with no replies (`reply_count=0`) in the Threads stream. This reduces unnecessary `conversations.replies` API calls and can significantly speed up syncs for workspaces with many messages. Disabled by default to make the Threads stream contain unthreaded messages in its records.
 11. Click **Set up source**. You must add the App created in Step 1 to the channels with the data that you want to sync.
 <!-- /env:oss -->
@@ -126,7 +126,7 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 - [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
 - [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public and private channels that the Slack App is a member of.
+- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) Replicates messages from non-archived, public and private channels that the Slack App is a member of.
 - [Users](https://api.slack.com/methods/users.list)
 - [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 
@@ -134,9 +134,9 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits).
 
-We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration setings.
+We highly recommend syncing only the channels you need. You can do this by specifying a **Channel filter** in the connector configuration.
 
-If you expect to sync a large amount of data (like historical data) you can try to increase the number of workers, default is 1. This could cause to being rate limited by Slack, so you should monitor the logs for rate limit errors.
+If you expect to sync a large amount of data, such as historical data, you can try increasing the **Number of concurrent threads** setting. The default is 2. Higher values may trigger Slack rate limits, so monitor your sync logs for rate limit errors.
 
 ## Data type map
 
@@ -193,7 +193,7 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.18 | 2026-04-14 | [76324](https://github.com/airbytehq/airbyte/pull/76324) | Skip non-member channels when auto-join is disabled to prevent cursor pollution |
+| 3.1.18 | 2026-04-15 | [76324](https://github.com/airbytehq/airbyte/pull/76324) | Skip non-member channels when auto-join is disabled to prevent cursor pollution |
 | 3.1.17 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 3.1.16 | 2026-04-02 | [76052](https://github.com/airbytehq/airbyte/pull/76052) | Skip joining archived channels that are rejected by the Slack API |
 | 3.1.15 | 2026-03-31 | [75905](https://github.com/airbytehq/airbyte/pull/75905) | Add configurable option to skip conversations.replies API calls for messages with no replies, reducing unnecessary API usage |
