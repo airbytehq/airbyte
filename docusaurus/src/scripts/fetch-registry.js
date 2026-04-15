@@ -152,7 +152,7 @@ async function fetchConnectorRegistriesFromRemote() {
 
 function extractMinimalRegistryData(fullRegistry) {
   return fullRegistry.map((connector) => ({
-    id: connector.name_oss || connector.name_cloud
+    id: (connector.name_oss || connector.name_cloud)
       ?.toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, ""),
