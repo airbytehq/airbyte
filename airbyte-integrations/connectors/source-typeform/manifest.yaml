@@ -14,8 +14,6 @@ api_budget:
       call_limit: 120
       matchers:
         - {}
-  status_codes_for_ratelimit_hit:
-    - 429
 
 check:
   type: CheckStream
