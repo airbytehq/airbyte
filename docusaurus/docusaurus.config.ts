@@ -387,21 +387,9 @@ const config: Config = {
             },
             {
               type: "docSidebar",
-              docsPluginId: "release_notes",
-              sidebarId: "releaseNotes",
-              label: "Release notes",
-            },
-            {
-              type: "docSidebar",
               docsPluginId: "developers",
               sidebarId: "developers",
               label: "Developers",
-            },
-            {
-              type: "docSidebar",
-              docsPluginId: "community",
-              sidebarId: "community",
-              label: "Community",
             },
           ],
         },
@@ -412,6 +400,21 @@ const config: Config = {
           docsPluginId: "ai-agents",
           docId: "README",
           label: "Agent Engine",
+        },
+        // "Release notes" and "Community" are tier-one nav items
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "release_notes",
+          sidebarId: "releaseNotes",
+          label: "Release notes",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "community",
+          sidebarId: "community",
+          label: "Community",
         },
         {
           href: "https://status.airbyte.com",
