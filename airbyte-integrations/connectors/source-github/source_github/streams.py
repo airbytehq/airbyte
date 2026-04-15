@@ -1143,6 +1143,7 @@ class ReactionStream(GithubStream, CheckpointMixin, ABC):
     parent_key = "id"
     copy_parent_key = "comment_id"
     cursor_field = "created_at"
+    state_checkpoint_interval = 1000
 
     def __init__(self, start_date: str = "", **kwargs):
         super().__init__(**kwargs)
