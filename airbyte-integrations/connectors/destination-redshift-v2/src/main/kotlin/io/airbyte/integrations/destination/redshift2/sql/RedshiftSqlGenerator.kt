@@ -4,9 +4,10 @@
 
 package io.airbyte.integrations.destination.redshift2.sql
 
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
-import io.airbyte.integrations.destination.redshift2.schema.RedshiftColumnManager
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -15,14 +16,24 @@ import jakarta.inject.Singleton
  * per Redshift/PostgreSQL convention.
  */
 @Singleton
-class RedshiftSqlGenerator(
-    private val columnManager: RedshiftColumnManager,
-) {
+class RedshiftSqlGenerator {
     private val log = KotlinLogging.logger {}
 
     companion object {
         internal fun quoteIdentifier(identifier: String): String =
             RedshiftSqlEscapeUtils.quoteIdentifier(identifier)
+
+        /** Airbyte meta columns and their Redshift-specific types. */
+        internal val META_COLUMNS =
+            linkedMapOf(
+                Meta.COLUMN_NAME_AB_RAW_ID to
+                    ColumnType(RedshiftDataType.VARCHAR_36.typeName, false),
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT to
+                    ColumnType(RedshiftDataType.TIMESTAMPTZ.typeName, false),
+                Meta.COLUMN_NAME_AB_META to ColumnType(RedshiftDataType.SUPER.typeName, false),
+                Meta.COLUMN_NAME_AB_GENERATION_ID to
+                    ColumnType(RedshiftDataType.BIGINT.typeName, false),
+            )
     }
 
     fun createNamespace(namespace: String): String =
@@ -33,7 +44,7 @@ class RedshiftSqlGenerator(
 
     /** Simplified `CREATE TABLE` for check/test tables that don't have a `DestinationStream` */
     fun createTableForCheck(tableName: TableName, tableSchema: StreamTableSchema): String {
-        val metaColumns = columnManager.getMetaColumns()
+        val metaColumns = META_COLUMNS
         val userColumns = tableSchema.columnSchema.finalSchema
 
         val columnDeclarations =
