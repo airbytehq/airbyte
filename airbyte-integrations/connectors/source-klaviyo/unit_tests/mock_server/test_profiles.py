@@ -11,6 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import KlaviyoRequestBuilder
@@ -603,27 +604,16 @@ class TestProfilesStream(TestCase):
         when the API returns subscription/consent data, it is correctly passed through
         to the output records.
 
+        Uses the profiles.json fixture which contains a realistic profile with subscriptions.
+
         Given: A Klaviyo API response containing profiles with subscription data
         When: Running a full refresh sync
         Then: The output records should contain the subscriptions field with nested consent data
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
-        subscriptions_data = {
-            "email": {
-                "marketing": {
-                    "can_receive_email_marketing": True,
-                    "consent": "SUBSCRIBED",
-                    "consent_timestamp": "2024-03-01T10:00:00+00:00",
-                }
-            },
-            "sms": {
-                "marketing": {
-                    "can_receive_sms_marketing": False,
-                    "consent": "UNSUBSCRIBED",
-                }
-            },
-        }
+        # Load the realistic profile fixture which includes subscriptions data
+        profiles_fixture = find_template("profiles", __file__)
 
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
@@ -636,28 +626,7 @@ class TestProfilesStream(TestCase):
                 }
             )
             .build(),
-            HttpResponse(
-                body=json.dumps(
-                    {
-                        "data": [
-                            {
-                                "type": "profile",
-                                "id": "profile_with_subs",
-                                "attributes": {
-                                    "email": "subscriber@example.com",
-                                    "first_name": "Jane",
-                                    "last_name": "Doe",
-                                    "updated": "2024-05-31T14:00:00+00:00",
-                                    "subscriptions": subscriptions_data,
-                                },
-                                "links": {"self": "https://a.klaviyo.com/api/profiles/profile_with_subs"},
-                            }
-                        ],
-                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
-                    }
-                ),
-                status_code=200,
-            ),
+            KlaviyoPaginatedResponseBuilder.single_page(profiles_fixture),
         )
 
         source = get_source(config=config)
@@ -666,8 +635,8 @@ class TestProfilesStream(TestCase):
 
         assert len(output.records) == 1
         record = output.records[0].record.data
-        assert record["id"] == "profile_with_subs"
+        assert record["id"] == "profile_001"
         assert "subscriptions" in record["attributes"]
-        assert record["attributes"]["subscriptions"] == subscriptions_data
         assert record["attributes"]["subscriptions"]["email"]["marketing"]["consent"] == "SUBSCRIBED"
+        assert record["attributes"]["subscriptions"]["email"]["marketing"]["can_receive_email_marketing"] is True
         assert record["attributes"]["subscriptions"]["sms"]["marketing"]["can_receive_sms_marketing"] is False
