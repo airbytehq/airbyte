@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import dpath.util
 from pydantic.v1 import AnyUrl, Field, root_validator
@@ -10,22 +10,6 @@ from pydantic.v1.error_wrappers import ValidationError
 
 from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-
-
-class S3FileBasedStreamConfig(FileBasedStreamConfig):
-    light_parquet_check: bool = Field(
-        title="Lightweight Parquet check (CHECK only)",
-        description=(
-            "When enabled, the connector reads only a tiny sample (one column, one row) during the CHECK operation to"
-            " avoid out-of-memory errors on large Parquet files. This makes CHECK best-effort: full schema validation"
-            " is skipped, so schema mismatches and data corruption in non-sampled columns will only surface during sync."
-            " Sync and Discover continue to read all columns and all row groups normally."
-        ),
-        default=False,
-        order=11,
-        group="advanced",
-    )
 
 
 class Config(AbstractFileBasedSpec):
@@ -39,9 +23,6 @@ class Config(AbstractFileBasedSpec):
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
 
     bucket: str = Field(title="Bucket", description="Name of the S3 bucket where the file(s) exist.", order=0)
-
-    # Use the extended stream config type but keep parent field metadata via schema patching.
-    streams: List[S3FileBasedStreamConfig]
 
     aws_access_key_id: Optional[str] = Field(
         title="AWS Access Key ID",
@@ -117,14 +98,6 @@ class Config(AbstractFileBasedSpec):
         Generates the mapping comprised of the config fields
         """
         schema = super().schema(*args, **kwargs)
-
-        # Keep parent streams metadata to avoid drift, then inject the S3-specific flag.
-        parent_schema = AbstractFileBasedSpec.schema()
-        schema["properties"]["streams"] = parent_schema["properties"]["streams"]
-
-        light_prop = S3FileBasedStreamConfig.schema(*args, **kwargs)["properties"]["light_parquet_check"]
-        stream_item_props = schema["properties"]["streams"]["items"]["properties"]
-        stream_item_props["light_parquet_check"] = light_prop
 
         # Hide API processing option until https://github.com/airbytehq/airbyte-platform-internal/issues/10354 is fixed
         processing_options = dpath.util.get(schema, "properties/streams/items/properties/format/oneOf/4/properties/processing/oneOf")
