@@ -9,6 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 | Version | Date       | Pull Request | Subject                                                                                         |
 |---------|------------|--------------|-------------------------------------------------------------------------------------------------|
+| 1.0.8   | 2026-04-14 | [#74728](https://github.com/airbytehq/airbyte/pull/74728) | Fix OAuthAuthenticator to track token expiry via `expires_in` and refresh expired tokens. |
 | 1.0.7   | 2026-03-27 | | Fix: update Iceberg sort order before schema evolution to prevent ValidationException when deleting columns referenced by the sort order. Handles Dedupe-to-Append mode switches and PK changes. |
 | 1.0.6   | 2026-03-12 | [#74715](https://github.com/airbytehq/airbyte/pull/74715) | Fix: drop temp table after successful upsert to prevent duplicate records across syncs. |
 | 1.0.5   | 2026-03-10 | [#74723](https://github.com/airbytehq/airbyte/pull/74723) | Fix schema evolution: defer identifier field update when replacing columns to avoid Iceberg conflict. |

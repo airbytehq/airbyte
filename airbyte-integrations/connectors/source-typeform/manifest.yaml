@@ -3,7 +3,7 @@ type: DeclarativeSource
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 3
+  default_concurrency: 2
   max_concurrency: 8
 
 api_budget:

@@ -45,17 +45,12 @@ jobs:
         env:
           CONNECTOR_OPTIONS: ${{ github.event.inputs.connectors-options }}
         run: |
-          MATRIX=$(
-            airbyte-ops local connector list \
-              --repo-path "$GITHUB_WORKSPACE" \
-              $CONNECTOR_OPTIONS \
-              --output-format=json-gh-matrix
-          )
-          echo "Matrix: $MATRIX"
-          # Use heredoc delimiter for multiline JSON
-          echo "generated_matrix<<MATRIX_EOF" >> $GITHUB_OUTPUT
-          echo "$MATRIX" >> $GITHUB_OUTPUT
-          echo "MATRIX_EOF" >> $GITHUB_OUTPUT
+          airbyte-ops local connector list \
+            --repo-path "$GITHUB_WORKSPACE" \
+            $CONNECTOR_OPTIONS \
+            --output-format=json-gh-matrix \
+            > "$RUNNER_TEMP/matrix.json"
+          echo "Matrix entry count: $(jq '.include | length' "$RUNNER_TEMP/matrix.json")"
 
       # Default path — Call 1: Sources (all support levels)
       - name: List source connectors
@@ -94,35 +89,40 @@ jobs:
         id: list-default
         if: github.event.inputs.connectors-options == '' || github.event_name == 'schedule'
         run: |
-          MATRIX=$(
-            airbyte-ops local connector list \
-              --repo-path "$GITHUB_WORKSPACE" \
-              --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
-              --output-format=json-gh-matrix
-          )
-          echo "Matrix: $MATRIX"
-          # Use heredoc delimiter for multiline JSON
-          echo "generated_matrix<<MATRIX_EOF" >> $GITHUB_OUTPUT
-          echo "$MATRIX" >> $GITHUB_OUTPUT
-          echo "MATRIX_EOF" >> $GITHUB_OUTPUT
+          airbyte-ops local connector list \
+            --repo-path "$GITHUB_WORKSPACE" \
+            --connectors-filter="${{ steps.list-sources.outputs.sources }},${{ steps.list-destinations.outputs.destinations }}" \
+            --output-format=json-gh-matrix \
+            > "$RUNNER_TEMP/matrix.json"
+          echo "Matrix entry count: $(jq '.include | length' "$RUNNER_TEMP/matrix.json")"
 
-      # Merge: pick whichever path ran, and validate non-empty
+      # Merge: pick whichever path ran, and validate non-empty.
+      # IMPORTANT: We write the matrix JSON to a file and use `cat` to
+      # pipe it into $GITHUB_OUTPUT.  Passing ~155 KB of JSON through
+      # an environment variable exceeds Linux's per-string execve()
+      # limit (MAX_ARG_STRLEN = 128 KB) and causes:
+      #   "Argument list too long"
       - name: Set final matrix output
         id: generate_matrix
-        env:
-          OVERRIDE_MATRIX: ${{ steps.list-override.outputs.generated_matrix }}
-          DEFAULT_MATRIX: ${{ steps.list-default.outputs.generated_matrix }}
         run: |
-          FINAL_MATRIX="${OVERRIDE_MATRIX:-$DEFAULT_MATRIX}"
-          if [ -z "$FINAL_MATRIX" ]; then
-            echo "::error::Matrix generation produced empty output. Check CLI commands above for errors."
+          MATRIX_FILE="$RUNNER_TEMP/matrix.json"
+          if [ ! -f "$MATRIX_FILE" ]; then
+            echo "::error::No matrix file found. Check CLI commands above for errors."
             exit 1
           fi
-          echo "Final matrix: $FINAL_MATRIX"
-          # Use heredoc delimiter for multiline JSON
-          echo "generated_matrix<<MATRIX_EOF" >> $GITHUB_OUTPUT
-          echo "$FINAL_MATRIX" >> $GITHUB_OUTPUT
-          echo "MATRIX_EOF" >> $GITHUB_OUTPUT
+          ENTRY_COUNT=$(jq '.include | length' "$MATRIX_FILE")
+          if [ "$ENTRY_COUNT" -eq 0 ]; then
+            echo "::error::Matrix generation produced empty output (0 entries)."
+            exit 1
+          fi
+          echo "Matrix: $MATRIX_FILE ($ENTRY_COUNT connectors)"
+          # Stream file contents into GITHUB_OUTPUT via heredoc + cat
+          # to avoid shell variable expansion hitting MAX_ARG_STRLEN.
+          {
+            echo 'generated_matrix<<MATRIX_EOF'
+            cat "$MATRIX_FILE"
+            echo 'MATRIX_EOF'
+          } >> "$GITHUB_OUTPUT"
 
   run_connectors_up_to_date:
     needs: generate_matrix
