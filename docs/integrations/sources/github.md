@@ -72,8 +72,8 @@ Repositories with the wrong name or repositories that do not exist or have the w
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
-9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL (e.g. `https://github.company.org`). Leave empty to use `https://api.github.com/`.
-10. **Max Waiting Time (Optional)** - Maximum time in minutes to wait when the connector is rate-limited by the GitHub API. Defaults to 10 minutes. Valid range: 1--60 minutes.
+9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
+10. **Max Waiting Time (Optional)** - Maximum time in minutes to wait when the connector is rate-limited by the GitHub API. Defaults to 10 minutes. Valid range: 1 to 60 minutes.
 
 ### For Airbyte Open Source:
 
