@@ -230,9 +230,9 @@ def test_job_get_result_writes_to_temp_directory(mocker, request, requests_mock,
     stream.job_manager._job_check_state()
     result_filename = stream.job_manager._job_result_filename
     assert result_filename is not None
-    assert result_filename.startswith(tempfile.gettempdir()), (
-        f"Bulk result file should be written to temp directory, got: {result_filename}"
-    )
+    assert result_filename.startswith(
+        tempfile.gettempdir()
+    ), f"Bulk result file should be written to temp directory, got: {result_filename}"
     assert result_filename.endswith(".jsonl")
     # clean up
     if os.path.exists(result_filename):
