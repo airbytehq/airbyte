@@ -65,7 +65,10 @@ class IcebergTableWriterFactory {
                     .getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT)
                     .uppercase()
             )
-        val identifierFieldIds = schema.identifierFieldIds()
+        // Only use identifier fields for Dedupe mode. For Append/Overwrite, pass null
+        // to ensure no equality-delete capability is configured on the appender factory.
+        val identifierFieldIds =
+            if (importType is Dedupe) schema.identifierFieldIds() else null
         val appenderFactory =
             createAppenderFactory(
                 table = table,
@@ -95,7 +98,7 @@ class IcebergTableWriterFactory {
                 newDeltaWriter(
                     table = table,
                     schema = schema,
-                    identifierFieldIds = identifierFieldIds,
+                    identifierFieldIds = identifierFieldIds!!,
                     appenderFactory = appenderFactory,
                     targetFileSize = targetFileSize,
                     outputFileFactory = outputFileFactory,
