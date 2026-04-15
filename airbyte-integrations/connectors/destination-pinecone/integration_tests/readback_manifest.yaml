@@ -1,0 +1,290 @@
+version: 3.0.0
+
+type: DeclarativeSource
+
+description: >
+  A local-only readback source for verifying data written by destination-pinecone.
+  Uses the same Pinecone credentials to read back index stats and vector IDs,
+  confirming that the destination write phase actually landed data.
+
+  This is NOT a production connector — it exists solely for E2E smoke test
+  verification within the destination-pinecone directory.
+
+check:
+  type: CheckStream
+  stream_names:
+    - index_info
+
+definitions:
+  pinecone_authenticator:
+    type: ApiKeyAuthenticator
+    header: "Api-Key"
+    api_token: "{{ config['pinecone_key'] }}"
+
+  # Reusable retriever that resolves the index host from the control plane.
+  # Used by DynamicDeclarativeStream components_resolvers to get the data-plane host.
+  host_resolver_retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: "https://api.pinecone.io"
+      path: "/indexes/{{ config['index'] }}"
+      http_method: GET
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: "Api-Key"
+        api_token: "{{ config['pinecone_key'] }}"
+      request_headers:
+        X-Pinecone-Api-Version: "2025-04"
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+
+  streams:
+    # Stream 1: Control-plane index metadata (always works, no host resolution needed)
+    index_info:
+      type: DeclarativeStream
+      name: index_info
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "https://api.pinecone.io"
+          path: "/indexes/{{ config['index'] }}"
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/pinecone_authenticator"
+          request_headers:
+            X-Pinecone-Api-Version: "2025-04"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/index_info"
+
+streams:
+  - $ref: "#/definitions/streams/index_info"
+
+# Data-plane streams use DynamicDeclarativeStream to first resolve the index host
+# from the control plane, then query the data plane at that host.
+dynamic_streams:
+  # Stream 2: Namespace stats — vector counts per namespace (key readback signal)
+  - type: DynamicDeclarativeStream
+    stream_template:
+      type: DeclarativeStream
+      name: "namespace_stats"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "https://placeholder.pinecone.io"
+          path: "/describe_index_stats"
+          http_method: POST
+          authenticator:
+            type: ApiKeyAuthenticator
+            header: "Api-Key"
+            api_token: "{{ config['pinecone_key'] }}"
+          request_headers:
+            X-Pinecone-Api-Version: "2025-04"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/namespace_stats"
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        $ref: "#/definitions/host_resolver_retriever"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - url_base
+          value: "https://{{ components_values['host'] }}"
+
+  # Stream 3: List vector IDs in a namespace (serverless indexes only)
+  - type: DynamicDeclarativeStream
+    stream_template:
+      type: DeclarativeStream
+      name: "list_vector_ids"
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "https://placeholder.pinecone.io"
+          path: "/vectors/list"
+          http_method: GET
+          authenticator:
+            type: ApiKeyAuthenticator
+            header: "Api-Key"
+            api_token: "{{ config['pinecone_key'] }}"
+          request_headers:
+            X-Pinecone-Api-Version: "2025-04"
+          request_parameters:
+            namespace: "{{ config.get('namespace', '') }}"
+            prefix: "{{ config.get('stream_prefix', '') }}"
+            limit: "100"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - vectors
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_vector_ids"
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        $ref: "#/definitions/host_resolver_retriever"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - url_base
+          value: "https://{{ components_values['host'] }}"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - pinecone_key
+      - index
+    properties:
+      pinecone_key:
+        type: string
+        title: Pinecone API Key
+        description: >
+          The Pinecone API key — same value as in the destination-pinecone config
+          (config.indexing.pinecone_key).
+        airbyte_secret: true
+        order: 0
+      index:
+        type: string
+        title: Index Name
+        description: >
+          The Pinecone index name — same value as in the destination-pinecone config
+          (config.indexing.index).
+        order: 1
+      namespace:
+        type: string
+        title: Namespace
+        description: >
+          Optional: the namespace written by the smoke test
+          (e.g. zz_deleteme_20260318_2256_smoke_test). Used by list_vector_ids
+          to scope results.
+        default: ""
+        order: 2
+      stream_prefix:
+        type: string
+        title: Stream Prefix
+        description: >
+          Optional: prefix filter for list_vector_ids. destination-pinecone
+          prefixes vector IDs with the stream name (e.g. "basic_types#<uuid>"),
+          so setting this to a stream name filters to that stream's vectors.
+        default: ""
+        order: 3
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    index_info: false
+    namespace_stats: false
+    list_vector_ids: false
+
+schemas:
+  index_info:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+      host:
+        type:
+          - "null"
+          - string
+      dimension:
+        type:
+          - "null"
+          - integer
+      metric:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - object
+        properties:
+          ready:
+            type:
+              - "null"
+              - boolean
+          state:
+            type:
+              - "null"
+              - string
+      spec:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      vector_type:
+        type:
+          - "null"
+          - string
+
+  namespace_stats:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      namespaces:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      dimension:
+        type:
+          - "null"
+          - integer
+      totalVectorCount:
+        type:
+          - "null"
+          - integer
+      indexFullness:
+        type:
+          - "null"
+          - number
+      metric:
+        type:
+          - "null"
+          - string
+
+  list_vector_ids:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
