@@ -28,6 +28,7 @@ function getSourceSlug(vfile) {
 }
 
 const plugin = () => {
+  let logged = false;
   const transformer = async (ast, vfile) => {
     const docsPageInfo = isDocsPage(vfile);
     if (!docsPageInfo.isTrueDocsPage) return;
@@ -37,6 +38,13 @@ const plugin = () => {
 
     const slugs = loadAgentConnectorSlugs();
     if (!slugs.includes(slug)) return;
+
+    // Debug: log once to verify plugin is running
+    if (!logged) {
+      console.log(`[connectorTypeBanner] Processing slug="${slug}", children types:`,
+        ast.children.slice(0, 5).map(c => `${c.type}${c.name ? ':' + c.name : ''}${c.depth ? ':d' + c.depth : ''}`));
+      logged = true;
+    }
 
     const connectorName = slug
       .split("-")
@@ -50,7 +58,10 @@ const plugin = () => {
         (ch.type === "heading" && ch.depth === 1),
     );
 
-    if (headingIndex === -1) return;
+    if (headingIndex === -1) {
+      console.log(`[connectorTypeBanner] No heading found for slug="${slug}"`);
+      return;
+    }
 
     const bannerNode = {
       type: "mdxJsxFlowElement",
