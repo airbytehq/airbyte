@@ -1177,19 +1177,31 @@ class ReactionStream(GithubStream, CheckpointMixin, ABC):
 
     def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
-        parent_id = str(latest_record[self.copy_parent_key])
         updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
+        stream_state_value = current_stream_state.get(repository, {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state.setdefault(repository, {}).setdefault(parent_id, {})[self.cursor_field] = updated_state
+        current_stream_state.setdefault(repository, {})[self.cursor_field] = updated_state
         return current_stream_state
+
+    def _get_starting_point_from_old_state(self, stream_state: Mapping[str, Any], repository: str, parent_id: str) -> Optional[str]:
+        """Extract cursor from legacy per-comment state format: {repository: {comment_id: {cursor_field: value}}}"""
+        repo_state = stream_state.get(repository, {})
+        comment_state = repo_state.get(parent_id, {})
+        if isinstance(comment_state, dict) and self.cursor_field in comment_state:
+            return comment_state[self.cursor_field]
+        return None
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
             repository = stream_slice["repository"]
-            parent_id = str(stream_slice[self.copy_parent_key])
-            stream_state_value = stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
+            repo_state = stream_state.get(repository, {})
+            # New per-repository state format: {repository: {cursor_field: value}}
+            stream_state_value = repo_state.get(self.cursor_field)
+            if not stream_state_value:
+                # Legacy per-comment state format: {repository: {comment_id: {cursor_field: value}}}
+                parent_id = str(stream_slice[self.copy_parent_key])
+                stream_state_value = self._get_starting_point_from_old_state(stream_state, repository, parent_id)
             if stream_state_value:
                 if self._start_date:
                     return max(self._start_date, stream_state_value)

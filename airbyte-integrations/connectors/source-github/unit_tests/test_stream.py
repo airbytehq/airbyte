@@ -1378,8 +1378,7 @@ def test_stream_commit_comment_reactions_incremental_read(requests_mock):
 
     assert stream_state == {
         "airbytehq/integration-test": {
-            "55538825": {"created_at": "2022-01-01T16:00:00Z"},
-            "55538826": {"created_at": "2022-01-01T17:00:00Z"},
+            "created_at": "2022-01-01T17:00:00Z",
         }
     }
 
