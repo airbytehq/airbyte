@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import requests
 
@@ -12,6 +12,14 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorR
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 from . import constants
+
+
+def _safe_json(response: requests.Response) -> Optional[Dict[str, Any]]:
+    """Parse response body as JSON, returning None when the body is empty or not valid JSON."""
+    try:
+        return response.json()  # type: ignore[no-any-return]
+    except (requests.exceptions.JSONDecodeError, ValueError):
+        return None
 
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
@@ -45,8 +53,8 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
 
 def is_conflict_with_empty_repository(response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> bool:
     if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.CONFLICT:
-        response_data = response_or_exception.json()
-        return response_data.get("message") == "Git Repository is empty."
+        response_data = _safe_json(response_or_exception)
+        return response_data.get("message") == "Git Repository is empty." if response_data else False
     return False
 
 
@@ -62,7 +70,8 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 # https://docs.github.com/en/graphql/overview/resource-limitations
                 (
                     response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                    and self.stream.check_graphql_rate_limited(response_or_exception.json())
+                    and (graphql_rate_limit_body := _safe_json(response_or_exception)) is not None
+                    and self.stream.check_graphql_rate_limited(graphql_rate_limit_body)
                 )
                 # Rate limit HTTP headers
                 # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
@@ -142,7 +151,8 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
             )
 
-            if response_or_exception.json().get("errors"):
+            graphql_body = _safe_json(response_or_exception)
+            if graphql_body and graphql_body.get("errors"):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
