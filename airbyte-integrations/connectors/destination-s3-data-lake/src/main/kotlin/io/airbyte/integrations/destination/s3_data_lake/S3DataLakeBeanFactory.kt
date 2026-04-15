@@ -25,9 +25,10 @@ class S3DataLakeBeanFactory {
     fun aggregatePublishingConfig() =
         AggregatePublishingConfig(
             maxRecordsPerAgg = 10_000_000_000L,
-            maxEstBytesPerAgg =
-                200L * 1024L * 1024L, // copied from DEFAULT_RECORD_BATCH_SIZE_BYTES in legacy-cdk
-            maxEstBytesAllAggregates = 150_000_000L * 5,
+            maxEstBytesPerAgg = 500L * 1024L * 1024L, // 500 MB — larger batches produce fewer,
+            // larger Parquet files (especially for partitioned tables where data is split across
+            // partitions within each flush).
+            maxEstBytesAllAggregates = 500L * 1024L * 1024L * 3, // 1.5 GB
             maxBufferedAggregates = 5,
         )
 
