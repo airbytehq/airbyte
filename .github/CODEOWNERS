@@ -53,6 +53,7 @@
 /airbyte-integrations/connectors/destination-mssql/ @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-postgres/ @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/move-destinations
+/airbyte-integrations/connectors/destination-redshift-v2/ @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-s3-data-lake/ @airbytehq/move-destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/move-destinations
