@@ -60,7 +60,7 @@ A queued job is cancelled when:
 
 - The connection is updated, cancelled, deleted, or reset.
 - The next scheduled sync for that connection arrives. The newer sync replaces the queued one so the most recent data syncs when capacity frees up.
-- Eight hours have elapsed for manually triggered syncs.
+- Eight hours have elapsed and the connection uses a manual schedule type.
 
 You can filter the Connections page by "Queued" status to identify all queued connections. For information about monitoring and managing data worker capacity, see [Monitor data worker usage](./manage-data-workers.md).
 

@@ -8,16 +8,16 @@ If you are on a capacity-based plan, you can monitor your data worker usage acro
 
 ## How data workers map to syncs
 
-Each running sync consumes a fraction of one data worker. The amount depends on the source type:
+Each running sync consumes a fraction of one data worker. The amount varies by source type and may change over time as resource profiles are updated. The following table shows approximate defaults:
 
-| Source type    | Data workers per sync |
-| -------------- | --------------------- |
-| Database       | 0.5                   |
-| File           | 0.5                   |
-| API            | 0.2                   |
-| Custom         | 0.2                   |
+| Source type    | Approximate data workers per sync |
+| -------------- | --------------------------------- |
+| Database       | ~0.5                              |
+| File           | ~0.5                              |
+| API            | ~0.2                              |
+| Custom         | ~0.2                              |
 
-For example, if your organization has 2 data workers, you can run 4 database syncs simultaneously (4 × 0.5 = 2) or 10 API syncs simultaneously (10 × 0.2 = 2), or any combination that totals your committed capacity.
+These values are derived from the job's resolved CPU requirements and may differ if your organization has custom resource overrides. As a rough guide, an organization with 2 data workers can run approximately 4 database syncs or 10 API syncs concurrently.
 
 ## Open the usage chart
 
@@ -59,7 +59,7 @@ An infrequent instance of maximum usage probably isn't a problem. If you're regu
 
 - Enable [on-demand capacity](#on-demand-capacity) for critical connections so they always run, even when committed capacity is exhausted.
 
-Manually triggered syncs that remain queued for 8 hours are automatically cancelled.
+On connections with a manual schedule type, syncs that remain queued for 8 hours are automatically cancelled. On scheduled or cron connections, a queued sync waits until the next scheduled run arrives, at which point the older queued sync is replaced.
 
 ### Optimize data worker usage
 

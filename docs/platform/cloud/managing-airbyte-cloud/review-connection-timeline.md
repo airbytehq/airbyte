@@ -65,7 +65,7 @@ Completed syncs, [refreshes](/platform/operator-guides/refreshes), and [clears](
 | Running    | The sync is currently running.                                                                                                         |
 | Queued     | The sync is waiting for data worker capacity to become available. (Cloud Pro and Enterprise Flex only)                                  |
 
-Queued syncs may appear as "Cancelled" in the timeline if they were cancelled due to a connection update, the next scheduled run arriving, or the 8-hour timeout for manual syncs. For more information about capacity queuing, see [Monitor data worker usage](./manage-data-workers.md).
+Queued syncs may appear as "Cancelled" in the timeline if they were cancelled due to a connection update, the next scheduled run arriving, or the 8-hour timeout for connections with a manual schedule type. For more information about capacity queuing, see [Monitor data worker usage](./manage-data-workers.md).
 
 ### How the Connection Timeline reflects moved data
 
