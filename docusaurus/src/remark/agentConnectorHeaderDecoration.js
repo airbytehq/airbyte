@@ -36,7 +36,6 @@ const plugin = () => {
     const connectorName = formatConnectorName(slug);
 
     let firstHeading = true;
-    let headingIndex = -1;
 
     visit(ast, "heading", (node) => {
       if (firstHeading && node.depth === 1 && node.children.length === 1) {
@@ -47,10 +46,13 @@ const plugin = () => {
         node.type = "mdxJsxFlowElement";
         node.name = "AgentConnectorTitle";
         node.attributes = toAttributes({ iconUrl, originalTitle });
-
-        headingIndex = ast.children.indexOf(node);
       }
     });
+
+    const headingIndex = ast.children.findIndex(
+      (ch) =>
+        ch.type === "mdxJsxFlowElement" && ch.name === "AgentConnectorTitle",
+    );
 
     if (headingIndex === -1) return;
 
