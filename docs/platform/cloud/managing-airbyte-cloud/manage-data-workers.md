@@ -97,7 +97,9 @@ Once your organization administrator enables on-demand capacity at the organizat
 
 You can also enable on-demand capacity when first creating a connection. The toggle appears in the connection configuration during setup.
 
-When you enable on-demand capacity on a connection, Airbyte automatically applies a "Burst" tag (![Burst](./assets/burst-tag.png)) with an orange gradient background and a star icon. You can filter connections by the Burst tag to see all on-demand connections at a glance. If you disable on-demand capacity, Airbyte removes the Burst tag automatically. For more information about tags, see [Tagging connections](/platform/using-airbyte/tagging).
+When you enable on-demand capacity on a connection, Airbyte automatically applies a "Burst" tag with an orange gradient background and a star icon. You can filter connections by the Burst tag to see all on-demand connections at a glance. If you disable on-demand capacity, Airbyte removes the Burst tag automatically. For more information about tags, see [Tagging connections](/platform/using-airbyte/tagging).
+
+![Burst tag](./assets/burst-tag.png)
 
 ### Identify queued connections
 
