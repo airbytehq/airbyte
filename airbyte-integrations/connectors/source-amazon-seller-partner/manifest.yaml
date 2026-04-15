@@ -2561,11 +2561,12 @@ definitions:
         step: "P{{ min( config.get('period_in_days', 365), 365 ) }}D"
         cursor_granularity: "PT1S"
         # The GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE report only allows for a max start of 90 days from now
-        # otherwise it will throw a 400 error. Using 89 days as a buffer to prevent race conditions
-        # caused by network latency between computing the timestamp and the API receiving the request.
+        # otherwise it will throw a 400 error. Using P89DT23H58M (90 days minus 2 minutes) as a buffer
+        # to prevent race conditions caused by network latency, mirroring the PT2M buffer pattern
+        # used on end_datetime in other streams.
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89DT23H58M')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89DT23H58M')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
@@ -3140,7 +3141,7 @@ definitions:
       # between computing the timestamp and the API receiving the request.
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P89DT23H58M')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P89DT23H58M')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         field_name: "createdSince"
