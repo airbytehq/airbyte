@@ -318,7 +318,6 @@ class GoogleAdsHttpRequester(HttpRequester):
         self.stream_response = True
         adapter = TimeoutHTTPAdapter(timeout=DEFAULT_HTTP_TIMEOUT)
         self._http_client._session.mount("https://", adapter)
-        self._http_client._session.mount("http://", adapter)
 
     def get_request_body_json(
         self,
@@ -867,7 +866,6 @@ class CustomGAQueryHttpRequester(HttpRequester):
         self.stream_response = True
         adapter = TimeoutHTTPAdapter(timeout=DEFAULT_HTTP_TIMEOUT)
         self._http_client._session.mount("https://", adapter)
-        self._http_client._session.mount("http://", adapter)
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
