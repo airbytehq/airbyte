@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.redshift2.check
 import com.amazonaws.services.s3.AmazonS3
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift2.config.S3StagingConfiguration
-import io.airbyte.integrations.destination.redshift2.connect.S3Connect
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -36,7 +35,6 @@ import org.junit.jupiter.params.provider.MethodSource
 class RedshiftCheckerUnitTest {
 
     @MockK lateinit var dataSource: DataSource
-    @MockK lateinit var s3Connect: S3Connect
     @MockK lateinit var sqlGenerator: RedshiftSqlGenerator
     @MockK lateinit var mockConnection: Connection
     @MockK lateinit var mockStatement: Statement
@@ -70,7 +68,6 @@ class RedshiftCheckerUnitTest {
         every { mockPreparedStatement.close() } returns Unit
 
         // S3 client: putObject and deleteObject succeed
-        every { s3Connect.createS3Client() } returns mockS3Client
         every { mockS3Client.putObject(any<String>(), any(), any(), any()) } returns mockk()
         every { mockS3Client.deleteObject(any<String>(), any<String>()) } returns Unit
 
@@ -83,7 +80,7 @@ class RedshiftCheckerUnitTest {
         every { sqlGenerator.copyFromS3(any(), any(), any(), any(), any()) } returns "COPY sql"
         every { sqlGenerator.addColumn(any(), any(), any()) } returns "ALTER TABLE sql"
 
-        checker = RedshiftChecker(dataSource, Fixtures.configuration(), s3Connect, sqlGenerator)
+        checker = RedshiftChecker(dataSource, Fixtures.configuration(), mockS3Client, sqlGenerator)
     }
 
     // ================================================================
@@ -146,7 +143,8 @@ class RedshiftCheckerUnitTest {
     @Test
     fun `check propagates non-SQL exceptions directly`() {
         val originalException = RuntimeException("S3 network timeout")
-        every { s3Connect.createS3Client() } throws originalException
+        every { mockS3Client.putObject(any<String>(), any(), any(), any()) } throws
+            originalException
 
         val caught = assertThrows<RuntimeException> { checker.check() }
         assertEquals(originalException, caught)

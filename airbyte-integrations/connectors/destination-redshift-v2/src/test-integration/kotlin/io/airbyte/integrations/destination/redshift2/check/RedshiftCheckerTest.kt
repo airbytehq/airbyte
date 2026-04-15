@@ -146,7 +146,8 @@ class RedshiftCheckerTest {
     private fun buildChecker(
         config: RedshiftConfiguration,
         ds: HikariDataSource,
-    ): RedshiftChecker = RedshiftChecker(ds, config, S3Connect(config), sqlGenerator)
+    ): RedshiftChecker =
+        RedshiftChecker(ds, config, S3Connect(config).createS3Client(), sqlGenerator)
 
     /**
      * Creates a [HikariDataSource] with 10-second timeouts (lower than real) for fast failure in

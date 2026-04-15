@@ -14,7 +14,6 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.schema.model.TableNames
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
-import io.airbyte.integrations.destination.redshift2.connect.S3Connect
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftDataType
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -25,7 +24,7 @@ import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import java.sql.SQLException
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 import java.util.zip.GZIPOutputStream
 import javax.sql.DataSource
 
@@ -52,11 +51,10 @@ private const val CHECK_ALTER_COLUMN_NAME = "_airbyte_check_alter"
 class RedshiftChecker(
     private val dataSource: DataSource,
     private val configuration: RedshiftConfiguration,
-    private val s3Connect: S3Connect,
+    private val s3Client: AmazonS3,
     private val sqlGenerator: RedshiftSqlGenerator,
 ) : DestinationChecker {
 
-    private var s3Client: AmazonS3? = null
     private var s3Key: String? = null
     private var tableName: TableName? = null
 
@@ -74,7 +72,7 @@ class RedshiftChecker(
             testRedshiftConnection()
             testCreateTable(tableName!!)
 
-            s3Client = testS3WriteAccess(s3Key!!, rawId)
+            testS3WriteAccess(s3Key!!, rawId)
             testCopyFromS3(tableName!!, s3Key!!)
 
             testAlterTable(tableName!!)
@@ -130,10 +128,9 @@ class RedshiftChecker(
         }
     }
 
-    /** Creates an S3 client and uploads a gzip-compressed CSV file with one test row. */
-    private fun testS3WriteAccess(s3Key: String, rawId: String): AmazonS3 {
+    /** Uploads a gzip-compressed CSV file with one test row to S3. */
+    private fun testS3WriteAccess(s3Key: String, rawId: String) {
         log.info { "Test 2: Check S3 write access..." }
-        val s3Client = s3Connect.createS3Client()
         val s3Config = configuration.uploadingMethod!!
 
         val csvBytes = buildGzipCsv(rawId)
@@ -148,7 +145,6 @@ class RedshiftChecker(
             ByteArrayInputStream(csvBytes),
             metadata,
         )
-        return s3Client
     }
 
     /**
@@ -233,17 +229,15 @@ class RedshiftChecker(
     /** Deletes the test S3 object to verify S3 delete permissions. */
     private fun testS3Cleanup(s3Key: String) {
         log.info { "Test 7: Check S3 DELETE object permission..." }
-        val s3Config = configuration.uploadingMethod
-        if (s3Client != null && s3Config != null) {
-            s3Client!!.deleteObject(s3Config.s3BucketName, s3Key)
-            log.info { "Cleaned up S3 object: $s3Key" }
-        }
+        val s3Config = configuration.uploadingMethod!!
+        s3Client.deleteObject(s3Config.s3BucketName, s3Key)
+        log.info { "Cleaned up S3 object: $s3Key" }
     }
 
     /** Builds the S3 key for the test CSV file, respecting the configured bucket path prefix. */
     private fun buildS3TestKey(testId: String): String {
         val prefix =
-            configuration.uploadingMethod?.s3BucketPath?.let { path ->
+            configuration.uploadingMethod!!.s3BucketPath?.let { path ->
                 val trimmed = path.trimEnd('/')
                 if (trimmed.isNotEmpty()) "$trimmed/" else ""
             }
