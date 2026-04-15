@@ -169,7 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.19 | 2026-04-15 | [](https://github.com/airbytehq/airbyte/pull/) | Bump SDM base image for deadlock fix and heartbeat diagnostics (CDK PR [airbytehq/airbyte-python-cdk#953](https://github.com/airbytehq/airbyte-python-cdk/pull/953)) |
+| 4.3.19 | 2026-04-15 | [76354](https://github.com/airbytehq/airbyte/pull/76354) | Bump SDM base image for deadlock fix and heartbeat diagnostics (CDK PR [airbytehq/airbyte-python-cdk#953](https://github.com/airbytehq/airbyte-python-cdk/pull/953)) |
 | 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
 | 4.3.16 | 2026-03-10 | [74500](https://github.com/airbytehq/airbyte/pull/74500) | Update dependencies |
