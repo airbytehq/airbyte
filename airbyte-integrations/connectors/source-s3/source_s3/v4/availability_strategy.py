@@ -17,12 +17,15 @@ from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
 )
 from airbyte_cdk.sources.file_based.file_types.parquet_parser import ParquetParser
+from source_s3.v4.config import S3FileBasedStreamConfig
 
 
 class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
     """
-    Custom availability strategy that skips the full parse check for Parquet streams
-    to avoid OOM errors on large files. Non-Parquet streams use the default check path.
+    Custom availability strategy that optionally skips the full parse check for Parquet
+    streams to avoid OOM errors on large files.  The skip is gated behind the per-stream
+    ``skip_full_check_for_parquet`` flag (default False).  Non-Parquet streams and streams
+    without the flag always use the default check path.
     """
 
     def check_availability_and_parsability(
@@ -33,7 +36,8 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
     ) -> Tuple[bool, Optional[str]]:
         parser = stream.get_parser()
 
-        if not isinstance(parser, ParquetParser):
+        skip_flag = isinstance(stream.config, S3FileBasedStreamConfig) and stream.config.skip_full_check_for_parquet
+        if not (isinstance(parser, ParquetParser) and skip_flag):
             return super().check_availability_and_parsability(stream, logger, source)
 
         # Parquet path: validate config, list files, and open the file to verify
