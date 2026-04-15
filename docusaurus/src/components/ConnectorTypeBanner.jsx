@@ -26,18 +26,15 @@ export const ConnectorTypeBanner = ({
       <span className={styles.text}>
         {isAgent ? (
           <>
-            Agent connector for Airbyte Agents. For data replication, see the{" "}
-            <a href={counterpartUrl}>
-              {connectorName} data replication connector
-            </a>
-            . {ARROW_ICON}
+            This connector is optimized for AI agents. For the data replication
+            connector, see{" "}
+            <a href={counterpartUrl}>{connectorName}</a>. {ARROW_ICON}
           </>
         ) : (
           <>
-            Data replication connector for Airbyte Core and Cloud. For agentic
-            operations, see the{" "}
-            <a href={counterpartUrl}>{connectorName} agent connector</a>.{" "}
-            {ARROW_ICON}
+            This connector is optimized for data replication, not AI agents. For
+            agentic operations, see{" "}
+            <a href={counterpartUrl}>{connectorName}</a>. {ARROW_ICON}
           </>
         )}
       </span>
