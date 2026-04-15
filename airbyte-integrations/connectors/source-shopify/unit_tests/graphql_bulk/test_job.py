@@ -3,6 +3,8 @@
 #
 
 
+import os
+import tempfile
 from os import remove
 
 import pytest
@@ -171,8 +173,8 @@ def test_job_state_completed(auth_config) -> None:
 @pytest.mark.parametrize(
     "job_response, error_type, expected",
     [
-        ("bulk_job_completed_response", None, "bulk-123456789.jsonl"),
-        ("bulk_job_failed_with_partial_url_response", None, "bulk-123456789.jsonl"),
+        ("bulk_job_completed_response", None, os.path.join(tempfile.gettempdir(), "bulk-123456789.jsonl")),
+        ("bulk_job_failed_with_partial_url_response", None, os.path.join(tempfile.gettempdir(), "bulk-123456789.jsonl")),
         ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, "exited with TIMEOUT"),
         ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, "exited with ACCESS_DENIED"),
     ],
@@ -206,6 +208,35 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
         mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.read_file", return_value=[])
         stream.job_manager._job_check_state()
         assert expected == stream.job_manager._job_result_filename
+
+
+def test_job_get_result_writes_to_temp_directory(mocker, request, requests_mock, auth_config) -> None:
+    """Verify that bulk result files are written to the temp directory, not CWD.
+
+    This prevents PermissionError when the container's working directory
+    (e.g. /airbyte/integration_code) is not writable by the non-root user.
+    """
+    stream = MetafieldOrders(auth_config)
+    stream.job_manager._concurrent_max_retry = 1
+    stream.job_manager._concurrent_interval = 1
+    stream.job_manager._job_check_interval = 1
+
+    job_response = request.getfixturevalue("bulk_job_completed_response")
+    requests_mock.post(stream.job_manager.base_url, json=job_response)
+    job_result_url = job_response["data"]["node"]["url"]
+    requests_mock.get(job_result_url, json=job_response)
+    mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.read_file", return_value=[])
+
+    stream.job_manager._job_check_state()
+    result_filename = stream.job_manager._job_result_filename
+    assert result_filename is not None
+    assert result_filename.startswith(tempfile.gettempdir()), (
+        f"Bulk result file should be written to temp directory, got: {result_filename}"
+    )
+    assert result_filename.endswith(".jsonl")
+    # clean up
+    if os.path.exists(result_filename):
+        os.remove(result_filename)
 
 
 @pytest.mark.parametrize(
@@ -328,7 +359,7 @@ def test_job_check_with_running_scenario(request, requests_mock, job_response, a
         (
             "bulk_job_running_with_object_count_and_url_response",
             "bulk_job_canceled_with_object_count_and_url_response",
-            "bulk-123456789.jsonl",
+            os.path.join(tempfile.gettempdir(), "bulk-123456789.jsonl"),
         ),
         (
             "bulk_job_running_with_object_count_no_url_response",

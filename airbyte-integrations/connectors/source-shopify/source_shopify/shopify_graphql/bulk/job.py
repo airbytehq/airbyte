@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -296,7 +298,9 @@ class ShopifyBulkManager:
         job_result_url = full_result_url if full_result_url else partial_result_url
         if job_result_url:
             # save to local file using chunks to avoid OOM
-            filename = self._tools.filename_from_url(job_result_url)
+            # Write to temp directory instead of CWD to avoid PermissionError
+            # when the container's working directory is not writable by the non-root user.
+            filename = os.path.join(tempfile.gettempdir(), self._tools.filename_from_url(job_result_url))
             _, response = self.http_client.send_request(http_method="GET", url=job_result_url, request_kwargs={"stream": True})
             response.raise_for_status()
             with open(filename, "wb") as file:
