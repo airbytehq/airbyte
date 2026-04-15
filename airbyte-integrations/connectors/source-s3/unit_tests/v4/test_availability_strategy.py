@@ -293,6 +293,28 @@ def test_light_parse_reraises_airbyte_traced_exception():
         strategy._check_parse_record_light(stream, file, logger)
 
 
+def test_light_parse_wraps_unexpected_exception_in_check_availability_error():
+    """Non-ArrowInvalid exceptions (e.g. RuntimeError) are wrapped by the broad fallback."""
+    parser = MagicMock(spec=ParquetParser)
+    parser.file_read_mode = "rb"
+
+    file = _make_remote_file()
+    stream = _make_stream(light_parquet_check=True, parser=parser)
+
+    strategy = _make_strategy()
+
+    @contextmanager
+    def _open(*_args, **_kwargs):
+        raise RuntimeError("unexpected pyarrow failure")
+
+    stream.stream_reader.open_file = _open
+
+    with pytest.raises(CheckAvailabilityError) as exc_info:
+        strategy._check_parse_record_light(stream, file, logger)
+
+    assert isinstance(exc_info.value.__cause__, RuntimeError)
+
+
 # ---------------------------------------------------------------------------
 # S3FileBasedStreamConfig – light_parquet_check field
 # ---------------------------------------------------------------------------

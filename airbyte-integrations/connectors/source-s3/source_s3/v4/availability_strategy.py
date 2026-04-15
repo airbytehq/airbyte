@@ -89,3 +89,6 @@ class SourceS3AvailabilityStrategy(DefaultFileBasedAvailabilityStrategy):
             raise ate
         except (pa.ArrowInvalid, OSError, ValueError) as exc:  # pragma: no cover - expected read/parse failures
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
+        except Exception as exc:  # pragma: no cover - defensive broad fallback
+            raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
+

@@ -18,8 +18,9 @@ class S3FileBasedStreamConfig(FileBasedStreamConfig):
         title="Lightweight Parquet check (CHECK only)",
         description=(
             "When enabled, the connector reads only a tiny sample (one column, one row) during the CHECK operation to"
-            " avoid out-of-memory errors on large Parquet files. Sync and Discover continue to read all columns and all"
-            " row groups, so data corruption in other columns may only be caught during sync."
+            " avoid out-of-memory errors on large Parquet files. This makes CHECK best-effort: full schema validation"
+            " is skipped, so schema mismatches and data corruption in non-sampled columns will only surface during sync."
+            " Sync and Discover continue to read all columns and all row groups normally."
         ),
         default=False,
         order=11,
