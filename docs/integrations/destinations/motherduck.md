@@ -75,6 +75,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| 0.2.3 | 2026-03-31 | [75645](https://github.com/airbytehq/airbyte/pull/75645) | Bump version to force registry update for supportLevel change to certified |
 | 0.2.2 | 2025-02-02 | [70438](https://github.com/airbytehq/airbyte/pull/70438) | Fix for camelCase columns being `NULL` |
 | 0.2.1 | 2025-12-19 | [70999](https://github.com/airbytehq/airbyte/pull/70999) | Fix for empty STRUCTs |
 | 0.2.0 | 2025-12-01 | [70221](https://github.com/airbytehq/airbyte/pull/70221) | Upgrade DuckDB to v1.4.2 and duckdb-engine to v0.17.0 |

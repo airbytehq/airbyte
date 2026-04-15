@@ -7,11 +7,14 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request | Subject                                                                                                                                                           |
-|---------|------------|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.2   | 2026-02-24 | [74007](https://github.com/airbytehq/airbyte/pull/74007) | Fix infinite loop when cursor-based incremental sync encounters an empty table with prior state by caching NULL cursor upper bound values (toolkit). |
-| 1.0.1   | 2026-02-24 | | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944). |
-| 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-extract. Separate versioning for extract package begins. |
+| Version | Date       | Pull Request                                              | Subject                                                                                                                                              |
+|---------|------------|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.2   | 2026-03-31 | [74124](https://github.com/airbytehq/airbyte/pull/74124)  | Change the default implementation of JDBC incremental partition to non splittable                                                                    |
+| 1.1.1   | 2026-04-02 | [76054](https://github.com/airbytehq/airbyte/pull/76054)  | Clarified CDC termination condition. Ensure querySingleValue returns one result or throws.                                                           |
+| 1.1.0   | 2026-03-30 | [75636](https://github.com/airbytehq/airbyte/pull/75636)  | CDC positions are partially ordered. Added optional CDC startup hook. Field is now EmittedField.                                                     |
+| 1.0.2   | 2026-02-24 | [74007](https://github.com/airbytehq/airbyte/pull/74007)  | Fix infinite loop when cursor-based incremental sync encounters an empty table with prior state by caching NULL cursor upper bound values (toolkit). |
+| 1.0.1   | 2026-02-24 |                                                           | Bump bulk-cdk-core-base to 1.0.1 to pick up CVE fixes (CVE-2021-47621, CVE-2022-36944).                                                              |
+| 1.0.0   | 2026-02-02 | [#72376](https://github.com/airbytehq/airbyte/pull/72376) | Initial independent release of bulk-cdk-core-extract. Separate versioning for extract package begins.                                                |
 
 </details>
 

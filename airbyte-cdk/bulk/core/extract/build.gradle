@@ -1,7 +1,8 @@
 dependencies {
-    api "io.airbyte.bulk-cdk:bulk-cdk-core-base:1.0.1"
+    api "io.airbyte.bulk-cdk:bulk-cdk-core-base:1.0.2"
     implementation 'org.apache.commons:commons-lang3:3.17.0'
     implementation 'hu.webarticum:tree-printer:3.2.1'
 
+    // TODO: Use a published version. Use a variable to share the version with the api dependency.
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
 }
