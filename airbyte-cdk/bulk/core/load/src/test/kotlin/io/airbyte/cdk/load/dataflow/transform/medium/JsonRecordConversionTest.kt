@@ -118,7 +118,7 @@ class JsonRecordConversionTest {
 
         val input =
             mockk<DestinationRecordRaw>(relaxed = true) {
-                every { asEnrichedDestinationRecordAirbyteValue(any()) } answers { coerced }
+                every { asEnrichedDestinationRecordAirbyteValue(any(), any(), any()) } answers { coerced }
                 every { schemaFields } returns
                     linkedMapOf(
                         "user_field_1" to FieldType(StringType, false),
@@ -137,7 +137,8 @@ class JsonRecordConversionTest {
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(
                 any(),
-                extractedAtAsTimestampWithTimezone = true
+                extractedAtAsTimestampWithTimezone = true,
+                respectLegacyUnions = any(),
             )
         }
         nonUnionUserFields.forEach { verify { valueCoercer.validate(it.value) } }
