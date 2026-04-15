@@ -12,11 +12,12 @@ Each running sync consumes a fraction of one data worker. The exact amount is de
 
 The following table shows approximate data worker consumption based on current default resource profiles. These values are not contractual and may change as resource profiles are updated. Use the [usage chart](#open-the-usage-chart) as the authoritative view of your actual capacity consumption.
 
-| Source type              | Approximate data workers per sync |
-| ------------------------ | --------------------------------- |
-| Database                 | ~0.5                              |
-| Default / File / Custom  | ~0.25                             |
-| API                      | ~0.18                             |
+| Source type | Default data workers per sync |
+| ---------- | ----------------------------- |
+| Database   | ~0.5                          |
+| File       | ~0.5                          |
+| API        | ~0.2                          |
+| Custom     | ~0.2                          |
 
 ## Open the usage chart
 
