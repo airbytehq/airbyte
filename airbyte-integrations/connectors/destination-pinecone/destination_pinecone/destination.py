@@ -16,16 +16,18 @@ from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConnectorSpecification,
+    DestinationSyncMode,
     FailureType,
+    Level,
     Status,
     TraceType,
     Type,
 )
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.indexer import PineconeIndexer
 
@@ -45,15 +47,11 @@ class DestinationPinecone(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
     def _log(self, level, message: str) -> AirbyteMessage:
-        from airbyte_protocol.models.airbyte_protocol import AirbyteLogMessage, Level
-
         return AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=level, message=message))
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-        from airbyte_protocol.models.airbyte_protocol import Level
-
         yield self._log(Level.INFO, "Starting Pinecone destination write...")
         try:
             yield self._log(Level.INFO, "Parsing configuration...")
