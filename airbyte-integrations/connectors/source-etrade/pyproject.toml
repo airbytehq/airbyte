@@ -1,0 +1,36 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-etrade"
+description = "Source implementation for E*TRADE brokerage data."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "ELv2"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/etrade"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "source_etrade"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^1"
+requests-oauthlib = "^2.0.0"
+
+[tool.poetry.scripts]
+source-etrade = "source_etrade.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.11.0"
+pytest = "^8.0.0"
+pytest-mock = "^3.6.1"
+freezegun = "^1.4.0"
+
+[tool.poe]
+include = [
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
