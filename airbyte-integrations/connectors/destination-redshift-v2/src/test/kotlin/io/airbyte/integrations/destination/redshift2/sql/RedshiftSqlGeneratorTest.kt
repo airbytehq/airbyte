@@ -18,7 +18,6 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -72,40 +71,6 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `namespaceExists queries information_schema`() {
-        val sql = sqlGenerator.namespaceExists("my_schema")
-
-        assertTrue(sql.contains("SELECT EXISTS("))
-        assertTrue(sql.contains("FROM information_schema.schemata"))
-        assertTrue(sql.contains("schema_name = 'my_schema'"))
-    }
-
-    @Test
-    fun `namespaceExists escapes single quotes`() {
-        val sql = sqlGenerator.namespaceExists("my'schema")
-
-        assertTrue(sql.contains("schema_name = 'my''schema'"))
-    }
-
-    @Test
-    fun `tableExists queries information_schema`() {
-        val sql = sqlGenerator.tableExists(TableName(namespace = "my_schema", name = "my_table"))
-
-        assertTrue(sql.contains("SELECT EXISTS("))
-        assertTrue(sql.contains("FROM information_schema.tables"))
-        assertTrue(sql.contains("table_schema = 'my_schema'"))
-        assertTrue(sql.contains("table_name = 'my_table'"))
-    }
-
-    @Test
-    fun `tableExists escapes single quotes`() {
-        val sql = sqlGenerator.tableExists(TableName(namespace = "my'ns", name = "my'tbl"))
-
-        assertTrue(sql.contains("table_schema = 'my''ns'"))
-        assertTrue(sql.contains("table_name = 'my''tbl'"))
-    }
-
-    @Test
     fun `createTable with replace drops and recreates`() {
         val finalSchema =
             mapOf(
@@ -130,7 +95,7 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `createTable without replace skips drop and transaction wrapper`() {
+    fun `createTable without replace skips drop`() {
         val finalSchema = mapOf("id" to ColumnType("bigint", false))
         val stream = mockStream(finalSchema)
         val tableName = TableName(namespace = "public", name = "users")
@@ -138,9 +103,9 @@ internal class RedshiftSqlGeneratorTest {
         val sql = sqlGenerator.createTable(stream, tableName, replace = false)
 
         assertFalse(sql.contains("DROP TABLE"))
-        assertFalse(sql.contains("BEGIN TRANSACTION;"))
-        assertFalse(sql.contains("COMMIT;"))
+        assertTrue(sql.contains("BEGIN TRANSACTION;"))
         assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS"))
+        assertTrue(sql.contains("COMMIT;"))
     }
 
     @Test
@@ -174,24 +139,12 @@ internal class RedshiftSqlGeneratorTest {
     }
 
     @Test
-    fun `isTableNotEmpty generates SELECT EXISTS with LIMIT 1`() {
-        val sql = sqlGenerator.isTableNotEmpty(TableName(namespace = "ns", name = "tbl"))
-        assertEquals(
-            """SELECT EXISTS(SELECT 1 FROM "ns"."tbl" LIMIT 1) AS "not_empty";""",
-            sql,
-        )
-    }
-
-    @Test
     fun `getGenerationId generates SELECT with LIMIT 1`() {
         val sql = sqlGenerator.getGenerationId(TableName(namespace = "ns", name = "tbl"))
-        val expected =
-            """
-            SELECT "_airbyte_generation_id"
-            FROM "ns"."tbl"
-            LIMIT 1;
-            """
-        assertEqualsIgnoreWhitespace(expected, sql)
+        assertEquals(
+            """SELECT "_airbyte_generation_id" FROM "ns"."tbl" LIMIT 1;""",
+            sql,
+        )
     }
 
     @Test
@@ -208,23 +161,23 @@ internal class RedshiftSqlGeneratorTest {
     // ================================================================
 
     @Test
-    fun `copyTable generates ALTER TABLE APPEND`() {
+    fun `copyTable generates INSERT INTO SELECT`() {
         val source = TableName(namespace = "ns", name = "src")
         val target = TableName(namespace = "ns", name = "tgt")
 
-        val sql = sqlGenerator.copyTable(source, target)
+        val sql = sqlGenerator.copyTable(listOf("col_a", "col_b"), source, target)
 
         val expected =
             """
-            ALTER TABLE "ns"."tgt"
-            APPEND FROM "ns"."src"
-            FILLTARGET;
+            INSERT INTO "ns"."tgt" ("col_a", "col_b")
+            SELECT "col_a", "col_b"
+            FROM "ns"."src";
             """
         assertEqualsIgnoreWhitespace(expected, sql)
     }
 
     @Test
-    fun `overwriteTable generates DROP and RENAME`() {
+    fun `overwriteTable same schema generates DROP and RENAME`() {
         val source = TableName(namespace = "ns", name = "tmp")
         val target = TableName(namespace = "ns", name = "final")
 
@@ -233,7 +186,20 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("BEGIN TRANSACTION;"))
         assertTrue(sql.contains("""DROP TABLE IF EXISTS "ns"."final""""))
         assertTrue(sql.contains("""ALTER TABLE "ns"."tmp" RENAME TO "final""""))
+        assertFalse(sql.contains("SET SCHEMA"))
         assertTrue(sql.contains("COMMIT;"))
+    }
+
+    @Test
+    fun `overwriteTable cross schema includes SET SCHEMA`() {
+        val source = TableName(namespace = "staging", name = "tmp")
+        val target = TableName(namespace = "public", name = "final")
+
+        val sql = sqlGenerator.overwriteTable(source, target)
+
+        assertTrue(sql.contains("""DROP TABLE IF EXISTS "public"."final""""))
+        assertTrue(sql.contains("""ALTER TABLE "staging"."tmp" RENAME TO "final""""))
+        assertTrue(sql.contains("""SET SCHEMA "public""""))
     }
 
     // ================================================================
@@ -279,6 +245,39 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(sql.contains(""""_airbyte_extracted_at" DESC"""))
         assertFalse(sql.contains("NULLS LAST"))
+    }
+
+    @Test
+    fun `cdcDelete enabled generates DELETE CTE with cursor comparison`() {
+        val target = TableName(namespace = "ns", name = "final")
+        val sql =
+            sqlGenerator.cdcDelete(
+                dedupTableAlias = "deduped_source",
+                cursorTargetColumn = """"updated_at"""",
+                targetTableName = target,
+                primaryKeyTargetColumns = listOf(""""id""""),
+                cdcHardDeleteEnabled = true,
+            )
+
+        assertTrue(sql.contains("deleted AS ("))
+        assertTrue(sql.contains("""DELETE FROM "ns"."final""""))
+        assertTrue(sql.contains("USING deduped_source"))
+        assertTrue(sql.contains(""""_ab_cdc_deleted_at" IS NOT NULL"""))
+        assertTrue(sql.contains(""""updated_at" < deduped_source."updated_at""""))
+    }
+
+    @Test
+    fun `cdcDelete disabled returns empty string`() {
+        val sql =
+            sqlGenerator.cdcDelete(
+                dedupTableAlias = "deduped_source",
+                cursorTargetColumn = """"updated_at"""",
+                targetTableName = TableName(namespace = "ns", name = "final"),
+                primaryKeyTargetColumns = listOf(""""id""""),
+                cdcHardDeleteEnabled = false,
+            )
+
+        assertEquals("", sql)
     }
 
     @Test
@@ -402,26 +401,81 @@ internal class RedshiftSqlGeneratorTest {
 
         val sql = sqlGenerator.upsertTable(stream, source, target)
 
-        // Redshift uses separate statements with a session-scoped TEMP TABLE (no namespace prefix)
-        val dedup = """"_airbyte_dedup_staging""""
-        assertTrue(sql.contains("BEGIN TRANSACTION;"))
-        assertTrue(sql.contains("CREATE TEMP TABLE $dedup AS"))
-        assertTrue(sql.contains("ROW_NUMBER() OVER"))
-        assertTrue(sql.contains("""PARTITION BY "id""""))
-        // CDC delete as a separate statement
-        assertTrue(sql.contains("DELETE FROM \"ns\".\"final\""))
-        assertTrue(sql.contains("USING $dedup"))
-        assertTrue(sql.contains("\"_ab_cdc_deleted_at\" IS NOT NULL"))
-        // Update as a separate statement
-        assertTrue(sql.contains("UPDATE \"ns\".\"final\""))
-        assertTrue(sql.contains("FROM $dedup"))
-        // Insert new rows
-        assertTrue(sql.contains("INSERT INTO \"ns\".\"final\""))
-        assertTrue(sql.contains("NOT EXISTS"))
-        assertTrue(sql.contains("\"_ab_cdc_deleted_at\" IS NULL"))
-        // Cleanup
-        assertTrue(sql.contains("DROP TABLE IF EXISTS $dedup;"))
-        assertTrue(sql.contains("COMMIT;"))
+        val expected =
+            """
+            WITH deduped_source AS (
+              SELECT "_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta", "_airbyte_generation_id", "id", "name", "updated_at", "_ab_cdc_deleted_at"
+              FROM (
+                SELECT *,
+                  ROW_NUMBER() OVER (
+                    PARTITION BY "id"
+                    ORDER BY
+                      "updated_at" DESC NULLS LAST, "_airbyte_extracted_at" DESC
+                  ) AS row_number
+                FROM "ns"."staging"
+              ) AS deduplicated
+              WHERE row_number = 1
+            ),
+
+            deleted AS (
+              DELETE FROM "ns"."final"
+              USING deduped_source
+              WHERE "ns"."final"."id" = deduped_source."id"
+                AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
+                AND ("ns"."final"."updated_at" < deduped_source."updated_at"
+                OR ("ns"."final"."updated_at" = deduped_source."updated_at" AND "ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+                OR ("ns"."final"."updated_at" IS NULL AND deduped_source."updated_at" IS NOT NULL)
+                OR ("ns"."final"."updated_at" IS NULL AND deduped_source."updated_at" IS NULL AND "ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            ),
+
+            updates AS (
+              UPDATE "ns"."final"
+              SET
+                "_airbyte_raw_id" = deduped_source."_airbyte_raw_id",
+                "_airbyte_extracted_at" = deduped_source."_airbyte_extracted_at",
+                "_airbyte_meta" = deduped_source."_airbyte_meta",
+                "_airbyte_generation_id" = deduped_source."_airbyte_generation_id",
+                "name" = deduped_source."name",
+                "updated_at" = deduped_source."updated_at",
+                "_ab_cdc_deleted_at" = deduped_source."_ab_cdc_deleted_at"
+              FROM deduped_source
+              WHERE "ns"."final"."id" = deduped_source."id"
+                AND deduped_source."_ab_cdc_deleted_at" IS NULL
+                AND ("ns"."final"."updated_at" < deduped_source."updated_at"
+                OR ("ns"."final"."updated_at" = deduped_source."updated_at" AND "ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+                OR ("ns"."final"."updated_at" IS NULL AND deduped_source."updated_at" IS NOT NULL)
+                OR ("ns"."final"."updated_at" IS NULL AND deduped_source."updated_at" IS NULL AND "ns"."final"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            )
+
+            INSERT INTO "ns"."final" (
+              "_airbyte_raw_id",
+              "_airbyte_extracted_at",
+              "_airbyte_meta",
+              "_airbyte_generation_id",
+              "id",
+              "name",
+              "updated_at",
+              "_ab_cdc_deleted_at"
+            )
+            SELECT
+              "_airbyte_raw_id",
+              "_airbyte_extracted_at",
+              "_airbyte_meta",
+              "_airbyte_generation_id",
+              "id",
+              "name",
+              "updated_at",
+              "_ab_cdc_deleted_at"
+            FROM deduped_source
+            WHERE
+              NOT EXISTS (
+                SELECT 1
+                FROM "ns"."final"
+                WHERE "ns"."final"."id" = deduped_source."id"
+              )
+              AND deduped_source."_ab_cdc_deleted_at" IS NULL
+            """
+        assertEqualsIgnoreWhitespace(expected, sql)
     }
 
     @Test
@@ -444,56 +498,11 @@ internal class RedshiftSqlGeneratorTest {
 
         val sql = sqlGenerator.upsertTable(stream, source, target)
 
-        assertTrue(sql.contains("BEGIN TRANSACTION;"))
-        assertTrue(sql.contains("CREATE TEMP TABLE"))
-        assertTrue(sql.contains("_airbyte_dedup_staging"))
-        assertFalse(sql.contains("DELETE FROM"))
-        assertTrue(sql.contains("UPDATE"))
+        assertTrue(sql.contains("WITH deduped_source AS"))
+        assertFalse(sql.contains("deleted AS"))
+        assertTrue(sql.contains("updates AS"))
         assertTrue(sql.contains("INSERT INTO"))
         assertFalse(sql.contains("_ab_cdc_deleted_at"))
-        assertTrue(sql.contains("COMMIT;"))
-    }
-
-    @Test
-    fun `upsertTable truncates dedup temp table name when source name is long`() {
-        val longName = "a".repeat(127) // already at Redshift max
-        val finalSchema =
-            mapOf(
-                "id" to ColumnType("bigint", false),
-                "name" to ColumnType("varchar(65535)", true),
-                "updated_at" to ColumnType("timestamptz", true),
-            )
-        val stream =
-            mockStream(
-                finalSchema = finalSchema,
-                primaryKey = listOf(listOf("id")),
-                cursor = listOf("updated_at"),
-            )
-
-        val source = TableName(namespace = "ns", name = longName)
-        val target = TableName(namespace = "ns", name = "final")
-
-        val sql = sqlGenerator.upsertTable(stream, source, target)
-
-        // The dedup temp table name should be truncated to 127 chars
-        // "_airbyte_dedup_" + 127 chars = 143 chars > 127, so it must be truncated with a hash
-        val dedupPrefix = "_airbyte_dedup_"
-        assertTrue(sql.contains("CREATE TEMP TABLE"))
-        // The full un-truncated name should NOT appear
-        assertFalse(sql.contains("$dedupPrefix$longName"))
-        // Extract the dedup table name from the CREATE TEMP TABLE statement
-        val createTempRegex = Regex("""CREATE TEMP TABLE "([^"]+)" AS""")
-        val match = createTempRegex.find(sql)
-        assertNotNull(match)
-        val dedupTableName = match!!.groupValues[1]
-        assertTrue(
-            dedupTableName.length <= 127,
-            "Dedup temp table name exceeds 127 chars: ${dedupTableName.length}"
-        )
-        assertTrue(
-            dedupTableName.startsWith(dedupPrefix),
-            "Dedup temp table name should start with $dedupPrefix"
-        )
     }
 
     @Test
@@ -574,16 +583,13 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_json_col" varchar(65535);"""))
-        assertTrue(sql.contains("""JSON_SERIALIZE("json_col")"""))
-        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
-        assertTrue(sql.contains(""""json_col" IS NOT NULL"""))
-        assertTrue(sql.contains(""""_airbyte_tmp_json_col" IS NULL"""))
+        assertTrue(sql.contains("JSON_SERIALIZE(\"json_col\")"))
         assertTrue(sql.contains("""DROP COLUMN "json_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_json_col" TO "json_col";"""))
     }
 
     @Test
-    fun `matchSchemas VARCHAR to SUPER uses IS_VALID_JSON`() {
+    fun `matchSchemas VARCHAR to SUPER uses JSON_PARSE`() {
         val tableName = TableName(namespace = "ns", name = "tbl")
         val sql =
             sqlGenerator.matchSchemas(
@@ -601,12 +607,7 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_data_col" super;"""))
-        assertTrue(sql.contains("IS_VALID_JSON("))
-        assertTrue(sql.contains("JSON_PARSE("))
-        assertFalse(sql.contains("REPLACE("))
-        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
-        assertTrue(sql.contains(""""data_col" IS NOT NULL"""))
-        assertTrue(sql.contains(""""_airbyte_tmp_data_col" IS NULL"""))
+        assertTrue(sql.contains("JSON_PARSE(\"data_col\")"))
         assertTrue(sql.contains("""DROP COLUMN "data_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_data_col" TO "data_col";"""))
     }
@@ -631,9 +632,6 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_num_col" numeric(38,9);"""))
         assertTrue(sql.contains("""CAST("num_col" AS numeric(38,9))"""))
-        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
-        assertTrue(sql.contains(""""num_col" IS NOT NULL"""))
-        assertTrue(sql.contains(""""_airbyte_tmp_num_col" IS NULL"""))
         assertTrue(sql.contains("""DROP COLUMN "num_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
     }
@@ -680,8 +678,8 @@ internal class RedshiftSqlGeneratorTest {
     // ================================================================
 
     @Test
-    fun `blank namespace is passed through without defaulting`() {
+    fun `blank namespace defaults to public`() {
         val sql = sqlGenerator.dropTable(TableName(namespace = "", name = "tbl"))
-        assertEquals("""DROP TABLE IF EXISTS ""."tbl";""", sql)
+        assertEquals("""DROP TABLE IF EXISTS "public"."tbl";""", sql)
     }
 }
