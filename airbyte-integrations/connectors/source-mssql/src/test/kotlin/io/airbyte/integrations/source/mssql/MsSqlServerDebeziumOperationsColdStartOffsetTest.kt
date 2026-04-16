@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Verifies that [DebeziumPropertiesBuilder.sanitizeTopicPrefix] is applied to the "server" field
- * in the cold-start offset key. Without sanitization, database names containing characters such as
+ * Verifies that [DebeziumPropertiesBuilder.sanitizeTopicPrefix] is applied to the "server" field in
+ * the cold-start offset key. Without sanitization, database names containing characters such as
  * spaces or special symbols produce an offset key that diverges from Debezium's internal
- * [SqlServerPartition] key, causing CDC cold starts to fail with:
- *   "Could not find existing redo log information while attempting schema only recovery snapshot"
+ * [SqlServerPartition] key, causing CDC cold starts to fail with: "Could not find existing redo log
+ * information while attempting schema only recovery snapshot"
  *
  * See: https://github.com/airbytehq/airbyte/issues/73326
  */
