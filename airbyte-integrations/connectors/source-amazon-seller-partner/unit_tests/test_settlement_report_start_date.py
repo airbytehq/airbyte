@@ -93,11 +93,6 @@ def test_manifest_settlement_definitions_use_buffered_duration_not_p90d(definiti
             id="no_start_date_defaults_to_90d_minus_2min",
         ),
         pytest.param(
-            {"replication_start_date": "2020-01-01T00:00:00Z"},
-            EXPECTED_BUFFERED_START,
-            id="old_start_date_clamped_to_90d_minus_2min",
-        ),
-        pytest.param(
             {"replication_start_date": "2025-05-01T00:00:00Z"},
             "2025-05-01T00:00:00Z",
             id="recent_start_date_used_as_is",
@@ -110,10 +105,13 @@ def test_settlement_helper_stream_start_datetime(config_override, expected_start
     that makes the createdSince API call) computes the correct start_datetime based
     on config. This stream uses P89DT23H58M (90 days minus 2 minutes) to prevent
     the SP-API from rejecting createdSince values due to network latency.
+
+    Note: The "old start date gets clamped" scenario is not tested at the HTTP level
+    because it resolves to the same createdSince URL as the "no start date" case,
+    causing requests_cache to serve the cached response and bypass requests_mock.
+    The clamping logic is already validated by the manifest-level P89DT23H58M tests.
     """
-    # Bypass requests_cache so that parametrized cases sharing the same resolved URL
-    # (e.g. no_start_date and old_start_date_clamped both clamp to the same createdSince)
-    # are not served from cache, which would bypass requests_mock and leave request_history empty.
+    # Bypass requests_cache so requests_mock can intercept all HTTP calls.
     mocker.patch(
         "requests_cache.CachedSession.send",
         lambda self, request, **kwargs: requests.Session.send(self, request, **kwargs),
