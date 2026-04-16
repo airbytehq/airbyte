@@ -1,49 +1,65 @@
-# Robinhood Source
+# Robinhood source connector
 
-This is the repository for the Robinhood source connector, written in the
-declarative low-code YAML framework.
+This directory contains the manifest-only connector for `source-robinhood`.
+This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
 
-## Overview
+For information about how to configure and use this connector within Airbyte, see [the connector's full documentation](https://docs.airbyte.com/integrations/sources/robinhood).
 
-The Robinhood source connector syncs data from the Robinhood trading platform.
-It uses the Robinhood private API to retrieve account information, positions,
-orders, dividends, instruments, and more.
+## Local development
 
-**Note:** Robinhood does not have an official public REST API for equities and
-options trading. This connector uses the well-documented private API used by
-community libraries such as [robin_stocks](https://robin-stocks.readthedocs.io/)
-and [sanko/Robinhood](https://github.com/sanko/Robinhood).
+We recommend using the Connector Builder to edit this connector.
+Using either Airbyte Cloud or your local Airbyte OSS instance, navigate to the **Builder** tab and select **Import a YAML**.
+Then select the connector's `manifest.yaml` file to load the connector into the Builder. You're now ready to make changes to the connector!
 
-## Authentication
+If you prefer to develop locally, you can follow the instructions below.
 
-The connector requires a pre-generated Robinhood access token. Because
-Robinhood's login flow requires interactive multi-factor authentication (MFA),
-the token must be obtained outside of Airbyte using a tool such as
-`robin_stocks`:
+### Building the docker image
 
-```python
-import robin_stocks.robinhood as rh
-login = rh.login('email@example.com', 'password', mfa_code='123456')
-print(login['access_token'])
+You can build any manifest-only connector with `airbyte-ci`:
+
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
+
+```bash
+airbyte-ci connectors --name=source-robinhood build
 ```
 
-The access token expires periodically and must be refreshed.
+An image will be available on your host with the tag `airbyte/source-robinhood:dev`.
 
-## Streams
+### Creating credentials
 
-| Stream | Endpoint | Auth Required | Incremental |
-|---|---|---|---|
-| accounts | `/accounts/` | Yes | No |
-| positions | `/positions/` | Yes | No |
-| portfolios | `/portfolios/` | Yes | No |
-| orders | `/orders/` | Yes | Yes |
-| instruments | `/instruments/` | Yes | No |
-| dividends | `/dividends/` | Yes | No |
-| watchlists | `/watchlists/` | Yes | No |
-| options_positions | `/options/positions/` | Yes | No |
-| options_orders | `/options/orders/` | Yes | No |
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/robinhood)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` object in the connector's `manifest.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 
-## Development
+### Running as a docker container
 
-For information about developing locally, see the
-[declarative connector development guide](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview).
+Then run any of the standard source connector commands:
+
+```bash
+docker run --rm airbyte/source-robinhood:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-robinhood:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-robinhood:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-robinhood:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+```
+
+### Running the CI test suite
+
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
+```bash
+airbyte-ci connectors --name=source-robinhood test
+```
+
+## Publishing a new version of the connector
+
+If you want to contribute changes to `source-robinhood`, here's how you can do that:
+1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
+2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-robinhood test`
+3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/robinhood.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.

@@ -37,8 +37,6 @@ data:
   tags:
     - language:manifest-only
     - cdk:low-code
-  connectorTestSuitesOptions:
-    - suite: unitTests
   externalDocumentationUrls:
     - title: Unofficial Robinhood API documentation
       url: https://github.com/sanko/Robinhood

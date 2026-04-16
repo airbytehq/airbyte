@@ -11,12 +11,13 @@ This page contains the setup guide and reference information for the Robinhood s
 
 ### Step 1: Obtain a Robinhood access token
 
-Robinhood's API requires an OAuth2 access token for authentication. Because
-the login flow involves interactive multi-factor authentication, you must
-generate the token outside of Airbyte.
+Robinhood does not provide an official developer portal or UI for generating
+API tokens for equities and options data. The API used by this connector is
+a private API documented by community projects.
 
-You can use the [robin_stocks](https://robin-stocks.readthedocs.io/) Python
-library:
+To obtain an access token, you can use the
+[robin_stocks](https://robin-stocks.readthedocs.io/) Python library to
+authenticate programmatically:
 
 ```python
 import robin_stocks.robinhood as rh
@@ -77,6 +78,6 @@ The Robinhood source connector supports the following sync modes:
 
 | Version | Date | Pull Request | Subject |
 |---|---|---|---|
-| 0.1.0 | 2026-04-15 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Initial release: Accounts, Positions, Portfolios, Orders, Instruments, Dividends, Watchlists, Options Positions, Options Orders |
+| 0.1.0 | 2026-04-15 | [76374](https://github.com/airbytehq/airbyte/pull/76374) | Initial release: Accounts, Positions, Portfolios, Orders, Instruments, Dividends, Watchlists, Options Positions, Options Orders |
 
 </details>
