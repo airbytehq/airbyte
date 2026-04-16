@@ -87,7 +87,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 
 #### Bring your own OAuth flow
-To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own).
+To implement your own OAuth flow, use Airbyte's server-side OAuth API endpoints. For a complete guide, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/interfaces/sdk/authenticate/build-auth/build-your-own).
 
 ##### Step 1: Initiate the OAuth flow
 
@@ -122,7 +122,7 @@ After the user authorizes access, Airbyte automatically creates the connector an
 https://yourapp.com/oauth/callback?connector_id=<connector_id>
 ```
 
-Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/platform/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
+Extract the `connector_id` from the callback URL and store it for future operations. For error handling and a complete implementation example, see [Build your own OAuth flow](https://docs.airbyte.com/ai-agents/interfaces/sdk/authenticate/build-auth/build-your-own#part-3-handle-the-callback).
 
 #### Token
 This authentication method isn't available for this connector.

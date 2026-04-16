@@ -178,8 +178,8 @@ export default function Home() {
       icon: TutorialsIcon,
     },
     {
-      title: 'Platform',
-      link: '/ai-agents/platform/',
+      title: 'SDK',
+      link: '/ai-agents/interfaces/sdk/',
       description: 'Authenticate, configure connectors, manage context stores, and execute agent workflows.',
       icon: PlatformIcon,
     },
@@ -197,7 +197,7 @@ export default function Home() {
     },
     {
       title: 'MCP server',
-      link: '/ai-agents/mcp-server/',
+      link: '/ai-agents/interfaces/mcp/',
       description: 'Let AI agents interact with your data sources through the Model Context Protocol.',
       icon: McpServerIcon,
     },

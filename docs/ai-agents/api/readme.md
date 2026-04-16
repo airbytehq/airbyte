@@ -65,7 +65,7 @@ If the workspace doesn't exist, Airbyte creates it automatically. Scoped tokens 
 
 ### Widget token
 
-Widget tokens are specialized tokens for embedding the [authentication module](/ai-agents/platform/authenticate/build-auth/authentication-module) in your app. They include all features of scoped tokens plus origin validation for CORS protection.
+Widget tokens are specialized tokens for embedding the [authentication module](/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module) in your app. They include all features of scoped tokens plus origin validation for CORS protection.
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
@@ -77,7 +77,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
   }'
 ```
 
-For more details on widget tokens and template filtering, see the [authentication module](/ai-agents/platform/authenticate/build-auth/authentication-module) documentation.
+For more details on widget tokens and template filtering, see the [authentication module](/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module) documentation.
 
 ### Security considerations
 

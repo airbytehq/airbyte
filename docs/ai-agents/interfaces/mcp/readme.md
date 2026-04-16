@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Airbyte Agent MCP server
 
-The Airbyte Airbyte Agent MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../connectors) for a list of available connectors.
+The Airbyte Airbyte Agent MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors) for a list of available connectors.
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
@@ -25,9 +25,9 @@ For example:
 
 Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
 
-When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [context store](../platform/context-store). The context store is Airbyte-managed object storage that enables fast search across your connected data. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
+When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [context store](../sdk/context-store). The context store is Airbyte-managed object storage that enables fast search across your connected data. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
 
-For the complete list of connectors and their supported entities, see [Agent connectors](../connectors).
+For the complete list of connectors and their supported entities, see [Agent connectors](../../connectors).
 
 ## Requirements
 
@@ -200,7 +200,7 @@ After you connect the MCP server, your agent can discover and call its tools aut
 
 ### Add a connector
 
-To connect a new data source, prompt your agent with the service you want to connect. The MCP can use any Airbyte [agent connector](../connectors). The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
+To connect a new data source, prompt your agent with the service you want to connect. The MCP can use any Airbyte [agent connector](../../connectors). The agent handles the setup, including starting a browser-based credential flow where you enter your credentials securely.
 
 ```text
 Connect my Linear account

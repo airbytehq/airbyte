@@ -813,17 +813,17 @@
     },
     {
       "source": "/ai-agents/embedded",
-      "destination": "/ai-agents/platform/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/embedded/:path*",
-      "destination": "/ai-agents/platform/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts/tutorial-server-side-oauth",
-      "destination": "/ai-agents/platform/authenticate/build-auth/build-your-own",
+      "destination": "/ai-agents/interfaces/sdk/authenticate/build-auth/build-your-own",
       "statusCode": 301
     },
     {
@@ -853,22 +853,22 @@
     },
     {
       "source": "/ai-agents/entity-cache",
-      "destination": "/ai-agents/platform/context-store",
+      "destination": "/ai-agents/interfaces/sdk/context-store",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/entity-cache/:path*",
-      "destination": "/ai-agents/platform/context-store",
+      "destination": "/ai-agents/interfaces/sdk/context-store",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/tools",
-      "destination": "/ai-agents/platform/execute",
+      "destination": "/ai-agents/interfaces/sdk/execute",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/tools/:path*",
-      "destination": "/ai-agents/platform/execute",
+      "destination": "/ai-agents/interfaces/sdk/execute",
       "statusCode": 301
     },
     {
@@ -888,7 +888,27 @@
     },
     {
       "source": "/ai-agents/platform/customers",
-      "destination": "/ai-agents/platform/workspaces",
+      "destination": "/ai-agents/interfaces/sdk/workspaces",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/platform",
+      "destination": "/ai-agents/interfaces/sdk",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/platform/:path*",
+      "destination": "/ai-agents/interfaces/sdk/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/mcp-server",
+      "destination": "/ai-agents/interfaces/mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/mcp-server/:path*",
+      "destination": "/ai-agents/interfaces/mcp/:path*",
       "statusCode": 301
     }
   ]
