@@ -354,7 +354,7 @@ const config: Config = {
     announcementBar: {
       id: "try_airbyte_agents",
       content:
-        '<a target="_blank" rel="noopener noreferrer" href="https://app.airbyte.ai">Try Airbyte Agents</a>! No credit card needed.',
+        '<a target="_blank" rel="noopener noreferrer" href="https://app.airbyte.ai?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_agents_docs_banner">Try Airbyte Agents</a>! No credit card needed.',
       backgroundColor: "#615eff",
       textColor: "#ffffff",
       isCloseable: false,
