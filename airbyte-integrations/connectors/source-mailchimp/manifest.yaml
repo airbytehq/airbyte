@@ -4796,7 +4796,7 @@ spec:
         airbyte_hidden: true
       num_workers:
         type: integer
-        title: Number of Concurrent Workers
+        title: Number of Concurrent Threads
         description: >-
           The number of worker threads to use for the sync. Higher values can
           speed up syncs but may hit rate limits. Mailchimp allows up to 10
