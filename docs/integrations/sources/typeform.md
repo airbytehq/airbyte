@@ -1,23 +1,15 @@
 # Typeform
 
-This page guides you through the process of setting up the Typeform source connector.
+This page contains the setup guide and reference information for the [Typeform](https://www.typeform.com/) source connector.
 
 ## Prerequisites
 
-- [Typeform Account](https://www.typeform.com/)
-- Form IDs (Optional) - If you want to sync data for specific forms, you'll need to have the IDs of those forms. If you want to sync data for all forms in your account you don't need any IDs. Form IDs can be found in the URLs to the forms in Typeform Admin Panel (for example, for URL `https://admin.typeform.com/form/12345/` a `12345` part would your Form ID)
-  <!-- env:cloud -->
-
-  **For Airbyte Cloud:**
-
-- OAuth
+- A [Typeform](https://www.typeform.com/) account
+<!-- env:cloud -->
+- For Airbyte Cloud: OAuth authentication
 <!-- /env:cloud -->
-
 <!-- env:oss -->
-
-**For Airbyte Open Source:**
-
-- Personal Access Token (see [personal access token](https://www.typeform.com/developers/get-started/personal-access-token/))
+- For Airbyte Open Source: A Typeform [personal access token](https://www.typeform.com/developers/get-started/personal-access-token/) with the following read scopes: `forms:read`, `responses:read`, `webhooks:read`, `workspaces:read`, `images:read`, and `themes:read`
 <!-- /env:oss -->
 
 ## Setup guide
@@ -27,21 +19,24 @@ This page guides you through the process of setting up the Typeform source conne
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
-To get the API token for your application, follow these [steps](https://developer.typeform.com/get-started/personal-access-token/):
 
-1. Log in to your account at Typeform.
-2. In the upper-right corner, in the drop-down menu next to your profile photo, click **My Account**.
+To generate a personal access token for your Typeform account:
+
+1. Log in to your [Typeform](https://www.typeform.com/) account.
+2. In the upper-left corner, in the drop-down menu next to your username, click **Account**.
 3. In the left menu, click **Personal tokens**.
 4. Click **Generate a new token**.
 5. In the **Token name** field, type a name for the token to help you identify it.
-6. Choose the scopes you need (API actions this token can perform). See [OAuth 2.0 scopes](https://www.typeform.com/developers/get-started/scopes/) for more details.
+6. Select the following scopes: `forms:read`, `responses:read`, `webhooks:read`, `workspaces:read`, `images:read`, and `themes:read`. See [OAuth scopes](https://www.typeform.com/developers/get-started/scopes/) for details.
 7. Click **Generate token**.
+
 <!-- /env:oss -->
 
 <!-- env:cloud -->
 
 **For Airbyte Cloud:**
-This step is not needed in Airbyte Cloud. Skip to the next step.
+
+Skip this step. Airbyte Cloud uses OAuth to authenticate with Typeform.
 
 <!-- /env:cloud -->
 
@@ -54,11 +49,11 @@ This step is not needed in Airbyte Cloud. Skip to the next step.
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
 3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
-4. Click `Authenticate your Typeform account` by selecting Oauth or Personal Access Token for Authentication.
-5. Log in and Authorize to the Typeform account.
-6. **Start date (Optional)** - The date from which to start fetching Responses stream data, in the format `YYYY-MM-DDT00:00:00Z`. If not set, the Responses stream fetches data from one year ago.
-7. **Form IDs (Optional)** - List of Form IDs to sync. If not specified, all forms in your account are synced.
-8. Click **Set up source**.
+4. Click **Authenticate your Typeform account** and complete the OAuth flow.
+5. **Start date** (Optional) - The date from which you want to replicate data for the Responses stream, in the format `YYYY-MM-DDT00:00:00Z`. If not set, the connector fetches response data from one year before the current date.
+6. **Form IDs** (Optional) - IDs of specific forms to sync. If not specified, the connector syncs all forms in your account. You can find form IDs in your form URLs on the **Share** panel. For example, in the URL `https://mysite.typeform.com/to/u6nXL7`, the form ID is `u6nXL7`.
+7. Click **Set up source**.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -67,15 +62,18 @@ This step is not needed in Airbyte Cloud. Skip to the next step.
 
 1. Go to your local Airbyte instance.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
-3. On the Set up the source page, enter a name for the connector and select **Typeform** from the Source type dropdown.
-4. Enter your **API Token** and optionally set a **Start Date**.
-5. Click **Set up source**.
+3. On the source setup page, enter a name for the connector and select **Typeform** from the Source type dropdown.
+4. Enter your personal access token in the **API Token** field.
+5. **Start date** (Optional) - The date from which you want to replicate data for the Responses stream, in the format `YYYY-MM-DDT00:00:00Z`. If not set, the connector fetches response data from one year before the current date.
+6. **Form IDs** (Optional) - IDs of specific forms to sync. If not specified, the connector syncs all forms in your account. You can find form IDs in your form URLs on the **Share** panel. For example, in the URL `https://mysite.typeform.com/to/u6nXL7`, the form ID is `u6nXL7`.
+7. Click **Set up source**.
+
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
 
 | Stream     | Key         | Incremental | API Link                                                                    |
-| :--------- | ----------- | :---------- | --------------------------------------------------------------------------- |
+| :--------- | :---------- | :---------- | :-------------------------------------------------------------------------- |
 | Forms      | id          | No          | https://developer.typeform.com/create/reference/retrieve-form/              |
 | Responses  | response_id | Yes         | https://developer.typeform.com/responses/reference/retrieve-responses       |
 | Webhooks   | id          | No          | https://developer.typeform.com/webhooks/reference/retrieve-webhooks/        |
@@ -83,16 +81,23 @@ This step is not needed in Airbyte Cloud. Skip to the next step.
 | Images     | id          | No          | https://developer.typeform.com/create/reference/retrieve-images-collection/ |
 | Themes     | id          | No          | https://developer.typeform.com/create/reference/retrieve-themes/            |
 
+## Limitations
+
+This connector uses the Typeform US API endpoint (`api.typeform.com`). If your Typeform account stores responses in the [EU Data Center](https://www.typeform.com/developers/get-started/responses-data-center/), the Responses stream returns empty results. The Forms, Webhooks, Workspaces, Images, and Themes streams work regardless of data center region.
+
 ## Performance considerations
 
-Typeform API page size limit per source:
+The Typeform API enforces a rate limit of 2 requests per second per account. The connector respects this limit automatically. For more information, see the [Typeform API rate limits documentation](https://developer.typeform.com/get-started/#rate-limits).
 
-- Forms - 200
-- Responses - 1000
+Page size limits per stream:
 
-The connector performs an additional API call to fetch all form IDs in your account using the [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/).
+- Forms: 200
+- Responses: 1000
+- Workspaces: 200
+- Images: 200
+- Themes: 200
 
-API rate limits \(2 requests per second\): [https://developer.typeform.com/get-started/\#rate-limits](https://developer.typeform.com/get-started/#rate-limits)
+The Forms, Responses, and Webhooks streams make separate API calls for each form in your account. The connector first fetches the list of form IDs using the [retrieve forms endpoint](https://developer.typeform.com/create/reference/retrieve-forms/), then queries each form individually. If you have many forms, consider using the **Form IDs** configuration option to limit the sync to only the forms you need.
 
 ## Changelog
 
@@ -101,6 +106,13 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.8-rc.4 | 2026-04-15 | [76363](https://github.com/airbytehq/airbyte/pull/76363) | Remove API budget, set concurrency to 25 |
+| 1.4.8-rc.3 | 2026-04-14 | [76319](https://github.com/airbytehq/airbyte/pull/76319) | Adjust default_concurrency from 3 to 2 for tuning retry |
+| 1.4.8-rc.2 | 2026-04-13 | [76270](https://github.com/airbytehq/airbyte/pull/76270) | Adjust default_concurrency from 4 to 3 for tuning retry |
+| 1.4.8-rc.1 | 2026-04-09 | [76204](https://github.com/airbytehq/airbyte/pull/76204) | Add concurrency_level and HTTPAPIBudget for concurrent stream reads |
+| 1.4.7 | 2026-04-02 | [76030](https://github.com/airbytehq/airbyte/pull/76030) | Promoted release candidate to GA |
+| 1.4.7-rc.2 | 2026-03-31 | [75898](https://github.com/airbytehq/airbyte/pull/75898) | Update CDK to 7.15.0 |
+| 1.4.7-rc.1 | 2026-03-26 | [75506](https://github.com/airbytehq/airbyte/pull/75506) | Upgrade CDK version to 7.13.0 |
 | 1.4.6 | 2026-03-03 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |
 | 1.4.5 | 2026-01-22 | [72261](https://github.com/airbytehq/airbyte/pull/72261) | Update CDK version from 7.0.1 to 7.6.5 |
 | 1.4.4 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |

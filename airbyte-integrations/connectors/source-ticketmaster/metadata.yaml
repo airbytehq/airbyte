@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-ticketmaster
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.1@sha256:bd69f6b52bdd92ce06c30786d67546427b828ffb553363c8950b2816c552d6e0
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.4@sha256:2f551a3fb5d580b34f4253aa1904d26c309364b09538f0b0fef3d8a98546f795
   connectorSubtype: api
   connectorType: source
   definitionId: 053eb2fe-5c44-49fc-a1e4-2dc82b09318e
-  dockerImageTag: 0.0.45
+  dockerImageTag: 0.0.46
   dockerRepository: airbyte/source-ticketmaster
   githubIssueLabel: source-ticketmaster
   icon: icon.svg

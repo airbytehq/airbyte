@@ -60,7 +60,7 @@ definitions:
         http_codes: [ 425 ]
         action: FAIL
         failure_type: config_error
-        error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent workers to 2 for sequential processing."
+        error_message: "Amazon detected duplicate report requests. This occurs when syncing the same report types with different time granularities simultaneously. To fix: create a separate source with only the needed report streams and set Number of concurrent threads to 2 for sequential processing."
 
   report_polling_error_handler:
     type: DefaultErrorHandler
@@ -147,9 +147,13 @@ definitions:
             field_path: []
           record_filter:
             condition: >-
-              {%- set requested_profiles = config.get("profiles", []) -%}
+              {%- set requested_profiles = config.get("profiles", []) | map('string') | list -%}
               {%- set requested_marketplace_ids = config.get("marketplace_ids", []) -%}
-              {{ record["profileId"] in requested_profiles or record["accountInfo"]["marketplaceStringId"] in requested_marketplace_ids if requested_profiles or requested_marketplace_ids else True }}
+              {%- set account_info = record.get("accountInfo", {}) -%}
+              {%- set has_filters = requested_profiles or requested_marketplace_ids -%}
+              {%- set matches_profile_id = (record["profileId"] | string) in requested_profiles -%}
+              {%- set matches_marketplace_id = account_info.get("marketplaceStringId", "") in requested_marketplace_ids if requested_marketplace_ids else false -%}
+              {{ matches_profile_id or matches_marketplace_id if has_filters else True }}
         paginator:
           type: NoPagination
 
@@ -1100,7 +1104,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1182,7 +1187,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1264,7 +1270,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1345,7 +1352,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 300
-            cursor_value: "{{ response.cursorId }}"
+            cursor_value: '{{ response.get("cursorId", "") | tojson }}'
+            stop_condition: "{{ response.cursorId is none}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3485,7 +3493,7 @@ spec:
         type: integer
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 20
         default: 10

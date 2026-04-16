@@ -8,7 +8,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.discover.DiscoveredStream
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
@@ -151,7 +151,7 @@ abstract class BaseConnectorTest(
         val discoveredStream =
             DiscoveredStream(
                 id = StreamIdentifier.from(desc),
-                columns = table.columns.map { Field(it.name, it.jdbcType) },
+                columns = table.columns.map { EmittedField(it.name, it.jdbcType) },
                 primaryKeyColumnIDs =
                     table.columns
                         .filter { it.isPrimaryKey }

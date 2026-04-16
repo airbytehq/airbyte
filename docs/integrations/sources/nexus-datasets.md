@@ -1,132 +1,183 @@
-# Nexus Datasets
-Nexus datasets is a solution to sync up with the current nexus data sets API.
-Data can be extracted from the nexus API after providing the required data in the config.
-Data set name should be provided aliong with the other details to sync the data.
-[API Documentation](https://developer.gtnexus.com/)
+# Infor Nexus Datasets
+
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Infor Nexus](https://developer.infornexus.com/) source connector.
+
+</HideInUI>
+
+The Infor Nexus Datasets source connector syncs data from [Infor Nexus](https://developer.infornexus.com/) Data Mesh export datasets using the Infor Nexus Data API (v3.1) with HMAC authentication.
 
 ## Prerequisites
 
-- Nexus customer organization with Data Mesh rights
-- Export data set created in the customer organization
-- Data API Agent user configured in the customer organization
-
-## Airbyte OSS and Airbyte Cloud
-
-- Name of the data set to be synced
-- Data API Agent user name / Cliend access key ID / Secret key for the Data API Agent user
-- Data Key (API Key) for the customer organization
+- An Infor Nexus customer organization with Data Mesh rights
+- An export dataset created in the customer organization
+- A Data API (DAPI) agent user configured in the customer organization
+- The following credentials for the DAPI agent user:
+  - User ID
+  - Client access key ID
+  - Secret key
+- A Data Key (API Key) for the customer organization
 
 ## Setup guide
 
-### Step 1: Nexus Configuration
+### Step 1: Configure Infor Nexus
 
-#### Step 1.1: Create Nexus Customer Organization
+#### Create a customer organization
 
-1. Create customer organization in the nexus platform
+Create a customer organization in the Infor Nexus platform.
 
-#### Step 1.2: Configure Data Mesh in the Customer Organization
+#### Configure Data Mesh
 
-1. Log into the admin side of the nexus application
-2. Set up the Data Mesh rule for the organization
-3. Create users with the Data Mesh previledges
-4. Make sure this user can be logged in to the nexus platfrom
+1. Log into the admin console of your Infor Nexus application.
+2. Set up the Data Mesh rule for your organization.
+3. Create a user with Data Mesh privileges.
+4. Verify this user can log into the Infor Nexus platform.
 
-#### Step 1.3: Configure export data pipeline in the Nexus
+#### Create an export dataset
 
-1. Log into the nexus platform using created user in the step 2
-2. Go to **Analytics** » **Data Mesh Console**
-3. Click on **Export** tab to go into the exportable data sets 
-4. Click **Create** to create new export pipeline using the existing models
-5. Schedule the data set to run
+1. Log into the Infor Nexus platform with the user you created.
+2. Go to **Analytics** > **Data Mesh Console**.
+3. Click the **Export** tab to view exportable datasets.
+4. Click **Create** to create a new export pipeline from the existing models.
+5. Schedule the dataset to run.
 
-#### Step 1.4: Summary
+#### Gather your credentials
 
-- Base URL for the nexus platform
-- Nexus customer organization with relevant user with rights
-- Export data set
-- Data API Agent user (DAPI user)
-- DAPI user id / access key id / secret key
-- Data key (API key)
+Before configuring Airbyte, collect the following information:
+
+- Base URL for your Infor Nexus platform
+- Dataset name
+- DAPI agent user ID
+- DAPI agent access key ID
+- DAPI agent secret key
+- Data key (API key) for your organization
+
+For more information about HMAC authentication, see the [Infor Nexus HMAC documentation](https://developer.infornexus.com/api/authentication-choices/hmac).
 
 ### Step 2: Set up the source connector in Airbyte
 
-#### For Airbyte Cloud:
+<!-- env:cloud -->
+
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
-4. Add **Base URL**
-5. Add **Dataset Name**
-6. Add **Infor Streaming Mode (default Full)**
-7. Add **User ID**
-8. Add **Access Key ID**
-9. Add **Secret Key**
-10. Add **API Key**
-11. Click `Set up source`
+2. Click **Sources**, then click **+ New source**.
+3. Select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
 
-#### For Airbyte OSS:
+<!-- /env:cloud -->
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
-4. Add **Base URL**
-5. Add **Dataset Name**
-6. Add **Infor Streaming Mode (default Full)**
-7. Add **User ID**
-8. Add **Access Key ID**
-9. Add **Secret Key**
-10. Add **API Key**
-11. Click `Set up source`.
+<!-- env:oss -->
 
-### Configuration
+**For Airbyte Open Source:**
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `base_url` | `string` | Base URL. Enter base url for your data set |  |
-| `dataset_name` | `string` | Name of the dataset. Enter dataset name to be synced |  |
-| `infor_streaming_mode` | `string` | Name of the dataset. Enter dataset name to be synced |  |
-| `user_id` | `string` | Data API agent user ID. Enter DAPI agent user id configured in the nexus |  |
-| `access_key_id` | `string` | Access key ID. Enter access key ID for the DAPI agent user |  |
-| `secret_key` | `string` | Secret key. Enter secret key for the DAPI agent user |  |
-| `api_key` | `string` | Data API key. Enter data API key for the organization |  |
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click **Sources**, then click **+ New source**.
+3. Select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
 
+<!-- /env:oss -->
 
+<FieldAnchor field="base_url">
 
-### Supported sync modes
+1. Enter the **Base URL** for your Infor Nexus platform.
 
-The Nexus Datasets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+</FieldAnchor>
+
+<FieldAnchor field="dataset_name">
+
+1. Enter the **Dataset Name** to sync.
+
+</FieldAnchor>
+
+<FieldAnchor field="mode">
+
+1. Select the **Infor Streaming Mode**. Choose `Full` for a complete dataset export, or `Incremental` for changes only. The default is `Full`.
+
+</FieldAnchor>
+
+<FieldAnchor field="user_id">
+
+1. Enter the **User ID** for your DAPI agent user.
+
+</FieldAnchor>
+
+<FieldAnchor field="access_key_id">
+
+1. Enter the **Access Key ID** for your DAPI agent user.
+
+</FieldAnchor>
+
+<FieldAnchor field="secret_key">
+
+1. Enter the **Secret Key** for your DAPI agent user.
+
+</FieldAnchor>
+
+<FieldAnchor field="api_key">
+
+1. Enter the **API Key** (Data Key) for your organization.
+
+</FieldAnchor>
+
+1. Click **Set up source**.
+
+### Configuration reference
+
+| Field | Type | Required | Description | Default |
+|-------|------|----------|-------------|---------|
+| `base_url` | `string` | Yes | The base URL of your Infor Nexus platform. | |
+| `dataset_name` | `string` | Yes | The name of the dataset to export. | |
+| `mode` | `string` | No | The streaming mode: `Full` exports the complete dataset; `Incremental` exports only changes since the last export. | `Full` |
+| `user_id` | `string` | Yes | The DAPI agent user ID configured in Infor Nexus. | |
+| `access_key_id` | `string` | Yes | The access key ID for the DAPI agent user. | |
+| `secret_key` | `string` | Yes | The secret key for HMAC authentication. | |
+| `api_key` | `string` | Yes | The Data API key for your organization. | |
+
+<HideInUI>
+
+## Supported sync modes
+
+The Infor Nexus Datasets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-### Streams
+## Supported streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| datasets | ❌ | DefaultPaginator | ✅ |  ✅  |
+| datasets | None | Yes | Yes | Yes |
 
-### Custom Components
-NexusCustomAuthenticator is a primary component which handles the HMAC authentication for nexus API. 
+The `datasets` stream returns records from the configured Infor Nexus export dataset. Each record contains the following fields:
 
-HMAC stands for Hash-based Message Authentication Code. In HMAC authentication, every request is independently established using a cryptographic hash function. For each API request, the client computes a hashed "signature" using a secret key and submits it in the Authorization header.
+- `raw_data`: The record payload as a JSON object.
+- `raw_data_string`: The record payload as a JSON string.
 
-Please refer https://developer.infornexus.com/api/authentication-choices/hmac for more details to get the data to calculate the HMAC signature.
+## Limitations and troubleshooting
 
-### Error Codes
-200 : Data set is ready to stream
-202 : Data set is not ready but try again later.
-304 : Data set is not ready, check the source again.
+### API response codes
 
+The Infor Nexus Data API returns the following status codes during dataset export:
+
+| Status Code | Meaning | Recommended action |
+|-------------|---------|-------------------|
+| 200 | Dataset is ready to stream. | No action needed. |
+| 202 | Dataset is not yet ready. | Wait and retry the sync later. |
+| 304 | Dataset is not ready. | Contact Infor member services to investigate. |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.1.4 | 2026-04-09 | [76138](https://github.com/airbytehq/airbyte/pull/76138) | Add missing imports for AirbyteTracedException and FailureType in components.py |
 | 0.1.3 | 2026-02-17 | [73548](https://github.com/airbytehq/airbyte/pull/73548) | Update dependencies |
 | 0.1.2 | 2026-02-10 | [73030](https://github.com/airbytehq/airbyte/pull/73030) | Update dependencies |
 | 0.1.1 | 2026-02-03 | [72789](https://github.com/airbytehq/airbyte/pull/72789) | Add missing registryOverrides to metadata.yaml |
-| 0.1.0 | 2025-09-30 | [69349](https://github.com/airbytehq/airbyte/pull/69349) | Nexus datasets connector first version |
+| 0.1.0 | 2025-09-30 | [69349](https://github.com/airbytehq/airbyte/pull/69349) | Initial release of the Infor Nexus Datasets connector |
 
 </details>
+
+</HideInUI>

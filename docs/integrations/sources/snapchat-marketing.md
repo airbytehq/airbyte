@@ -143,6 +143,10 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.33-rc.2 | 2026-04-13 | [76255](https://github.com/airbytehq/airbyte/pull/76255) | Increase default_concurrency to 5 for tuning iteration 2 |
+| 1.5.33-rc.1 | 2026-04-10 | [70866](https://github.com/airbytehq/airbyte/pull/70866) | Add HTTPAPIBudget and concurrency_level for progressive rollout tuning |
+| 1.5.32 | 2026-03-24 | [75098](https://github.com/airbytehq/airbyte/pull/75098) | Update dependencies |
+| 1.5.31 | 2026-03-10 | [74573](https://github.com/airbytehq/airbyte/pull/74573) | Update dependencies |
 | 1.5.30 | 2026-03-03 | [72736](https://github.com/airbytehq/airbyte/pull/72736) | Update dependencies |
 | 1.5.29 | 2026-02-24 | [73634](https://github.com/airbytehq/airbyte/pull/73634) | fix(source-snapchat-marketing): add lookback_window P2D to mitigate UTC timezone mismatch (AI-Triage PR) |
 | 1.5.28 | 2026-01-20 | [70672](https://github.com/airbytehq/airbyte/pull/70672) | Update dependencies |

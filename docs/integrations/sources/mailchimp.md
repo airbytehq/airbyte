@@ -111,6 +111,8 @@ Expand to see details about Mailchimp connector limitations and troubleshooting
 
 [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
 
+The connector includes a `num_workers` configuration parameter (default: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but be mindful of the 10 simultaneous connections limit.
+
 </details>
 
 ## Tutorials
@@ -126,6 +128,13 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.23-rc.4 | 2026-04-13 | [76268](https://github.com/airbytehq/airbyte/pull/76268) | Add HTTPAPIBudget for rate limit enforcement (Phase 2 of concurrency tuning) |
+| 2.1.23-rc.3 | 2026-04-10 | [76232](https://github.com/airbytehq/airbyte/pull/76232) | Increase default_concurrency to 6 (iteration 3, final concurrency tuning) |
+| 2.1.23-rc.2 | 2026-04-08 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Increase default_concurrency to 5 (iteration 2 of concurrency tuning) |
+| 2.1.23-rc.1 | 2026-04-06 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Add concurrency_level and num_workers configuration for concurrency tuning |
+| 2.1.22 | 2026-04-01 | [75576](https://github.com/airbytehq/airbyte/pull/75576) | Add `oauth_connector_input_specification` for declarative OAuth |
+| 2.1.21 | 2026-03-31 | [75803](https://github.com/airbytehq/airbyte/pull/75803) | Update dependencies |
+| 2.1.20 | 2026-03-24 | [74579](https://github.com/airbytehq/airbyte/pull/74579) | Update dependencies |
 | 2.1.19 | 2026-03-03 | [74155](https://github.com/airbytehq/airbyte/pull/74155) | Update dependencies |
 | 2.1.18 | 2026-02-17 | [73380](https://github.com/airbytehq/airbyte/pull/73380) | Update dependencies |
 | 2.1.17 | 2026-02-10 | [73055](https://github.com/airbytehq/airbyte/pull/73055) | Update dependencies |

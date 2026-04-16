@@ -25,6 +25,9 @@ Fetches data on users, expenses, transactions, vendors, and budgets from Brex AP
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.41 | 2026-03-31 | [75651](https://github.com/airbytehq/airbyte/pull/75651) | Update dependencies |
+| 0.0.40 | 2026-03-24 | [74944](https://github.com/airbytehq/airbyte/pull/74944) | Update dependencies |
+| 0.0.39 | 2026-03-10 | [74609](https://github.com/airbytehq/airbyte/pull/74609) | Update dependencies |
 | 0.0.38 | 2026-03-03 | [74202](https://github.com/airbytehq/airbyte/pull/74202) | Update dependencies |
 | 0.0.37 | 2026-02-10 | [73137](https://github.com/airbytehq/airbyte/pull/73137) | Update dependencies |
 | 0.0.36 | 2026-02-03 | [72626](https://github.com/airbytehq/airbyte/pull/72626) | Update dependencies |

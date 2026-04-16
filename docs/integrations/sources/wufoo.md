@@ -28,6 +28,9 @@ The Airbyte connector for [Wufoo](https://www.wufoo.com/) enables seamless data 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.50 | 2026-03-31 | [75859](https://github.com/airbytehq/airbyte/pull/75859) | Update dependencies |
+| 0.0.49 | 2026-03-24 | [75373](https://github.com/airbytehq/airbyte/pull/75373) | Update dependencies |
+| 0.0.48 | 2026-03-10 | [74669](https://github.com/airbytehq/airbyte/pull/74669) | Update dependencies |
 | 0.0.47 | 2026-03-03 | [74158](https://github.com/airbytehq/airbyte/pull/74158) | Update dependencies |
 | 0.0.46 | 2026-02-17 | [73505](https://github.com/airbytehq/airbyte/pull/73505) | Update dependencies |
 | 0.0.45 | 2026-02-03 | [72607](https://github.com/airbytehq/airbyte/pull/72607) | Update dependencies |

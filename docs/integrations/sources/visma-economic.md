@@ -1,49 +1,53 @@
 # Visma e-conomic
 
-## Sync overview
-
-This source collects data from [Visma e-conomic](https://developer.visma.com/api/e-conomic/).
-At the moment the source only implements full refresh, meaning you will sync all records with every new sync.
+[Visma e-conomic](https://www.e-conomic.com/) is a cloud-based accounting platform for small and medium-sized businesses, primarily in the Nordics. This connector syncs data from the [e-conomic REST API](https://restdocs.e-conomic.com/).
 
 ## Prerequisites
 
-- Your Visma e-conomic Agreement Grant Token
-- Your Visma e-conomic App Secret Token
+To use this connector, you need:
 
-[This page](https://www.e-conomic.com/developer/connect) guides you through the different ways of connecting to the api.
-In sort your options are:
+- An **Agreement Grant Token** -- issued when an accounting user grants your app access to their e-conomic agreement.
+- An **App Secret Token** -- generated when you create an app in your e-conomic developer agreement.
 
-- Developer agreement
-- Create a free [sandbox account](https://www.e-conomic.dk/regnskabsprogram/demo-alle), valid for 14 days.
-- Demo tokens: `app_secret_token=demo` and `agreement_grant_token=demo`
+To obtain these tokens:
+
+1. [Sign up for a free developer agreement](https://www.e-conomic.com/developer/connect) on the e-conomic Developer Network.
+2. Log in to your developer agreement and create an app on the **Apps** tab. Copy the **App Secret Token**.
+3. Use the app's **Installation URL** to grant access to an accounting agreement. This produces the **Agreement Grant Token**.
+
+For testing, you can use the demo tokens: `app_secret_token=demo` and `agreement_grant_token=demo`. You can also [create a free sandbox account](https://www.e-conomic.dk/regnskabsprogram/demo-alle), valid for 14 days.
+
+For more details, see the [e-conomic token authentication guide](https://www.e-conomic.com/developer/connect).
 
 ## Set up the Visma e-conomic source connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Stripe** from the Source type dropdown.
+3. On the Set up the source page, select **Visma e-conomic** from the Source type dropdown.
 4. Enter a name for your source.
-5. Enter **Agreement Grant Token**.
-6. Enter **Secret Key**.
+5. Enter your **Agreement Grant Token**.
+6. Enter your **App Secret Token**.
 
-## This Source Supports the Following Streams
+## Supported streams
 
-- [accounts](https://restdocs.e-conomic.com/#get-accounts)
-- [customers](https://restdocs.e-conomic.com/#get-customers)
-- [invoices booked](https://restdocs.e-conomic.com/#get-invoices-booked)
-- [invoices booked document](https://restdocs.e-conomic.com/#get-invoices-booked-bookedinvoicenumber)
-- [invoices paid](https://restdocs.e-conomic.com/#get-invoices-paid)
-- [invoices total](https://restdocs.e-conomic.com/#get-invoices-totals)
-- [products](https://restdocs.e-conomic.com/#get-products)
+This connector supports the following streams, all in full refresh mode:
 
-For more information about the api see the [E-conomic REST API Documentation](https://restdocs.e-conomic.com/#tl-dr).
+- [accounts](https://restdocs.e-conomic.com/#get-accounts) -- chart of accounts entries
+- [customers](https://restdocs.e-conomic.com/#get-customers) -- customer (debtor) records
+- [invoices_booked](https://restdocs.e-conomic.com/#get-invoices-booked) -- finalized invoices
+- [invoices_booked_document](https://restdocs.e-conomic.com/#get-invoices-booked-bookedinvoicenumber) -- detailed booked invoice documents
+- [invoices_paid](https://restdocs.e-conomic.com/#get-invoices-paid) -- paid invoices
+- [invoices_total](https://restdocs.e-conomic.com/#get-invoices-totals) -- invoice totals and summaries
+- [products](https://restdocs.e-conomic.com/#get-products) -- product catalog entries
 
-### [Sync models](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes)
+For more information, see the [e-conomic REST API documentation](https://restdocs.e-conomic.com/).
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
+### Sync modes
+
+| Feature           | Supported? | Notes |
+| :---------------- | :--------- | :---- |
+| Full Refresh Sync | Yes        |       |
+| Incremental Sync  | No         |       |
 
 ## Changelog
 
@@ -52,6 +56,10 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.54 | 2026-03-31 | [75738](https://github.com/airbytehq/airbyte/pull/75738) | Update dependencies |
+| 0.3.53 | 2026-03-17 | [75124](https://github.com/airbytehq/airbyte/pull/75124) | Increase check_connection memory from 2Gi to 4Gi to prevent OOM |
+| 0.3.52 | 2026-03-17 | [75055](https://github.com/airbytehq/airbyte/pull/75055) | Update dependencies |
+| 0.3.51 | 2026-03-10 | [74513](https://github.com/airbytehq/airbyte/pull/74513) | Update dependencies |
 | 0.3.50 | 2026-03-02 | [73712](https://github.com/airbytehq/airbyte/pull/73712) | Add memory bump for check_connection to prevent OOM |
 | 0.3.49 | 2026-02-24 | [73919](https://github.com/airbytehq/airbyte/pull/73919) | Update dependencies |
 | 0.3.48 | 2026-02-17 | [73437](https://github.com/airbytehq/airbyte/pull/73437) | Update dependencies |

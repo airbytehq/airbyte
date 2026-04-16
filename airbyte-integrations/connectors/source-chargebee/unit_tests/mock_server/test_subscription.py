@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+from http import HTTPStatus
 from unittest import TestCase
 
 import freezegun
@@ -9,7 +10,7 @@ from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.state_builder import StateBuilder
 
 from .request_builder import RequestBuilder
-from .response_builder import configuration_incompatible_response, subscription_response
+from .response_builder import configuration_incompatible_response, error_response, subscription_response
 from .utils import config, read_output
 
 
@@ -150,3 +151,21 @@ class TestSubscriptionStream(TestCase):
 
         # Verify error message from manifest is logged
         assert output.is_in_logs("Stream is available only for Product Catalog 1.0")
+
+    @HttpMocker()
+    def test_error_404_ignored(self, http_mocker: HttpMocker) -> None:
+        """Test 404 error is ignored for subscription stream.
+
+        The Chargebee API returns HTTP 404 (resource_not_found) when listing subscriptions
+        that reference a deleted plan/item. The subscription stream should ignore 404 errors
+        and continue syncing, matching the behavior of contact, subscription_with_scheduled_changes,
+        and quote_line_group streams.
+        """
+        http_mocker.get(
+            RequestBuilder.subscriptions_endpoint().with_any_query_params().build(),
+            error_response(HTTPStatus.NOT_FOUND),
+        )
+        output = read_output(config_builder=config(), stream_name=_STREAM_NAME)
+
+        # Verify no records returned (error was ignored, not raised)
+        assert len(output.records) == 0
