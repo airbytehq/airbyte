@@ -1,0 +1,730 @@
+version: 6.3.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - get_me
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - result
+
+  selector_list:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - result
+        - "*"
+
+  base_requester:
+    type: HttpRequester
+    url_base: "https://api.telegram.org/bot{{ config['bot_token'] }}"
+    http_method: GET
+    # Note: url_base + path is used for clarity; individual streams override path.
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 1
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 401
+            - 403
+          error_message: "Authentication failed. Verify that the bot_token is correct."
+
+  chat_partition_router:
+    type: ListPartitionRouter
+    values: "{{ config.get('chat_ids', []) }}"
+    cursor_field: chat_id
+
+  streams:
+    get_me:
+      type: DeclarativeStream
+      name: get_me
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getMe
+          http_method: GET
+        record_selector:
+          $ref: "#/definitions/selector"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_me"
+
+    updates:
+      type: DeclarativeStream
+      name: updates
+      primary_key:
+        - update_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getUpdates
+          http_method: GET
+          request_parameters:
+            timeout: "0"
+            allowed_updates: "{{ config.get('allowed_updates', []) | tojson }}"
+        record_selector:
+          $ref: "#/definitions/selector_list"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/updates"
+
+    chats:
+      type: DeclarativeStream
+      name: chats
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getChat
+          http_method: GET
+          request_parameters:
+            chat_id: "{{ stream_partition.chat_id }}"
+        record_selector:
+          $ref: "#/definitions/selector"
+        partition_router:
+          $ref: "#/definitions/chat_partition_router"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/chats"
+
+    chat_administrators:
+      type: DeclarativeStream
+      name: chat_administrators
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getChatAdministrators
+          http_method: GET
+          request_parameters:
+            chat_id: "{{ stream_partition.chat_id }}"
+        record_selector:
+          $ref: "#/definitions/selector_list"
+        partition_router:
+          $ref: "#/definitions/chat_partition_router"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - _chat_id
+              value: "{{ stream_partition.chat_id }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/chat_administrators"
+
+    webhook_info:
+      type: DeclarativeStream
+      name: webhook_info
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /getWebhookInfo
+          http_method: GET
+        record_selector:
+          $ref: "#/definitions/selector"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/webhook_info"
+
+streams:
+  - $ref: "#/definitions/streams/get_me"
+  - $ref: "#/definitions/streams/updates"
+  - $ref: "#/definitions/streams/chats"
+  - $ref: "#/definitions/streams/chat_administrators"
+  - $ref: "#/definitions/streams/webhook_info"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - bot_token
+    properties:
+      bot_token:
+        type: string
+        title: Bot Token
+        description: >-
+          Telegram Bot API token obtained from @BotFather.
+          Format: {bot_id}:{secret_token}
+        airbyte_secret: true
+        order: 0
+      chat_ids:
+        type: array
+        title: Chat IDs
+        description: >-
+          List of Telegram chat IDs to retrieve data from (for chats,
+          chat_administrators, and chat_member_count streams). The bot
+          must be a member of each chat. Use negative IDs for groups
+          and channels.
+        items:
+          type: string
+        order: 1
+      allowed_updates:
+        type: array
+        title: Allowed Update Types
+        description: >-
+          Filter which update types to receive from getUpdates. If
+          empty, all update types are received. Possible values include
+          message, edited_message, channel_post, edited_channel_post,
+          message_reaction, poll, poll_answer, my_chat_member,
+          chat_member, chat_join_request, chat_boost, callback_query,
+          inline_query, chosen_inline_result.
+        items:
+          type: string
+          enum:
+            - message
+            - edited_message
+            - channel_post
+            - edited_channel_post
+            - business_connection
+            - business_message
+            - edited_business_message
+            - deleted_business_messages
+            - message_reaction
+            - message_reaction_count
+            - inline_query
+            - chosen_inline_result
+            - callback_query
+            - shipping_query
+            - pre_checkout_query
+            - poll
+            - poll_answer
+            - my_chat_member
+            - chat_member
+            - chat_join_request
+            - chat_boost
+            - removed_chat_boost
+        order: 2
+    additionalProperties: true
+
+schemas:
+  get_me:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+        description: Unique identifier for the bot.
+      is_bot:
+        type: boolean
+        description: True if this user is a bot.
+      first_name:
+        type: string
+        description: Bot's first name.
+      last_name:
+        type:
+          - string
+          - "null"
+        description: Bot's last name.
+      username:
+        type:
+          - string
+          - "null"
+        description: Bot's username.
+      can_join_groups:
+        type:
+          - boolean
+          - "null"
+        description: True if the bot can be invited to groups.
+      can_read_all_group_messages:
+        type:
+          - boolean
+          - "null"
+        description: True if privacy mode is disabled for the bot.
+      supports_inline_queries:
+        type:
+          - boolean
+          - "null"
+        description: True if the bot supports inline queries.
+      can_connect_to_business:
+        type:
+          - boolean
+          - "null"
+        description: True if the bot can be connected to a Telegram Business account.
+      has_main_web_app:
+        type:
+          - boolean
+          - "null"
+        description: True if the bot has a main Web App.
+
+  updates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      update_id:
+        type: integer
+        description: >-
+          The update's unique identifier. Update identifiers start
+          from a certain positive number and increase sequentially.
+      message:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New incoming message of any kind.
+      edited_message:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New version of a message that is known to the bot and was edited.
+      channel_post:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New incoming channel post of any kind.
+      edited_channel_post:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New version of a channel post that is known to the bot and was edited.
+      business_connection:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: The bot was connected to or disconnected from a business account.
+      business_message:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New message from a connected business account.
+      edited_business_message:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New version of a message from a connected business account.
+      deleted_business_messages:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: Messages were deleted from a connected business account.
+      message_reaction:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: A reaction to a message was changed by a user.
+      message_reaction_count:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: Reactions to a message with anonymous reactions were changed.
+      inline_query:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New incoming inline query.
+      chosen_inline_result:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: >-
+          The result of an inline query that was chosen by a user and
+          sent to their chat partner.
+      callback_query:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New incoming callback query.
+      shipping_query:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New incoming shipping query.
+      pre_checkout_query:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New incoming pre-checkout query.
+      poll:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: New poll state.
+      poll_answer:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: >-
+          A user changed their answer in a non-anonymous poll.
+      my_chat_member:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: >-
+          The bot's chat member status was updated in a chat.
+      chat_member:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: >-
+          A chat member's status was updated in a chat.
+      chat_join_request:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: >-
+          A request to join the chat has been sent.
+      chat_boost:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: A chat boost was added or changed.
+      removed_chat_boost:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: A boost was removed from a chat.
+
+  chats:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+        description: Unique identifier for this chat.
+      type:
+        type: string
+        description: >-
+          Type of the chat, can be either private, group, supergroup,
+          or channel.
+      title:
+        type:
+          - string
+          - "null"
+        description: Title for supergroups, channels, and group chats.
+      username:
+        type:
+          - string
+          - "null"
+        description: Username for private chats, supergroups, and channels.
+      first_name:
+        type:
+          - string
+          - "null"
+        description: First name of the other party in a private chat.
+      last_name:
+        type:
+          - string
+          - "null"
+        description: Last name of the other party in a private chat.
+      is_forum:
+        type:
+          - boolean
+          - "null"
+        description: True if the supergroup chat is a forum.
+      description:
+        type:
+          - string
+          - "null"
+        description: Description for groups, supergroups, and channel chats.
+      invite_link:
+        type:
+          - string
+          - "null"
+        description: Primary invite link for the chat.
+      pinned_message:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: The most recent pinned message.
+      permissions:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: Default chat permissions for non-administrator members.
+      slow_mode_delay:
+        type:
+          - integer
+          - "null"
+        description: >-
+          The minimum allowed delay between consecutive messages sent
+          by each unprivileged user, in seconds.
+      message_auto_delete_time:
+        type:
+          - integer
+          - "null"
+        description: >-
+          The time after which all messages sent to the chat will be
+          automatically deleted, in seconds.
+      has_aggressive_anti_spam_enabled:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if aggressive anti-spam checks are enabled in the
+          supergroup.
+      has_hidden_members:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if non-administrators can only get the list of bots and
+          administrators in the chat.
+      has_protected_content:
+        type:
+          - boolean
+          - "null"
+        description: True if messages from the chat cannot be forwarded.
+      available_reactions:
+        type:
+          - array
+          - "null"
+        items:
+          type: object
+          additionalProperties: true
+        description: List of available reactions allowed in the chat.
+      linked_chat_id:
+        type:
+          - integer
+          - "null"
+        description: >-
+          Unique identifier for the linked chat (discussion group for
+          channels or linked channel for supergroups).
+      location:
+        type:
+          - object
+          - "null"
+        additionalProperties: true
+        description: >-
+          For supergroups, the location to which the supergroup is
+          connected.
+
+  chat_administrators:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      _chat_id:
+        type:
+          - integer
+          - string
+        description: The chat ID this administrator belongs to.
+      status:
+        type: string
+        description: >-
+          The member's status in the chat (creator or administrator).
+      user:
+        type: object
+        additionalProperties: true
+        description: Information about the user.
+        properties:
+          id:
+            type: integer
+            description: Unique identifier for this user.
+          is_bot:
+            type: boolean
+            description: True if this user is a bot.
+          first_name:
+            type: string
+            description: User's first name.
+          last_name:
+            type:
+              - string
+              - "null"
+            description: User's last name.
+          username:
+            type:
+              - string
+              - "null"
+            description: User's username.
+      is_anonymous:
+        type:
+          - boolean
+          - "null"
+        description: True if the user's presence in the chat is hidden.
+      custom_title:
+        type:
+          - string
+          - "null"
+        description: Custom title for this user.
+      can_be_edited:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the bot is allowed to edit administrator privileges
+          of that user.
+      can_manage_chat:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the administrator can access the chat event log,
+          get boost list, see hidden supergroup and channel members,
+          report spam messages, and ignore slow mode.
+      can_delete_messages:
+        type:
+          - boolean
+          - "null"
+        description: True if the administrator can delete messages.
+      can_manage_video_chats:
+        type:
+          - boolean
+          - "null"
+        description: True if the administrator can manage video chats.
+      can_restrict_members:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the administrator can restrict, ban, or unban chat
+          members.
+      can_promote_members:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the administrator can add new administrators.
+      can_change_info:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the administrator can change the chat title, photo,
+          and other settings.
+      can_invite_users:
+        type:
+          - boolean
+          - "null"
+        description: True if the administrator can invite new users.
+      can_post_messages:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the administrator can post messages in the channel.
+      can_edit_messages:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the administrator can edit messages of other users
+          and can pin messages.
+      can_pin_messages:
+        type:
+          - boolean
+          - "null"
+        description: True if the administrator can pin messages.
+      can_post_stories:
+        type:
+          - boolean
+          - "null"
+        description: True if the administrator can post stories.
+      can_edit_stories:
+        type:
+          - boolean
+          - "null"
+        description: True if the administrator can edit stories.
+      can_delete_stories:
+        type:
+          - boolean
+          - "null"
+        description: True if the administrator can delete stories.
+      can_manage_topics:
+        type:
+          - boolean
+          - "null"
+        description: >-
+          True if the user is allowed to create, rename, close, and
+          reopen forum topics.
+
+  webhook_info:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      url:
+        type: string
+        description: Webhook URL, may be empty if webhook is not set up.
+      has_custom_certificate:
+        type: boolean
+        description: True if a custom certificate was provided for webhook.
+      pending_update_count:
+        type: integer
+        description: Number of updates awaiting delivery.
+      ip_address:
+        type:
+          - string
+          - "null"
+        description: Currently used webhook IP address.
+      last_error_date:
+        type:
+          - integer
+          - "null"
+        description: Unix time of the most recent error while delivering an update.
+      last_error_message:
+        type:
+          - string
+          - "null"
+        description: Error message in human-readable format for the most recent error.
+      last_synchronization_error_date:
+        type:
+          - integer
+          - "null"
+        description: Unix time of the most recent error that happened when trying to synchronize available updates.
+      max_connections:
+        type:
+          - integer
+          - "null"
+        description: Maximum allowed number of simultaneous HTTPS connections to the webhook.
+      allowed_updates:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+        description: A list of update types the bot is subscribed to.
