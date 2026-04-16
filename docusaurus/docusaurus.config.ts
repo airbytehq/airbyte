@@ -24,7 +24,7 @@ const getRemarkPlugins = () => ({
 
 const plugins = getRemarkPlugins();
 
-// Import constants for Agent Engine API sidebar generation
+// Import constants for Airbyte Agents API sidebar generation
 const {
   SPEC_CACHE_PATH,
   API_SIDEBAR_PATH,
@@ -178,7 +178,7 @@ const config: Config = {
         async sidebarItemsGenerator({ defaultSidebarItemsGenerator, ...args }) {
           const sidebarItems = await defaultSidebarItemsGenerator(args);
 
-          // Load and filter the Agent Engine API sidebar based on allowed tags
+          // Load and filter the Airbyte Agents API sidebar based on allowed tags
           const agentEngineApiItems = loadAgentEngineApiSidebar();
 
           // Replace the "api-reference" category with the filtered API items
@@ -395,13 +395,13 @@ const config: Config = {
             },
           ],
         },
-        // "Agent Engine" is a direct link (no dropdown needed)
+        // "Airbyte Agents" is a direct link (no dropdown needed)
         {
           type: "doc",
           position: "left",
           docsPluginId: "ai-agents",
           docId: "README",
-          label: "Agent Engine",
+          label: "Airbyte Agents",
         },
         // "Release notes" and "Community" are tier-one nav items
         {

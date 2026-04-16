@@ -1,3 +1,7 @@
+---
+plan: all
+---
+
 # Billing
 
 Airbyte Agents bills you based on a unit of measurement called agentic operations (AOs). All plans come with a specific number of free AOs, and most plans allow you to exceed this limit for an additional cost.
