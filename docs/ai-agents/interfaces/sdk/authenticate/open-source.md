@@ -64,7 +64,7 @@ connector = GithubConnector(
 
 ### Finding connector-specific authentication options
 
-Each connector has its own authentication requirements. See the [reference documentation](../../connectors/) for the connector you want to use.
+Each connector has its own authentication requirements. See the [reference documentation](../../../connectors/) for the connector you want to use.
 
 ## Security considerations
 
