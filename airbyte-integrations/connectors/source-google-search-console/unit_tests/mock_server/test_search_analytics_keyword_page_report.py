@@ -537,7 +537,9 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
             assert isinstance(filter_groups, list) and len(filter_groups) >= 1
             for group in filter_groups:
                 filters = group.get("filters")
-                assert isinstance(filters, list), f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
+                assert isinstance(filters, list), (
+                    f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
+                )
                 assert len(filters) >= 1
                 for f in filters:
                     assert f.get("dimension") == "searchAppearance"

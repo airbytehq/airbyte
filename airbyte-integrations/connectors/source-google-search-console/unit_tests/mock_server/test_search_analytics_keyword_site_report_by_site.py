@@ -439,9 +439,7 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
                             keyword_filter_expressions.append(f.get("expression"))
 
                 return json.dumps(
-                    _build_search_analytics_response(
-                        [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query")]
-                    )
+                    _build_search_analytics_response([_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query")])
                 )
 
             return json.dumps(_build_search_analytics_response([]))
@@ -490,9 +488,7 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
             if body.get("dimensions") == ["date", "country", "device"] and body.get("aggregationType") == "byProperty":
                 captured_filter_groups.append(body.get("dimensionFilterGroups"))
                 return json.dumps(
-                    _build_search_analytics_response(
-                        [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query")]
-                    )
+                    _build_search_analytics_response([_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query")])
                 )
 
             return json.dumps(_build_search_analytics_response([]))
@@ -509,7 +505,9 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
             assert isinstance(filter_groups, list) and len(filter_groups) >= 1
             for group in filter_groups:
                 filters = group.get("filters")
-                assert isinstance(filters, list), f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
+                assert isinstance(filters, list), (
+                    f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
+                )
                 assert len(filters) >= 1
                 for f in filters:
                     assert f.get("dimension") == "searchAppearance"
