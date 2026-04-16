@@ -18,7 +18,7 @@ Airbyte Agents offers four plans. Free and Individual are self-serve. You can up
 
 ### Free
 
-A plan to explore Agent Engine and prototype agents.
+A plan to explore Airbyte Agents and prototype agents.
 
 - $0 per month.
 - 1,000 AOs per month.
