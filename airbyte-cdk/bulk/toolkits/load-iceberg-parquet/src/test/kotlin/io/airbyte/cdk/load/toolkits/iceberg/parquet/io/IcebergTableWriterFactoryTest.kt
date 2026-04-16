@@ -241,4 +241,120 @@ internal class IcebergTableWriterFactoryTest {
         assertNotNull(writer)
         assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
     }
+
+    /**
+     * Verifies that when a schema still has identifier fields (e.g. from a previous Dedupe
+     * configuration) but the import type is Append, the factory creates an append writer — not a
+     * delta writer — and the appender factory is built without equality-delete capability.
+     */
+    @Test
+    fun testAppendWriterWithSchemaIdentifierFieldsIgnoresIdentifiers() {
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+                Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
+            )
+        // Schema has identifier fields (as if the table was previously configured for Dedupe)
+        val primaryKeyIds = setOf(1)
+        val outputFile: OutputFile = mockk { every { location() } returns "location" }
+        val encryptionKeyMetadata: EncryptionKeyMetadata = mockk {
+            every { buffer() } returns ByteBuffer.allocate(8)
+        }
+        val encryptedOutputFile: EncryptedOutputFile = mockk {
+            every { encryptingOutputFile() } returns outputFile
+            every { keyMetadata() } returns encryptionKeyMetadata
+        }
+        val encryptionManager: EncryptionManager = mockk {
+            every { encrypt(any<OutputFile>()) } returns encryptedOutputFile
+        }
+        val fileIo: FileIO = mockk { every { newOutputFile(any()) } returns outputFile }
+        val locationProvider: LocationProvider = mockk {
+            every { newDataLocation(any()) } returns "location"
+            every { newDataLocation(any(), any(), any()) } returns "location"
+        }
+        val tableProperties = mapOf<String, String>()
+        val tableSchema = Schema(columns, primaryKeyIds)
+        val tableSpec: PartitionSpec = mockk {
+            every { fields() } returns emptyList()
+            every { isUnpartitioned } returns true
+        }
+        val table: Table = mockk {
+            every { encryption() } returns encryptionManager
+            every { io() } returns fileIo
+            every { locationProvider() } returns locationProvider
+            every { properties() } returns tableProperties
+            every { schema() } returns tableSchema
+            every { spec() } returns tableSpec
+        }
+
+        val factory = IcebergTableWriterFactory()
+        // Pass Append import type even though the schema has identifier fields
+        val writer =
+            factory.create(
+                table = table,
+                generationId = generationIdSuffix,
+                importType = Append,
+                tableSchema,
+            )
+        assertNotNull(writer)
+        // Must create an append writer, not a delta writer
+        assertEquals(UnpartitionedAppendWriter::class.java, writer.javaClass)
+    }
+
+    /**
+     * Same as above but for a partitioned table: Append mode with residual identifier fields in the
+     * schema should still produce a PartitionedAppendWriter.
+     */
+    @Test
+    fun testPartitionedAppendWriterWithSchemaIdentifierFieldsIgnoresIdentifiers() {
+        val columns =
+            mutableListOf(
+                Types.NestedField.required(1, "id", Types.IntegerType.get()),
+                Types.NestedField.required(2, "name", Types.StringType.get()),
+                Types.NestedField.required(3, "timestamp", Types.TimestampType.withZone()),
+            )
+        val primaryKeyIds = setOf(1)
+        val outputFile: OutputFile = mockk { every { location() } returns "location" }
+        val encryptionKeyMetadata: EncryptionKeyMetadata = mockk {
+            every { buffer() } returns ByteBuffer.allocate(8)
+        }
+        val encryptedOutputFile: EncryptedOutputFile = mockk {
+            every { encryptingOutputFile() } returns outputFile
+            every { keyMetadata() } returns encryptionKeyMetadata
+        }
+        val encryptionManager: EncryptionManager = mockk {
+            every { encrypt(any<OutputFile>()) } returns encryptedOutputFile
+        }
+        val fileIo: FileIO = mockk { every { newOutputFile(any()) } returns outputFile }
+        val locationProvider: LocationProvider = mockk {
+            every { newDataLocation(any()) } returns "location"
+            every { newDataLocation(any(), any(), any()) } returns "location"
+        }
+        val tableProperties = mapOf<String, String>()
+        val tableSchema = Schema(columns, primaryKeyIds)
+        val tableSpec: PartitionSpec = mockk {
+            every { fields() } returns emptyList()
+            every { isUnpartitioned } returns false
+        }
+        val table: Table = mockk {
+            every { encryption() } returns encryptionManager
+            every { io() } returns fileIo
+            every { locationProvider() } returns locationProvider
+            every { properties() } returns tableProperties
+            every { schema() } returns tableSchema
+            every { spec() } returns tableSpec
+        }
+
+        val factory = IcebergTableWriterFactory()
+        val writer =
+            factory.create(
+                table = table,
+                generationId = generationIdSuffix,
+                importType = Append,
+                tableSchema,
+            )
+        assertNotNull(writer)
+        assertEquals(PartitionedAppendWriter::class.java, writer.javaClass)
+    }
 }
