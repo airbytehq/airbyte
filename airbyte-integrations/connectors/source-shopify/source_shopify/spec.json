@@ -125,6 +125,14 @@
         "title": "Include Closed Fulfillment Orders",
         "description": "If enabled, the `Fulfillment Orders` stream includes closed fulfillment orders. Shopify excludes closed orders by default.",
         "default": false
+      },
+      "lookback_window_in_days": {
+        "type": "integer",
+        "title": "Lookback Window in Days",
+        "description": "If set, during incremental syncs the connector re-fetches records from this many days before the saved state. This helps capture records that were missed due to Shopify API race conditions or late-arriving data. Default is 0 (no lookback). Maximum is 30 days.",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 30
       }
     }
   },
