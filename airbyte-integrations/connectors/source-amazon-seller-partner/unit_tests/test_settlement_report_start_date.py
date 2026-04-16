@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
+import requests
 import yaml
 from freezegun import freeze_time
 
@@ -103,13 +104,20 @@ def test_manifest_settlement_definitions_use_buffered_duration_not_p90d(definiti
         ),
     ],
 )
-def test_settlement_helper_stream_start_datetime(config_override, expected_start, requests_mock):
+def test_settlement_helper_stream_start_datetime(config_override, expected_start, requests_mock, mocker):
     """
     Test that the flat_file_settlement_v2_helper stream (which is the parent stream
     that makes the createdSince API call) computes the correct start_datetime based
     on config. This stream uses P89DT23H58M (90 days minus 2 minutes) to prevent
     the SP-API from rejecting createdSince values due to network latency.
     """
+    # Bypass requests_cache so that parametrized cases sharing the same resolved URL
+    # (e.g. no_start_date and old_start_date_clamped both clamp to the same createdSince)
+    # are not served from cache, which would bypass requests_mock and leave request_history empty.
+    mocker.patch(
+        "requests_cache.CachedSession.send",
+        lambda self, request, **kwargs: requests.Session.send(self, request, **kwargs),
+    )
     requests_mock.post(
         "https://api.amazon.com/auth/o2/token",
         json={"access_token": "fake_access_token", "expires_in": 3600},
