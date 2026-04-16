@@ -5,9 +5,9 @@ sidebar_position: 6
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Agent Engine MCP server
+# Airbyte Agent MCP server
 
-The Airbyte Agent Engine MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../connectors) for a list of available connectors.
+The Airbyte Airbyte Agent MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../connectors) for a list of available connectors.
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
@@ -25,7 +25,7 @@ For example:
 
 Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
 
-When you connect a service through the MCP server, the Agent Engine can copy key data from that connector into a [context store](../platform/context-store). The context store is Airbyte-managed object storage that enables fast search across your connected data. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
+When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [context store](../platform/context-store). The context store is Airbyte-managed object storage that enables fast search across your connected data. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
 
 For the complete list of connectors and their supported entities, see [Agent connectors](../connectors).
 
@@ -33,7 +33,7 @@ For the complete list of connectors and their supported entities, see [Agent con
 
 Before you begin, make sure you have the following:
 
-- **An Agent Engine account.** Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
+- **An Airbyte Agents account.** Sign up at [app.airbyte.ai](https://app.airbyte.ai) if you don't have one.
 
 - **An AI agent that supports MCP.** For example, Claude Desktop, Claude Code, Cursor, Codex, or ChatGPT.
 
@@ -62,9 +62,9 @@ Add the MCP server to your Claude Code command line tool.
 
 5. Select **Authenticate**. Your web browser opens.
 
-6. If you're not logged into the Agent Engine, log in now.
+6. If you're not logged into the Airbyte Agents, log in now.
 
-7. Grant access to the Agent Engine MCP.
+7. Grant access to the Airbyte Agent MCP.
 
 8. Return to Claude Code and begin using the MCP server.
 
@@ -82,7 +82,7 @@ Add the MCP server to your Cursor app.
     ```json
     {
       "mcpServers": {
-        "Airbyte Agent Engine MCP": {
+        "Airbyte Airbyte Agent MCP": {
           "url": "https://mcp.airbyte.ai/mcp"
         }
       }
@@ -93,9 +93,9 @@ Add the MCP server to your Cursor app.
 
 5. Find the Airbyte MCP server and click **Connect**.
 
-6. If you're not logged into the Agent Engine, log in now.
+6. If you're not logged into the Airbyte Agents, log in now.
 
-7. Grant access to the Agent Engine MCP.
+7. Grant access to the Airbyte Agent MCP.
 
 8. Return to Cursor. The MCP server tools are now available.
 
@@ -158,13 +158,13 @@ On Business, Enterprise, and Education plans, you must be a workspace owner or a
 
 6. Enter the server details:
 
-    - **Name**: `Airbyte Agent Engine`
+    - **Name**: `Airbyte Airbyte Agents`
     - **Server URL**: `https://mcp.airbyte.ai/mcp`
     - **Authentication**: Select **OAuth**
 
 7. Accept ChatGPT's disclaimer and click **Create**. The app appears under **Drafts** in your Apps settings.
 
-8. When prompted, log into Agent Engine if necessary, then accept the access privileges.
+8. When prompted, log into Airbyte Agents if necessary, then accept the access privileges.
 
 9. Open a new conversation to start using the MCP server.
 
@@ -182,7 +182,7 @@ Most clients that support remote MCP servers accept a JSON configuration like th
 ```json
 {
   "mcpServers": {
-    "Airbyte Agent Engine MCP": {
+    "Airbyte Airbyte Agent MCP": {
       "url": "https://mcp.airbyte.ai/mcp"
     }
   }
@@ -248,7 +248,7 @@ The agent uses field selection to return only the data you need, which reduces t
 
 ## How authentication works
 
-The MCP server uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agent Engine, and a second layer to authenticate with each third-party service you connect.
+The MCP server uses a two-layer authentication model: one layer to authenticate you with the Airbyte Airbyte Agents, and a second layer to authenticate with each third-party service you connect.
 
 ### Layer 1: Authenticating with the MCP server
 
@@ -258,7 +258,7 @@ When your AI client first connects to the MCP server, it initiates an [OAuth 2.0
 sequenceDiagram
     participant Client as AI Client
     participant Browser as Browser
-    participant Airbyte as Airbyte Agent Engine
+    participant Airbyte as Airbyte Airbyte Agents
 
     Client->>Airbyte: Connect to MCP server
     Airbyte-->>Client: Authentication required
@@ -271,12 +271,12 @@ sequenceDiagram
 
 1. Your client detects that the MCP server at `https://mcp.airbyte.ai/mcp` requires authentication.
 2. Your client opens a browser window to the Airbyte login page.
-3. You log in with your [Agent Engine](https://app.airbyte.ai) account (or create one).
+3. You log in with your [Airbyte Agents](https://app.airbyte.ai) account (or create one).
 4. You grant the MCP server access to your Airbyte account.
 5. The browser redirects back to your client with an OAuth token.
 6. Your client stores the token and uses it for all subsequent MCP requests.
 
-This token authorizes the MCP server to act on your behalf within the Agent Engine. The token is scoped to your Airbyte account and organization, so the MCP server can only access connectors and data that belong to you. If the token expires, your client automatically triggers a new OAuth flow.
+This token authorizes the MCP server to act on your behalf within the Airbyte Agents. The token is scoped to your Airbyte account and organization, so the MCP server can only access connectors and data that belong to you. If the token expires, your client automatically triggers a new OAuth flow.
 
 ### Layer 2: Authenticating with third-party services
 

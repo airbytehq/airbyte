@@ -18,7 +18,7 @@ Before embedding the authentication module, complete the following prerequisites
 
 You can see what your authentication widget looks like before implementing it.
 
-1. In the Agent Engine, click **Authentication Module**.
+1. In the Airbyte Agents, click **Authentication Module**.
 
 2. Enter a sample [workspace name](../../workspaces).
 
@@ -264,4 +264,4 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
 | `selected_connection_template_tags` | Tags to filter which connection templates are used. |
 | `selected_connection_template_tags_mode` | `any` or `all`. |
 
-You can manage tags through the Agent Engine UI or the [API](/ai-agents/api). -->
+You can manage tags through the Airbyte Agents UI or the [API](/ai-agents/api). -->

@@ -2,9 +2,9 @@
 sidebar_position: 1
 ---
 
-# Agent Engine authentication
+# Airbyte Agents authentication
 
-When you subscribe to the Agent Engine, you authenticate with Airbyte Cloud using your Airbyte credentials, and Airbyte manages your end-users' credentials securely. This approach is ideal for production B2B applications where you need centralized credential management across multiple customers. When your agent executes operations, your proxy API calls through Airbyte Cloud.
+When you subscribe to the Airbyte Agents, you authenticate with Airbyte Cloud using your Airbyte credentials, and Airbyte manages your end-users' credentials securely. This approach is ideal for production B2B applications where you need centralized credential management across multiple customers. When your agent executes operations, your proxy API calls through Airbyte Cloud.
 
 - You authenticate using Airbyte Cloud client credentials.
 - You store end-user API credentials securely in Airbyte Cloud.
@@ -13,7 +13,7 @@ When you subscribe to the Agent Engine, you authenticate with Airbyte Cloud usin
 
 ## Token types
 
-The Agent Engine uses a hierarchical token system with three token types: application tokens for organization-level access, scoped tokens for workspace-level end-user operations, and widget tokens for embedding the authentication module with CORS protection.
+The Airbyte Agents uses a hierarchical token system with three token types: application tokens for organization-level access, scoped tokens for workspace-level end-user operations, and widget tokens for embedding the authentication module with CORS protection.
 
 For complete details on each token type, how to generate them, and security considerations, see [Token types](/ai-agents/api/#token-types) in the API documentation.
 

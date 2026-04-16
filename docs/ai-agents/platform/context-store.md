@@ -24,7 +24,7 @@ The context store solves this problem by making key fields available to your age
 
 To enable the context store, follow these steps.
 
-1. In Airbyte's Agent Engine, click Connectors.
+1. In Airbyte's Airbyte Agents, click Connectors.
 
 2. Enable **Enable Airbyte-managed Context Store for agent search**.
 
@@ -42,7 +42,7 @@ You can't use the context store until Airbyte completes its first full data popu
 
 To turn off the context store, follow these steps.
 
-1. In Airbyte's Agent Engine, click Connectors.
+1. In Airbyte's Airbyte Agents, click Connectors.
 
 2. Disable **Cache connected source data for agentic search**.
 

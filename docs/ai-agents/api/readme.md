@@ -2,9 +2,9 @@
 sidebar_position: 4
 ---
 
-# Agent engine API
+# Airbyte Agent API
 
-The Agent Engine API lets you manage connectors, credentials, and data operations programmatically. Use it to integrate Airbyte's agent connectors into any language or framework, or to build custom backend services that interact with your end-users' data sources.
+The Airbyte Agent API lets you manage connectors, credentials, and data operations programmatically. Use it to integrate Airbyte's agent connectors into any language or framework, or to build custom backend services that interact with your end-users' data sources.
 
 All API requests use the base URL `https://api.airbyte.ai`.
 
@@ -12,7 +12,7 @@ If your account belongs to multiple organizations, include the `X-Organization-I
 
 ## Token types
 
-The Agent Engine uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
+The Airbyte Agents uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
 
 | Token type        | Use case                                                                                     | Scope                                |
 | ----------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
@@ -24,7 +24,7 @@ The Agent Engine uses a hierarchical token system. Each token type has a differe
 
 The application token provides organization-level access. Use it for administrative operations like managing connectors, listing workspaces, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
 
-To obtain an application token, send your app credentials to the token endpoint. Find your credentials in the Agent Engine under **Authentication Module** > **Installation**.
+To obtain an application token, send your app credentials to the token endpoint. Find your credentials in the Airbyte Agents under **Authentication Module** > **Installation**.
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
@@ -89,7 +89,7 @@ For more details on widget tokens and template filtering, see the [authenticatio
 
 ## Make your first request
 
-After you obtain an application token, you can make your first API call. A good starting point is to list the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Agent Engine, so it returns data even if you haven't configured anything yet.
+After you obtain an application token, you can make your first API call. A good starting point is to list the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Airbyte Agents, so it returns data even if you haven't configured anything yet.
 
 ```bash title="Request"
 curl https://api.airbyte.ai/api/v1/integrations/definitions/sources \
@@ -126,4 +126,4 @@ curl 'https://api.airbyte.ai/api/v1/integrations/definitions/sources?name=github
 
 ## Full API reference
 
-For the complete list of endpoints, request and response schemas, and authentication requirements, see the Agent Engine API reference in the sidebar.
+For the complete list of endpoints, request and response schemas, and authentication requirements, see the Airbyte Agent API reference in the sidebar.

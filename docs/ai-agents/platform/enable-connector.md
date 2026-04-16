@@ -7,13 +7,13 @@ import TabItem from '@theme/TabItem';
 
 # Enable a connector
 
-Before your AI agents can interact with external data sources, you need to enable connectors in the Agent Engine. Enabling a connector makes it available for your end users to authenticate and use with their own credentials.
+Before your AI agents can interact with external data sources, you need to enable connectors in the Airbyte Agents. Enabling a connector makes it available for your end users to authenticate and use with their own credentials.
 
 ## What enabling a connector does
 
-When you enable a connector in Agent Engine, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
+When you enable a connector in Airbyte Agents, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
 
-Enabling a connector creates a **source template** in the API, which is the organization-level configuration for a connector type. The Agent Engine uses three layers:
+Enabling a connector creates a **source template** in the API, which is the organization-level configuration for a connector type. The Airbyte Agents uses three layers:
 
 - **Definition**: A connector type available in the Airbyte catalog (for example, GitHub or Salesforce), identified by a `sourceDefinitionId`. List definitions with `GET /api/v1/integrations/definitions/sources`.
 - **Source template**: Your organization's configuration of a definition, including default settings and enabled modes. Managed through `GET/POST/PATCH/DELETE /api/v1/integrations/templates/sources`.
@@ -27,7 +27,7 @@ Enabling a connector (creating a source template) does the following.
 
 ## Connector modes
 
-Agent Engine connectors can operate in two modes:
+Airbyte Agents connectors can operate in two modes:
 
 - **Direct mode** allows AI agents to execute real-time queries against connected data sources. When a user asks a question, the agent calls the third-party API directly to fetch fresh data. This mode is ideal for operational queries, real-time lookups, and actions that need current information.
 
@@ -39,7 +39,7 @@ Some connectors support both modes, while others support only one. When enabling
 
 ### Enable a new connector
 
-Enable a connector through the Agent Engine dashboard.
+Enable a connector through the Airbyte Agents dashboard.
 
 1. Click **Connectors**.
 
@@ -77,7 +77,7 @@ At least one mode must remain enabled for each active connector.
 
 ## With the API
 
-You can also enable connectors programmatically using the Agent Engine API. This approach is useful for automation, infrastructure-as-code workflows, or when building custom admin interfaces.
+You can also enable connectors programmatically using the Airbyte Agent API. This approach is useful for automation, infrastructure-as-code workflows, or when building custom admin interfaces.
 
 ### Get an application token
 
@@ -103,7 +103,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
   --header 'Authorization: Bearer <APPLICATION_TOKEN>'
 ```
 
-This returns both source templates you've created and standard source templates available to all Agent Engine users.
+This returns both source templates you've created and standard source templates available to all Airbyte Agents users.
 
 ### Create a source template
 

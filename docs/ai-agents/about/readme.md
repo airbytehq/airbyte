@@ -2,11 +2,11 @@
 sidebar_position: 1
 ---
 
-# About Agent Engine
+# About Airbyte Agents
 
 import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 
-Airbyte's Agent Engine is a data layer for AI agents. Use the Agent Engine as a cloud platform to manage connectors, credentials, and data replication for your agents. You can also use Airbyte's open source agent connectors as standalone Python packages, import them into your AI agents, and manage storage and credentials yourself.
+Airbyte's Airbyte Agents is a data layer for AI agents. Use the Airbyte Agents as a cloud platform to manage connectors, credentials, and data replication for your agents. You can also use Airbyte's open source agent connectors as standalone Python packages, import them into your AI agents, and manage storage and credentials yourself.
 
 <!-- - **Agents hallucinate or fail**: Stale and incomplete data erodes agent effectiveness. AI agents need real-time context from multiple business systems to be fully effective.
 
@@ -16,11 +16,11 @@ Airbyte's Agent Engine is a data layer for AI agents. Use the Agent Engine as a 
 
 ### The use case for agentic data
 
-The Agent engine enables agents to fetch, search, and reason with live business data.
+The Airbyte Agents enables agents to fetch, search, and reason with live business data.
 
 Even if you're not a data expert, you still need to interpret vendor data. That means cleaning, normalizing, stitching fields together, and transforming your and your customers' data into entities your agents can actually use.
 
-The Agent engine is an ideal solution when you:
+The Airbyte Agents is an ideal solution when you:
 
 - Don't want storage
 - Care a lot about freshness and latency
@@ -64,7 +64,7 @@ The result is that agentic features never scale. They remain expensive, fragile 
 
 ## How Airbyte solves that problem
 
-Airbyte's Agent Engine solves this problem with three components.
+Airbyte's Airbyte Agents solves this problem with three components.
 
 - Open-source, type-safe connectors designed for AI agents. These connectors allow agents to retrieve information they don't have, perform computations or transformations, interact with external systems, and trigger side-effects, like sending emails, updating databases, and starting workflows
 
@@ -72,9 +72,9 @@ Airbyte's Agent Engine solves this problem with three components.
 
 - Out of the box entity caching to power low-latency search operations.
 
-It's helpful to think of the Agent Engine as a data layer that makes agentic tool use easy. Tools are external capabilities AI agents can invoke. They allow agents to perceive, decide, and act beyond their training data. They're one of the most critical bridges between agents that aren't effective and agents with broad capabilities.
+It's helpful to think of the Airbyte Agents as a data layer that makes agentic tool use easy. Tools are external capabilities AI agents can invoke. They allow agents to perceive, decide, and act beyond their training data. They're one of the most critical bridges between agents that aren't effective and agents with broad capabilities.
 
-## Who Agent Engine is for
+## Who Airbyte Agents is for
 
 - AI companies building agentic solutions, especially multi-tenant SaaS services.
 

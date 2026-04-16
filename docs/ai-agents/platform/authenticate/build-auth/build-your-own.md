@@ -37,7 +37,7 @@ sequenceDiagram
 
 Before implementing an OAuth flow, ensure you have:
 
-1. **Agent Engine credentials**: Your `client_id` and `client_secret` from the Agent Engine under **Authentication Module**.
+1. **Airbyte Agents credentials**: Your `client_id` and `client_secret` from the Airbyte Agents under **Authentication Module**.
 
 2. **A bearer token**: See [Authentication](./..) for how to obtain one.
 

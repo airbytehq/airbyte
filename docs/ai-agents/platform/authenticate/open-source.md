@@ -4,7 +4,7 @@ sidebar_position: 0
 
 # Open source authentication
 
-When you use agent connectors as open source Python packages, you provide user credentials to the connector in your app. The connector then makes HTTP calls directly to the external API using those credentials. In this case, you don't need to subscribe to Agent Engine, but you are responsible for managing your users' credentials.
+When you use agent connectors as open source Python packages, you provide user credentials to the connector in your app. The connector then makes HTTP calls directly to the external API using those credentials. In this case, you don't need to subscribe to Airbyte Agents, but you are responsible for managing your users' credentials.
 
 - You provide actual API credentials (tokens, keys, OAuth tokens) directly to the connector.
 - Connectors make direct HTTP calls to external APIs.
@@ -87,4 +87,4 @@ Open source authentication is most appropriate when:
 - You need full control over credential storage and don't want to use a cloud service.
 - You're building a proof of concept before moving to production.
 
-For production applications with multiple end-users, use [hosted authentication](hosted.md) instead, which provides secure credential management in the Agent Engine.
+For production applications with multiple end-users, use [hosted authentication](hosted.md) instead, which provides secure credential management in the Airbyte Agents.

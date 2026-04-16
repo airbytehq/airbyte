@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Execute operations
 
-You can execute operations using either the Python SDK or the Agent Engine API.
+You can execute operations using either the Python SDK or the Airbyte Agent API.
 
 ## With Python
 
@@ -154,7 +154,7 @@ if schema:
 
 ## With the API
 
-You can execute operations directly through the Agent Engine API. This approach is useful when you're not using Python, when building custom integrations, or when you need to execute operations from a backend service.
+You can execute operations directly through the Airbyte Agent API. This approach is useful when you're not using Python, when building custom integrations, or when you need to execute operations from a backend service.
 
 ### Authentication
 
