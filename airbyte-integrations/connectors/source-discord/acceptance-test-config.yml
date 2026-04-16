@@ -1,0 +1,5 @@
+connector_image: airbyte/source-discord:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: manifest.yaml
