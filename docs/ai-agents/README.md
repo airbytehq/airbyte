@@ -98,7 +98,7 @@ It's helpful to think of agent connectors as equivalent to sets of tools. Tools 
 
 <Grid columns="2">
 
-<CardWithIcon title="Tutorials" description="Get started with the Airbyte Agents and its connectors. Even if you've never built an AI agent before, you can have one working for you in 15 minutes or less." ctaText="Tutorials" ctaLink="/ai-agents/tutorials/" icon="fa-cloud" />
+<CardWithIcon title="Tutorials" description="Get started with the Airbyte Agents and its connectors. Even if you've never built an AI agent before, you can have one working for you in 15 minutes or less." ctaText="Tutorials" ctaLink="/ai-agents/get-started/tutorials/" icon="fa-cloud" />
 
 <CardWithIcon title="SDK" description="Use Airbyte's Airbyte Agents to store and manage credentials, run connectors, and power agentic search." ctaText="SDK docs" ctaLink="/ai-agents/interfaces/sdk/" icon="fa-lock" />
 

@@ -60,7 +60,7 @@ Use Airbyte agent Connectors when you want:
 
 ## How to work with agent connectors
 
-To get started with agent connectors, follow one of the [quick start tutorials](../tutorials/quickstarts/).
+To get started with agent connectors, follow one of the [quick start tutorials](../get-started/tutorials/quickstarts/).
 
 ## All agent connectors
 

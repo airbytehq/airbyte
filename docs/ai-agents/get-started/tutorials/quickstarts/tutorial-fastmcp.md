@@ -233,6 +233,6 @@ In this tutorial, you learned how to:
 
 ## Next steps
 
-- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](../../connectors/) to give your MCP server access to more services like Stripe, HubSpot, and Salesforce. You can register multiple tools on the same FastMCP server.
+- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](../../../connectors/) to give your MCP server access to more services like Stripe, HubSpot, and Salesforce. You can register multiple tools on the same FastMCP server.
 
 - Consider how you might like to expand your MCP server. For example, you can add [MCP prompts](https://gofastmcp.com/servers/prompts) to provide reusable prompt templates, or [MCP resources](https://gofastmcp.com/servers/resources) to expose data directly. See the [FastMCP documentation](https://gofastmcp.com) for more options.
