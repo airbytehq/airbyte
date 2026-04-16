@@ -5,13 +5,13 @@ products: all
 # Typing and Deduping
 
 This page refers to new functionality added by
-[Destinations V2](/release_notes/upgrading_to_destinations_v2/). Typing and deduping is the default
+[Destinations V2](/release_notes/self-managed/upgrading_to_destinations_v2/). Typing and deduping is the default
 method of transforming datasets within data warehouse and database destinations after they've been
 replicated. Please check each destination to learn if Typing and Deduping is supported.
 
 ## What is Destinations V2?
 
-[Airbyte Destinations V2](/release_notes/upgrading_to_destinations_v2) provide:
+[Airbyte Destinations V2](/release_notes/self-managed/upgrading_to_destinations_v2) provide:
 
 - One-to-one table mapping: Data in one stream will always be mapped to one table in your data
   warehouse. No more sub-tables.
