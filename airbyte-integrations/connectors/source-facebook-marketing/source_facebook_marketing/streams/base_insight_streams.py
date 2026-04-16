@@ -444,36 +444,59 @@ class AdsInsights(FBMarketingIncrementalStream):
         Making call to check "action_breakdowns" and "breakdowns" combinations
         https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
 
-        We constrain the request to a single-day time_range to avoid hitting
-        Facebook's data-volume limits on synchronous insight calls.  High-cardinality
-        breakdowns such as ``product_id`` can return thousands of rows per day; without
-        the date constraint the default date range causes the API to reject the request
-        with "Please reduce the amount of data you're asking for".
+        Uses a three-tier fallback to avoid blocking setup when a high-cardinality
+        breakdown (for example `product_id`) trips Facebook's synchronous data-volume
+        limit ("Please reduce the amount of data you're asking for"):
 
-        If the API *still* returns a "reduce the amount of data" error even for a
-        single day (e.g. extremely large product catalogs), we treat that as a
-        non-fatal condition: the breakdown combination itself is valid and will work
-        fine during actual syncs which use async jobs with per-day slicing.
+        1. First attempt uses the default params (no `time_range`) — preserves the
+           original validation behavior for every user who is not affected by the bug.
+        2. On a "reduce the amount of data" error, retry constrained to a single day
+           (`today`) so Facebook still validates the breakdown combination itself.
+        3. If the second call also returns "reduce the amount of data", log a warning
+           and return. Real syncs use async jobs with per-day slicing and handle large
+           result sets fine, so a volume-limited validation call must not block setup.
+
+        Any other `FacebookRequestError` is re-raised so truly invalid breakdown
+        combinations still fail the connection check.
         """
-        today = date.today().strftime("%Y-%m-%d")
         params = {
             "action_breakdowns": self.action_breakdowns,
             "breakdowns": self.breakdowns,
             "fields": ["account_id"],
-            "time_range": {"since": today, "until": today},
         }
         try:
             self._api.get_account(account_id=account_id).get_insights(params=params, is_async=False)
+            return
         except FacebookRequestError as e:
-            if "reduce the amount of data" in str(e):
-                logger.warning(
-                    "Breakdown validation exceeded Facebook API data-volume limit for account %s. "
-                    "This is expected for high-cardinality breakdowns (e.g. product_id) and does not indicate an "
-                    "invalid breakdown combination. The actual sync uses async jobs which handle large result sets.",
-                    account_id,
-                )
-            else:
+            if not self._is_reduce_data_error(e):
                 raise
+
+        today = date.today().strftime("%Y-%m-%d")
+        retry_params = {**params, "time_range": {"since": today, "until": today}}
+        try:
+            self._api.get_account(account_id=account_id).get_insights(params=retry_params, is_async=False)
+        except FacebookRequestError as e:
+            if not self._is_reduce_data_error(e):
+                raise
+            logger.warning(
+                "Breakdown validation exceeded Facebook API data-volume limit for account %s even after "
+                "constraining to a single day. This is expected for high-cardinality breakdowns (e.g. "
+                "product_id) and does not indicate an invalid breakdown combination. The actual sync uses "
+                "async jobs which handle large result sets.",
+                account_id,
+            )
+
+    @staticmethod
+    def _is_reduce_data_error(error: FacebookRequestError) -> bool:
+        """Match the Facebook "reduce the amount of data" synchronous-call data-volume limit error.
+
+        Error-code stability note: Facebook often returns this as subcode 1487534 under code 100,
+        but we also fall back to a case-insensitive string match because the subcode is not
+        documented as stable and error strings are what existing users see in logs today.
+        """
+        if error.api_error_subcode() == 1487534:
+            return True
+        return "reduce the amount of data" in str(error).lower()
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
         """
