@@ -17,6 +17,7 @@ from source_etrade.streams import (
     TransactionDetails,
     Transactions,
 )
+
 from unit_tests.conftest import (
     MOCK_ACCOUNTS_RESPONSE,
     MOCK_ALERT_DETAILS_RESPONSE,
