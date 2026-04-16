@@ -465,6 +465,7 @@ module.exports = {
             "enterprise-flex/getting-started",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
+            "enterprise-flex/log-collection",
           ],
         },
         {
@@ -537,7 +538,6 @@ module.exports = {
           label: "Integrating with Airbyte",
           items: [
             "operator-guides/using-the-airflow-airbyte-operator",
-            "operator-guides/using-prefect-task",
             "operator-guides/using-dagster-integration",
             "operator-guides/using-kestra-plugin",
             "operator-guides/using-orchestra-task",
