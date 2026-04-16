@@ -2,9 +2,7 @@
 
 """Unit tests for the source-discord connector manifest."""
 
-import json
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
