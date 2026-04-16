@@ -121,6 +121,106 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
         assert state_migration.migrate(stream_state=state) == expected_state
 
 
+@pytest.mark.parametrize(
+    "input_record, config, expected_record",
+    [
+        pytest.param(
+            {
+                "hs_hd_ticket_ids": {"type": ["null", "number"]},
+                "hs_task_send_default_reminder": {"type": ["null", "boolean"]},
+                "name": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+            },
+            {"treat_numbers_and_booleans_as_strings": True},
+            {
+                "hs_hd_ticket_ids": {"type": ["null", "string"]},
+                "hs_task_send_default_reminder": {"type": ["null", "string"]},
+                "name": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+            },
+            id="toggle_on_coerces_number_and_boolean_to_string",
+        ),
+        pytest.param(
+            {
+                "hs_hd_ticket_ids": {"type": ["null", "number"]},
+                "hs_task_send_default_reminder": {"type": ["null", "boolean"]},
+                "name": {"type": ["null", "string"]},
+            },
+            {"treat_numbers_and_booleans_as_strings": False},
+            {
+                "hs_hd_ticket_ids": {"type": ["null", "number"]},
+                "hs_task_send_default_reminder": {"type": ["null", "boolean"]},
+                "name": {"type": ["null", "string"]},
+            },
+            id="toggle_off_leaves_schema_unchanged",
+        ),
+        pytest.param(
+            {
+                "hs_hd_ticket_ids": {"type": ["null", "number"]},
+            },
+            {},
+            {
+                "hs_hd_ticket_ids": {"type": ["null", "number"]},
+            },
+            id="missing_toggle_leaves_schema_unchanged",
+        ),
+        pytest.param(
+            {
+                "count": {"type": "integer"},
+                "active": {"type": "boolean"},
+                "price": {"type": ["number", "null"]},
+            },
+            {"treat_numbers_and_booleans_as_strings": True},
+            {
+                "count": {"type": ["null", "string"]},
+                "active": {"type": ["null", "string"]},
+                "price": {"type": ["null", "string"]},
+            },
+            id="coerces_integer_and_bare_types_and_mixed_order",
+        ),
+    ],
+)
+def test_hubspot_coerce_numbers_and_booleans_to_string_transformation(
+    components_module, input_record, config, expected_record
+):
+    transformation = components_module.HubspotCoerceNumbersAndBooleansToStringTransformation()
+    transformation.transform(record=input_record, config=config)
+    assert input_record == expected_record
+
+
+@pytest.mark.parametrize(
+    "raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema",
+    [
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            True,
+            {"type": ["null", "string"]},
+            {"type": ["null", "string"]},
+            id="custom_objects_toggle_on",
+        ),
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            False,
+            {"type": ["null", "number"]},
+            {"type": ["null", "boolean"]},
+            id="custom_objects_toggle_off",
+        ),
+    ],
+)
+def test_hubspot_custom_objects_schema_loader_respects_toggle(
+    components_module, raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema
+):
+    config = {"treat_numbers_and_booleans_as_strings": treat_as_string}
+    loader = components_module.HubspotCustomObjectsSchemaLoader(
+        config=config,
+        parameters={"schema_properties": raw_fields},
+    )
+    schema = loader.get_json_schema()
+    properties = schema["properties"]["properties"]["properties"]
+    assert properties["num_field"] == expected_number_schema
+    assert properties["bool_field"] == expected_boolean_schema
+
+
 def test_hubspot_rename_properties_transformation(components_module):
     expected_properties = {
         "properties_amount": {"type": ["null", "number"]},

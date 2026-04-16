@@ -346,6 +346,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.6.0 | 2026-04-16 | [76387](https://github.com/airbytehq/airbyte/pull/76387) | Add `treat_numbers_and_booleans_as_strings` config toggle to coerce dynamic `number`/`boolean` properties to `string` |
 | 6.5.0 | 2026-04-14 | [75281](https://github.com/airbytehq/airbyte/pull/75281) | Add new `list_memberships` stream via V3 Lists API |
 | 6.4.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 6.4.3 | 2026-04-08 | [76149](https://github.com/airbytehq/airbyte/pull/76149) | Added missing OAuth scopes `crm.objects.users.read` and `settings.users.read` for the `users` stream |

@@ -237,6 +237,8 @@ definitions:
           field_path: []
     schema_transformations:
       - type: CustomTransformation
+        class_name: source_declarative_manifest.components.HubspotCoerceNumbersAndBooleansToStringTransformation
+      - type: CustomTransformation
         class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
     schema_type_identifier:
       type: SchemaTypeIdentifier
@@ -1907,6 +1909,8 @@ definitions:
       - $ref: "#/definitions/base_dynamic_schema_loader"
         schema_transformations:
           - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotCoerceNumbersAndBooleansToStringTransformation
+          - type: CustomTransformation
             class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
             field_mapping:
               hs_lifecyclestage_: "hs_v2_date_entered_"
@@ -2346,6 +2350,16 @@ spec:
       enable_experimental_streams:
         title: Enable experimental streams
         description: If enabled then experimental streams become available for sync.
+        type: boolean
+        default: false
+      treat_numbers_and_booleans_as_strings:
+        title: Treat dynamic number and boolean properties as strings
+        description: >-
+          If enabled, all HubSpot dynamic properties declared with `number` or `boolean`
+          type are read as strings. Enable this if HubSpot returns multi-value or
+          malformed values for these fields (e.g. semicolon-separated IDs like
+          `"3092727991;3881228353"`) that cause destination type conversion failures.
+          This does not affect static schema fields.
         type: boolean
         default: false
       num_worker:
