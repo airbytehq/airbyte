@@ -1703,6 +1703,7 @@ class TestCheckBreakdowns:
         assert "time_range" not in first_call_kwargs["params"]
         assert first_call_kwargs["is_async"] is False
 
+    @freeze_time("2024-06-15")
     def test_check_breakdowns_retries_with_today_on_reduce_data_error(self, api, some_config):
         """First attempt raises "reduce data" → retry constrained to today succeeds."""
         stream = self._make_stream(api, some_config)
@@ -1718,9 +1719,7 @@ class TestCheckBreakdowns:
         first_params = account.get_insights.call_args_list[0].kwargs["params"]
         second_params = account.get_insights.call_args_list[1].kwargs["params"]
         assert "time_range" not in first_params
-        assert "time_range" in second_params
-        today = date.today().strftime("%Y-%m-%d")
-        assert second_params["time_range"] == {"since": today, "until": today}
+        assert second_params["time_range"] == {"since": "2024-06-15", "until": "2024-06-15"}
 
     def test_check_breakdowns_logs_warning_when_both_attempts_fail(self, api, some_config, caplog):
         """Both attempts raise "reduce data" → warning logged, no exception raised."""
@@ -1731,7 +1730,7 @@ class TestCheckBreakdowns:
             self._make_fb_error("Please reduce the amount of data you're asking for."),
         ]
 
-        with caplog.at_level(logging.WARNING, logger="source_facebook_marketing.streams.base_insight_streams"):
+        with caplog.at_level(logging.WARNING, logger="airbyte"):
             stream.check_breakdowns(account_id=some_config["account_ids"][0])
 
         assert account.get_insights.call_count == 2

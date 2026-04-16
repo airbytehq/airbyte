@@ -495,8 +495,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         issue airbytehq/airbyte#38025 contain only `code: 1` / `code: 100` with no
         subcode. The message text is what every affected user actually sees, so we
         match on it. If Facebook ever introduces a stable subcode, add it here.
+
+        Extracts the message via `api_error_message()` with `get_message()` as a fallback,
+        consistent with how `streams/common.py` and `streams/streams.py` read error text.
         """
-        return "reduce the amount of data" in str(error).lower()
+        message = error.api_error_message() or error.get_message() or ""
+        return "reduce the amount of data" in message.lower()
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
         """
