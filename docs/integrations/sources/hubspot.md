@@ -346,7 +346,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.5.2 | 2026-04-16 | [76404](https://github.com/airbytehq/airbyte/pull/76404) | Fix Avro serialization for `listId` in the `list_memberships` stream (emit as string) |
+| 6.5.2 | 2026-04-16 | [76395](https://github.com/airbytehq/airbyte/pull/76395) | Fix Avro serialization for `listId` in the `list_memberships` stream (emit as string) |
 | 6.5.1 | 2026-04-14 | [76323](https://github.com/airbytehq/airbyte/pull/76323) | Ignore HTTP 400 errors with invalid `objectTypeId` in the `list_memberships` stream |
 | 6.5.0 | 2026-04-14 | [75281](https://github.com/airbytehq/airbyte/pull/75281) | Add new `list_memberships` stream via V3 Lists API |
 | 6.4.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
