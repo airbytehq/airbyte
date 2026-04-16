@@ -6,7 +6,6 @@
   border-left-color: var(--ifm-color-primary);
   margin-bottom: 1em;
   padding: var(--ifm-alert-padding-vertical) var(--ifm-alert-padding-horizontal);
-  font-size: 0.9rem;
 }
 
 [data-theme="dark"] .banner {
@@ -19,4 +18,8 @@
 
 .text a {
   font-weight: 600;
+}
+
+.icon {
+  margin-right: 0.4em;
 }
