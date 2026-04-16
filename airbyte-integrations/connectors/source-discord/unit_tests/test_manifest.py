@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 
+
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
 
@@ -397,8 +398,13 @@ class TestSchemas:
 
     def test_all_schemas_have_id_field(self, manifest):
         schemas_with_id = [
-            "guilds", "channels", "messages", "roles",
-            "threads", "scheduled_events", "audit_log",
+            "guilds",
+            "channels",
+            "messages",
+            "roles",
+            "threads",
+            "scheduled_events",
+            "audit_log",
         ]
         for name in schemas_with_id:
             schema = manifest["schemas"][name]
@@ -410,6 +416,4 @@ class TestSchemas:
         for schema_name, schema in manifest["schemas"].items():
             for field_name, field_def in schema.get("properties", {}).items():
                 if isinstance(field_def.get("type"), list):
-                    assert "null" in field_def["type"], (
-                        f"Schema '{schema_name}.{field_name}' has array type but no null"
-                    )
+                    assert "null" in field_def["type"], f"Schema '{schema_name}.{field_name}' has array type but no null"
