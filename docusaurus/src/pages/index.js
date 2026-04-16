@@ -173,7 +173,7 @@ export default function Home() {
     },
     {
       title: 'Tutorials',
-      link: '/ai-agents/tutorials/',
+      link: '/ai-agents/get-started/tutorials/',
       description: 'Step-by-step guides and quickstarts to get your agents up and running.',
       icon: TutorialsIcon,
     },
