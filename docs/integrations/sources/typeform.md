@@ -106,8 +106,10 @@ The Forms, Responses, and Webhooks streams make separate API calls for each form
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 1.4.8-rc.2 | 2026-04-13 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Adjust default_concurrency from 4 to 3 for tuning retry |
-| 1.4.8-rc.1 | 2026-04-09 | [76204](https://github.com/airbytehq/airbyte/pull/76204) | Add concurrency_level for concurrent stream reads |
+| 1.4.8-rc.4 | 2026-04-15 | [76363](https://github.com/airbytehq/airbyte/pull/76363) | Remove API budget, set concurrency to 25 |
+| 1.4.8-rc.3 | 2026-04-14 | [76319](https://github.com/airbytehq/airbyte/pull/76319) | Adjust default_concurrency from 3 to 2 for tuning retry |
+| 1.4.8-rc.2 | 2026-04-13 | [76270](https://github.com/airbytehq/airbyte/pull/76270) | Adjust default_concurrency from 4 to 3 for tuning retry |
+| 1.4.8-rc.1 | 2026-04-09 | [76204](https://github.com/airbytehq/airbyte/pull/76204) | Add concurrency_level and HTTPAPIBudget for concurrent stream reads |
 | 1.4.7 | 2026-04-02 | [76030](https://github.com/airbytehq/airbyte/pull/76030) | Promoted release candidate to GA |
 | 1.4.7-rc.2 | 2026-03-31 | [75898](https://github.com/airbytehq/airbyte/pull/75898) | Update CDK to 7.15.0 |
 | 1.4.7-rc.1 | 2026-03-26 | [75506](https://github.com/airbytehq/airbyte/pull/75506) | Upgrade CDK version to 7.13.0 |

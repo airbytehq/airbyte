@@ -1692,7 +1692,7 @@ spec:
           Number of concurrent threads for syncing. Higher values can speed up
           syncs but may increase API rate limit usage. Adjust based on your
           Freshdesk API plan.
-        default: 5
+        default: 6
         minimum: 2
         maximum: 16
         order: 5
@@ -3739,7 +3739,7 @@ schemas:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
   max_concurrency: 16
 
 api_budget:

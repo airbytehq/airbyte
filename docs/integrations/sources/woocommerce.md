@@ -109,6 +109,7 @@ If your hosting environment supports higher throughput, you can increase the **N
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.35 | 2026-04-14 | [76330](https://github.com/airbytehq/airbyte/pull/76330) | Promoted release candidate to GA |
 | 0.5.35-rc.2 | 2026-04-12 | [76253](https://github.com/airbytehq/airbyte/pull/76253) | Increase default concurrency from 4 to 5 for tuning iteration 2 |
 | 0.5.35-rc.1 | 2026-04-10 | [76205](https://github.com/airbytehq/airbyte/pull/76205) | Add concurrency_level and num_workers for concurrent stream syncing |
 | 0.5.34 | 2026-03-31 | [75853](https://github.com/airbytehq/airbyte/pull/75853) | Update dependencies |
@@ -146,7 +147,7 @@ If your hosting environment supports higher throughput, you can increase the **N
 | 0.5.2 | 2024-12-14 | [49382](https://github.com/airbytehq/airbyte/pull/49382) | Update dependencies |
 | 0.5.1 | 2024-12-11 | [47510](https://github.com/airbytehq/airbyte/pull/47510) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.5.0 | 2024-10-16 | [46956](https://github.com/airbytehq/airbyte/pull/46956) | Promoting release candidate 0.5.0-rc.1 to a main version. |
-| 0.5.0-rc.1  | 2024-10-08 | [46575](https://github.com/airbytehq/airbyte/pull/46575) | Migrate to Manifest-only |
+| 0.5.0-rc.1 | 2024-10-08 | [46575](https://github.com/airbytehq/airbyte/pull/46575) | Migrate to Manifest-only |
 | 0.4.12 | 2024-10-12 | [46806](https://github.com/airbytehq/airbyte/pull/46806) | Update dependencies |
 | 0.4.11 | 2024-10-05 | [46423](https://github.com/airbytehq/airbyte/pull/46423) | Update dependencies |
 | 0.4.10 | 2024-09-28 | [46193](https://github.com/airbytehq/airbyte/pull/46193) | Update dependencies |
