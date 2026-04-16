@@ -1,4 +1,4 @@
-version: 6.45.0
+version: 6.45.1
 
 type: DeclarativeSource
 
@@ -1011,6 +1011,16 @@ definitions:
           type: DpathExtractor
           field_path:
             - rows
+        # Drop rows where Google returned an empty/null searchAppearance value.
+        # These umbrella rows represent traffic without a specific rich-result classification
+        # (e.g., plain organic blue links). If they are kept, SubstreamPartitionRouter emits
+        # a partition with an empty/null `search_appearance` value, which in turn renders a
+        # malformed `dimensionFilterGroups` expression that the Google Search Console API
+        # silently ignores. The API then returns aggregated metrics across ALL appearance
+        # types, producing duplicate "umbrella" rows in the keyword streams.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (record.get('keys') or [None])[0] not in (None, '') }}"
       partition_router:
         - type: ListPartitionRouter
           values: "{{ config['site_urls'] }}"
@@ -1051,7 +1061,11 @@ definitions:
           type: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
           aggregationType: "{{ 'auto' if config.get('always_use_aggregation_type_auto') else parameters.get('aggregationType') }}"
           dataState: "{{ config.get('data_state', 'final') }}"
-          dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': {'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}}] }}"
+          # The Google Search Console API spec requires `filters` to be an array of filter
+          # objects. The single-dict form was silently tolerated by the API, but the array
+          # form is the documented / spec-compliant shape. See:
+          # https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+          dimensionFilterGroups: "{{ [{'groupType': 'and', 'filters': [{'dimension': 'searchAppearance', 'operator': 'equals', 'expression': stream_partition.get('search_appearance')}]}] }}"
         error_handler:
           $ref: "#/definitions/search_analytics_error_handler"
       paginator:

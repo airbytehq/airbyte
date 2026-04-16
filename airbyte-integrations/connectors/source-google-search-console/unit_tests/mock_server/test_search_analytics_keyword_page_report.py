@@ -412,3 +412,134 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
         # Verify state message was emitted with updated cursor
         state_messages = output.state_messages
         assert len(state_messages) > 0, "Expected state message to be emitted"
+
+    @HttpMocker()
+    def test_empty_or_null_search_appearance_partitions_are_skipped(self, http_mocker: HttpMocker) -> None:
+        """Parent `search_appearances` records with empty/null/missing `keys[0]` must NOT become keyword partitions.
+
+        The parent stream queries GSC with `dimensions: ["searchAppearance"]`. For traffic
+        without a specific rich-result classification (e.g., plain organic blue links),
+        Google returns rows with an empty-string or missing `keys[0]`. Without the
+        declarative `RecordFilter` on the parent stream, those rows become keyword
+        partitions with empty/null `search_appearance`; the resulting keyword API
+        request has a malformed `dimensionFilterGroups` that GSC silently ignores,
+        producing duplicate "umbrella" rows aggregated across all appearance types.
+
+        The fix drops these parent rows so that the keyword stream only queries GSC
+        for actual appearance types (e.g., `PRODUCT_SNIPPETS`).
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        keyword_filter_expressions: List[Any] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                # Mix of junk parent rows (empty / null / missing keys) and one valid row.
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [
+                            {"keys": [""], "clicks": 5, "impressions": 50, "ctr": 0.1, "position": 1.0},
+                            {"keys": [None], "clicks": 5, "impressions": 50, "ctr": 0.1, "position": 1.0},
+                            {"clicks": 5, "impressions": 50, "ctr": 0.1, "position": 1.0},
+                            {"keys": ["PRODUCT_SNIPPETS"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 2.0},
+                        ]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                # Record the `expression` used in the searchAppearance filter so the test can
+                # assert that no keyword request was made for the empty/null parent partitions.
+                for group in body.get("dimensionFilterGroups", []):
+                    filters = group.get("filters", [])
+                    # Spec says `filters` MUST be a list; the fix enforces this.
+                    assert isinstance(filters, list), f"dimensionFilterGroups[].filters must be a list, got {type(filters).__name__}"
+                    for f in filters:
+                        if f.get("dimension") == "searchAppearance":
+                            keyword_filter_expressions.append(f.get("expression"))
+
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query", "https://example.com/page1")]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # The keyword stream must only have been queried for the valid PRODUCT_SNIPPETS partition
+        # (may be called multiple times per date slice, but never with empty/null expression).
+        assert keyword_filter_expressions, "Expected at least one keyword request for the valid parent partition"
+        assert set(keyword_filter_expressions) == {"PRODUCT_SNIPPETS"}, (
+            f"Expected keyword stream to only query PRODUCT_SNIPPETS partition, "
+            f"got searchAppearance filter expressions: {keyword_filter_expressions}"
+        )
+        # All emitted records carry the PRODUCT_SNIPPETS appearance (no NULL / empty umbrella rows).
+        assert len(records) >= 1
+        for record in records:
+            assert record.record.data["search_appearance"] == "PRODUCT_SNIPPETS", (
+                f"Unexpected search_appearance in record: {record.record.data.get('search_appearance')}"
+            )
+
+    @HttpMocker()
+    def test_dimension_filter_groups_filters_is_an_array(self, http_mocker: HttpMocker) -> None:
+        """`dimensionFilterGroups[].filters` must be an array per the GSC API spec.
+
+        See https://developers.google.com/webmaster-tools/v1/searchanalytics/query —
+        the `filters` property is `array[ApiDimensionFilter]`. The API tolerated a
+        single-dict form historically, but that is non-spec and should be corrected.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        config = ConfigBuilder().with_site_urls(["https://example.com/"]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        captured_filter_groups: List[List[Dict[str, Any]]] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [{"keys": ["AMP_TOP_STORIES"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                captured_filter_groups.append(body.get("dimensionFilterGroups"))
+                return json.dumps(
+                    _build_search_analytics_response(
+                        [_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "test query", "https://example.com/page1")]
+                    )
+                )
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        self._read_stream(config)
+
+        assert captured_filter_groups, "Expected at least one keyword page report request to be made"
+        for filter_groups in captured_filter_groups:
+            assert isinstance(filter_groups, list) and len(filter_groups) >= 1
+            for group in filter_groups:
+                filters = group.get("filters")
+                assert isinstance(filters, list), f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
+                assert len(filters) >= 1
+                for f in filters:
+                    assert f.get("dimension") == "searchAppearance"
+                    assert f.get("operator") == "equals"
+                    assert f.get("expression") == "AMP_TOP_STORIES"
