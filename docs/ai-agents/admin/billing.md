@@ -29,7 +29,7 @@ A plan to explore Airbyte Agents and prototype agents.
 
 ### Individual
 
-A plan for personal use and daily workflows.
+A plan for personal use and daily work.
 
 - $29 per month.
 - 1,000 AOs per month.
