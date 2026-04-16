@@ -2,9 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
-
 import pendulum as pdm
+import pytest
 from source_shopify.streams.base_streams import IncrementalShopifyStream
 
 
@@ -31,6 +30,7 @@ def _make_config(**overrides):
 # ---------------------------------------------------------------------------
 # _apply_lookback_window
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize(
     "lookback_days, start_date, state_value, expected_date",
@@ -67,6 +67,7 @@ def test_apply_lookback_window(lookback_days, start_date, state_value, expected_
 # ---------------------------------------------------------------------------
 # request_params integration with lookback
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize(
     "lookback_days, stream_state, expected_filter_value",
