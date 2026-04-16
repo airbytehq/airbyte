@@ -4,7 +4,7 @@
 
 import logging
 from abc import ABC
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests

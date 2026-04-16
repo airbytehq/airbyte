@@ -2,9 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import json
-
-import pytest
 import requests_mock as req_mock
 from source_etrade.source import SourceEtrade
 

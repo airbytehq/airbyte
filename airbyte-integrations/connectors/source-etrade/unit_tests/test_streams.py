@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 import requests
 import requests_mock as req_mock
 from source_etrade.streams import (
@@ -14,7 +13,6 @@ from source_etrade.streams import (
     Portfolio,
     ProductLookup,
     Quotes,
-    TransactionDetails,
     Transactions,
 )
 
