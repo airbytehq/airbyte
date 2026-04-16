@@ -28,6 +28,9 @@ API Reference: https://app.ninjarmm.com/apidocs/?links.active=core
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2026-03-31 | [75742](https://github.com/airbytehq/airbyte/pull/75742) | Update dependencies |
+| 0.0.32 | 2026-03-17 | [75066](https://github.com/airbytehq/airbyte/pull/75066) | Update dependencies |
+| 0.0.31 | 2026-03-10 | [74596](https://github.com/airbytehq/airbyte/pull/74596) | Update dependencies |
 | 0.0.30 | 2026-02-24 | [73833](https://github.com/airbytehq/airbyte/pull/73833) | Update dependencies |
 | 0.0.29 | 2026-02-10 | [72595](https://github.com/airbytehq/airbyte/pull/72595) | Update dependencies |
 | 0.0.28 | 2026-01-20 | [71951](https://github.com/airbytehq/airbyte/pull/71951) | Update dependencies |

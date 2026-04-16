@@ -17,6 +17,7 @@ dependencies {
 
     api "io.airbyte.bulk-cdk:bulk-cdk-core-base:1.0.1"
     implementation 'org.apache.commons:commons-lang3:3.17.0'
+    implementation 'com.ethlo.time:itu:1.14.0'
 
     // For ranges and rangesets
     implementation("com.google.guava:guava:33.3.0-jre")

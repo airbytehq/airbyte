@@ -4,73 +4,78 @@ This page contains the setup guide and reference information for the WooCommerce
 
 ## Prerequisites
 
-To set up the WooCommerce source connector with Airbyte, you must be using:
+To set up the WooCommerce source connector, you need:
 
-- WooCommerce 3.5+
-- WordPress 4.4+
-- Pretty permalinks in `Settings > Permalinks` so that the custom endpoints are supported.
-  e.g. `/%year%/%monthnum%/%day%/%postname%/`
+- WooCommerce 3.5 or later
+- WordPress 4.4 or later
+- Pretty permalinks enabled in **Settings > Permalinks** so that custom endpoints are supported. For example, `/%year%/%monthnum%/%day%/%postname%/`.
 
-You will need to generate new API key with read permissions and use `Customer key` and `Customer Secret`.
+You also need a WooCommerce REST API key with read permissions. The setup process generates a **Consumer key** and **Consumer secret** that you use to authenticate.
 
 ## Setup guide
 
-### Step 1: Set up WooCommerce
+### Step 1: Generate WooCommerce REST API keys
 
-1. Generate new [Rest API key](https://woocommerce.github.io/woocommerce-rest-api-docs/#rest-api-keys)
-2. Obtain `Customer key` and `Customer Secret`.
+1. In your WordPress admin panel, go to **WooCommerce > Settings > Advanced > REST API**.
+2. Click **Add key**.
+3. Enter a description, select a user with access to your store data, and set the permissions to **Read**.
+4. Click **Generate API key**.
+5. Copy the **Consumer key** and **Consumer secret**. The consumer secret is only displayed once.
+
+For more details, see the [WooCommerce REST API authentication documentation](https://woocommerce.github.io/woocommerce-rest-api-docs/#authentication).
 
 ### Step 2: Set up the WooCommerce connector in Airbyte
+
+<!-- env:cloud -->
 
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
-   type dropdown.
-4. Fill in `Customer key` and `Customer Secret` with data from Step 1 of this guide.
-5. Fill in `Shop Name`. For `https://EXAMPLE.com`, the shop name is 'EXAMPLE.com'.
-6. Choose start date you want to start sync from.
-7. (Optional) Fill in Conversion Window.
+3. Select **WooCommerce** from the Source type dropdown and enter a name for the connector.
+4. Enter the **Consumer key** and **Consumer secret** from Step 1.
+5. Enter the **Shop Name**. For `https://EXAMPLE.com`, the shop name is `EXAMPLE.com`.
+6. Choose the **Start Date** to begin syncing data from.
+7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
+
+<!-- /env:cloud -->
 <!-- env:oss -->
 
-### For Airbyte OSS:
+### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
-   type dropdown.
-4. Fill in `Customer key` and `Customer Secret` with data from Step 1 of this guide.
-5. Fill in `Shop Name`. For `https://EXAMPLE.com`, the shop name is 'EXAMPLE.com'.
-6. Choose start date you want to start sync from.
-7. (Optional) Fill in Conversion Window.
+2. Click **Sources**, then click **+ New source**.
+3. Select **WooCommerce** from the Source type dropdown and enter a name for the connector.
+4. Enter the **Consumer key** and **Consumer secret** from Step 1.
+5. Enter the **Shop Name**. For `https://EXAMPLE.com`, the shop name is `EXAMPLE.com`.
+6. Choose the **Start Date** to begin syncing data from.
+7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
-The WooCommerce source connector supports the
-following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The WooCommerce source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
-<!-- /env:oss -->
 
-## Supported Streams
+## Supported streams
 
-- [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) \(Incremental\)
-- [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) \(Incremental\)
-- [orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) \(Incremental\)
+- [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) (Incremental)
+- [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) (Incremental)
+- [Orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) (Incremental)
 - [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes)
 - [Payment gateways](https://woocommerce.github.io/woocommerce-rest-api-docs/#payment-gateways)
 - [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms)
 - [Product attributes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attributes)
 - [Product categories](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-categories)
-- [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) \(Incremental\)
+- [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) (Incremental)
 - [Product shipping classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-shipping-classes)
 - [Product tags](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-tags)
 - [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations)
-- [Products](https://woocommerce.github.io/woocommerce-rest-api-docs/#products) \(Incremental\)
+- [Products](https://woocommerce.github.io/woocommerce-rest-api-docs/#products) (Incremental)
 - [Refunds](https://woocommerce.github.io/woocommerce-rest-api-docs/#refunds)
 - [Shipping methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-methods)
 - [Shipping zone locations](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-locations)
@@ -79,23 +84,6 @@ following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 - [System status tools](https://woocommerce.github.io/woocommerce-rest-api-docs/#system-status-tools)
 - [Tax classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-classes)
 - [Tax rates](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-rates)
-
-## Connector-specific features & highlights
-
-Useful links:
-
-- [WooCommerce Rest API Docs](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
-
-## Data type map
-
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `integer`        | `integer`    |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
-| `boolean`        | `boolean`    |       |
 
 ## Limitations & Troubleshooting
 
@@ -108,11 +96,10 @@ Expand to see details about WooCommerce connector limitations and troubleshootin
 
 #### Rate limiting
 
-The WooCommerce API allows to
-set [custom rate limits](https://developer.woocommerce.com/2022/11/22/store-api-now-supports-rate-limiting/) to protect
-your store. If you set a custom rate limit,
-specify it in seconds in the `maxSecondsBetweenMessages` field in the `metadata.yaml` file. This value should be the
-maximum number of seconds between API calls.
+The WooCommerce REST API does not enforce built-in rate limits. Actual rate limits depend on your hosting provider. Shared hosting environments typically allow 2-5 requests per second. The connector applies a default rate budget of 5 requests per second and handles HTTP 429 responses automatically.
+
+If your hosting environment supports higher throughput, you can increase the **Number of Concurrent Threads** setting (up to 12) in the connector configuration to speed up syncs. If you experience rate limiting errors, reduce this value.
+
 </details>
 
 ## Changelog
@@ -122,6 +109,12 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.35 | 2026-04-14 | [76330](https://github.com/airbytehq/airbyte/pull/76330) | Promoted release candidate to GA |
+| 0.5.35-rc.2 | 2026-04-12 | [76253](https://github.com/airbytehq/airbyte/pull/76253) | Increase default concurrency from 4 to 5 for tuning iteration 2 |
+| 0.5.35-rc.1 | 2026-04-10 | [76205](https://github.com/airbytehq/airbyte/pull/76205) | Add concurrency_level and num_workers for concurrent stream syncing |
+| 0.5.34 | 2026-03-31 | [75853](https://github.com/airbytehq/airbyte/pull/75853) | Update dependencies |
+| 0.5.33 | 2026-03-24 | [75380](https://github.com/airbytehq/airbyte/pull/75380) | Update dependencies |
+| 0.5.32 | 2026-03-10 | [74674](https://github.com/airbytehq/airbyte/pull/74674) | Update dependencies |
 | 0.5.31 | 2026-02-24 | [73889](https://github.com/airbytehq/airbyte/pull/73889) | Update dependencies |
 | 0.5.30 | 2026-02-10 | [72988](https://github.com/airbytehq/airbyte/pull/72988) | Update dependencies |
 | 0.5.29 | 2026-02-03 | [72658](https://github.com/airbytehq/airbyte/pull/72658) | Update dependencies |
@@ -154,7 +147,7 @@ maximum number of seconds between API calls.
 | 0.5.2 | 2024-12-14 | [49382](https://github.com/airbytehq/airbyte/pull/49382) | Update dependencies |
 | 0.5.1 | 2024-12-11 | [47510](https://github.com/airbytehq/airbyte/pull/47510) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 0.5.0 | 2024-10-16 | [46956](https://github.com/airbytehq/airbyte/pull/46956) | Promoting release candidate 0.5.0-rc.1 to a main version. |
-| 0.5.0-rc.1  | 2024-10-08 | [46575](https://github.com/airbytehq/airbyte/pull/46575) | Migrate to Manifest-only |
+| 0.5.0-rc.1 | 2024-10-08 | [46575](https://github.com/airbytehq/airbyte/pull/46575) | Migrate to Manifest-only |
 | 0.4.12 | 2024-10-12 | [46806](https://github.com/airbytehq/airbyte/pull/46806) | Update dependencies |
 | 0.4.11 | 2024-10-05 | [46423](https://github.com/airbytehq/airbyte/pull/46423) | Update dependencies |
 | 0.4.10 | 2024-09-28 | [46193](https://github.com/airbytehq/airbyte/pull/46193) | Update dependencies |

@@ -25,6 +25,9 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 
 | Version | Date       | Pull Request                                    | Subject                                     |
 | :------ | :--------- | :---------------------------------------------- |:--------------------------------------------|
+| 0.2.37 | 2026-03-31 | [75819](https://github.com/airbytehq/airbyte/pull/75819) | Update dependencies |
+| 0.2.36 | 2026-03-24 | [75336](https://github.com/airbytehq/airbyte/pull/75336) | Update dependencies |
+| 0.2.35 | 2026-03-10 | [74695](https://github.com/airbytehq/airbyte/pull/74695) | Update dependencies |
 | 0.2.34 | 2026-02-24 | [73492](https://github.com/airbytehq/airbyte/pull/73492) | Update dependencies |
 | 0.2.33 | 2026-02-03 | [72546](https://github.com/airbytehq/airbyte/pull/72546) | Update dependencies |
 | 0.2.32 | 2026-01-20 | [72101](https://github.com/airbytehq/airbyte/pull/72101) | Update dependencies |

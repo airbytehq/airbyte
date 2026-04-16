@@ -15,14 +15,15 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 
 ## Supported sync modes
 
-The connectors supports all sync modes.
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-| Feature                        | Supported?\(Yes/No\) | Notes                          |
-| :----------------------------- |:---------------------|:-------------------------------|
-| Full Refresh Sync              | Yes                  |                                |
-| Incremental - Append Sync      | Yes                  |                                |
-| Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
-| Namespaces                     | Yes                  |                                |
+Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) below for details.
 
 ## Deduplication
 
@@ -164,6 +165,10 @@ The connector converts Airbyte data types to ClickHouse types as follows:
 :::note
 The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
 :::
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
 
 ## Changelog
 

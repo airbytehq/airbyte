@@ -570,6 +570,23 @@ definitions:
                 error_message: >-
                   Check provided permissions for: {{
                   response['error']['message'] }}
+              # When the cursor has advanced to a timezone-offset date
+              # (e.g. end_time for UTC+ accounts) and step P1D slicing
+              # produces a window whose 'since' is in the future, the
+              # Instagram API returns HTTP 400 with code 100 and message
+              # "since param is not valid".  Ignoring this slice is safe:
+              # the data will be picked up on the next sync once the date
+              # is no longer in the future.
+              - type: HttpResponseFilter
+                action: IGNORE
+                predicate: >-
+                  {{ 'error' in response and
+                  response['error'].get('code') == 100 and
+                  'since param is not valid' in
+                  response['error'].get('message', '') }}
+                error_message: >-
+                  Skipping time window with future 'since' date: {{
+                  response['error']['message'] }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -607,6 +624,10 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        # Re-read the last day of data on each sync to catch records whose end_time
+        # (day boundary in account timezone) may have been ahead of UTC when first seen.
+        # This prevents the cursor from getting stuck on a future timestamp.
+        lookback_window: P1D
         step: P1D
         cursor_granularity: PT0S
         start_time_option:
@@ -786,7 +807,7 @@ spec:
         type: string
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 40
         default: 15

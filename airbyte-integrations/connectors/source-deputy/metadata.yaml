@@ -12,11 +12,11 @@ data:
       enabled: false
       packageName: airbyte-source-deputy
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.10.0@sha256:caac8e8f74b2b64d13ec5956ac93c87dd3d50b0c7975de4e81c938e2f215d1d6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
   connectorSubtype: api
   connectorType: source
   definitionId: 0b8bfdb4-ee91-43a8-9f91-536c816724a6
-  dockerImageTag: 0.0.39
+  dockerImageTag: 0.0.40
   dockerRepository: airbyte/source-deputy
   githubIssueLabel: source-deputy
   icon: icon.svg

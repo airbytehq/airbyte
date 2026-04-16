@@ -169,6 +169,9 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
+| 4.3.16 | 2026-03-10 | [74500](https://github.com/airbytehq/airbyte/pull/74500) | Update dependencies |
 | 4.3.15 | 2026-02-24 | [73898](https://github.com/airbytehq/airbyte/pull/73898) | Update dependencies |
 | 4.3.14 | 2026-02-17 | [73494](https://github.com/airbytehq/airbyte/pull/73494) | Update dependencies |
 | 4.3.13 | 2026-02-10 | [73044](https://github.com/airbytehq/airbyte/pull/73044) | Update dependencies |
@@ -191,72 +194,72 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 | 4.2.2 | 2025-08-02 | [64216](https://github.com/airbytehq/airbyte/pull/64216) | Update dependencies |
 | 4.2.1 | 2025-07-26 | [63916](https://github.com/airbytehq/airbyte/pull/63916) | Update dependencies |
 | 4.2.0 | 2025-07-24 | [63761](https://github.com/airbytehq/airbyte/pull/63761) | Promoting release candidate 4.2.0-rc.1 to a main version. |
-| 4.2.0-rc.1 | 2025-07-21  | [63366](https://github.com/airbytehq/airbyte/pull/63366)       | Migrate the issues stream from `/search` to `/search/jql` due to API deprecation                                                                                       |
-| 4.1.7      | 2025-07-19 | [63461](https://github.com/airbytehq/airbyte/pull/63461) | Update dependencies |
-| 4.1.6      | 2025-07-12 | [63104](https://github.com/airbytehq/airbyte/pull/63104) | Update dependencies |
-| 4.1.5      | 2025-07-05 | [62640](https://github.com/airbytehq/airbyte/pull/62640) | Update dependencies |
-| 4.1.4      | 2025-06-28 | [62186](https://github.com/airbytehq/airbyte/pull/62186) | Update dependencies |
-| 4.1.3      | 2025-06-21 | [61812](https://github.com/airbytehq/airbyte/pull/61812) | Update dependencies |
-| 4.1.2      | 2025-06-14 | [52790](https://github.com/airbytehq/airbyte/pull/52790) | Update dependencies |
-| 4.1.1      | 2025-05-26 | [60908](https://github.com/airbytehq/airbyte/pull/60908) | Update dependencies |
-| 4.1.0      | 2025-05-15 | [60298](https://github.com/airbytehq/airbyte/pull/60298) | Promoting release candidate 4.1.0-rc.1 to a main version. |
+| 4.2.0-rc.1 | 2025-07-21 | [63366](https://github.com/airbytehq/airbyte/pull/63366) | Migrate the issues stream from `/search` to `/search/jql` due to API deprecation |
+| 4.1.7 | 2025-07-19 | [63461](https://github.com/airbytehq/airbyte/pull/63461) | Update dependencies |
+| 4.1.6 | 2025-07-12 | [63104](https://github.com/airbytehq/airbyte/pull/63104) | Update dependencies |
+| 4.1.5 | 2025-07-05 | [62640](https://github.com/airbytehq/airbyte/pull/62640) | Update dependencies |
+| 4.1.4 | 2025-06-28 | [62186](https://github.com/airbytehq/airbyte/pull/62186) | Update dependencies |
+| 4.1.3 | 2025-06-21 | [61812](https://github.com/airbytehq/airbyte/pull/61812) | Update dependencies |
+| 4.1.2 | 2025-06-14 | [52790](https://github.com/airbytehq/airbyte/pull/52790) | Update dependencies |
+| 4.1.1 | 2025-05-26 | [60908](https://github.com/airbytehq/airbyte/pull/60908) | Update dependencies |
+| 4.1.0 | 2025-05-15 | [60298](https://github.com/airbytehq/airbyte/pull/60298) | Promoting release candidate 4.1.0-rc.1 to a main version. |
 | 4.1.0-rc.1 | 2025-05-12 | [59689](https://github.com/airbytehq/airbyte/pull/59689) | Migrate to manifest-only format |
-| 4.0.0      | 2025-05-07 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
-| 3.5.4      | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
-| 3.5.3      | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
-| 3.5.2      | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
-| 3.5.1      | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |
-| 3.5.0      | 2025-01-23 | [52105](https://github.com/airbytehq/airbyte/pull/52105) | Update incremental per partition streams to use concurrency |
-| 3.4.8      | 2025-01-11 | [51189](https://github.com/airbytehq/airbyte/pull/51189) | Update dependencies |
-| 3.4.7      | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
-| 3.4.6      | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
-| 3.4.5      | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
-| 3.4.4      | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 3.4.3      | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
-| 3.4.2      | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |
-| 3.4.1      | 2024-12-09 | [48859](https://github.com/airbytehq/airbyte/pull/48859) | Add a couple of fixes regarding memory usage |
-| 3.4.0      | 2024-12-05 | [48738](https://github.com/airbytehq/airbyte/pull/48738) | Enable concurrency for substreams without cursor |
-| 3.3.1      | 2024-11-18 | [48539](https://github.com/airbytehq/airbyte/pull/48539) | Update dependencies |
-| 3.3.0-rc.3 | 2024-11-14 | [48395](https://github.com/airbytehq/airbyte/pull/48395)   | Change JQL filters comparing cursor values to use milliseconds since unix epoch so that data isn't skipped when the active timezone is a negative UTC offset           |
-| 3.3.0-rc.2 | 2024-11-08 | [38612](https://github.com/airbytehq/airbyte/pull/38612)   | Add substream state migration. Update CDK to v6.                                                                                                                       |
-| 3.3.0-rc.1 | 2024-10-28 | [38612](https://github.com/airbytehq/airbyte/pull/38612)   | Migrate IssueComments and IssueWorklogs streams to low-code (This change is irreversible)                                                                              |
-| 3.2.1      | 2024-10-12 | [44650](https://github.com/airbytehq/airbyte/pull/44650)   | Update dependencies                                                                                                                                                    |
-| 3.2.0      | 2024-10-10 | [46344](https://github.com/airbytehq/airbyte/pull/46344)   | Update CDK v5                                                                                                                                                          |
-| 3.1.1      | 2024-08-17 | [44251](https://github.com/airbytehq/airbyte/pull/44251)   | Update dependencies                                                                                                                                                    |
-| 3.1.0      | 2024-08-13 | [39558](https://github.com/airbytehq/airbyte/pull/39558)   | Ensure config_error when state has improper format                                                                                                                     |
-| 3.0.14     | 2024-08-12 | [43885](https://github.com/airbytehq/airbyte/pull/43885)   | Update dependencies                                                                                                                                                    |
-| 3.0.13     | 2024-08-10 | [43542](https://github.com/airbytehq/airbyte/pull/43542)   | Update dependencies                                                                                                                                                    |
-| 3.0.12     | 2024-08-03 | [43196](https://github.com/airbytehq/airbyte/pull/43196)   | Update dependencies                                                                                                                                                    |
-| 3.0.11     | 2024-07-27 | [42802](https://github.com/airbytehq/airbyte/pull/42802)   | Update dependencies                                                                                                                                                    |
-| 3.0.10     | 2024-07-20 | [42231](https://github.com/airbytehq/airbyte/pull/42231)   | Update dependencies                                                                                                                                                    |
-| 3.0.9      | 2024-07-13 | [41842](https://github.com/airbytehq/airbyte/pull/41842)   | Update dependencies                                                                                                                                                    |
-| 3.0.8      | 2024-07-10 | [41453](https://github.com/airbytehq/airbyte/pull/41453)   | Update dependencies                                                                                                                                                    |
-| 3.0.7      | 2024-07-09 | [41175](https://github.com/airbytehq/airbyte/pull/41175)   | Update dependencies                                                                                                                                                    |
-| 3.0.6      | 2024-07-06 | [40785](https://github.com/airbytehq/airbyte/pull/40785)   | Update dependencies                                                                                                                                                    |
-| 3.0.5      | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215)   | Replaced deprecated AirbyteLogger with logging.Logger                                                                                                                  |
-| 3.0.4      | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549)   | Migrate off deprecated auth package                                                                                                                                    |
-| 3.0.3      | 2024-06-25 | [40444](https://github.com/airbytehq/airbyte/pull/40444)   | Update dependencies                                                                                                                                                    |
-| 3.0.2      | 2024-06-21 | [40121](https://github.com/airbytehq/airbyte/pull/40121)   | Update dependencies                                                                                                                                                    |
-| 3.0.1      | 2024-06-13 | [39458](https://github.com/airbytehq/airbyte/pull/39458)   | Fix skipping custom_field_options entities when schema.items is options                                                                                                |
-| 3.0.0      | 2024-06-14 | [39467](https://github.com/airbytehq/airbyte/pull/39467)   | Update pk for Workflows stream from Id(object) to entityId, name(string, string)                                                                                       |
-| 2.0.3      | 2024-06-10 | [39347](https://github.com/airbytehq/airbyte/pull/39347)   | Update state handling for incremental Python streams                                                                                                                   |
-| 2.0.2      | 2024-06-06 | [39310](https://github.com/airbytehq/airbyte/pull/39310)   | Fix projects substreams for deleted projects                                                                                                                           |
-| 2.0.1      | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341)   | Update CDK authenticator package                                                                                                                                       |
-| 2.0.0      | 2024-04-20 | [37374](https://github.com/airbytehq/airbyte/pull/37374)   | Migrate to low-code and fix `Project Avatars` stream                                                                                                                   |
-| 1.2.2      | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | Updating to 0.80.0 CDK                                                                                                                                                 |
-| 1.2.1      | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646)   | schema descriptions                                                                                                                                                    |
-| 1.2.0      | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267)   | Pin airbyte-cdk version to `^0`                                                                                                                                        |
-| 1.1.0      | 2024-02-27 | [35656](https://github.com/airbytehq/airbyte/pull/35656)   | Add new fields to streams `board_issues`, `filter_sharing`, `filters`, `issues`, `permission_schemes`, `sprint_issues`, `users_groups_detailed`, and `workflows`       |
-| 1.0.2      | 2024-02-12 | [35160](https://github.com/airbytehq/airbyte/pull/35160)   | Manage dependencies with Poetry.                                                                                                                                       |
-| 1.0.1      | 2024-01-24 | [34470](https://github.com/airbytehq/airbyte/pull/34470)   | Add state checkpoint interval for all streams                                                                                                                          |
-| 1.0.0      | 2024-01-01 | [33715](https://github.com/airbytehq/airbyte/pull/33715)   | Save state for stream `Board Issues` per `board`                                                                                                                       |
-| 0.14.1     | 2023-12-19 | [33625](https://github.com/airbytehq/airbyte/pull/33625)   | Skip 404 error                                                                                                                                                         |
-| 0.14.0     | 2023-12-15 | [33532](https://github.com/airbytehq/airbyte/pull/33532)   | Add lookback window                                                                                                                                                    |
-| 0.13.0     | 2023-12-12 | [33353](https://github.com/airbytehq/airbyte/pull/33353)   | Fix check command to check access for all available streams                                                                                                            |
-| 0.12.0     | 2023-12-01 | [33011](https://github.com/airbytehq/airbyte/pull/33011)   | Fix BoardIssues stream; increase number of retries for backoff policy to 10                                                                                            |
-| 0.11.0     | 2023-11-29 | [32927](https://github.com/airbytehq/airbyte/pull/32927)   | Fix incremental syncs for stream Issues                                                                                                                                |
-| 0.10.2     | 2023-10-26 | [31896](https://github.com/airbytehq/airbyte/pull/31896)   | Provide better guidance when configuring the connector with an invalid domain                                                                                          |
-| 0.10.1     | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702)   | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                        |
+| 4.0.0 | 2025-05-07 | [59172](https://github.com/airbytehq/airbyte/pull/59172) | Remove deprecated `pull_requests` stream and Python stream code |
+| 3.5.4 | 2025-04-16 | [58100](https://github.com/airbytehq/airbyte/pull/58100) | Fix cdk conflicts & upgrade |
+| 3.5.3 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
+| 3.5.2 | 2025-01-25 | [52291](https://github.com/airbytehq/airbyte/pull/52291) | Update dependencies |
+| 3.5.1 | 2025-01-24 | [52134](https://github.com/airbytehq/airbyte/pull/52134) | Fix low-code state migration |
+| 3.5.0 | 2025-01-23 | [52105](https://github.com/airbytehq/airbyte/pull/52105) | Update incremental per partition streams to use concurrency |
+| 3.4.8 | 2025-01-11 | [51189](https://github.com/airbytehq/airbyte/pull/51189) | Update dependencies |
+| 3.4.7 | 2025-01-04 | [50886](https://github.com/airbytehq/airbyte/pull/50886) | Update dependencies |
+| 3.4.6 | 2024-12-28 | [50625](https://github.com/airbytehq/airbyte/pull/50625) | Update dependencies |
+| 3.4.5 | 2024-12-21 | [50108](https://github.com/airbytehq/airbyte/pull/50108) | Update dependencies |
+| 3.4.4 | 2024-12-14 | [49224](https://github.com/airbytehq/airbyte/pull/49224) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 3.4.3 | 2024-12-12 | [47087](https://github.com/airbytehq/airbyte/pull/47087) | Update dependencies |
+| 3.4.2 | 2024-12-09 | [48838](https://github.com/airbytehq/airbyte/pull/48838) | Fixing timezone gaps with state |
+| 3.4.1 | 2024-12-09 | [48859](https://github.com/airbytehq/airbyte/pull/48859) | Add a couple of fixes regarding memory usage |
+| 3.4.0 | 2024-12-05 | [48738](https://github.com/airbytehq/airbyte/pull/48738) | Enable concurrency for substreams without cursor |
+| 3.3.1 | 2024-11-18 | [48539](https://github.com/airbytehq/airbyte/pull/48539) | Update dependencies |
+| 3.3.0-rc.3 | 2024-11-14 | [48395](https://github.com/airbytehq/airbyte/pull/48395) | Change JQL filters comparing cursor values to use milliseconds since unix epoch so that data isn't skipped when the active timezone is a negative UTC offset |
+| 3.3.0-rc.2 | 2024-11-08 | [38612](https://github.com/airbytehq/airbyte/pull/38612) | Add substream state migration. Update CDK to v6. |
+| 3.3.0-rc.1 | 2024-10-28 | [38612](https://github.com/airbytehq/airbyte/pull/38612) | Migrate IssueComments and IssueWorklogs streams to low-code (This change is irreversible) |
+| 3.2.1 | 2024-10-12 | [44650](https://github.com/airbytehq/airbyte/pull/44650) | Update dependencies |
+| 3.2.0 | 2024-10-10 | [46344](https://github.com/airbytehq/airbyte/pull/46344) | Update CDK v5 |
+| 3.1.1 | 2024-08-17 | [44251](https://github.com/airbytehq/airbyte/pull/44251) | Update dependencies |
+| 3.1.0 | 2024-08-13 | [39558](https://github.com/airbytehq/airbyte/pull/39558) | Ensure config_error when state has improper format |
+| 3.0.14 | 2024-08-12 | [43885](https://github.com/airbytehq/airbyte/pull/43885) | Update dependencies |
+| 3.0.13 | 2024-08-10 | [43542](https://github.com/airbytehq/airbyte/pull/43542) | Update dependencies |
+| 3.0.12 | 2024-08-03 | [43196](https://github.com/airbytehq/airbyte/pull/43196) | Update dependencies |
+| 3.0.11 | 2024-07-27 | [42802](https://github.com/airbytehq/airbyte/pull/42802) | Update dependencies |
+| 3.0.10 | 2024-07-20 | [42231](https://github.com/airbytehq/airbyte/pull/42231) | Update dependencies |
+| 3.0.9 | 2024-07-13 | [41842](https://github.com/airbytehq/airbyte/pull/41842) | Update dependencies |
+| 3.0.8 | 2024-07-10 | [41453](https://github.com/airbytehq/airbyte/pull/41453) | Update dependencies |
+| 3.0.7 | 2024-07-09 | [41175](https://github.com/airbytehq/airbyte/pull/41175) | Update dependencies |
+| 3.0.6 | 2024-07-06 | [40785](https://github.com/airbytehq/airbyte/pull/40785) | Update dependencies |
+| 3.0.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 3.0.4 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 3.0.3 | 2024-06-25 | [40444](https://github.com/airbytehq/airbyte/pull/40444) | Update dependencies |
+| 3.0.2 | 2024-06-21 | [40121](https://github.com/airbytehq/airbyte/pull/40121) | Update dependencies |
+| 3.0.1 | 2024-06-13 | [39458](https://github.com/airbytehq/airbyte/pull/39458) | Fix skipping custom_field_options entities when schema.items is options |
+| 3.0.0 | 2024-06-14 | [39467](https://github.com/airbytehq/airbyte/pull/39467) | Update pk for Workflows stream from Id(object) to entityId, name(string, string) |
+| 2.0.3 | 2024-06-10 | [39347](https://github.com/airbytehq/airbyte/pull/39347) | Update state handling for incremental Python streams |
+| 2.0.2 | 2024-06-06 | [39310](https://github.com/airbytehq/airbyte/pull/39310) | Fix projects substreams for deleted projects |
+| 2.0.1 | 2024-05-20 | [38341](https://github.com/airbytehq/airbyte/pull/38341) | Update CDK authenticator package |
+| 2.0.0 | 2024-04-20 | [37374](https://github.com/airbytehq/airbyte/pull/37374) | Migrate to low-code and fix `Project Avatars` stream |
+| 1.2.2 | 2024-04-19 | [36646](https://github.com/airbytehq/airbyte/pull/36646) | Updating to 0.80.0 CDK |
+| 1.2.1 | 2024-04-12 | [36646](https://github.com/airbytehq/airbyte/pull/36646) | schema descriptions |
+| 1.2.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
+| 1.1.0 | 2024-02-27 | [35656](https://github.com/airbytehq/airbyte/pull/35656) | Add new fields to streams `board_issues`, `filter_sharing`, `filters`, `issues`, `permission_schemes`, `sprint_issues`, `users_groups_detailed`, and `workflows` |
+| 1.0.2 | 2024-02-12 | [35160](https://github.com/airbytehq/airbyte/pull/35160) | Manage dependencies with Poetry. |
+| 1.0.1 | 2024-01-24 | [34470](https://github.com/airbytehq/airbyte/pull/34470) | Add state checkpoint interval for all streams |
+| 1.0.0 | 2024-01-01 | [33715](https://github.com/airbytehq/airbyte/pull/33715) | Save state for stream `Board Issues` per `board` |
+| 0.14.1 | 2023-12-19 | [33625](https://github.com/airbytehq/airbyte/pull/33625) | Skip 404 error |
+| 0.14.0 | 2023-12-15 | [33532](https://github.com/airbytehq/airbyte/pull/33532) | Add lookback window |
+| 0.13.0 | 2023-12-12 | [33353](https://github.com/airbytehq/airbyte/pull/33353) | Fix check command to check access for all available streams |
+| 0.12.0 | 2023-12-01 | [33011](https://github.com/airbytehq/airbyte/pull/33011) | Fix BoardIssues stream; increase number of retries for backoff policy to 10 |
+| 0.11.0 | 2023-11-29 | [32927](https://github.com/airbytehq/airbyte/pull/32927) | Fix incremental syncs for stream Issues |
+| 0.10.2 | 2023-10-26 | [31896](https://github.com/airbytehq/airbyte/pull/31896) | Provide better guidance when configuring the connector with an invalid domain |
+| 0.10.1 | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.10.0     | 2023-10-13 | [\#31385](https://github.com/airbytehq/airbyte/pull/31385) | Fixed `aggregatetimeoriginalestimate, timeoriginalestimate` field types for the `Issues` stream schema                                                                 |
 | 0.9.0      | 2023-09-26 | [\#30688](https://github.com/airbytehq/airbyte/pull/30688) | Added `createdDate` field to sprints schema, Removed `Expand Issues stream` from spec                                                                                  |
 | 0.8.0      | 2023-09-26 | [\#30755](https://github.com/airbytehq/airbyte/pull/30755) | Add new streams: `Issue custom field options`, `IssueTypes`, `Project Roles`                                                                                           |

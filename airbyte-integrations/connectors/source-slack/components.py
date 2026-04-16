@@ -18,7 +18,6 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import (
     InterpolatedString,
 )
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
@@ -107,6 +106,8 @@ class ChannelsRetriever(SimpleRetriever):
         The `is_member` property indicates whether the API Bot is already assigned / joined to the channel.
         https://api.slack.com/types/conversation#booleans
         """
+        if record.get("is_archived"):
+            return False  # Slack API rejects conversations.join for archived channels
         return config["join_channels"] and not record.get("is_member")
 
     def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -145,6 +146,10 @@ class ChannelsRetriever(SimpleRetriever):
         for stream_data in self._read_pages(record_generator, _slice):
             if self.should_join_to_channel(self.config, stream_data):
                 self.join_channel(self.config, stream_data)
+            elif not self.config["join_channels"] and not stream_data.get("is_member"):
+                # Skip non-member channels when auto-join is disabled to prevent
+                # child streams from creating cursors for inaccessible channels.
+                continue
 
             yield stream_data
 

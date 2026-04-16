@@ -1685,6 +1685,17 @@ spec:
         order: 4
         title: Lookback Window
         default: 14
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: >-
+          Number of concurrent threads for syncing. Higher values can speed up
+          syncs but may increase API rate limit usage. Adjust based on your
+          Freshdesk API plan.
+        default: 6
+        minimum: 2
+        maximum: 16
+        order: 5
     additionalProperties: true
 
 metadata:
@@ -3725,6 +3736,11 @@ schemas:
           - string
           - "null"
     additionalProperties: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 6) }}"
+  max_concurrency: 16
 
 api_budget:
   type: HTTPAPIBudget
