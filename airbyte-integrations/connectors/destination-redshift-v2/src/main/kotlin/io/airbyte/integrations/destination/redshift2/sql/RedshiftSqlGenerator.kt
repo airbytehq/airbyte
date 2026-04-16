@@ -312,7 +312,9 @@ class RedshiftSqlGenerator {
             buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
 
         val updateAssignments =
-            allTargetColumns.joinToString(",\n    ") { col -> "$col = $dedupTableAlias.$col" }
+            allTargetColumns
+                .filter { it !in primaryKeyTargetColumns }
+                .joinToString(",\n    ") { col -> "$col = $dedupTableAlias.$col" }
 
         val skipCdcDeletedClause =
             if (cdcHardDeleteEnabled) {
