@@ -2,15 +2,101 @@ import { usePluginData } from "@docusaurus/useGlobalData";
 import TabItem from "@theme/TabItem";
 import Tabs from "@theme/Tabs";
 import { useEffect, useState } from "react";
-import { REGISTRY_URL } from "../constants";
+import { OSS_REGISTRY_URL, CLOUD_REGISTRY_URL } from "../constants";
 import styles from "./ConnectorRegistry.module.css";
 
 const iconStyle = { maxWidth: 25, maxHeight: 25 };
 
-async function fetchCatalog(url, setter) {
-  const response = await fetch(url);
-  const registry = await response.json();
-  setter(registry);
+const GITHUB_REPO_NAME = "airbytehq/airbyte";
+const CONNECTORS_PATH = "airbyte-integrations/connectors";
+
+function buildCompositeEntry(oss, cloud, connectorType, dockerRepository) {
+  const connectorName = dockerRepository.replace("airbyte/", "");
+  const definitionId =
+    oss?.sourceDefinitionId ||
+    oss?.destinationDefinitionId ||
+    cloud?.sourceDefinitionId ||
+    cloud?.destinationDefinitionId ||
+    "";
+
+  const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
+  const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
+  const issueUrl = `https://github.com/${GITHUB_REPO_NAME}/issues?q=is:open+is:issue+label:${issuesLabel}`;
+
+  return {
+    connector_type: connectorType,
+    definitionId,
+    is_oss: oss != null,
+    is_cloud: cloud != null,
+    github_url: githubUrl,
+    issue_url: issueUrl,
+
+    name_oss: oss?.name || cloud?.name || "",
+    dockerRepository_oss: oss?.dockerRepository || dockerRepository,
+    dockerImageTag_oss: oss?.dockerImageTag || "",
+    supportLevel_oss: oss?.supportLevel || cloud?.supportLevel || "community",
+    iconUrl_oss: oss?.iconUrl || cloud?.iconUrl || "",
+    documentationUrl_oss: oss?.documentationUrl || cloud?.documentationUrl || "",
+
+    name_cloud: cloud?.name || oss?.name || "",
+    dockerRepository_cloud: cloud?.dockerRepository || "",
+    dockerImageTag_cloud: cloud?.dockerImageTag || "",
+    supportLevel_cloud: cloud?.supportLevel || "",
+    documentationUrl_cloud: cloud?.documentationUrl || "",
+  };
+}
+
+function mergeRegistries(ossRegistry, cloudRegistry) {
+  const ossSourcesByRepo = new Map();
+  for (const src of ossRegistry.sources || []) {
+    ossSourcesByRepo.set(src.dockerRepository, src);
+  }
+  const ossDestsByRepo = new Map();
+  for (const dst of ossRegistry.destinations || []) {
+    ossDestsByRepo.set(dst.dockerRepository, dst);
+  }
+  const cloudSourcesByRepo = new Map();
+  for (const src of cloudRegistry.sources || []) {
+    cloudSourcesByRepo.set(src.dockerRepository, src);
+  }
+  const cloudDestsByRepo = new Map();
+  for (const dst of cloudRegistry.destinations || []) {
+    cloudDestsByRepo.set(dst.dockerRepository, dst);
+  }
+
+  const allSourceRepos = new Set([
+    ...ossSourcesByRepo.keys(),
+    ...cloudSourcesByRepo.keys(),
+  ]);
+  const allDestRepos = new Set([
+    ...ossDestsByRepo.keys(),
+    ...cloudDestsByRepo.keys(),
+  ]);
+
+  const merged = [];
+  for (const repo of allSourceRepos) {
+    const oss = ossSourcesByRepo.get(repo) || null;
+    const cloud = cloudSourcesByRepo.get(repo) || null;
+    merged.push(buildCompositeEntry(oss, cloud, "source", repo));
+  }
+  for (const repo of allDestRepos) {
+    const oss = ossDestsByRepo.get(repo) || null;
+    const cloud = cloudDestsByRepo.get(repo) || null;
+    merged.push(buildCompositeEntry(oss, cloud, "destination", repo));
+  }
+  return merged;
+}
+
+async function fetchCatalog(setter) {
+  const [ossResponse, cloudResponse] = await Promise.all([
+    fetch(OSS_REGISTRY_URL),
+    fetch(CLOUD_REGISTRY_URL),
+  ]);
+  const [ossRegistry, cloudRegistry] = await Promise.all([
+    ossResponse.json(),
+    cloudResponse.json(),
+  ]);
+  setter(mergeRegistries(ossRegistry, cloudRegistry));
 }
 
 /*
@@ -122,7 +208,7 @@ export default function ConnectorRegistry({ type }) {
   const [enterpriseConnectors, setEnterpriseConnectors] = useState([]);
 
   useEffect(() => {
-    fetchCatalog(REGISTRY_URL, setRegistry);
+    fetchCatalog(setRegistry);
   }, []);
 
   useEffect(() => {

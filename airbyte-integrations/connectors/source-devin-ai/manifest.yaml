@@ -1,0 +1,459 @@
+version: "4.6.2"
+type: DeclarativeSource
+
+definitions:
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['api_token'] }}"
+
+  base_requester:
+    type: HttpRequester
+    url_base: "https://api.devin.ai"
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 5
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+            - 500
+            - 502
+            - 503
+            - 504
+
+  cursor_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: first
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 100
+      cursor_value: "{{ response.get('end_cursor', '') }}"
+      stop_condition: "{{ not response.get('has_next_page', False) }}"
+    page_token_option:
+      type: RequestOption
+      field_name: after
+      inject_into: request_parameter
+
+  sessions_stream:
+    type: DeclarativeStream
+    name: sessions
+    description: "List all Devin sessions for your organization."
+    primary_key:
+      - session_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/v3/organizations/{{ config['org_id'] }}/sessions"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          session_id:
+            type: string
+          url:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          status_detail:
+            type:
+              - string
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          playbook_id:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          org_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - integer
+              - "null"
+          updated_at:
+            type:
+              - integer
+              - "null"
+          is_archived:
+            type:
+              - boolean
+              - "null"
+          acus_consumed:
+            type:
+              - number
+              - "null"
+          pull_requests:
+            type:
+              - array
+              - "null"
+            items:
+              type: object
+              properties:
+                pr_url:
+                  type: string
+                pr_state:
+                  type: string
+          is_advanced:
+            type:
+              - boolean
+              - "null"
+          parent_session_id:
+            type:
+              - string
+              - "null"
+          child_session_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type: string
+          service_user_id:
+            type:
+              - string
+              - "null"
+          structured_output:
+            type:
+              - object
+              - "null"
+
+  session_messages_stream:
+    type: DeclarativeStream
+    name: session_messages
+    description: "List all messages in a Devin session conversation."
+    primary_key:
+      - event_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/v3/organizations/{{ config['org_id'] }}/sessions/devin-{{ stream_slice.session_id }}/messages"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: NoPagination
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/sessions_stream"
+            parent_key: session_id
+            partition_field: session_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - session_id
+            value: "{{ stream_slice.session_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          event_id:
+            type: string
+          source:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - integer
+              - "null"
+          session_id:
+            type:
+              - string
+              - "null"
+
+  playbooks_stream:
+    type: DeclarativeStream
+    name: playbooks
+    description: "List all team playbooks for the organization."
+    primary_key:
+      - playbook_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/v3/organizations/{{ config['org_id'] }}/playbooks"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          playbook_id:
+            type: string
+          title:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - string
+              - "null"
+          macro:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          org_id:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - integer
+              - "null"
+          updated_at:
+            type:
+              - integer
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          updated_by:
+            type:
+              - string
+              - "null"
+
+  secrets_stream:
+    type: DeclarativeStream
+    name: secrets
+    description: "List metadata for all secrets in your organization. Does not return secret values."
+    primary_key:
+      - secret_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/v3/organizations/{{ config['org_id'] }}/secrets"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          secret_id:
+            type: string
+          key:
+            type:
+              - string
+              - "null"
+          note:
+            type:
+              - string
+              - "null"
+          is_sensitive:
+            type:
+              - boolean
+              - "null"
+          created_by:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - integer
+              - "null"
+          secret_type:
+            type:
+              - string
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - integer
+              - "null"
+          updated_by:
+            type:
+              - string
+              - "null"
+
+  knowledge_notes_stream:
+    type: DeclarativeStream
+    name: knowledge_notes
+    description: "List all knowledge notes for the organization."
+    primary_key:
+      - note_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: "/v3/organizations/{{ config['org_id'] }}/knowledge/notes"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          note_id:
+            type: string
+          folder_id:
+            type:
+              - string
+              - "null"
+          folder_path:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - string
+              - "null"
+          trigger:
+            type:
+              - string
+              - "null"
+          is_enabled:
+            type:
+              - boolean
+              - "null"
+          created_at:
+            type:
+              - integer
+              - "null"
+          updated_at:
+            type:
+              - integer
+              - "null"
+          access_type:
+            type:
+              - string
+              - "null"
+          org_id:
+            type:
+              - string
+              - "null"
+          macro:
+            type:
+              - string
+              - "null"
+          pinned_repo:
+            type:
+              - string
+              - "null"
+
+check:
+  type: CheckStream
+  stream_names:
+    - sessions
+
+streams:
+  - $ref: "#/definitions/sessions_stream"
+  - $ref: "#/definitions/session_messages_stream"
+  - $ref: "#/definitions/playbooks_stream"
+  - $ref: "#/definitions/secrets_stream"
+  - $ref: "#/definitions/knowledge_notes_stream"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/devin-ai
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Source Devin AI Spec
+    type: object
+    additionalProperties: true
+    properties:
+      api_token:
+        type: string
+        title: API Token
+        description: "Devin API key for authentication (cog_* prefix for service users)."
+        airbyte_secret: true
+        order: 0
+      org_id:
+        type: string
+        title: Organization ID
+        description: "Your Devin organization ID (org_* prefix)."
+        order: 1
+    required:
+      - api_token
+      - org_id
