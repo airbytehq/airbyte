@@ -1,5 +1,5 @@
 # Airbyte Agents release notes
 
-import DocCardList from '@theme/DocCardList';
+## May 4, 2026
 
-<DocCardList />
+Initial release of Airbyte Agents.
