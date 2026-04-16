@@ -19,16 +19,35 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eaf50f04-21dd-4620-913b-2a83f5635227
-  dockerImageTag: 1.2.15
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-microsoft-teams
   githubIssueLabel: source-microsoft-teams
   icon: microsoft-teams.svg
   license: ELv2
   name: Microsoft Teams
   releaseDate: 2020-12-21
-  releaseStage: alpha
+  releaseStage: beta
   releases:
     breakingChanges:
+      2.0.0:
+        message:
+          "Version 2.0.0 is a major overhaul of the Microsoft Teams connector. Five
+          legacy streams have been removed: conversations, conversation_threads,
+          conversation_posts, channel_tabs, and team_device_usage_report. These are
+          replaced by modern Microsoft Graph API streams including channel_messages,
+          channel_message_replies, chats, chat_messages, and more. Users must refresh
+          their schema and reconfigure affected connections. See the <a
+          href='https://docs.airbyte.com/integrations/sources/microsoft-teams-migrations'>migration
+          guide</a> for details."
+        upgradeDeadline: "2026-04-29"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - conversations
+              - conversation_threads
+              - conversation_posts
+              - channel_tabs
+              - team_device_usage_report
       1.0.0:
         message:
           Version 1.0.0 introduces breaking schema changes to all streams.

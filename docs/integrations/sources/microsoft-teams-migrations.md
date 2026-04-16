@@ -1,5 +1,60 @@
 # Microsoft Teams Migration Guide
 
+## Upgrading to 2.0.0
+
+Version 2.0.0 is a major overhaul of the Microsoft Teams connector. It replaces legacy Outlook group conversation APIs with modern Microsoft Graph Teams APIs and adds comprehensive coverage for agent search use cases.
+
+### Removed streams
+
+The following streams have been removed:
+
+| Removed Stream | Replacement |
+| :--- | :--- |
+| `conversations` | `channel_messages` |
+| `conversation_threads` | `channel_messages` |
+| `conversation_posts` | `channel_message_replies` |
+| `channel_tabs` | _(no replacement — low search value)_ |
+| `team_device_usage_report` | _(no replacement — admin analytics, low search value)_ |
+
+### New streams added
+
+- `teams`, `channel_messages`, `channel_message_replies`, `chats`, `chat_messages`, `team_members`, `channel_members` (restructured), `chat_members`, `online_meetings`, `meeting_transcripts`, `meeting_attendance_reports`, `tags`, `tag_members`
+
+### Required permissions
+
+New API permissions are required for the new streams. See the [setup guide](microsoft-teams.md) for the full list. Key additions include:
+
+- `Team.ReadBasic.All` — for the teams stream
+- `Chat.Read.All` / `ChatMessage.Read.All` — for chats and chat messages
+- `ChannelMessage.Read.All` — for channel messages and replies
+- `OnlineMeetings.Read.All` — for online meetings
+- `TeamworkTag.Read.All` — for tags
+
+### Migration steps
+
+1. Select **Connections** in the main navbar.
+2. From the list of your existing connections, select the connection(s) affected by the update.
+3. Select the **Replication** tab, then select **Refresh source schema**.
+
+:::note
+Any detected schema changes will be listed for your review. Select **OK** when you are ready to proceed.
+:::
+
+4. Remove any of the deleted streams (`conversations`, `conversation_threads`, `conversation_posts`, `channel_tabs`, `team_device_usage_report`) from your configured catalog.
+5. Enable the new replacement streams (`channel_messages`, `channel_message_replies`, etc.) as needed.
+6. Ensure your Azure AD app registration has the new required permissions listed above.
+7. At the bottom of the page, select **Save changes**.
+
+:::caution
+Depending on your destination, you may be prompted to **Reset all streams**. This is recommended to ensure clean data with the new schema.
+:::
+
+8. Select **Save connection**. This will reset the data in your destination (if selected) and initiate a fresh sync.
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
+---
+
 ## Upgrading to 1.0.0
 
 Version 1.0.0 of the Microsoft Teams source connector introduces breaking changes to the schemas of all streams. A full schema refresh is required to ensure a seamless upgrade to this version.
