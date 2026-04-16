@@ -630,6 +630,60 @@ def test_extractor_supports_associations_list_interpolation(config, associations
             "abc123",
             id="test_non_numeric_string_returns_original_value_for_number_type",
         ),
+        pytest.param(
+            "3092727991;3881228353;15895321999",
+            {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]},
+            "3092727991;3881228353;15895321999",
+            id="test_oneOf_number_string_semicolon_separated_returns_original_string",
+        ),
+        pytest.param(
+            "42",
+            {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]},
+            42,
+            id="test_oneOf_number_string_numeric_value_cast_to_int",
+        ),
+        pytest.param(
+            "3.14",
+            {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]},
+            3.14,
+            id="test_oneOf_number_string_float_value_cast_to_float",
+        ),
+        pytest.param(
+            None,
+            {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]},
+            None,
+            id="test_oneOf_number_string_null_returns_none",
+        ),
+        pytest.param(
+            "",
+            {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]},
+            "",
+            id="test_oneOf_number_string_empty_string_passes_through_as_valid_string",
+        ),
+        pytest.param(
+            "true",
+            {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]},
+            True,
+            id="test_oneOf_boolean_string_true_cast_to_boolean",
+        ),
+        pytest.param(
+            "false",
+            {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]},
+            False,
+            id="test_oneOf_boolean_string_false_cast_to_boolean",
+        ),
+        pytest.param(
+            "not_a_boolean",
+            {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]},
+            "not_a_boolean",
+            id="test_oneOf_boolean_string_non_boolean_returns_original_string",
+        ),
+        pytest.param(
+            None,
+            {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]},
+            None,
+            id="test_oneOf_boolean_string_null_returns_none",
+        ),
     ],
 )
 def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):
@@ -640,6 +694,45 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     normalized_value = transform_function(original_value=original_value, field_schema=field_schema)
 
     assert normalized_value == expected_value
+
+
+@pytest.mark.parametrize(
+    "field,expected_schema",
+    [
+        pytest.param(
+            {"name": "amount", "type": "number"},
+            {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]},
+            id="number_field_produces_oneOf_number_string",
+        ),
+        pytest.param(
+            {"name": "is_active", "type": "boolean"},
+            {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]},
+            id="boolean_field_produces_oneOf_boolean_string",
+        ),
+        pytest.param(
+            {"name": "is_archived", "type": "bool"},
+            {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]},
+            id="bool_field_produces_oneOf_boolean_string",
+        ),
+        pytest.param(
+            {"name": "email", "type": "string"},
+            {"type": ["null", "string"]},
+            id="string_field_produces_nullable_string",
+        ),
+        pytest.param(
+            {"name": "created_at", "type": "datetime"},
+            {"type": ["null", "string"], "format": "date-time"},
+            id="datetime_field_produces_nullable_datetime",
+        ),
+    ],
+)
+def test_hubspot_custom_objects_schema_loader_field_to_property_schema(components_module, field, expected_schema):
+    loader = components_module.HubspotCustomObjectsSchemaLoader(
+        config={},
+        parameters={"schema_properties": [field]},
+    )
+    schema = loader.get_json_schema()
+    assert schema["properties"]["properties"]["properties"][field["name"]] == expected_schema
 
 
 @pytest.mark.parametrize(

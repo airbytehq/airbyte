@@ -425,6 +425,23 @@ class EntitySchemaNormalization(TypeTransformer):
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
 
+            # Handle oneOf schema structures (e.g. {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]})
+            # by extracting and flattening all types into a single list.
+            if target_type is None and "oneOf" in field_schema:
+                all_types: set[str] = set()
+                for one_of_item in field_schema["oneOf"]:
+                    item_type = one_of_item.get("type", [])
+                    if isinstance(item_type, list):
+                        all_types.update(item_type)
+                    elif isinstance(item_type, str):
+                        all_types.add(item_type)
+                target_type = list(all_types)
+
+            if target_type is None:
+                target_type = []
+            elif isinstance(target_type, str):
+                target_type = [target_type]
+
             if "null" in target_type:
                 if original_value is None:
                     return original_value
@@ -856,9 +873,9 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
         elif field_type == "date":
             return {"type": ["null", "string"], "format": "date"}
         elif field_type == "number":
-            return {"type": ["null", "number"]}
+            return {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]}
         elif field_type == "boolean" or field_type == "bool":
-            return {"type": ["null", "boolean"]}
+            return {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]}
         else:
             logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
             return {"type": ["null", "string"]}

@@ -248,7 +248,9 @@ definitions:
         - properties
       types_mapping:
         - type: TypesMap
-          target_type: boolean
+          target_type:
+            - boolean
+            - string
           current_type: bool
         - type: TypesMap
           target_type: date
@@ -265,6 +267,11 @@ definitions:
         - type: TypesMap
           target_type: string
           current_type: json
+        - type: TypesMap
+          target_type:
+            - number
+            - string
+          current_type: number
         - type: TypesMap
           target_type: string
           current_type: object_coordinates
@@ -1822,7 +1829,9 @@ definitions:
             target_type: timestamp_with_timezone
             current_type: date-time
           - type: TypesMap
-            target_type: boolean
+            target_type:
+              - boolean
+              - string
             current_type: bool
           - type: TypesMap
             target_type: date
@@ -1830,6 +1839,11 @@ definitions:
           - type: TypesMap
             target_type: string
             current_type: json
+          - type: TypesMap
+            target_type:
+              - number
+              - string
+            current_type: number
           - type: TypesMap
             target_type: string
             current_type: phone_number
