@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -81,33 +80,6 @@ class RedshiftSqlGenerator {
 
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};".andLog()
-
-    /** Simplified `CREATE TABLE` for check/test tables that don't have a `DestinationStream` */
-    fun createTableForCheck(tableName: TableName, tableSchema: StreamTableSchema): String {
-        val metaColumns = META_COLUMNS
-        val userColumns = tableSchema.columnSchema.finalSchema
-
-        val columnDeclarations =
-            buildList {
-                    metaColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                    }
-                    userColumns.forEach { (columnName, columnType) ->
-                        val nullability = if (columnType.nullable) "" else " NOT NULL"
-                        add("${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                    }
-                }
-                .joinToString(",\n    ")
-
-        return """
-            |CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} (
-            |    $columnDeclarations
-            |);
-        """
-            .trimMargin()
-            .andLog()
-    }
 
     fun addColumn(tableName: TableName, columnName: String, columnType: String): String =
         "ALTER TABLE ${getFullyQualifiedName(tableName)} ADD COLUMN ${quoteIdentifier(columnName)} $columnType;".andLog()

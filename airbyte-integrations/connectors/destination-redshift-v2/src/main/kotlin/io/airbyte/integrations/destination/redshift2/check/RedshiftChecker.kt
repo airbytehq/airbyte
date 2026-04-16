@@ -8,6 +8,8 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
@@ -155,7 +157,7 @@ class RedshiftChecker(
         log.info { "Test 3: Check CREATE access for ${tableName.namespace}.${tableName.name}..." }
         val createSchemaSql = sqlGenerator.createNamespace(tableName.namespace)
         val createTableSql =
-            sqlGenerator.createTableForCheck(tableName, buildCheckTableSchema(tableName))
+            sqlGenerator.createTable(buildCheckStream(tableName), tableName, replace = false)
 
         dataSource.connection.use { conn ->
             conn.createStatement().use { stmt ->
@@ -245,24 +247,34 @@ class RedshiftChecker(
         return "${prefix}_airbyte_check_$testId.csv.gz"
     }
 
-    /** Builds a [StreamTableSchema] for the check table with one user column (`test_key`). */
-    private fun buildCheckTableSchema(tableName: TableName): StreamTableSchema =
-        StreamTableSchema(
-            tableNames =
-                TableNames(
-                    finalTableName = tableName,
-                    tempTableName = tableName,
-                ),
-            columnSchema =
-                ColumnSchema(
-                    inputToFinalColumnNames = mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
-                    finalSchema =
-                        mapOf(
-                            CHECK_COLUMN_NAME to ColumnType(RedshiftDataType.VARCHAR.typeName, true)
+    /** Builds a [DestinationStream] for the check table with one user column (`test_key`). */
+    private fun buildCheckStream(tableName: TableName): DestinationStream =
+        DestinationStream(
+            unmappedNamespace = tableName.namespace,
+            unmappedName = tableName.name,
+            generationId = 0L,
+            minimumGenerationId = 0L,
+            syncId = 0L,
+            namespaceMapper = NamespaceMapper(),
+            tableSchema =
+                StreamTableSchema(
+                    tableNames =
+                        TableNames(
+                            finalTableName = tableName,
+                            tempTableName = tableName,
                         ),
-                    inputSchema = emptyMap(),
+                    columnSchema =
+                        ColumnSchema(
+                            inputToFinalColumnNames = mapOf(CHECK_COLUMN_NAME to CHECK_COLUMN_NAME),
+                            finalSchema =
+                                mapOf(
+                                    CHECK_COLUMN_NAME to
+                                        ColumnType(RedshiftDataType.VARCHAR.typeName, true)
+                                ),
+                            inputSchema = emptyMap(),
+                        ),
+                    importType = Append,
                 ),
-            importType = Append,
         )
 
     /**
