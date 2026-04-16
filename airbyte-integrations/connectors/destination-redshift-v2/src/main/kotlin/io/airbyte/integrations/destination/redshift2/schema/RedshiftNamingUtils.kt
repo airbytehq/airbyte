@@ -36,13 +36,10 @@ fun String.toRedshiftCompatibleName(): String {
         transformed = "_$transformed"
     }
 
-    // Truncate to 127 bytes if needed (Redshift identifier limit).
-    // Since the string is ASCII-only at this point, 1 char = 1 byte.
-    // Keep a prefix and append a hex hash suffix to avoid collisions.
+    // Truncate to 127 bytes by keeping a prefix and append a hex hash suffix to avoid collisions.
     if (transformed.length > REDSHIFT_MAX_IDENTIFIER_LENGTH) {
         val hash = transformed.hashCode().toUInt().toString(16).takeLast(8)
-        transformed =
-            transformed.take(REDSHIFT_MAX_IDENTIFIER_LENGTH - 1 - hash.length) + "_" + hash
+        transformed = transformed.take(118) + "_" + hash
     }
 
     return transformed
