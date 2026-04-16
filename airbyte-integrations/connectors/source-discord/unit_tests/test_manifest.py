@@ -1,10 +1,13 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 """Unit tests for the source-discord connector manifest."""
 
 import json
-import yaml
-import pytest
-from unittest.mock import MagicMock, patch
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+import yaml
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
@@ -101,9 +104,7 @@ class TestBaseRequester:
         requester = manifest["definitions"]["base_requester"]
         error_handler = requester["error_handler"]
         response_filters = error_handler["response_filters"]
-        server_error_filter = [
-            f for f in response_filters if any(code in f.get("http_codes", []) for code in [500, 502, 503])
-        ]
+        server_error_filter = [f for f in response_filters if any(code in f.get("http_codes", []) for code in [500, 502, 503])]
         assert len(server_error_filter) == 1
         assert server_error_filter[0]["action"] == "RETRY"
 
@@ -392,9 +393,7 @@ class TestSchemas:
 
     def test_all_schemas_allow_additional_properties(self, manifest):
         for name, schema in manifest["schemas"].items():
-            assert schema.get("additionalProperties") is True, (
-                f"Schema '{name}' does not allow additionalProperties"
-            )
+            assert schema.get("additionalProperties") is True, f"Schema '{name}' does not allow additionalProperties"
 
     def test_all_schemas_have_id_field(self, manifest):
         schemas_with_id = [
