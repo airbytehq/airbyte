@@ -135,8 +135,7 @@ class ClickhouseSqlGeneratorTest {
     fun `test renameTable`() {
         val sourceTable = TableName("source_db", "source_table")
         val targetTable = TableName("target_db", "target_table")
-        val expectedSql =
-            "RENAME TABLE `source_db`.`source_table` TO `target_db`.`target_table`;"
+        val expectedSql = "RENAME TABLE `source_db`.`source_table` TO `target_db`.`target_table`;"
         val actualSql = clickhouseSqlGenerator.renameTable(sourceTable, targetTable)
 
         Assertions.assertEquals(expectedSql, actualSql)
