@@ -278,6 +278,7 @@ const config: Config = {
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
+    require.resolve("./src/plugins/agentConnectors"),
     [
       "@signalwire/docusaurus-plugin-llms-txt",
       {
