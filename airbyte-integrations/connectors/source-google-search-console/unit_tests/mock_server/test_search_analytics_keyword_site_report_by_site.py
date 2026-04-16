@@ -459,9 +459,9 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
         )
         assert len(records) >= 1
         for record in records:
-            assert record.record.data["search_appearance"] == "PRODUCT_SNIPPETS", (
-                f"Unexpected search_appearance in record: {record.record.data.get('search_appearance')}"
-            )
+            assert (
+                record.record.data["search_appearance"] == "PRODUCT_SNIPPETS"
+            ), f"Unexpected search_appearance in record: {record.record.data.get('search_appearance')}"
 
     @HttpMocker()
     def test_dimension_filter_groups_filters_is_an_array(self, http_mocker: HttpMocker) -> None:
@@ -505,9 +505,9 @@ class TestSearchAnalyticsKeywordSiteReportBySiteStream(TestCase):
             assert isinstance(filter_groups, list) and len(filter_groups) >= 1
             for group in filter_groups:
                 filters = group.get("filters")
-                assert isinstance(filters, list), (
-                    f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
-                )
+                assert isinstance(
+                    filters, list
+                ), f"dimensionFilterGroups[].filters must be a list (per GSC API spec), got {type(filters).__name__}: {filters!r}"
                 assert len(filters) >= 1
                 for f in filters:
                     assert f.get("dimension") == "searchAppearance"
