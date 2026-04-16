@@ -1670,16 +1670,14 @@ class TestCheckBreakdowns:
     breakdowns like product_id). See base_insight_streams.check_breakdowns for details.
     """
 
-    REDUCE_DATA_SUBCODE = 1487534
-
     @classmethod
-    def _make_fb_error(cls, message: str, subcode: int = REDUCE_DATA_SUBCODE) -> FacebookRequestError:
+    def _make_fb_error(cls, message: str) -> FacebookRequestError:
         return FacebookRequestError(
             message="Call was not successful",
             request_context={"method": "GET"},
             http_status=400,
             http_headers={},
-            body={"error": {"message": message, "code": 100, "error_subcode": subcode}},
+            body={"error": {"message": message, "code": 100}},
         )
 
     def _make_stream(self, api, some_config):
@@ -1743,7 +1741,7 @@ class TestCheckBreakdowns:
         """First attempt raises any other FacebookRequestError → re-raise, no retry."""
         stream = self._make_stream(api, some_config)
         account = api.get_account.return_value
-        account.get_insights.side_effect = self._make_fb_error("Invalid OAuth access token", subcode=460)
+        account.get_insights.side_effect = self._make_fb_error("Invalid OAuth access token")
 
         with pytest.raises(FacebookRequestError):
             stream.check_breakdowns(account_id=some_config["account_ids"][0])
@@ -1756,31 +1754,10 @@ class TestCheckBreakdowns:
         account = api.get_account.return_value
         account.get_insights.side_effect = [
             self._make_fb_error("Please reduce the amount of data you're asking for."),
-            self._make_fb_error("Invalid parameter", subcode=0),
+            self._make_fb_error("Invalid parameter"),
         ]
 
         with pytest.raises(FacebookRequestError):
             stream.check_breakdowns(account_id=some_config["account_ids"][0])
 
         assert account.get_insights.call_count == 2
-
-    def test_check_breakdowns_matches_reduce_data_via_string_when_subcode_absent(self, api, some_config):
-        """Error lacks subcode 1487534 but message contains "reduce the amount of data"
-        → string-fallback branch of `_is_reduce_data_error` fires and the retry path runs.
-
-        Guards against Facebook changing/removing the subcode: the string match is our
-        only detection signal in that case.
-        """
-        stream = self._make_stream(api, some_config)
-        account = api.get_account.return_value
-        account.get_insights.side_effect = [
-            self._make_fb_error("Please reduce the amount of data you're asking for.", subcode=0),
-            [],
-        ]
-
-        stream.check_breakdowns(account_id=some_config["account_ids"][0])
-
-        assert account.get_insights.call_count == 2
-        second_params = account.get_insights.call_args_list[1].kwargs["params"]
-        today = date.today().strftime("%Y-%m-%d")
-        assert second_params["time_range"] == {"since": today, "until": today}

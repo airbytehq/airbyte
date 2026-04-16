@@ -488,14 +488,14 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     @staticmethod
     def _is_reduce_data_error(error: FacebookRequestError) -> bool:
-        """Match the Facebook "reduce the amount of data" synchronous-call data-volume limit error.
+        """Match Facebook's synchronous-call data-volume-limit error by message.
 
-        Error-code stability note: Facebook often returns this as subcode 1487534 under code 100,
-        but we also fall back to a case-insensitive string match because the subcode is not
-        documented as stable and error strings are what existing users see in logs today.
+        Facebook does not publish a stable `error_subcode` for this case, and the real
+        payloads observed in the oncall issue (airbytehq/oncall#11482) and the public
+        issue airbytehq/airbyte#38025 contain only `code: 1` / `code: 100` with no
+        subcode. The message text is what every affected user actually sees, so we
+        match on it. If Facebook ever introduces a stable subcode, add it here.
         """
-        if error.api_error_subcode() == 1487534:
-            return True
         return "reduce the amount of data" in str(error).lower()
 
     def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
