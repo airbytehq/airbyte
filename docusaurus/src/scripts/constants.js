@@ -2,7 +2,6 @@ const path = require("path");
 
 const DATA_DIR = path.join(__dirname, "..", "data");
 const REGISTRY_CACHE_PATH = path.join(DATA_DIR, "connector_registry_slim.json");
-const AGENT_CONNECTOR_MANIFEST_PATH = path.join(DATA_DIR, "agent_connectors.json");
 const OSS_REGISTRY_URL =
   "https://connectors.airbyte.com/files/registries/v0/oss_registry.json";
 const CLOUD_REGISTRY_URL =
@@ -17,7 +16,6 @@ const ENTERPRISE_CONNECTORS_DOCS = `${CONNECTORS_DOCS_ROOT}/enterprise-connector
 module.exports = {
   DATA_DIR,
   REGISTRY_CACHE_PATH,
-  AGENT_CONNECTOR_MANIFEST_PATH,
   OSS_REGISTRY_URL,
   CLOUD_REGISTRY_URL,
   CONNECTORS_DOCS_ROOT,
