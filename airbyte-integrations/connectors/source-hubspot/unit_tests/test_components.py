@@ -180,9 +180,7 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
         ),
     ],
 )
-def test_hubspot_coerce_numbers_and_booleans_to_string_transformation(
-    components_module, input_record, config, expected_record
-):
+def test_hubspot_coerce_numbers_and_booleans_to_string_transformation(components_module, input_record, config, expected_record):
     transformation = components_module.HubspotCoerceNumbersAndBooleansToStringTransformation()
     transformation.transform(record=input_record, config=config)
     assert input_record == expected_record
