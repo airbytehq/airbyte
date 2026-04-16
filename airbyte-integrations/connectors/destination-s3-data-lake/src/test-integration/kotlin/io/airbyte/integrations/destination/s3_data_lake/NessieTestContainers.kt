@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3_data_lake
 
-import io.airbyte.cdk.load.util.setOnce
 import java.io.File
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -39,7 +38,7 @@ object NessieTestContainers {
      * finish starting
      */
     fun start() {
-        if (startNessieContainerRunOnce.setOnce()) {
+        if (startNessieContainerRunOnce.compareAndSet(false, true)) {
             testcontainers.start()
         }
     }

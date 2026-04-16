@@ -5,13 +5,12 @@ from unittest import TestCase, mock
 
 from source_github import SourceGithub
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, Level, SyncMode, TraceType
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStreamStatus, Level, TraceType
 
 from .config import ConfigBuilder
 
@@ -179,13 +178,14 @@ class EventsTest(TestCase):
             .with_stream_state("events", {"airbytehq/integration-test": {"created_at": "2020-06-09T10:00:00Z"}})
             .build(),
         )
-        assert actual_messages.state_messages[0].state.stream.stream_state.dict() == {
+        assert actual_messages.state_messages[0].state.stream.stream_state.__dict__ == {
             "airbytehq/integration-test": {"created_at": "2022-06-09T12:47:28Z"}
         }
 
     @mock.patch("time.sleep")
-    def test_read_handles_expected_error_correctly_and_exits_with_complete_status(self, time_mock):
-        """Ensure read() method does not raise an Exception and log message with error is in output"""
+    def test_read_handles_permission_error_correctly_and_exits_with_incomplete_status(self, time_mock):
+        """Ensure a 403 permission error (no rate-limit headers) fails immediately
+        and the stream exits with INCOMPLETE status rather than retrying indefinitely."""
         self.r_mock.get(
             HttpRequest(
                 url=f"https://api.github.com/repos/{_CONFIG.get('repositories')[0]}/events",
@@ -197,6 +197,6 @@ class EventsTest(TestCase):
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert Level.ERROR in [x.log.level for x in actual_messages.logs]
-        events_stream_complete_message = [x for x in actual_messages.trace_messages if x.trace.type == TraceType.STREAM_STATUS][-1]
-        assert events_stream_complete_message.trace.stream_status.stream_descriptor.name == "events"
-        assert events_stream_complete_message.trace.stream_status.status == AirbyteStreamStatus.COMPLETE
+        events_stream_status_message = [x for x in actual_messages.trace_messages if x.trace.type == TraceType.STREAM_STATUS][-1]
+        assert events_stream_status_message.trace.stream_status.stream_descriptor.name == "events"
+        assert events_stream_status_message.trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE

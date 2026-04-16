@@ -34,7 +34,7 @@ def test_next_page_token(patch_base_class):
     response.status_code = 200
     response.headers["content-type"] = "application/json"
     response._content = pagination_token.encode("utf-8")
-    expected_token = {"offset": 51}
+    expected_token = {"offset": 50, "limit": 50}
     assert stream.next_page_token(response) == expected_token
 
 

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql.v2.config
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -188,7 +189,12 @@ class BulkLoadSpecification(
     }"""
     )
     val validateValuesPreLoad: Boolean?,
-) : LoadType(loadType), AzureBlobStorageClientSpecification
+) : LoadType(loadType), AzureBlobStorageClientSpecification {
+    // Entra ID support isn't exposed at this moment in dest-MSSQL
+    @get:JsonIgnore override val azureClientId: String? = null
+    @get:JsonIgnore override val azureClientSecret: String? = null
+    @get:JsonIgnore override val azureTenantId: String? = null
+}
 
 /**
  * A marker interface for classes that hold the load configuration details. This helps unify both

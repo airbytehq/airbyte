@@ -77,6 +77,14 @@ class TestAdsReportHourly(TestCase):
         "cost_per_total_sales_lead",
         "cost_per_total_app_event_add_to_cart",
         "total_app_event_add_to_cart",
+        "engaged_view",
+        "engagements",
+        "paid_engaged_view",
+        "engaged_view_through_conversions",
+        "paid_engagement_engaged_view",
+        "engaged_view_15s",
+        "paid_engaged_view_15s",
+        "paid_engagement_engaged_view_15s",
         "spend",
         "cpc",
         "cpm",
@@ -199,7 +207,7 @@ class TestAdsReportHourly(TestCase):
             state=self.state(cursor=self.legacy_cursor),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.legacy_cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -383,7 +391,7 @@ class TestAdGroupsReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -544,7 +552,7 @@ class TestAdvertisersReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -662,7 +670,7 @@ class TestCampaignsReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]

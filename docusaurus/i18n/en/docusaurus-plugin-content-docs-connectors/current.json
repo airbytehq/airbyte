@@ -2453,15 +2453,11 @@
   },
   "sidebar.connectors.doc.Source Netsuite": {
     "message": "Source Netsuite",
-    "description": "The label for the doc item Source Netsuite in sidebar connectors, linking to the doc enterprise-connectors/source-netsuite"
+    "description": "The label for the doc item Source Netsuite in sidebar connectors, linking to the doc enterprise-connectors/source-netsuite-enterprise"
   },
   "sidebar.connectors.doc.Source Oracle": {
     "message": "Source Oracle",
     "description": "The label for the doc item Source Oracle in sidebar connectors, linking to the doc enterprise-connectors/source-oracle-enterprise"
-  },
-  "sidebar.connectors.doc.Source Salesforce Marketing Cloud Engagement": {
-    "message": "Source Salesforce Marketing Cloud Engagement",
-    "description": "The label for the doc item Source Salesforce Marketing Cloud Engagement in sidebar connectors, linking to the doc enterprise-connectors/source-salesforce-marketing-cloud"
   },
   "sidebar.connectors.doc.Source SAP HANA": {
     "message": "Source SAP HANA",

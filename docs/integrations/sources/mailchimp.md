@@ -111,6 +111,8 @@ Expand to see details about Mailchimp connector limitations and troubleshooting
 
 [Mailchimp does not impose rate limits](https://mailchimp.com/developer/guides/marketing-api-conventions/#throttling) on how much data is read from its API in a single sync process. However, Mailchimp enforces a maximum of 10 simultaneous connections to its API, which means that Airbyte is unable to run more than 10 concurrent syncs from Mailchimp using API keys generated from the same account.
 
+The connector includes a `num_workers` configuration parameter (default: 2, max: 10) that controls the number of concurrent threads used during syncing. You can increase this value to speed up syncs, but be mindful of the 10 simultaneous connections limit.
+
 </details>
 
 ## Tutorials
@@ -126,6 +128,28 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.23-rc.4 | 2026-04-13 | [76268](https://github.com/airbytehq/airbyte/pull/76268) | Add HTTPAPIBudget for rate limit enforcement (Phase 2 of concurrency tuning) |
+| 2.1.23-rc.3 | 2026-04-10 | [76232](https://github.com/airbytehq/airbyte/pull/76232) | Increase default_concurrency to 6 (iteration 3, final concurrency tuning) |
+| 2.1.23-rc.2 | 2026-04-08 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Increase default_concurrency to 5 (iteration 2 of concurrency tuning) |
+| 2.1.23-rc.1 | 2026-04-06 | [70860](https://github.com/airbytehq/airbyte/pull/70860) | Add concurrency_level and num_workers configuration for concurrency tuning |
+| 2.1.22 | 2026-04-01 | [75576](https://github.com/airbytehq/airbyte/pull/75576) | Add `oauth_connector_input_specification` for declarative OAuth |
+| 2.1.21 | 2026-03-31 | [75803](https://github.com/airbytehq/airbyte/pull/75803) | Update dependencies |
+| 2.1.20 | 2026-03-24 | [74579](https://github.com/airbytehq/airbyte/pull/74579) | Update dependencies |
+| 2.1.19 | 2026-03-03 | [74155](https://github.com/airbytehq/airbyte/pull/74155) | Update dependencies |
+| 2.1.18 | 2026-02-17 | [73380](https://github.com/airbytehq/airbyte/pull/73380) | Update dependencies |
+| 2.1.17 | 2026-02-10 | [73055](https://github.com/airbytehq/airbyte/pull/73055) | Update dependencies |
+| 2.1.16 | 2026-01-20 | [72019](https://github.com/airbytehq/airbyte/pull/72019) | Update dependencies |
+| 2.1.15 | 2026-01-14 | [71446](https://github.com/airbytehq/airbyte/pull/71446) | Update dependencies |
+| 2.1.14 | 2025-12-18 | [70791](https://github.com/airbytehq/airbyte/pull/70791) | Update dependencies |
+| 2.1.13 | 2025-11-25 | [70012](https://github.com/airbytehq/airbyte/pull/70012) | Update dependencies |
+| 2.1.12 | 2025-11-18 | [69453](https://github.com/airbytehq/airbyte/pull/69453) | Update dependencies |
+| 2.1.11 | 2025-10-29 | [68941](https://github.com/airbytehq/airbyte/pull/68941) | Update dependencies |
+| 2.1.10 | 2025-10-21 | [68319](https://github.com/airbytehq/airbyte/pull/68319) | Update dependencies |
+| 2.1.9 | 2025-10-14 | [68062](https://github.com/airbytehq/airbyte/pull/68062) | Update dependencies |
+| 2.1.8 | 2025-10-07 | [67516](https://github.com/airbytehq/airbyte/pull/67516) | Update dependencies |
+| 2.1.7 | 2025-09-30 | [66812](https://github.com/airbytehq/airbyte/pull/66812) | Update dependencies |
+| 2.1.6 | 2025-09-24 | [66653](https://github.com/airbytehq/airbyte/pull/66653) | Update dependencies |
+| 2.1.5 | 2025-09-09 | [66042](https://github.com/airbytehq/airbyte/pull/66042) | Update dependencies |
 | 2.1.4 | 2025-08-26 | [65557](https://github.com/airbytehq/airbyte/pull/65557) | Update dependencies |
 | 2.1.3 | 2025-08-23 | [65361](https://github.com/airbytehq/airbyte/pull/65361) | Update dependencies |
 | 2.1.2 | 2025-08-09 | [64625](https://github.com/airbytehq/airbyte/pull/64625) | Update dependencies |

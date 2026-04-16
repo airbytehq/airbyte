@@ -71,6 +71,18 @@
       "title": "Total interactions title",
       "description": "Total interactions description.",
       "id": "3874523487643/insights/total_interactions/lifetime"
+    },
+    {
+      "name": "views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 200
+        }
+      ],
+      "title": "Views title",
+      "description": "Views description.",
+      "id": "3874523487643/insights/views/lifetime"
     }
   ]
 }

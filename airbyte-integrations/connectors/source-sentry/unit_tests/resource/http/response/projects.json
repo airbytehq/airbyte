@@ -1,0 +1,15 @@
+[
+  {
+    "id": "proj123",
+    "slug": "test-project",
+    "name": "Test Project",
+    "platform": "javascript",
+    "dateCreated": "2023-01-01T00:00:00Z",
+    "status": "active",
+    "organization": {
+      "id": "org123",
+      "slug": "test-org",
+      "name": "Test Organization"
+    }
+  }
+]

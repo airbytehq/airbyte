@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read
@@ -8,20 +8,19 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.DataChannelFormat
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.output.sockets.ProtoEncoder
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
-import io.airbyte.cdk.output.sockets.nullProtoEncoder
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.output.sockets.toProtobuf
-import io.airbyte.cdk.output.sockets.toProtobufEncoder
+import io.airbyte.cdk.output.sockets.valueForProtobufEncoding
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -117,13 +116,13 @@ sealed class FeedBootstrap<T : Feed>(
 
         override fun accept(
             recordData: NativeRecordPayload,
-            changes: Map<Field, FieldValueChange>?
+            changes: Map<EmittedField, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(recordData.toJson())
             } else {
                 val protocolChanges: List<AirbyteRecordMessageMetaChange> =
-                    changes.map { (field: Field, fieldValueChange: FieldValueChange) ->
+                    changes.map { (field: EmittedField, fieldValueChange: FieldValueChange) ->
                         AirbyteRecordMessageMetaChange()
                             .withField(field.id)
                             .withChange(fieldValueChange.protocolChange())
@@ -231,7 +230,7 @@ sealed class FeedBootstrap<T : Feed>(
         val valueVBuilder = AirbyteValueProtobuf.newBuilder()!!
         override fun accept(
             recordData: NativeRecordPayload,
-            changes: Map<Field, FieldValueChange>?
+            changes: Map<EmittedField, FieldValueChange>?
         ) {
             if (changes.isNullOrEmpty()) {
                 acceptWithoutChanges(
@@ -241,7 +240,7 @@ sealed class FeedBootstrap<T : Feed>(
                 val rm = AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMeta.newBuilder()
                 val c =
                     AirbyteRecordMessageMetaOuterClass.AirbyteRecordMessageMetaChange.newBuilder()
-                changes.forEach { (field: Field, fieldValueChange: FieldValueChange) ->
+                changes.forEach { (field: EmittedField, fieldValueChange: FieldValueChange) ->
                     c.clear()
                         .setField(field.id)
                         .setChange(fieldValueChange.protobufChange())
@@ -320,26 +319,23 @@ sealed class FeedBootstrap<T : Feed>(
 
                     // Unlike STDIO mode, in socket mode we always include all scehma fields
                     // Including decorating field even when it has NULL value.
-                    // This is necessary beacuse in PROTOBUF mode we don't have field names so
+                    // This is necessary because in PROTOBUF mode we don't have field names so
                     // the sorted order of fields is used to determine the field position on the
                     // other side.
+                    val encoder = AirbyteValueProtobufEncoder()
                     stream.schema
                         .sortedBy { it.id }
                         .forEach { field ->
-                            builder.addData(
-                                when {
-                                    decoratingFields.keys.contains(field.id) -> {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (decoratingFields[field.id]!!
-                                                .jsonEncoder
-                                                .toProtobufEncoder() as ProtoEncoder<Any>)
-                                            .encode(
-                                                valueVBuilder.clear(),
-                                                decoratingFields[field.id]!!.fieldValue!!
-                                            )
-                                    }
-                                    else -> nullProtoEncoder.encode(valueVBuilder.clear(), true)
+                            val decodedValueForProto =
+                                decoratingFields[field.id]?.let { fve ->
+                                    valueForProtobufEncoding(fve)
                                 }
+                            builder.addData(
+                                encoder.encode(
+                                    decodedValueForProto,
+                                    field.type.airbyteSchemaType,
+                                    valueVBuilder.clear()
+                                )
                             )
                         }
                 }
@@ -497,7 +493,7 @@ interface StreamRecordConsumer {
 
     val stream: Stream
 
-    fun accept(recordData: NativeRecordPayload, changes: Map<Field, FieldValueChange>?)
+    fun accept(recordData: NativeRecordPayload, changes: Map<EmittedField, FieldValueChange>?)
     fun close()
 }
 

@@ -5,8 +5,6 @@
 from typing import Any, MutableMapping
 from unittest import mock
 
-import responses
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
@@ -61,13 +59,13 @@ class ProjectsResponsesAPI:
         return res
 
     @classmethod
-    def register(cls, data):
-        responses.upsert("GET", cls.projects_url, json=cls.get_json_projects(data))
+    def register(cls, data, requests_mock):
+        requests_mock.get(cls.projects_url, json=cls.get_json_projects(data))
         for project_id, project in enumerate(data, start=1):
-            responses.upsert("GET", cls.columns_url.format(project_id=project_id), json=cls.get_json_columns(project, project_id))
+            requests_mock.get(cls.columns_url.format(project_id=project_id), json=cls.get_json_columns(project, project_id))
             for n, column in enumerate(project.get("columns", []), start=1):
                 column_id = int(str(project_id) + str(n))
-                responses.upsert("GET", cls.cards_url.format(column_id=column_id), json=cls.get_json_cards(column, column_id))
+                requests_mock.get(cls.cards_url.format(column_id=column_id), json=cls.get_json_cards(column, column_id))
 
 
 def command_check(source: Source, config):

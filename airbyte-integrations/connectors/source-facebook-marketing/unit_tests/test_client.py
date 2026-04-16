@@ -4,7 +4,6 @@
 
 import json
 
-import pendulum
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
@@ -12,6 +11,7 @@ from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
@@ -92,8 +92,8 @@ class TestBackoff:
         stream = Campaigns(
             api=api,
             account_ids=[account_id],
-            start_date=pendulum.now(),
-            end_date=pendulum.now(),
+            start_date=ab_datetime_now(),
+            end_date=ab_datetime_now(),
         )
         try:
             records = list(
@@ -119,8 +119,8 @@ class TestBackoff:
         stream = Campaigns(
             api=api,
             account_ids=[account_id],
-            start_date=pendulum.now(),
-            end_date=pendulum.now(),
+            start_date=ab_datetime_now(),
+            end_date=ab_datetime_now(),
         )
 
         with pytest.raises(AirbyteTracedException) as exception:
@@ -275,8 +275,8 @@ class TestBackoff:
         stream = Campaigns(
             api=api,
             account_ids=[account_id],
-            start_date=pendulum.now(),
-            end_date=pendulum.now(),
+            start_date=ab_datetime_now(),
+            end_date=ab_datetime_now(),
             page_size=100,
         )
         try:
@@ -330,8 +330,8 @@ class TestBackoff:
         stream = Activities(
             api=api,
             account_ids=[account_id],
-            start_date=pendulum.now(),
-            end_date=pendulum.now(),
+            start_date=ab_datetime_now(),
+            end_date=ab_datetime_now(),
             page_size=100,
         )
         try:
@@ -410,8 +410,8 @@ class TestBackoff:
         stream = Videos(
             api=api,
             account_ids=[account_id],
-            start_date=pendulum.now(),
-            end_date=pendulum.now(),
+            start_date=ab_datetime_now(),
+            end_date=ab_datetime_now(),
             page_size=100,
         )
         try:

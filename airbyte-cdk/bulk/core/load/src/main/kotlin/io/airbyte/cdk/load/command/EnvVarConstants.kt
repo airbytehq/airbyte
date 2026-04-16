@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.command
@@ -21,11 +21,7 @@ package io.airbyte.cdk.load.command
 data class Property(val micronautProperty: String, val environmentVariable: String)
 
 object EnvVarConstants {
-    val FILE_TRANSFER_ENABLED =
-        Property(
-            "airbyte.destination.core.file-transfer.enabled",
-            "USE_FILE_TRANSFER",
-        )
+    val AIRBYTE_EDITION = Property("airbyte.edition", "AIRBYTE_EDITION")
     val RECORD_BATCH_SIZE =
         Property(
             "airbyte.destination.core.record-batch-size-override",

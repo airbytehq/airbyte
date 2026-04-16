@@ -1,0 +1,17 @@
+{
+  "list": [
+    {
+      "subscription": {
+        "id": "sub_001",
+        "customer_id": "cust_123",
+        "plan_id": "plan_123",
+        "status": "active",
+        "updated_at": 1705312800,
+        "created_at": 1704067200,
+        "cf_contract_type": "Annual",
+        "cf_sales_channel": "Direct"
+      }
+    }
+  ],
+  "next_offset": "offset_page_2"
+}

@@ -62,7 +62,23 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
 3. Click **Save**.
 
+4. (Optional) To allow users to access Airbyte directly from their Okta dashboard, configure IdP-Initiated Login. In the **General** tab of your Airbyte application, scroll to **Login initiated by** and configure the following settings:
+
+    - **Login initiated by**: `Either Okta or App`
+
+    - **Application visibility**: Check `Display application icon to users`
+
+    - **Login flow**: `Redirect to app to initiate login (OIDC Compliant)`
+
+    - **Initiate login URI**: `https://cloud.airbyte.com`
+
+    Click **Save**. After this configuration, users see an Airbyte tile in their Okta dashboard and can click it to sign into Airbyte.
+
 #### Configure SSO in Airbyte
+
+:::info
+Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
+:::
 
 1. In Airbyte, click **Settings**.
 
@@ -156,6 +172,15 @@ Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note
 * Client ID
 * Client Secret
 
+(Optional) To allow users to access Airbyte directly from their Okta dashboard, configure IdP-Initiated Login. In the **General** tab of your Airbyte application, scroll to **Login initiated by** and configure the following settings:
+
+- **Login initiated by**: `Either Okta or App`
+- **Application visibility**: Check `Display application icon to users`
+- **Login flow**: `Redirect to app to initiate login (OIDC Compliant)`
+- **Initiate login URI**: Your Airbyte domain (for example, `https://airbyte.internal.mycompany.com`)
+
+Click **Save**. After this configuration, users see an Airbyte tile in their Okta dashboard and can click it to sign into Airbyte.
+
 Visit the [implementation guide](../../enterprise-setup/implementation-guide.md) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
 
 ## Self-Managed Enterprise with Okta Generic OIDC
@@ -206,6 +231,18 @@ Follow these steps to set up an Okta app integration for Airbyte. If you need mo
 6. Click **Save**. Okta takes you to your app page.
 
 7. On the app page, make sure you have **Require PKCE as additional verification** enabled. Leave other values as defaults.
+
+8. (Optional) To allow users to access Airbyte directly from their Okta dashboard, configure IdP-Initiated Login. In the **General** tab of your Airbyte application, scroll to **Login initiated by** and configure the following settings:
+
+    - **Login initiated by**: `Either Okta or App`
+
+    - **Application visibility**: Check `Display application icon to users`
+
+    - **Login flow**: `Redirect to app to initiate login (OIDC Compliant)`
+
+    - **Initiate login URI**: Your Airbyte domain (for example, `https://airbyte.example.com`)
+
+    Click **Save**. After this configuration, users see an Airbyte tile in their Okta dashboard and can click it to sign into Airbyte.
 
 ### Add an authorization server {#sme-auth-server}
 
@@ -264,9 +301,10 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
+        extraScopes: YOUR_EXTRA_SCOPES
         issuer: YOUR_ISSUER
         endpoints: 
           authorizationServerEndpoint: YOUR_AUTH_ENDPOINT
@@ -278,6 +316,8 @@ You collect these values from Okta in the locations shown below.
 - `clientId`: In Okta's administrator panel, **Applications** > **Applications** > **Airbyte** > **General** tab > **Client ID**.
 
 - `audience`: In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > **Audience**. Choose the audience for the authorization server you're using with Airbyte.
+
+- `extraScopes`: If you've defined extra scopes in your authorization server, you can reference them here. Extra scopes are included in the authorization code flow and are sometimes required to provide web apps like Airbyte with valid JSON web tokens. In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > your authorization server > **Scopes**.
 
 - `issuer`: In your well-known endpoint, use the `issuer`.
 

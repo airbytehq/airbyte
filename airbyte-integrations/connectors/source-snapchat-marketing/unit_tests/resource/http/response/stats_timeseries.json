@@ -1,0 +1,31 @@
+{
+  "request_status": "SUCCESS",
+  "request_id": "test_request_id",
+  "timeseries_stats": [
+    {
+      "sub_request_status": "SUCCESS",
+      "timeseries_stat": {
+        "id": "test_entity_id",
+        "type": "AD_ACCOUNT",
+        "granularity": "HOUR",
+        "start_time": "2024-01-15T00:00:00.000-0800",
+        "end_time": "2024-01-15T01:00:00.000-0800",
+        "timeseries": [
+          {
+            "start_time": "2024-01-15T00:00:00.000-0800",
+            "end_time": "2024-01-15T01:00:00.000-0800",
+            "stats": {
+              "impressions": 1000,
+              "swipes": 50,
+              "spend": 5000000,
+              "video_views": 800,
+              "android_installs": 10,
+              "ios_installs": 15,
+              "total_installs": 25
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

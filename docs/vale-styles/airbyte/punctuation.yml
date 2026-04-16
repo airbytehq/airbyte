@@ -1,8 +1,0 @@
-extends: existence
-message: "Sentences must end with a period or question mark."
-level: error
-scope: sentence
-ignorecase: true
-nonword: true
-tokens:
-  - '\w[^.?:"]*$'

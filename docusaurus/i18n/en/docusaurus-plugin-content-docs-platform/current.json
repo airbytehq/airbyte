@@ -1,6 +1,6 @@
 {
   "version.label": {
-    "message": "Cloud and Next",
+    "message": "Cloud",
     "description": "The label for version current"
   },
   "sidebar.platform.category.Airbyte Platform": {

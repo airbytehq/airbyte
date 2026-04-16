@@ -27,7 +27,12 @@ definitions:
             - 429
           error_message: >-
             Twilio rate limit reached (429). Backoff based on 'retry-after' header, then exponential backoff fallback.
-
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 404
+          error_message: >-
+            Skipping this slice—data may be available in later slices or for other accounts/subaccounts.
   base_stream:
     type: DeclarativeStream
     primary_key:
@@ -159,7 +164,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: P1D
       step: P1Y
-      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d') }}"
@@ -217,7 +222,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
       step: P1Y
-      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
@@ -868,7 +873,7 @@ spec:
         type: integer
       num_worker:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 3

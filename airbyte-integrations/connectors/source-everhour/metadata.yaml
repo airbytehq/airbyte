@@ -42,4 +42,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Everhour API reference
+      url: https://everhour.docs.apiary.io/
+      type: api_reference
+    - title: Everhour authentication
+      url: https://everhour.docs.apiary.io/#introduction/authentication
+      type: authentication_guide
+    - title: Everhour rate limits
+      url: https://everhour.docs.apiary.io/#introduction/rate-limiting
+      type: rate_limits
 metadataSpecVersion: "1.0"

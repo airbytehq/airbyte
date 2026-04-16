@@ -21,11 +21,10 @@ This page contains the setup guide and reference information for the Apple Ads s
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
 7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be
    earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. When syncing large amounts of data over vast durations, you can customize **Exponential Backoff Factor** in order to
-   reduce the chance of synchronization failures in case of Apple's rate limit kicking in.
-9. You can also decrease the **Lookback Window** in order to sync smaller amounts of data on each incremental sync,
-   at the cost of missing late data attributions.
-10. Click **Set up source**.
+8. For **Time Zone**, select either UTC (Coordinated Universal Time) or ORTZ (Organization Time Zone). The default is UTC.
+9. For **Lookback Window**, enter the number of days (1-30) to re-fetch data during incremental syncs. The default is 30 days, which matches Apple Search Ads' attribution window. You can decrease this value to sync smaller amounts of data on each incremental sync, but this may result in missing late data attributions.
+10. For **Exponential Backoff Factor**, enter a value between 1 and 20 to control the delay between retry attempts when rate limits are encountered. The default is 5. Increase this value when syncing large amounts of data to reduce the chance of synchronization failures.
+11. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -42,21 +41,23 @@ The Apple Ads source connector supports the following streams. For more informat
 
 ### Base streams
 
-- [campaigns](https://developer.apple.com/documentation/apple_search_ads/get_all_campaigns)
-- [adgroups](https://developer.apple.com/documentation/apple_search_ads/get_all_ad_groups)
-- [keywords](https://developer.apple.com/documentation/apple_search_ads/get_all_targeting_keywords_in_an_ad_group)
+- [campaigns](https://developer.apple.com/documentation/apple_ads/get-all-campaigns)
+- [adgroups](https://developer.apple.com/documentation/apple_ads/get-all-ad-groups)
+- [keywords](https://developer.apple.com/documentation/apple_ads/get-all-targeting-keywords-in-an-ad-group)
+- [ads](https://developer.apple.com/documentation/apple_ads/get-all-ads)
 
 ### Report Streams
 
-::: note
+:::note
 The usual primary keys for reports are `date` and `campaignId`.
 However, there are cases where active fields must be selected as primary keys to ensure data deduplication is correct.
 One example is `countryOrRegion`.
 :::
 
-- [campaigns_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_campaign-level_reports)
-- [adgroups_report_daily](https://developer.apple.com/documentation/apple_search_ads/get__ad_group-level_reports)
-- [keywords_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)
+- [campaigns_report_daily](https://developer.apple.com/documentation/apple_ads/get-campaign-level-reports)
+- [adgroups_report_daily](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports)
+- [keywords_report_daily](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports)
+- [ads_report_daily](https://developer.apple.com/documentation/apple_ads/get-ad-level-reports)
 
 ### Report aggregation
 
@@ -71,6 +72,23 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 1.1.0 | 2026-04-01 | [69218](https://github.com/airbytehq/airbyte/pull/69218) | Add two new streams - `ads` & `ads_report_daily` |
+| 1.0.11 | 2026-03-31 | [75879](https://github.com/airbytehq/airbyte/pull/75879) | Update dependencies |
+| 1.0.10 | 2026-03-24 | [75015](https://github.com/airbytehq/airbyte/pull/75015) | Update dependencies |
+| 1.0.9 | 2026-03-10 | [74512](https://github.com/airbytehq/airbyte/pull/74512) | Update dependencies |
+| 1.0.8 | 2026-03-03 | [74180](https://github.com/airbytehq/airbyte/pull/74180) | Update dependencies |
+| 1.0.7 | 2026-02-03 | [72690](https://github.com/airbytehq/airbyte/pull/72690) | Update dependencies |
+| 1.0.6 | 2026-01-20 | [71888](https://github.com/airbytehq/airbyte/pull/71888) | Update dependencies |
+| 1.0.5 | 2026-01-14 | [71435](https://github.com/airbytehq/airbyte/pull/71435) | Update dependencies |
+| 1.0.4 | 2025-12-18 | [70810](https://github.com/airbytehq/airbyte/pull/70810) | Update dependencies |
+| 1.0.3 | 2025-11-25 | [69891](https://github.com/airbytehq/airbyte/pull/69891) | Update dependencies |
+| 1.0.2 | 2025-11-18 | [69577](https://github.com/airbytehq/airbyte/pull/69577) | Update dependencies |
+| 1.0.1 | 2025-10-29 | [68392](https://github.com/airbytehq/airbyte/pull/68392) | Update dependencies |
+| 1.0.0 | 2025-10-21 | [66557](https://github.com/airbytehq/airbyte/pull/66557) | Update `adgroups_report_daily` and `keywords_report_daily` to use global state cursor |
+| 0.8.10 | 2025-10-14 | [67979](https://github.com/airbytehq/airbyte/pull/67979) | Update dependencies |
+| 0.8.9 | 2025-10-07 | [67173](https://github.com/airbytehq/airbyte/pull/67173) | Update dependencies |
+| 0.8.8 | 2025-09-30 | [66272](https://github.com/airbytehq/airbyte/pull/66272) | Update dependencies |
+| 0.8.7 | 2025-09-12 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
 | 0.8.6 | 2025-08-23 | [65312](https://github.com/airbytehq/airbyte/pull/65312) | Update dependencies |
 | 0.8.5 | 2025-08-09 | [64663](https://github.com/airbytehq/airbyte/pull/64663) | Update dependencies |
 | 0.8.4 | 2025-07-19 | [63453](https://github.com/airbytehq/airbyte/pull/63453) | Update dependencies |

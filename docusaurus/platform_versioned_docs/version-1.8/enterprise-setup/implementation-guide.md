@@ -10,7 +10,7 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 Once you [have a license key](https://airbyte.com/company/talk-to-sales), you can deploy [Self-Managed Enterprise](./README.md) using the following instructions.
 
-Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `webapp`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
 :::note
 Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instructions on this page describe both V1 and V2 requirements. Airbyte recommends using Helm chart V2 from the start. The new chart will become mandatory in the future and you can avoid having to upgrade later.
@@ -304,6 +304,7 @@ Follow these instructions to add the Airbyte helm repository:
             genericOidc:
               clientId: ""
               audience: ""
+              extraScopes: ""
               issuer: ""
               endpoints:
                 authorizationServerEndpoint: ""
@@ -317,8 +318,6 @@ Follow these instructions to add the Airbyte helm repository:
 
     </TabItem>
     </Tabs>
-
-
 
 4. You must configure the public facing URL of your Airbyte instance to your `values.yaml` file, under `global`:
 
@@ -794,6 +793,14 @@ spec:
         paths:
           - backend:
               service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
+                name: airbyte-enterprise-airbyte-keycloak-svc 
+                port: 
+                  number: 8180 
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
@@ -841,6 +848,13 @@ spec:
         paths:
           - backend:
               service:
+                name: airbyte-enterprise-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
                   number: 80
@@ -861,7 +875,7 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 </Tabs>
 </details>
 
-Once this is complete, ensure that the value of the `webapp-url` field in your `values.yaml` is configured to match the ingress URL.
+Once this is complete, ensure that the value of the `airbyteUrl` field in your `values.yaml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
@@ -1013,7 +1027,6 @@ airbyte/cron:1.3.1
 airbyte/db:1.3.1
 airbyte/mc:latest
 airbyte/server:1.3.1
-airbyte/webapp:1.3.1
 airbyte/worker:1.3.1
 airbyte/workload-api-server:1.3.1
 airbyte/workload-init-container:1.3.1

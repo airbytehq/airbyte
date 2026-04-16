@@ -42,9 +42,17 @@ jobs:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
     runs-on: ubuntu-latest
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Run Poe Slash Command Processor
-        uses: aaronsteers/poe-command-processor@v1
+        uses: aaronsteers/poe-command-processor@04330aa7047b6b182ff280a962cbbcd99d6eb683 # v1.3.0
         with:
           pr: ${{ github.event.inputs.pr }}
           comment-id: ${{ github.event.inputs.comment-id }}
-          github-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
