@@ -68,7 +68,10 @@ class SourceEtrade(AbstractSource):
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code if e.response is not None else None
             if status_code == 401:
-                return False, "Authentication failed. Access tokens may be expired (tokens expire at midnight US Eastern) or credentials are invalid."
+                return (
+                    False,
+                    "Authentication failed. Access tokens may be expired (tokens expire at midnight US Eastern) or credentials are invalid.",
+                )
             if status_code == 403:
                 return False, "Access forbidden. The API consumer key may lack required permissions."
             return False, f"HTTP {status_code} error: {e}"

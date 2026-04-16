@@ -12,6 +12,7 @@ from requests_oauthlib import OAuth1
 
 from airbyte_cdk.sources.streams.http import HttpStream
 
+
 logger = logging.getLogger("airbyte")
 
 

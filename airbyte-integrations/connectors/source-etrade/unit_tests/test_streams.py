@@ -5,7 +5,6 @@
 import pytest
 import requests
 import requests_mock as req_mock
-
 from source_etrade.streams import (
     Accounts,
     AlertDetails,
