@@ -30,26 +30,19 @@ Go to **Settings > Applications** in the Airbyte Cloud UI and create a new appli
 ### Define the workspace resource and load assets
 
 ```python
-from dagster_airbyte import AirbyteCloudWorkspace, load_airbyte_cloud_asset_specs
+from dagster_airbyte import AirbyteCloudWorkspace, build_airbyte_assets_definitions
+import dagster as dg
 
 airbyte_workspace = AirbyteCloudWorkspace(
-    workspace_id="your-workspace-uuid",
-    client_id="your-client-id",
-    client_secret="your-client-secret",
+    workspace_id=dg.EnvVar("AIRBYTE_WORKSPACE_ID"),
+    client_id=dg.EnvVar("AIRBYTE_CLIENT_ID"),
+    client_secret=dg.EnvVar("AIRBYTE_CLIENT_SECRET"),
 )
 
-airbyte_asset_specs = load_airbyte_cloud_asset_specs(workspace=airbyte_workspace)
-```
+airbyte_assets = build_airbyte_assets_definitions(workspace=airbyte_workspace)
 
-This automatically discovers all connections in your Airbyte Cloud workspace and creates corresponding Dagster asset specs.
-
-### Add to Dagster definitions
-
-```python
-from dagster import Definitions
-
-defs = Definitions(
-    assets=airbyte_asset_specs,
+defs = dg.Definitions(
+    assets=airbyte_assets,
     resources={"airbyte": airbyte_workspace},
 )
 ```
@@ -65,25 +58,21 @@ Go to **Settings > Applications** in the Airbyte UI and create a new application
 ### Define the workspace resource and load assets
 
 ```python
-from dagster_airbyte import AirbyteWorkspace, load_airbyte_cloud_asset_specs
+from dagster_airbyte import AirbyteWorkspace, build_airbyte_assets_definitions
+import dagster as dg
 
 airbyte_workspace = AirbyteWorkspace(
-    workspace_id="your-workspace-uuid",
-    client_id="your-client-id",
-    client_secret="your-client-secret",
-    base_url="http://localhost:8000/api/public/v1/",
+    rest_api_base_url="http://localhost:8000/api/public/v1",
+    configuration_api_base_url="http://localhost:8000/api/v1",
+    workspace_id=dg.EnvVar("AIRBYTE_WORKSPACE_ID"),
+    client_id=dg.EnvVar("AIRBYTE_CLIENT_ID"),
+    client_secret=dg.EnvVar("AIRBYTE_CLIENT_SECRET"),
 )
 
-airbyte_asset_specs = load_airbyte_cloud_asset_specs(workspace=airbyte_workspace)
-```
+airbyte_assets = build_airbyte_assets_definitions(workspace=airbyte_workspace)
 
-### Add to Dagster definitions
-
-```python
-from dagster import Definitions
-
-defs = Definitions(
-    assets=airbyte_asset_specs,
+defs = dg.Definitions(
+    assets=airbyte_assets,
     resources={"airbyte": airbyte_workspace},
 )
 ```
