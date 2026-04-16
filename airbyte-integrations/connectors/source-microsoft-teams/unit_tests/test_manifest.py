@@ -274,11 +274,20 @@ class TestErrorHandlers:
         [name for name, parent_info in SUBSTREAM_PARENTS.items() if parent_info is not None],
     )
     def test_substream_has_error_handler(self, stream_defs, stream_name):
-        """All substreams should have an error handler for 403/404 responses."""
+        """All substreams should have an error handler for 400/403/404 responses."""
         stream_def = stream_defs[stream_name]
         requester = stream_def["retriever"]["requester"]
         error_handler = requester.get("error_handler")
         assert error_handler is not None, f"Substream '{stream_name}' is missing an error_handler"
+
+    def test_permission_error_handler_covers_400(self, manifest):
+        """The shared error handler must handle 400 for app-only context limitations."""
+        handler = manifest["definitions"]["permission_error_handler"]
+        filters = handler["error_handlers"][0]["response_filters"]
+        codes_covered = [code for f in filters for code in f.get("http_codes", [])]
+        assert 400 in codes_covered, "permission_error_handler must handle HTTP 400"
+        assert 403 in codes_covered, "permission_error_handler must handle HTTP 403"
+        assert 404 in codes_covered, "permission_error_handler must handle HTTP 404"
 
 
 # ===== Schema tests =====
@@ -375,6 +384,7 @@ class TestApiPaths:
         requester = stream_defs["online_meetings"]["retriever"]["requester"]
         path = requester.get("path", "")
         assert "users/" in path and "/onlineMeetings" in path
+        assert "$top" not in path, "onlineMeetings endpoint does not support $top"
 
     def test_tags_path(self, stream_defs):
         requester = stream_defs["tags"]["retriever"]["requester"]

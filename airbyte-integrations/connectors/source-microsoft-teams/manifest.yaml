@@ -48,6 +48,11 @@ definitions:
           - type: HttpResponseFilter
             action: IGNORE
             http_codes:
+              - 400
+            error_message: Endpoint not supported in current auth context
+          - type: HttpResponseFilter
+            action: IGNORE
+            http_codes:
               - 403
             error_message: Insufficient permissions for this resource
           - type: HttpResponseFilter
@@ -1306,7 +1311,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: users/{{ stream_partition.user_id }}/onlineMeetings?$top=50
+          path: users/{{ stream_partition.user_id }}/onlineMeetings
           error_handler:
             $ref: "#/definitions/permission_error_handler"
         record_selector:
