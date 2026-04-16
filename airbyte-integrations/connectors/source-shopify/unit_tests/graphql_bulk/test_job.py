@@ -243,7 +243,7 @@ def test_job_failed_for_stream_with_no_bulk_checkpointing(
             False,
             ShopifyBulkExceptions.BulkJobNonHandableError,
             2,
-            "Non-handable error occured",
+            "unrecoverable bulk job error",
             1,
         ),
         # Should be retried

@@ -387,7 +387,10 @@ class ShopifyBulkManager:
         raise ShopifyBulkExceptions.BulkJobError(f"Could not validate the status of the BULK Job `{self._job_id}`. Errors: {errors}.")
 
     def _on_non_handable_job_error(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
-        raise ShopifyBulkExceptions.BulkJobNonHandableError(f"The Stream: `{self.http_client.name}`, Non-handable error occured: {errors}")
+        raise ShopifyBulkExceptions.BulkJobNonHandableError(
+            message=f'Bulk operation query rejected by Shopify for stream "{self.http_client.name}".',
+            internal_message=f"Stream: `{self.http_client.name}`, unrecoverable bulk job error: {errors}",
+        )
 
     def _get_server_errors(self, response: requests.Response) -> List[Optional[Mapping[str, Any]]]:
         server_errors = response.json().get("errors", [])

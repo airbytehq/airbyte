@@ -13,8 +13,13 @@ class ShopifyBulkExceptions:
 
         failure_type: FailureType = FailureType.config_error
 
-        def __init__(self, message: str, **kwargs) -> None:
-            super().__init__(internal_message=message, failure_type=self.failure_type, **kwargs)
+        def __init__(self, message: str, internal_message: str | None = None, **kwargs) -> None:
+            super().__init__(
+                message=message,
+                internal_message=internal_message or message,
+                failure_type=self.failure_type,
+                **kwargs,
+            )
 
     class BulkJobError(BaseBulkException):
         """Raised when there are BULK Job Errors in response"""
