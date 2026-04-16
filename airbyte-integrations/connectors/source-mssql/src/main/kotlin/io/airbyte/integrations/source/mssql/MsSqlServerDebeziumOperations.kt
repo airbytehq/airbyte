@@ -573,8 +573,7 @@ class MsSqlServerDebeziumOperations(
     override fun generateColdStartOffset(): DebeziumOffset {
         val currentLsn = getCurrentMaxLsn()
         val databaseName = configuration.databaseName
-        val topicPrefixName: String =
-            DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
+        val topicPrefixName: String = DebeziumPropertiesBuilder.sanitizeTopicPrefix(databaseName)
 
         // Create offset structure that matches SQL Server Debezium connector format.
         // The "server" field must use the sanitized topic prefix to match Debezium's
