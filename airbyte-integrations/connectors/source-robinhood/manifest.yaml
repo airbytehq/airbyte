@@ -50,9 +50,7 @@ definitions:
       cursor_value: "{{ response.get('next', '') }}"
       stop_condition: "{{ not response.get('next') }}"
     page_token_option:
-      type: RequestOption
-      field_name: ""
-      inject_into: path
+      type: RequestPath
 
   # --- Tier 1 Streams ---
 

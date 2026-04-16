@@ -122,6 +122,7 @@ def test_url_paginator_uses_cursor(manifest):
     assert strategy["type"] == "CursorPagination"
     assert "response.get('next'" in strategy["cursor_value"]
     assert "not response.get('next')" in strategy["stop_condition"]
+    assert paginator["page_token_option"]["type"] == "RequestPath"
 
 
 def test_orders_stream_has_incremental_sync(manifest):
