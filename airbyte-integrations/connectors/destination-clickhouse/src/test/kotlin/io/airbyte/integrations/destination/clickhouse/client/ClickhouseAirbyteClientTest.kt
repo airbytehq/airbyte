@@ -227,13 +227,15 @@ class ClickhouseAirbyteClientTest {
     }
 
     @Test
-    fun `test overwrite table`() = runTest {
+    fun `test overwrite table when target exists uses exchange and drop`() = runTest {
         val sourceTableName = TableName("source_db", "source_table")
         val targetTableName = TableName("target_db", "target_table")
         val exchangeTableSql =
             "EXCHANGE TABLES `source_db`.`source_table` AND `target_db`.`target_table`"
         val dropTableSql = "DROP TABLE `source_db`.`source_table`"
 
+        // Target table exists
+        coEvery { clickhouseAirbyteClient.tableExists(targetTableName) } returns true
         every { clickhouseSqlGenerator.exchangeTable(sourceTableName, targetTableName) } returns
             exchangeTableSql
         every { clickhouseSqlGenerator.dropTable(sourceTableName) } returns dropTableSql
@@ -248,6 +250,27 @@ class ClickhouseAirbyteClientTest {
             clickhouseAirbyteClient.execute(exchangeTableSql)
             clickhouseAirbyteClient.execute(dropTableSql)
         }
+    }
+
+    @Test
+    fun `test overwrite table when target does not exist uses rename`() = runTest {
+        val sourceTableName = TableName("source_db", "source_table")
+        val targetTableName = TableName("target_db", "target_table")
+        val renameTableSql =
+            "RENAME TABLE `source_db`.`source_table` TO `target_db`.`target_table`;"
+
+        // Target table does not exist
+        coEvery { clickhouseAirbyteClient.tableExists(targetTableName) } returns false
+        every { clickhouseSqlGenerator.renameTable(sourceTableName, targetTableName) } returns
+            renameTableSql
+        coEvery { clickhouseAirbyteClient.execute(renameTableSql) } returns mockk()
+
+        clickhouseAirbyteClient.overwriteTable(sourceTableName, targetTableName)
+
+        verify { clickhouseSqlGenerator.renameTable(sourceTableName, targetTableName) }
+        verify(exactly = 0) { clickhouseSqlGenerator.exchangeTable(any(), any()) }
+        verify(exactly = 0) { clickhouseSqlGenerator.dropTable(any()) }
+        coVerify(exactly = 1) { clickhouseAirbyteClient.execute(renameTableSql) }
     }
 
     @Test

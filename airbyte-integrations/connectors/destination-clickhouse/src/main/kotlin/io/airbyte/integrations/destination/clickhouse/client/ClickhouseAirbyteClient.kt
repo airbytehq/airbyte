@@ -68,8 +68,18 @@ class ClickhouseAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        execute(sqlGenerator.exchangeTable(sourceTableName, targetTableName))
-        execute(sqlGenerator.dropTable(sourceTableName))
+        val targetExists = tableExists(targetTableName)
+
+        log.info {
+            "overwriteTable: source=${sourceTableName}, target=${targetTableName}, targetExists=$targetExists"
+        }
+
+        if (targetExists) {
+            execute(sqlGenerator.exchangeTable(sourceTableName, targetTableName))
+            execute(sqlGenerator.dropTable(sourceTableName))
+        } else {
+            execute(sqlGenerator.renameTable(sourceTableName, targetTableName))
+        }
     }
 
     override suspend fun copyTable(
