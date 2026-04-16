@@ -1,8 +1,9 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
-import yaml
-import pytest
 from pathlib import Path
+
+import pytest
+import yaml
 
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
@@ -164,9 +165,7 @@ def test_schema_primary_key_is_non_nullable(manifest, schema_name, required_fiel
     schema = manifest["schemas"][schema_name]
     pk_prop = schema["properties"][required_field]
     # Primary key fields should be non-nullable (type: string, not [string, "null"])
-    assert pk_prop["type"] == "string", (
-        f"Primary key '{required_field}' in '{schema_name}' should be non-nullable string"
-    )
+    assert pk_prop["type"] == "string", f"Primary key '{required_field}' in '{schema_name}' should be non-nullable string"
 
 
 @pytest.mark.parametrize(
@@ -176,9 +175,7 @@ def test_schema_primary_key_is_non_nullable(manifest, schema_name, required_fiel
 )
 def test_schema_allows_additional_properties(manifest, schema_name):
     schema = manifest["schemas"][schema_name]
-    assert schema.get("additionalProperties") is True, (
-        f"Schema '{schema_name}' should allow additional properties"
-    )
+    assert schema.get("additionalProperties") is True, f"Schema '{schema_name}' should allow additional properties"
 
 
 @pytest.mark.parametrize(
