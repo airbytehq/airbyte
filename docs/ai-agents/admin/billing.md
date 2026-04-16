@@ -12,10 +12,6 @@ Each time your agent works for you, it consumes AOs. Your plan determines:
 - Whether you can exceed that limit and how much overage costs.
 - How often Airbyte refreshes data in your Context Store.
 
-:::note
-Airbyte is iterating on how it meters AOs. The relative cost of different operations can change. Use the [Usage panel](#monitor-usage) to see how your activity translates to AOs in practice.
-:::
-
 ## Plans you can choose from
 
 Airbyte Agents offers four plans. Free and Individual are self-serve. You can upgrade to them directly from the Billing page. Team and Custom plans are sales-assisted. Contact [Airbyte Sales](https://airbyte.com/company/talk-to-sales) to sign up for these plans.
