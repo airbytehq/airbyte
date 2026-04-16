@@ -16,56 +16,6 @@ Each time your agent works for you, it consumes AOs. Your plan determines:
 - Whether you can exceed that limit and how much overage costs.
 - How often Airbyte refreshes data in your Context Store.
 
-## Plans you can choose from
-
-Airbyte Agents offers four plans. Free and Individual are self-serve. You can upgrade to them directly from the Billing page. Team and Custom plans are sales-assisted. Contact [Airbyte Sales](https://airbyte.com/company/talk-to-sales) to sign up for these plans.
-
-### Free
-
-A plan to explore Airbyte Agents and prototype agents.
-
-- $0 per month.
-- 1,000 AOs per month.
-- Daily limit of 500 AOs. When you reach the daily limit, agent operations pause until the next day.
-- Overage isn't available. When you reach your monthly limit, agent operations pause until the next billing period.
-- Context Store refreshes hourly during your first month, then daily.
-- AI and community support.
-
-### Individual
-
-A plan for personal use and daily work.
-
-- $29 per month.
-- 1,000 AOs per month.
-- No daily limit.
-- Overage AOs are available.
-- Context Store refreshes hourly.
-- Standard human support, in addition to AI and community support.
-
-You must [add a payment method](#add-a-payment-method) before you upgrade to the Individual plan.
-
-### Team
-
-A plan for teams running more automations.
-
-- $299 per month.
-- 10,000 AOs per month.
-- No daily limit.
-- Overage AOs are available.
-- Context Store refreshes hourly.
-- Multiple workspaces and an authentication module.
-- Single sign-on and SAML.
-- Standard human support, in addition to AI and community support.
-
-### Custom
-
-A plan for large companies and embedded products. Airbyte tailors pricing, usage limits, and feature access to your needs. Custom plans include:
-
-- A dedicated account manager.
-- Service level agreements.
-- Dedicated human support.
-- Everything included in the Team plan.
-
 ## Manage payments
 
 Manage payment methods, billing information, and your maximum bill from the Billing page.
@@ -195,3 +145,53 @@ To cancel:
 1. On the Billing page, in the Subscription card, click **Change your plan**.
 2. Select the Free plan, or contact Airbyte to cancel a Custom plan.
 3. Review what you'll lose access to, and confirm the cancellation.
+
+## Plans
+
+Airbyte Agents offers four plans. Free and Individual are self-serve. You can upgrade to them directly from the Billing page. Team and Custom plans are sales-assisted. Contact [Airbyte Sales](https://airbyte.com/company/talk-to-sales) to sign up for these plans.
+
+### Free
+
+A plan to explore Airbyte Agents and prototype agents.
+
+- $0 per month.
+- 1,000 AOs per month.
+- Daily limit of 500 AOs. When you reach the daily limit, agent operations pause until the next day.
+- Overage isn't available. When you reach your monthly limit, agent operations pause until the next billing period.
+- Context Store refreshes hourly during your first month, then daily.
+- AI and community support.
+
+### Individual
+
+A plan for personal use and daily work.
+
+- $29 per month.
+- 1,000 AOs per month.
+- No daily limit.
+- Overage AOs are available.
+- Context Store refreshes hourly.
+- Standard human support, in addition to AI and community support.
+
+You must [add a payment method](#add-a-payment-method) before you upgrade to the Individual plan.
+
+### Team
+
+A plan for teams running more automations.
+
+- $299 per month.
+- 10,000 AOs per month.
+- No daily limit.
+- Overage AOs are available.
+- Context Store refreshes hourly.
+- Multiple workspaces and an authentication module.
+- Single sign-on and SAML.
+- Standard human support, in addition to AI and community support.
+
+### Custom
+
+A plan for large companies and embedded products. Airbyte tailors pricing, usage limits, and feature access to your needs. Custom plans include:
+
+- A dedicated account manager.
+- Service level agreements.
+- Dedicated human support.
+- Everything included in the Team plan.
