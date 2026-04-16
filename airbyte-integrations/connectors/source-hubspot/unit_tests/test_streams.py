@@ -866,9 +866,11 @@ def test_list_memberships_read(requests_mock, config, mock_dynamic_schema_reques
     records = run_read(stream)
     assert len(records) == 2
     assert records[0]["recordId"] == "101"
-    assert records[0]["listId"] == 42
+    assert records[0]["listId"] == "42"
+    assert isinstance(records[0]["listId"], str)
     assert records[1]["recordId"] == "102"
-    assert records[1]["listId"] == 42
+    assert records[1]["listId"] == "42"
+    assert isinstance(records[1]["listId"], str)
 
 
 def test_list_memberships_pagination(requests_mock, config, mock_dynamic_schema_requests):
@@ -938,4 +940,48 @@ def test_list_memberships_multiple_parent_lists(requests_mock, config, mock_dyna
     records = run_read(stream)
     assert len(records) == 2
     list_ids = {r["listId"] for r in records}
-    assert list_ids == {10, 20}
+    assert list_ids == {"10", "20"}
+    for record in records:
+        assert isinstance(record["listId"], str)
+
+
+def test_list_memberships_listid_is_string_for_numeric_values(requests_mock, config, mock_dynamic_schema_requests):
+    """Regression test for oncall #11995.
+
+    The parent `contact_lists` stream returns numeric-looking `listId` values (e.g. "885").
+    When the `list_memberships` stream injects `listId` into child records via an AddFields
+    transformation, the value must remain a string so Avro destinations (which declare the
+    schema as [null, string]) can serialize the records without union-resolution failures.
+
+    Without `value_type: string` on the AddFields transformation, JinjaInterpolation's
+    `_literal_eval` coerces a numeric-looking string like "885" into a Python int, which
+    then fails Avro union resolution against `[null, string]` at the destination.
+    """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    contact_lists_response = {
+        "lists": [
+            {
+                "listId": "885",
+                "createdAt": "2022-02-25T16:43:11Z",
+                "updatedAt": "2022-02-25T16:43:11Z",
+            },
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    memberships_response = {
+        "results": [
+            {"recordId": "101", "membershipTimestamp": "2023-06-15T10:30:00Z"},
+        ],
+    }
+    requests_mock.register_uri("GET", "https://api.hubapi.com/crm/v3/lists/885/memberships", json=memberships_response)
+
+    stream = find_stream("list_memberships", config)
+    records = run_read(stream)
+    assert len(records) == 1
+    assert records[0]["listId"] == "885"
+    assert isinstance(records[0]["listId"], str), (
+        f"listId should be a string to match the schema type [null, string], "
+        f"but got {type(records[0]['listId']).__name__} with value {records[0]['listId']!r}"
+    )

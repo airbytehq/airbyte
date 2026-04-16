@@ -1231,6 +1231,7 @@ definitions:
         fields:
           - path: ["listId"]
             value: "{{ stream_partition['list_id'] }}"
+            value_type: string
     schema_loader:
       type: InlineSchemaLoader
       schema:
