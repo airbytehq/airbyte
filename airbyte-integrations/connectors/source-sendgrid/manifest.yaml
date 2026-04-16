@@ -721,7 +721,7 @@ spec:
         airbyte_secret: true
       # num_workers:  # Commented out for Phase 1 - using fixed default_concurrency=12
       #   type: integer
-      #   title: Number of concurrent workers
+      #   title: Number of concurrent threads
       #   minimum: 2
       #   maximum: 20
       #   default: 12
