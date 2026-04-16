@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional
 import pytest
 import yaml
 
+
 MANIFEST_PATH = pathlib.Path(__file__).resolve().parent.parent / "manifest.yaml"
 
 # Streams that MUST be present after the overhaul
@@ -199,11 +200,7 @@ class TestStreamsPresence:
 class TestSubstreamRelationships:
     @pytest.mark.parametrize(
         "stream_name,expected",
-        [
-            (name, parent_info)
-            for name, parent_info in SUBSTREAM_PARENTS.items()
-            if parent_info is not None
-        ],
+        [(name, parent_info) for name, parent_info in SUBSTREAM_PARENTS.items() if parent_info is not None],
     )
     def test_substream_parent(self, stream_defs, stream_name, expected):
         """Substreams must reference the correct parent stream."""
@@ -212,16 +209,13 @@ class TestSubstreamRelationships:
         parent_config = _get_parent_config(stream_def)
         assert parent_config is not None, f"'{stream_name}' has no partition router"
         assert parent_config["partition_field"] == partition_field, (
-            f"'{stream_name}' partition_field should be '{partition_field}', "
-            f"got '{parent_config.get('partition_field')}'"
+            f"'{stream_name}' partition_field should be '{partition_field}', got '{parent_config.get('partition_field')}'"
         )
         # Check parent stream reference
         parent_stream = parent_config["stream"]
         if "$ref" in parent_stream:
             ref_name = parent_stream["$ref"].split("/")[-1]
-            assert ref_name == parent_name, (
-                f"'{stream_name}' parent should be '{parent_name}', got '{ref_name}'"
-            )
+            assert ref_name == parent_name, f"'{stream_name}' parent should be '{parent_name}', got '{ref_name}'"
 
     def test_top_level_streams_have_no_partition_router(self, stream_defs):
         """Top-level streams (users, teams, groups, chats) should not have partition routers."""
@@ -245,9 +239,7 @@ class TestExtraFields:
         parent_config = _get_parent_config(stream_def)
         assert parent_config is not None, f"'{stream_name}' has no parent config"
         actual_extra = parent_config.get("extra_fields", [])
-        assert actual_extra == expected_extra_fields, (
-            f"'{stream_name}' extra_fields should be {expected_extra_fields}, got {actual_extra}"
-        )
+        assert actual_extra == expected_extra_fields, f"'{stream_name}' extra_fields should be {expected_extra_fields}, got {actual_extra}"
 
 
 # ===== AddFields transformation tests =====
@@ -270,10 +262,7 @@ class TestAddFieldsTransformations:
                     if path:
                         add_fields_found.append(path[0])
         for expected in expected_fields:
-            assert expected in add_fields_found, (
-                f"'{stream_name}' is missing AddFields for '{expected}'. "
-                f"Found: {add_fields_found}"
-            )
+            assert expected in add_fields_found, f"'{stream_name}' is missing AddFields for '{expected}'. Found: {add_fields_found}"
 
 
 # ===== Error handler tests =====
@@ -282,20 +271,14 @@ class TestAddFieldsTransformations:
 class TestErrorHandlers:
     @pytest.mark.parametrize(
         "stream_name",
-        [
-            name
-            for name, parent_info in SUBSTREAM_PARENTS.items()
-            if parent_info is not None
-        ],
+        [name for name, parent_info in SUBSTREAM_PARENTS.items() if parent_info is not None],
     )
     def test_substream_has_error_handler(self, stream_defs, stream_name):
         """All substreams should have an error handler for 403/404 responses."""
         stream_def = stream_defs[stream_name]
         requester = stream_def["retriever"]["requester"]
         error_handler = requester.get("error_handler")
-        assert error_handler is not None, (
-            f"Substream '{stream_name}' is missing an error_handler"
-        )
+        assert error_handler is not None, f"Substream '{stream_name}' is missing an error_handler"
 
 
 # ===== Schema tests =====
@@ -315,18 +298,14 @@ class TestSchemas:
         """All schemas must have additionalProperties: true to handle API changes gracefully."""
         stream_def = stream_defs[stream_name]
         schema = stream_def["schema_loader"]["schema"]
-        assert schema.get("additionalProperties") is True, (
-            f"Schema for '{stream_name}' should have additionalProperties: true"
-        )
+        assert schema.get("additionalProperties") is True, f"Schema for '{stream_name}' should have additionalProperties: true"
 
     @pytest.mark.parametrize("stream_name", EXPECTED_STREAMS)
     def test_stream_has_primary_key(self, stream_defs, stream_name):
         """Every stream must declare a primary key."""
         stream_def = stream_defs[stream_name]
         pk = stream_def.get("primary_key")
-        assert pk is not None and len(pk) > 0, (
-            f"Stream '{stream_name}' is missing a primary_key"
-        )
+        assert pk is not None and len(pk) > 0, f"Stream '{stream_name}' is missing a primary_key"
 
 
 # ===== Pagination tests =====
@@ -424,9 +403,7 @@ class TestSpec:
         creds = props["credentials"]
         assert "oneOf" in creds
         assert len(creds["oneOf"]) == 2
-        auth_types = [
-            item["properties"]["auth_type"]["const"] for item in creds["oneOf"]
-        ]
+        auth_types = [item["properties"]["auth_type"]["const"] for item in creds["oneOf"]]
         assert "Client" in auth_types
         assert "Token" in auth_types
 
@@ -435,9 +412,7 @@ class TestSpec:
         props = manifest["spec"]["connection_specification"]["properties"]
         period = props.get("period")
         assert period is not None, "period field should still exist (deprecated)"
-        assert period.get("airbyte_hidden") is True, (
-            "period field should be marked as airbyte_hidden"
-        )
+        assert period.get("airbyte_hidden") is True, "period field should be marked as airbyte_hidden"
 
     def test_advanced_auth(self, manifest):
         """Advanced auth configuration must be present."""
@@ -476,10 +451,6 @@ class TestMetadata:
         """All streams must be listed in metadata.autoImportSchema."""
         auto_import = manifest["metadata"]["autoImportSchema"]
         for stream_name in EXPECTED_STREAMS:
-            assert stream_name in auto_import, (
-                f"Stream '{stream_name}' missing from autoImportSchema"
-            )
+            assert stream_name in auto_import, f"Stream '{stream_name}' missing from autoImportSchema"
         for removed in REMOVED_STREAMS:
-            assert removed not in auto_import, (
-                f"Removed stream '{removed}' should not be in autoImportSchema"
-            )
+            assert removed not in auto_import, f"Removed stream '{removed}' should not be in autoImportSchema"
