@@ -208,9 +208,9 @@ class TestSubstreamRelationships:
         stream_def = stream_defs[stream_name]
         parent_config = _get_parent_config(stream_def)
         assert parent_config is not None, f"'{stream_name}' has no partition router"
-        assert parent_config["partition_field"] == partition_field, (
-            f"'{stream_name}' partition_field should be '{partition_field}', got '{parent_config.get('partition_field')}'"
-        )
+        assert (
+            parent_config["partition_field"] == partition_field
+        ), f"'{stream_name}' partition_field should be '{partition_field}', got '{parent_config.get('partition_field')}'"
         # Check parent stream reference
         parent_stream = parent_config["stream"]
         if "$ref" in parent_stream:
