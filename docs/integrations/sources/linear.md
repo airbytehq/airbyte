@@ -36,32 +36,35 @@ For more information, see the [Linear API documentation](https://developers.line
 
 ## Supported sync modes
 
-The Linear source connector supports the following sync mode:
+The Linear source connector supports the following sync modes:
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---append)
+- [Incremental - Append](https://docs.airbyte.com/cloud/core-concepts/#incremental---append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/cloud/core-concepts/#incremental---append-deduped)
 
 ## Supported streams
 
-The Linear source connector supports the following streams:
+The Linear source connector supports the following streams. All streams support incremental sync using the `updatedAt` field as the cursor.
 
-| Stream Name | Description |
-|-------------|-------------|
-| teams | Teams in your Linear workspace |
-| users | Users in your Linear workspace |
-| cycles | Sprint cycles for teams |
-| issues | Issues and tasks |
-| comments | Comments on issues |
-| projects | Projects for organizing issues |
-| customers | Customer records (if using Linear's customer features) |
-| attachments | File attachments on issues |
-| issue_labels | Labels for categorizing issues |
-| customer_needs | Customer needs linked to issues |
-| customer_tiers | Customer tier definitions |
-| issue_relations | Relationships between issues |
-| workflow_states | Workflow states (statuses) for issues |
-| project_statuses | Status definitions for projects |
-| customer_statuses | Status definitions for customers |
-| project_milestones | Milestones within projects |
+| Stream Name | Description | Incremental |
+|-------------|-------------|-------------|
+| teams | Teams in your Linear workspace | ✅ |
+| users | Users in your Linear workspace | ✅ |
+| cycles | Sprint cycles for teams | ✅ |
+| issues | Issues and tasks | ✅ |
+| comments | Comments on issues | ✅ |
+| projects | Projects for organizing issues | ✅ |
+| customers | Customer records (if using Linear's customer features) | ✅ |
+| attachments | File attachments on issues | ✅ |
+| issue_labels | Labels for categorizing issues | ✅ |
+| customer_needs | Customer needs linked to issues | ✅ |
+| customer_tiers | Customer tier definitions | ✅ |
+| issue_relations | Relationships between issues | ✅ |
+| workflow_states | Workflow states (statuses) for issues | ✅ |
+| project_statuses | Status definitions for projects | ✅ |
+| customer_statuses | Status definitions for customers | ✅ |
+| project_milestones | Milestones within projects | ✅ |
 
 ## Limitations and troubleshooting
 
@@ -80,6 +83,7 @@ The connector retrieves data that the authenticated user has access to. If you c
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.0 | 2026-04-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add incremental sync support for all streams using the `updatedAt` cursor |
 | 0.0.36 | 2026-03-31 | [75720](https://github.com/airbytehq/airbyte/pull/75720) | Update dependencies |
 | 0.0.35 | 2026-03-17 | [75023](https://github.com/airbytehq/airbyte/pull/75023) | Update dependencies |
 | 0.0.34 | 2026-03-03 | [74239](https://github.com/airbytehq/airbyte/pull/74239) | Update dependencies |

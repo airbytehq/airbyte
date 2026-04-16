@@ -21,6 +21,17 @@ definitions:
       name: issues
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -208,6 +219,17 @@ definitions:
       name: customers
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -275,6 +297,17 @@ definitions:
       name: users
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -333,6 +366,17 @@ definitions:
       name: comments
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -430,6 +474,17 @@ definitions:
       name: cycles
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -511,6 +566,17 @@ definitions:
       name: customer_needs
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -619,6 +685,17 @@ definitions:
       name: projects
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -724,6 +801,17 @@ definitions:
       name: project_milestones
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -783,6 +871,17 @@ definitions:
       name: project_statuses
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -829,6 +928,17 @@ definitions:
       name: issue_labels
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -915,6 +1025,17 @@ definitions:
       name: workflow_states
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -982,6 +1103,17 @@ definitions:
       name: teams
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1089,6 +1221,17 @@ definitions:
       name: attachments
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1155,6 +1298,17 @@ definitions:
       name: issue_relations
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1222,6 +1376,17 @@ definitions:
       name: customer_statuses
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1268,6 +1433,17 @@ definitions:
       name: customer_tiers
       primary_key:
         - id
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2020-01-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       retriever:
         type: SimpleRetriever
         requester:
@@ -1351,6 +1527,15 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        description: UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Any records created or updated before this date will not be synced. Used by incremental sync modes. If omitted, defaults to 2020-01-01T00:00:00Z.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        examples:
+          - "2024-01-01T00:00:00Z"
     additionalProperties: true
 
 metadata:
