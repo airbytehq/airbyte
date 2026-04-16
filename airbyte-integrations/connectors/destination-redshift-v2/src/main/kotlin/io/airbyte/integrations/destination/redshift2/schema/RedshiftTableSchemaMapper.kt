@@ -45,13 +45,10 @@ class RedshiftTableSchemaMapper(
         )
     }
 
-    override fun toTempTableName(tableName: TableName): TableName {
-        return tempTableNameGenerator.generate(tableName)
-    }
+    override fun toTempTableName(tableName: TableName): TableName =
+        tempTableNameGenerator.generate(tableName)
 
-    override fun toColumnName(name: String): String {
-        return name.toRedshiftCompatibleName()
-    }
+    override fun toColumnName(name: String): String = name.toRedshiftCompatibleName()
 
     override fun toColumnType(fieldType: FieldType): ColumnType {
         val redshiftType =

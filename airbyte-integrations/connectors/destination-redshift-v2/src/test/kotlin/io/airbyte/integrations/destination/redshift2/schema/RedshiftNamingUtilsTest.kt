@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.redshift2.schema
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class RedshiftNamingUtilsTest {
@@ -60,5 +61,53 @@ class RedshiftNamingUtilsTest {
     @Test
     fun `consecutive special characters collapsed to underscores`() {
         assertEquals("a___b", "a---b".toRedshiftCompatibleName())
+    }
+
+    // ================================================================
+    // Truncation (127-byte Redshift identifier limit)
+    // ================================================================
+
+    @Test
+    fun `name exactly 127 chars is not truncated`() {
+        val input = "a".repeat(127)
+        val result = input.toRedshiftCompatibleName()
+        assertEquals(127, result.length)
+        assertEquals(input, result)
+    }
+
+    @Test
+    fun `name exceeding 127 chars is truncated`() {
+        val input = "a".repeat(200)
+        val result = input.toRedshiftCompatibleName()
+        assertTrue(result.length <= 127, "Expected <= 127 chars but got ${result.length}")
+    }
+
+    @Test
+    fun `truncation is deterministic`() {
+        val input = "x".repeat(200)
+        val first = input.toRedshiftCompatibleName()
+        val second = input.toRedshiftCompatibleName()
+        assertEquals(first, second)
+    }
+
+    @Test
+    fun `two long names sharing a prefix produce different truncated results`() {
+        val base = "a".repeat(130)
+        val input1 = base + "_suffix_one"
+        val input2 = base + "_suffix_two"
+        val result1 = input1.toRedshiftCompatibleName()
+        val result2 = input2.toRedshiftCompatibleName()
+        assertTrue(result1 != result2, "Expected different results for different inputs")
+        assertTrue(result1.length <= 127)
+        assertTrue(result2.length <= 127)
+    }
+
+    @Test
+    fun `truncated name with digit prefix still prepends underscore and stays within limit`() {
+        // Input starts with a digit and exceeds 127 chars after underscore prepend
+        val input = "1" + "a".repeat(200)
+        val result = input.toRedshiftCompatibleName()
+        assertTrue(result.startsWith("_"), "Expected leading underscore for digit-prefixed name")
+        assertTrue(result.length <= 127, "Expected <= 127 chars but got ${result.length}")
     }
 }
