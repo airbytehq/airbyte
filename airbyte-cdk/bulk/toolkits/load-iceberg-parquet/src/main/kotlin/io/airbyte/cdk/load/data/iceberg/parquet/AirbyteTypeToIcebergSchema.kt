@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data.iceberg.parquet
@@ -108,7 +108,13 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
         // But we should leave the _airbyte_meta field as an actual object.
         val stringifyObjects = name != Meta.COLUMN_NAME_AB_META
         val icebergType =
-            icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+            if (isPrimaryKey && field.type is NumberType) {
+                // Override PK NumberType fields to StringType so they can be used as
+                // Iceberg identifier fields (float/double are disallowed as identifiers).
+                Types.StringType.get()
+            } else {
+                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+            }
         fields.add(
             NestedField.of(
                 id,

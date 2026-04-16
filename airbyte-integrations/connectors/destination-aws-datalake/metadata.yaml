@@ -33,4 +33,14 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: AWS Lake Formation documentation
+      url: https://docs.aws.amazon.com/lake-formation/
+      type: api_reference
+    - title: IAM authentication
+      url: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html
+      type: authentication_guide
+    - title: Permissions
+      url: https://docs.aws.amazon.com/lake-formation/latest/dg/lake-formation-permissions.html
+      type: permissions_scopes
 metadataSpecVersion: "1.0"

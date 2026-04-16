@@ -1,0 +1,8 @@
+{
+  "description": "Schema for AdsInsightsResult type fields. This type is used for objective-related metrics in Facebook Marketing API.",
+  "type": ["null", "array"],
+  "items": {
+    "type": "object",
+    "additionalProperties": true
+  }
+}

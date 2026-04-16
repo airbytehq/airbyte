@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.transform.medium
@@ -8,8 +8,8 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
-import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
@@ -41,17 +41,13 @@ import org.junit.jupiter.api.Test
 class ProtobufConverterTest {
 
     private val encoder = AirbyteValueProtobufEncoder()
+    private val defaultConfig = MediumConverterConfig(extractedAtAsTimestampWithTimezone = true)
 
     private fun createMockCoercerPassThrough(): ValueCoercer =
         mockk<ValueCoercer> {
             every { representAs(any()) } returns null
             every { map(any()) } answers { firstArg<EnrichedAirbyteValue>() }
             every { validate(any()) } returns ValidationResult.Valid
-        }
-
-    private fun createMockMapperPassThrough(): ColumnNameMapper =
-        mockk<ColumnNameMapper> {
-            every { getMappedColumnName(any(), any()) } answers { secondArg<String>() }
         }
 
     private fun fa(name: String, type: AirbyteType, idx: Int): FieldAccessor = mockk {
@@ -134,7 +130,8 @@ class ProtobufConverterTest {
         source: DestinationRecordProtobufSource = buildProtoSource(emptyList()),
         generationId: Long = 1L,
         syncId: Long = 2L,
-        unknownChanges: List<Meta.Change> = emptyList()
+        unknownChanges: List<Meta.Change> = emptyList(),
+        columnNameMapper: ((String) -> String)? = null
     ): DestinationRecordRaw {
         val destinationStream =
             mockk<DestinationStream> {
@@ -145,6 +142,15 @@ class ProtobufConverterTest {
                 every { mappedDescriptor } returns DestinationStream.Descriptor("namespace", "name")
                 every { unmappedDescriptor } returns
                     DestinationStream.Descriptor("namespace", "name")
+                // Add tableSchema mock
+                every { tableSchema } returns
+                    mockk {
+                        every { getFinalColumnName(any()) } answers
+                            {
+                                val columnName = firstArg<String>()
+                                columnNameMapper?.invoke(columnName) ?: columnName
+                            }
+                    }
             }
         return mockk<DestinationRecordRaw> {
             every { stream } returns destinationStream
@@ -156,9 +162,8 @@ class ProtobufConverterTest {
     @Test
     fun `convertWithMetadata processes basic types correctly`() {
         val valueCoercer = createMockCoercerPassThrough()
-        val columnNameMapper = createMockMapperPassThrough()
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors =
             arrayOf(
@@ -268,9 +273,8 @@ class ProtobufConverterTest {
     @Test
     fun `convertWithMetadata handles BigDecimal values correctly`() {
         val valueCoercer = createMockCoercerPassThrough()
-        val columnNameMapper = createMockMapperPassThrough()
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors =
             arrayOf(
@@ -311,9 +315,8 @@ class ProtobufConverterTest {
     @Test
     fun `convertWithMetadata handles null values`() {
         val valueCoercer = createMockCoercerPassThrough()
-        val columnNameMapper = createMockMapperPassThrough()
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors = arrayOf(fa("null_field", StringType, 0))
 
@@ -338,8 +341,7 @@ class ProtobufConverterTest {
                 every { validate(any()) } returns ValidationResult.Valid
             }
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors = arrayOf(fa("time_field", TimeTypeWithoutTimezone, 0))
         val protoValues = listOf(vTimeNoTz(LocalTime.parse("12:34:56")))
@@ -384,9 +386,8 @@ class ProtobufConverterTest {
                         }
                     }
             }
-        val columnNameMapper = createMockMapperPassThrough()
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors = arrayOf(fa("short_string", StringType, 0), fa("long_string", StringType, 1))
         val protoValues = listOf(vString("hello"), vString("this_is_too_long"))
@@ -406,24 +407,26 @@ class ProtobufConverterTest {
     @Test
     fun `convertWithMetadata applies column mapping`() {
         val valueCoercer = createMockCoercerPassThrough()
-        val columnNameMapper =
-            object : ColumnNameMapper {
-                override fun getMappedColumnName(
-                    stream: DestinationStream,
-                    columnName: String
-                ): String = if (columnName == "original_name") "mapped_name" else columnName
-            }
+        // NOTE: Column name mapping is now handled by the stream's tableSchema
+        // This test has been modified to work with the new API
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors = arrayOf(fa("original_name", StringType, 0))
         val protoValues = listOf(vString("test"))
 
         val msg =
-            mockMsgWithStream(accessors, source = buildProtoSource(protoValues.map { it.build() }))
+            mockMsgWithStream(
+                accessors,
+                source = buildProtoSource(protoValues.map { it.build() }),
+                columnNameMapper = { columnName ->
+                    if (columnName == "original_name") "mapped_name" else columnName
+                }
+            )
 
         val result = converter.convert(ConversionInput(msg, PartitionKey("test-key")))
 
+        // Column mapping is now handled by tableSchema
         assertFalse(result.containsKey("original_name"))
         assertTrue(result.containsKey("mapped_name"))
         assertEquals("test", (result["mapped_name"] as StringValue).value)
@@ -432,9 +435,8 @@ class ProtobufConverterTest {
     @Test
     fun `convertWithMetadata handles parsing exceptions`() {
         val valueCoercer = createMockCoercerPassThrough()
-        val columnNameMapper = createMockMapperPassThrough()
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors = arrayOf(fa("invalid_int", IntegerType, 0))
 
@@ -457,9 +459,8 @@ class ProtobufConverterTest {
     @Test
     fun `convertWithMetadata merges meta changes from source + stream unknown changes + parsing failures`() {
         val valueCoercer = createMockCoercerPassThrough()
-        val columnNameMapper = createMockMapperPassThrough()
         val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, defaultConfig)
 
         val accessors = arrayOf(fa("ok_str", StringType, 0), fa("bad_int", IntegerType, 1))
 
@@ -509,5 +510,56 @@ class ProtobufConverterTest {
         val meta = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
         val changes = meta.values["changes"] as ArrayValue
         assertTrue(changes.values.size >= 4)
+    }
+
+    @Test
+    fun `extractedAt returns TimestampWithTimezoneValue when config is true`() {
+        val valueCoercer = createMockCoercerPassThrough()
+        val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
+        val config = MediumConverterConfig(extractedAtAsTimestampWithTimezone = true)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, config)
+
+        val emittedAtMs = 1704067200000L // 2024-01-01T00:00:00Z
+        val accessors = arrayOf(fa("test_field", StringType, 0))
+        val protoValues = listOf(vString("test"))
+
+        val msg =
+            mockMsgWithStream(
+                accessors,
+                source = buildProtoSource(protoValues.map { it.build() }, emittedAtMs = emittedAtMs)
+            )
+
+        val result = converter.convert(ConversionInput(msg, PartitionKey("test-key")))
+
+        val extractedAt = result[Meta.COLUMN_NAME_AB_EXTRACTED_AT]
+        assertTrue(extractedAt is TimestampWithTimezoneValue)
+        assertEquals(
+            emittedAtMs,
+            (extractedAt as TimestampWithTimezoneValue).value.toInstant().toEpochMilli()
+        )
+    }
+
+    @Test
+    fun `extractedAt returns IntegerValue when config is false`() {
+        val valueCoercer = createMockCoercerPassThrough()
+        val validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
+        val config = MediumConverterConfig(extractedAtAsTimestampWithTimezone = false)
+        val converter = ProtobufConverter(valueCoercer, validationResultHandler, config)
+
+        val emittedAtMs = 1704067200000L // 2024-01-01T00:00:00Z
+        val accessors = arrayOf(fa("test_field", StringType, 0))
+        val protoValues = listOf(vString("test"))
+
+        val msg =
+            mockMsgWithStream(
+                accessors,
+                source = buildProtoSource(protoValues.map { it.build() }, emittedAtMs = emittedAtMs)
+            )
+
+        val result = converter.convert(ConversionInput(msg, PartitionKey("test-key")))
+
+        val extractedAt = result[Meta.COLUMN_NAME_AB_EXTRACTED_AT]
+        assertTrue(extractedAt is IntegerValue)
+        assertEquals(BigInteger.valueOf(emittedAtMs), (extractedAt as IntegerValue).value)
     }
 }

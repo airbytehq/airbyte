@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
-import com.google.common.base.Charsets
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files

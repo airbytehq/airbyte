@@ -284,6 +284,16 @@ definitions:
       schema:
         $ref: "#/schemas/channel_messages"
 
+  channel_messages_with_replies_stream:
+    $ref: "#/definitions/channel_messages_stream"
+    retriever:
+      $ref: "#/definitions/channel_messages_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/channel_messages_stream/retriever/record_selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ (record.reply_count or 0) > 0 if config.get('threads_ignore_no_replies', false) else true }}"
+
   threads_stream:
     $ref: "#/definitions/stream_base"
     $parameters:
@@ -328,7 +338,7 @@ definitions:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/definitions/channel_messages_stream"
+              $ref: "#/definitions/channel_messages_with_replies_stream"
             # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
             # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
             # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
@@ -432,6 +442,11 @@ spec:
         examples:
           - channel_one
           - channel_two
+      threads_ignore_no_replies:
+        type: boolean
+        default: false
+        title: Ignore messages with no replies in threads stream
+        description: When enabled, the threads stream will skip messages that have no replies (reply_count is 0, null, or absent), reducing the number of API calls. Disabled by default to make Threads stream contain unthreaded messages in its records.
       credentials:
         title: Authentication mechanism
         description: Choose how to authenticate into Slack
@@ -480,7 +495,7 @@ spec:
           order: 1
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 10
         default: 2
@@ -508,7 +523,30 @@ spec:
       - option_title
     predicate_value: Default OAuth2.0 authorization
     oauth_config_specification:
-#      oauth_user_input_from_connector_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://slack.com/oauth/v2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{state_param}}&{{scopes_param}}"
+        access_token_url: "https://slack.com/api/oauth.v2.access"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        scopes:
+          - scope: "channels:history"
+          - scope: "channels:join"
+          - scope: "channels:read"
+          - scope: "groups:read"
+          - scope: "groups:history"
+          - scope: "users:read"
+          - scope: "im:history"
+          - scope: "mpim:history"
+          - scope: "im:read"
+          - scope: "mpim:read"
+        scopes_join_strategy: comma
+        extract_output:
+          - access_token
       complete_oauth_output_specification:
         type: object
         additionalProperties: false

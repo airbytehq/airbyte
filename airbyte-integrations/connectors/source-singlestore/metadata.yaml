@@ -24,4 +24,8 @@ data:
   supportLevel: community
   tags:
     - language:java
+  externalDocumentationUrls:
+    - title: SingleStore documentation
+      url: https://docs.singlestore.com/
+      type: api_reference
 metadataSpecVersion: "1.0"

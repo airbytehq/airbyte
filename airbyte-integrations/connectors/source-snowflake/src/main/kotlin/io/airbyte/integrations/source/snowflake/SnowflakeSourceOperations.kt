@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake
@@ -21,7 +21,6 @@ import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
-import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -114,7 +113,7 @@ class SnowflakeSourceOperations() :
             "DATETIME",
             "TIMESTAMP",
             "TIMESTAMP_NTZ",
-            "TIMESTAMPNTZ", -> LocalDateTimeFieldType
+            "TIMESTAMPNTZ", -> SnowflakeLocalDateTimeFieldType
             "BINARY",
             "VARBINARY", -> BytesFieldType
             "VARIANT",

@@ -53,11 +53,11 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Terraform
 
-Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/platform/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
+Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/developers/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
 
 ### PyAirbyte
 
-If you want to use Python to move data, our Python library, [PyAirbyte](/platform/using-airbyte/pyairbyte/getting-started), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
+If you want to use Python to move data, our Python library, [PyAirbyte](/developers/pyairbyte), might be the best fit for you. It's a good choice if you're using Jupyter Notebook or iterating on an early prototype for a large data project and don't need to run a server.
 
 :::note
 PyAirbyte isn't an SDK for managing Airbyte. If that's what you're looking for, use the [API or Python SDK](#api-sdk).

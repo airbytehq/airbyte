@@ -197,4 +197,4 @@ class API:
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
-        return AdAccount(f"act_{account_id}").api_get()
+        return AdAccount(f"act_{account_id}").api_get(fields=["timezone_name"])

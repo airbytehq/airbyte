@@ -181,7 +181,7 @@ If you want to interact with the pods or resources inside the cluster you can us
 
 [kind](https://kind.sigs.k8s.io/) is a tool for creating a K8s cluster using docker instead of having to install a local K8s cluster. You only need to think about kind if you want to make an adjustment to the cluster itself.
 
-For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](/platform/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
+For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](/community/contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
 
 ### Unable To Locate User Email
 

@@ -1,0 +1,23 @@
+{
+  "list": [
+    {
+      "quote": {
+        "id": "quote_001",
+        "name": "Test Quote",
+        "customer_id": "cust_001",
+        "subscription_id": "sub_001",
+        "status": "open",
+        "operation_type": "create_subscription_for_customer",
+        "date": 1705312800,
+        "valid_till": 1707991200,
+        "total": 1000,
+        "currency_code": "USD",
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "quote",
+        "cf_sales_rep": "Jane Doe",
+        "cf_deal_stage": "Negotiation"
+      }
+    }
+  ]
+}

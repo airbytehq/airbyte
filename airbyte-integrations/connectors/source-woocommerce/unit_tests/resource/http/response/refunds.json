@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1001,
+    "date_created": "2024-03-16T10:00:00",
+    "date_created_gmt": "2024-03-16T10:00:00",
+    "amount": "49.99",
+    "reason": "Customer requested refund",
+    "refunded_by": 1,
+    "refunded_payment": true,
+    "meta_data": [],
+    "line_items": [
+      {
+        "id": 1,
+        "name": "Test Product",
+        "product_id": 99,
+        "variation_id": 0,
+        "quantity": -1,
+        "tax_class": "",
+        "subtotal": "-49.99",
+        "subtotal_tax": "0.00",
+        "total": "-49.99",
+        "total_tax": "0.00",
+        "taxes": [],
+        "meta_data": [],
+        "sku": "TEST-001",
+        "price": -49.99
+      }
+    ]
+  }
+]
