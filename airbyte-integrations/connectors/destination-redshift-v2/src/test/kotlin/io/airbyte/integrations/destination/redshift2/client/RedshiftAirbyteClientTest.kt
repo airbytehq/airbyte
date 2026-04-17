@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.client
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -13,7 +11,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
-import io.airbyte.cdk.load.component.TableSchema
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
@@ -25,9 +22,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.InputStream
 import java.sql.Connection
-import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
@@ -48,10 +43,8 @@ internal class RedshiftAirbyteClientTest {
 
     @MockK lateinit var dataSource: DataSource
     @MockK lateinit var sqlGenerator: RedshiftSqlGenerator
-    @MockK lateinit var s3Client: AmazonS3
     @MockK lateinit var mockConnection: Connection
     @MockK lateinit var mockStatement: Statement
-    @MockK lateinit var mockPreparedStatement: PreparedStatement
     @MockK lateinit var mockResultSet: ResultSet
 
     private lateinit var client: RedshiftAirbyteClient
@@ -62,13 +55,11 @@ internal class RedshiftAirbyteClientTest {
     fun setUp() {
         every { dataSource.connection } returns mockConnection
         every { mockConnection.createStatement() } returns mockStatement
-        every { mockConnection.prepareStatement(any()) } returns mockPreparedStatement
         every { mockConnection.close() } returns Unit
         every { mockStatement.close() } returns Unit
-        every { mockPreparedStatement.close() } returns Unit
         every { mockResultSet.close() } returns Unit
 
-        client = RedshiftAirbyteClient(dataSource, sqlGenerator, s3Client)
+        client = RedshiftAirbyteClient(dataSource, sqlGenerator)
     }
 
     // ================================================================
@@ -205,17 +196,18 @@ internal class RedshiftAirbyteClientTest {
     }
 
     @Test
-    fun `copyTable delegates to sqlGenerator with ALTER TABLE APPEND`() = runTest {
+    fun `copyTable builds column list from meta columns plus user columns`() = runTest {
         val source = TableName(namespace = "ns", name = "src")
         val target = TableName(namespace = "ns", name = "tgt")
         val columnNameMapping = ColumnNameMapping(mapOf("user_col" to "user_col"))
 
-        every { sqlGenerator.copyTable(source, target) } returns "ALTER TABLE APPEND SQL"
-        every { mockStatement.execute("ALTER TABLE APPEND SQL") } returns true
+        val expectedColumns = RedshiftSqlGenerator.META_COLUMNS.keys.toList() + listOf("user_col")
+        every { sqlGenerator.copyTable(expectedColumns, source, target) } returns "COPY TABLE SQL"
+        every { mockStatement.execute("COPY TABLE SQL") } returns true
 
         client.copyTable(columnNameMapping, source, target)
 
-        verify { sqlGenerator.copyTable(source, target) }
+        verify { sqlGenerator.copyTable(expectedColumns, source, target) }
     }
 
     @Test
@@ -263,48 +255,6 @@ internal class RedshiftAirbyteClientTest {
         every { mockResultSet.next() } returns false
 
         assertEquals(0L, client.countTable(testTable))
-    }
-
-    // ================================================================
-    // isTableNotEmpty
-    // ================================================================
-
-    @Test
-    fun `isTableNotEmpty returns true when table has rows`() = runTest {
-        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
-        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } returns mockResultSet
-        every { mockResultSet.next() } returns true
-        every { mockResultSet.getBoolean("not_empty") } returns true
-
-        assertEquals(true, client.isTableNotEmpty(testTable))
-    }
-
-    @Test
-    fun `isTableNotEmpty returns false when table is empty`() = runTest {
-        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
-        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } returns mockResultSet
-        every { mockResultSet.next() } returns true
-        every { mockResultSet.getBoolean("not_empty") } returns false
-
-        assertEquals(false, client.isTableNotEmpty(testTable))
-    }
-
-    @Test
-    fun `isTableNotEmpty returns null on missing table`() = runTest {
-        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
-        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } throws
-            SQLException("relation does not exist")
-
-        assertNull(client.isTableNotEmpty(testTable))
-    }
-
-    @Test
-    fun `isTableNotEmpty returns false on empty result set`() = runTest {
-        every { sqlGenerator.isTableNotEmpty(testTable) } returns "IS NOT EMPTY SQL"
-        every { mockStatement.executeQuery("IS NOT EMPTY SQL") } returns mockResultSet
-        every { mockResultSet.next() } returns false
-
-        assertEquals(false, client.isTableNotEmpty(testTable))
     }
 
     // ================================================================
@@ -419,17 +369,6 @@ internal class RedshiftAirbyteClientTest {
         every { mockResultSet.getString("is_nullable") } returns "YES"
 
         assertThrows<ConfigErrorException> { client.discoverSchema(testTable) }
-    }
-
-    @Test
-    fun `discoverSchema returns empty schema when table does not exist`() = runTest {
-        every { sqlGenerator.getTableSchema(testTable) } returns "GET SCHEMA SQL"
-        every { mockStatement.executeQuery("GET SCHEMA SQL") } returns mockResultSet
-        // Simulate: no rows returned = table doesn't exist in information_schema
-        every { mockResultSet.next() } returns false
-
-        val schema = client.discoverSchema(testTable)
-        assertEquals(TableSchema(emptyMap()), schema)
     }
 
     // ================================================================
@@ -648,96 +587,5 @@ internal class RedshiftAirbyteClientTest {
                     )
             }
         return mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
-    }
-
-    // ================================================================
-    // ping
-    // ================================================================
-
-    @Test
-    fun `ping executes SELECT 1`() = runTest {
-        every { mockStatement.execute("SELECT 1") } returns true
-
-        client.ping()
-
-        verify { mockStatement.execute("SELECT 1") }
-    }
-
-    // ================================================================
-    // copyFromS3
-    // ================================================================
-
-    @Test
-    fun `copyFromS3 delegates to sqlGenerator and suppresses logging`() = runTest {
-        every {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
-        } returns "COPY SQL"
-        every { mockStatement.execute("COPY SQL") } returns true
-
-        client.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
-
-        verify {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
-        }
-        verify { mockStatement.execute("COPY SQL") }
-    }
-
-    // ================================================================
-    // addColumn
-    // ================================================================
-
-    @Test
-    fun `addColumn delegates to sqlGenerator`() = runTest {
-        every { sqlGenerator.addColumn(testTable, "new_col", "varchar(65535)") } returns "ALTER SQL"
-        every { mockStatement.execute("ALTER SQL") } returns true
-
-        client.addColumn(testTable, "new_col", "varchar(65535)")
-
-        verify { sqlGenerator.addColumn(testTable, "new_col", "varchar(65535)") }
-    }
-
-    // ================================================================
-    // deleteByRawId
-    // ================================================================
-
-    @Test
-    fun `deleteByRawId uses PreparedStatement`() = runTest {
-        every { sqlGenerator.deleteByRawId(testTable) } returns "DELETE SQL WHERE ? = ?"
-        every { mockPreparedStatement.setString(1, "test-raw-id") } returns Unit
-        every { mockPreparedStatement.executeUpdate() } returns 1
-
-        client.deleteByRawId(testTable, "test-raw-id")
-
-        verify { mockPreparedStatement.setString(1, "test-raw-id") }
-        verify { mockPreparedStatement.executeUpdate() }
-    }
-
-    // ================================================================
-    // uploadToS3
-    // ================================================================
-
-    @Test
-    fun `uploadToS3 delegates to s3Client`() = runTest {
-        val data = "test".toByteArray()
-        val metadata = ObjectMetadata()
-        every { s3Client.putObject(any<String>(), any(), any<InputStream>(), any()) } returns
-            mockk()
-
-        client.uploadToS3("bucket", "key", data, metadata)
-
-        verify { s3Client.putObject(eq("bucket"), eq("key"), any<InputStream>(), eq(metadata)) }
-    }
-
-    // ================================================================
-    // deleteFromS3
-    // ================================================================
-
-    @Test
-    fun `deleteFromS3 delegates to s3Client`() = runTest {
-        every { s3Client.deleteObject("bucket", "key") } returns Unit
-
-        client.deleteFromS3("bucket", "key")
-
-        verify { s3Client.deleteObject("bucket", "key") }
     }
 }

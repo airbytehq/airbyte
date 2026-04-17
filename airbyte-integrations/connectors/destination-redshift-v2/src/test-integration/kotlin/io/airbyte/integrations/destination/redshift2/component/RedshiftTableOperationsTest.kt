@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.component.TableOperationsSuite
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClient
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["component"])
@@ -39,9 +38,6 @@ class RedshiftTableOperationsTest(
     }
 
     @Test
-    @Disabled(
-        "CDK fixture (bulk-cdk-core-load 1.0.7) contains a 37-char UUID that exceeds Redshift's varchar(36) for _airbyte_raw_id. Re-enable once the CDK publishes a fix."
-    )
     override fun `count table rows`() {
         super.`count table rows`()
     }

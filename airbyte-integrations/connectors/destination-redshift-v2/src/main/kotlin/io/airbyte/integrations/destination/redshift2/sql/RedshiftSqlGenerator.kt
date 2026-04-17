@@ -13,15 +13,12 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
 class RedshiftSqlGenerator {
-    private val log = KotlinLogging.logger {}
 
     companion object {
-        private const val DEDUPED_TABLE_ALIAS = "deduped_source"
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
@@ -42,7 +39,26 @@ class RedshiftSqlGenerator {
     }
 
     fun createNamespace(namespace: String): String =
-        "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(namespace)};".andLog()
+        "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(namespace)};"
+
+    /** Generates a query to check if a schema exists via `information_schema.schemata`. */
+    fun namespaceExists(namespace: String): String =
+        """
+            |SELECT EXISTS(
+            |    SELECT 1 FROM information_schema.schemata
+            |    WHERE schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
+            |)
+        """.trimMargin()
+
+    /** Generates a query to check if a table exists via `information_schema.tables`. */
+    fun tableExists(tableName: TableName): String =
+        """
+            |SELECT EXISTS(
+            |    SELECT 1 FROM information_schema.tables
+            |    WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.namespace)}'
+            |    AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.name)}'
+            |)
+        """.trimMargin()
 
     fun createTable(
         stream: DestinationStream,
@@ -73,29 +89,27 @@ class RedshiftSqlGenerator {
             |${dropStatement}
             |CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} ($columnDeclarations);
             |COMMIT;
-        """
-            .trimMargin()
-            .andLog()
+        """.trimMargin()
     }
 
     fun dropTable(tableName: TableName): String =
-        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};".andLog()
+        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};"
 
     fun addColumn(tableName: TableName, columnName: String, columnType: String): String =
-        "ALTER TABLE ${getFullyQualifiedName(tableName)} ADD COLUMN ${quoteIdentifier(columnName)} $columnType;".andLog()
+        "ALTER TABLE ${getFullyQualifiedName(tableName)} ADD COLUMN ${quoteIdentifier(columnName)} $columnType;"
 
     fun countTable(tableName: TableName): String =
-        "SELECT COUNT(*) AS \"total\" FROM ${getFullyQualifiedName(tableName)};".andLog()
+        "SELECT COUNT(*) AS \"total\" FROM ${getFullyQualifiedName(tableName)};"
 
     fun getGenerationId(tableName: TableName): String =
         "SELECT ${quoteIdentifier(COLUMN_NAME_AB_GENERATION_ID)} FROM ${
             getFullyQualifiedName(
                 tableName,
             )
-        } LIMIT 1;".andLog()
+        } LIMIT 1;"
 
     fun deleteByRawId(tableName: TableName): String =
-        "DELETE FROM ${getFullyQualifiedName(tableName)} WHERE ${quoteIdentifier("_airbyte_raw_id")} = ?;".andLog()
+        "DELETE FROM ${getFullyQualifiedName(tableName)} WHERE ${quoteIdentifier("_airbyte_raw_id")} = ?;"
 
     /** Generates an `INSERT INTO target SELECT FROM source` to copy data between tables. */
     fun copyTable(
@@ -108,9 +122,7 @@ class RedshiftSqlGenerator {
             |INSERT INTO ${getFullyQualifiedName(targetTableName)} ($quotedColumnNames)
             |SELECT $quotedColumnNames
             |FROM ${getFullyQualifiedName(sourceTableName)};
-        """
-            .trimMargin()
-            .andLog()
+        """.trimMargin()
     }
 
     /**
@@ -141,9 +153,7 @@ class RedshiftSqlGenerator {
         };
             |$moveSchemaSql
             |COMMIT;
-        """
-            .trimMargin()
-            .andLog()
+        """.trimMargin()
     }
 
     /**
@@ -168,6 +178,15 @@ class RedshiftSqlGenerator {
         val cursorTargetColumn = getCursorColumnNameQuoted(stream)
         val allTargetColumns = getTargetColumnNamesForStream(stream)
 
+        val cdcHardDeleteEnabled =
+            stream.tableSchema.columnSchema.inputSchema.containsKey(CDC_DELETED_AT_COLUMN)
+
+        // Redshift doesn't support writable CTEs (DELETE/UPDATE inside WITH clauses).
+        // Execute dedup as a temp table, then run DELETE, UPDATE, INSERT as separate statements.
+        val dedupTempTable = "_airbyte_dedup_${sourceTableName.name.take(100)}"
+        val dedupFqn =
+            "${quoteIdentifier(sourceTableName.namespace)}.${quoteIdentifier(dedupTempTable)}"
+
         val selectDedupedQuery =
             selectDeduped(
                 primaryKeyTargetColumns,
@@ -176,21 +195,9 @@ class RedshiftSqlGenerator {
                 sourceTableName,
             )
 
-        val cdcHardDeleteEnabled =
-            stream.tableSchema.columnSchema.inputSchema.containsKey(CDC_DELETED_AT_COLUMN)
-
-        val cdcDeleteQuery =
-            cdcDelete(
-                DEDUPED_TABLE_ALIAS,
-                cursorTargetColumn,
-                targetTableName,
-                primaryKeyTargetColumns,
-                cdcHardDeleteEnabled,
-            )
-
         val updateExistingRowsQuery =
             updateExistingRows(
-                DEDUPED_TABLE_ALIAS,
+                dedupFqn,
                 targetTableName,
                 allTargetColumns,
                 primaryKeyTargetColumns,
@@ -200,27 +207,51 @@ class RedshiftSqlGenerator {
 
         val insertNewRowsQuery =
             insertNewRows(
-                DEDUPED_TABLE_ALIAS,
+                dedupFqn,
                 targetTableName,
                 allTargetColumns,
                 primaryKeyTargetColumns,
                 cdcHardDeleteEnabled,
             )
 
+        val statements = mutableListOf<String>()
+
+        // Step 1: Materialize deduped rows into a temp table
+        statements.add("CREATE TABLE $dedupFqn AS\n$selectDedupedQuery;")
+
+        // Step 2: CDC hard-delete (if enabled)
+        if (cdcHardDeleteEnabled) {
+            val primaryKeysMatchingCondition =
+                primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+                    "${getFullyQualifiedName(targetTableName)}.$pk = $dedupFqn.$pk"
+                }
+            val cursorComparison =
+                buildCursorComparison(cursorTargetColumn, targetTableName, dedupFqn)
+            statements.add(
+                """
+                |DELETE FROM ${getFullyQualifiedName(targetTableName)}
+                |USING $dedupFqn
+                |WHERE $primaryKeysMatchingCondition
+                |  AND $dedupFqn.$DELETED_AT_COLUMN_NAME IS NOT NULL
+                |  AND ($cursorComparison);
+                """.trimMargin()
+            )
+        }
+
+        // Step 3: Update existing rows
+        statements.add("$updateExistingRowsQuery;")
+
+        // Step 4: Insert new rows
+        statements.add("$insertNewRowsQuery;")
+
+        // Step 5: Drop temp table
+        statements.add("DROP TABLE IF EXISTS $dedupFqn;")
+
         return """
-            |WITH $DEDUPED_TABLE_ALIAS AS (
-            |$selectDedupedQuery
-            |),
-            |
-            |$cdcDeleteQuery
-            |updates AS (
-            |$updateExistingRowsQuery
-            |)
-            |
-            |$insertNewRowsQuery
-        """
-            .trimMargin()
-            .andLog()
+            |BEGIN TRANSACTION;
+            |${statements.joinToString("\n")}
+            |COMMIT;
+        """.trimMargin()
     }
 
     /**
@@ -249,43 +280,6 @@ class RedshiftSqlGenerator {
             |    FROM ${getFullyQualifiedName(sourceTableName)}
             |  ) AS deduplicated
             |  WHERE row_number = 1
-        """.trimMargin()
-    }
-
-    /**
-     * Generates the CDC hard-delete CTE, or an empty string if CDC hard delete is disabled.
-     *
-     * Deletes target rows where the source has a CDC deletion marker and the deletion is newer than
-     * the target record.
-     */
-    internal fun cdcDelete(
-        dedupTableAlias: String,
-        cursorTargetColumn: String?,
-        targetTableName: TableName,
-        primaryKeyTargetColumns: List<String>,
-        cdcHardDeleteEnabled: Boolean,
-    ): String {
-        if (!cdcHardDeleteEnabled) {
-            return ""
-        }
-
-        val primaryKeysMatchingCondition =
-            primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
-            }
-
-        val cursorComparison =
-            buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
-
-        return """
-            |deleted AS (
-            |  DELETE FROM ${getFullyQualifiedName(targetTableName)}
-            |  USING $dedupTableAlias
-            |  WHERE $primaryKeysMatchingCondition
-            |    AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NOT NULL
-            |    AND ($cursorComparison)
-            |),
-            |
         """.trimMargin()
     }
 
@@ -435,9 +429,7 @@ class RedshiftSqlGenerator {
             |BEGIN TRANSACTION;
             |${clauses.joinToString("\n")}
             |COMMIT;
-        """
-            .trimMargin()
-            .andLog()
+        """.trimMargin()
     }
 
     /**
@@ -462,9 +454,10 @@ class RedshiftSqlGenerator {
                 // SUPER -> VARCHAR: serialize JSON to string
                 oldType == RedshiftDataType.SUPER.typeName && newType.startsWith("varchar") ->
                     "JSON_SERIALIZE($quotedName)"
-                // VARCHAR -> SUPER: parse string as JSON
+                // VARCHAR -> SUPER: wrap as JSON string value before parsing, so that plain
+                // text like "foo" becomes the JSON string "foo" rather than failing JSON_PARSE.
                 oldType.startsWith("varchar") && newType == RedshiftDataType.SUPER.typeName ->
-                    "JSON_PARSE($quotedName)"
+                    "JSON_PARSE('\"' || REPLACE(REPLACE($quotedName, '\\\\', '\\\\\\\\'), '\"', '\\\\\"') || '\"')"
                 // All other conversions: standard CAST
                 else -> "CAST($quotedName AS $newType)"
             }
@@ -489,9 +482,7 @@ class RedshiftSqlGenerator {
             |WHERE table_schema = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.namespace)}'
             |AND table_name = '${RedshiftSqlEscapeUtils.escapeSqlString(tableName.name)}'
             |ORDER BY ordinal_position;
-        """
-            .trimMargin()
-            .andLog()
+        """.trimMargin()
 
     /** Generates a Redshift COPY command to load gzip CSV data from S3 */
     fun copyFromS3(
@@ -524,8 +515,7 @@ class RedshiftSqlGenerator {
     private fun getFullyQualifiedName(tableName: TableName): String =
         "${getNamespace(tableName)}.${getName(tableName)}"
 
-    private fun getNamespace(tableName: TableName): String =
-        quoteIdentifier(tableName.namespace.ifBlank { "public" })
+    private fun getNamespace(tableName: TableName): String = quoteIdentifier(tableName.namespace)
 
     private fun getName(tableName: TableName): String = quoteIdentifier(tableName.name)
 
@@ -541,10 +531,4 @@ class RedshiftSqlGenerator {
 
     private fun getCursorColumnNameQuoted(stream: DestinationStream): String? =
         stream.tableSchema.getCursor().firstOrNull()?.let { quoteIdentifier(it) }
-
-    /** Logs the SQL string at INFO level and returns it. */
-    private fun String.andLog(): String {
-        log.info { this }
-        return this
-    }
 }

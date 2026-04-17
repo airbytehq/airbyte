@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.client
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -21,7 +19,6 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.io.ByteArrayInputStream
 import java.sql.ResultSet
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -31,21 +28,18 @@ private val log = KotlinLogging.logger {}
 private const val COUNT_TOTAL_ALIAS = "total"
 private const val COLUMN_NAME_COLUMN = "column_name"
 
-/** PostgreSQL/Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
-private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
-
 @Singleton
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
-    private val sqlGenerator: RedshiftSqlGenerator,
-    private val s3Client: AmazonS3,
+    private val sqlGenerator: RedshiftSqlGenerator
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     override suspend fun createNamespace(namespace: String) {
         try {
             execute(sqlGenerator.createNamespace(namespace))
         } catch (e: SQLException) {
-            // Swallow race condition where concurrent connections both try CREATE SCHEMA
+            // Swallow race condition where concurrent connections both try CREATE SCHEMA IF NOT
+            // EXISTS
             if (e.message?.contains("already exists") != true) {
                 throw e
             }
@@ -82,7 +76,9 @@ class RedshiftAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(sqlGenerator.copyTable(sourceTableName, targetTableName))
+        val metaColumnNames = getMetaColumnNames()
+        val targetColumnNames = (metaColumnNames + columnNameMapping.values).toList()
+        execute(sqlGenerator.copyTable(targetColumnNames, sourceTableName, targetTableName))
     }
 
     override suspend fun upsertTable(
@@ -111,25 +107,6 @@ class RedshiftAirbyteClient(
             null
         }
 
-    /**
-     * Efficiently checks whether a table is non-empty using `SELECT EXISTS(... LIMIT 1)`.
-     *
-     * Returns `true` if the table has at least one row, `false` if it is empty, or `null` if the
-     * table does not exist.
-     */
-    suspend fun isTableNotEmpty(tableName: TableName): Boolean? =
-        try {
-            executeQuery(sqlGenerator.isTableNotEmpty(tableName)) { rs ->
-                rs.next() && rs.getBoolean("not_empty")
-            }
-        } catch (e: SQLException) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. " +
-                    "Returning null to signal a missing table."
-            }
-            null
-        }
-
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
             executeQuery(sqlGenerator.getGenerationId(tableName)) { rs ->
@@ -147,22 +124,15 @@ class RedshiftAirbyteClient(
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columnsInDb = getColumnsFromDbForDiscovery(tableName)
-
-        // Table does not exist -- return empty schema so the CDK creates it.
-        if (columnsInDb.isEmpty()) {
-            return TableSchema(emptyMap())
-        }
-
         val hasAllAirbyteColumns = columnsInDb.keys.containsAll(COLUMN_NAMES)
+
         if (!hasAllAirbyteColumns) {
             val message =
-                """
-                The target table (${tableName.namespace}.${tableName.name}) already exists \
-                in the destination, but does not contain Airbyte's internal columns. \
-                Airbyte can only sync to Airbyte-controlled tables. To fix this error, \
-                you must either delete the target table or add a prefix in the connection \
-                configuration in order to sync to a separate table in the destination.
-                """.trimIndent()
+                "The target table (${tableName.namespace}.${tableName.name}) already exists " +
+                    "in the destination, but does not contain Airbyte's internal columns. " +
+                    "Airbyte can only sync to Airbyte-controlled tables. To fix this error, " +
+                    "you must either delete the target table or add a prefix in the connection " +
+                    "configuration in order to sync to a separate table in the destination."
             log.error { message }
             throw ConfigErrorException(message)
         }
@@ -206,64 +176,6 @@ class RedshiftAirbyteClient(
     }
 
     // ================================================================
-    // Checker / staging operations
-    // ================================================================
-
-    /** Validates JDBC connectivity by executing a trivial query. */
-    suspend fun ping() {
-        execute("SELECT 1")
-    }
-
-    /**
-     * Executes a Redshift COPY command to load data from S3. Logging is suppressed because the
-     * generated SQL contains plaintext AWS credentials in the CREDENTIALS clause.
-     */
-    suspend fun copyFromS3(
-        tableName: TableName,
-        s3Path: String,
-        accessKeyId: String,
-        secretAccessKey: String,
-        region: String,
-    ) {
-        execute(
-            sqlGenerator.copyFromS3(tableName, s3Path, accessKeyId, secretAccessKey, region),
-            logStatement = false,
-        )
-    }
-
-    /** Adds a column to an existing table. */
-    suspend fun addColumn(tableName: TableName, columnName: String, columnType: String) {
-        execute(sqlGenerator.addColumn(tableName, columnName, columnType))
-    }
-
-    /** Deletes a row by its `_airbyte_raw_id` using a parameterized query. */
-    suspend fun deleteByRawId(tableName: TableName, rawId: String) {
-        val sql = sqlGenerator.deleteByRawId(tableName)
-        log.info { sql }
-        dataSource.connection.use { conn ->
-            conn.prepareStatement(sql).use { ps ->
-                ps.setString(1, rawId)
-                ps.executeUpdate()
-            }
-        }
-    }
-
-    /** Uploads data to S3. */
-    suspend fun uploadToS3(
-        bucketName: String,
-        key: String,
-        data: ByteArray,
-        metadata: ObjectMetadata,
-    ) {
-        s3Client.putObject(bucketName, key, ByteArrayInputStream(data), metadata)
-    }
-
-    /** Deletes an object from S3. */
-    suspend fun deleteFromS3(bucketName: String, key: String) {
-        s3Client.deleteObject(bucketName, key)
-    }
-
-    // ================================================================
     // Internal helpers
     // ================================================================
 
@@ -303,41 +215,29 @@ class RedshiftAirbyteClient(
             else -> redshiftType
         }
 
-    /**
-     * Executes a SQL statement (DDL or DML) against Redshift.
-     *
-     * @param logStatement set to `false` for statements that contain secrets (e.g. COPY with inline
-     * AWS credentials) to prevent plaintext credentials from appearing in logs.
-     */
-    internal fun execute(query: String, logStatement: Boolean = true) {
-        if (logStatement) {
-            log.info { query.trimIndent() }
-        }
+    /** Executes a SQL statement (DDL or DML) against Redshift */
+    internal fun execute(query: String) {
+        log.info { query.trimIndent() }
         try {
             dataSource.connection.use { connection ->
                 connection.createStatement().use { it.execute(query) }
             }
         } catch (e: SQLException) {
-            if (
-                e.sqlState == SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST ||
-                    e.message?.contains("depends on") == true
-            ) {
+            // PostgreSQL/Redshift error code 2BP01 = DEPENDENT_OBJECTS_STILL_EXIST
+            if (e.sqlState == "2BP01" || e.message?.contains("depends on") == true) {
                 val message =
-                    """
-                    Failed to modify table because other database objects (such as views \
-                    or rules) depend on it. Original error: ${e.message}
-
-                    You can manually drop the dependent views before running the sync, \
-                    then recreate them afterward. To find dependent views, run:
-                    SELECT dependent_ns.nspname, dependent_view.relname \
-                    FROM pg_depend \
-                    JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid \
-                    JOIN pg_class AS dependent_view \
-                    ON pg_rewrite.ev_class = dependent_view.oid \
-                    JOIN pg_namespace dependent_ns \
-                    ON dependent_view.relnamespace = dependent_ns.oid \
-                    WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;
-                    """.trimIndent()
+                    "Failed to modify table because other database objects (such as views " +
+                        "or rules) depend on it. Original error: ${e.message}\n\n" +
+                        "You can manually drop the dependent views before running the sync, " +
+                        "then recreate them afterward. To find dependent views, run:\n" +
+                        "SELECT dependent_ns.nspname, dependent_view.relname " +
+                        "FROM pg_depend " +
+                        "JOIN pg_rewrite ON pg_depend.objid = pg_rewrite.oid " +
+                        "JOIN pg_class AS dependent_view " +
+                        "ON pg_rewrite.ev_class = dependent_view.oid " +
+                        "JOIN pg_namespace dependent_ns " +
+                        "ON dependent_view.relnamespace = dependent_ns.oid " +
+                        "WHERE pg_depend.refobjid = 'your_schema.your_table'::regclass;"
                 log.error { message }
                 throw ConfigErrorException(message, e)
             }
