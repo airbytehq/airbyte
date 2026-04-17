@@ -1,14 +1,15 @@
 /**
  * Utility to manage connector registry - fetching, caching, and extracting minimal data.
  *
- * Fetches the composite connector registry from the CDN and projects each entry
- * into the `_oss` / `_cloud` suffixed shape that the rest of the docs code
- * (remark plugins, sidebar, ConnectorRegistry.jsx) expects.
+ * Fetches the composite connector registry from the CDN and projects each
+ * entry into the flat shape that the rest of the docs code (remark plugins,
+ * sidebar, ConnectorRegistry.jsx) consumes.
  *
  * The composite registry is a server-side superset of the OSS and Cloud
  * registries, keyed by definitionId (cloud preferred when present), and
  * exposes an `availability` field indicating which registries each connector
- * appears in.
+ * appears in — the only bit we carry through as separate `is_oss` / `is_cloud`
+ * booleans.
  */
 const fs = require("fs");
 const https = require("https");
@@ -49,14 +50,10 @@ function fetchJsonFromUrl(url) {
 }
 
 /**
- * Project a single composite registry entry into the `_oss` / `_cloud`
- * suffixed shape used by downstream consumers.
- *
- * Because the composite registry has one entry per definitionId (cloud
- * preferred when present), independent OSS vs Cloud field values cannot be
- * recovered here. Every `<field>_oss` and `<field>_cloud` pair is populated
- * with the same value from the composite entry; callers already handle the
- * `is_oss === false` / `is_cloud === false` cases via fallbacks.
+ * Project a single composite registry entry into the shape used by downstream
+ * consumers. The composite registry has one entry per definitionId (cloud
+ * preferred when present), so we expose a single flat set of connector fields
+ * plus `is_oss` / `is_cloud` availability booleans.
  */
 function buildCompositeEntry(entry, connectorType) {
   const dockerRepository = entry.dockerRepository || "";
@@ -64,8 +61,6 @@ function buildCompositeEntry(entry, connectorType) {
   const definitionId =
     entry.sourceDefinitionId || entry.destinationDefinitionId || "";
   const availability = entry.availability || [];
-  const isOss = availability.includes("oss");
-  const isCloud = availability.includes("cloud");
 
   const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
   const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
@@ -74,41 +69,21 @@ function buildCompositeEntry(entry, connectorType) {
   return {
     connector_type: connectorType,
     definitionId,
-    is_oss: isOss,
-    is_cloud: isCloud,
+    is_oss: availability.includes("oss"),
+    is_cloud: availability.includes("cloud"),
     github_url: githubUrl,
     issue_url: issueUrl,
 
-    // OSS-leaning display fields — populated from the composite entry even when
-    // the connector isn't in OSS, so cloud-only connectors still render in the
-    // catalog (which keys off name_oss / supportLevel_oss). This matches the
-    // old fallback pattern `oss?.x || cloud?.x`.
-    name_oss: entry.name || "",
-    dockerRepository_oss: dockerRepository,
-    supportLevel_oss: entry.supportLevel || "community",
-    iconUrl_oss: entry.iconUrl || "",
-    documentationUrl_oss: entry.documentationUrl || "",
-    // OSS-only fields — gated on availability to preserve the previous
-    // invariant that these are empty when the connector isn't in the OSS
-    // registry. Downstream consumers (e.g. isPypiConnector, which reads
-    // remoteRegistries_oss without checking is_oss) rely on this.
-    dockerImageTag_oss: isOss ? entry.dockerImageTag || "" : "",
-    spec_oss: isOss ? entry.spec || null : null,
-    remoteRegistries_oss: isOss ? entry.remoteRegistries || {} : {},
-    packageInfo_oss: isOss ? entry.packageInfo || null : null,
-    generated_oss: isOss ? entry.generated || null : null,
-
-    // Cloud-leaning display fields — populated unconditionally so OSS-only
-    // connectors still have a name to fall back on.
-    name_cloud: entry.name || "",
-    // Cloud-only fields — gated on availability to preserve the previous
-    // invariant that these are empty when the connector isn't in Cloud.
-    dockerRepository_cloud: isCloud ? dockerRepository : "",
-    dockerImageTag_cloud: isCloud ? entry.dockerImageTag || "" : "",
-    supportLevel_cloud: isCloud ? entry.supportLevel || "" : "",
-    documentationUrl_cloud: isCloud ? entry.documentationUrl || "" : "",
-    packageInfo_cloud: isCloud ? entry.packageInfo || null : null,
-    generated_cloud: isCloud ? entry.generated || null : null,
+    name: entry.name || "",
+    dockerRepository,
+    dockerImageTag: entry.dockerImageTag || "",
+    supportLevel: entry.supportLevel || "community",
+    iconUrl: entry.iconUrl || "",
+    documentationUrl: entry.documentationUrl || "",
+    spec: entry.spec || null,
+    remoteRegistries: entry.remoteRegistries || {},
+    packageInfo: entry.packageInfo || null,
+    generated: entry.generated || null,
   };
 }
 
@@ -129,47 +104,34 @@ async function fetchConnectorRegistriesFromRemote() {
 
 function extractMinimalRegistryData(fullRegistry) {
   return fullRegistry.map((connector) => ({
-    id: (connector.name_oss || connector.name_cloud)
+    id: connector.name
       ?.toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, ""),
     // Properties used by sidebar-connectors.js
-    docUrl:
-      connector.documentationUrl_cloud || connector.documentationUrl_oss || "",
-    supportLevel:
-      connector.supportLevel_cloud || connector.supportLevel_oss || "community",
-    // Properties used by remark/utils.js and remark/specDecoration.js
-    dockerRepository_oss: connector.dockerRepository_oss || "",
-    spec_oss: connector.spec_oss
-      ? {
-          connectionSpecification: connector.spec_oss.connectionSpecification,
-        }
-      : null,
-    // Properties used by remark/utils.js for buildArchivedRegistryEntry
-    name_oss: connector.name_oss || connector.name || "",
+    docUrl: connector.documentationUrl || "",
+    // Core connector fields (consumed by remark plugins, sidebar, the
+    // client-side catalog page, etc.).
+    connector_type: connector.connector_type || "",
+    definitionId: connector.definitionId || "",
     is_oss: connector.is_oss || false,
     is_cloud: connector.is_cloud || false,
-    iconUrl_oss: connector.iconUrl_oss || "",
-    supportLevel_oss: connector.supportLevel_oss || "community",
-    documentationUrl_oss: connector.documentationUrl_oss || "",
-    // Properties used by remark/connectorList.js (isPypiConnector)
-    remoteRegistries_oss: connector.remoteRegistries_oss || {},
-    // Properties used by remark/docsHeaderDecoration.js for HeaderDecoration component
-    dockerImageTag_oss: connector.dockerImageTag_oss || "",
     github_url: connector.github_url || "",
     issue_url: connector.issue_url || "",
-    definitionId: connector.definitionId || "",
-    packageInfo_oss: connector.packageInfo_oss || null,
-    packageInfo_cloud: connector.packageInfo_cloud || null,
-    generated_oss: connector.generated_oss || null,
-    generated_cloud: connector.generated_cloud || null,
-    // Properties used by ConnectorRegistry.jsx (client-side catalog page)
-    connector_type: connector.connector_type || "",
-    dockerRepository_cloud: connector.dockerRepository_cloud || "",
-    dockerImageTag_cloud: connector.dockerImageTag_cloud || "",
-    supportLevel_cloud: connector.supportLevel_cloud || "",
-    documentationUrl_cloud: connector.documentationUrl_cloud || "",
-    name_cloud: connector.name_cloud || "",
+    name: connector.name || "",
+    dockerRepository: connector.dockerRepository || "",
+    dockerImageTag: connector.dockerImageTag || "",
+    supportLevel: connector.supportLevel || "community",
+    iconUrl: connector.iconUrl || "",
+    documentationUrl: connector.documentationUrl || "",
+    // Strip `spec` down to only the subset remark/specDecoration.js consumes
+    // so the cached JSON stays small.
+    spec: connector.spec
+      ? { connectionSpecification: connector.spec.connectionSpecification }
+      : null,
+    remoteRegistries: connector.remoteRegistries || {},
+    packageInfo: connector.packageInfo || null,
+    generated: connector.generated || null,
   }));
 }
 

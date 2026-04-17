@@ -2,8 +2,9 @@
 // This works with URLs instead of vfiles and fetches data from the connector registry
 //
 // Fetches the composite connector registry (a server-side superset of the OSS
-// and Cloud registries) and projects each entry into the `_oss` / `_cloud`
-// suffixed shape that downstream consumers expect.
+// and Cloud registries) and projects each entry into the flat shape that
+// downstream consumers expect, plus `is_oss` / `is_cloud` availability
+// booleans.
 
 const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];
 const connectorPageAlternativeEndingsRegExp = new RegExp(
@@ -23,8 +24,6 @@ function buildCompositeEntry(entry, connectorType) {
   const definitionId =
     entry.sourceDefinitionId || entry.destinationDefinitionId || "";
   const availability = entry.availability || [];
-  const isOss = availability.includes("oss");
-  const isCloud = availability.includes("cloud");
 
   const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
   const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
@@ -33,27 +32,17 @@ function buildCompositeEntry(entry, connectorType) {
   return {
     connector_type: connectorType,
     definitionId,
-    is_oss: isOss,
-    is_cloud: isCloud,
+    is_oss: availability.includes("oss"),
+    is_cloud: availability.includes("cloud"),
     github_url: githubUrl,
     issue_url: issueUrl,
 
-    // OSS-leaning display fields — populated unconditionally so cloud-only
-    // connectors still render when the catalog keys off `*_oss` fields.
-    name_oss: entry.name || "",
-    dockerRepository_oss: dockerRepository,
-    supportLevel_oss: entry.supportLevel || "community",
-    iconUrl_oss: entry.iconUrl || "",
-    documentationUrl_oss: entry.documentationUrl || "",
-    // OSS-only fields — gated on availability to preserve the old invariant.
-    dockerImageTag_oss: isOss ? entry.dockerImageTag || "" : "",
-
-    name_cloud: entry.name || "",
-    // Cloud-only fields — gated on availability.
-    dockerRepository_cloud: isCloud ? dockerRepository : "",
-    dockerImageTag_cloud: isCloud ? entry.dockerImageTag || "" : "",
-    supportLevel_cloud: isCloud ? entry.supportLevel || "" : "",
-    documentationUrl_cloud: isCloud ? entry.documentationUrl || "" : "",
+    name: entry.name || "",
+    dockerRepository,
+    dockerImageTag: entry.dockerImageTag || "",
+    supportLevel: entry.supportLevel || "community",
+    iconUrl: entry.iconUrl || "",
+    documentationUrl: entry.documentationUrl || "",
   };
 }
 
@@ -106,7 +95,7 @@ const getRegistryEntry = async ({ path }) => {
   const registry = await fetchRegistry();
 
   let registryEntry = registry.find(
-    (r) => r.dockerRepository_oss === dockerRepository,
+    (r) => r.dockerRepository === dockerRepository,
   );
 
   if (!registryEntry) {
@@ -128,13 +117,13 @@ const buildArchivedRegistryEntry = (
   const dockerName = dockerRepository.split("/")[1];
   const registryEntry = {
     connectorName,
-    name_oss: dockerName,
-    dockerRepository_oss: dockerRepository,
+    name: dockerName,
+    dockerRepository,
     is_oss: false,
     is_cloud: false,
-    iconUrl_oss: `https://connectors.airbyte.com/files/metadata/airbyte/${dockerName}/latest/icon.svg`,
-    supportLevel_oss: "archived",
-    documentationUrl_oss: `https://docs.airbyte.com/integrations/${connectorType}s/${connectorName}`,
+    iconUrl: `https://connectors.airbyte.com/files/metadata/airbyte/${dockerName}/latest/icon.svg`,
+    supportLevel: "archived",
+    documentationUrl: `https://docs.airbyte.com/integrations/${connectorType}s/${connectorName}`,
   };
 
   return registryEntry;
