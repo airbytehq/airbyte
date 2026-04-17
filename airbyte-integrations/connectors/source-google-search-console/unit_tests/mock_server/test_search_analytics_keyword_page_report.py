@@ -545,3 +545,108 @@ class TestSearchAnalyticsKeywordPageReportStream(TestCase):
                     assert f.get("dimension") == "searchAppearance"
                     assert f.get("operator") == "equals"
                     assert f.get("expression") == "AMP_TOP_STORIES"
+
+    @HttpMocker()
+    def test_multi_site_does_not_cartesian_product_keyword_requests(self, http_mocker: HttpMocker) -> None:
+        """With multiple `site_urls` configured, the keyword stream must NOT cartesian-product
+        the child `site_url` `ListPartitionRouter` with the parent substream's own
+        `site_url` partitioning.
+
+        The parent `search_appearances_stream` is already partitioned by `site_url`, so each
+        parent slice already carries a per-site context. If the child keyword stream also adds
+        its own outer `ListPartitionRouter` over `site_urls`, the CDK combines the two routers
+        as a cartesian product — causing each `(site_url, searchAppearance)` pair to be
+        fetched N times where N is the number of configured sites, and emitting duplicate
+        records across sites.
+
+        The fix sources `site_url` from `parent_slice` (matching the pattern already used
+        for `search_type`), so each `(site_url, searchAppearance)` pair is fetched exactly once.
+        """
+        http_mocker.post(_oauth_request(), create_oauth_response())
+
+        site_a = "https://example-a.com/"
+        site_b = "https://example-b.com/"
+        config = ConfigBuilder().with_site_urls([site_a, site_b]).with_start_date("2024-01-01").with_end_date("2024-01-03").build()
+
+        # Capture (site_url_from_path, search_type_from_body, search_appearance_expression)
+        # for each keyword request. The parent partitions by `(site_url, search_type)` with
+        # search_types of web/news/image/video, so each (site, appearance) legitimately maps
+        # to one request per search_type. The regression we guard against is the cartesian
+        # product of the CHILD outer `site_urls` router with the parent — which would
+        # re-issue every one of those triples N times where N is the number of configured sites.
+        keyword_request_triples: List[tuple] = []
+
+        def search_analytics_callback(request: rm.request._RequestObjectProxy, context: Any) -> str:
+            body = json.loads(request.body)
+
+            # Parent stream: return the SAME searchAppearance for every parent slice (any site,
+            # any search_type). This is exactly the scenario the reviewer flagged: two sites
+            # that discover a common `searchAppearance` value.
+            if body.get("dimensions") == ["searchAppearance"]:
+                return json.dumps(
+                    _build_search_appearances_response(
+                        [{"keys": ["PRODUCT_SNIPPETS"], "clicks": 10, "impressions": 100, "ctr": 0.1, "position": 1.0}]
+                    )
+                )
+
+            if body.get("dimensions") == ["date", "country", "device", "query", "page"]:
+                # Extract the site_url the HTTP path is scoped to. The manifest path is
+                # `/sites/{sanitize_url(site_url)}/searchAnalytics/query`, so we can recover
+                # it from the request URL.
+                match = re.match(
+                    r"https://www\.googleapis\.com/webmasters/v3/sites/([^/]+)/searchAnalytics/query",
+                    request.url,
+                )
+                assert match is not None, f"Unexpected request URL shape: {request.url}"
+                site_from_path = match.group(1)
+                search_type_from_body = body.get("type")
+
+                for group in body.get("dimensionFilterGroups", []):
+                    for f in group.get("filters", []):
+                        if f.get("dimension") == "searchAppearance":
+                            keyword_request_triples.append((site_from_path, search_type_from_body, f.get("expression")))
+
+                return json.dumps(_build_search_analytics_response([_build_search_analytics_row("2024-01-01", "usa", "DESKTOP", "q", "p")]))
+
+            return json.dumps(_build_search_analytics_response([]))
+
+        http_mocker._mocker.post(
+            re.compile(r"https://www\.googleapis\.com/webmasters/v3/sites/.*/searchAnalytics/query"),
+            text=search_analytics_callback,
+        )
+
+        output = self._read_stream(config)
+        records = [message for message in output.records if message.record.stream == _STREAM_NAME]
+
+        # Each `(site_url, search_type, searchAppearance)` triple must be fetched at most
+        # once per date slice. With `start_date=2024-01-01`, `end_date=2024-01-03`, and
+        # `step: P3D` in the manifest, there is exactly one date slice per parent partition,
+        # so we expect exactly one request per triple.
+        triple_counts: Dict[tuple, int] = {}
+        for triple in keyword_request_triples:
+            triple_counts[triple] = triple_counts.get(triple, 0) + 1
+
+        # Pre-fix (cartesian product) behavior would produce N requests per triple where N is
+        # the number of configured sites. Post-fix must produce exactly 1.
+        for triple, count in triple_counts.items():
+            assert count == 1, (
+                f"Keyword stream issued {count} requests for {triple}; expected exactly 1. "
+                f"Multi-site cartesian-product regression — the child `site_url` router was "
+                f"combined with the parent's own `site_url` partitioning. All triple counts: {triple_counts}"
+            )
+
+        # Both sites must be represented and every request must carry the shared
+        # `PRODUCT_SNIPPETS` appearance.
+        observed_sites = {triple[0] for triple in keyword_request_triples}
+        assert len(observed_sites) == 2, f"Expected keyword requests for both configured sites, got: {observed_sites}"
+        observed_expressions = {triple[2] for triple in keyword_request_triples}
+        assert observed_expressions == {"PRODUCT_SNIPPETS"}, observed_expressions
+
+        # Emitted records must carry both configured `site_url` values, sourced from the
+        # parent slice. Record count scales with parent search_types, but each record's
+        # `site_url` must match the request URL's path (never a mis-scoped cross product).
+        record_site_urls = {record.record.data.get("site_url") for record in records}
+        assert record_site_urls == {
+            site_a,
+            site_b,
+        }, f"Expected emitted records for both configured sites, got site_urls: {record_site_urls}"

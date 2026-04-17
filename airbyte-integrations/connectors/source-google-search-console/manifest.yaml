@@ -1049,7 +1049,15 @@ definitions:
       requester:
         type: HttpRequester
         url_base: https://www.googleapis.com/webmasters/v3
-        path: "/sites/{{  sanitize_url(stream_partition.get('site_url')) }}/searchAnalytics/query"
+        # `site_url` is sourced from the parent slice (the parent
+        # `search_appearances_stream` is already partitioned by `site_url`).
+        # Sourcing it from `parent_slice` — rather than from an additional outer
+        # `ListPartitionRouter` on the child — avoids a cartesian-product
+        # explosion across `site_urls` for multi-site configs, which previously
+        # caused each (site_url, searchAppearance) pair to be fetched N times
+        # where N is the number of configured sites. See `type:` below for the
+        # same pattern already applied to `search_type`.
+        path: "/sites/{{  sanitize_url(stream_partition.get('parent_slice', {}).get('site_url')) }}/searchAnalytics/query"
         http_method: POST
         authenticator: "#/definitions/selective_authenticator"
         request_headers:
@@ -1089,9 +1097,13 @@ definitions:
           field_path:
             - rows
       partition_router:
-        - type: ListPartitionRouter
-          values: "{{ config['site_urls'] }}"
-          cursor_field: site_url
+        # `site_url` comes from the parent slice — do NOT add an outer
+        # `ListPartitionRouter` for `site_urls` here. The parent
+        # `search_appearances_stream` is already partitioned by `site_url`, so
+        # its slices carry the per-site context. Combining an outer per-site
+        # `ListPartitionRouter` with the parent substream router produces a
+        # cartesian product across all configured sites, which emits duplicate
+        # requests and records for multi-site configs.
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
@@ -1133,7 +1145,7 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
@@ -1191,7 +1203,7 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
@@ -1245,7 +1257,7 @@ definitions:
         fields:
           - path:
               - site_url
-            value: "{{ stream_partition['site_url'] }}"
+            value: "{{ stream_partition.get('parent_slice', {}).get('site_url') }}"
           - path:
               - search_type
             value: "{{ stream_partition.get('parent_slice', {}).get('search_type') }}"
