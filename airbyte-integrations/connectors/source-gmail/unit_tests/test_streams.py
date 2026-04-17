@@ -85,9 +85,9 @@ def test_messages_parent_defaults_to_pre_gmail_epoch_when_no_start_date(base_con
     list_calls = [c for c in _gmail_calls(requests_mock, _MESSAGES_LIST_URL) if urlparse(c.url).path.endswith("/messages")]
     assert list_calls, "Expected at least one call to the messages list endpoint"
     qs = parse_qs(urlparse(list_calls[0].url).query)
-    assert qs.get("q") == ["after:1080777600"], (
-        f"Expected q=after:1080777600 (2004-04-01 unix seconds) when no start_date and no state; got {qs.get('q')!r}"
-    )
+    assert qs.get("q") == [
+        "after:1080777600"
+    ], f"Expected q=after:1080777600 (2004-04-01 unix seconds) when no start_date and no state; got {qs.get('q')!r}"
 
 
 def test_messages_request_injects_after_from_start_date(config_with_start_date, requests_mock):
@@ -245,9 +245,9 @@ def test_retry_after_on_403_rate_limit_exceeded_is_honoured(base_config, request
     output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
 
     sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
-    assert any(5 <= duration <= 8 for duration in sleep_durations), (
-        f"Expected a backoff honouring Retry-After=5s on 403 rateLimitExceeded; got {sleep_durations!r}"
-    )
+    assert any(
+        5 <= duration <= 8 for duration in sleep_durations
+    ), f"Expected a backoff honouring Retry-After=5s on 403 rateLimitExceeded; got {sleep_durations!r}"
     assert output.records, "Expected the retry to succeed and produce a record"
     # Sanity: the sync must not have failed — a 403 without the rateLimitExceeded
     # filter would have produced no records and an auth/config error trace.
