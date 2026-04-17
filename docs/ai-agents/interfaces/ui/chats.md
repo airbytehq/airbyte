@@ -26,7 +26,7 @@ Every chat you start is saved. To return to a chat, open the sidebar and click t
 
 When you reopen a chat, the full history loads in place and you can continue the conversation by sending another message. Older messages stay available—scroll up or click **Load older messages** to page through the history.
 
-To share a chat with a teammate, click the **Share** button at the top of the chat to copy a link to the session. Only you can send messages in your own chats; other people in your organization who open the link can read the conversation but can't post new messages to it.
+Only the person who started a chat can send messages in it. If another member of your organization opens the chat (for example, via a link to its URL), they see the full conversation in read-only mode and can't post new messages.
 
 ## Context
 
