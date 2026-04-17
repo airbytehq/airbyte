@@ -135,7 +135,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
-            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
+            q: "after:{{ stream_interval.start_time }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -157,6 +157,22 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: internalDate
+        # The parent `messages` list response only carries `{id, threadId}` —
+        # no `internalDate`. Cursor values are never read from records here;
+        # they arrive via `incremental_dependency` from `messages_details`,
+        # which already normalises them to unix seconds (%s). Parsing `%s`
+        # keeps the round-trip stable; parsing `%ms` here would truncate any
+        # migrated state value to milliseconds-divided-by-1000.
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -290,6 +306,16 @@ definitions:
           action: RATE_LIMITED
           http_codes:
             - 429
+        # Gmail returns HTTP 403 with reason `rateLimitExceeded` or
+        # `userRateLimitExceeded` on quota-unit saturation — without this
+        # filter those would be classified as FAIL/config_error by the CDK's
+        # default error mapping and terminate the sync as an auth failure.
+        # See https://developers.google.com/gmail/api/guides/handle-errors.
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 403
+          error_message_contains: "rateLimitExceeded"
 
 streams:
   - $ref: "#/definitions/streams/profile"
@@ -336,6 +362,18 @@ spec:
         title: Include Spam & Trash
         default: false
         order: 3
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: >-
+          Number of concurrent workers used when syncing. Higher values result
+          in faster syncs but may trigger rate limiting on lower-tier Gmail API
+          quotas. The default works well for most accounts; if you see frequent
+          rate-limit errors in sync logs, reduce this value.
+        default: 5
+        minimum: 2
+        maximum: 10
+        order: 4
       start_date:
         type: string
         title: Start date
@@ -347,7 +385,7 @@ spec:
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
           - "2020-01-01T00:00:00Z"
-        order: 4
+        order: 5
     additionalProperties: true
 
 metadata:
