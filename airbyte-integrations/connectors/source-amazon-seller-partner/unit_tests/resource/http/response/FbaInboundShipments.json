@@ -1,0 +1,24 @@
+{
+  "payload": {
+    "ShipmentData": [
+      {
+        "ShipmentId": "FBA15ABCD1234",
+        "ShipmentName": "FBA (07/15/2024 19:53)",
+        "ShipFromAddress": {
+          "Name": "Seller Co.",
+          "AddressLine1": "100 Test St",
+          "City": "Seattle",
+          "StateOrProvinceCode": "WA",
+          "PostalCode": "98109",
+          "CountryCode": "US"
+        },
+        "DestinationFulfillmentCenterId": "PHX7",
+        "ShipmentStatus": "WORKING",
+        "LabelPrepType": "SELLER_LABEL",
+        "AreCasesRequired": false,
+        "ConfirmedNeedByDate": "2024-08-01",
+        "BoxContentsSource": "FEED"
+      }
+    ]
+  }
+}

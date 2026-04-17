@@ -53,6 +53,14 @@ class RequestBuilder:
         return cls("vendor/orders/v1/purchaseOrders")
 
     @classmethod
+    def fba_inbound_shipments_endpoint(cls) -> RequestBuilder:
+        return cls("fba/inbound/v0/shipments")
+
+    @classmethod
+    def fba_inbound_shipment_items_endpoint(cls) -> RequestBuilder:
+        return cls("fba/inbound/v0/shipmentItems")
+
+    @classmethod
     def vendor_orders_status_endpoint(cls) -> RequestBuilder:
         return cls("vendor/orders/v1/purchaseOrdersStatus")
 
