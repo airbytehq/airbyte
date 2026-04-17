@@ -27,8 +27,25 @@ fun String.toSnowflakeCompatibleName(): String {
         identifier = identifier.replace("$", "_").replace("{", "_").replace("}", "_")
     }
 
-    // Escape double quotes
-    identifier = escapeJsonIdentifier(identifier)
+    // Escape double quotes and uppercase
+    identifier = escapeJsonIdentifier(identifier).uppercase()
 
-    return identifier.uppercase()
+    if (identifier in ANSI_RESERVED_COLUMN_NAMES) {
+        identifier = "_$identifier"
+    }
+
+    return identifier
 }
+
+// Unlike other Snowflake reserved keywords, these cannot be used as column definition names
+// even when double-quoted. Prefix with underscore (e.g. LOCALTIME -> _LOCALTIME).
+// See https://docs.snowflake.com/en/sql-reference/reserved-keywords
+private val ANSI_RESERVED_COLUMN_NAMES =
+    setOf(
+        "CURRENT_DATE",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP",
+        "CURRENT_USER",
+        "LOCALTIME",
+        "LOCALTIMESTAMP",
+    )
