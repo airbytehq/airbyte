@@ -9,6 +9,22 @@ check:
   stream_names:
     - messages
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  max_concurrency: 10
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 25
+          interval: PT1S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
 definitions:
   streams:
     profile:
@@ -42,6 +58,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{% if config.get('start_date') %}after:{{ config['start_date'][:10] | replace('-', '/') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -129,6 +146,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "after:{{ stream_interval.start_time }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -150,6 +168,16 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: internalDate
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -176,6 +204,7 @@ definitions:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: message_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/messages"
       schema_loader:
@@ -195,6 +224,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{% if config.get('start_date') %}after:{{ config['start_date'][:10] | replace('-', '/') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -261,6 +291,19 @@ definitions:
       access_token_name: access_token
       refresh_request_body: {}
       token_refresh_endpoint: https://accounts.google.com/o/oauth2/token
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              http_codes:
+                - 429
+        - type: DefaultErrorHandler
 
 streams:
   - $ref: "#/definitions/streams/profile"
@@ -307,6 +350,18 @@ spec:
         title: Include Spam & Trash
         default: false
         order: 3
+      start_date:
+        type: string
+        title: Start date
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Only messages,
+          threads, and drafts received on or after this date will be replicated.
+          If not set, all historical data will be replicated.
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2020-01-01T00:00:00Z"
+        order: 4
     additionalProperties: true
 
 metadata:
