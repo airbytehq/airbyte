@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import date, datetime, timedelta
 
 import pytest
+from facebook_business.exceptions import FacebookRequestError
 from freezegun import freeze_time
 from source_facebook_marketing.spec import InsightConfig, TimeIncrementPeriod, ValidBreakdowns
 from source_facebook_marketing.streams import AdsInsights
@@ -1658,3 +1660,103 @@ class TestCalendarAlignedPeriods:
         intervals = list(stream._date_intervals(some_config["account_ids"][0]))
         # The first interval should start at the retention boundary, not 2022-01-01
         assert intervals[0] == retention_date
+
+
+class TestCheckBreakdowns:
+    """Tests for AdsInsights.check_breakdowns() — the connection-check breakdown validation.
+
+    The method uses a three-tier fallback when Facebook rejects the synchronous call with
+    "Please reduce the amount of data you're asking for" (common for high-cardinality
+    breakdowns like product_id). See base_insight_streams.check_breakdowns for details.
+    """
+
+    @classmethod
+    def _make_fb_error(cls, message: str) -> FacebookRequestError:
+        return FacebookRequestError(
+            message="Call was not successful",
+            request_context={"method": "GET"},
+            http_status=400,
+            http_headers={},
+            body={"error": {"message": message, "code": 100}},
+        )
+
+    def _make_stream(self, api, some_config):
+        return AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2024, 1, 1),
+            end_date=datetime(2024, 1, 2),
+            insights_lookback_window=28,
+            breakdowns=["product_id"],
+        )
+
+    def test_check_breakdowns_first_attempt_succeeds_no_retry(self, api, some_config):
+        """First attempt succeeds → no retry is issued and no error is raised."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.return_value = []
+
+        stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 1
+        first_call_kwargs = account.get_insights.call_args_list[0].kwargs
+        assert "time_range" not in first_call_kwargs["params"]
+        assert first_call_kwargs["is_async"] is False
+
+    @freeze_time("2024-06-15")
+    def test_check_breakdowns_retries_with_today_on_reduce_data_error(self, api, some_config):
+        """First attempt raises "reduce data" → retry constrained to today succeeds."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = [
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+            [],
+        ]
+
+        stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 2
+        first_params = account.get_insights.call_args_list[0].kwargs["params"]
+        second_params = account.get_insights.call_args_list[1].kwargs["params"]
+        assert "time_range" not in first_params
+        assert second_params["time_range"] == {"since": "2024-06-15", "until": "2024-06-15"}
+
+    def test_check_breakdowns_logs_warning_when_both_attempts_fail(self, api, some_config, caplog):
+        """Both attempts raise "reduce data" → warning logged, no exception raised."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = [
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+        ]
+
+        with caplog.at_level(logging.WARNING, logger="airbyte"):
+            stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 2
+        assert any("exceeded Facebook API data-volume limit" in rec.message for rec in caplog.records)
+
+    def test_check_breakdowns_reraises_non_reduce_data_error_on_first_attempt(self, api, some_config):
+        """First attempt raises any other FacebookRequestError → re-raise, no retry."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = self._make_fb_error("Invalid OAuth access token")
+
+        with pytest.raises(FacebookRequestError):
+            stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 1
+
+    def test_check_breakdowns_reraises_non_reduce_data_error_on_retry(self, api, some_config):
+        """Retry raises a non-"reduce data" FacebookRequestError → re-raise."""
+        stream = self._make_stream(api, some_config)
+        account = api.get_account.return_value
+        account.get_insights.side_effect = [
+            self._make_fb_error("Please reduce the amount of data you're asking for."),
+            self._make_fb_error("Invalid parameter"),
+        ]
+
+        with pytest.raises(FacebookRequestError):
+            stream.check_breakdowns(account_id=some_config["account_ids"][0])
+
+        assert account.get_insights.call_count == 2
