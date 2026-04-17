@@ -11,6 +11,7 @@ https://github.com/airbytehq/oncall/issues/11998 for context.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -26,20 +27,22 @@ CONFIG: Mapping[str, Any] = {
     "start_date": "2024-01-01T00:00:00.000Z",
 }
 
-INCREMENTAL_STREAMS = [
-    "issues",
-    "customers",
-    "users",
-    "comments",
-    "cycles",
-    "customer_needs",
-    "projects",
-    "project_milestones",
-    "issue_labels",
-    "workflow_states",
-    "teams",
-    "attachments",
-]
+# Stream name -> top-level GraphQL field name that must receive `filter` and `orderBy`.
+INCREMENTAL_STREAM_GRAPHQL_FIELDS: Mapping[str, str] = {
+    "issues": "issues",
+    "customers": "customers",
+    "users": "users",
+    "comments": "comments",
+    "cycles": "cycles",
+    "customer_needs": "customerNeeds",
+    "projects": "projects",
+    "project_milestones": "projectMilestones",
+    "issue_labels": "issueLabels",
+    "workflow_states": "workflowStates",
+    "teams": "teams",
+    "attachments": "attachments",
+}
+INCREMENTAL_STREAMS = list(INCREMENTAL_STREAM_GRAPHQL_FIELDS)
 
 FULL_REFRESH_ONLY_STREAMS = [
     "project_statuses",
@@ -99,27 +102,30 @@ def _build_full_request_body(
     )
 
 
-@pytest.mark.parametrize(
-    "stream_name,graphql_field",
-    [
-        pytest.param("issues", "issues", id="issues"),
-        pytest.param("comments", "comments", id="comments"),
-        pytest.param("customer_needs", "customerNeeds", id="customer_needs"),
-        pytest.param("project_milestones", "projectMilestones", id="project_milestones"),
-    ],
-)
+def _top_level_call_site(query: str, graphql_field: str) -> str:
+    """Return the argument list of the top-level GraphQL field call.
+
+    A substring match against the full query is not sufficient because `filter: $filter`
+    and `orderBy: $orderBy` also appear in the query's variable *declaration*. This helper
+    isolates the first `<field>(...)` call site so assertions can target it directly.
+    """
+    match = re.search(rf"(?<![A-Za-z_]){re.escape(graphql_field)}\(([^)]*)\)", query)
+    assert match, f"could not find top-level {graphql_field}(...) call in query: {query!r}"
+    return match.group(1)
+
+
+@pytest.mark.parametrize("stream_name", INCREMENTAL_STREAMS)
 def test_initial_request_body_has_updated_at_filter_and_order_by(
     stream_name: str,
-    graphql_field: str,
     streams_by_name: Mapping[str, Any],
 ) -> None:
-    """The first request must include `filter.updatedAt.gte` derived from `start_date` and `orderBy: updatedAt`."""
+    """The first request must pass `filter` and `orderBy` at the call site and inject `filter.updatedAt.gte`."""
+    graphql_field = INCREMENTAL_STREAM_GRAPHQL_FIELDS[stream_name]
     body = _build_full_request_body(streams_by_name[stream_name], next_page_token=None)
 
-    query = body["query"]
-    assert f"{graphql_field}(after: $after, first:" in query
-    assert "filter: $filter" in query
-    assert "orderBy: $orderBy" in query
+    call_site = _top_level_call_site(body["query"], graphql_field)
+    assert "filter: $filter" in call_site, f"{graphql_field} call site must pass filter: $filter, got: {call_site!r}"
+    assert "orderBy: $orderBy" in call_site, f"{graphql_field} call site must pass orderBy: $orderBy, got: {call_site!r}"
 
     variables = body["variables"]
     assert variables["orderBy"] == "updatedAt"
@@ -128,34 +134,27 @@ def test_initial_request_body_has_updated_at_filter_and_order_by(
     assert "after" not in variables
 
 
+@pytest.mark.parametrize("stream_name", INCREMENTAL_STREAMS)
 def test_paginated_request_body_includes_after_filter_and_order_by(
+    stream_name: str,
     streams_by_name: Mapping[str, Any],
 ) -> None:
-    """On subsequent pages, `after` must merge with `filter` and `orderBy` under `variables`."""
+    """On subsequent pages, `after` must merge with `filter` and `orderBy` at the call site and under `variables`."""
+    graphql_field = INCREMENTAL_STREAM_GRAPHQL_FIELDS[stream_name]
     body = _build_full_request_body(
-        streams_by_name["issues"],
+        streams_by_name[stream_name],
         next_page_token={"next_page_token": "PAGE_CURSOR_TOKEN"},
     )
+
+    call_site = _top_level_call_site(body["query"], graphql_field)
+    assert "after: $after" in call_site, f"{graphql_field} call site must pass after: $after, got: {call_site!r}"
+    assert "filter: $filter" in call_site, f"{graphql_field} call site must pass filter: $filter, got: {call_site!r}"
+    assert "orderBy: $orderBy" in call_site, f"{graphql_field} call site must pass orderBy: $orderBy, got: {call_site!r}"
+
     variables = body["variables"]
     assert variables["after"] == "PAGE_CURSOR_TOKEN"
     assert variables["orderBy"] == "updatedAt"
     assert variables["filter"]["updatedAt"]["gte"].startswith("2024-01-01T00:00:00")
-
-
-def test_users_stream_filters_but_does_not_order_by_updated_at(
-    streams_by_name: Mapping[str, Any],
-) -> None:
-    """The Linear `users` query supports `filter` but not `orderBy: updatedAt`.
-
-    Incremental still works because the cursor clamps records via `filter.updatedAt.gte`;
-    ordering is just not guaranteed. We still emit `orderBy: updatedAt` in variables (the
-    query field does pass `orderBy: $orderBy`), which Linear accepts as a no-op for the
-    users query.
-    """
-    body = _build_full_request_body(streams_by_name["users"], next_page_token=None)
-    variables = body["variables"]
-    assert variables["filter"]["updatedAt"]["gte"].startswith("2024-01-01T00:00:00")
-    assert variables["orderBy"] == "updatedAt"
 
 
 def test_start_date_override_flows_into_filter(tmp_path: Path) -> None:

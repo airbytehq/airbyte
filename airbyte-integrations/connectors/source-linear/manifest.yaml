@@ -240,7 +240,7 @@ definitions:
           request_body_json:
             query: >-
               query Customers($after: String, $filter: CustomerFilter, $orderBy: PaginationOrderBy) { customers(after: $after, first:
-              50) { nodes { approximateNeedCount archivedAt createdAt domains
+              50, filter: $filter, orderBy: $orderBy) { nodes { approximateNeedCount archivedAt createdAt domains
               externalIds id logoUrl name owner { id } revenue size
               slackChannelId slugId status { id } tier { id } updatedAt }
               pageInfo { endCursor hasNextPage } } }
@@ -753,7 +753,7 @@ definitions:
           request_body_json:
             query: >-
               query Projects($after: String, $filter: ProjectFilter, $orderBy: PaginationOrderBy) { projects(after: $after, first:
-              25) { nodes { archivedAt autoArchivedAt canceledAt color
+              25, filter: $filter, orderBy: $orderBy) { nodes { archivedAt autoArchivedAt canceledAt color
               completedAt completedIssueCountHistory completedScopeHistory
               content contentState convertedFromIssue { id } createdAt creator {
               id } description health healthUpdatedAt icon id
@@ -1003,7 +1003,7 @@ definitions:
           request_body_json:
             query: >-
               query IssueLabels($after: String, $filter: IssueLabelFilter, $orderBy: PaginationOrderBy) { issueLabels(after: $after,
-              first: 50) { nodes { archivedAt color createdAt creator { id }
+              first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt color createdAt creator { id }
               description id inheritedFrom { id } isGroup name parent { id }
               team { id } updatedAt } pageInfo { endCursor hasNextPage } } }
             variables:
@@ -1110,7 +1110,7 @@ definitions:
           request_body_json:
             query: >-
               query WorkflowStates($after: String, $filter: WorkflowStateFilter, $orderBy: PaginationOrderBy) { workflowStates(after:
-              $after, first: 50) { nodes { archivedAt color createdAt
+              $after, first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt color createdAt
               description id inheritedFrom { id } name position team { id } type
               updatedAt } pageInfo { hasNextPage endCursor } } }
             variables:
@@ -1325,7 +1325,7 @@ definitions:
           request_body_json:
             query: >-
               query Attachments($after: String, $filter: AttachmentFilter, $orderBy: PaginationOrderBy) { attachments(after: $after,
-              first: 50) { nodes { archivedAt createdAt creator { id }
+              first: 50, filter: $filter, orderBy: $orderBy) { nodes { archivedAt createdAt creator { id }
               groupBySource id issue { id } sourceType subtitle title updatedAt
               url } pageInfo { endCursor hasNextPage } } }
             variables:
