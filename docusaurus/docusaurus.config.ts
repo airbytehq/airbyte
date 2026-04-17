@@ -202,7 +202,7 @@ const config: Config = {
           return [
             {
               type: "category",
-              label: "Agent Engine",
+              label: "Airbyte Agents",
               collapsible: false,
               link: { type: "doc", id: "README" },
               items: itemsWithoutReadme,
