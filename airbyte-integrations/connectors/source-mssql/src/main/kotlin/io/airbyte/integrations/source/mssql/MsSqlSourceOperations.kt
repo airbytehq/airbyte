@@ -323,8 +323,12 @@ class MsSqlSourceOperations :
                     val tableName =
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
-
-                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) ORDER BY NEWID()) AS randomly_sampled"
+                    val innerWhere =
+                        when (val w = where) {
+                            is Where -> " WHERE ${w.clause.sql()}"
+                            else -> ""
+                        }
+                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT)$innerWhere ORDER BY NEWID()) AS randomly_sampled"
                 }
             }
         }
@@ -352,7 +356,15 @@ class MsSqlSourceOperations :
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + limit.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> {
+        // Include bindings from FromSample.where (partition bounds inside the subquery)
+        val fromSampleBindings =
+            when (val f = from) {
+                is FromSample -> (f.where ?: NoWhere).bindings()
+                else -> emptyList()
+            }
+        return fromSampleBindings + where.bindings() + limit.bindings()
+    }
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
