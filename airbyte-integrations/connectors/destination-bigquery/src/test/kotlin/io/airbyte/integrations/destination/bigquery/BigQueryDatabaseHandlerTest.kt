@@ -69,13 +69,14 @@ class BigQueryDatabaseHandlerTest {
         val unrelated = BigQueryError("invalidQuery", "US", "Syntax error near something")
 
         assertFalse(BigQueryDatabaseHandler.isConcurrentUpdateError(BigQueryException(400, "boom")))
-        assertFalse(BigQueryDatabaseHandler.isConcurrentUpdateError(BigQueryException(listOf(unrelated))))
+        assertFalse(
+            BigQueryDatabaseHandler.isConcurrentUpdateError(BigQueryException(listOf(unrelated)))
+        )
     }
 
     @Test
     fun `execute retries on concurrent-update error then succeeds`() {
-        val concurrentUpdateError =
-            BigQueryError("invalidQuery", "US", CONCURRENT_UPDATE_ERROR)
+        val concurrentUpdateError = BigQueryError("invalidQuery", "US", CONCURRENT_UPDATE_ERROR)
         val failingJob: Job =
             mockk(relaxed = true) {
                 every { status } returns
@@ -119,8 +120,7 @@ class BigQueryDatabaseHandlerTest {
 
     @Test
     fun `execute rethrows concurrent-update error after exhausting retries`() {
-        val concurrentUpdateError =
-            BigQueryError("invalidQuery", "US", CONCURRENT_UPDATE_ERROR)
+        val concurrentUpdateError = BigQueryError("invalidQuery", "US", CONCURRENT_UPDATE_ERROR)
         val failingJob: Job =
             mockk(relaxed = true) {
                 every { status } returns

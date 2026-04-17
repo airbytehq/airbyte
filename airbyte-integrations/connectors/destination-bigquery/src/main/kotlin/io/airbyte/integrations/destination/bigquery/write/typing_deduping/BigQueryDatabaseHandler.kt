@@ -161,9 +161,9 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
      *
      * BigQuery uses optimistic concurrency control for DML. When two transactions touch the same
      * table in overlapping windows, BigQuery aborts one of them with the message `Transaction is
-     * aborted due to concurrent update`. The canonical mitigation per BigQuery docs is to retry
-     * the aborted transaction. The typing+deduping operations we run here (MERGE, CREATE OR
-     * REPLACE TABLE) are idempotent, so retrying is safe.
+     * aborted due to concurrent update`. The canonical mitigation per BigQuery docs is to retry the
+     * aborted transaction. The typing+deduping operations we run here (MERGE, CREATE OR REPLACE
+     * TABLE) are idempotent, so retrying is safe.
      */
     private fun runQueryWithConcurrentUpdateRetries(queryId: UUID, statement: String): Job {
         var attemptDelayMs = CONCURRENT_UPDATE_INITIAL_DELAY_MS
@@ -186,8 +186,7 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
             if (jobError == null) {
                 return job
             }
-            val bqException =
-                BigQueryException(listOf(jobError) + job.status.executionErrors)
+            val bqException = BigQueryException(listOf(jobError) + job.status.executionErrors)
             if (
                 isConcurrentUpdateError(bqException) &&
                     attemptNumber < CONCURRENT_UPDATE_MAX_ATTEMPTS
@@ -233,8 +232,8 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         private const val BILLING_CONFIG_ERROR = "Billing has not been enabled for this project"
 
         /**
-         * Text fragment BigQuery includes in the error message when it aborts a transaction due
-         * to optimistic concurrency control. See
+         * Text fragment BigQuery includes in the error message when it aborts a transaction due to
+         * optimistic concurrency control. See
          * https://cloud.google.com/bigquery/docs/data-manipulation-language#concurrent_dml_statements.
          */
         private const val CONCURRENT_UPDATE_ERROR_FRAGMENT =
