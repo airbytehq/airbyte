@@ -83,17 +83,17 @@ In Airbyte, configure the following fields:
 
 ### Common fields (all catalog types)
 
-| Field                    | Required   | Description                                                                  |
-|--------------------------|------------|------------------------------------------------------------------------------|
-| **GCS Bucket Name**      | Yes        | The name of your GCS bucket (for example: `my-data-lake`)                    |
-| **Service Account JSON** | Yes        | The complete JSON content from your service account key file                 |
-| **GCP Project ID**       | No         | The GCP project ID. If not specified, extracted from service account         |
-| **GCP Location**         | Yes        | The GCP location/region (for example: `us`, `us-central1`, `eu`)             |
-| **Warehouse Location**   | Yes        | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`)  |
-| **Catalog Type**         | Yes        | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`            |
-| **Main Branch Name**     | No         | Iceberg branch name (default: `main`)                                        |
-| **Default Namespace**    | No         | Default namespace for tables (default: `default`). Only used when **Destination Namespace** is `Destination-defined` or `Source-defined` |
-| **GCS Endpoint**         | No         | Custom GCS endpoint URL. Only needed when running against a local GCS emulator |
+| Field                    | Required | Description                                                                                                                             |
+|--------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------|
+| **GCS Bucket Name**      | Yes      | The name of your GCS bucket (for example: `my-data-lake`)                                                                               |
+| **Service Account JSON** | Yes      | The complete JSON content from your service account key file                                                                            |
+| **GCP Project ID**       | No       | The GCP project ID. If not specified, extracted from service account                                                                    |
+| **GCP Location**         | Yes      | The GCP location/region (for example: `us`, `us-central1`, `eu`)                                                                        |
+| **Warehouse Location**   | Yes      | Root path for Iceberg data in GCS (for example: `gs://my-bucket/warehouse`)                                                             |
+| **Catalog Type**         | Yes      | Select the type of Iceberg catalog to use: `BigLake` or `Polaris`                                                                       |
+| **Main Branch Name**     | No       | Iceberg branch name (default: `main`)                                                                                                   |
+| **Default Namespace**    | No       | Default namespace for tables (default: `default`). Only used when **Destination Namespace** is `Destination-defined` or `Source-defined`|
+| **GCS Endpoint**         | No       | Custom GCS endpoint URL. Only needed when running against a local GCS emulator                                                          |
 
 ### BigLake-specific fields
 
