@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9023923c-002f-4131-9554-3ebdf56540a4
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-granola
   documentationUrl: https://docs.airbyte.com/integrations/sources/granola
   githubIssueLabel: source-granola
@@ -19,6 +19,15 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      0.2.0:
+        message: "The `notes` stream now uses `updated_at` as the cursor field instead of `created_at`. This ensures that edited notes are captured during incremental syncs. Users syncing the `notes` stream incrementally must reset the stream after upgrading. See the [migration guide](https://docs.airbyte.com/integrations/sources/granola-migrations) for details."
+        upgradeDeadline: "2026-04-24"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - notes
   remoteRegistries:
     pypi:
       enabled: false
