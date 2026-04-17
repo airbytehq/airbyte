@@ -695,6 +695,11 @@
       "source": "/ai-agents/tutorials/quickstarts/tutorial-python",
       "destination": "/ai-agents/tutorials/quickstarts/tutorial-pydantic",
       "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/platform/customers",
+      "destination": "/ai-agents/platform/workspaces",
+      "statusCode": 301
     }
   ]
 }

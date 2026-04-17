@@ -418,7 +418,7 @@ spec:
           type: integer
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 50
         default: 4
