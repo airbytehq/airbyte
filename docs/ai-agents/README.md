@@ -22,7 +22,7 @@ The Agent engine is new and growing. Airbyte is actively seeking feedback. Expec
 
 <Grid columns="3">
 
-<CardWithIcon title="API docs" description="Use our API to set up connectors, authentication, execute operations, and your customers." ctaText="API docs" ctaLink="/ai-agents/api/" icon="fa-cloud" />
+<CardWithIcon title="API docs" description="Use our API to set up connectors, authentication, execute operations, and manage workspaces." ctaText="API docs" ctaLink="/ai-agents/api/" icon="fa-cloud" />
 
 <CardWithIcon title="Connectors" description="Browse our catalog of connectors, copy code samples, and start powering your agents." ctaText="Connectors" ctaLink="/ai-agents/connectors/" icon="fa-python" />
 

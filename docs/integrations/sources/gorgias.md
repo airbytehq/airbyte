@@ -43,6 +43,8 @@ Visit `https://developers.gorgias.com/reference/introduction` for API documentat
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.37 | 2026-03-17 | [74936](https://github.com/airbytehq/airbyte/pull/74936) | Update dependencies |
+| 0.1.36 | 2026-03-10 | [74662](https://github.com/airbytehq/airbyte/pull/74662) | Update dependencies |
 | 0.1.35 | 2026-02-24 | [73115](https://github.com/airbytehq/airbyte/pull/73115) | Update dependencies |
 | 0.1.34 | 2026-01-20 | [71909](https://github.com/airbytehq/airbyte/pull/71909) | Update dependencies |
 | 0.1.33 | 2026-01-14 | [71733](https://github.com/airbytehq/airbyte/pull/71733) | Update dependencies |

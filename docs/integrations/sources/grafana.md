@@ -24,6 +24,8 @@ Grafana is an observability and analytics platform that lets teams visualize, ex
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.6 | 2026-03-31 | [74931](https://github.com/airbytehq/airbyte/pull/74931) | Update dependencies |
+| 0.0.5 | 2026-03-10 | [74658](https://github.com/airbytehq/airbyte/pull/74658) | Update dependencies |
 | 0.0.4 | 2026-02-24 | [73967](https://github.com/airbytehq/airbyte/pull/73967) | Update dependencies |
 | 0.0.3 | 2026-02-10 | [73074](https://github.com/airbytehq/airbyte/pull/73074) | Update dependencies |
 | 0.0.2 | 2026-02-03 | [72665](https://github.com/airbytehq/airbyte/pull/72665) | Update dependencies |

@@ -133,8 +133,6 @@ definitions:
                     http_codes:
                       - 404
           request_body_json:
-            filter:
-              fromDateTime: "{{ config['start_date'] }}"
             contentSelector:
               exposedFields:
                 media: true
@@ -202,8 +200,10 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
-          inject_into: request_parameter
-          field_name: fromDateTime
+          inject_into: body_json
+          field_path:
+            - filter
+            - fromDateTime
       transformations:
         - type: AddFields
           fields:
@@ -275,8 +275,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /stats/activity/scorecards
           http_method: POST
-          request_parameters:
-            fromDateTime: "{{ config['start_date'] }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -313,7 +311,8 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
@@ -352,7 +351,8 @@ definitions:
                       - 404
           request_body_json:
             filter:
-              fromDateTime: "{{ config['start_date'] }}"
+              callIds:
+                - "{{ stream_partition.call_id }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -369,6 +369,38 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.records.cursor }}"
             stop_condition: "{{ 'records' not in response }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: call_id
+              stream:
+                $ref: "#/definitions/streams/calls"
+              incremental_dependency: true
+              extra_fields:
+                - - started
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: started
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.start_date or (now_utc() -
+            duration('P90DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_client_side_incremental: true
+        global_substream_cursor: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - started
+              value: "{{ stream_slice.extra_fields['started'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -516,7 +548,7 @@ spec:
     predicate_value: OAuth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
-        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&scope={{scope_value | urlEncode}}
+        consent_url: https://app.gong.io/oauth2/authorize?client_id={{client_id_value}}&redirect_uri={{redirect_uri_value}}&response_type=code&state={{state_value}}&{{scopes_param}}
         access_token_url: https://app.gong.io/oauth2/generate-customer-token
         access_token_headers:
           Authorization: "Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode }}"
@@ -525,7 +557,14 @@ spec:
           grant_type: authorization_code
           redirect_uri: "{{ redirect_uri_value }}"
           code: "{{ auth_code_value }}"
-        scope: api:calls:read:basic api:calls:read:extensive api:users:read api:stats:scorecards api:stats:interaction
+        scopes:
+          - scope: "api:calls:read:basic"
+          - scope: "api:calls:read:extensive"
+          - scope: "api:calls:read:transcript"
+          - scope: "api:users:read"
+          - scope: "api:stats:scorecards"
+          - scope: "api:stats:interaction"
+          - scope: "api:settings:scorecards:read"
         extract_output:
           - access_token
           - refresh_token
@@ -623,6 +662,7 @@ metadata:
         - errorHandler
       callTranscripts:
         - errorHandler
+        - incrementalSync
   testedStreams:
     users:
       streamHash: c6b2bab08397024790447b2ea909e5e2056b3778
@@ -1095,57 +1135,70 @@ schemas:
                           - string
                           - "null"
       context:
-        description: A list of the agenda of each part of the call.
-        properties:
-          objects:
-            type: array
-            description: List of objects within the external system.
-            items:
-              type: object
-              properties:
-                fields:
-                  type: array
-                  description: array<External object data>.
-                  items:
-                    type: object
-                    properties:
-                      name:
-                        type:
-                          - "null"
-                          - string
-                        description: >-
-                          Field name. For Account supported fields are: Name,
-                          Website, Industry and all the custom fields. For
-                          Opportunity supported fields are Name, LeadSource,
-                          Type, StageName, Probability, Amount, CloseDate and
-                          all the custom fields.
-                      value:
-                        type:
-                          - "null"
-                          - object
-                        description: Field value.
-                objectId:
-                  type:
-                    - "null"
-                    - string
-                  description: Object ID.
-                objectType:
-                  type:
-                    - "null"
-                    - string
-                  description: "Object Type. Allowed: Opportunity, Account"
-                timing:
-                  type:
-                    - "null"
-                    - string
-                  description: "Timing of object. Allowed: Now, TimeOfCall."
-          system:
-            type:
-              - "null"
-              - string
-            description: >-
-              External system name. Allowed: Salesforce, HubSpot,
-              MicrosoftDynamic, Generic.
+        type:
+          - array
+          - "null"
+        description: A list of links to external systems such as CRM, Dialer, Case Management, etc.
+        items:
+          type: object
+          properties:
+            objects:
+              type:
+                - array
+                - "null"
+              description: List of objects within the external system.
+              items:
+                type: object
+                properties:
+                  fields:
+                    type:
+                      - array
+                      - "null"
+                    description: array<External object data>.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type:
+                            - "null"
+                            - string
+                          description: >-
+                            Field name. For Account supported fields are: Name,
+                            Website, Industry and all the custom fields. For
+                            Opportunity supported fields are Name, LeadSource,
+                            Type, StageName, Probability, Amount, CloseDate and
+                            all the custom fields.
+                        value:
+                          type:
+                            - "null"
+                            - string
+                            - number
+                            - boolean
+                            - object
+                            - array
+                          description: Field value.
+                  objectId:
+                    type:
+                      - "null"
+                      - string
+                    description: Object ID.
+                  objectType:
+                    type:
+                      - "null"
+                      - string
+                    description: "Object Type. Allowed: Opportunity, Account"
+                  timing:
+                    type:
+                      - "null"
+                      - string
+                    description: "Timing of object. Allowed: Now, TimeOfCall."
+            system:
+              type:
+                - "null"
+                - string
+              description: >-
+                External system name. Allowed: Salesforce, HubSpot,
+                MicrosoftDynamic, Generic.
       id:
         type:
           - "null"
@@ -1620,6 +1673,12 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      started:
+        type:
+          - "null"
+          - string
+        description: The start time of the call associated with the transcript.
+        format: date-time
       callId:
         type:
           - "null"

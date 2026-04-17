@@ -41,7 +41,7 @@ Before implementing an OAuth flow, ensure you have:
 
 2. **A bearer token**: See [Authentication](./..) for how to obtain one.
 
-3. **A scoped token**: Required for some customer-level operations. Generate one using your application token.
+3. **A scoped token**: Required for some workspace-level operations. Generate one using your application token.
 
 4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `connector_id`.
 
@@ -80,6 +80,29 @@ Requires a bearer token.
 
 ### Example
 
+<Tabs>
+<TabItem value="python" label="Python SDK" default>
+
+```python title="agent.py"
+from airbyte_hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_hubspot.models import HubspotOAuthCredentials
+
+# Set your own OAuth app credentials
+await HubspotConnector.configure_oauth_app_parameters(
+    airbyte_config=AirbyteAuthConfig(
+        airbyte_client_id="<your_airbyte_client_id>",
+        airbyte_client_secret="<your_airbyte_client_secret>",
+    ),
+    credentials=HubspotOAuthCredentials(
+        client_id="<your_hubspot_oauth_client_id>",
+        client_secret="<your_hubspot_oauth_client_secret>",
+    ),
+)
+```
+
+</TabItem>
+<TabItem value="api" label="API">
+
 ```bash title="Request"
 curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
   -H 'Authorization: Bearer <operator_token>' \
@@ -105,7 +128,38 @@ curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
 }
 ```
 
+</TabItem>
+</Tabs>
+
 The configuration schema varies by connector. To get the required fields for a specific connector, call `GET /api/v1/oauth/credentials/spec?connector_type=<connector_type>`.
+
+### Removing an override
+
+To revert to the default Airbyte-managed OAuth app, remove the override:
+
+<Tabs>
+<TabItem value="python" label="Python SDK" default>
+
+```python title="agent.py"
+await HubspotConnector.configure_oauth_app_parameters(
+    airbyte_config=AirbyteAuthConfig(
+        airbyte_client_id="<your_airbyte_client_id>",
+        airbyte_client_secret="<your_airbyte_client_secret>",
+    ),
+    credentials=None,
+)
+```
+
+</TabItem>
+<TabItem value="api" label="API">
+
+```bash title="Request"
+curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/hubspot" \
+  -H "Authorization: Bearer <operator_token>"
+```
+
+</TabItem>
+</Tabs>
 
 ## Part 2: Initiate the OAuth flow
 
@@ -125,7 +179,7 @@ Requires a bearer token or scoped token.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `customer_name` | string | Yes | Your customer identifier. Maps to a customer in Airbyte. |
+| `workspace_name` | string | Yes | Your workspace identifier. Maps to a workspace in Airbyte. |
 | `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
 | `redirect_url` | string | Yes | Your callback URL. After OAuth consent, Airbyte auto-creates the connector and redirects the user here with `?connector_id=<value>`. |
 | `name` | string | No | Display name for the connector. Auto-generated if not provided. |
@@ -140,7 +194,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiat
   -H 'Authorization: Bearer <operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "customer_name": "user_12345",
+    "workspace_name": "user_12345",
     "connector_type": "hubspot",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -165,7 +219,7 @@ const response = await fetch('https://api.airbyte.ai/api/v1/integrations/connect
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    customer_name: userId,
+    workspace_name: userId,
     connector_type: 'hubspot',
     redirect_url: 'https://yourapp.com/oauth/callback'
   })
@@ -251,7 +305,7 @@ app.post('/api/connect/:connectorType', async (req, res) => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      customer_name: userId,
+      workspace_name: userId,
       connector_type: connectorType,
       redirect_url: redirectUrl.toString()
     })
@@ -311,9 +365,9 @@ app.listen(3000);
 
 ## Troubleshooting
 
-**"Workspace not found" or "customer not found" error:**
+**"Workspace not found" error:**
 
-- Ensure the `customer_name` you provide in the initiate step is correct. Airbyte creates the customer automatically on first use.
+- Ensure the `workspace_name` you provide in the initiate step is correct. Airbyte creates the workspace automatically on first use.
 
 **OAuth consent URL returns an error:**
 

@@ -17,9 +17,10 @@ from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
-from source_facebook_marketing.utils import INSIGHTS_RETENTION_PERIOD_DAYS, DateInterval, validate_start_date
+from source_facebook_marketing.utils import DateInterval
 
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class DummyAPILimit:
@@ -453,9 +454,7 @@ class TestInsightAsyncJob:
         small_jobs = job._split_by_edge_class(next_edge_class)
 
         # ----- Assert the params passed to get_insights --------------------------
-        expected_since = validate_start_date(
-            AirbyteDateTime.from_datetime(datetime.combine(job._interval.start - timedelta(days=29), datetime.min.time()))
-        ).strftime("%Y-%m-%d")
+        expected_since = (job._interval.start - timedelta(days=29)).strftime("%Y-%m-%d")
 
         expected_params = {
             "fields": [id_field],
@@ -556,8 +555,213 @@ class TestInsightAsyncJob:
             primary_key=pk,
         )
 
-        with pytest.raises(ValueError, match="Cannot split by fields: not enough non-PK fields"):
+        with pytest.raises(AirbyteTracedException, match="Cannot split by fields") as exc_info:
             job._split_job()
+
+        from airbyte_cdk.models import FailureType
+
+        assert exc_info.value.failure_type == FailureType.system_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_start_failure_generic(self, mocker, api):
+        """
+        When get_insights raises a non-FacebookRequestError exception,
+        _collect_child_ids should wrap it in AirbyteTracedException with transient_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+        mocker.patch.object(job._edge_object, "get_insights", side_effect=RuntimeError("API down"))
+
+        with pytest.raises(AirbyteTracedException, match="Failed to start ID-collection job") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_start_failure_facebook_request_error(self, mocker, api):
+        """
+        When get_insights raises a FacebookRequestError, _collect_child_ids should
+        delegate to traced_exception() to preserve the correct FailureType classification
+        (e.g. config_error for invalid tokens, transient_error for rate limits).
+        """
+        from unittest.mock import PropertyMock
+
+        from facebook_business.exceptions import FacebookRequestError
+
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Simulate a FacebookRequestError with an invalid-token message
+        fb_error = FacebookRequestError(
+            message="Invalid OAuth access token",
+            request_context={"method": "GET"},
+            http_status=400,
+            http_headers={},
+            body='{"error": {"message": "Invalid OAuth access token", "type": "OAuthException", "code": 190, "fbtrace_id": "abc"}}',
+        )
+        mocker.patch.object(job._edge_object, "get_insights", side_effect=fb_error)
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        # traced_exception classifies invalid token errors as config_error
+        assert exc_info.value.failure_type == FailureType.config_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_all_attempts_exhausted(self, mocker, api):
+        """
+        When every attempt returns Job Failed, _collect_child_ids should raise
+        AirbyteTracedException with transient_error after exhausting all retries.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Create a mock that always returns Job Failed status
+        failed_run = mocker.MagicMock()
+        failed_run.api_get.return_value = failed_run
+        failed_run.get.side_effect = lambda key: {
+            "async_status": Status.FAILED,
+            "async_percent_completion": 0,
+        }[key]
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=failed_run)
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        with pytest.raises(AirbyteTracedException, match="ID-collection failed for level=campaign") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_result_fetch_failure(self, mocker, api):
+        """
+        When get_result raises FacebookBadObjectError, _collect_child_ids should
+        wrap it in AirbyteTracedException with transient_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Create a mock that completes immediately but fails on get_result
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.side_effect = FacebookBadObjectError("bad object")
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
+
+        with pytest.raises(AirbyteTracedException, match="Failed to fetch ID-collection results") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_no_child_ids(self, mocker, api):
+        """
+        When _collect_child_ids returns an empty list, _split_by_edge_class should
+        raise AirbyteTracedException with system_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(minutes=60),
+        )
+
+        # Create a mock that completes immediately and returns no IDs
+        completed_run = mocker.MagicMock()
+        completed_run.api_get.return_value = completed_run
+        completed_run.get.side_effect = lambda key: {
+            "async_status": Status.COMPLETED,
+            "async_percent_completion": 100,
+        }[key]
+        completed_run.get_result.return_value = []  # no rows → no IDs
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
+
+        with pytest.raises(AirbyteTracedException, match="No child IDs at level=campaign") as exc_info:
+            job._split_by_edge_class(Campaign)
+
+        assert exc_info.value.failure_type == FailureType.system_error
+
+    @freezegun.freeze_time("2023-10-29")
+    def test_collect_child_ids_timeout(self, mocker, api):
+        """
+        When job polling exceeds the timeout, _collect_child_ids should raise
+        AirbyteTracedException with transient_error.
+        """
+        from airbyte_cdk.models import FailureType
+
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=AdAccount(1),
+            interval=DateInterval(date(2023, 1, 1), date(2023, 1, 10)),
+            params={"time_increment": 1, "breakdowns": []},
+            job_timeout=timedelta(seconds=1),
+        )
+
+        # Create a mock that is always running (never completes)
+        running_run = mocker.MagicMock()
+        running_run.api_get.return_value = running_run
+        running_run.get.side_effect = lambda key: {
+            "async_status": Status.RUNNING,
+            "async_percent_completion": 50,
+        }[key]
+
+        mocker.patch.object(job._edge_object, "get_insights", return_value=running_run)
+        # Patch sleep to be a no-op, and advance time past the timeout
+        mocker.patch("source_facebook_marketing.streams.async_job.time.sleep")
+
+        # Patch ab_datetime_now to advance past timeout on the second call
+        original_now = ab_datetime_now()
+        call_count = [0]
+
+        def advancing_now():
+            call_count[0] += 1
+            if call_count[0] <= 1:
+                return original_now
+            # Return a time well past the 1-second timeout
+            return original_now + timedelta(seconds=10)
+
+        mocker.patch("source_facebook_marketing.streams.async_job.ab_datetime_now", side_effect=advancing_now)
+
+        with pytest.raises(AirbyteTracedException, match="ID-collection timed out") as exc_info:
+            job._collect_child_ids(pk_name="campaign_id", level="campaign")
+
+        assert exc_info.value.failure_type == FailureType.transient_error
 
 
 class TestParentAsyncJob:
@@ -709,3 +913,38 @@ class TestParentAsyncJob:
 
     def test_str(self, parent_job, grouped_jobs):
         assert str(parent_job) == f"ParentAsyncJob({grouped_jobs[0]} ... {len(grouped_jobs) - 1} jobs more)"
+
+
+class TestAPILimitTypeAnnotation:
+    """Verify that the APILimit forward reference in async_job.py resolves correctly.
+
+    async_job_manager imports from async_job, so a runtime import would be
+    circular.  The fix adds a TYPE_CHECKING-guarded import so that static
+    analysis tools (mypy, pyflakes) can resolve the ``"APILimit"`` string
+    annotation.  At runtime we supply the namespace explicitly to
+    ``typing.get_type_hints`` — the same thing type-checkers do internally.
+    """
+
+    @pytest.mark.parametrize(
+        "cls_name",
+        [
+            pytest.param("AsyncJob", id="abstract_base"),
+            pytest.param("InsightAsyncJob", id="leaf_job"),
+            pytest.param("ParentAsyncJob", id="parent_job"),
+        ],
+    )
+    def test_start_method_apilimit_annotation_resolves(self, cls_name):
+        """The 'APILimit' string annotation on <cls>.start() must resolve
+        to the real class when the proper namespace is provided."""
+        import importlib
+        import typing
+
+        from source_facebook_marketing.streams.async_job_manager import APILimit
+
+        mod = importlib.import_module("source_facebook_marketing.streams.async_job")
+        cls = getattr(mod, cls_name)
+        # Provide the module globals + APILimit so get_type_hints can resolve the forward ref,
+        # mirroring what static type-checkers do with the TYPE_CHECKING import.
+        ns = {**vars(mod), "APILimit": APILimit}
+        hints = typing.get_type_hints(cls.start, globalns=ns)
+        assert hints["api_limit"] is APILimit

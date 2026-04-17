@@ -10692,3 +10692,19 @@ schemas:
           - "null"
           - number
         description: Total time viewers spend on viewing content in milliseconds.
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 80
+          interval: PT10S
+      matchers: []
+  status_codes_for_ratelimit_hit:
+    - 429
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 5
+  max_concurrency: 10

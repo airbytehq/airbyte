@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.transform.medium
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
@@ -45,7 +46,13 @@ class JsonRecordConversionTest {
     @BeforeEach
     fun setup() {
         validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        jsonConverter = JsonConverter(valueCoercer, validationResultHandler, jsonConverterConfig)
+        jsonConverter =
+            JsonConverter(
+                valueCoercer,
+                validationResultHandler,
+                jsonConverterConfig,
+                AirbyteValueCoercer(useFastTimestampParsing = true),
+            )
     }
 
     @Test
@@ -111,7 +118,10 @@ class JsonRecordConversionTest {
 
         val input =
             mockk<DestinationRecordRaw>(relaxed = true) {
-                every { asEnrichedDestinationRecordAirbyteValue(any()) } answers { coerced }
+                every { asEnrichedDestinationRecordAirbyteValue(any(), any(), any()) } answers
+                    {
+                        coerced
+                    }
                 every { schemaFields } returns
                     linkedMapOf(
                         "user_field_1" to FieldType(StringType, false),
@@ -128,7 +138,11 @@ class JsonRecordConversionTest {
         // just validate we call the coercing logic here
         // if we refactor to do the coercing directly here, we need more comprehensive tests
         verify {
-            input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
+            input.asEnrichedDestinationRecordAirbyteValue(
+                any(),
+                extractedAtAsTimestampWithTimezone = true,
+                respectLegacyUnions = any(),
+            )
         }
         nonUnionUserFields.forEach { verify { valueCoercer.validate(it.value) } }
         // the stringified field is also validated

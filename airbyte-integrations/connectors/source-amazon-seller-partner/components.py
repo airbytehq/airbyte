@@ -6,30 +6,41 @@ import csv
 import gzip
 import json
 import logging
+import threading
+import time
 from dataclasses import InitVar, dataclass
 from datetime import datetime as dt
 from io import StringIO
 from typing import Any, Dict, Generator, List, Mapping, MutableMapping, Optional, Union
 
+import backoff
 import dateparser
 import requests
 import xmltodict
 
 from airbyte_cdk import InterpolatedString
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
 
-# Module-level reference to the authenticator instance for token invalidation on 403 errors
-_authenticator_instance: Optional["AmazonSPOauthAuthenticator"] = None
+# Module-level references to authenticator instances for token invalidation on 403 errors
+_authenticator_instances: List["AmazonSPOauthAuthenticator"] = []
+
+# Expiry threshold for Restricted Data Tokens (in seconds). RDTs are valid for 1 hour;
+# we refresh proactively at 50 minutes to avoid using an expired token.
+_RDT_REFRESH_THRESHOLD_SECONDS = 50 * 60
 
 # Error message that indicates the access token has expired (returned by Amazon SP API)
 TOKEN_EXPIRED_ERROR_MESSAGE = "The access token you provided has expired."
@@ -51,8 +62,8 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
         super().__post_init__(parameters)
         self._host = InterpolatedString.create(self.host, parameters=parameters)
         # Register this instance for token invalidation by the backoff strategy
-        global _authenticator_instance
-        _authenticator_instance = self
+        global _authenticator_instances
+        _authenticator_instances.append(self)
 
     def get_auth_header(self) -> Mapping[str, Any]:
         return {
@@ -74,6 +85,135 @@ class AmazonSPOauthAuthenticator(DeclarativeOauth2Authenticator):
         # Set the token expiry date to the past to force a refresh
         self.set_token_expiry_date(ab_datetime_parse("1970-01-01T00:00:00Z"))
         logger.info("Access token invalidated due to 403 'token expired' response from Amazon SP API")
+
+
+@dataclass
+class AmazonSPRdtAuthenticator(AmazonSPOauthAuthenticator):
+    """
+    Extends AmazonSPOauthAuthenticator to support Restricted Data Tokens (RDT) for
+    accessing PII fields (BuyerInfo, ShippingAddress) on Orders-related endpoints.
+
+    When the ``include_pii`` config flag is ``True``, this authenticator:
+      1. Requests an RDT scoped to the configured ``restricted_resource_paths``.
+      2. Caches the RDT and proactively refreshes it before the 50-minute threshold.
+      3. Falls back to the standard LWA token on HTTP 403 (missing Restricted Role).
+      4. Raises a config error for any other RDT request failure.
+    """
+
+    restricted_resource_paths: Optional[List[str]] = None
+    _RDT_API_VERSION: str = "2021-03-01"
+    _rdt_lock: threading.Lock = threading.Lock()
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self._rdt_token: Optional[str] = None
+        self._rdt_fetch_time: Optional[float] = None
+        self._rdt_fallback_to_lwa: bool = False
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        include_pii = self.config.get("include_pii", False)
+
+        if include_pii and not self._rdt_fallback_to_lwa:
+            rdt_token = self._get_rdt_token()
+            if rdt_token:
+                return {
+                    "host": self._host.eval(self.config),
+                    "user-agent": "python-requests",
+                    "x-amz-access-token": rdt_token,
+                    "x-amz-date": ab_datetime_now().strftime("%Y%m%dT%H%M%SZ"),
+                }
+
+        # Fall back to standard LWA token (non-PII mode)
+        return super().get_auth_header()
+
+    # ------------------------------------------------------------------
+    # RDT lifecycle helpers
+    # ------------------------------------------------------------------
+
+    def _get_rdt_token(self) -> Optional[str]:
+        """Return a cached RDT if still fresh, otherwise fetch a new one.
+
+        Uses double-checked locking to prevent multiple threads from
+        refreshing the token simultaneously (see airbyte-python-cdk#883).
+        """
+        current_time = time.monotonic()
+        if self._rdt_token and self._rdt_fetch_time is not None:
+            if current_time - self._rdt_fetch_time <= _RDT_REFRESH_THRESHOLD_SECONDS:
+                return self._rdt_token
+
+        with self._rdt_lock:
+            # Re-check after acquiring the lock; another thread may have refreshed already.
+            current_time = time.monotonic()
+            if self._rdt_token and self._rdt_fetch_time is not None:
+                if current_time - self._rdt_fetch_time <= _RDT_REFRESH_THRESHOLD_SECONDS:
+                    return self._rdt_token
+            return self._fetch_rdt_token()
+
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"RDT request: retryable error after {details['tries']} tries. Waiting {details['wait']:.1f}s then retrying..."
+        ),
+        max_time=300,
+    )
+    def _fetch_rdt_token(self) -> Optional[str]:
+        """Request a new RDT from the Amazon Tokens API."""
+
+        endpoint = self.config.get("endpoint", "")
+        tokens_url = f"{endpoint}/tokens/{self._RDT_API_VERSION}/restrictedDataToken"
+
+        restricted_resources = [
+            {
+                "method": "GET",
+                "path": path,
+                "dataElements": ["buyerInfo", "shippingAddress"],
+            }
+            for path in self.restricted_resource_paths or []
+        ]
+
+        lwa_token = self.get_access_token()
+        headers = {
+            "content-type": "application/json",
+            "x-amz-access-token": lwa_token,
+            "x-amz-date": ab_datetime_now().strftime("%Y%m%dT%H%M%SZ"),
+            "host": self._host.eval(self.config),
+            "user-agent": "python-requests",
+        }
+
+        try:
+            response = requests.post(
+                tokens_url,
+                json={"restrictedResources": restricted_resources},
+                headers=headers,
+            )
+
+            if response.status_code == 403:
+                logger.warning("RDT request returned HTTP 403 (PII access is not available). Falling back to standard LWA token.")
+                self._rdt_fallback_to_lwa = True
+                return None
+
+            if not response.ok:
+                response.raise_for_status()
+
+            data = response.json()
+            self._rdt_token = data["restrictedDataToken"]
+            add_to_secrets(self._rdt_token)
+            self._rdt_fetch_time = time.monotonic()
+            logger.info("Successfully obtained a RDT for PII access.")
+            return self._rdt_token
+
+        except requests.exceptions.RequestException as exc:
+            if exc.response is not None and (exc.response.status_code == 429 or exc.response.status_code >= 500):
+                raise DefaultBackoffException(
+                    request=exc.response.request,
+                    response=exc.response,
+                    failure_type=FailureType.transient_error,
+                )
+            raise AirbyteTracedException(
+                message=(f"Failed to request a RDT from Amazon SP-API: {exc}."),
+                failure_type=FailureType.config_error,
+            ) from exc
 
 
 @dataclass
@@ -130,8 +270,8 @@ class AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy(WaitTimeFromHeaderBac
                 message = error.get("message", "")
                 details = error.get("details", "")
                 if TOKEN_EXPIRED_ERROR_MESSAGE in message or TOKEN_EXPIRED_ERROR_MESSAGE in details:
-                    if _authenticator_instance is not None:
-                        _authenticator_instance.invalidate_token()
+                    for instance in _authenticator_instances:
+                        instance.invalidate_token()
                     return
         except (json.JSONDecodeError, AttributeError, TypeError):
             # If we can't parse the response, don't invalidate

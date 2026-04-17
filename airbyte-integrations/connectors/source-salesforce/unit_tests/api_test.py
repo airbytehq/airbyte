@@ -501,6 +501,15 @@ def test_convert_to_standard_instance(stream_config, stream_api):
     assert isinstance(rest_stream, IncrementalRestSalesforceStream)
 
 
+def test_convert_to_standard_instance_full_refresh_falls_back_to_rest(stream_config, stream_api):
+    bulk_stream = generate_stream("Account", stream_config, stream_api)
+    assert isinstance(bulk_stream, BulkIncrementalSalesforceStream)
+    bulk_stream._stream_slicer_cursor = None
+    rest_stream = bulk_stream.get_standard_instance()
+    assert isinstance(rest_stream, RestSalesforceStream)
+    assert not isinstance(rest_stream, IncrementalRestSalesforceStream)
+
+
 def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_too_many_properties):
     with pytest.raises(AssertionError):
         # v2 means the stream is going to be a REST stream.

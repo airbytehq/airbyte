@@ -146,7 +146,7 @@ abstract class IcebergWriteTest(
                 InputRecord(
                     finalStream,
                     """{"id": 42, "same": 43, "to_add": "val3"}""",
-                    emittedAtMs = 1234,
+                    emittedAtMs = 1235,
                 ),
             ),
         )
@@ -160,7 +160,7 @@ abstract class IcebergWriteTest(
                     airbyteMeta = OutputRecord.Meta(syncId = 42),
                 ),
                 OutputRecord(
-                    extractedAt = 1234,
+                    extractedAt = 1235,
                     generationId = 0,
                     data = mapOf("id" to 42, "same" to 43, "to_add" to "val3"),
                     airbyteMeta = OutputRecord.Meta(syncId = 43),
