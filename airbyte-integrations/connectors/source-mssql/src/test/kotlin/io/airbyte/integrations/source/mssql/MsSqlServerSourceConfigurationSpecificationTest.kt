@@ -126,6 +126,30 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         Assertions.assertEquals(emptySet<String>(), config.namespaces)
     }
 
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_SEMICOLON_JDBC_PARAMS)
+    fun testSemicolonSeparatedJdbcUrlParams() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val factory = MsSqlServerSourceConfigurationFactory()
+        val config = factory.make(pojo)
+
+        Assertions.assertEquals("300", config.jdbcProperties["loginTimeout"])
+        Assertions.assertEquals("0", config.jdbcProperties["socketTimeout"])
+        Assertions.assertEquals("0", config.jdbcProperties["cancelQueryTimeout"])
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_AMPERSAND_JDBC_PARAMS)
+    fun testAmpersandSeparatedJdbcUrlParams() {
+        val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
+        val factory = MsSqlServerSourceConfigurationFactory()
+        val config = factory.make(pojo)
+
+        Assertions.assertEquals("300", config.jdbcProperties["loginTimeout"])
+        Assertions.assertEquals("0", config.jdbcProperties["socketTimeout"])
+        Assertions.assertEquals("0", config.jdbcProperties["cancelQueryTimeout"])
+    }
+
     companion object {
 
         const val CONFIG_JSON: String =
@@ -250,6 +274,44 @@ class MsSqlServerSourceConfigurationSpecificationTest {
   "replication_method": {
     "method": "CDC"
   }
+}
+"""
+
+        const val CONFIG_JSON_SEMICOLON_JDBC_PARAMS: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "schemas": ["dbo"],
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  },
+  "jdbc_url_params": "loginTimeout=300;socketTimeout=0;cancelQueryTimeout=0"
+}
+"""
+
+        const val CONFIG_JSON_AMPERSAND_JDBC_PARAMS: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "schemas": ["dbo"],
+  "ssl_mode": {
+    "mode": "encrypted_trust_server_certificate"
+  },
+  "replication_method": {
+    "method": "STANDARD"
+  },
+  "jdbc_url_params": "loginTimeout=300&socketTimeout=0&cancelQueryTimeout=0"
 }
 """
     }
