@@ -28,11 +28,7 @@ The first time you open Automations in a new workspace, the same suggestions app
 
 ### From a chat
 
-Any Chat can become an Automation. Open the chat and click **Automate this** at the top of the conversation. Airbyte:
-
-1. Takes the prompt and tool configuration you iterated on in the chat.
-2. Creates a new Automation seeded with those settings.
-3. Moves you into the Automation Builder to finish configuring it.
+Any Chat can become an Automation. Open the chat and click **Automate this** at the top of the conversation. Airbyte takes the prompt and tool configuration you iterated on in the chat, converts the chat session into a new Automation seeded with those settings, and moves you into the Automation Builder to finish configuring it. The original chat is replaced by the Automation and no longer appears in Recent Chats.
 
 See [Convert a chat to an automation](./chats#convert-a-chat-to-an-automation) for more detail.
 

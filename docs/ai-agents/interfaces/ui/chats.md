@@ -26,7 +26,7 @@ Every chat you start is saved. To return to a chat, open the sidebar and click t
 
 When you reopen a chat, the full history loads in place and you can continue the conversation by sending another message. Older messages stay available—scroll up or click **Load older messages** to page through the history.
 
-Chats are private to you by default. To share a chat with a teammate, click the **Share** button at the top of the chat to copy a link. Anyone in your organization can open the link to view the chat in read-only mode; they can't send new messages on your behalf.
+To share a chat with a teammate, click the **Share** button at the top of the chat to copy a link to the session. Only you can send messages in your own chats; other people in your organization who open the link can read the conversation but can't post new messages to it.
 
 ## Context
 
@@ -67,12 +67,8 @@ If you want the same work to happen repeatedly, on a schedule, or in response to
 
 ## Convert a chat to an automation
 
-As your chat develops, you may want to turn it into an event that can run repeatedly. These are called Automations.
+As your chat develops, you may want to turn it into something that can run repeatedly. These are called Automations.
 
-To convert a chat, click **Automate this** at the top of the chat. Airbyte:
+To convert a chat, click **Automate this** at the top of the chat. Airbyte takes the prompt and tools you've been iterating on, converts the existing chat session into a new Automation seeded with those settings, and opens it in the [Automation Builder](./automations#the-automation-builder) so you can add a trigger, fine-tune the prompt, and run it.
 
-1. Takes the prompt and tools you've been iterating on in the chat.
-2. Creates a new Automation seeded with those settings.
-3. Moves you into the Automation Builder so you can add a trigger, fine-tune the prompt, and run it.
-
-Converting a chat doesn't modify the original chat—you can keep using it for follow-up questions. The resulting Automation starts in draft, so it doesn't run until you configure a trigger and enable it. See [Automations](./automations) for the full builder workflow.
+Converting a chat replaces it—the original chat is turned into the Automation and no longer appears as a chat. If you want to keep exploring the same question as a chat after converting, start a new chat. The resulting Automation starts in draft, so it doesn't run until you configure a trigger and enable it. See [Automations](./automations) for the full builder workflow.
