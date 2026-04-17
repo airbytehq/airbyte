@@ -38,18 +38,22 @@ function buildCompositeEntry(entry, connectorType) {
     github_url: githubUrl,
     issue_url: issueUrl,
 
+    // OSS-leaning display fields — populated unconditionally so cloud-only
+    // connectors still render when the catalog keys off `*_oss` fields.
     name_oss: entry.name || "",
     dockerRepository_oss: dockerRepository,
-    dockerImageTag_oss: entry.dockerImageTag || "",
     supportLevel_oss: entry.supportLevel || "community",
     iconUrl_oss: entry.iconUrl || "",
     documentationUrl_oss: entry.documentationUrl || "",
+    // OSS-only fields — gated on availability to preserve the old invariant.
+    dockerImageTag_oss: isOss ? entry.dockerImageTag || "" : "",
 
     name_cloud: entry.name || "",
-    dockerRepository_cloud: dockerRepository,
-    dockerImageTag_cloud: entry.dockerImageTag || "",
-    supportLevel_cloud: entry.supportLevel || "",
-    documentationUrl_cloud: entry.documentationUrl || "",
+    // Cloud-only fields — gated on availability.
+    dockerRepository_cloud: isCloud ? dockerRepository : "",
+    dockerImageTag_cloud: isCloud ? entry.dockerImageTag || "" : "",
+    supportLevel_cloud: isCloud ? entry.supportLevel || "" : "",
+    documentationUrl_cloud: isCloud ? entry.documentationUrl || "" : "",
   };
 }
 

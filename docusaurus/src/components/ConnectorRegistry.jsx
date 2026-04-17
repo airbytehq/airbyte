@@ -31,18 +31,22 @@ function buildCompositeEntry(entry, connectorType) {
     github_url: githubUrl,
     issue_url: issueUrl,
 
+    // OSS-leaning display fields — populated unconditionally so cloud-only
+    // connectors still render in the catalog (which keys off `*_oss` fields).
     name_oss: entry.name || "",
     dockerRepository_oss: dockerRepository,
-    dockerImageTag_oss: entry.dockerImageTag || "",
     supportLevel_oss: entry.supportLevel || "community",
     iconUrl_oss: entry.iconUrl || "",
     documentationUrl_oss: entry.documentationUrl || "",
+    // OSS-only fields — gated on availability to preserve the old invariant.
+    dockerImageTag_oss: isOss ? entry.dockerImageTag || "" : "",
 
     name_cloud: entry.name || "",
-    dockerRepository_cloud: dockerRepository,
-    dockerImageTag_cloud: entry.dockerImageTag || "",
-    supportLevel_cloud: entry.supportLevel || "",
-    documentationUrl_cloud: entry.documentationUrl || "",
+    // Cloud-only fields — gated on availability.
+    dockerRepository_cloud: isCloud ? dockerRepository : "",
+    dockerImageTag_cloud: isCloud ? entry.dockerImageTag || "" : "",
+    supportLevel_cloud: isCloud ? entry.supportLevel || "" : "",
+    documentationUrl_cloud: isCloud ? entry.documentationUrl || "" : "",
   };
 }
 
@@ -172,7 +176,8 @@ function ConnectorTable({ connectors, connectorSupportLevel, enterpriseConnector
 
 export default function ConnectorRegistry({ type }) {
   const pluginData = usePluginData("enterprise-connectors-plugin");
-  const [registry, setRegistry] = useState([]);
+  // `null` = loading, `[]` = fetch failed / empty, populated array = loaded.
+  const [registry, setRegistry] = useState(null);
   const [enterpriseConnectors, setEnterpriseConnectors] = useState([]);
 
   useEffect(() => {
@@ -180,7 +185,7 @@ export default function ConnectorRegistry({ type }) {
   }, []);
 
   useEffect(() => {
-    if (registry.length > 0) {
+    if (registry && registry.length > 0) {
       const enterpriseFromRegistry = registry.filter(
         (c) =>
           c.connector_type === type &&
@@ -215,7 +220,9 @@ export default function ConnectorRegistry({ type }) {
     }
   }, [registry, pluginData, type]);
 
-  if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;
+  if (registry === null) return <div>{`Loading ${type}s...`}</div>;
+  if (registry.length === 0)
+    return <div>{`Failed to load ${type}s. Check your network connection and try again.`}</div>;
 
   const connectors = registry
     .filter((c) => c.connector_type === type)

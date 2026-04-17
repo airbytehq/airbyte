@@ -79,26 +79,36 @@ function buildCompositeEntry(entry, connectorType) {
     github_url: githubUrl,
     issue_url: issueUrl,
 
-    // OSS fields — sourced from the composite entry (cloud-preferred when both exist)
+    // OSS-leaning display fields — populated from the composite entry even when
+    // the connector isn't in OSS, so cloud-only connectors still render in the
+    // catalog (which keys off name_oss / supportLevel_oss). This matches the
+    // old fallback pattern `oss?.x || cloud?.x`.
     name_oss: entry.name || "",
     dockerRepository_oss: dockerRepository,
-    dockerImageTag_oss: entry.dockerImageTag || "",
     supportLevel_oss: entry.supportLevel || "community",
     iconUrl_oss: entry.iconUrl || "",
     documentationUrl_oss: entry.documentationUrl || "",
-    spec_oss: entry.spec || null,
-    remoteRegistries_oss: entry.remoteRegistries || {},
-    packageInfo_oss: entry.packageInfo || null,
-    generated_oss: entry.generated || null,
+    // OSS-only fields — gated on availability to preserve the previous
+    // invariant that these are empty when the connector isn't in the OSS
+    // registry. Downstream consumers (e.g. isPypiConnector, which reads
+    // remoteRegistries_oss without checking is_oss) rely on this.
+    dockerImageTag_oss: isOss ? entry.dockerImageTag || "" : "",
+    spec_oss: isOss ? entry.spec || null : null,
+    remoteRegistries_oss: isOss ? entry.remoteRegistries || {} : {},
+    packageInfo_oss: isOss ? entry.packageInfo || null : null,
+    generated_oss: isOss ? entry.generated || null : null,
 
-    // Cloud fields — same composite entry values
+    // Cloud-leaning display fields — populated unconditionally so OSS-only
+    // connectors still have a name to fall back on.
     name_cloud: entry.name || "",
-    dockerRepository_cloud: dockerRepository,
-    dockerImageTag_cloud: entry.dockerImageTag || "",
-    supportLevel_cloud: entry.supportLevel || "",
-    documentationUrl_cloud: entry.documentationUrl || "",
-    packageInfo_cloud: entry.packageInfo || null,
-    generated_cloud: entry.generated || null,
+    // Cloud-only fields — gated on availability to preserve the previous
+    // invariant that these are empty when the connector isn't in Cloud.
+    dockerRepository_cloud: isCloud ? dockerRepository : "",
+    dockerImageTag_cloud: isCloud ? entry.dockerImageTag || "" : "",
+    supportLevel_cloud: isCloud ? entry.supportLevel || "" : "",
+    documentationUrl_cloud: isCloud ? entry.documentationUrl || "" : "",
+    packageInfo_cloud: isCloud ? entry.packageInfo || null : null,
+    generated_cloud: isCloud ? entry.generated || null : null,
   };
 }
 
