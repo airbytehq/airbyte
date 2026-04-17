@@ -14,17 +14,6 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 10
 
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 25
-          interval: PT1S
-      matchers: []
-  status_codes_for_ratelimit_hit:
-    - 429
-
 definitions:
   streams:
     profile:
