@@ -1,8 +1,9 @@
 // Client-side registry utilities
 // This works with URLs instead of vfiles and fetches data from the connector registry
 //
-// Fetches both the OSS and Cloud registries and merges them into a single
-// composite list, replacing the legacy connector_registry_report.json dependency.
+// Fetches the composite connector registry (a server-side superset of the OSS
+// and Cloud registries) and projects each entry into the `_oss` / `_cloud`
+// suffixed shape that downstream consumers expect.
 
 const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];
 const connectorPageAlternativeEndingsRegExp = new RegExp(
@@ -10,66 +11,20 @@ const connectorPageAlternativeEndingsRegExp = new RegExp(
   "gi",
 );
 
-const OSS_REGISTRY_URL =
-  "https://connectors.airbyte.com/files/registries/v0/oss_registry.json";
-const CLOUD_REGISTRY_URL =
-  "https://connectors.airbyte.com/files/registries/v0/cloud_registry.json";
+const COMPOSITE_REGISTRY_URL =
+  "https://connectors.airbyte.com/files/registries/v0/composite_registry.json";
 
 const GITHUB_REPO_NAME = "airbytehq/airbyte";
 const CONNECTORS_PATH = "airbyte-integrations/connectors";
 
-function mergeRegistries(ossRegistry, cloudRegistry) {
-  const ossSourcesByRepo = new Map();
-  for (const src of ossRegistry.sources || []) {
-    ossSourcesByRepo.set(src.dockerRepository, src);
-  }
-  const ossDestsByRepo = new Map();
-  for (const dst of ossRegistry.destinations || []) {
-    ossDestsByRepo.set(dst.dockerRepository, dst);
-  }
-  const cloudSourcesByRepo = new Map();
-  for (const src of cloudRegistry.sources || []) {
-    cloudSourcesByRepo.set(src.dockerRepository, src);
-  }
-  const cloudDestsByRepo = new Map();
-  for (const dst of cloudRegistry.destinations || []) {
-    cloudDestsByRepo.set(dst.dockerRepository, dst);
-  }
-
-  const allSourceRepos = new Set([
-    ...ossSourcesByRepo.keys(),
-    ...cloudSourcesByRepo.keys(),
-  ]);
-  const allDestRepos = new Set([
-    ...ossDestsByRepo.keys(),
-    ...cloudDestsByRepo.keys(),
-  ]);
-
-  const merged = [];
-
-  for (const repo of allSourceRepos) {
-    const oss = ossSourcesByRepo.get(repo) || null;
-    const cloud = cloudSourcesByRepo.get(repo) || null;
-    merged.push(buildCompositeEntry(oss, cloud, "source", repo));
-  }
-
-  for (const repo of allDestRepos) {
-    const oss = ossDestsByRepo.get(repo) || null;
-    const cloud = cloudDestsByRepo.get(repo) || null;
-    merged.push(buildCompositeEntry(oss, cloud, "destination", repo));
-  }
-
-  return merged;
-}
-
-function buildCompositeEntry(oss, cloud, connectorType, dockerRepository) {
+function buildCompositeEntry(entry, connectorType) {
+  const dockerRepository = entry.dockerRepository || "";
   const connectorName = dockerRepository.replace("airbyte/", "");
   const definitionId =
-    oss?.sourceDefinitionId ||
-    oss?.destinationDefinitionId ||
-    cloud?.sourceDefinitionId ||
-    cloud?.destinationDefinitionId ||
-    "";
+    entry.sourceDefinitionId || entry.destinationDefinitionId || "";
+  const availability = entry.availability || [];
+  const isOss = availability.includes("oss");
+  const isCloud = availability.includes("cloud");
 
   const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
   const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
@@ -78,43 +33,41 @@ function buildCompositeEntry(oss, cloud, connectorType, dockerRepository) {
   return {
     connector_type: connectorType,
     definitionId,
-    is_oss: oss != null,
-    is_cloud: cloud != null,
+    is_oss: isOss,
+    is_cloud: isCloud,
     github_url: githubUrl,
     issue_url: issueUrl,
 
-    name_oss: oss?.name || cloud?.name || "",
-    dockerRepository_oss: oss?.dockerRepository || dockerRepository,
-    dockerImageTag_oss: oss?.dockerImageTag || "",
-    supportLevel_oss: oss?.supportLevel || cloud?.supportLevel || "community",
-    iconUrl_oss: oss?.iconUrl || cloud?.iconUrl || "",
-    documentationUrl_oss: oss?.documentationUrl || cloud?.documentationUrl || "",
+    name_oss: entry.name || "",
+    dockerRepository_oss: dockerRepository,
+    dockerImageTag_oss: entry.dockerImageTag || "",
+    supportLevel_oss: entry.supportLevel || "community",
+    iconUrl_oss: entry.iconUrl || "",
+    documentationUrl_oss: entry.documentationUrl || "",
 
-    name_cloud: cloud?.name || oss?.name || "",
-    dockerRepository_cloud: cloud?.dockerRepository || "",
-    dockerImageTag_cloud: cloud?.dockerImageTag || "",
-    supportLevel_cloud: cloud?.supportLevel || "",
-    documentationUrl_cloud: cloud?.documentationUrl || "",
+    name_cloud: entry.name || "",
+    dockerRepository_cloud: dockerRepository,
+    dockerImageTag_cloud: entry.dockerImageTag || "",
+    supportLevel_cloud: entry.supportLevel || "",
+    documentationUrl_cloud: entry.documentationUrl || "",
   };
 }
 
 const fetchRegistry = async () => {
   try {
-    const [ossResponse, cloudResponse] = await Promise.all([
-      fetch(OSS_REGISTRY_URL),
-      fetch(CLOUD_REGISTRY_URL),
-    ]);
-    if (!ossResponse.ok) {
-      throw new Error(`Failed to fetch OSS registry: ${ossResponse.statusText}`);
+    const response = await fetch(COMPOSITE_REGISTRY_URL);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch composite registry: ${response.statusText}`,
+      );
     }
-    if (!cloudResponse.ok) {
-      throw new Error(`Failed to fetch Cloud registry: ${cloudResponse.statusText}`);
-    }
-    const [ossRegistry, cloudRegistry] = await Promise.all([
-      ossResponse.json(),
-      cloudResponse.json(),
-    ]);
-    return mergeRegistries(ossRegistry, cloudRegistry);
+    const compositeRegistry = await response.json();
+    const sources = compositeRegistry.sources || [];
+    const destinations = compositeRegistry.destinations || [];
+    return [
+      ...sources.map((entry) => buildCompositeEntry(entry, "source")),
+      ...destinations.map((entry) => buildCompositeEntry(entry, "destination")),
+    ];
   } catch (error) {
     console.error("Failed to fetch connector registry:", error);
     return [];

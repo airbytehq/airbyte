@@ -1,14 +1,18 @@
 /**
  * Utility to manage connector registry - fetching, caching, and extracting minimal data.
  *
- * Fetches both the OSS and Cloud registries from the CDN and merges them
- * into a single composite list with `_oss` / `_cloud` suffixed fields.
- * This replaces the previous dependency on the legacy
- * `connector_registry_report.json` (which is no longer regenerated).
+ * Fetches the composite connector registry from the CDN and projects each entry
+ * into the `_oss` / `_cloud` suffixed shape that the rest of the docs code
+ * (remark plugins, sidebar, ConnectorRegistry.jsx) expects.
+ *
+ * The composite registry is a server-side superset of the OSS and Cloud
+ * registries, keyed by definitionId (cloud preferred when present), and
+ * exposes an `availability` field indicating which registries each connector
+ * appears in.
  */
 const fs = require("fs");
 const https = require("https");
-const { DATA_DIR, REGISTRY_CACHE_PATH, OSS_REGISTRY_URL, CLOUD_REGISTRY_URL } = require("./constants");
+const { DATA_DIR, REGISTRY_CACHE_PATH, COMPOSITE_REGISTRY_URL } = require("./constants");
 
 const GITHUB_REPO_NAME = "airbytehq/airbyte";
 const CONNECTORS_PATH = "airbyte-integrations/connectors";
@@ -45,62 +49,23 @@ function fetchJsonFromUrl(url) {
 }
 
 /**
- * Merge the OSS and Cloud registries into a single flat list of connectors,
- * with `_oss` / `_cloud` suffixed fields matching the shape that downstream
- * consumers (remark plugins, sidebar, ConnectorRegistry.jsx) expect.
+ * Project a single composite registry entry into the `_oss` / `_cloud`
+ * suffixed shape used by downstream consumers.
+ *
+ * Because the composite registry has one entry per definitionId (cloud
+ * preferred when present), independent OSS vs Cloud field values cannot be
+ * recovered here. Every `<field>_oss` and `<field>_cloud` pair is populated
+ * with the same value from the composite entry; callers already handle the
+ * `is_oss === false` / `is_cloud === false` cases via fallbacks.
  */
-function mergeRegistries(ossRegistry, cloudRegistry) {
-  const ossSourcesByRepo = new Map();
-  for (const src of ossRegistry.sources || []) {
-    ossSourcesByRepo.set(src.dockerRepository, src);
-  }
-  const ossDestsByRepo = new Map();
-  for (const dst of ossRegistry.destinations || []) {
-    ossDestsByRepo.set(dst.dockerRepository, dst);
-  }
-  const cloudSourcesByRepo = new Map();
-  for (const src of cloudRegistry.sources || []) {
-    cloudSourcesByRepo.set(src.dockerRepository, src);
-  }
-  const cloudDestsByRepo = new Map();
-  for (const dst of cloudRegistry.destinations || []) {
-    cloudDestsByRepo.set(dst.dockerRepository, dst);
-  }
-
-  const allSourceRepos = new Set([
-    ...ossSourcesByRepo.keys(),
-    ...cloudSourcesByRepo.keys(),
-  ]);
-  const allDestRepos = new Set([
-    ...ossDestsByRepo.keys(),
-    ...cloudDestsByRepo.keys(),
-  ]);
-
-  const merged = [];
-
-  for (const repo of allSourceRepos) {
-    const oss = ossSourcesByRepo.get(repo) || null;
-    const cloud = cloudSourcesByRepo.get(repo) || null;
-    merged.push(buildCompositeEntry(oss, cloud, "source", repo));
-  }
-
-  for (const repo of allDestRepos) {
-    const oss = ossDestsByRepo.get(repo) || null;
-    const cloud = cloudDestsByRepo.get(repo) || null;
-    merged.push(buildCompositeEntry(oss, cloud, "destination", repo));
-  }
-
-  return merged;
-}
-
-function buildCompositeEntry(oss, cloud, connectorType, dockerRepository) {
+function buildCompositeEntry(entry, connectorType) {
+  const dockerRepository = entry.dockerRepository || "";
   const connectorName = dockerRepository.replace("airbyte/", "");
   const definitionId =
-    oss?.sourceDefinitionId ||
-    oss?.destinationDefinitionId ||
-    cloud?.sourceDefinitionId ||
-    cloud?.destinationDefinitionId ||
-    "";
+    entry.sourceDefinitionId || entry.destinationDefinitionId || "";
+  const availability = entry.availability || [];
+  const isOss = availability.includes("oss");
+  const isCloud = availability.includes("cloud");
 
   const githubUrl = `https://github.com/${GITHUB_REPO_NAME}/blob/master/${CONNECTORS_PATH}/${connectorName}`;
   const issuesLabel = `connectors/${connectorType}/${connectorName.replace(`${connectorType}-`, "")}`;
@@ -109,45 +74,47 @@ function buildCompositeEntry(oss, cloud, connectorType, dockerRepository) {
   return {
     connector_type: connectorType,
     definitionId,
-    is_oss: oss != null,
-    is_cloud: cloud != null,
+    is_oss: isOss,
+    is_cloud: isCloud,
     github_url: githubUrl,
     issue_url: issueUrl,
 
-    // OSS fields
-    name_oss: oss?.name || cloud?.name || "",
-    dockerRepository_oss: oss?.dockerRepository || dockerRepository,
-    dockerImageTag_oss: oss?.dockerImageTag || "",
-    supportLevel_oss: oss?.supportLevel || cloud?.supportLevel || "community",
-    iconUrl_oss: oss?.iconUrl || cloud?.iconUrl || "",
-    documentationUrl_oss: oss?.documentationUrl || cloud?.documentationUrl || "",
-    spec_oss: oss?.spec || null,
-    remoteRegistries_oss: oss?.remoteRegistries || {},
-    packageInfo_oss: oss?.packageInfo || null,
-    generated_oss: oss?.generated || null,
+    // OSS fields — sourced from the composite entry (cloud-preferred when both exist)
+    name_oss: entry.name || "",
+    dockerRepository_oss: dockerRepository,
+    dockerImageTag_oss: entry.dockerImageTag || "",
+    supportLevel_oss: entry.supportLevel || "community",
+    iconUrl_oss: entry.iconUrl || "",
+    documentationUrl_oss: entry.documentationUrl || "",
+    spec_oss: entry.spec || null,
+    remoteRegistries_oss: entry.remoteRegistries || {},
+    packageInfo_oss: entry.packageInfo || null,
+    generated_oss: entry.generated || null,
 
-    // Cloud fields
-    name_cloud: cloud?.name || oss?.name || "",
-    dockerRepository_cloud: cloud?.dockerRepository || "",
-    dockerImageTag_cloud: cloud?.dockerImageTag || "",
-    supportLevel_cloud: cloud?.supportLevel || "",
-    documentationUrl_cloud: cloud?.documentationUrl || "",
-    packageInfo_cloud: cloud?.packageInfo || null,
-    generated_cloud: cloud?.generated || null,
+    // Cloud fields — same composite entry values
+    name_cloud: entry.name || "",
+    dockerRepository_cloud: dockerRepository,
+    dockerImageTag_cloud: entry.dockerImageTag || "",
+    supportLevel_cloud: entry.supportLevel || "",
+    documentationUrl_cloud: entry.documentationUrl || "",
+    packageInfo_cloud: entry.packageInfo || null,
+    generated_cloud: entry.generated || null,
   };
 }
 
 async function fetchConnectorRegistriesFromRemote() {
-  console.log("Fetching OSS and Cloud connector registries...");
-  const [ossRegistry, cloudRegistry] = await Promise.all([
-    fetchJsonFromUrl(OSS_REGISTRY_URL),
-    fetchJsonFromUrl(CLOUD_REGISTRY_URL),
-  ]);
+  console.log("Fetching composite connector registry...");
+  const compositeRegistry = await fetchJsonFromUrl(COMPOSITE_REGISTRY_URL);
+  const sources = compositeRegistry.sources || [];
+  const destinations = compositeRegistry.destinations || [];
   console.log(
-    `Fetched ${(ossRegistry.sources || []).length + (ossRegistry.destinations || []).length} OSS connectors, ` +
-    `${(cloudRegistry.sources || []).length + (cloudRegistry.destinations || []).length} Cloud connectors`,
+    `Fetched ${sources.length + destinations.length} connectors ` +
+      `(${sources.length} sources, ${destinations.length} destinations)`,
   );
-  return mergeRegistries(ossRegistry, cloudRegistry);
+  return [
+    ...sources.map((entry) => buildCompositeEntry(entry, "source")),
+    ...destinations.map((entry) => buildCompositeEntry(entry, "destination")),
+  ];
 }
 
 function extractMinimalRegistryData(fullRegistry) {
