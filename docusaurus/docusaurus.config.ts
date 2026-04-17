@@ -352,12 +352,12 @@ const config: Config = {
       indexName: "airbyte",
     },
     announcementBar: {
-      id: "try_airbyte_cloud",
+      id: "try_airbyte_agents",
       content:
-        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 30 days, no credit card needed.',
+        '<a target="_blank" rel="noopener noreferrer" href="https://app.airbyte.ai?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_agents_docs_banner">Try Airbyte Agents</a>! No credit card needed.',
       backgroundColor: "#615eff",
       textColor: "#ffffff",
-      isCloseable: true,
+      isCloseable: false,
     },
     navbar: {
       title: "Docs",
