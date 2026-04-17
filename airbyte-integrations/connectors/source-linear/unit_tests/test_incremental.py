@@ -8,14 +8,17 @@ inject the correct GraphQL variables (`filter.updatedAt.gte`, `orderBy`, `after`
 when combined with pagination and the `DatetimeBasedCursor`. See oncall issue
 https://github.com/airbytehq/oncall/issues/11998 for context.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Mapping
 
 import pytest
+
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.types import StreamSlice
+
 
 MANIFEST_PATH = str(Path(__file__).resolve().parents[1] / "manifest.yaml")
 CONFIG: Mapping[str, Any] = {
@@ -59,9 +62,7 @@ def streams_by_name(source: YamlDeclarativeSource) -> Mapping[str, Any]:
 @pytest.mark.parametrize("stream_name", INCREMENTAL_STREAMS)
 def test_stream_declares_incremental_cursor(stream_name: str, streams_by_name: Mapping[str, Any]) -> None:
     stream = streams_by_name[stream_name]
-    assert stream.cursor_field == "updatedAt", (
-        f"stream {stream_name} should be incremental with cursor_field=updatedAt"
-    )
+    assert stream.cursor_field == "updatedAt", f"stream {stream_name} should be incremental with cursor_field=updatedAt"
 
 
 @pytest.mark.parametrize("stream_name", FULL_REFRESH_ONLY_STREAMS)
