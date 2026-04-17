@@ -985,3 +985,70 @@ def test_list_memberships_listid_is_string_for_numeric_values(requests_mock, con
         f"listId should be a string to match the schema type [null, string], "
         f"but got {type(records[0]['listId']).__name__} with value {records[0]['listId']!r}"
     )
+
+
+def test_list_memberships_skips_leads_object_type(requests_mock, config, mock_dynamic_schema_requests):
+    """Regression test for oncall #11995 (HTTP 400 `INVALID_OBJECT_TYPE_FOR_LIST`).
+
+    The `/crm/v3/lists/{listId}/memberships` endpoint rejects lists whose `objectTypeId`
+    is `0-136` (HubSpot Leads) on portals that do not have the Leads object enabled,
+    even though those same lists are returned by `/crm/v3/lists/search`. The
+    `list_memberships` stream's `SubstreamPartitionRouter` uses a `RecordFilter` on the
+    parent `contact_lists` stream to skip Leads lists entirely, so no doomed request
+    is made.
+
+    This test verifies the filter by:
+    1. Having the parent `contact_lists` endpoint return both a CONTACT list (`0-1`)
+       and a LEADS list (`0-136`).
+    2. Registering the Leads memberships endpoint with a 400 that would fail the sync
+       if the filter is not applied.
+    3. Asserting the sync succeeds, returns only the contact-list's memberships, and
+       never calls the Leads memberships endpoint.
+    """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    contact_lists_response = {
+        "lists": [
+            {
+                "listId": "10",
+                "objectTypeId": "0-1",
+                "createdAt": "2022-01-01T00:00:00Z",
+                "updatedAt": "2022-01-01T00:00:00Z",
+            },
+            {
+                "listId": "20",
+                "objectTypeId": "0-136",
+                "createdAt": "2022-01-01T00:00:00Z",
+                "updatedAt": "2022-01-01T00:00:00Z",
+            },
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/10/memberships",
+        json={"results": [{"recordId": "r1", "membershipTimestamp": "2023-01-01T00:00:00Z"}]},
+    )
+    leads_memberships_mock = requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/20/memberships",
+        status_code=400,
+        json={
+            "status": "error",
+            "message": "The objectTypeId 0-136 provided for the list is not valid for this portal.",
+            "category": "VALIDATION_ERROR",
+            "subCategory": "ListError.INVALID_OBJECT_TYPE_FOR_LIST",
+        },
+    )
+
+    stream = find_stream("list_memberships", config)
+    records = run_read(stream)
+
+    assert len(records) == 1
+    assert records[0]["listId"] == "10"
+    assert records[0]["recordId"] == "r1"
+    assert leads_memberships_mock.call_count == 0, (
+        "The memberships endpoint for the Leads list (objectTypeId=0-136) must NOT be called; "
+        "the parent stream's RecordFilter should skip it upstream."
+    )

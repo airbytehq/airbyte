@@ -1215,7 +1215,20 @@ definitions:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
-            stream: "#/definitions/contact_lists_stream"
+            # Reuse the `contact_lists_stream` definition, but filter out lists whose
+            # `objectTypeId` is `0-136` (HubSpot Leads). The /crm/v3/lists/{listId}/memberships
+            # endpoint rejects those lists with a 400 `INVALID_OBJECT_TYPE_FOR_LIST` on portals
+            # that do not have the Leads object enabled, even though `/crm/v3/lists/search`
+            # happily returns them. Filtering here avoids making the doomed membership request.
+            stream:
+              $ref: "#/definitions/contact_lists_stream"
+              retriever:
+                $ref: "#/definitions/contact_lists_stream/retriever"
+                record_selector:
+                  $ref: "#/definitions/contact_lists_stream/retriever/record_selector"
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ record.get('objectTypeId') != '0-136' }}"
             parent_key: "listId"
             partition_field: "list_id"
       paginator:
