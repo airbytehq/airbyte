@@ -13,6 +13,7 @@ check:
   dynamic_streams_check_configs:
     - type: DynamicStreamCheckConfig
       dynamic_stream_name: custom_ga_query_stream
+      stream_count: 100
 
 definitions:
   # Authenticator Definitions
