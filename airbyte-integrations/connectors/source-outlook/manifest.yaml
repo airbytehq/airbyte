@@ -562,6 +562,60 @@ spec:
         title: Refresh Token
         airbyte_secret: true
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&response_type=code"
+        access_token_url: "https://login.microsoftonline.com/{{tenant_id}}/oauth2/v2.0/token"
+        scopes:
+          - scope: "https://graph.microsoft.com/Mail.Read"
+          - scope: "https://graph.microsoft.com/User.Read"
+          - scope: "offline_access"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - refresh_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - client_secret
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          tenant_id:
+            type: string
+            path_in_connector_config:
+              - tenant_id
 
 metadata:
   assist:
