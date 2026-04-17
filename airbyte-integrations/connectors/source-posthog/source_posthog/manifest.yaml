@@ -17,6 +17,18 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+                - 403
+              error_message_contains: "missing required scope"
+              error_message: "API key is missing a required PostHog scope."
+              failure_type: config_error
 
   retriever:
     type: SimpleRetriever
