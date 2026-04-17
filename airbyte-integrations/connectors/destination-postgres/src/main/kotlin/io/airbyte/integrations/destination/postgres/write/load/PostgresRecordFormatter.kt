@@ -20,6 +20,13 @@ internal val RAW_META_COLUMNS =
         Meta.COLUMN_NAME_AB_GENERATION_ID
     )
 
+/**
+ * Strips null bytes (\u0000) from strings. PostgreSQL does not allow null bytes in text fields, and
+ * they cause COPY failures with "unsupported Unicode escape sequence".
+ */
+internal fun String.stripNullBytes(): String =
+    if (contains('\u0000')) replace("\u0000", "") else this
+
 interface PostgresRecordFormatter {
     fun format(record: Map<String, AirbyteValue>): List<Any>
 }
@@ -29,7 +36,8 @@ class PostgresSchemaRecordFormatter(
 ) : PostgresRecordFormatter {
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
         columns.map { columnName ->
-            if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
+            val value = if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
+            if (value is String) value.stripNullBytes() else value
         }
 }
 
@@ -46,7 +54,7 @@ class PostgresRawRecordFormatter(
         // Do not output null values in the JSON raw output
         val filteredRecord =
             record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
-        val jsonData = Jsons.writeValueAsString(filteredRecord)
+        val jsonData = Jsons.writeValueAsString(filteredRecord).stripNullBytes()
 
         // Iterate through columns in the exact order they appear in the table
         columns.forEach { column ->
