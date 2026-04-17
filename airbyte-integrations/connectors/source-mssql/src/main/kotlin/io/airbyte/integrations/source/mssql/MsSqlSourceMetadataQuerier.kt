@@ -129,8 +129,56 @@ class MsSqlSourceMetadataQuerier(
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         if (table !in memoizedColumnMetadata) return listOf()
-        return memoizedColumnMetadata[table]!!.map {
-            Field(it.label, base.fieldTypeMapper.toFieldType(it))
+        val allColumns = memoizedColumnMetadata[table]!!
+        val accessibleColumns = filterByPrivileges(table, allColumns)
+        return accessibleColumns.map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
+    }
+
+    /**
+     * Filters columns by checking SELECT privileges when [checkPrivileges] is enabled.
+     *
+     * First attempts a bulk SELECT TOP 0 query with all columns. If it succeeds, all columns are
+     * accessible. If it fails (e.g. due to DENY SELECT on some columns), falls back to querying
+     * each column individually and filtering out inaccessible ones.
+     */
+    private fun filterByPrivileges(
+        table: TableName,
+        columns: List<JdbcMetadataQuerier.ColumnMetadata>,
+    ): List<JdbcMetadataQuerier.ColumnMetadata> {
+        if (columns.isEmpty() || !base.config.checkPrivileges) {
+            return columns
+        }
+        // Try selecting all columns at once
+        val allColumnNames = columns.map { it.name }
+        val bulkSql = base.selectLimit0(table, allColumnNames)
+        if (executePrivilegeCheck(bulkSql)) {
+            return columns
+        }
+        // Bulk query failed; try each column individually to find accessible ones
+        log.info {
+            "Not all columns of $table might be accessible, trying each column individually."
+        }
+        return columns.filter { column ->
+            val singleSql = base.selectLimit0(table, listOf(column.name))
+            executePrivilegeCheck(singleSql)
+        }
+    }
+
+    /** Executes a privilege-check query. Returns true if the query succeeds, false otherwise. */
+    private fun executePrivilegeCheck(sql: String): Boolean {
+        log.info { "Checking column privileges: $sql" }
+        try {
+            base.conn.createStatement().use { stmt: Statement ->
+                stmt.fetchSize = 1
+                stmt.executeQuery(sql).use { /* just need it to succeed */}
+            }
+            return true
+        } catch (e: SQLException) {
+            log.info {
+                "Privilege check failed for query $sql: " +
+                    "sqlState = '${e.sqlState ?: ""}', errorCode = ${e.errorCode}, ${e.message}"
+            }
+            return false
         }
     }
 
