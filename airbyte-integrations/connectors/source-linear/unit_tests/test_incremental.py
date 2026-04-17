@@ -68,7 +68,7 @@ def test_stream_declares_incremental_cursor(stream_name: str, streams_by_name: M
 @pytest.mark.parametrize("stream_name", FULL_REFRESH_ONLY_STREAMS)
 def test_full_refresh_only_stream_has_no_cursor(stream_name: str, streams_by_name: Mapping[str, Any]) -> None:
     stream = streams_by_name[stream_name]
-    assert stream.cursor_field in (None, [])
+    assert not stream.cursor_field, f"stream {stream_name} should not declare a cursor_field but got {stream.cursor_field!r}"
 
 
 def _build_full_request_body(
