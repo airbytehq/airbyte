@@ -446,6 +446,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.7-rc.1 | 2026-04-16 | [74127](https://github.com/airbytehq/airbyte/pull/74127) | Constrain check_breakdowns time range for high-cardinality breakdowns like product_id |
 | 5.2.6 | 2026-04-09 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
 | 5.2.5 | 2026-04-07 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
 | 5.2.4 | 2026-04-01 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |
