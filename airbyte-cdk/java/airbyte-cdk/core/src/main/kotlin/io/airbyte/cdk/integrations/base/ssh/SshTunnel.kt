@@ -391,8 +391,7 @@ constructor(
 
     companion object {
 
-        const val SSH_TIMEOUT_DISPLAY_MESSAGE: String =
-            "Timed out while opening an SSH tunnel."
+        const val SSH_TIMEOUT_DISPLAY_MESSAGE: String = "Timed out while opening an SSH tunnel."
 
         /**
          * Maps an [IOException] raised while establishing a tunnel onto an appropriate exception
