@@ -100,7 +100,15 @@ It's helpful to think of agent connectors as equivalent to sets of tools. Tools 
 
 <CardWithIcon title="Tutorials" description="Get started with the Airbyte Agents and its connectors. Even if you've never built an AI agent before, you can have one working for you in 15 minutes or less." ctaText="Tutorials" ctaLink="/ai-agents/get-started/tutorials/" icon="fa-cloud" />
 
+<CardWithIcon title="Web app" description="Use the Airbyte Agents web app to talk to an Airbyte-hosted agent in Chats, or define Automations that run on a schedule or webhook." ctaText="Web app docs" ctaLink="/ai-agents/interfaces/ui/" icon="fa-robot" />
+
+</Grid>
+
+<Grid columns="2">
+
 <CardWithIcon title="SDK" description="Use Airbyte's Airbyte Agents to store and manage credentials, run connectors, and power agentic search." ctaText="SDK docs" ctaLink="/ai-agents/interfaces/sdk/" icon="fa-lock" />
+
+<CardWithIcon title="MCP server" description="Connect MCP-capable agents, like Claude, Cursor, and ChatGPT, to your data through the Airbyte-hosted Model Context Protocol server." ctaText="MCP docs" ctaLink="/ai-agents/interfaces/mcp/" icon="fa-plug" />
 
 </Grid>
 
