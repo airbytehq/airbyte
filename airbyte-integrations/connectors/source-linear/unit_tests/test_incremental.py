@@ -12,6 +12,7 @@ https://github.com/airbytehq/oncall/issues/11998 for context.
 from __future__ import annotations
 
 import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -164,3 +165,22 @@ def test_start_date_override_flows_into_filter(tmp_path: Path) -> None:
     streams = {s.name: s for s in src.streams(config=custom_config)}
     body = _build_full_request_body(streams["issues"], next_page_token=None)
     assert body["variables"]["filter"]["updatedAt"]["gte"].startswith("2025-06-15T00:00:00")
+
+
+def test_default_start_date_is_roughly_two_years_ago() -> None:
+    """When `start_date` is not configured, the manifest falls back to `now_utc() - 2 years`.
+
+    The fallback is rendered by Jinja at runtime, so assert the resulting datetime lands
+    within a generous window around `today - 2 years` to avoid clock-skew flakiness.
+    """
+    config = {"api_key": "test"}
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=config)
+    streams = {s.name: s for s in src.streams(config=config)}
+    body = _build_full_request_body(streams["issues"], next_page_token=None)
+
+    gte = body["variables"]["filter"]["updatedAt"]["gte"]
+    parsed = datetime.strptime(gte, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.utc)
+    expected = datetime.now(tz=timezone.utc) - timedelta(days=365 * 2)
+    delta = abs((parsed - expected).total_seconds())
+    # +/- 2 days tolerance for leap years and clock drift.
+    assert delta < 2 * 24 * 3600, f"expected ~2 years ago, got {gte!r} (delta={delta}s)"
