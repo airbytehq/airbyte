@@ -299,23 +299,39 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       backoff_strategies:
+        # Gmail usually returns a `Retry-After` header on 429 and on 403
+        # quota-saturation responses, but not always. `WaitTimeFromHeader`
+        # reads it when present; `ExponentialBackoffStrategy` is the
+        # fallback when the header is absent so the sync still backs off
+        # instead of retrying immediately.
         - type: WaitTimeFromHeader
           header: Retry-After
+        - type: ExponentialBackoffStrategy
+          factor: 5
       response_filters:
         - type: HttpResponseFilter
           action: RATE_LIMITED
           http_codes:
             - 429
-        # Gmail returns HTTP 403 with reason `rateLimitExceeded` or
-        # `userRateLimitExceeded` on quota-unit saturation — without this
-        # filter those would be classified as FAIL/config_error by the CDK's
-        # default error mapping and terminate the sync as an auth failure.
+        # Gmail returns HTTP 403 with `error.errors[0].reason` set to
+        # `rateLimitExceeded` or `userRateLimitExceeded` on quota-unit
+        # saturation. The default CDK 403 mapping is FAIL/config_error
+        # (e.g. wrong OAuth scope, Gmail API disabled, revoked token),
+        # which would terminate the sync as an auth failure. We match
+        # *only* rate-limit 403s via `predicate` so auth-failure 403s
+        # keep failing fast.
+        #
+        # `HttpResponseFilter` matchers are OR'd, not AND'd, so we must
+        # not pair this with `http_codes: [403]` — that would match any
+        # 403 regardless of the predicate. Also, `error_message_contains`
+        # scans the top-level `error.message` ("User-rate limit
+        # exceeded."), not the nested `error.errors[0].reason`, so the
+        # reason string must be checked explicitly.
         # See https://developers.google.com/gmail/api/guides/handle-errors.
         - type: HttpResponseFilter
           action: RATE_LIMITED
-          http_codes:
-            - 403
-          error_message_contains: "rateLimitExceeded"
+          predicate: >-
+            {{ 'rateLimitExceeded' in (response.get('error', {}).get('errors', [{}]) | first).get('reason', '') }}
 
 streams:
   - $ref: "#/definitions/streams/profile"

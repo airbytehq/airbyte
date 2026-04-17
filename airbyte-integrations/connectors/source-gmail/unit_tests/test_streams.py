@@ -255,3 +255,44 @@ def test_retry_after_on_403_rate_limit_exceeded_is_honoured(base_config, request
         "config_error" in (msg.trace.error.failure_type.value if msg.trace and msg.trace.error and msg.trace.error.failure_type else "")
         for msg in output.trace_messages
     ), "403 rateLimitExceeded must not be surfaced as a config_error"
+
+
+def test_non_rate_limit_403_is_not_retried(base_config, requests_mock, mocker):
+    """Negative guard for the `rateLimitExceeded` predicate.
+
+    A 403 whose `error.errors[0].reason` is *not* `rateLimitExceeded`
+    (e.g. insufficient OAuth scope, disabled Gmail API, revoked token)
+    must stay classified as FAIL/config_error by the CDK default
+    mapping. A bug in the predicate (or using `http_codes: [403]` alone,
+    which is OR'd with the predicate inside `HttpResponseFilter`) would
+    reclassify every 403 as `RATE_LIMITED` and retry indefinitely,
+    masking auth failures that should fail fast.
+    """
+    sleep_mock = mocker.patch("time.sleep")
+
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        status_code=403,
+        headers={"Retry-After": "5"},
+        json={
+            "error": {
+                "code": 403,
+                "message": "Request had insufficient authentication scopes.",
+                "errors": [
+                    {
+                        "reason": "insufficientPermissions",
+                        "message": "Insufficient Permission",
+                    }
+                ],
+                "status": "PERMISSION_DENIED",
+            }
+        },
+    )
+
+    output = _read_stream("messages_details", SyncMode.full_refresh, base_config)
+
+    sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
+    assert not any(
+        d >= 5 for d in sleep_durations
+    ), f"Insufficient-permission 403 must not trigger a Retry-After backoff; got {sleep_durations!r}"
+    assert not output.records, "Insufficient-permission 403 must not yield records"
