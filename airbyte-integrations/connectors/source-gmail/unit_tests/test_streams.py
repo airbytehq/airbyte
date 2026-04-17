@@ -60,10 +60,7 @@ def test_messages_request_injects_after_from_start_date(config_with_start_date, 
     _read_messages(config_with_start_date, requests_mock)
 
     assert requests_mock.call_count >= 1
-    history = [
-        r for r in requests_mock.request_history
-        if r.url.startswith("https://gmail.googleapis.com/gmail/v1/users/me/messages")
-    ]
+    history = [r for r in requests_mock.request_history if r.url.startswith("https://gmail.googleapis.com/gmail/v1/users/me/messages")]
     assert history, "Expected at least one call to the Gmail messages endpoint"
 
     qs = parse_qs(urlparse(history[0].url).query)
@@ -99,7 +96,5 @@ def test_retry_after_on_429_is_honoured(base_config, requests_mock, mocker):
     # The CDK's WaitTimeFromHeader honours the Retry-After header (with a small
     # safety padding); the resulting sleep must be at least the header value.
     sleep_durations = [call.args[0] for call in sleep_mock.call_args_list if call.args]
-    assert any(7 <= duration <= 10 for duration in sleep_durations), (
-        f"Expected a backoff honouring Retry-After=7s; got {sleep_durations!r}"
-    )
+    assert any(7 <= duration <= 10 for duration in sleep_durations), f"Expected a backoff honouring Retry-After=7s; got {sleep_durations!r}"
     assert output.records, "Expected the retry to succeed and produce a record"
