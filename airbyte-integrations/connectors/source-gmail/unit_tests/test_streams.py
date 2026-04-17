@@ -31,6 +31,56 @@ def _gmail_calls(requests_mock, url_prefix):
     return [r for r in requests_mock.request_history if r.url.startswith(url_prefix)]
 
 
+def test_public_messages_standalone_is_full_refresh_and_emits_records(base_config, requests_mock):
+    """Regression guard for the "messages cursor silently drops every record
+    standalone" design flaw flagged in pnilan's follow-up review.
+
+    If `messages` is ever re-declared as incremental on `internalDate`, the
+    list-endpoint stubs (`{id, threadId}` with no cursor field) would be
+    dropped by `DatetimeBasedCursor._is_within_daterange_boundaries`
+    (returns False + WARN for records missing the cursor field). Users who
+    select `messages` alone would then see zero records and a broken sync.
+
+    The fix keeps `messages` as a public full-refresh stream; this test
+    asserts the stubs are actually emitted when the stream is selected
+    standalone, with no query-side `start_date` gate by default.
+    """
+    requests_mock.get(
+        _MESSAGES_LIST_URL,
+        json={"messages": [{"id": "m1", "threadId": "t1"}, {"id": "m2", "threadId": "t2"}]},
+    )
+
+    output = _read_stream("messages", SyncMode.full_refresh, base_config)
+
+    assert len(output.records) == 2, (
+        f"Public `messages` stream must emit list-endpoint stubs standalone; got {len(output.records)} records. "
+        "If this regresses, `messages` has likely been re-declared as incremental on `internalDate` — which "
+        "the list endpoint does not populate, so `DatetimeBasedCursor` would drop every record."
+    )
+    calls = _gmail_calls(requests_mock, _MESSAGES_LIST_URL)
+    assert calls, "Expected at least one call to the messages list endpoint"
+    qs = parse_qs(urlparse(calls[0].url).query)
+    assert "q" not in qs or qs.get("q") == [
+        ""
+    ], f"Public `messages` must not inject a `q=after:` filter without a configured `start_date`; got {qs.get('q')!r}"
+
+
+def test_public_messages_injects_after_unix_seconds_when_start_date_set(config_with_start_date, requests_mock):
+    """Complement to the standalone test: when `start_date` IS configured,
+    the public `messages` stream must still inject `q=after:<unix seconds>`
+    (not the CDK's `MinMaxDatetime` default epoch), matching the
+    drafts/threads behaviour.
+    """
+    requests_mock.get(_MESSAGES_LIST_URL, json={"messages": []})
+
+    _read_stream("messages", SyncMode.full_refresh, config_with_start_date)
+
+    calls = _gmail_calls(requests_mock, _MESSAGES_LIST_URL)
+    assert calls, "Expected at least one call to the messages list endpoint"
+    qs = parse_qs(urlparse(calls[0].url).query)
+    assert qs.get("q") == ["after:1704067200"], f"Expected q=after:1704067200, got {qs.get('q')!r}"
+
+
 def test_messages_details_checkpoints_on_internal_date(base_config, requests_mock):
     """`messages_details` owns the cursor because `internalDate` is only
     returned by `users.messages.get`, not by `users.messages.list`. After a

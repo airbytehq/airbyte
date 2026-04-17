@@ -123,10 +123,68 @@ definitions:
         schema:
           $ref: "#/schemas/labels_details"
     messages:
+      # Public, full-refresh stream. `users.messages.list` returns `{id,
+      # threadId}` stubs with no `internalDate`, so there is no record-level
+      # cursor value available on this stream. Exposing it as incremental
+      # would silently drop every record when selected standalone
+      # (DatetimeBasedCursor._is_within_daterange_boundaries returns False +
+      # WARN for records missing the cursor field). The repeat-sync
+      # efficiency gain is instead realised inside `messages_details` via
+      # the internal `_messages_for_details` parent.
       type: DeclarativeStream
       name: messages
       primary_key:
         - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: messages
+          http_method: GET
+          request_parameters:
+            includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
+            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            field_name: maxResults
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
+            stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+    # INTERNAL — do not add to the top-level `streams:` list. This stream
+    # exists only so `messages_details` has a parent whose cursor can
+    # receive migrated child state via `incremental_dependency: true`,
+    # letting repeat syncs bound the `messages` list call by the last-seen
+    # `internalDate` instead of re-crawling from the configured start.
+    #
+    # The `cursor_field: internalDate` on this internal parent is unusual:
+    # list-endpoint responses don't populate it, so the cursor only ever
+    # advances via state migration from the child. That is acceptable here
+    # because (a) this stream is never surfaced to users, so standalone
+    # selection is impossible, and (b) the child's state write is the only
+    # driver of the parent's cursor value by design. See pnilan's review
+    # on PR #76431 for the full rationale.
+    _messages_for_details:
+      $ref: "#/definitions/streams/messages"
+      name: _messages_for_details
       retriever:
         type: SimpleRetriever
         requester:
@@ -160,12 +218,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: internalDate
-        # The parent `messages` list response only carries `{id, threadId}` —
-        # no `internalDate`. Cursor values are never read from records here;
-        # they arrive via `incremental_dependency` from `messages_details`,
-        # which already normalises them to unix seconds (%s). Parsing `%s`
-        # keeps the round-trip stable; parsing `%ms` here would truncate any
-        # migrated state value to milliseconds-divided-by-1000.
         cursor_datetime_formats:
           - "%s"
         datetime_format: "%s"
@@ -173,10 +225,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/messages"
     messages_details:
       type: DeclarativeStream
       name: messages_details
@@ -201,7 +249,7 @@ definitions:
               partition_field: message_id
               incremental_dependency: true
               stream:
-                $ref: "#/definitions/streams/messages"
+                $ref: "#/definitions/streams/_messages_for_details"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: internalDate
