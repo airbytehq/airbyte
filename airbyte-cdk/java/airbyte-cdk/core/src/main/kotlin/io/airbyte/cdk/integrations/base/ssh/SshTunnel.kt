@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
@@ -356,16 +357,7 @@ constructor(
             }
             return session
         } catch (e: IOException) {
-            if (
-                e is SshException &&
-                    e.message!!
-                        .lowercase()
-                        .contains("failed to get operation result within specified timeout")
-            ) {
-                throw ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e)
-            } else {
-                throw RuntimeException(e)
-            }
+            throw classifySshTunnelException(e)
         } catch (e: GeneralSecurityException) {
             throw RuntimeException(e)
         }
@@ -400,7 +392,27 @@ constructor(
     companion object {
 
         const val SSH_TIMEOUT_DISPLAY_MESSAGE: String =
-            "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again."
+            "Timed out while opening an SSH tunnel."
+
+        /**
+         * Maps an [IOException] raised while establishing a tunnel onto an appropriate exception
+         * type. SSH tunnel timeouts are classified as [TransientErrorException] so that the
+         * platform retry budget handles transient bastion or network blips. Other [IOException]s
+         * are wrapped in a [RuntimeException] and surface as system errors.
+         */
+        @JvmStatic
+        fun classifySshTunnelException(e: IOException): RuntimeException {
+            return if (
+                e is SshException &&
+                    (e.message ?: "")
+                        .lowercase()
+                        .contains("failed to get operation result within specified timeout")
+            ) {
+                TransientErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e)
+            } else {
+                RuntimeException(e)
+            }
+        }
 
         const val CONNECTION_OPTIONS_KEY: String = "ssh_connection_options"
         const val SESSION_HEARTBEAT_INTERVAL_KEY: String = "session_heartbeat_interval"

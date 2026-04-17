@@ -2,6 +2,7 @@
 package io.airbyte.cdk.ssh
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.StringReader
 import java.net.InetSocketAddress
@@ -119,21 +120,26 @@ fun createTunnelSession(
         log.info { "Port forwarding started on $address." }
         return TunnelSession(address.toInetSocketAddress(), client, session)
     } catch (e: SshException) {
-        if (
-            (e.message ?: "")
-                .lowercase()
-                .contains("failed to get operation result within specified timeout")
-        ) {
-            throw ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e)
-        } else {
-            throw RuntimeException(e)
-        }
+        throw classifySshTunnelException(e)
     }
 }
 
-const val SSH_TIMEOUT_DISPLAY_MESSAGE: String =
-    "Timed out while opening a SSH Tunnel. " +
-        "Please double check the given SSH configurations and try again."
+/**
+ * Maps an [SshException] raised while establishing a tunnel onto an appropriate exception type. SSH
+ * tunnel timeouts are classified as [TransientErrorException] so that the platform retry budget
+ * handles transient bastion or network blips. Other [SshException]s are wrapped in a
+ * [RuntimeException] and surface as system errors.
+ */
+internal fun classifySshTunnelException(e: SshException): RuntimeException {
+    val message = (e.message ?: "").lowercase()
+    return if (message.contains("failed to get operation result within specified timeout")) {
+        TransientErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e)
+    } else {
+        RuntimeException(e)
+    }
+}
+
+const val SSH_TIMEOUT_DISPLAY_MESSAGE: String = "Timed out while opening an SSH tunnel."
 
 private val tunnelSessionTimeout: Duration = Duration.ofMillis(15_000)
 
