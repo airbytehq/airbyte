@@ -47,7 +47,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
-            q: "{% if config.get('start_date') %}after:{{ config['start_date'][:10] | replace('-', '/') }}{% endif %}"
+            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -135,7 +135,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
-            q: "after:{{ stream_interval.start_time }}"
+            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -157,16 +157,6 @@ definitions:
             page_size: 100
             cursor_value: "{{ response.get(\"nextPageToken\", {}) }}"
             stop_condition: "{{ not response.get(\"nextPageToken\", {}) }}"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: internalDate
-        cursor_datetime_formats:
-          - "%ms"
-        datetime_format: "%s"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -196,6 +186,16 @@ definitions:
               incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/messages"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: internalDate
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.get('start_date', '2004-04-01T00:00:00Z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -213,7 +213,7 @@ definitions:
           http_method: GET
           request_parameters:
             includeSpamTrash: "{{ config['include_spam_and_trash'] }}"
-            q: "{% if config.get('start_date') %}after:{{ config['start_date'][:10] | replace('-', '/') }}{% endif %}"
+            q: "{% if config.get('start_date') %}after:{{ format_datetime(config['start_date'], '%s') }}{% endif %}"
         record_selector:
           type: RecordSelector
           extractor:
