@@ -82,7 +82,14 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 12. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 13. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-14. Click `Set up source`.
+14. **Inbound API settings (Fulfillment Inbound streams only)**:
+    - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
+      - `rolling_days` (default): Fetch data for the last **N days including today**.
+      - `fixed`: Fetch data for a fixed UTC datetime range.
+    - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
+15. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -106,7 +113,14 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
     - **SKU**: Data at the individual SKU level, with both `childAsin` and `sku` values populated.
 10. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
 11. For **Include PII (Personally Identifiable Information)**, enable this option to access PII fields such as BuyerInfo and ShippingAddress in the Orders and OrderItems streams. This requires an approved Restricted Role from Amazon. If your account lacks the required role, the connector falls back to standard access automatically and PII fields remain empty.
-12. Click `Set up source`.
+12. **Inbound API settings (Fulfillment Inbound streams only)**:
+    - **Inbound Replication Mode**: Choose how the connector defines the time window for Fulfillment Inbound streams.
+      - `rolling_days` (default): Fetch data for the last **N days including today**.
+      - `fixed`: Fetch data for a fixed UTC datetime range.
+    - **Inbound Rolling Days**: Used only when `Inbound Replication Mode=rolling_days`. Required when `Inbound Replication Mode=rolling_days`. Default: `30`. Minimum: `1`.
+    - **Inbound Start Datetime** / **Inbound End Datetime**: Used only when `Inbound Replication Mode=fixed`. `Inbound Start Datetime` is required when `Inbound Replication Mode=fixed`. `Inbound End Datetime` is optional; if not set, the connector uses the current UTC time. Format: `YYYY-MM-DDTHH:MM:SSZ` (UTC), e.g. `2026-01-25T00:00:00Z`.
+    These options affect the following streams: **FbaInboundShipments** and **FbaInboundShipmentItems**.
+13. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -163,6 +177,8 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Fulfillment Inbound Shipments](https://developer-docs.amazon.com/sp-api/reference/getshipments) \(full-refresh\)
+- [Fulfillment Inbound Shipment Items](https://developer-docs.amazon.com/sp-api/reference/getshipmentitemsbyshipmentid) \(full-refresh\)
 - [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
 - [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
 - [Repeat Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(full-refresh\)
@@ -306,6 +322,7 @@ You may also combine this with a smaller **Financial Events Step Size** (e.g., 1
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.8.0 | 2026-04-17 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
 | 5.7.2 | 2026-04-13 | [75143](https://github.com/airbytehq/airbyte/pull/75143) | Fix incorrect URL path for GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE stream — add missing `/reports/` segment |
 | 5.7.1 | 2026-04-02 | [76031](https://github.com/airbytehq/airbyte/pull/76031) | Deprecate non-functional `wait_to_avoid_fatal_errors` config option (hidden from UI) |
 | 5.7.0 | 2026-03-23 | [74740](https://github.com/airbytehq/airbyte/pull/74740) | Add configurable `asinGranularity` for GET_SALES_AND_TRAFFIC_REPORT streams, enabling CHILD and SKU level data with populated childAsin and sku values |
