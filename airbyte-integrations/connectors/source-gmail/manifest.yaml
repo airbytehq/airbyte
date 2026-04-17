@@ -292,18 +292,15 @@ definitions:
       refresh_request_body: {}
       token_refresh_endpoint: https://accounts.google.com/o/oauth2/token
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-          response_filters:
-            - type: HttpResponseFilter
-              action: RATE_LIMITED
-              http_codes:
-                - 429
-        - type: DefaultErrorHandler
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
 
 streams:
   - $ref: "#/definitions/streams/profile"

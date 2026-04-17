@@ -46,14 +46,10 @@ def test_base_requester_has_retry_after_error_handler(manifest):
     error_handler = base_requester.get("error_handler")
     assert error_handler is not None, "base_requester must define an error_handler"
 
-    # Flatten nested handlers to look for WaitTimeFromHeader on 429.
-    handlers = error_handler.get("error_handlers", [error_handler])
-    found_retry_after = False
-    for handler in handlers:
-        for strategy in handler.get("backoff_strategies", []) or []:
-            if strategy.get("type") == "WaitTimeFromHeader" and strategy.get("header") == "Retry-After":
-                found_retry_after = True
-    assert found_retry_after, "Expected a WaitTimeFromHeader backoff for Retry-After"
+    strategies = error_handler.get("backoff_strategies") or []
+    assert any(s.get("type") == "WaitTimeFromHeader" and s.get("header") == "Retry-After" for s in strategies), (
+        "Expected a WaitTimeFromHeader backoff on Retry-After"
+    )
 
 
 def test_messages_stream_has_datetime_incremental_cursor(manifest):
