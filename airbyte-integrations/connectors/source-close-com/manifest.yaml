@@ -21,6 +21,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: /user
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -103,6 +113,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: custom_field/lead
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -197,6 +217,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: custom_field/contact
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -291,6 +321,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: custom_field/opportunity
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -385,6 +425,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: custom_field/activity
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -487,6 +537,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: contact
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -644,6 +704,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: status/lead
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -698,6 +768,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: status/opportunity
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -760,6 +840,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: email_template
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -854,6 +944,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: sequence
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1011,6 +1111,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: dialer
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1115,6 +1225,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: bulk_action/email
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1211,6 +1331,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: bulk_action/sequence_subscription
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1323,6 +1453,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: bulk_action/delete
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1411,6 +1551,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: bulk_action/edit
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1523,6 +1673,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: integration_link
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1597,6 +1757,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: pipeline
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1670,6 +1840,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: send_as
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1716,6 +1896,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: custom_activity
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1821,6 +2011,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: role
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -1895,6 +2095,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: saved_search
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -2387,6 +2597,16 @@ definitions:
                         value: "{{ stream_slice['start_time'] }}"
                         which: start
             results_limit:
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -2983,6 +3203,16 @@ definitions:
           http_method: GET
           request_parameters:
             _order_by: date_updated
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -3205,6 +3435,16 @@ definitions:
           http_method: GET
           request_parameters:
             _order_by: date_updated
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -4416,6 +4656,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/created
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -4544,6 +4794,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/note
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -4709,6 +4969,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/emailthread
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -5024,6 +5294,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/email
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -5350,6 +5630,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/sms
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -5518,6 +5808,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/call
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -5746,6 +6046,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/meeting
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -5947,6 +6257,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/status_change/lead
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -6087,6 +6407,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/status_change/opportunity
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -6279,6 +6609,16 @@ definitions:
             username: "{{ config['api_key'] }}"
           path: activity/task_completed
           http_method: GET
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -6425,6 +6765,16 @@ definitions:
           request_parameters:
             _type: lead
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -6572,6 +6922,16 @@ definitions:
           request_parameters:
             _type: incoming_email
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -6738,6 +7098,16 @@ definitions:
           request_parameters:
             _type: email_followup
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -6908,6 +7278,16 @@ definitions:
           request_parameters:
             _type: missed_call
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7078,6 +7458,16 @@ definitions:
           request_parameters:
             _type: answered_detached_call
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7248,6 +7638,16 @@ definitions:
           request_parameters:
             _type: voicemail
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7426,6 +7826,16 @@ definitions:
           request_parameters:
             _type: opportunity_due
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7597,6 +8007,16 @@ definitions:
           request_parameters:
             _type: incoming_sms
             _order_by: date_created
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7770,6 +8190,16 @@ definitions:
           http_method: GET
           request_parameters:
             _type: google
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7840,6 +8270,16 @@ definitions:
           http_method: GET
           request_parameters:
             _type: custom_email
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7914,6 +8354,16 @@ definitions:
           http_method: GET
           request_parameters:
             _type: zoom
+          error_handler:
+            type: DefaultErrorHandler
+            response_filters:
+            - type: HttpResponseFilter
+              action: FAIL
+              http_codes:
+              - 400
+              error_message_contains: less than or equal to
+              error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+              failure_type: config_error
         record_selector:
           type: RecordSelector
           extractor:
@@ -7988,6 +8438,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: /user
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8069,6 +8529,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: custom_field/lead
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8162,6 +8632,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: custom_field/contact
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8255,6 +8735,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: custom_field/opportunity
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8348,6 +8838,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: custom_field/activity
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8449,6 +8949,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: contact
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8605,6 +9115,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: status/lead
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8658,6 +9178,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: status/opportunity
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8719,6 +9249,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: email_template
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8812,6 +9352,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: sequence
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -8968,6 +9518,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: dialer
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9071,6 +9631,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: bulk_action/email
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9166,6 +9736,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: bulk_action/sequence_subscription
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9277,6 +9857,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: bulk_action/delete
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9364,6 +9954,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: bulk_action/edit
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9475,6 +10075,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: integration_link
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9548,6 +10158,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: pipeline
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9620,6 +10240,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: send_as
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9665,6 +10295,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: custom_activity
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9769,6 +10409,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: role
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -9842,6 +10492,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: saved_search
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -10333,6 +10993,16 @@ streams:
                     value: "{{ stream_slice['start_time'] }}"
                     which: start
         results_limit:
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -10928,6 +11598,16 @@ streams:
       http_method: GET
       request_parameters:
         _order_by: date_updated
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -11149,6 +11829,16 @@ streams:
       http_method: GET
       request_parameters:
         _order_by: date_updated
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -12359,6 +13049,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/created
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -12486,6 +13186,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/note
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -12650,6 +13360,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/emailthread
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -12964,6 +13684,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/email
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -13289,6 +14019,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/sms
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -13456,6 +14196,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/call
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -13683,6 +14433,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/meeting
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -13883,6 +14643,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/status_change/lead
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -14022,6 +14792,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/status_change/opportunity
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -14213,6 +14993,16 @@ streams:
         username: "{{ config['api_key'] }}"
       path: activity/task_completed
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -14358,6 +15148,16 @@ streams:
       request_parameters:
         _type: lead
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -14504,6 +15304,16 @@ streams:
       request_parameters:
         _type: incoming_email
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -14669,6 +15479,16 @@ streams:
       request_parameters:
         _type: email_followup
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -14838,6 +15658,16 @@ streams:
       request_parameters:
         _type: missed_call
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -15007,6 +15837,16 @@ streams:
       request_parameters:
         _type: answered_detached_call
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -15176,6 +16016,16 @@ streams:
       request_parameters:
         _type: voicemail
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -15353,6 +16203,16 @@ streams:
       request_parameters:
         _type: opportunity_due
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -15523,6 +16383,16 @@ streams:
       request_parameters:
         _type: incoming_sms
         _order_by: date_created
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -15695,6 +16565,16 @@ streams:
       http_method: GET
       request_parameters:
         _type: google
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -15764,6 +16644,16 @@ streams:
       http_method: GET
       request_parameters:
         _type: custom_email
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
@@ -15837,6 +16727,16 @@ streams:
       http_method: GET
       request_parameters:
         _type: zoom
+      error_handler:
+        type: DefaultErrorHandler
+        response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+          - 400
+          error_message_contains: less than or equal to
+          error_message: Close.com request offset exceeds the API's per-resource `_skip` pagination cap.
+          failure_type: config_error
     record_selector:
       type: RecordSelector
       extractor:
