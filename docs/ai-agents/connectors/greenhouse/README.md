@@ -125,4 +125,4 @@ See the official [Greenhouse API reference](https://developers.greenhouse.io/har
 - **Package version:** 0.17.117
 - **Connector version:** 0.1.7
 - **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-sdk/blob/main/connectors/greenhouse/CHANGELOG.md)
+- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/greenhouse/CHANGELOG.md)
