@@ -171,16 +171,16 @@ Agent connector documentation follows a different workflow than traditional conn
 
 The documentation pipeline involves three repositories and two GitHub Apps:
 
-1. **Source repository (sonar)**: Connector definitions live in the private [sonar](https://github.com/airbytehq/sonar) repository under `integrations/*/connector.yaml`. When changes merge to `main`, the [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) workflow generates Python packages including documentation files. The [BlessedConnectorGenerator](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/generator.py) class uses Jinja2 templates ([README.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/README.md.jinja2), [REFERENCE.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/REFERENCE.md.jinja2)) to generate README.md and REFERENCE.md, while [generate-changelog.py](https://github.com/airbytehq/sonar/blob/main/scripts/connectors/generate-changelog.py) creates CHANGELOG.md entries. The `octavia-bot-hoard` GitHub App authenticates and pushes these generated files to the airbyte-agent-connectors repository.
+1. **Source repository (sonar)**: Connector definitions live in the private [sonar](https://github.com/airbytehq/sonar) repository under `integrations/*/connector.yaml`. When changes merge to `main`, the [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) workflow generates Python packages including documentation files. The [BlessedConnectorGenerator](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/generator.py) class uses Jinja2 templates ([README.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/README.md.jinja2), [REFERENCE.md.jinja2](https://github.com/airbytehq/sonar/blob/main/connector-sdk/connector_sdk/codegen/templates/REFERENCE.md.jinja2)) to generate README.md and REFERENCE.md, while [generate-changelog.py](https://github.com/airbytehq/sonar/blob/main/scripts/connectors/generate-changelog.py) creates CHANGELOG.md entries. The `octavia-bot-hoard` GitHub App authenticates and pushes these generated files to the airbyte-agent-sdk repository.
 
-2. **Generated repository (airbyte-agent-connectors)**: The [airbyte-agent-connectors](https://github.com/airbytehq/airbyte-agent-connectors) repository receives the generated connector packages. Each connector has its own directory under `connectors/` containing the Python package and documentation files. The [publish.yml](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/.github/workflows/publish.yml) workflow publishes packages to PyPI and creates GitHub releases.
+2. **Generated repository (airbyte-agent-sdk)**: The [airbyte-agent-sdk](https://github.com/airbytehq/airbyte-agent-sdk) repository receives the generated connector packages. Each connector has its own directory under `connectors/` containing the Python package and documentation files. The [publish.yml](https://github.com/airbytehq/airbyte-agent-sdk/blob/main/.github/workflows/publish.yml) workflow publishes packages to PyPI and creates GitHub releases.
 
-3. **Documentation repository (airbyte)**: The [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) workflow runs every two hours (or on manual trigger). It checks out the airbyte-agent-connectors repository, copies all markdown files from `connectors/*/` to `docs/ai-agents/connectors/`, and creates an auto-merge pull request using the `octavia-bot` GitHub App. When the PR merges, Vercel deploys the updated docs automatically.
+3. **Documentation repository (airbyte)**: The [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) workflow runs every two hours (or on manual trigger). It checks out the airbyte-agent-sdk repository, copies all markdown files from `connectors/*/` to `docs/ai-agents/connectors/`, and creates an auto-merge pull request using the `octavia-bot` GitHub App. When the PR merges, Vercel deploys the updated docs automatically.
 
 #### Key characteristics
 
 - **Fully automated**: No manual steps are required. Changes to connector definitions in sonar automatically propagate to the public documentation.
-- **Two-hour sync cycle**: Documentation updates appear on docs.airbyte.com within two hours of changes merging to airbyte-agent-connectors.
+- **Two-hour sync cycle**: Documentation updates appear on docs.airbyte.com within two hours of changes merging to airbyte-agent-sdk.
 - **Bot-managed PRs**: The `octavia-bot-hoard` and `octavia-bot` GitHub Apps handle authentication and PR creation across repositories.
 - **Auto-merge enabled**: Documentation sync PRs are labeled for auto-merge, minimizing manual review overhead.
 
@@ -188,9 +188,9 @@ The documentation pipeline involves three repositories and two GitHub Apps:
 
 | Repository | Workflow | Purpose |
 | --- | --- | --- |
-| [sonar](https://github.com/airbytehq/sonar) | [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) | Generates connector packages and pushes to airbyte-agent-connectors |
-| [airbyte-agent-connectors](https://github.com/airbytehq/airbyte-agent-connectors) | [publish.yml](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/.github/workflows/publish.yml) | Publishes packages to PyPI |
-| [airbyte](https://github.com/airbytehq/airbyte) | [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) | Syncs docs from airbyte-agent-connectors to Docusaurus |
+| [sonar](https://github.com/airbytehq/sonar) | [publish-connectors.yml](https://github.com/airbytehq/sonar/blob/main/.github/workflows/publish-connectors.yml) | Generates connector packages and pushes to airbyte-agent-sdk |
+| [airbyte-agent-sdk](https://github.com/airbytehq/airbyte-agent-sdk) | [publish.yml](https://github.com/airbytehq/airbyte-agent-sdk/blob/main/.github/workflows/publish.yml) | Publishes packages to PyPI |
+| [airbyte](https://github.com/airbytehq/airbyte) | [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) | Syncs docs from airbyte-agent-sdk to Docusaurus |
 
 ## Multiple instances and versions
 
