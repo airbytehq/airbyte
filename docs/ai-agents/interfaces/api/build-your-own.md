@@ -3,7 +3,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-If you provide an environment where your users can create connectors on their own, they need to supply their credentials so agents can access their data. Airbyte provides an [Authentication module](./..) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding, UX, and OAuth app. In this case, you can implement your own OAuth flow.
+If you provide an environment where your users can create connectors on their own, they need to supply their credentials so agents can access their data. Airbyte provides an [Authentication module](./authentication-module) for this purpose. However, you might prefer to create a fully customized OAuth flow with your own branding, UX, and OAuth app. In this case, you can implement your own OAuth flow.
 
 This tutorial walks you through implementing a server-side OAuth flow for your users. By the end, you'll be able to initiate OAuth consent, handle the callback, and use the automatically created connector.
 
@@ -39,7 +39,7 @@ Before implementing an OAuth flow, ensure you have:
 
 1. **Airbyte Agents credentials**: Your `client_id` and `client_secret` from the Airbyte Agents under **Authentication Module**.
 
-2. **A bearer token**: See [Authentication](./..) for how to obtain one.
+2. **A bearer token**: See [Authentication](./authenticate) for how to obtain one.
 
 3. **A scoped token**: Required for some workspace-level operations. Generate one using your application token.
 
@@ -276,7 +276,7 @@ if (error) {
 
 ## Part 4: Execute operations
 
-Once the connector is created, you can use it in hosted mode to execute operations. See [how to execute operations](../../execute).
+Once the connector is created, you can use it in hosted mode to execute operations. See [how to execute operations](./execute).
 
 ## Complete example
 

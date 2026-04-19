@@ -12,11 +12,11 @@ The `workspace_name` you provide when creating scoped tokens serves as the uniqu
 
 Airbyte Agents uses the workspace concept to provide data isolation in multi-tenant applications.
 
-Airbyte isolates each workspace's data, credentials, and configurations. A [scoped token](/ai-agents/api/#scoped-token) can only access a single workspace. Workspace data never crosses the workspace boundary. This architecture means you can safely serve multiple end-users from a single Airbyte Agents organization without worrying about data leakage between workspaces.
+Airbyte isolates each workspace's data, credentials, and configurations. A [scoped token](./#scoped-token) can only access a single workspace. Workspace data never crosses the workspace boundary. This architecture means you can safely serve multiple end-users from a single Airbyte Agents organization without worrying about data leakage between workspaces.
 
 ## Workspaces and authentication
 
-Airbyte Agents uses a hierarchical token system where each token type has a different scope. For complete details on token types and how to generate them, see [Token types](/ai-agents/api/#token-types) in the API documentation.
+Airbyte Agents uses a hierarchical token system where each token type has a different scope. For complete details on token types and how to generate them, see [Token types](./#token-types).
 
 ## Create a new workspace
 

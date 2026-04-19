@@ -9,7 +9,7 @@ When you use agent connectors as open source Python packages, you provide user c
 - You provide actual API credentials (tokens, keys, OAuth tokens) directly to the connector.
 - Connectors make direct HTTP calls to external APIs.
 - You are responsible for credential security, rotation, and lifecycle management.
-- You can't use the [context store](../context-store).
+- You can't use the [context store](../../ui/context-store).
 
 ## Authentication methods
 
@@ -87,4 +87,4 @@ Open source authentication is most appropriate when:
 - You need full control over credential storage and don't want to use a cloud service.
 - You're building a proof of concept before moving to production.
 
-For production applications with multiple end-users, use [hosted authentication](hosted.md) instead, which provides secure credential management in the Airbyte Agents.
+For production applications with multiple end-users, use [hosted authentication](../../api/authenticate.md) instead, which provides secure credential management in the Airbyte Agents.

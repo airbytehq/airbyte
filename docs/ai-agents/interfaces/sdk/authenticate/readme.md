@@ -4,10 +4,8 @@ sidebar_position: 2
 
 # Authenticate
 
-After you [enable a connector](../enable-connector), but before your users can do anything with that connector, they must authenticate with that service. Several options exist to build an authentication flow for your users.
+Before end users can do anything with a connector, they must authenticate with that service.
 
-- The simplest method is to use Airbyte's Authentication Module, an out-of-the-box login flow.
+If you're using the Python SDK and managing credentials yourself (for example, because you use agent connectors as open source Python packages and don't subscribe to Airbyte), see [Open source](./open-source).
 
-- It's possible to build your own flow from scratch, using the Airbyte Agent API.
-
-- If you subscribe to Airbyte, the Airbyte Agents manages user credentials for you. If you use agent connectors as open source Python packages and don't subscribe to Airbyte, you must manage user credentials yourself.
+For the hosted Airbyte-managed authentication flow, the drop-in [Authentication Module](../../api/authentication-module), and the [Build your own](../../api/build-your-own) OAuth walkthrough, see the [API](../../api) section.

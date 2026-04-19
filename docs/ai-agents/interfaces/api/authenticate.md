@@ -15,7 +15,7 @@ When you subscribe to the Airbyte Agents, you authenticate with Airbyte Cloud us
 
 The Airbyte Agents uses a hierarchical token system with three token types: application tokens for organization-level access, scoped tokens for workspace-level end-user operations, and widget tokens for embedding the authentication module with CORS protection.
 
-For complete details on each token type, how to generate them, and security considerations, see [Token types](/ai-agents/api/#token-types) in the API documentation.
+For complete details on each token type, how to generate them, and security considerations, see [Token types](./#token-types).
 
 ## Authentication flow
 
@@ -73,7 +73,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 ### With your own OAuth flow
 
-You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-auth/build-your-own.md) for details.
+You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](build-your-own.md) for details.
 
 ## Security considerations
 
@@ -94,4 +94,4 @@ Hosted authentication is most appropriate when:
 - You need Airbyte to handle credential lifecycle management, including token refresh.
 - Security and compliance are priorities for your application.
 
-For development, testing, or single-user scenarios, you might find it easier to use [open source authentication](open-source.md).
+For development, testing, or single-user scenarios, you might find it easier to use [open source authentication](../sdk/authenticate/open-source.md).
