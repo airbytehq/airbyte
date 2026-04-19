@@ -10,13 +10,13 @@ The Google Drive source connector pulls data from a single folder in Google Driv
 
 - Drive folder link - The link to the Google Drive folder you want to sync files from (includes files located in subfolders)
 <!-- env:cloud -->
-- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
+- **For Airbyte Cloud:** A Google account with access to the Google Drive folder you want to sync
   <!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source:**
   - A GCP project
-  - Enable the Google Drive API in your GCP project
-  - Service Account Key with access to the Spreadsheet you want to replicate
+  - The [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com) enabled in your GCP project
+  - A Service Account Key with access to the Google Drive folder you want to replicate
   <!-- /env:oss -->
 
 ## Setup guide
@@ -34,7 +34,7 @@ For **Airbyte Cloud** users, we highly recommend using OAuth, as it significantl
 For **Airbyte Open Source** users, we recommend using Service Account Key Authentication. Follow the steps below to create a service account, generate a key, and enable the Google Drive API.
 
 :::note
-If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/drive.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
+If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/drive.readonly`. If you plan to use the [Replicate Permissions ACL](#replicate-permissions-acl) feature, you must also add the Admin Directory scopes listed in the [Authorization Scopes](#authorization-scopes) section. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
 :::
 
 ### Set up the service account key (Airbyte Open Source)
@@ -280,42 +280,49 @@ Format options will not be taken into account. Instead, files will be transferre
 If enabled, sends subdirectory folder structure along with source file names to the destination. Otherwise, files will be synced by their names only. This option is ignored when file-based replication is not enabled.
 
 ### Replicate Permissions ACL
-This mode allows to sync Google Drive files permissions (ACLs) and Identities (users and groups) from your Google Workspace.
-The Identities Stream is enabled by default.
 
-To use these features, ensure you have the correct permissions and have enabled the required Google APIs.
+This mode syncs Google Drive file permissions (ACLs) and identities (users and groups) from your Google Workspace. The Identities stream is enabled by default.
+
+:::note
+This feature requires a [Google Workspace](https://workspace.google.com/) account. It is not available for personal Google accounts.
+:::
+
+To use this feature, ensure you have the correct permissions and have enabled the required Google APIs.
 
 #### Required Google APIs
-Make sure the following APIs are enabled in your Google Cloud project:
 
-- [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com)
-  Provides access to read file metadata and permissions in Google Drive.
-- [Google Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com)
-  Allows retrieval of users and groups in your Google Workspace.
+Enable the following APIs in your [Google Cloud project](https://console.cloud.google.com/apis/library):
+
+- [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com) — Provides access to read file metadata and permissions in Google Drive.
+- [Google Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com) — Required to retrieve users and groups in your Google Workspace.
 
 #### Authorization Scopes
-When setting up this connector, ensure that the following scopes are authorized in the Google consent screen:
 
-- https://www.googleapis.com/auth/drive.readonly
-- https://www.googleapis.com/auth/admin.directory.group.readonly
-- https://www.googleapis.com/auth/admin.directory.group.member.readonly
-- https://www.googleapis.com/auth/admin.directory.user.readonly
+The connector requires the following OAuth scopes. If you use OAuth authentication, these scopes are requested automatically. If you use a Service Account, assign these scopes through [domain-wide delegation](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority).
 
-#### Domain Field (optional)
-If you are syncing **identities** (users and groups) from a different domain than the one associated with your user account, you must specify the `domain` field in the connector configuration.
+- `https://www.googleapis.com/auth/drive.readonly` — Read-only access to file metadata and content.
+- `https://www.googleapis.com/auth/admin.directory.group.readonly` — Read-only access to Google Workspace groups.
+- `https://www.googleapis.com/auth/admin.directory.group.member.readonly` — Read-only access to group membership.
+- `https://www.googleapis.com/auth/admin.directory.user.readonly` — Read-only access to Google Workspace user profiles.
+
+#### Domain field (optional)
+
+If you are syncing identities (users and groups) from a different domain than the one associated with your authenticated user, specify the `domain` field in the connector configuration.
 
 #### Streams
 
-#### 1. Files Permissions (ACLs)
-This stream syncs file permissions (Access Control Lists) for files in your Google Drive. You should set up a stream name and globs.
+##### Files Permissions (ACLs)
 
-#### 2. Identities (Users and Groups)
-By default, this stream is enabled and retrieves information about **users and groups** in your Google Workspace. This helps you map file permissions (ACLs) to actual users and groups.
+This stream syncs file permissions (Access Control Lists) for files in your Google Drive. Configure a stream name and glob patterns to select which files to sync permissions for.
 
-#### Requirements:
-- Ensure the **Google Admin SDK API** is enabled.
-- The authenticated user must have the necessary Google Admin Directory permissions.
+##### Identities (Users and Groups)
 
+This stream retrieves information about users and groups in your Google Workspace. It helps you map file permissions (ACLs) to actual user and group identities.
+
+Requirements:
+
+- The [Google Admin SDK API](https://console.cloud.google.com/apis/library/admin.googleapis.com) must be enabled.
+- The authenticated user must have Google Workspace admin privileges, or the service account must have domain-wide delegation with the required Admin Directory scopes.
 
 ## Changelog
 
@@ -324,7 +331,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.14 | 2026-03-31 | [75573](https://github.com/airbytehq/airbyte/pull/75573) | Migrate OAuth scope to scopes object array for granular scopes support |
+| 0.5.14 | 2026-04-01 | [75573](https://github.com/airbytehq/airbyte/pull/75573) | Migrate OAuth scope to scopes object array for granular scopes support |
 | 0.5.13 | 2026-03-31 | [75368](https://github.com/airbytehq/airbyte/pull/75368) | Update dependencies |
 | 0.5.12 | 2026-03-17 | [74923](https://github.com/airbytehq/airbyte/pull/74923) | Update dependencies |
 | 0.5.11 | 2026-03-03 | [73119](https://github.com/airbytehq/airbyte/pull/73119) | Update dependencies |
