@@ -118,13 +118,13 @@ class DefaultJdbcPartitionFactory(
                 null
             } else {
                 // Incremental ongoing.
-                DefaultJdbcCursorIncrementalPartition(
+                DefaultUnsplittableJdbcCursorIncrementalPartition(
                     selectQueryGenerator,
                     streamState,
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
                     isLowerBoundIncluded = true,
-                    cursorUpperBound = streamState.cursorUpperBound,
+                    explicitCursorUpperBound = streamState.cursorUpperBound,
                 )
             }
         }
@@ -222,10 +222,7 @@ class DefaultJdbcPartitionFactory(
                 unsplitPartition.split(splitPartitionBoundaries)
             is DefaultJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
-            is DefaultJdbcCursorIncrementalPartition ->
-                unsplitPartition.split(splitPartitionBoundaries)
-            is DefaultJdbcUnsplittableSnapshotPartition -> listOf(unsplitPartition)
-            is DefaultJdbcUnsplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)
+            else -> listOf(unsplitPartition)
         }
     }
 
@@ -263,24 +260,6 @@ class DefaultJdbcPartitionFactory(
                 upperBound,
                 cursor,
                 cursorUpperBound,
-            )
-        }
-    }
-
-    private fun DefaultJdbcCursorIncrementalPartition.split(
-        splitPointValues: List<DefaultJdbcStreamStateValue>
-    ): List<DefaultJdbcCursorIncrementalPartition> {
-        val inners: List<JsonNode> = splitPointValues.mapNotNull { it.cursorPair(stream)?.second }
-        val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners
-        val ubs: List<JsonNode> = inners + listOf(cursorUpperBound)
-        return lbs.zip(ubs).mapIndexed { idx: Int, (lowerBound, upperBound) ->
-            DefaultJdbcCursorIncrementalPartition(
-                selectQueryGenerator,
-                streamState,
-                cursor,
-                lowerBound,
-                isLowerBoundIncluded = idx == 0,
-                upperBound,
             )
         }
     }
