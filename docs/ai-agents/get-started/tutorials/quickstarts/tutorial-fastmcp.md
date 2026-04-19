@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 
 In this tutorial, you'll create a new Python project with uv, build a FastMCP server that exposes one of Airbyte's agent connectors as an MCP tool, and use it to query GitHub data from any MCP-compatible agent. This tutorial uses GitHub, but if you don't have a GitHub account you can swap in any other agent connector and perform different operations.
 
-Your MCP server executes through Airbyte, so the third-party credentials you use (for GitHub or any other service) never leave your Airbyte Agents account. Your Python code only ever sees your Airbyte client ID and client secret.
+Your MCP server executes through Airbyte. Airbyte Agents owns the OAuth apps, stores your third-party tokens, and refreshes them for you. Your Python code only ever sees your Airbyte client ID and client secret.
 
 ## Overview
 
@@ -57,7 +57,7 @@ my-mcp-agent/
 
 ## Part 2: Install dependencies
 
-Install the GitHub connector and FastMCP:
+Install the Airbyte agent SDK and FastMCP:
 
 ```bash
 uv add airbyte-agent-sdk fastmcp python-dotenv
@@ -65,7 +65,7 @@ uv add airbyte-agent-sdk fastmcp python-dotenv
 
 This command installs:
 
-- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which provides type-safe access to every agent connector.
+- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which ships every connector as a typed submodule.
 - `fastmcp`: A Python framework for building MCP servers with minimal boilerplate.
 - `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
@@ -80,22 +80,21 @@ This command installs:
 2. Add the following imports to `server.py`:
 
     ```python title="server.py"
-    import os
     import json
 
     from dotenv import load_dotenv
     from fastmcp import FastMCP
-    from airbyte_agent_sdk import AirbyteAuthConfig
+    from airbyte_agent_sdk import connect
     from airbyte_agent_sdk.connectors.github import GithubConnector
     ```
 
     These imports provide:
 
-    - `os` and `json`: Access environment variables and serialize connector results.
+    - `json`: Serialize connector results for the MCP tool return value.
     - `load_dotenv`: Load environment variables from your `.env` file.
     - `FastMCP`: The FastMCP server class that handles MCP protocol communication.
-    - `AirbyteAuthConfig`: The auth object that tells the connector which Airbyte workspace and client credentials to use.
-    - `GithubConnector`: The Airbyte agent connector that executes GitHub operations through Airbyte Agents.
+    - `connect`: The Airbyte agent SDK entry point. One call returns a typed connector bound to your workspace.
+    - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
 
 ## Part 4: Add a .env file with your secrets
 
@@ -127,33 +126,51 @@ Now that your environment is set up, add the following code to `server.py` to cr
 ```python title="server.py"
 mcp = FastMCP("GitHub Agent")
 
-connector = GithubConnector(
-    auth_config=AirbyteAuthConfig(
-        workspace_name="default",
-        airbyte_client_id=os.environ["AIRBYTE_CLIENT_ID"],
-        airbyte_client_secret=os.environ["AIRBYTE_CLIENT_SECRET"],
-    ),
-)
+github = connect("github")
 ```
 
-- `FastMCP("GitHub Agent")` creates a new MCP server named "GitHub Agent".
-- The connector authenticates to Airbyte with your Airbyte client credentials. Airbyte uses the GitHub credentials you already stored with your connector to talk to GitHub.
-- `workspace_name` is the Airbyte workspace where the SDK looks up your connector. `"default"` points to your Airbyte Agents default workspace, which is where the web app stores credentials unless you change it.
+`FastMCP("GitHub Agent")` creates a new MCP server named "GitHub Agent".
+
+`connect("github")` does four things for you:
+
+- Reads `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the environment.
+- Defaults to the `"default"` workspace, which is where the web app stores credentials unless you change it.
+- Returns a typed `GithubConnector` bound to the authenticated GitHub connector you added earlier.
+- Routes every `github.execute(...)` call through Airbyte's hosted API, which holds the GitHub OAuth tokens and refreshes them for you.
+
+You never register an OAuth app, copy a GitHub token into your code, or write token-refresh logic.
+
+If you want to connect to a different workspace or pass credentials explicitly, use `connect("github", workspace_name="my-workspace", client_id=..., client_secret=...)` or pass an `AirbyteAuthConfig`. See the [SDK reference](https://github.com/airbytehq/airbyte-agent-sdk) for details.
 
 ### Register the tool
 
-Register the connector's `execute` method as an MCP tool. The `@GithubConnector.tool_utils` decorator automatically generates a comprehensive tool description from the connector's metadata. This tells the agent what entities are available (issues, pull requests, repositories, etc.), what actions it can perform on each entity, and what parameters each action requires.
+Rather than one tool per GitHub endpoint, the Airbyte agent SDK exposes the entire GitHub API through a single `execute(entity, action, params)` entry point. The `@GithubConnector.tool_utils` decorator fills in the entity and action catalog as part of the tool description, so the agent knows what's available without you writing a schema.
 
 ```python title="server.py"
 @mcp.tool()
 @GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute GitHub connector operations."""
-    result = await connector.execute(entity, action, params or {})
+    """Execute GitHub connector operations.
+
+    Rules for calling this tool:
+    1. Use entity, action, and parameter names exactly as they appear in the
+       catalog below. Do not use GitHub REST API names. For example, list pull
+       requests with entity='pull_requests' (not 'pulls'), and list issues with
+       entity='issues' (not 'issue').
+    2. Parameters that take an enum value must use the uppercase form
+       (for example, OPEN, CLOSED, MERGED).
+    3. Filter parameters are usually plural arrays, such as states=['OPEN']
+       rather than state='OPEN'. Page size is per_page, not limit.
+    """
+    result = await github.execute(entity, action, params or {})
     return json.dumps(result, default=str)
 ```
 
-With this single tool, your MCP server exposes all of the connector's capabilities. The agent decides which entity and action to use based on your natural language questions.
+The decorator stack is the whole tool definition. No per-action `docstring`, no `GITHUB_LIST_COMMITS` or `GITHUB_GET_PR` sprawl, one entry point that covers the full connector. As the connector grows, the tool signature stays the same.
+
+The rules in the docstring travel to the MCP client as part of the tool description. Models often pattern-match to the underlying REST API they know, so the rules pin them to the catalog's plural entity names, uppercase values, and array-typed filter parameters. `@GithubConnector.tool_utils` appends the full entity and action catalog after the rules, so the final tool description the client sees is your rules plus the catalog.
+
+Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). This tutorial serializes the whole result with `json.dumps` so the MCP client can reason about both the records and the pagination state.
 
 ### Add the server entry point
 
@@ -218,9 +235,9 @@ Add the following to your Cursor MCP configuration file (`.cursor/mcp.json` in y
 
 2. Once restarted, prompt your agent with natural language questions about your GitHub data. Try prompts like:
 
-    - "List the 5 most recent open issues in airbytehq/airbyte"
-    - "Show me the latest pull requests in my-org/my-repo"
-    - "What are the open issues assigned to octocat?"
+    - "List the 10 most recent open issues in airbytehq/airbyte"
+    - "What are the 10 most recent pull requests that are still open in airbytehq/airbyte?"
+    - "Are there any open issues that might be fixed by a pending PR?"
 
 Your agent discovers the MCP server's tools automatically and calls them based on your prompts. The MCP server hands each tool call off to Airbyte, which executes the operation against GitHub and returns the result.
 
@@ -230,8 +247,9 @@ If your agent fails to retrieve GitHub data, check the following:
 
 - **Server not found**: Ensure the path in your MCP configuration points to the correct `server.py` file and that `uv` is available on your system PATH.
 - **HTTP 401/403 errors from Airbyte**: Verify that `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` are copied correctly from your [Profile page](https://app.airbyte.ai/profile).
-- **"No connector found" or "connector not configured"**: Make sure you've added a GitHub connector in the [Credentials](https://app.airbyte.ai/credentials) page of the Airbyte Agents web app, and that `workspace_name` in your code matches the workspace where you added it (`"default"` if you haven't changed workspaces).
+- **"No connector found" or "connector not configured"**: Make sure you've added a GitHub connector in the [Credentials](https://app.airbyte.ai/credentials) page of the Airbyte Agents web app, and that `workspace_name` matches the workspace where you added it (`"default"` if you haven't changed workspaces).
 - **HTTP 401/403 errors from GitHub**: The GitHub token or OAuth credentials stored in your connector are invalid or missing required scopes. Open your GitHub connector in the web app and reauthenticate with a valid token that has `repo` scope.
+- **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The tool description's rules nudge the model to do that by default; you can also reinforce the rules in your client's system prompt.
 
 ## Summary
 
@@ -240,11 +258,12 @@ In this tutorial, you learned how to:
 - Set up a new Python project with uv
 - Add FastMCP and Airbyte's GitHub agent connector to your project
 - Configure environment variables for your Airbyte Agents credentials
-- Build a FastMCP server that exposes the GitHub connector as an MCP tool
-- Register the MCP server with your agent and query data using natural language through Airbyte
+- Expose the entire GitHub API as a single MCP tool
+- Register your MCP server with an agent and use natural language to interact with GitHub data through Airbyte
 
 ## Next steps
 
-- Add more agent connectors to your project. Explore other agent connectors in the [Airbyte agent connectors catalog](../../../connectors/) to give your MCP server access to more services like Stripe, HubSpot, and Salesforce. You can register multiple tools on the same FastMCP server. Each connector works the same way: add it in the web app, then initialize it in your code with your Airbyte client credentials.
-
-- Consider how you might like to expand your MCP server. For example, you can add [MCP prompts](https://gofastmcp.com/servers/prompts) to provide reusable prompt templates, or [MCP resources](https://gofastmcp.com/servers/resources) to expose data directly. See the [FastMCP documentation](https://gofastmcp.com) for more options.
+- **Add another connector.** The same `connect(...)` + `execute(...)` pattern covers the full [Airbyte agent connectors catalog](../../../connectors). Add Slack, Stripe, Salesforce, or any other connector in the web app, then call `slack = connect("slack")` in your server and register a second tool with another `@mcp.tool()` / `@SlackConnector.tool_utils` stack. Your MCP client now reads GitHub and posts to Slack with no additional OAuth setup.
+- **Use write actions.** Connectors expose create, update, and post actions alongside the read ones. Ask your client to file an issue, comment on a PR, or send a Slack message, and `execute` carries the write through with the stored OAuth token.
+- **Let your AI assistant scaffold the next server.** The Airbyte agent SDK ships skills for Claude Code and Codex that carry the patterns above, so you can ask your assistant to build a new MCP server without retyping them. See the [airbyte-agent-sdk repository](https://github.com/airbytehq/airbyte-agent-sdk) for installation instructions.
+- **Reach the same connectors from a hosted MCP endpoint.** Airbyte Agents exposes the same connectors through a hosted MCP endpoint that works with Claude Code, Cursor, and ChatGPT, with one OAuth flow per provider shared across clients. Use this when you don't want to run and maintain your own MCP server.
