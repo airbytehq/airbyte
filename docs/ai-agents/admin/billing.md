@@ -4,11 +4,11 @@ plan: all
 
 # Billing and pricing
 
-Airbyte Agents bills you based on a unit of measurement called agentic operations (AOs). All plans come with a specific number of free AOs, and most plans allow you to exceed this limit for an additional cost.
+Airbyte Agents bills you based on a unit of measurement called agent operations (AOs). All plans come with a specific number of free AOs, and most plans allow you to exceed this limit for an additional cost.
 
-## What's an agentic operation?
+## What's an agent operation?
 
-An agentic operation represents the processing intensity of a prompt and how much work the agent does to answer it. Airbyte derives AOs from a combination of tool calls and token usage. Simple tasks typically make fewer tool calls and use fewer tokens, so they consume fewer AOs. Complex reasoning tasks typically make more tool calls and use more tokens, so they consume more AOs.
+An agent operation represents the processing intensity of a prompt and how much work the agent does to answer it. Airbyte derives AOs from a combination of tool calls and token usage. Simple tasks typically make fewer tool calls and use fewer tokens, so they consume fewer AOs. Complex reasoning tasks typically make more tool calls and use more tokens, so they consume more AOs.
 
 Each time your agent works for you, it consumes AOs. Your plan determines:
 
