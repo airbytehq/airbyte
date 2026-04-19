@@ -88,6 +88,7 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
     from dotenv import load_dotenv
     from pydantic_ai import Agent
     from airbyte_agent_sdk import connect
+    from airbyte_agent_sdk.connectors.github import GithubConnector
     ```
 
     These imports provide:
@@ -95,6 +96,7 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
     - `load_dotenv`: Load environment variables from your `.env` file.
     - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
     - `connect`: The Airbyte agent SDK entry point. One call returns a typed connector bound to your workspace.
+    - `GithubConnector`: The connector class. You reference it when decorating the tool so the SDK can describe the connector's entities and actions to the agent.
 
 ## Part 4: Add a .env file with your secrets
 
@@ -168,6 +170,11 @@ agent = Agent(
 
 - The `"openai:gpt-4o"` string specifies the model to use. You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` to lower costs, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
 - The `system_prompt` parameter is where you encode API idiosyncrasies the model can't see in the tool schema. Models often pattern-match to the underlying REST API they know, so the prompt pins them to the catalog's plural entity names, uppercase values, and array-typed filter parameters. Add similar constraints for your own domain (pagination defaults, date formats, preferred streams) as your agent grows.
+- The prompt references a `github_execute` tool. You register that tool in the next part.
+
+:::note
+The three numbered rules in the prompt are a stopgap that compensate for current SDK behavior: the auto-generated tool description doesn't enumerate enum values, and some validation errors aren't wrapped as retryable tool errors. Once the SDK surfaces enum values in the tool description and wraps validation errors for retries, you can remove these rules from your own agents.
+:::
 
 ## Part 6: Add a tool to your agent
 
@@ -182,15 +189,9 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
     return await github.execute(entity, action, params or {})
 ```
 
-The decorator stack is the whole tool definition. No per-action `docstring`, no `GITHUB_LIST_COMMITS` or `GITHUB_GET_PR` sprawl, one entry point that covers the full connector. As the connector grows, the tool signature stays the same.
+The decorator stack is the whole tool definition. No per-action `docstring`, no `GITHUB_LIST_COMMITS` or `GITHUB_GET_PR` sprawl, one entry point that covers the full connector. `@GithubConnector.tool_utils` appends the full entity and action catalog to the tool description, and caps oversized responses. As the connector grows, the tool signature stays the same.
 
-Add the `GithubConnector` import at the top of `agent.py` so the decorator resolves:
-
-```python title="agent.py"
-from airbyte_agent_sdk.connectors.github import GithubConnector
-```
-
-Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). You can keep the result as-is for the model, filter it in Python, or page through it using `meta.end_cursor`.
+Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). Pydantic AI serializes the dict for the model automatically, so you don't need to call `json.dumps` here. You can keep the result as-is, filter it in Python, or page through it using `meta.end_cursor`.
 
 ## Part 7: Run your project
 
@@ -241,7 +242,7 @@ The agent has basic message history within each session, and you can ask followu
 If your agent fails to retrieve GitHub data, check the following:
 
 - **HTTP 401/403 errors from Airbyte**: Verify that `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` are copied correctly from your [Profile page](https://app.airbyte.ai/profile).
-- **"No connector found" or "connector not configured"**: Make sure you've added a GitHub connector in the [Credentials](https://app.airbyte.ai/credentials) page of the Airbyte Agents web app, and that `workspace_name` matches the workspace where you added it (`"default"` if you haven't changed workspaces).
+- **"No connector found" or "connector not configured"**: Make sure you've added a GitHub connector in the [Credentials](https://app.airbyte.ai/credentials) page of the Airbyte Agents web app. `connect("github")` defaults to the `"default"` workspace; if you added the connector to a different workspace, pass `workspace_name="your-workspace-name"` to `connect()`.
 - **HTTP 401/403 errors from GitHub**: The GitHub token or OAuth credentials stored in your connector are invalid or missing required scopes. Open your GitHub connector in the web app and reauthenticate with a valid token that has `repo` scope.
 - **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The system prompt in this tutorial nudges the model to do that by default.
 - **OpenAI errors**: Verify your `OPENAI_API_KEY` is valid, has available credits, and won't exceed rate limits.
@@ -253,7 +254,7 @@ In this tutorial, you learned how to:
 - Set up a new Python project with uv
 - Add Pydantic AI and Airbyte's GitHub agent connector to your project
 - Configure environment variables for your Airbyte Agents credentials
-- Connect a single tool that covers the entire GitHub API
+- Register a single tool that covers the entire GitHub API
 - Run your project and use natural language to interact with GitHub data through Airbyte
 
 ## Next steps

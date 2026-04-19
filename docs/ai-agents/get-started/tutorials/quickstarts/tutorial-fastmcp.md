@@ -170,7 +170,11 @@ The decorator stack is the whole tool definition. No per-action `docstring`, no 
 
 The rules in the docstring travel to the MCP client as part of the tool description. Models often pattern-match to the underlying REST API they know, so the rules pin them to the catalog's plural entity names, uppercase values, and array-typed filter parameters. `@GithubConnector.tool_utils` appends the full entity and action catalog after the rules, so the final tool description the client sees is your rules plus the catalog.
 
-Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). This tutorial serializes the whole result with `json.dumps` so the MCP client can reason about both the records and the pagination state.
+:::note
+The three numbered rules in the docstring are a stopgap that compensate for current SDK behavior: the auto-generated tool description doesn't enumerate enum values, and some validation errors aren't wrapped as retryable tool errors. Once the SDK surfaces enum values in the tool description and wraps validation errors for retries, you can remove these rules from your own servers.
+:::
+
+Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). MCP tools return strings, so this tutorial serializes the whole result with `json.dumps` so the MCP client can reason about both the records and the pagination state.
 
 ### Add the server entry point
 
@@ -247,7 +251,7 @@ If your agent fails to retrieve GitHub data, check the following:
 
 - **Server not found**: Ensure the path in your MCP configuration points to the correct `server.py` file and that `uv` is available on your system PATH.
 - **HTTP 401/403 errors from Airbyte**: Verify that `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` are copied correctly from your [Profile page](https://app.airbyte.ai/profile).
-- **"No connector found" or "connector not configured"**: Make sure you've added a GitHub connector in the [Credentials](https://app.airbyte.ai/credentials) page of the Airbyte Agents web app, and that `workspace_name` matches the workspace where you added it (`"default"` if you haven't changed workspaces).
+- **"No connector found" or "connector not configured"**: Make sure you've added a GitHub connector in the [Credentials](https://app.airbyte.ai/credentials) page of the Airbyte Agents web app. `connect("github")` defaults to the `"default"` workspace; if you added the connector to a different workspace, pass `workspace_name="your-workspace-name"` to `connect()`.
 - **HTTP 401/403 errors from GitHub**: The GitHub token or OAuth credentials stored in your connector are invalid or missing required scopes. Open your GitHub connector in the web app and reauthenticate with a valid token that has `repo` scope.
 - **Empty `data=[]` responses from filtered queries**: Most GitHub filters use case-sensitive values. Confirm the agent is sending uppercase values (for example, `states=["OPEN"]` rather than `states=["open"]`). The tool description's rules nudge the model to do that by default; you can also reinforce the rules in your client's system prompt.
 
@@ -258,7 +262,7 @@ In this tutorial, you learned how to:
 - Set up a new Python project with uv
 - Add FastMCP and Airbyte's GitHub agent connector to your project
 - Configure environment variables for your Airbyte Agents credentials
-- Expose the entire GitHub API as a single MCP tool
+- Register a single MCP tool that covers the entire GitHub API
 - Register your MCP server with an agent and use natural language to interact with GitHub data through Airbyte
 
 ## Next steps
