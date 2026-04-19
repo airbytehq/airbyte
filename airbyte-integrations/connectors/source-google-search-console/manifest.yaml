@@ -182,7 +182,7 @@ spec:
         order: 6
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 2
         maximum: 100
         default: 40
@@ -225,6 +225,14 @@ spec:
     - auth_type
     predicate_value: Client
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/webmasters.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:
@@ -486,6 +494,8 @@ definitions:
             value: "{{ record['query'] }}"
             value_type: string
         condition: "{{ record.get('query', False) }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -536,6 +546,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -577,6 +589,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -625,6 +639,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -669,6 +685,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -727,6 +745,8 @@ definitions:
             value: "{{ record['query'] }}"
             value_type: string
         condition: "{{ record.get('query', False) }}"
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -778,6 +798,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -827,6 +849,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -876,6 +900,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1116,6 +1142,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1165,6 +1193,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1213,6 +1243,8 @@ definitions:
       - type: RemoveFields
         field_pointers:
           - - keys
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.SanitizeNumericFields
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1331,6 +1363,8 @@ dynamic_streams:
           dimensions: # This will be replaced by the dimensions of the custom report
             - date
             - country
+        - type: CustomTransformation
+          class_name: source_declarative_manifest.components.SanitizeNumericFields
       schema_loader:
         type: CustomSchemaLoader
         class_name: source_declarative_manifest.components.CustomReportSchemaLoader
