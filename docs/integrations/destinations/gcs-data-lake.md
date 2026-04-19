@@ -218,6 +218,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.0.9   | 2026-04-16 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9.                                                                 |
 | 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution.                |
 | 1.0.7   | 2026-02-04 | [72855](https://github.com/airbytehq/airbyte/pull/72855)     | Upgrade CDK to 0.2.8                                                                  |
 | 1.0.6   | 2026-01-23 | [72300](https://github.com/airbytehq/airbyte/pull/72300)     | Upgrade CDK to 0.2.0                                                                  |
