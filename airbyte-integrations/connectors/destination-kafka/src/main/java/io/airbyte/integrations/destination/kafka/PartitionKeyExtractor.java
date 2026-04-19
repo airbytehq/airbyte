@@ -25,6 +25,12 @@ public class PartitionKeyExtractor {
   // Cache for split field names to optimize performance in hot path
   private static final ConcurrentMap<String, String[]> FIELD_SPLIT_CACHE = new ConcurrentHashMap<>();
 
+  // Cache for fully parsed field structure (split by comma and then by dots) to optimize performance
+  private static final ConcurrentMap<String, String[][]> PARSED_FIELDS_CACHE = new ConcurrentHashMap<>();
+
+  // Thread-local list to reuse for collecting key values, avoiding per-record allocations
+  private static final ThreadLocal<List<String>> KEY_VALUES_LIST = ThreadLocal.withInitial(ArrayList::new);
+
   /**
    * Extracts partition key from record data based on configured fields.
    *
@@ -38,14 +44,23 @@ public class PartitionKeyExtractor {
       return null;
     }
 
-    // Use cached split result for performance optimization
-    String[] fields = FIELD_SPLIT_CACHE.computeIfAbsent(partitionKeyFields, key -> key.split(","));
-    List<String> keyValues = new ArrayList<>();
+    // Use cached fully parsed fields structure for performance optimization
+    String[][] parsedFields = PARSED_FIELDS_CACHE.computeIfAbsent(partitionKeyFields, key -> {
+      String[] fields = key.split(",");
+      String[][] result = new String[fields.length][];
+      for (int i = 0; i < fields.length; i++) {
+        result[i] = fields[i].trim().split("\\.");
+      }
+      return result;
+    });
 
-    for (String field : fields) {
-      String trimmedField = field.trim();
+    // Reuse thread-local list to avoid per-record allocations
+    List<String> keyValues = KEY_VALUES_LIST.get();
+    keyValues.clear();
+
+    for (String[] fieldParts : parsedFields) {
       JsonNode valueNode = recordData;
-      for (String part : trimmedField.split("\\.")) {
+      for (String part : fieldParts) {
         valueNode = valueNode.path(part);
       }
       if (!valueNode.isMissingNode() && !valueNode.isNull()) {
