@@ -19,9 +19,9 @@ Every Chat and Automation runs against the connectors you've authenticated in yo
 
 ## Set up connectors and context
 
-Administrators can enable connectors and configure the context store from the web app.
+Administrators can add connectors and configure the context store from the web app.
 
-- [**Enable a connector**](./enable-connector): Choose which connectors are available to your end users and which modes (direct, replication) they run in.
+- [**Add a connector**](./add-connector): Choose which connectors are available to your end users and which modes (direct, replication) they run in.
 - [**Context store**](./context-store): Configure the searchable cache that powers grounded answers and large-scale analytics.
 
 ## Related administration

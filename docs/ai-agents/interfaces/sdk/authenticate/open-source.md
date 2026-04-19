@@ -87,4 +87,4 @@ Open source authentication is most appropriate when:
 - You need full control over credential storage and don't want to use a cloud service.
 - You're building a proof of concept before moving to production.
 
-For production applications with multiple end-users, use [hosted authentication](hosted.md) instead, which provides secure credential management in the Airbyte Agents.
+For production applications with multiple end-users, use [hosted authentication](../../api/authenticate.md) instead, which provides secure credential management in the Airbyte Agents.

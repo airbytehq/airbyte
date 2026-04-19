@@ -8,7 +8,7 @@ When a user completes authentication through the module, Airbyte stores their cr
 
 Before embedding the authentication module, complete the following prerequisites.
 
-1. [Enable](./enable-connector) at least one connector. The module displays only the connectors you've enabled.
+1. [Add](./add-connector) at least one connector. The module displays only the connectors you've added.
 
 2. Get your API credentials. Click **Authentication Module** and find your credentials under **Installation**.
 

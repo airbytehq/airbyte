@@ -953,7 +953,17 @@
     },
     {
       "source": "/ai-agents/interfaces/sdk/enable-connector",
-      "destination": "/ai-agents/interfaces/ui/enable-connector",
+      "destination": "/ai-agents/interfaces/ui/add-connector",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/ui/enable-connector",
+      "destination": "/ai-agents/interfaces/ui/add-connector",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/api/enable-connector",
+      "destination": "/ai-agents/interfaces/api/add-connector",
       "statusCode": 301
     }
   ]

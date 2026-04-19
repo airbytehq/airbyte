@@ -2,27 +2,27 @@
 sidebar_position: 2
 ---
 
-# Enable a connector
+# Add a connector
 
-Before your AI agents can interact with external data sources, you need to enable connectors in the Airbyte Agents. Enabling a connector makes it available for your end users to authenticate and use with their own credentials.
+Before your AI agents can interact with external data sources, you need to add connectors to your workspace. Adding a connector makes it available for your end users to authenticate and use with their own credentials.
 
-## What enabling a connector does
+## What adding a connector does
 
-When you enable a connector in Airbyte Agents, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
+When you add a connector in Airbyte Agents, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
 
-Enabling a connector creates a **source template** in the API, which is the organization-level configuration for a connector type. The Airbyte Agents uses three layers:
+Adding a connector creates a **source template** in the API, which is the organization-level configuration for a connector type. The Airbyte Agents uses three layers:
 
 - **Definition**: A connector type available in the Airbyte catalog (for example, GitHub or Salesforce), identified by a `sourceDefinitionId`. List definitions with `GET /api/v1/integrations/definitions/sources`.
 - **Source template**: Your organization's configuration of a definition, including default settings and enabled modes. Managed through `GET/POST/PATCH/DELETE /api/v1/integrations/templates/sources`.
 - **Connector**: A per-user instance with actual credentials, created when an end user authenticates. Managed through `/api/v1/integrations/connectors`.
 
-Enabling a connector (creating a source template) does the following.
+Adding a connector (creating a source template) does the following.
 
 - Makes the connector available in your organization's connector catalog
 - Allows your end users to authenticate with their own credentials for that data source
 - Configures which modes the connector operates in: direct, replication, or both
 
-To do the same thing without writing code, see [Enable a connector](../ui/enable-connector) in the Web app section.
+To do the same thing without writing code, see [Add a connector](../ui/add-connector) in the Web app section.
 
 ## Connector modes
 
@@ -32,7 +32,7 @@ Airbyte Agents connectors can operate in two modes:
 
 - **Replication mode** syncs data from connected sources to object storage like S3, GCS, or Azure Blob Storage. This mode is useful for analytics, RAG pipelines, and scenarios where you need to process large volumes of historical data.
 
-Some connectors support both modes, while others support only one. When enabling a connector, you can choose which modes to activate based on your application's needs.
+Some connectors support both modes, while others support only one. When adding a connector, you can choose which modes to activate based on your application's needs.
 
 ## Get an application token
 
@@ -51,7 +51,7 @@ Save the returned access token for subsequent API calls.
 
 ## List source templates
 
-To see which connectors are enabled (as source templates) for your organization:
+To see which connectors are added (as source templates) for your organization:
 
 ```bash title="Request"
 curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
