@@ -61,15 +61,14 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 Install the GitHub connector and Pydantic AI. This tutorial uses OpenAI as the LLM provider, but Pydantic AI supports many other providers.
 
 ```bash
-uv add airbyte-agent-github pydantic-ai
+uv add airbyte-agent-sdk pydantic-ai python-dotenv
 ```
 
 This command installs:
 
-- `airbyte-agent-github`: The Airbyte agent connector for GitHub, which provides type-safe access to GitHub's API.
+- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which provides type-safe access to every agent connector.
 - `pydantic-ai`: The AI agent framework, which includes support for multiple LLM providers including OpenAI, Anthropic, and Google.
-
-The GitHub connector also includes `python-dotenv`, which you can use to load environment variables from a `.env` file.
+- `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
 :::note
 If you want a smaller installation with only OpenAI support, you can use `pydantic-ai-slim[openai]` instead of `pydantic-ai`. See the [Pydantic AI installation docs](https://ai.pydantic.dev/install/) for more options.
@@ -90,7 +89,8 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
 
     from dotenv import load_dotenv
     from pydantic_ai import Agent
-    from airbyte_agent_github import GithubConnector
+    from airbyte_agent_sdk import AirbyteAuthConfig
+    from airbyte_agent_sdk.connectors.github import GithubConnector
     ```
 
     These imports provide:
@@ -98,6 +98,7 @@ If you want a smaller installation with only OpenAI support, you can use `pydant
     - `os`: Access environment variables for your Airbyte and LLM credentials.
     - `load_dotenv`: Load environment variables from your `.env` file.
     - `Agent`: The Pydantic AI agent class that orchestrates LLM interactions and tool calls.
+    - `AirbyteAuthConfig`: The auth object that tells the connector which Airbyte workspace and client credentials to use.
     - `GithubConnector`: The Airbyte agent connector that executes GitHub operations through Airbyte Agents.
 
 ## Part 4: Add a .env file with your secrets
@@ -134,13 +135,15 @@ Define the agent connector for GitHub. It authenticates to Airbyte with your Air
 
 ```python title="agent.py"
 connector = GithubConnector(
-    external_user_id="default",
-    airbyte_client_id=os.environ["AIRBYTE_CLIENT_ID"],
-    airbyte_client_secret=os.environ["AIRBYTE_CLIENT_SECRET"],
+    auth_config=AirbyteAuthConfig(
+        workspace_name="default",
+        airbyte_client_id=os.environ["AIRBYTE_CLIENT_ID"],
+        airbyte_client_secret=os.environ["AIRBYTE_CLIENT_SECRET"],
+    ),
 )
 ```
 
-`external_user_id` is the name of the workspace where Airbyte looks up your connector. `"default"` points to your Airbyte Agents default workspace, which is where the web app stores credentials unless you change it.
+`workspace_name` is the Airbyte workspace where the SDK looks up your connector. `"default"` points to your Airbyte Agents default workspace, which is where the web app stores credentials unless you change it.
 
 ### Define the agent
 

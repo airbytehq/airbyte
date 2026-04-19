@@ -61,17 +61,16 @@ You create `.env` and `uv.lock` files in later steps, so don't worry about them 
 Install the GitHub connector, LangChain with OpenAI support, and LangGraph for the agent runtime:
 
 ```bash
-uv add airbyte-agent-github langchain langchain-openai langgraph
+uv add airbyte-agent-sdk langchain langchain-openai langgraph python-dotenv
 ```
 
 This command installs:
 
-- `airbyte-agent-github`: The Airbyte agent connector for GitHub, which executes GitHub operations through Airbyte Agents.
+- `airbyte-agent-sdk`: The Airbyte Agents Python SDK, which provides type-safe access to every agent connector.
 - `langchain`: The LangChain framework core.
 - `langchain-openai`: LangChain's OpenAI integration for chat models.
 - `langgraph`: The LangGraph agent runtime, which provides a `create_react_agent` function for building tool-calling agents.
-
-The GitHub connector also includes `python-dotenv`, which you can use to load environment variables from a `.env` file.
+- `python-dotenv`: A library you can use to load environment variables from a `.env` file.
 
 ## Part 3: Import LangChain and the GitHub agent connector
 
@@ -91,7 +90,8 @@ The GitHub connector also includes `python-dotenv`, which you can use to load en
     from langchain_core.tools import tool
     from langchain_openai import ChatOpenAI
     from langgraph.prebuilt import create_react_agent
-    from airbyte_agent_github import GithubConnector
+    from airbyte_agent_sdk import AirbyteAuthConfig
+    from airbyte_agent_sdk.connectors.github import GithubConnector
     ```
 
     These imports provide:
@@ -101,6 +101,7 @@ The GitHub connector also includes `python-dotenv`, which you can use to load en
     - `tool`: LangChain's decorator for converting a function into a tool.
     - `ChatOpenAI`: LangChain's OpenAI chat model integration.
     - `create_react_agent`: LangGraph's function for creating a ReAct agent that can call tools.
+    - `AirbyteAuthConfig`: The auth object that tells the connector which Airbyte workspace and client credentials to use.
     - `GithubConnector`: The Airbyte agent connector that executes GitHub operations through Airbyte Agents.
 
 ## Part 4: Add a .env file with your secrets
@@ -137,13 +138,15 @@ Define the agent connector for GitHub. It authenticates to Airbyte with your Air
 
 ```python title="agent.py"
 connector = GithubConnector(
-    external_user_id="default",
-    airbyte_client_id=os.environ["AIRBYTE_CLIENT_ID"],
-    airbyte_client_secret=os.environ["AIRBYTE_CLIENT_SECRET"],
+    auth_config=AirbyteAuthConfig(
+        workspace_name="default",
+        airbyte_client_id=os.environ["AIRBYTE_CLIENT_ID"],
+        airbyte_client_secret=os.environ["AIRBYTE_CLIENT_SECRET"],
+    ),
 )
 ```
 
-`external_user_id` is the name of the workspace where Airbyte looks up your connector. `"default"` points to your Airbyte Agents default workspace, which is where the web app stores credentials unless you change it.
+`workspace_name` is the Airbyte workspace where the SDK looks up your connector. `"default"` points to your Airbyte Agents default workspace, which is where the web app stores credentials unless you change it.
 
 ### Define the tool
 
