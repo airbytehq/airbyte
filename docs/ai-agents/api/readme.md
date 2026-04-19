@@ -17,12 +17,12 @@ The Agent Engine uses a hierarchical token system. Each token type has a differe
 | Token type        | Use case                                                                                     | Scope                                |
 | ----------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
 | Application Token | Organization management, generating scoped and widget tokens, executing connector operations | Organization-wide                    |
-| Scoped Token      | Company-level administration                                                                 | Single customer                      |
-| Widget Token      | Embedding the authentication module in your app                                              | Single customer with CORS protection |
+| Scoped Token      | Company-level administration                                                                 | Single workspace                     |
+| Widget Token      | Embedding the authentication module in your app                                              | Single workspace with CORS protection |
 
 ### Application token
 
-The application token provides organization-level access. Use it for administrative operations like managing connectors, listing customers, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
+The application token provides organization-level access. Use it for administrative operations like managing connectors, listing workspaces, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
 
 To obtain an application token, send your app credentials to the token endpoint. Find your credentials in the Agent Engine under **Authentication Module** > **Installation**.
 
@@ -50,18 +50,18 @@ application tokens expire after 15 minutes. Request a new token when needed.
 
 ### Scoped token
 
-Scoped tokens provide customer-level access for some end-user operations. Each scoped token is limited to a single customer, ensuring data isolation between customers. Generate a scoped token using your application token:
+Scoped tokens provide workspace-level access for some end-user operations. Each scoped token is limited to a single workspace, ensuring data isolation between workspaces. Generate a scoped token using your application token:
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "customer_name": "customer_workspace_123"
+    "workspace_name": "workspace_123"
   }'
 ```
 
-If the customer doesn't exist, Airbyte creates it automatically. Scoped tokens expire after 20 minutes.
+If the workspace doesn't exist, Airbyte creates it automatically. Scoped tokens expire after 20 minutes.
 
 ### Widget token
 
@@ -72,7 +72,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "customer_name": "customer_workspace_123",
+    "workspace_name": "workspace_123",
     "allowed_origin": "https://yourapp.com"
   }'
 ```

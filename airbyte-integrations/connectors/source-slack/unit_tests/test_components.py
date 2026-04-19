@@ -51,10 +51,21 @@ def get_channels_retriever_instance(token_config, components_module):
     )
 
 
-def test_join_channels_should_join_to_channel(token_config, components_module):
-    retriever = get_channels_retriever_instance(token_config, components_module)
-    assert retriever.should_join_to_channel(token_config, {"is_member": False}) is True
-    assert retriever.should_join_to_channel(token_config, {"is_member": True}) is False
+@pytest.mark.parametrize(
+    "join_channels,record,expected",
+    [
+        pytest.param(True, {"is_member": False, "is_archived": False}, True, id="join_enabled_non_member_non_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": False}, False, id="join_enabled_already_member"),
+        pytest.param(True, {"is_member": False, "is_archived": True}, False, id="join_enabled_archived_channel_rejected"),
+        pytest.param(False, {"is_member": False, "is_archived": False}, False, id="join_disabled"),
+        pytest.param(True, {"is_member": False}, True, id="join_enabled_missing_is_archived"),
+        pytest.param(True, {"is_member": True, "is_archived": True}, False, id="archived_and_already_member"),
+    ],
+)
+def test_should_join_to_channel(token_config, components_module, join_channels, record, expected):
+    config = {**token_config, "join_channels": join_channels}
+    retriever = get_channels_retriever_instance(config, components_module)
+    assert retriever.should_join_to_channel(config, record) is expected
 
 
 def test_join_channels_make_join_channel_slice(token_config, components_module):
@@ -126,6 +137,42 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
+
+
+def test_read_records_skips_non_member_channels_when_join_disabled(token_config, requests_mock, components_module):
+    """When join_channels=false, non-member channels should be skipped to prevent cursor pollution."""
+    config = {**token_config, "join_channels": False}
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C001", "name": "member-channel", "is_member": True},
+                {"id": "C002", "name": "non-member-channel", "is_member": False},
+                {"id": "C003", "name": "another-member", "is_member": True},
+            ]
+        },
+    )
+    retriever = get_channels_retriever_instance(config, components_module)
+    records = list(retriever.read_records(records_schema={}))
+    assert len(records) == 2
+    assert {r["id"] for r in records} == {"C001", "C003"}
+
+
+def test_read_records_yields_all_channels_when_join_enabled(token_config, requests_mock, components_module):
+    """When join_channels=true, all channels are yielded (non-members get joined)."""
+    requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": {}})
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C001", "name": "member-channel", "is_member": True},
+                {"id": "C002", "name": "non-member-channel", "is_member": False},
+            ]
+        },
+    )
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    records = list(retriever.read_records(records_schema={}))
+    assert len(records) == 2
 
 
 @pytest.mark.parametrize(
