@@ -813,17 +813,17 @@
     },
     {
       "source": "/ai-agents/embedded",
-      "destination": "/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/api/authentication-module",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/embedded/:path*",
-      "destination": "/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/api/authentication-module",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/quickstarts/tutorial-server-side-oauth",
-      "destination": "/ai-agents/interfaces/sdk/authenticate/build-auth/build-your-own",
+      "destination": "/ai-agents/interfaces/api/build-your-own",
       "statusCode": 301
     },
     {
@@ -863,12 +863,12 @@
     },
     {
       "source": "/ai-agents/entity-cache",
-      "destination": "/ai-agents/interfaces/sdk/context-store",
+      "destination": "/ai-agents/interfaces/ui/context-store",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/entity-cache/:path*",
-      "destination": "/ai-agents/interfaces/sdk/context-store",
+      "destination": "/ai-agents/interfaces/ui/context-store",
       "statusCode": 301
     },
     {
@@ -898,7 +898,7 @@
     },
     {
       "source": "/ai-agents/platform/customers",
-      "destination": "/ai-agents/interfaces/sdk/workspaces",
+      "destination": "/ai-agents/interfaces/api/workspaces",
       "statusCode": 301
     },
     {
@@ -919,6 +919,41 @@
     {
       "source": "/ai-agents/mcp-server/:path*",
       "destination": "/ai-agents/interfaces/mcp/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/workspaces",
+      "destination": "/ai-agents/interfaces/api/workspaces",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/hosted",
+      "destination": "/ai-agents/interfaces/api/authenticate",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/build-auth/authentication-module",
+      "destination": "/ai-agents/interfaces/api/authentication-module",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/build-auth/build-your-own",
+      "destination": "/ai-agents/interfaces/api/build-your-own",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/authenticate/build-auth",
+      "destination": "/ai-agents/interfaces/api",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/context-store",
+      "destination": "/ai-agents/interfaces/ui/context-store",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/sdk/enable-connector",
+      "destination": "/ai-agents/interfaces/ui/enable-connector",
       "statusCode": 301
     }
   ]

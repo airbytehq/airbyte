@@ -1,9 +1,6 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 ---
-
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
 
 # Enable a connector
 
@@ -25,6 +22,8 @@ Enabling a connector (creating a source template) does the following.
 - Allows your end users to authenticate with their own credentials for that data source
 - Configures which modes the connector operates in: direct, replication, or both
 
+To do the same thing without writing code, see [Enable a connector](../ui/enable-connector) in the Web app section.
+
 ## Connector modes
 
 Airbyte Agents connectors can operate in two modes:
@@ -35,51 +34,7 @@ Airbyte Agents connectors can operate in two modes:
 
 Some connectors support both modes, while others support only one. When enabling a connector, you can choose which modes to activate based on your application's needs.
 
-## With the UI
-
-### Enable a new connector
-
-Enable a connector through the Airbyte Agents dashboard.
-
-1. Click **Connectors**.
-
-2. Click **Manage Connectors** (or **Enable Connector** if you haven't enabled any connectors yet).
-
-3. In the slide-out panel, browse or search for the connector you want to enable, and click it.
-
-4. Click the **Existing Connectors** tab and select the modes you want to enable for the connector:
-
-   - Check **Direct** to enable real-time agent queries
-
-   - Check **Replication** to enable replicating data to object storage
-
-5. Click **Done**.
-
-The connector appears in your active connectors list. Your end users can authenticate with this connector and use it in the modes you defined.
-
-![Managing connectors in the user interface](img/managing-connectors.png)
-
-### Update connectors
-
-To modify or delete connectors you've already enabled, follow these steps.
-
-1. Click **Connectors** > **Manage Connectors** > **Existing Connectors**.
-
-2. For each connector, you can:
-
-   - Toggle Direct mode on or off
-
-   - Toggle Replication mode on or off, if data replication is enabled
-
-   - Remove the connector entirely by clicking the trash icon
-
-At least one mode must remain enabled for each active connector.
-
-## With the API
-
-You can also enable connectors programmatically using the Airbyte Agent API. This approach is useful for automation, infrastructure-as-code workflows, or when building custom admin interfaces.
-
-### Get an application token
+## Get an application token
 
 Request an application token using your Airbyte client credentials.
 
@@ -94,7 +49,7 @@ curl --location 'https://api.airbyte.ai/api/v1/account/applications/token' \
 
 Save the returned access token for subsequent API calls.
 
-### List source templates
+## List source templates
 
 To see which connectors are enabled (as source templates) for your organization:
 
@@ -105,7 +60,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
 
 This returns both source templates you've created and standard source templates available to all Airbyte Agents users.
 
-### Create a source template
+## Create a source template
 
 If you don't see the connector you need, create a source template for it.
 
@@ -120,11 +75,11 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
   }'
 ```
 
-The `actor_definition_id` is the identifier for the connector type. This corresponds to the `sourceDefinitionId` returned by the [definitions endpoint](/ai-agents/api/#make-your-first-request). You can also find these IDs in the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
+The `actor_definition_id` is the identifier for the connector type. This corresponds to the `sourceDefinitionId` returned by the [definitions endpoint](./#make-your-first-request). You can also find these IDs in the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
 The `partial_default_config` object lets you pre-configure default values for the source template, so your users don't need to provide them during authentication.
 
-### Update a source template
+## Update a source template
 
 To modify an existing source template.
 
@@ -141,7 +96,7 @@ curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<tem
 
 When you update a source template, the changes apply to all connectors created from it.
 
-### Delete a source template
+## Delete a source template
 
 To delete a source template, follow these steps. Once you do this, the connector type is no longer available for end users to authenticate with.
 
