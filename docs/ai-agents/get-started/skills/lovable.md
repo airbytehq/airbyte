@@ -5,17 +5,30 @@ sidebar_label: Lovable
 
 # Lovable
 
-[Lovable](https://lovable.dev) is an AI app builder that generates full-stack React and Supabase applications from natural-language prompts. Lovable doesn't expose a dedicated "skills" surface, but it does support Workspace Knowledge and Public Knowledge, which serve the same purpose: context you attach to your project so Lovable's AI agent uses it on every prompt.
+[Lovable](https://lovable.dev) is an AI app builder that generates full-stack React and Supabase applications from natural-language prompts. Lovable doesn't expose a dedicated "skills" surface, but you can give it the same context two different ways: paste the skill directly into the prompt you use to build the app, or add it to Project/Workspace Knowledge.
 
-The Airbyte skill for Lovable is a single Markdown document that teaches Lovable how to wire up two Supabase Edge Functions (for server-side token exchange and connector execution), the Airbyte embedded widget (for end-user connector setup), and a React query hook (for reading and writing data). After you add it to Knowledge, you can prompt Lovable to build apps against any of Airbyte's connectors without explaining the integration yourself.
+The Airbyte skill for Lovable is a single Markdown document that teaches Lovable how to wire up two Supabase Edge Functions (for server-side token exchange and connector execution), the Airbyte embedded widget (for end-user connector setup), and a React query hook (for reading and writing data). Once Lovable has the skill in context, you can ask it to build apps against any of Airbyte's connectors without explaining the integration yourself.
 
 ## Add the skill to Lovable
 
+In testing, pasting the skill directly into the initial build prompt produces the most reliable results. Lovable's Knowledge surfaces (Project Knowledge and Workspace Knowledge) work as a fallback, but Lovable doesn't always apply Knowledge consistently on every generation, so prefer the prompt approach.
+
+### Recommended: paste it into the build prompt
+
+1. In the Lovable chat, open a new prompt for the app you want to build.
+2. Copy the entire skill text from [The skill](#the-skill) section below and paste it at the top of the prompt.
+3. Below the skill text, add your build instructions. For example: _"Using the preceding Airbyte integration context, build a page that lets the user connect their Stripe account with the Airbyte widget and then lists their customers."_
+4. Send the prompt. Lovable generates the Edge Functions, the widget setup, and the query code based on the skill.
+
+### Alternative: add it to project knowledge
+
+Use this if you want the skill available to every prompt in a project or across your workspace. Lovable applies Knowledge less reliably than in-prompt context, so expect occasional drift.
+
 1. Open your project in Lovable.
-2. Go to **Project settings** > **Knowledge**. If you want the same skill to apply across all your Lovable projects, use **Workspace Knowledge** instead.
+2. Go to **Project settings** > **Knowledge**. To apply the skill across all your Lovable projects, use **Workspace Knowledge** instead.
 3. Create a new Knowledge entry titled **Airbyte Integration** (or similar).
-4. Copy the entire skill text from the next section and paste it into the entry. Save.
-5. In the Lovable chat, prompt the AI with something like: _"Using the Airbyte integration in Knowledge, build a page that lists Stripe customers."_ Lovable generates the Edge Functions, the widget setup, and the query code based on the skill.
+4. Copy the entire skill text from [The skill](#the-skill) section below and paste it into the entry. Save.
+5. In the Lovable chat, prompt the AI with something like: _"Using the Airbyte integration in Knowledge, build a page that lists Stripe customers."_
 
 ## Configure Supabase secrets
 
@@ -28,7 +41,7 @@ Get these from your Airbyte dashboard at [app.airbyte.ai](https://app.airbyte.ai
 
 ## The skill
 
-Copy everything in the block below and paste it into your Lovable Knowledge entry.
+Copy everything in the block below and paste it into your Lovable build prompt (or into a Knowledge entry if you chose that path).
 
 `````markdown
 # Airbyte Integration for Lovable Apps
