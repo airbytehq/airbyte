@@ -45,7 +45,9 @@ class PostgresSourceMetadataQuerier(
      * prefer] and no tunnel are rejected.
      */
     private fun validateSslConfiguration() {
+        log.info { "TEMP: Validating SSL configuration" }
         if (!featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)) {
+            log.info { "TEMP: feature flag for cloud not set, skipping SSL validation" }
             return
         }
         val sslMode: String? = postgresSourceConfig.jdbcProperties["sslmode"]
