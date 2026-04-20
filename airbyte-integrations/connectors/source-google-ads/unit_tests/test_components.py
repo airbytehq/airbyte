@@ -151,6 +151,106 @@ class TestCustomGAQueryHttpRequester:
         }
 
 
+class TestErrorHandler:
+    """Verify that the manifest's base_error_handler produces actionable error messages."""
+
+    def test_unrecognized_field_error_surfaces_field_name(self, config):
+        """
+        When the Google Ads API returns UNRECOGNIZED_FIELD, the error handler should surface
+        the specific field name from the API response instead of the generic "Bad request" message.
+        """
+        source = get_source(config)
+
+        # Walk the resolved manifest to find the base_error_handler's first response filter
+        error_handler_def = source.resolved_manifest["definitions"]["base_error_handler"]
+        filters = error_handler_def["response_filters"]
+
+        # The UNRECOGNIZED_FIELD filter should be the first one (highest priority)
+        unrecognized_filter = filters[0]
+        assert "UNRECOGNIZED_FIELD" in unrecognized_filter.get("predicate", ""), (
+            "First response filter should match UNRECOGNIZED_FIELD"
+        )
+
+        # Now test the actual error resolution by constructing the error handler component
+        from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+        from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
+        from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+        from unittest.mock import MagicMock
+
+        response_filter = HttpResponseFilter(
+            config=config,
+            parameters={},
+            action=ResponseAction.FAIL,
+            predicate=unrecognized_filter["predicate"],
+            error_message=unrecognized_filter["error_message"],
+        )
+
+        # Simulate a Google Ads API UNRECOGNIZED_FIELD 400 response
+        import requests as req
+
+        mock_response = MagicMock(spec=req.Response)
+        mock_response.status_code = 400
+        mock_response.ok = False
+        mock_response.json.return_value = {
+            "error": {
+                "code": 400,
+                "message": "Request contains an invalid argument.",
+                "status": "INVALID_ARGUMENT",
+                "details": [
+                    {
+                        "errors": [
+                            {
+                                "errorCode": {"queryError": "UNRECOGNIZED_FIELD"},
+                                "message": "Unrecognized field in the query: 'date'.",
+                            }
+                        ]
+                    }
+                ],
+            }
+        }
+        mock_response.headers = {}
+
+        resolution = response_filter.matches(mock_response)
+
+        assert resolution is not None, "Filter should match UNRECOGNIZED_FIELD response"
+        assert resolution.response_action == ResponseAction.FAIL
+        assert "date" in resolution.error_message, (
+            f"Error message should include the unrecognized field name, got: {resolution.error_message}"
+        )
+        assert "query_validator" in resolution.error_message, (
+            f"Error message should include link to query validator, got: {resolution.error_message}"
+        )
+        # Should NOT contain the generic CDK message
+        assert "Bad request" not in resolution.error_message
+
+    def test_non_unrecognized_field_400_not_matched(self, config):
+        """A 400 error without UNRECOGNIZED_FIELD should NOT be caught by this filter."""
+        from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
+        from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+        from unittest.mock import MagicMock
+
+        response_filter = HttpResponseFilter(
+            config=config,
+            parameters={},
+            action=ResponseAction.FAIL,
+            predicate="{{ 'UNRECOGNIZED_FIELD' in (response | string) }}",
+            error_message="should not matter",
+        )
+
+        import requests as req
+
+        mock_response = MagicMock(spec=req.Response)
+        mock_response.status_code = 400
+        mock_response.ok = False
+        mock_response.json.return_value = {
+            "error": {"code": 400, "message": "Some other error.", "status": "INVALID_ARGUMENT"}
+        }
+        mock_response.headers = {}
+
+        resolution = response_filter.matches(mock_response)
+        assert resolution is None, "Filter should NOT match non-UNRECOGNIZED_FIELD 400 errors"
+
+
 class TestClickViewHttpRequester:
     def test_click_view_http_requester_returns_expected_request_body(self, config):
         requester = ClickViewHttpRequester(
