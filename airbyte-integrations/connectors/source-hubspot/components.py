@@ -289,51 +289,6 @@ class HubspotSchemaExtractor(RecordExtractor):
 
 
 @dataclass
-class HubspotCoerceNumbersAndBooleansToStringTransformation(RecordTransformation):
-    """
-    When the `treat_numbers_and_booleans_as_strings` config option is enabled, rewrite
-    the JSON schema type of every dynamic HubSpot property declared as `number` or
-    `boolean` to `string`.
-
-    This is a workaround for HubSpot dynamic properties that sometimes return values
-    that do not conform to the declared type — for example, semicolon-separated IDs
-    (`"3092727991;3881228353"`) in `number` fields or multi-value strings in `boolean`
-    fields. With the toggle enabled the schema advertises the affected fields as
-    strings, and `EntitySchemaNormalization` consequently emits the raw value without
-    attempting a cast, preventing destination type-conversion failures.
-
-    The transformation expects to be applied before `HubspotRenamePropertiesTransformation`
-    so that it operates on the flat `{property_name: property_schema}` shape produced
-    by `DynamicSchemaLoader`.
-    """
-
-    def transform(
-        self,
-        record: Dict[str, Any],
-        config: Optional[Config] = None,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> None:
-        if not config or not config.get("treat_numbers_and_booleans_as_strings"):
-            return
-
-        for key, value in list(record.items()):
-            if not isinstance(value, dict):
-                continue
-            if _schema_declares_number_or_boolean(value):
-                record[key] = {"type": ["null", "string"]}
-
-
-def _schema_declares_number_or_boolean(schema: Mapping[str, Any]) -> bool:
-    """Return True if the JSON schema declares a `number`, `integer`, or `boolean` type."""
-    schema_type = schema.get("type")
-    if schema_type is None:
-        return False
-    declared_types = schema_type if isinstance(schema_type, list) else [schema_type]
-    return any(t in ("number", "integer", "boolean") for t in declared_types)
-
-
-@dataclass
 class HubspotRenamePropertiesTransformation(RecordTransformation):
     """
     Custom transformation that takes in a record that represents a map of all dynamic properties retrieved

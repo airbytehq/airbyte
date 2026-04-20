@@ -237,8 +237,6 @@ definitions:
           field_path: []
     schema_transformations:
       - type: CustomTransformation
-        class_name: source_declarative_manifest.components.HubspotCoerceNumbersAndBooleansToStringTransformation
-      - type: CustomTransformation
         class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
     schema_type_identifier:
       type: SchemaTypeIdentifier
@@ -249,6 +247,18 @@ definitions:
       schema_pointer:
         - properties
       types_mapping:
+        # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+        # `number` and `bool` properties to `string` so destinations do not reject
+        # non-numeric / non-boolean values returned by HubSpot (for example,
+        # semicolon-separated IDs in a `number` field).
+        - type: TypesMap
+          target_type: string
+          current_type: number
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+        - type: TypesMap
+          target_type: string
+          current_type: bool
+          condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
         - type: TypesMap
           target_type: boolean
           current_type: bool
@@ -1814,6 +1824,18 @@ definitions:
         type_pointer: ["type"]
         schema_pointer: ["properties"]
         types_mapping:
+          # When `treat_numbers_and_booleans_as_strings` is enabled, coerce dynamic
+          # `number` and `bool` properties to `string` so destinations do not reject
+          # non-numeric / non-boolean values returned by HubSpot (for example,
+          # semicolon-separated IDs in a `number` field).
+          - type: TypesMap
+            target_type: string
+            current_type: number
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
+          - type: TypesMap
+            target_type: string
+            current_type: bool
+            condition: "{{ config['treat_numbers_and_booleans_as_strings'] }}"
           - type: TypesMap
             target_type: string
             current_type: enumeration
@@ -1908,8 +1930,6 @@ definitions:
           $ref: "#/schemas/contacts"
       - $ref: "#/definitions/base_dynamic_schema_loader"
         schema_transformations:
-          - type: CustomTransformation
-            class_name: source_declarative_manifest.components.HubspotCoerceNumbersAndBooleansToStringTransformation
           - type: CustomTransformation
             class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
             field_mapping:
