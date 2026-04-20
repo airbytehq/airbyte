@@ -8,24 +8,41 @@ There are currently 2 versions of [Microsoft Graph REST APIs](https://docs.micro
 
 ### Output schema
 
-This Source is capable of syncing the following core Streams:
+This Source is capable of syncing the following streams:
 
-- [users](https://docs.microsoft.com/en-us/graph/api/user-list?view=graph-rest-beta&tabs=http)
-- [groups](https://docs.microsoft.com/en-us/graph/teams-list-all-teams?context=graph%2Fapi%2F1.0&view=graph-rest-1.0)
-- [group_members](https://docs.microsoft.com/en-us/graph/api/group-list-members?view=graph-rest-1.0&tabs=http)
-- [group_owners](https://docs.microsoft.com/en-us/graph/api/group-list-owners?view=graph-rest-1.0&tabs=http)
-- [channels](https://docs.microsoft.com/en-us/graph/api/channel-list?view=graph-rest-1.0&tabs=http)
-- [channel_members](https://docs.microsoft.com/en-us/graph/api/channel-list-members?view=graph-rest-1.0&tabs=http)
-- [channel_tabs](https://docs.microsoft.com/en-us/graph/api/channel-list-tabs?view=graph-rest-1.0&tabs=http)
-- [conversations](https://docs.microsoft.com/en-us/graph/api/group-list-conversations?view=graph-rest-beta&tabs=http)
-- [conversation_threads](https://docs.microsoft.com/en-us/graph/api/conversation-list-threads?view=graph-rest-beta&tabs=http)
-- [conversation_posts](https://docs.microsoft.com/en-us/graph/api/conversationthread-list-posts?view=graph-rest-beta&tabs=http)
-- [team_drives](https://docs.microsoft.com/en-us/graph/api/drive-get?view=graph-rest-beta&tabs=http#get-the-document-library-associated-with-a-group)
-- [team_device_usage_report](https://docs.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageuserdetail?view=graph-rest-1.0)
+**Tier 1 — Primary data for agent search:**
+
+- [users](https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0)
+- [teams](https://learn.microsoft.com/en-us/graph/api/teams-list?view=graph-rest-1.0)
+- [channels](https://learn.microsoft.com/en-us/graph/api/channel-list?view=graph-rest-1.0) (substream of teams)
+- [channel_messages](https://learn.microsoft.com/en-us/graph/api/channel-list-messages?view=graph-rest-1.0) (substream of channels)
+- [channel_message_replies](https://learn.microsoft.com/en-us/graph/api/chatmessage-list-replies?view=graph-rest-1.0) (substream of channel_messages)
+- [chats](https://learn.microsoft.com/en-us/graph/api/chat-list?view=graph-rest-1.0)
+- [chat_messages](https://learn.microsoft.com/en-us/graph/api/chat-list-messages?view=graph-rest-1.0) (substream of chats)
+- [team_members](https://learn.microsoft.com/en-us/graph/api/team-list-members?view=graph-rest-1.0) (substream of teams)
+
+**Tier 2 — Enrichment streams:**
+
+- [channel_members](https://learn.microsoft.com/en-us/graph/api/channel-list-members?view=graph-rest-1.0) (substream of channels)
+- [chat_members](https://learn.microsoft.com/en-us/graph/api/chat-list-members?view=graph-rest-1.0) (substream of chats)
+- [online_meetings](https://learn.microsoft.com/en-us/graph/api/user-list-onlinemeetings?view=graph-rest-1.0) (substream of users)
+- [meeting_transcripts](https://learn.microsoft.com/en-us/graph/api/onlinemeeting-list-transcripts?view=graph-rest-1.0) (substream of online_meetings)
+- [meeting_attendance_reports](https://learn.microsoft.com/en-us/graph/api/meetingattendancereport-list?view=graph-rest-1.0) (substream of online_meetings)
+- [tags](https://learn.microsoft.com/en-us/graph/api/teamworktag-list?view=graph-rest-1.0) (substream of teams)
+- [tag_members](https://learn.microsoft.com/en-us/graph/api/teamworktagmember-list?view=graph-rest-1.0) (substream of tags)
+
+**Backward-compatible streams (kept from v1.x):**
+
+- [groups](https://learn.microsoft.com/en-us/graph/api/group-list?view=graph-rest-1.0)
+- [group_members](https://learn.microsoft.com/en-us/graph/api/group-list-members?view=graph-rest-1.0) (substream of groups)
+- [group_owners](https://learn.microsoft.com/en-us/graph/api/group-list-owners?view=graph-rest-1.0) (substream of groups)
+- [team_drives](https://learn.microsoft.com/en-us/graph/api/drive-get?view=graph-rest-1.0) (substream of teams)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
-Some APIs aren't supported in v1.0, e.g. channel messages and channel messages replies.
+:::note
+The following legacy streams were removed in v2.0.0: `conversations`, `conversation_threads`, `conversation_posts`, `channel_tabs`, and `team_device_usage_report`. See the [migration guide](microsoft-teams-migrations.md) for details.
+:::
 
 ### Data type mapping
 
@@ -126,33 +143,28 @@ This source requires **Application permissions**. Follow these [instructions](ht
        - Directory.ReadWrite.All
     6. Channel members
        - ChannelMember.Read.All
-       - ChannelMember.ReadWrite.All
-    7. Channel tabs
-       - TeamsTab.Read.Group
-       - TeamsTab.ReadWrite.Group
-       - TeamsTab.Read.All
-       - TeamsTab.ReadWriteForTeam.All
-       - TeamsTab.ReadWrite.All
-       - Group.Read.All
-       - Group.ReadWrite.All
-       - Directory.Read.All
-       - Directory.ReadWrite.All
-    8. Conversations
-       - Group.Read.All
-       - Group.ReadWrite.All
-    9. Conversation threads
-       - Group.Read.All
-       - Group.ReadWrite.All
-    10. Conversation posts
-        - Group.Read.All
-        - Group.ReadWrite.All
-    11. Team drives
+    7. Teams
+       - Team.ReadBasic.All
+       - TeamSettings.Read.All
+    8. Team members
+       - TeamMember.Read.All
+    9. Chats and chat messages
+       - Chat.Read.All
+       - Chat.ReadBasic.All
+       - ChatMessage.Read.All
+    10. Chat members
+        - ChatMember.Read.All
+    11. Online meetings, transcripts, and attendance
+        - OnlineMeetings.Read.All
+        - OnlineMeetingTranscript.Read.All
+        - OnlineMeetingArtifact.Read.All
+    12. Channel messages and replies
+        - ChannelMessage.Read.All
+    13. Tags and tag members
+        - TeamworkTag.Read.All
+    14. Team drives
         - Files.Read.All
-        - Files.ReadWrite.All
         - Sites.Read.All
-        - Sites.ReadWrite.All
-    12. Team device usage report
-        - Reports.Read.All
 14. Click Add permissions
 
 Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-app-configuration?tabs=python#instantiate-the-msal-application) the confidential client application with a client secret and [calling](https://docs.microsoft.com/en-us/azure/active-directory/develop/scenario-daemon-acquire-token?tabs=python) AcquireTokenForClient from [Microsoft Authentication Library \(MSAL\) for Python](https://github.com/AzureAD/microsoft-authentication-library-for-python)
@@ -164,6 +176,7 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 2.0.0 | 2026-04-16 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Major overhaul: added teams, channel_messages, channel_message_replies, chats, chat_messages, team_members, online_meetings, meeting_transcripts, meeting_attendance_reports, chat_members, tags, tag_members streams; removed legacy conversations, conversation_threads, conversation_posts, channel_tabs, team_device_usage_report streams; upgraded from alpha to beta |
 | 1.2.15 | 2026-03-31 | [75805](https://github.com/airbytehq/airbyte/pull/75805) | Update dependencies |
 | 1.2.14 | 2026-03-17 | [74567](https://github.com/airbytehq/airbyte/pull/74567) | Update dependencies |
 | 1.2.13 | 2026-03-03 | [73414](https://github.com/airbytehq/airbyte/pull/73414) | Update dependencies |
