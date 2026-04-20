@@ -167,15 +167,14 @@ class TestErrorHandler:
 
         # The UNRECOGNIZED_FIELD filter should be the first one (highest priority)
         unrecognized_filter = filters[0]
-        assert "UNRECOGNIZED_FIELD" in unrecognized_filter.get("predicate", ""), (
-            "First response filter should match UNRECOGNIZED_FIELD"
-        )
+        assert "UNRECOGNIZED_FIELD" in unrecognized_filter.get("predicate", ""), "First response filter should match UNRECOGNIZED_FIELD"
 
         # Now test the actual error resolution by constructing the error handler component
+        from unittest.mock import MagicMock
+
         from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
         from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
         from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-        from unittest.mock import MagicMock
 
         response_filter = HttpResponseFilter(
             config=config,
@@ -214,20 +213,21 @@ class TestErrorHandler:
 
         assert resolution is not None, "Filter should match UNRECOGNIZED_FIELD response"
         assert resolution.response_action == ResponseAction.FAIL
-        assert "date" in resolution.error_message, (
-            f"Error message should include the unrecognized field name, got: {resolution.error_message}"
-        )
-        assert "query_validator" in resolution.error_message, (
-            f"Error message should include link to query validator, got: {resolution.error_message}"
-        )
+        assert (
+            "date" in resolution.error_message
+        ), f"Error message should include the unrecognized field name, got: {resolution.error_message}"
+        assert (
+            "query_validator" in resolution.error_message
+        ), f"Error message should include link to query validator, got: {resolution.error_message}"
         # Should NOT contain the generic CDK message
         assert "Bad request" not in resolution.error_message
 
     def test_non_unrecognized_field_400_not_matched(self, config):
         """A 400 error without UNRECOGNIZED_FIELD should NOT be caught by this filter."""
+        from unittest.mock import MagicMock
+
         from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
         from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-        from unittest.mock import MagicMock
 
         response_filter = HttpResponseFilter(
             config=config,
@@ -242,9 +242,7 @@ class TestErrorHandler:
         mock_response = MagicMock(spec=req.Response)
         mock_response.status_code = 400
         mock_response.ok = False
-        mock_response.json.return_value = {
-            "error": {"code": 400, "message": "Some other error.", "status": "INVALID_ARGUMENT"}
-        }
+        mock_response.json.return_value = {"error": {"code": 400, "message": "Some other error.", "status": "INVALID_ARGUMENT"}}
         mock_response.headers = {}
 
         resolution = response_filter.matches(mock_response)
