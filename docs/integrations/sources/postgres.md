@@ -209,7 +209,7 @@ If your goal is to maintain a snapshot of your table in the destination but the 
 
 ### Xmin
 
-Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
+Xmin replication is a cursor-less replication method for Postgres. Cursorless syncs replicate new or updated rows without you needing to choose a cursor field. Airbyte uses the `xmin` system column, which is available in all Postgres databases, to track inserts and updates to your source data.
 
 This is a good solution if:
 
@@ -357,7 +357,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version    | Date       | Pull Request                                        | Subject                                                                                                                                                                   |
 |------------|------------|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.0-rc.6 | 2026-04-16 | [76399](https://github.com/airbytehq/airbyte/pull/76399) | Catalog validation failures result in stream failure                                                                                                                      |
+| 3.8.0-rc.6 | 2026-04-16 | [76399](https://github.com/airbytehq/airbyte/pull/76399) | Report catalog validation failures as stream-level sync failures instead of silently excluding the stream                                                                 |
 | 3.8.0-rc.5 | 2026-04-08 | [76166](https://github.com/airbytehq/airbyte/pull/76166) | Fix CDC over SSH tunnels                                                                                                                                                  |
 | 3.8.0-rc.4 | 2026-04-07 | [76129](https://github.com/airbytehq/airbyte/pull/76129) | Fix xmin syncs on Postgres versions < 14.0                                                                                                                                |
 | 3.8.0-rc.3 | 2026-04-02 | [76055](https://github.com/airbytehq/airbyte/pull/76055) | Use CDK 1.1.1                                                                                                                                                             |
