@@ -812,6 +812,23 @@ def test_read_catalog_with_missing_scopes(config, requests_mock, mock_dynamic_sc
     ) in error_messages
 
 
+def test_marketing_emails_schema_has_folder_id_v2(config, requests_mock, mock_dynamic_schema_requests):
+    """The `marketing_emails` schema must declare `folderIdV2` alongside `folderId`.
+
+    HubSpot deprecated `folderId` on 2026-01-28 and replaced it with `folderIdV2` in the
+    Marketing Email v3 API. See:
+    https://developers.hubspot.com/changelog/marketing-email-api-folder-id-migration
+    """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    stream = find_stream("marketing_emails", config)
+    schema = stream.get_json_schema()
+    properties = schema["properties"]
+    assert "folderId" in properties, "`folderId` must remain for backward compatibility"
+    assert "folderIdV2" in properties, "`folderIdV2` must be declared after HubSpot's 2026-01-28 folder ID migration"
+    assert "null" in properties["folderIdV2"]["type"]
+    assert "string" in properties["folderIdV2"]["type"]
+
+
 def test_list_memberships_stream_exists(config, requests_mock, mock_dynamic_schema_requests):
     """Test that the list_memberships stream is discovered and has the correct configuration."""
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
