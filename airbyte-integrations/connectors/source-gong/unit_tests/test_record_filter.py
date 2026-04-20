@@ -94,9 +94,7 @@ def test_calls_stream_drops_private_calls():
         output = _sync("calls")
 
     emitted_ids = [record.record.data["id"] for record in output.records]
-    assert emitted_ids == ["public-1", "public-2"], (
-        f"expected only public calls to be emitted, got {emitted_ids}"
-    )
+    assert emitted_ids == ["public-1", "public-2"], f"expected only public calls to be emitted, got {emitted_ids}"
     emitted_is_private = [record.record.data.get("isPrivate") for record in output.records]
     assert all(value is False for value in emitted_is_private), (
         f"expected all emitted calls to have isPrivate=False, got {emitted_is_private}"
@@ -120,12 +118,8 @@ def test_extensive_calls_stream_drops_private_calls():
         output = _sync("extensiveCalls")
 
     emitted_ids = [record.record.data["metaData"]["id"] for record in output.records]
-    assert emitted_ids == ["public-1", "public-2"], (
-        f"expected only public extensive calls to be emitted, got {emitted_ids}"
-    )
-    emitted_is_private = [
-        record.record.data["metaData"].get("isPrivate") for record in output.records
-    ]
+    assert emitted_ids == ["public-1", "public-2"], f"expected only public extensive calls to be emitted, got {emitted_ids}"
+    emitted_is_private = [record.record.data["metaData"].get("isPrivate") for record in output.records]
     assert all(value is False for value in emitted_is_private), (
         f"expected all emitted extensive calls to have isPrivate=False, got {emitted_is_private}"
     )
@@ -143,6 +137,5 @@ def test_calls_stream_emits_no_records_when_all_private():
         output = _sync("calls")
 
     assert output.records == [], (
-        f"expected zero emitted records when all source records are private, got "
-        f"{[r.record.data['id'] for r in output.records]}"
+        f"expected zero emitted records when all source records are private, got {[r.record.data['id'] for r in output.records]}"
     )
