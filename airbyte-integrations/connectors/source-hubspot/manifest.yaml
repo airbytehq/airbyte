@@ -2452,22 +2452,10 @@ spec:
         default: false
       treat_numbers_and_booleans_as_strings:
         title: Treat dynamic number and boolean properties as strings
-        description: >-
-          If enabled, all HubSpot dynamic properties declared as `number` or
-          `boolean` are exposed as `string`. Use this when HubSpot returns values
-          that do not match the declared type (for example, semicolon-separated IDs
-          like `"3092727991;3881228353"` in a `number` field, or multi-value text
-          in a `boolean` field) and your destination is rejecting the records as
-          a result. Only affects HubSpot dynamic `properties.*` fields; static
-          schema fields are unchanged.
-          <br/><br/>
-          <b>After changing this setting you must refresh the source schema and
-          refresh the affected stream data</b>, otherwise the new string type will
-          not reach the destination and records may continue to fail. In the
-          Airbyte UI: open the connection, click "Refresh source schema", save
-          the updated catalog, and then trigger a "Refresh data" (or clear the
-          affected streams) so the destination tables are rewritten with the new
-          column type.
+        description: |
+          If enabled, all HubSpot dynamic properties declared as `number` or `boolean` are exposed as `string`. Use this when HubSpot returns values that do not match the declared type (for example, semicolon-separated IDs like `"3092727991;3881228353"` in a `number` field, or multi-value text in a `boolean` field) and your destination is rejecting the records as a result. Only affects HubSpot dynamic `properties.*` fields; static schema fields are unchanged.
+
+          **After changing this setting you must refresh the source schema and refresh the affected stream data**, otherwise the new string type will not reach the destination and records may continue to fail. In the Airbyte UI: open the connection, click "Refresh source schema", save the updated catalog, and then trigger a "Refresh data" (or clear the affected streams) so the destination tables are rewritten with the new column type.
         type: boolean
         default: false
       num_worker:
