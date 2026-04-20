@@ -10698,7 +10698,7 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 80
+        - limit: 100
           interval: PT10S
       matchers: []
   status_codes_for_ratelimit_hit:
