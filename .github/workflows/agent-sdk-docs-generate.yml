@@ -109,7 +109,9 @@ jobs:
           # See: https://github.com/facebook/docusaurus/discussions/11458
           # Skip the hand-written landing readme (see commit adding it).
           base_dir="docs/ai-agents/reference/sdk"
-          for file in $(find "$base_dir" -name "*.md" ! -iname "readme.md"); do
+          # Use -print0 / read -d '' so paths containing whitespace or glob
+          # characters are handled safely.
+          find "$base_dir" -name "*.md" ! -iname "readme.md" -print0 | while IFS= read -r -d '' file; do
             rel_path="${file#$base_dir/}"
             module_path="${rel_path%.md}"
             module_title=$(echo "$module_path" | tr '/' '.')
