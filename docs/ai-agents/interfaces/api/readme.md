@@ -10,7 +10,7 @@ All API requests use the base URL `https://api.airbyte.ai`.
 
 If your account belongs to multiple organizations, include the `X-Organization-Id` header in every request to specify which organization you're targeting. If you belong to a single organization, this header is optional.
 
-For the complete list of endpoints, request and response schemas, and authentication requirements, see the [Airbyte Agent API reference](/ai-agents/api).
+For the complete list of endpoints, request and response schemas, and authentication requirements, see the [Airbyte Agent API reference](/ai-agents/reference/api).
 
 ## Token types
 
