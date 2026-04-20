@@ -8,10 +8,10 @@ This page contains the setup guide and reference information for the [Slack](htt
 
 ## Prerequisites
 
-Before you begin, have the following ready: 
+Before you begin, have the following ready:
 
 - Administrator access to an active Slack Workspace
-- Slack App OAuth (preferred) or API Key
+- Slack App OAuth (preferred) or Bot Token
 
 ## Setup guide
 
@@ -20,16 +20,16 @@ Before you begin, have the following ready:
 The following instructions guide you through creating a Slack app. Airbyte can only replicate messages from channels that the app has been added to.
 
 :::info
-If you are using a legacy Slack API Key, you can skip this section.
+If you are using a Slack Bot Token, you can skip this section.
 :::
 
 :::warning
 **OAuth-only rate limit note:** When authenticating via **OAuth**, the Slack source applies a stricter API budget for the **Channel Messages** and **Threads** streams (effectively one request per minute). To avoid slowing down other Slack streams, we recommend creating a separate connection for these two streams. See the [Rate limiting](#rate-limiting) section for details.
 
-If you authenticate using a **legacy Slack API token**, this OAuth-specific limit does **not** apply.
+If you authenticate using a **Bot Token**, this OAuth-specific limit does **not** apply.
 :::
 
-To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions. 
+To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions.
 
 1. Go to your [Apps](https://api.slack.com/apps)
 2. Click **Create New App**. Select **From Scratch**.
@@ -52,12 +52,12 @@ To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/trac
  users.profile:read
 ```
 
-6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using the API token for authentication.
-7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**. 
+6. At the top of the "OAuth & Permissions" page, click **Install to Workspace**. This will generate a Bot User OAuth Token. Copy this for later if you are using bot token authentication.
+7. Go to your Slack instance. For any public channel, go to **Info**, **More**, and select **Add Apps**.
 8. Search for your newly created app. (If you are using the desktop version of Slack, you may need to restart Slack for it to pick up the new App). Add the App to all channels you want to sync data from.
 
 :::note
-If you are using an API key to authenticate to Slack, a refresh token is not required, as acccess tokens never expire. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
+If you are using a bot token to authenticate to Slack, a refresh token is not required, as bot tokens never expire. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 :::
 
 ### Step 2: Set up the Slack connector in Airbyte
@@ -95,10 +95,10 @@ If you are using an API key to authenticate to Slack, a refresh token is not req
 
 **For Airbyte Open Source:**
 
-1. In the navigation bar, click **Sources**. 
+1. In the navigation bar, click **Sources**.
 2. Click **New source**.
 3. Find and click **Slack**.
-4. Click **Sign in via Slack (OAuth)**. Enter the Access Token, Client ID, and Client Secret. Alternatively, enter the API Token from Step 1.
+4. Click **Sign in via Slack (OAuth)**. Enter the Access Token, Client ID, and Client Secret. Alternatively, enter the Bot Token from Step 1.
 5. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
 6. **Start Date**: Any data before this date will not be extracted.
 7. **Threads Lookback window (Days)**. This corresponds to the number of days in the past from which you want to sync data.
@@ -168,7 +168,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 These two streams are effectively limited to **one request per minute**. Consider creating a **separate connection** for them so other streams (Users, Channels, Channel Members, etc.) are not slowed down.
 
-**Legacy API token authentication:** When using a legacy Slack API token, this OAuth-specific one-per-minute policy does **not** apply; only Slack’s general rate limits apply.
+**Bot Token authentication:** When using a Slack Bot Token, this OAuth-specific one-per-minute policy does **not** apply; only Slack's general rate limits apply.
 
 ### Troubleshooting
 
@@ -193,6 +193,7 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.19 | 2026-04-15 | [76297](https://github.com/airbytehq/airbyte/pull/76297) | Rename "API Token" to "Bot Token" in connector spec and docs |
 | 3.1.18 | 2026-04-14 | [76324](https://github.com/airbytehq/airbyte/pull/76324) | Skip non-member channels when auto-join is disabled to prevent cursor pollution |
 | 3.1.17 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 3.1.16 | 2026-04-02 | [76052](https://github.com/airbytehq/airbyte/pull/76052) | Skip joining archived channels that are rejected by the Slack API |
