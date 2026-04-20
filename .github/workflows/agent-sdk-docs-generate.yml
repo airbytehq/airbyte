@@ -153,11 +153,14 @@ jobs:
           }
 
           def is_allowed_html_tag(match_text):
-              """Check if a <...> pattern is a legitimate HTML tag."""
-              tag_match = re.match(r'</?([a-zA-Z][a-zA-Z0-9]*)', match_text)
+              """Check if a <...> pattern is a legitimate HTML tag.
+
+              Case-sensitive: uppercase tokens like `<DATA>` in docstrings
+              are almost always placeholders, not real HTML.
+              """
+              tag_match = re.match(r'</?([a-z][a-z0-9]*)', match_text)
               if tag_match:
-                  tag_name = tag_match.group(1).lower()
-                  return tag_name in ALLOWED_HTML_TAGS
+                  return tag_match.group(1) in ALLOWED_HTML_TAGS
               return False
 
           def escape_angle_brackets(text):
@@ -169,7 +172,11 @@ jobs:
                   return content.replace('<', '&lt;').replace('>', '&gt;')
 
               pattern = r'<[^>]+>'
-              return re.sub(pattern, replace_angles, text)
+              out = re.sub(pattern, replace_angles, text)
+              # MDX treats '<' as a tag opener only when followed by a letter
+              # or '/'. Anything else (e.g. `field <= value`) needs escaping.
+              out = re.sub(r'<(?![a-zA-Z/])', '&lt;', out)
+              return out
 
           def sanitize_for_mdx(content):
               """Sanitize content for MDX compatibility, preserving code blocks and frontmatter."""
