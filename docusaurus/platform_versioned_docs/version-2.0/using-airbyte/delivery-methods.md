@@ -43,7 +43,7 @@ To ensure your source and destination credentials remain isolated, Airbyte uses 
 
 #### Limitations
 
-- Maximum file size: 1-GB per file.
+- Maximum file size: 1.5 GB (1,500,000,000 bytes) per file.
 
 ## Configure copy raw files as your delivery method
 

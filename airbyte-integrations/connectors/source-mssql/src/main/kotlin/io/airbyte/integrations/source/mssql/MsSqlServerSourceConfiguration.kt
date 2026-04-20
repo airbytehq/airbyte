@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql
@@ -257,7 +257,7 @@ constructor(
             sshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
             checkpointTargetInterval = checkpointTargetInterval,
             jdbcUrlFmt = "jdbc:sqlserver://%s:%d;databaseName=${pojo.database}",
-            namespaces = pojo.schemas?.takeIf { it.isNotEmpty() }?.toSet() ?: setOf("dbo"),
+            namespaces = pojo.schemas?.takeIf { it.isNotEmpty() }?.toSet() ?: emptySet(),
             jdbcProperties = jdbcProperties,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql
@@ -31,7 +31,7 @@ class MysqlTestDatabase(container: MySQLContainer<*>) :
 
     override fun inContainerBootstrapCmd(): Stream<Stream<String>> {
         // Besides setting up user and privileges, we also need to create a soft link otherwise
-        // airbyte-ci on github runner would not be able to connect to DB, because the sock file
+        // CI on github runner would not be able to connect to DB, because the sock file
         // does not
         // exist.
         return Stream.of(

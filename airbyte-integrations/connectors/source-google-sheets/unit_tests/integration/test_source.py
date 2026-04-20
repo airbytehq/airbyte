@@ -164,11 +164,18 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_discover_empty_column_return_expected_schema(self, http_mocker: HttpMocker) -> None:
         """
-        The response from headers (first row) has columns "name | age | | address | address2"  so everything after empty cell will be
-        discarded, in this case address and address2 shouldn't be part of the schema.
+        The response from headers (first row) has columns "name | age | | address | address2". When
+        read_empty_header_columns is enabled, empty columns are assigned position-based names
+        (e.g., "column_C") so all columns are included in the schema.
         """
         expected_schemas_properties = {
-            _STREAM_NAME: {"name": {"type": ["null", "string"]}, "age": {"type": ["null", "string"]}},
+            _STREAM_NAME: {
+                "name": {"type": ["null", "string"]},
+                "age": {"type": ["null", "string"]},
+                "column_C": {"type": ["null", "string"]},
+                "address": {"type": ["null", "string"]},
+                "address2": {"type": ["null", "string"]},
+            },
         }
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, "discover_with_empty_column_spreadsheet_info_and_sheets", 200)
         GoogleSheetsBaseTest.get_sheet_first_row(http_mocker, f"discover_with_empty_column_get_sheet_first_row", 200)
@@ -192,7 +199,9 @@ class TestSourceDiscovery(GoogleSheetsBaseTest):
         expected_catalog = AirbyteCatalog(streams=expected_streams)
         expected_message = AirbyteMessage(type=Type.CATALOG, catalog=expected_catalog)
 
-        output = self._discover(self._config, expecting_exception=False)
+        config = deepcopy(self._config)
+        config["read_empty_header_columns"] = True
+        output = self._discover(config, expecting_exception=False)
         assert output.catalog == expected_message
 
     @HttpMocker()
@@ -323,8 +332,9 @@ class TestSourceRead(GoogleSheetsBaseTest):
     @HttpMocker()
     def test_when_read_empty_column_then_return_records(self, http_mocker: HttpMocker) -> None:
         """
-        The response from headers (first row) has columns "header_1 | header_2 | | address | address2"  so everything after empty cell will be
-        discarded, in this case address and address2 shouldn't be part of the schema in records.
+        The response from headers (first row) has columns "header_1 | header_2 | | address | address2". When
+        read_empty_header_columns is enabled, empty columns are assigned position-based names
+        (e.g., "column_C") so all columns are included in the records.
         """
         test_file_base_name = "read_with_empty_column"
         GoogleSheetsBaseTest.get_spreadsheet_info_and_sheets(http_mocker, f"{test_file_base_name}_{GET_SPREADSHEET_INFO}")
@@ -332,30 +342,59 @@ class TestSourceRead(GoogleSheetsBaseTest):
         GoogleSheetsBaseTest.get_stream_data(http_mocker, f"{test_file_base_name}_{GET_STREAM_DATA}")
         first_property = "header_1"
         second_property = "header_2"
+        third_property = "column_C"
+        fourth_property = "address"
+        fifth_property = "address2"
         configured_catalog = (
             CatalogBuilder()
             .with_stream(
                 ConfiguredAirbyteStreamBuilder()
                 .with_name(_STREAM_NAME)
                 .with_json_schema(
-                    {"properties": {first_property: {"type": ["null", "string"]}, second_property: {"type": ["null", "string"]}}}
+                    {
+                        "properties": {
+                            first_property: {"type": ["null", "string"]},
+                            second_property: {"type": ["null", "string"]},
+                            third_property: {"type": ["null", "string"]},
+                            fourth_property: {"type": ["null", "string"]},
+                            fifth_property: {"type": ["null", "string"]},
+                        }
+                    }
                 )
             )
             .build()
         )
 
-        output = self._read(self._config, catalog=configured_catalog, expecting_exception=False)
+        config = deepcopy(self._config)
+        config["read_empty_header_columns"] = True
+        output = self._read(config, catalog=configured_catalog, expecting_exception=False)
         expected_records = [
             AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    emitted_at=ANY, stream=_STREAM_NAME, data={first_property: "value_11", second_property: "value_12"}
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={
+                        first_property: "value_11",
+                        second_property: "value_12",
+                        third_property: "",
+                        fourth_property: "main",
+                        fifth_property: "main st",
+                    },
                 ),
             ),
             AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
-                    emitted_at=ANY, stream=_STREAM_NAME, data={first_property: "value_21", second_property: "value_22"}
+                    emitted_at=ANY,
+                    stream=_STREAM_NAME,
+                    data={
+                        first_property: "value_21",
+                        second_property: "value_22",
+                        third_property: "",
+                        fourth_property: "washington 3",
+                        fifth_property: "colonial",
+                    },
                 ),
             ),
         ]

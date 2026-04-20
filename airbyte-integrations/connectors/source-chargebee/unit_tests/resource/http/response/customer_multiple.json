@@ -1,0 +1,28 @@
+{
+  "list": [
+    {
+      "customer": {
+        "id": "cust_001",
+        "first_name": "Test_cust_001",
+        "last_name": "Customer",
+        "email": "cust_001@example.com",
+        "updated_at": 1705312800,
+        "created_at": 1704067200,
+        "cf_loyalty_tier": "Platinum",
+        "cf_account_manager": "John Smith"
+      }
+    },
+    {
+      "customer": {
+        "id": "cust_002",
+        "first_name": "Test_cust_002",
+        "last_name": "Customer",
+        "email": "cust_002@example.com",
+        "updated_at": 1705312800,
+        "created_at": 1704067200,
+        "cf_loyalty_tier": "Platinum",
+        "cf_account_manager": "John Smith"
+      }
+    }
+  ]
+}

@@ -155,6 +155,61 @@ def test_parse_raw_schema_value(raw_schema_data, expected_data):
 
 
 @pytest.mark.parametrize(
+    "raw_schema_data, expected_data",
+    [
+        pytest.param(
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": ""}), (2, "h3", {"formattedValue": "h3"})],
+            id="blank_header_in_middle_generates_placeholder",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "   "}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "column_B", {"formattedValue": "   "}), (2, "h3", {"formattedValue": "h3"})],
+            id="whitespace_header_generates_placeholder",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": "h3"}]},
+            [(0, "column_A", {"formattedValue": ""}), (1, "column_B", {"formattedValue": ""}), (2, "h3", {"formattedValue": "h3"})],
+            id="multiple_blank_headers_generate_placeholders",
+        ),
+        pytest.param(
+            {"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]},
+            [(0, "column_A", {"formattedValue": ""}), (1, "column_B", {"formattedValue": ""}), (2, "column_C", {"formattedValue": ""})],
+            id="all_blank_headers_generate_placeholders",
+        ),
+        pytest.param(
+            {
+                "values": [
+                    {"formattedValue": "columnA"},
+                    {"formattedValue": "columnB"},
+                    {"formattedValue": ""},
+                    {"formattedValue": "columnD"},
+                ]
+            },
+            [
+                (0, "columnA", {"formattedValue": "columnA"}),
+                (1, "columnB", {"formattedValue": "columnB"}),
+                (2, "column_C", {"formattedValue": ""}),
+                (3, "columnD", {"formattedValue": "columnD"}),
+            ],
+            id="empty_header_does_not_skip_subsequent_columns",
+        ),
+    ],
+)
+def test_parse_raw_schema_value_with_read_empty_header_columns_enabled(raw_schema_data, expected_data):
+    """Test that when read_empty_header_columns is enabled, empty headers get placeholder names."""
+    extractor = RawSchemaParser()
+    extractor.config = {"read_empty_header_columns": True}
+    parsed_data = extractor.parse_raw_schema_values(
+        raw_schema_data,
+        schema_pointer=_SCHEMA_TYPE_IDENTIFIERS["schema_pointer"],
+        key_pointer=_SCHEMA_TYPE_IDENTIFIERS["key_pointer"],
+        names_conversion=False,
+    )
+    assert parsed_data == expected_data
+
+
+@pytest.mark.parametrize(
     "values, expected_response",
     [([" ", "", "     "], True), ([" ", "", "     ", "some_value_here"], False)],
     ids=["with_empty_row", "with_full_row"],

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256px" height="252px" viewBox="0 0 256 252" version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid">
+    <title>stigg</title>
+    <defs>
+        <radialGradient cx="-100.1136%" cy="-37.2%" fx="-100.1136%" fy="-37.2%" r="279.1152%" gradientTransform="translate(-1.001136,-0.372000),scale(1.000000,0.667824),translate(1.001136,0.372000)" id="stiggRadialGradient-1">
+            <stop stop-color="#FFBE6E" offset="0%"></stop>
+            <stop stop-color="#FA9B68" offset="31.3%"></stop>
+            <stop stop-color="#F0465A" offset="100%"></stop>
+        </radialGradient>
+        <radialGradient cx="98.1828%" cy="107.6%" fx="98.1828%" fy="107.6%" r="331.87906%" gradientTransform="translate(0.981828,1.076000),scale(0.645755,1.000000),translate(-0.981828,-1.076000)" id="stiggRadialGradient-2">
+            <stop stop-color="#FFBE6E" offset="0%"></stop>
+            <stop stop-color="#FBAB69" offset="28.2%"></stop>
+            <stop stop-color="#F27B5D" offset="84.8%"></stop>
+            <stop stop-color="#F06E5A" offset="100%"></stop>
+        </radialGradient>
+        <linearGradient x1="-4.9%" y1="-41.5%" x2="77.9%" y2="102%" id="linearGradient-3">
+            <stop stop-color="#003EE2" offset="0%"></stop>
+            <stop stop-color="#1458E6" offset="10.8%"></stop>
+            <stop stop-color="#2C77EC" offset="25.9%"></stop>
+            <stop stop-color="#3F8EF0" offset="41.8%"></stop>
+            <stop stop-color="#4C9FF3" offset="58.7%"></stop>
+            <stop stop-color="#54A9F5" offset="77.1%"></stop>
+            <stop stop-color="#57ADF6" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="125.2%" y1="50%" x2="-45.7%" y2="50%" id="linearGradient-4">
+            <stop stop-color="#003EE2" offset="0%"></stop>
+            <stop stop-color="#1E64E8" offset="26.8%"></stop>
+            <stop stop-color="#3C8BF0" offset="58.8%"></stop>
+            <stop stop-color="#4FA4F4" offset="84.4%"></stop>
+            <stop stop-color="#57ADF6" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g>
+        <path d="M213.917245,16.5112263 C197.167754,34.767653 185.418465,48.1909891 178.669377,56.7812348 C172.185784,65.033558 164.086052,76.8740751 154.37018,92.3027862 L168.996166,162.600321 C174.724058,163.309347 196.784956,168.196837 203.039977,168.497524 C245.640944,170.561495 253.630136,155.506347 254.899701,154.942096 C255.140993,153.572302 259.851748,127.575912 247.731484,86.7270932 C240.331481,61.6471611 228.911728,37.9338428 213.917245,16.5112263 Z" fill="url(#stiggRadialGradient-1)"></path>
+        <path d="M154.355332,92.3027862 L213.902396,16.5112263 C189.540266,7.01249638 163.798508,1.52891152 137.680223,0.274155074 C95.1238025,-1.83436263 70.9797899,8.89383485 69.7102247,9.45437389 C69.4615087,10.8204558 61.9984021,37.5937062 74.0852571,78.4982073 C75.8099167,84.2610445 80.4702787,89.1029887 82.5951982,94.7305513 L154.355332,92.3027862 Z" fill="url(#stiggRadialGradient-2)"></path>
+        <path d="M69.7436343,9.45808607 L1.12029216,96.1189062 C0.867863982,97.481276 -3.86145214,123.39971 8.22540288,164.304211 C13.5632143,182.18659 20.8558996,199.426109 29.9713478,215.710467 L95.7363121,123.834035 C87.9326575,109.097671 81.605993,93.6254449 76.848745,77.6433911 C64.76189,36.73889 69.4912061,10.824168 69.7436343,9.45808607 Z" fill="url(#linearGradient-3)"></path>
+        <path d="M254.895989,154.94952 C253.630136,155.513771 229.567792,166.245681 186.963112,164.181709 C170.301122,163.342102 153.763162,160.855191 137.591131,156.757351 L63.9043766,242.371337 C81.8843435,247.375422 100.361493,250.380666 119.000538,251.332537 C161.601505,253.396509 185.66385,242.668311 186.933415,242.10406 L254.895989,154.94952 Z" fill="url(#linearGradient-4)"></path>
+    </g>
+</svg>

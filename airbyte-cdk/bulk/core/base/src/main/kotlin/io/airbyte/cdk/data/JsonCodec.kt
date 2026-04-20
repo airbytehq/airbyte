@@ -1,7 +1,8 @@
-/* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.data
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.util.Jsons
 import java.math.BigDecimal
 import java.net.URI
@@ -187,7 +188,9 @@ data object FloatCodec : JsonCodec<Float> {
         }
         val decoded: Float = encoded.floatValue()
         if (encode(decoded).doubleValue().compareTo(encoded.doubleValue()) != 0) {
-            throw IllegalArgumentException("invalid IEEE-754 32-bit floating point value $encoded")
+            throw IllegalArgumentException(
+                "invalid IEEE-754 32-bit floating point value $encoded (type ${encoded.javaClass.canonicalName})"
+            )
         }
         return decoded
     }
@@ -260,14 +263,19 @@ data object LocalTimeCodec : JsonCodec<LocalTime> {
     override fun decode(encoded: JsonNode): LocalTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return LocalTime.parse(str, formatter)
+            return LocalTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException("invalid value $str for flexible time pattern", e)
         }
     }
 
     const val PATTERN = "HH:mm:ss.SSSSSS"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]"
+        )
 }
 
 data object LocalDateTimeCodec : JsonCodec<LocalDateTime> {
@@ -277,14 +285,20 @@ data object LocalDateTimeCodec : JsonCodec<LocalDateTime> {
     override fun decode(encoded: JsonNode): LocalDateTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return LocalDateTime.parse(str, formatter)
+            return LocalDateTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException("invalid value $str for flexible datetime pattern", e)
         }
     }
 
     const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds (needed for MSSQL
+    // datetime2)
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]"
+        )
 }
 
 data object OffsetTimeCodec : JsonCodec<OffsetTime> {
@@ -293,14 +307,22 @@ data object OffsetTimeCodec : JsonCodec<OffsetTime> {
     override fun decode(encoded: JsonNode): OffsetTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return OffsetTime.parse(str, formatter)
+            return OffsetTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException(
+                "invalid value $str for flexible time with offset pattern",
+                e
+            )
         }
     }
 
     const val PATTERN = "HH:mm:ss.SSSSSSXXX"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]XXX"
+        )
 }
 
 data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
@@ -310,14 +332,22 @@ data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
     override fun decode(encoded: JsonNode): OffsetDateTime {
         val str: String = TextCodec.decode(encoded)
         try {
-            return OffsetDateTime.parse(str, formatter)
+            return OffsetDateTime.parse(str, flexibleFormatter)
         } catch (e: DateTimeParseException) {
-            throw IllegalArgumentException("invalid value $str for pattern '$PATTERN'", e)
+            throw IllegalArgumentException(
+                "invalid value $str for flexible datetime with offset pattern",
+                e
+            )
         }
     }
 
     const val PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
+    // Flexible formatter accepts 0-9 decimal places for fractional seconds
+    private val flexibleFormatter: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            "yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]XXX"
+        )
 }
 
 // We need a specialized CDC OffsetDateTimeCodec to support CDC metafield that are string
@@ -340,18 +370,23 @@ data class ArrayEncoder<T>(
     override fun encode(decoded: List<T>): JsonNode =
         Jsons.arrayNode().apply {
             for (e in decoded) {
-                add(elementEncoder.encode(e))
+                // Note: in generics, T can be nullable!
+                if (e == null) add(NullCodec.encode(e)) else add(elementEncoder.encode(e))
             }
         }
 }
 
 data class ArrayDecoder<T>(
     val elementDecoder: JsonDecoder<T>,
-) : JsonDecoder<List<T>> {
-    override fun decode(encoded: JsonNode): List<T> {
+) : JsonDecoder<List<T?>> {
+    override fun decode(encoded: JsonNode): List<T?> {
         if (!encoded.isArray) {
             throw IllegalArgumentException("invalid array value $encoded")
         }
-        return encoded.elements().asSequence().map { elementDecoder.decode(it) }.toList()
+        return encoded
+            .elements()
+            .asSequence()
+            .map { if (it == null || it is NullNode) null else elementDecoder.decode(it) }
+            .toList()
     }
 }

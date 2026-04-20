@@ -13,6 +13,8 @@ from responses import matchers
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
@@ -32,6 +34,17 @@ _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+
+
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    """
+    Create a YamlDeclarativeSource instance for testing.
+
+    This is the main entry point for running your connector in tests.
+    """
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 def delete_cache_files(cache_directory):

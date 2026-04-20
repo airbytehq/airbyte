@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb.cdc;
@@ -8,18 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCommandException;
-import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
@@ -30,19 +28,18 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.debezium.connector.mongodb.MongoUtils;
 import io.debezium.connector.mongodb.ResumeTokens;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
-import org.bson.conversions.Bson;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class MongoDbDebeziumStateUtilTest {
 
@@ -60,45 +57,6 @@ class MongoDbDebeziumStateUtilTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
 
   protected static final ConfiguredAirbyteCatalog SINGLE_DB_CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(SINGLE_DB_CATALOG);
-
-  private static final AirbyteCatalog MULTIPLE_DB_CATALOG = new AirbyteCatalog().withStreams(List.of(
-      CatalogHelpers.createAirbyteStream(
-          "test-collection",
-          DATABASE,
-          Field.of("id", JsonSchemaType.INTEGER),
-          Field.of("string", JsonSchemaType.STRING))
-          .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("_id"))),
-      CatalogHelpers.createAirbyteStream(
-          "test-collection-1",
-          DATABASE_1,
-          Field.of("id", JsonSchemaType.INTEGER),
-          Field.of("name", JsonSchemaType.STRING))
-          .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
-
-  List<ConfiguredAirbyteStream> database1Streams = CatalogHelpers.toDefaultConfiguredCatalog(MULTIPLE_DB_CATALOG).getStreams()
-      .stream().filter(stream -> stream.getStream().getNamespace().equals(DATABASE))
-      .toList();
-
-  List<ConfiguredAirbyteStream> database2Streams = CatalogHelpers.toDefaultConfiguredCatalog(MULTIPLE_DB_CATALOG).getStreams().stream()
-      .filter(stream -> stream.getStream().getNamespace().equals(DATABASE_1))
-      .toList();
-
-  final List<Bson> SINGLE_DB_PIPELINE = Collections.singletonList(Aggregates.match(
-      Filters.or(List.of(
-          Filters.and(
-              Filters.eq("ns.db", DATABASE),
-              Filters.in("ns.coll", List.of("test-collection")))))));
-
-  private final List<Bson> MULTIPLE_DB_PIPELINE = Collections.singletonList(Aggregates.match(
-      Filters.or(List.of(
-          Filters.and(
-              Filters.eq("ns.db", DATABASE),
-              Filters.in("ns.coll", List.of("test-collection"))),
-          Filters.and(
-              Filters.eq("ns.db", DATABASE_1),
-              Filters.in("ns.coll", "test-collection-1"))))));
 
   private MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
 
@@ -156,81 +114,95 @@ class MongoDbDebeziumStateUtilTest {
         + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + expectedNormalized + "\"}]", offsetState.fieldNames().next());
   }
 
+  private Properties createDebeziumProperties(String collectionIncludeList) {
+    final Properties debeziumProperties = new Properties();
+    debeziumProperties.setProperty("mongodb.connection.string", "mongodb://localhost:27017/");
+    debeziumProperties.setProperty("collection.include.list", collectionIncludeList);
+    debeziumProperties.setProperty("capture.scope", "deployment");
+    debeziumProperties.setProperty("topic.prefix", "test-prefix");
+    return debeziumProperties;
+  }
+
   @Test
   void testIsResumeTokenValidSingleDb() {
-    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
-
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
+    final String resumeToken = RESUME_TOKEN;
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor = mock(MongoChangeStreamCursor.class);
+    final Properties debeziumProperties = createDebeziumProperties(DATABASE + ".test-collection");
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
-    when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertTrue(
-        mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
+    when(changeStreamIterable.cursor()).thenReturn(cursor);
+
+    try (MockedStatic<MongoUtils> mockedMongoUtils = mockStatic(MongoUtils.class)) {
+      mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+          .thenReturn(changeStreamIterable);
+
+      final boolean result = mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties);
+      assertTrue(result);
+    }
   }
 
   @Test
   void testIsResumeTokenValidMultipleDb() {
-    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
-
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
+    final String resumeToken = RESUME_TOKEN;
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> cursor = mock(MongoChangeStreamCursor.class);
+    final Properties debeziumProperties = createDebeziumProperties(DATABASE + ".test-collection," + DATABASE_1 + ".test-collection-1");
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1),
-        List.of(database1Streams, database2Streams)));
+    when(changeStreamIterable.cursor()).thenReturn(cursor);
+
+    try (MockedStatic<MongoUtils> mockedMongoUtils = mockStatic(MongoUtils.class)) {
+      mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+          .thenReturn(changeStreamIterable);
+
+      final boolean result = mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties);
+      assertTrue(result);
+    }
   }
 
   @Test
   void testIsResumeTokenInvalidSingleDb() {
-    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
-
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-
+    final String resumeToken = RESUME_TOKEN;
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final Properties debeziumProperties = createDebeziumProperties(DATABASE + ".test-collection");
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
-    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()));
-    when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
-    when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertFalse(
-        mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE), List.of(SINGLE_DB_CONFIGURED_CATALOG.getStreams())));
+    // Simulate invalid resume token - MongoDB throws MongoCommandException
+    final MongoCommandException mongoException = mock(MongoCommandException.class);
+    when(changeStreamIterable.cursor()).thenThrow(mongoException);
+
+    try (MockedStatic<MongoUtils> mockedMongoUtils = mockStatic(MongoUtils.class)) {
+      mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+          .thenReturn(changeStreamIterable);
+
+      final boolean result = mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties);
+      assertFalse(result);
+    }
   }
 
   @Test
   void testIsResumeTokenInvalidMultipleDb() {
-    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
-
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-
+    final String resumeToken = RESUME_TOKEN;
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
     final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final Properties debeziumProperties = createDebeziumProperties(DATABASE + ".test-collection," + DATABASE_1 + ".test-collection-1");
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
-    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()));
-    when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    when(mongoClient.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
-    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient, List.of(DATABASE, DATABASE_1),
-        List.of(database1Streams, database2Streams)));
+    // Simulate invalid resume token - MongoDB throws MongoCommandException
+    final MongoCommandException mongoException = mock(MongoCommandException.class);
+    when(changeStreamIterable.cursor()).thenThrow(mongoException);
+
+    try (MockedStatic<MongoUtils> mockedMongoUtils = mockStatic(MongoUtils.class)) {
+      mockedMongoUtils.when(() -> MongoUtils.openChangeStream(any(MongoClient.class), any()))
+          .thenReturn(changeStreamIterable);
+
+      final boolean result = mongoDbDebeziumStateUtil.isValidResumeToken(resumeTokenDocument, mongoClient, debeziumProperties);
+      assertFalse(result);
+    }
   }
 
 }

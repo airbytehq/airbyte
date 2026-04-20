@@ -1,0 +1,34 @@
+{
+  "list": [
+    {
+      "subscription": {
+        "id": "sub_001",
+        "customer_id": "cust_001",
+        "plan_id": "plan_001",
+        "status": "active",
+        "current_term_start": 1705312800,
+        "current_term_end": 1707991200,
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "subscription",
+        "cf_contract_type": "Annual",
+        "cf_sales_channel": "Direct"
+      }
+    },
+    {
+      "subscription": {
+        "id": "sub_002",
+        "customer_id": "cust_002",
+        "plan_id": "plan_002",
+        "status": "active",
+        "current_term_start": 1705312800,
+        "current_term_end": 1707991200,
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "subscription",
+        "cf_contract_type": "Annual",
+        "cf_sales_channel": "Direct"
+      }
+    }
+  ]
+}

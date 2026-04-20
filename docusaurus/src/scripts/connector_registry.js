@@ -1,15 +1,3 @@
-const memoize = require("lodash/memoize");
-
-const fetchLatestVersionOfPyPackage = memoize(async (packageName) => {
-  const json = await fetch(`https://pypi.org/pypi/${packageName}/json`).then(
-    (resp) => resp.json(),
-  );
-  return json.info.version;
-});
-
-const getLatestPythonCDKVersion = async () =>
-  fetchLatestVersionOfPyPackage("airbyte-cdk");
-
 const parseCDKVersion = (
   connectorCdkVersion,
   latestPythonCdkVersion,
@@ -22,9 +10,8 @@ const parseCDKVersion = (
   const [language, version] = connectorCdkVersion.split(":");
   switch (language) {
     case "python":
-      const isLatest = version === latestPythonCdkVersion;
       const packageUrl = `https://pypi.org/project/airbyte-cdk/${version}/`;
-      return { version, isLatest, url: packageUrl };
+      return { version, url: packageUrl };
     case "java":
       return { version, isLatest: version === latestJavaCdkVersion, url: null };
     default:
@@ -49,9 +36,8 @@ function getSupportLevelDisplay(rawSupportLevel) {
 
 module.exports = {
   isPypiConnector: (connector) => {
-    return Boolean(connector.remoteRegistries_oss?.pypi?.enabled);
+    return Boolean(connector.remoteRegistries?.pypi?.enabled);
   },
-  getLatestPythonCDKVersion,
   parseCDKVersion,
   getSupportLevelDisplay,
 };

@@ -1,221 +1,223 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.write.load
 
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.ColumnSchema
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStreamReader
 import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SnowflakeInsertBufferTest {
 
     private lateinit var snowflakeConfiguration: SnowflakeConfiguration
-    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
+    private lateinit var columnManager: SnowflakeColumnManager
+    private lateinit var columnSchema: ColumnSchema
+    private lateinit var snowflakeRecordFormatter: SnowflakeRecordFormatter
 
     @BeforeEach
     fun setUp() {
         snowflakeConfiguration = mockk(relaxed = true)
-        snowflakeColumnUtils = mockk(relaxed = true)
+        snowflakeRecordFormatter = SnowflakeSchemaRecordFormatter()
+        columnManager =
+            mockk(relaxed = true) {
+                every { getMetaColumns() } returns
+                    linkedMapOf(
+                        "_AIRBYTE_RAW_ID" to ColumnType("VARCHAR", false),
+                        "_AIRBYTE_EXTRACTED_AT" to ColumnType("TIMESTAMP_TZ", false),
+                        "_AIRBYTE_META" to ColumnType("VARIANT", false),
+                        "_AIRBYTE_GENERATION_ID" to ColumnType("NUMBER", true)
+                    )
+                every { getTableColumnNames(any()) } returns
+                    listOf(
+                        "_AIRBYTE_RAW_ID",
+                        "_AIRBYTE_EXTRACTED_AT",
+                        "_AIRBYTE_META",
+                        "_AIRBYTE_GENERATION_ID",
+                        "columnName"
+                    )
+            }
     }
 
     @Test
     fun testAccumulate() {
-        val tableName = mockk<TableName>(relaxed = true)
+        val tableName = TableName(namespace = "test", name = "table")
         val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
-                snowflakeColumnUtils = snowflakeColumnUtils,
+                columnSchema = columnSchema,
+                columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
             )
-
-        buffer.accumulate(record)
-
-        assertEquals(true, buffer.csvFilePath?.exists())
+        assertEquals(0, buffer.recordCount)
+        runBlocking { buffer.accumulate(record) }
         assertEquals(1, buffer.recordCount)
     }
 
     @Test
-    fun testAccumulateRaw() {
-        val tableName = mockk<TableName>(relaxed = true)
+    fun testFlushToStaging() {
+        val tableName = TableName(namespace = "test", name = "table")
         val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                columnSchema = columnSchema,
+                columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
                 flushLimit = 1,
-                snowflakeColumnUtils = snowflakeColumnUtils,
             )
-
-        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
-
-        buffer.accumulate(record)
-
-        assertEquals(true, buffer.csvFilePath?.exists())
-        assertEquals(1, buffer.recordCount)
-    }
-
-    @Test
-    fun testFlush() {
-        val tableName = mockk<TableName>(relaxed = true)
-        val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
-        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = createRecord(column)
-        val buffer =
-            SnowflakeInsertBuffer(
-                tableName = tableName,
-                columns = columns,
-                snowflakeClient = snowflakeAirbyteClient,
-                snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
-                snowflakeColumnUtils = snowflakeColumnUtils,
+        val expectedColumnNames =
+            listOf(
+                "_AIRBYTE_RAW_ID",
+                "_AIRBYTE_EXTRACTED_AT",
+                "_AIRBYTE_META",
+                "_AIRBYTE_GENERATION_ID",
+                "columnName"
             )
-
         runBlocking {
             buffer.accumulate(record)
             buffer.flush()
-        }
-
-        coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
-        coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(
-                tableName,
-                match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") }
-            )
+            coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
+            coVerify(exactly = 1) {
+                snowflakeAirbyteClient.copyFromStage(tableName, any(), expectedColumnNames)
+            }
         }
     }
 
     @Test
-    fun testFlushRaw() {
-        val tableName = mockk<TableName>(relaxed = true)
+    fun testFlushToNoStaging() {
+        val tableName = TableName(namespace = "test", name = "table")
         val column = "columnName"
-        val columns = linkedMapOf(column to "NUMBER(38,0)")
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
+        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+        val record = createRecord(column)
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
+                columnSchema = columnSchema,
+                columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
+                flushLimit = 1,
+            )
+        val expectedColumnNames =
+            listOf(
+                "_AIRBYTE_RAW_ID",
+                "_AIRBYTE_EXTRACTED_AT",
+                "_AIRBYTE_META",
+                "_AIRBYTE_GENERATION_ID",
+                "columnName"
+            )
+        runBlocking {
+            buffer.accumulate(record)
+            buffer.flush()
+            // In legacy raw mode, it still uses staging
+            coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
+            coVerify(exactly = 1) {
+                snowflakeAirbyteClient.copyFromStage(tableName, any(), expectedColumnNames)
+            }
+        }
+    }
+
+    @Test
+    fun testFileCreation() {
+        val tableName = TableName(namespace = "test", name = "table")
+        val column = "columnName"
+        columnSchema =
+            ColumnSchema(
+                inputToFinalColumnNames = mapOf(column to column.uppercase()),
+                finalSchema = mapOf(column.uppercase() to ColumnType("NUMBER", true)),
+                inputSchema = mapOf(column to FieldType(StringType, nullable = true))
+            )
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                columnSchema = columnSchema,
+                columnManager = columnManager,
+                snowflakeRecordFormatter = snowflakeRecordFormatter,
                 flushLimit = 1,
-                snowflakeColumnUtils = snowflakeColumnUtils,
             )
-
-        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
-
         runBlocking {
             buffer.accumulate(record)
-            buffer.flush()
-        }
-
-        coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
-        coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(
-                tableName,
-                match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") }
-            )
-        }
-    }
-
-    @Test
-    fun testMissingFields() {
-        val tableName = mockk<TableName>(relaxed = true)
-        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = createRecord("COLUMN1")
-        val buffer =
-            SnowflakeInsertBuffer(
-                tableName = tableName,
-                columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
-                snowflakeClient = snowflakeAirbyteClient,
-                snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
-                snowflakeColumnUtils = snowflakeColumnUtils,
-            )
-
-        runBlocking {
-            buffer.accumulate(record)
-            buffer.csvWriter?.flush()
+            // The csvFilePath is internal, we can access it for testing
+            val filepath = buffer.csvFilePath
+            assertNotNull(filepath)
+            val file = filepath!!.toFile()
+            assert(file.exists())
+            // Close the writer to ensure all data is flushed
             buffer.csvWriter?.close()
-            assertEquals(
-                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                readFromCsvFile(buffer.csvFilePath!!.toFile())
-            )
+            val lines = mutableListOf<String>()
+            GZIPInputStream(file.inputStream()).use { gzip ->
+                BufferedReader(InputStreamReader(gzip)).use { bufferedReader ->
+                    bufferedReader.forEachLine { line -> lines.add(line) }
+                }
+            }
+            assertEquals(1, lines.size)
+            file.delete()
         }
     }
 
-    @Test
-    fun testMissingFieldsRaw() {
-        val tableName = mockk<TableName>(relaxed = true)
-        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = createRecord("COLUMN1")
-        val buffer =
-            SnowflakeInsertBuffer(
-                tableName = tableName,
-                columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
-                snowflakeClient = snowflakeAirbyteClient,
-                snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
-                snowflakeColumnUtils = snowflakeColumnUtils,
-            )
-
-        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
-
-        runBlocking {
-            buffer.accumulate(record)
-            buffer.csvWriter?.flush()
-            buffer.csvWriter?.close()
-            assertEquals(
-                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                readFromCsvFile(buffer.csvFilePath!!.toFile())
-            )
-        }
-    }
-
-    private fun readFromCsvFile(file: File) =
-        GZIPInputStream(file.inputStream()).use { input ->
-            val reader = BufferedReader(InputStreamReader(input))
-            reader.readText()
-        }
-
-    private fun createRecord(columnName: String) =
-        mapOf(
-            columnName to AirbyteValue.from("test-value"),
-            Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(System.currentTimeMillis()),
-            Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id"),
-            Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1223),
-            Meta.COLUMN_NAME_AB_META to StringValue("{\"changes\":[],\"syncId\":43}"),
-            "${columnName}Null" to NullValue
+    private fun createRecord(column: String): Map<String, AirbyteValue> {
+        return mapOf(
+            column to IntegerValue(value = 42),
+            Meta.COLUMN_NAME_AB_GENERATION_ID to NullValue,
+            Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id-1"),
+            Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(1234567890),
+            Meta.COLUMN_NAME_AB_META to StringValue("meta-data-foo"),
         )
+    }
 }

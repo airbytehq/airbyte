@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.write.db.DbConstants
+import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import jakarta.inject.Singleton
 
 data class SnowflakeConfiguration(
@@ -76,7 +76,7 @@ class SnowflakeConfigurationFactory :
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
             internalTableSchema =
                 if (pojo.internalTableSchema.isNullOrBlank()) {
-                    DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+                    DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
                 } else {
                     pojo.internalTableSchema!!
                 },

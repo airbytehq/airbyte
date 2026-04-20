@@ -1,4 +1,4 @@
-/* Copyright (c) 2025 Airbyte, Inc., all rights reserved. */
+/* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mssql
 
 import io.airbyte.cdk.ConfigErrorException
@@ -97,30 +97,33 @@ class MsSqlServerSourceConfigurationSpecificationTest {
     }
 
     /**
-     * Verifies that empty schemas array defaults to "dbo". This is a regression test for the issue
-     * where empty schemas array resulted in no tables being discovered during CDC syncs.
+     * Verifies that empty schemas array defaults to empty set, which will trigger discovery of all
+     * schemas (legacy connector behavior).
      */
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_EMPTY_SCHEMAS)
-    fun testEmptySchemasArrayDefaultsToDbo() {
+    fun testEmptySchemasArrayDefaultsToEmptySet() {
         val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
         val factory = MsSqlServerSourceConfigurationFactory()
         val config = factory.make(pojo)
 
-        // Empty schemas array should default to setOf("dbo")
-        Assertions.assertEquals(setOf("dbo"), config.namespaces)
+        // Empty schemas array should default to empty set (discover all schemas)
+        Assertions.assertEquals(emptySet<String>(), config.namespaces)
     }
 
-    /** Verifies that null schemas defaults to "dbo". */
+    /**
+     * Verifies that null schemas defaults to empty set, which will trigger discovery of all schemas
+     * (legacy connector behavior).
+     */
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_NULL_SCHEMAS)
-    fun testNullSchemasDefaultsToDbo() {
+    fun testNullSchemasDefaultsToEmptySet() {
         val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
         val factory = MsSqlServerSourceConfigurationFactory()
         val config = factory.make(pojo)
 
-        // Null schemas should default to setOf("dbo")
-        Assertions.assertEquals(setOf("dbo"), config.namespaces)
+        // Null schemas should default to empty set (discover all schemas)
+        Assertions.assertEquals(emptySet<String>(), config.namespaces)
     }
 
     companion object {

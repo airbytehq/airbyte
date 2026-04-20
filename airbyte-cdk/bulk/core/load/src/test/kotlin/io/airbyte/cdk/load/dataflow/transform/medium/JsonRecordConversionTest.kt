@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.transform.medium
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
@@ -15,8 +16,8 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
-import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
@@ -34,27 +35,31 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class JsonRecordConversionTest {
-    @MockK lateinit var columnNameMapper: ColumnNameMapper
-
     @MockK lateinit var valueCoercer: ValueCoercer
 
     private lateinit var validationResultHandler: ValidationResultHandler
 
     private lateinit var jsonConverter: JsonConverter
 
+    private val jsonConverterConfig = MediumConverterConfig()
+
     @BeforeEach
     fun setup() {
         validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
-        jsonConverter = JsonConverter(columnNameMapper, valueCoercer, validationResultHandler)
+        jsonConverter =
+            JsonConverter(
+                valueCoercer,
+                validationResultHandler,
+                jsonConverterConfig,
+                AirbyteValueCoercer(useFastTimestampParsing = true),
+            )
     }
 
     @Test
     fun `transforms record into map of munged keys and values`() {
-        // add "_munged" to every key so we can validate we get the mapped cols
-        every { columnNameMapper.getMappedColumnName(any(), any()) } answers
-            {
-                secondArg<String>() + "_munged"
-            }
+        // NOTE: columnNameMapper has been removed from the API
+        // Column name mapping is now handled by the stream's tableSchema
+        // This test has been modified to work with the new API
 
         every { valueCoercer.validate(any<EnrichedAirbyteValue>()) } returns ValidationResult.Valid
 
@@ -87,15 +92,36 @@ class JsonRecordConversionTest {
                 "internal_field_2" to Fixtures.mockCoercedValue(IntegerValue(0)),
                 "internal_field_3" to Fixtures.mockCoercedValue(BooleanValue(true)),
             )
+        // Mock the stream with tableSchema that provides column name mapping
+        val mockStream =
+            mockk<io.airbyte.cdk.load.command.DestinationStream> {
+                every { tableSchema } returns
+                    mockk {
+                        every { getFinalColumnName(any()) } answers
+                            {
+                                val columnName = firstArg<String>()
+                                if (columnName.startsWith("user_field")) {
+                                    "${columnName}_munged"
+                                } else {
+                                    columnName
+                                }
+                            }
+                    }
+            }
+
         val coerced =
             mockk<EnrichedDestinationRecordAirbyteValue> {
                 every { declaredFields } answers { userFields }
                 every { airbyteMetaFields } answers { internalFields }
+                every { stream } returns mockStream
             }
 
         val input =
             mockk<DestinationRecordRaw>(relaxed = true) {
-                every { asEnrichedDestinationRecordAirbyteValue(any()) } answers { coerced }
+                every { asEnrichedDestinationRecordAirbyteValue(any(), any(), any()) } answers
+                    {
+                        coerced
+                    }
                 every { schemaFields } returns
                     linkedMapOf(
                         "user_field_1" to FieldType(StringType, false),
@@ -112,7 +138,11 @@ class JsonRecordConversionTest {
         // just validate we call the coercing logic here
         // if we refactor to do the coercing directly here, we need more comprehensive tests
         verify {
-            input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
+            input.asEnrichedDestinationRecordAirbyteValue(
+                any(),
+                extractedAtAsTimestampWithTimezone = true,
+                respectLegacyUnions = any(),
+            )
         }
         nonUnionUserFields.forEach { verify { valueCoercer.validate(it.value) } }
         // the stringified field is also validated

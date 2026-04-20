@@ -56,6 +56,12 @@ This connector syncs the following streams from Uptick:
 - **assettypes** - Categories and specifications for asset types
 - **assettypevariants** - Variants and configurations of asset types
 - **routines** - Scheduled maintenance and inspection routines
+- **routineservices** - Routine service configurations for properties and assets
+- **routineservicelevels** - Service level definitions for routine services
+- **routineservicetypes** - Types and categories of routine services
+- **routineserviceleveltypes** - Service level type classifications
+- **servicetasks** - Individual work activities on tasks
+- **subtasks** - Links programme maintenance routines to tasks
 - **remarks** - Issues, defects, and observations during inspections
 
 ### Quality & Compliance

@@ -43,4 +43,17 @@ data:
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  externalDocumentationUrls:
+    - title: commercetools API reference
+      url: https://docs.commercetools.com/api/
+      type: api_reference
+    - title: commercetools authentication
+      url: https://docs.commercetools.com/api/authorization
+      type: authentication_guide
+    - title: commercetools rate limits
+      url: https://docs.commercetools.com/api/general-concepts#rate-limits
+      type: rate_limits
+    - title: commercetools Status
+      url: https://status.commercetools.com/
+      type: status_page
 metadataSpecVersion: "1.0"
