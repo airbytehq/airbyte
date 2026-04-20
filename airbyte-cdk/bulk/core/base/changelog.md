@@ -1,3 +1,7 @@
+## Version 1.0.3
+
+Classify SSH tunnel open timeouts as transient errors so the platform retry budget handles brief bastion or network blips.
+
 ## Version 1.0.2
 
 Improved null handling for array types.
