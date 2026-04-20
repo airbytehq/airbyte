@@ -19,7 +19,7 @@ class TestEngagementCallsStream(HubspotCRMSearchStream):
     CURSOR_FIELD = "updatedAt"
     STREAM_NAME = "engagements_calls"
     OBJECT_TYPE = "calls"
-    ASSOCIATIONS = ["companies", "contacts", "deals", "tickets"]
+    ASSOCIATIONS = ["companies", "contacts", "deals", "leads", "tickets"]
     OBJECT_ID = "12345"
 
     @HttpMocker()
