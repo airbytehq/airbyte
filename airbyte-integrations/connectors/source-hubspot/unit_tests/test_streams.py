@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.types import Record
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, mock_v3_properties, read_from_stream
 from .utils import run_read
@@ -1055,3 +1056,41 @@ def test_list_memberships_ignores_invalid_object_type_for_list_400(requests_mock
         "The memberships endpoint for the Leads list (objectTypeId=0-136) should be called; "
         "the 400 VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST response is then ignored."
     )
+
+
+def test_list_memberships_fails_on_unrelated_400(requests_mock, config, mock_dynamic_schema_requests):
+    """Guard test for the `error_handler_ignore_invalid_object_type_for_list` error handler on
+    `list_memberships_stream`. Ensures the trailing `FAIL` filter on 400 responses is not
+    shadowed by the earlier `IGNORE` filter: a 400 whose body does NOT contain the
+    `ListError.INVALID_OBJECT_TYPE_FOR_LIST` marker must still fail the stream.
+    """
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    contact_lists_response = {
+        "lists": [
+            {
+                "listId": "30",
+                "objectTypeId": "0-1",
+                "createdAt": "2022-01-01T00:00:00Z",
+                "updatedAt": "2022-01-01T00:00:00Z",
+            },
+        ],
+    }
+    requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", json=contact_lists_response)
+
+    unrelated_400_mock = requests_mock.register_uri(
+        "GET",
+        "https://api.hubapi.com/crm/v3/lists/30/memberships",
+        status_code=400,
+        json={
+            "status": "error",
+            "message": "Invalid request payload.",
+            "category": "VALIDATION_ERROR",
+        },
+    )
+
+    stream = find_stream("list_memberships", config)
+    with pytest.raises(AirbyteTracedException):
+        run_read(stream)
+
+    assert unrelated_400_mock.call_count >= 1
