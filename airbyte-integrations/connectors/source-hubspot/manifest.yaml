@@ -5059,6 +5059,10 @@ schemas:
         type:
           - "null"
           - integer
+      folderIdV2:
+        type:
+          - "null"
+          - string
       emailCampaignGroupId:
         type:
           - "null"
