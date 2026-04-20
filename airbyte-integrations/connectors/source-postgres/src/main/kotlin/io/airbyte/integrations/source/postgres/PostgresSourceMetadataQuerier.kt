@@ -53,7 +53,8 @@ class PostgresSourceMetadataQuerier(
         val hasNoTunnel = postgresSourceConfig.sshTunnel is SshNoTunnelMethod
         if (sslMode !in acceptableSslModes && hasNoTunnel) {
             throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.",
+                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. " +
+                    "Current SSL mode: $sslMode",
             )
         }
     }
