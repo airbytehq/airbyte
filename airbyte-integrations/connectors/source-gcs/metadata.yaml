@@ -97,6 +97,9 @@ data:
     - title: Google Cloud Storage documentation
       url: https://cloud.google.com/storage/docs
       type: api_reference
+    - title: Cloud Storage release notes
+      url: https://cloud.google.com/storage/docs/release-notes
+      type: api_release_history
     - title: GCS authentication
       url: https://cloud.google.com/storage/docs/authentication
       type: authentication_guide
