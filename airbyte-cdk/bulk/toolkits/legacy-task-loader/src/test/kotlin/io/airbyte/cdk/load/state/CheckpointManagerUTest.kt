@@ -269,11 +269,10 @@ class CheckpointManagerUTest {
     ): Reserved<CheckpointMessage> = Reserved(value = checkpointMessage ?: mockk(relaxed = true))
 
     /**
-     * Regression coverage for airbytehq/oncall#12017: in socket mode,
-     * `checkGlobalStreams` must treat records that the destination *rejected* (DLQ'd) as still
-     * accounted for when comparing to the source-reported record count. Without this, a single
-     * rejected record prevents the global checkpoint from ever flushing, and
-     * `awaitAllCheckpointsFlushed` busy-waits forever.
+     * Regression coverage for airbytehq/oncall#12017: in socket mode, `checkGlobalStreams` must
+     * treat records that the destination *rejected* (DLQ'd) as still accounted for when comparing
+     * to the source-reported record count. Without this, a single rejected record prevents the
+     * global checkpoint from ever flushing, and `awaitAllCheckpointsFlushed` busy-waits forever.
      */
     @Test
     fun `socket-mode global checkpoint flushes when some records are rejected by the destination`() =
@@ -311,9 +310,9 @@ class CheckpointManagerUTest {
         }
 
     /**
-     * Negative counterpart: if committed + rejected still does not equal the source-reported
-     * count, the checkpoint must not flush. This protects against an overly permissive fix that
-     * would emit checkpoints despite unaccounted-for records.
+     * Negative counterpart: if committed + rejected still does not equal the source-reported count,
+     * the checkpoint must not flush. This protects against an overly permissive fix that would emit
+     * checkpoints despite unaccounted-for records.
      */
     @Test
     fun `socket-mode global checkpoint does not flush when committed plus rejected is still short of source`() =
@@ -348,9 +347,9 @@ class CheckpointManagerUTest {
         }
 
     /**
-     * Regression coverage for oncall#12017 on the stream-state code path:
-     * `flushStreamCheckpoints` must also count rejected records toward the source-vs-destination
-     * comparison when operating in socket mode.
+     * Regression coverage for oncall#12017 on the stream-state code path: `flushStreamCheckpoints`
+     * must also count rejected records toward the source-vs-destination comparison when operating
+     * in socket mode.
      */
     @Test
     fun `socket-mode stream checkpoint flushes when some records are rejected by the destination`() =
@@ -377,9 +376,7 @@ class CheckpointManagerUTest {
             coVerify(exactly = 1) { outputConsumer.invoke(message, any(), any(), any()) }
         }
 
-    /**
-     * Regression coverage for oncall#12017 on the snapshot-checkpoint code path.
-     */
+    /** Regression coverage for oncall#12017 on the snapshot-checkpoint code path. */
     @Test
     fun `socket-mode snapshot checkpoint flushes when some records are rejected by the destination`() =
         runTest {
