@@ -49,9 +49,9 @@ class PostgresSourceMetadataQuerier(
             return
         }
         val sslMode: String? = postgresSourceConfig.jdbcProperties["sslmode"]
-        val isWeakSsl = sslMode in listOf("disable", "allow", "prefer")
+        val acceptableSslModes = listOf("require", "verify-ca", "verify-full")
         val hasNoTunnel = postgresSourceConfig.sshTunnel is SshNoTunnelMethod
-        if (isWeakSsl && hasNoTunnel) {
+        if (sslMode !in acceptableSslModes && hasNoTunnel) {
             throw ConfigErrorException(
                 "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel.",
             )
