@@ -347,7 +347,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.5 | 2026-04-17 | [76373](https://github.com/airbytehq/airbyte/pull/76373) | Validate custom GAQL queries during connection check via `DynamicStreamCheckConfig` |
+| 4.2.5 | 2026-04-17 | [76373](https://github.com/airbytehq/airbyte/pull/76373) | Validate custom GAQL queries during connection check; connections with invalid GAQL fields will now fail check instead of failing at sync time |
 | 4.2.4 | 2026-04-16 | [76331](https://github.com/airbytehq/airbyte/pull/76331) | Improve UNRECOGNIZED_FIELD error message for custom GAQL queries |
 | 4.2.3 | 2026-04-16 | [75451](https://github.com/airbytehq/airbyte/pull/75451) | Fix NULL values for MESSAGE-type fields (e.g., change_event.old_resource, change_event.new_resource) in custom GAQL queries |
 | 4.2.2 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
