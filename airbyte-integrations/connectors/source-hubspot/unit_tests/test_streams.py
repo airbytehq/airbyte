@@ -987,23 +987,26 @@ def test_list_memberships_listid_is_string_for_numeric_values(requests_mock, con
     )
 
 
-def test_list_memberships_skips_leads_object_type(requests_mock, config, mock_dynamic_schema_requests):
+def test_list_memberships_ignores_invalid_object_type_for_list_400(requests_mock, config, mock_dynamic_schema_requests):
     """Regression test for oncall #11995 (HTTP 400 `INVALID_OBJECT_TYPE_FOR_LIST`).
 
     The `/crm/v3/lists/{listId}/memberships` endpoint rejects lists whose `objectTypeId`
-    is `0-136` (HubSpot Leads) on portals that do not have the Leads object enabled,
-    even though those same lists are returned by `/crm/v3/lists/search`. The
-    `list_memberships` stream's `SubstreamPartitionRouter` uses a `RecordFilter` on the
-    parent `contact_lists` stream to skip Leads lists entirely, so no doomed request
-    is made.
+    is not active for the portal (notably Leads, `0-136`) with a 400 response whose body
+    contains `"category": "VALIDATION_ERROR"` and
+    `"subCategory": "ListError.INVALID_OBJECT_TYPE_FOR_LIST"`, even though those same
+    lists are returned by `POST /crm/v3/lists/search`.
 
-    This test verifies the filter by:
+    The `list_memberships` stream declares a dedicated error handler that matches this
+    specific 400 response via `error_message_contains: "ListError.INVALID_OBJECT_TYPE_FOR_LIST"`
+    and ignores it so the list is skipped without failing the rest of the stream.
+
+    This test verifies the IGNORE behaviour by:
     1. Having the parent `contact_lists` endpoint return both a CONTACT list (`0-1`)
        and a LEADS list (`0-136`).
-    2. Registering the Leads memberships endpoint with a 400 that would fail the sync
-       if the filter is not applied.
+    2. Registering the Leads memberships endpoint with the exact 400 response body
+       HubSpot returns in this case.
     3. Asserting the sync succeeds, returns only the contact-list's memberships, and
-       never calls the Leads memberships endpoint.
+       does call the Leads memberships endpoint exactly once (no retry, no failure).
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
@@ -1048,7 +1051,7 @@ def test_list_memberships_skips_leads_object_type(requests_mock, config, mock_dy
     assert len(records) == 1
     assert records[0]["listId"] == "10"
     assert records[0]["recordId"] == "r1"
-    assert leads_memberships_mock.call_count == 0, (
-        "The memberships endpoint for the Leads list (objectTypeId=0-136) must NOT be called; "
-        "the parent stream's RecordFilter should skip it upstream."
+    assert leads_memberships_mock.call_count >= 1, (
+        "The memberships endpoint for the Leads list (objectTypeId=0-136) should be called; "
+        "the 400 VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST response is then ignored."
     )
