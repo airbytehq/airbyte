@@ -150,29 +150,12 @@ Rather than one tool per GitHub endpoint, the Airbyte agent SDK exposes the enti
 @mcp.tool()
 @GithubConnector.tool_utils
 async def github_execute(entity: str, action: str, params: dict | None = None) -> str:
-    """Execute GitHub connector operations.
-
-    Rules for calling this tool:
-    1. Use entity, action, and parameter names exactly as they appear in the
-       catalog below. Do not use GitHub REST API names. For example, list pull
-       requests with entity='pull_requests' (not 'pulls'), and list issues with
-       entity='issues' (not 'issue').
-    2. Parameters that take an enum value must use the uppercase form
-       (for example, OPEN, CLOSED, MERGED).
-    3. Filter parameters are usually plural arrays, such as states=['OPEN']
-       rather than state='OPEN'. Page size is per_page, not limit.
-    """
+    """Execute GitHub connector operations."""
     result = await github.execute(entity, action, params or {})
     return json.dumps(result, default=str)
 ```
 
-The decorator stack is the whole tool definition. No per-action `docstring`, no `GITHUB_LIST_COMMITS` or `GITHUB_GET_PR` sprawl, one entry point that covers the full connector. As the connector grows, the tool signature stays the same.
-
-The rules in the docstring travel to the MCP client as part of the tool description. Models often pattern-match to the underlying REST API they know, so the rules pin them to the catalog's plural entity names, uppercase values, and array-typed filter parameters. `@GithubConnector.tool_utils` appends the full entity and action catalog after the rules, so the final tool description the client sees is your rules plus the catalog.
-
-:::note
-The three numbered rules in the docstring are a stopgap that compensate for current SDK behavior: the auto-generated tool description doesn't enumerate enum values, and some validation errors aren't wrapped as retryable tool errors. Once the SDK surfaces enum values in the tool description and wraps validation errors for retries, you can remove these rules from your own servers.
-:::
+The decorator stack is the whole tool definition. No per-action `docstring`, no `GITHUB_LIST_COMMITS` or `GITHUB_GET_PR` sprawl, one entry point that covers the full connector. `@GithubConnector.tool_utils` appends the full entity and action catalog to the tool description so the MCP client sees every entity, action, and enum value the connector supports. As the connector grows, the tool signature stays the same.
 
 Each `execute` call returns a structured result with `data` (the records) and `meta` (pagination cursors). MCP tools return strings, so this tutorial serializes the whole result with `json.dumps` so the MCP client can reason about both the records and the pagination state.
 

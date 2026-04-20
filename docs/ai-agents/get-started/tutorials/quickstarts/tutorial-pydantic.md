@@ -154,27 +154,14 @@ agent = Agent(
     "openai:gpt-4o",
     system_prompt=(
         "You are a helpful assistant that can access GitHub data through the "
-        "github_execute tool. Rules for calling the tool:\n"
-        "1. Use entity, action, and parameter names exactly as they appear in "
-        "the tool's catalog. Do not use GitHub REST API names. For example, "
-        "list pull requests with entity='pull_requests' (not 'pulls'), and "
-        "list issues with entity='issues' (not 'issue').\n"
-        "2. Parameters that take an enum value must use the uppercase form "
-        "(for example, OPEN, CLOSED, MERGED).\n"
-        "3. Filter parameters are usually plural arrays, such as states=['OPEN'] "
-        "rather than state='OPEN'. Page size is per_page, not limit.\n"
-        "Be concise and accurate."
+        "github_execute tool. Be concise and accurate."
     ),
 )
 ```
 
 - The `"openai:gpt-4o"` string specifies the model to use. You can use a different model by changing the model string. For example, use `"openai:gpt-4o-mini"` to lower costs, or see the [Pydantic AI models documentation](https://ai.pydantic.dev/models/) for other providers like Anthropic or Google.
-- The `system_prompt` parameter is where you encode API idiosyncrasies the model can't see in the tool schema. Models often pattern-match to the underlying REST API they know, so the prompt pins them to the catalog's plural entity names, uppercase values, and array-typed filter parameters. Add similar constraints for your own domain (pagination defaults, date formats, preferred streams) as your agent grows.
+- The `system_prompt` parameter is where you encode any API idiosyncrasies the model can't see in the tool schema. The Airbyte agent SDK already exposes entity names, actions, and enum values through the tool description, so the prompt only needs to carry domain constraints (pagination defaults, date formats, preferred streams) as your agent grows.
 - The prompt references a `github_execute` tool. You register that tool in the next part.
-
-:::note
-The three numbered rules in the prompt are a stopgap that compensate for current SDK behavior: the auto-generated tool description doesn't enumerate enum values, and some validation errors aren't wrapped as retryable tool errors. Once the SDK surfaces enum values in the tool description and wraps validation errors for retries, you can remove these rules from your own agents.
-:::
 
 ## Part 6: Add a tool to your agent
 
