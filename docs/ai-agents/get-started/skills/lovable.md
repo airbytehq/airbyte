@@ -26,7 +26,7 @@ Use this if you want the skill available to every prompt in a project or across 
 
 1. Open your project in Lovable.
 2. Go to **Project settings** > **Knowledge**. To apply the skill across all your Lovable projects, use **Workspace Knowledge** instead.
-3. Copy the entire skill text from [The skill](#the-skill) section below and paste it into the project knowledge (or workspace knowledge) text area. Save.
+3. Copy the entire skill text from [The skill](#the-skill) section below and paste it into the project knowledge (or workspace knowledge) text area. Lovable auto-saves your entry.
 4. In the Lovable chat, prompt the AI with something like: _"Using the Airbyte integration in the project knowledge, build a page that lists Stripe customers."_
 
 ## Configure Supabase secrets
