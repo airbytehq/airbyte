@@ -11,7 +11,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
-  dockerImageTag: 0.10.11
+  dockerImageTag: 0.10.12
   dockerRepository: airbyte/source-gcs
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   githubIssueLabel: source-gcs
@@ -97,6 +97,9 @@ data:
     - title: Google Cloud Storage documentation
       url: https://cloud.google.com/storage/docs
       type: api_reference
+    - title: Cloud Storage release notes
+      url: https://cloud.google.com/storage/docs/release-notes
+      type: api_release_history
     - title: GCS authentication
       url: https://cloud.google.com/storage/docs/authentication
       type: authentication_guide
