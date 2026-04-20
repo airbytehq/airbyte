@@ -354,7 +354,7 @@ class MsSqlSourceOperations :
         }
 
     fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
-        where.bindings() + from.bindings() + limit.bindings()
+        from.bindings() + where.bindings() + limit.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
