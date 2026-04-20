@@ -114,7 +114,7 @@ It's helpful to think of agent connectors as equivalent to sets of tools. Tools 
 
 <Grid columns="2">
 
-<CardWithIcon title="API docs" description="Use our API to set up connectors, authentication, execute operations, and manage workspaces." ctaText="API docs" ctaLink="/ai-agents/api/" icon="fa-cloud" />
+<CardWithIcon title="Reference" description="API and SDK reference for setting up connectors, authentication, executing operations, and managing workspaces." ctaText="Reference" ctaLink="/ai-agents/reference/" icon="fa-cloud" />
 
 <CardWithIcon title="Connectors" description="Browse our catalog of connectors, copy code samples, and start powering your agents." ctaText="Connectors" ctaLink="/ai-agents/connectors/" icon="fa-python" />
 

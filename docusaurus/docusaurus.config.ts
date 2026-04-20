@@ -291,7 +291,7 @@ const config: Config = {
         config: {
           "agent-engine": {
             specPath: "src/data/agent_engine_api_spec.json",
-            outputDir: "../docs/ai-agents/api/api-reference",
+            outputDir: "../docs/ai-agents/reference/api/api-reference",
             sidebarOptions: {
               groupPathsBy: "tag",
               categoryLinkSource: "tag",

@@ -184,9 +184,9 @@ export default function Home() {
       icon: PlatformIcon,
     },
     {
-      title: 'API reference',
-      link: '/ai-agents/api/',
-      description: 'Integrate Agent Engine into your applications with the REST API.',
+      title: 'Reference',
+      link: '/ai-agents/reference/',
+      description: 'Integrate Agent Engine into your applications with the REST API and SDK.',
       icon: AgentApiIcon,
     },
     {
