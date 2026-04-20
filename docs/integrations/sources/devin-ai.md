@@ -12,6 +12,12 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
   - Associated pull requests with PR state
   - User and service user attribution
   - Parent/child session relationships
+- **Sessions Insights** — Sessions augmented with aggregate insights
+  - All fields from the Sessions stream
+  - Per-session message counts (`num_user_messages`, `num_devin_messages`)
+  - Session size classification (`session_size`)
+  - AI-generated analysis: category, programming languages, tools and frameworks, issues, note usage, suggested prompts, timeline
+  - Analysis fields may be null for sessions where insights have not been generated
 - **Session Messages** — Full conversation history for each session
   - Every message exchanged between users and Devin
   - Message source attribution (user vs. devin)
@@ -59,6 +65,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 | Stream | Sync Mode | Description |
 |--------|-----------|-------------|
 | [Sessions](https://docs.devin.ai/api-reference/v3/sessions/list-sessions) | Full Refresh | All Devin sessions in your organization |
+| [Sessions Insights](https://docs.devin.ai/api-reference/v3/sessions/organizations-sessions-insights) | Full Refresh | Sessions enriched with message counts, size classification, and AI-generated analysis |
 | [Session Messages](https://docs.devin.ai/api-reference/v3/sessions/get-session-messages) | Full Refresh | Conversation messages for each session |
 | [Playbooks](https://docs.devin.ai/api-reference/v3/playbooks/list-playbooks) | Full Refresh | Team playbooks for the organization |
 | [Secrets](https://docs.devin.ai/api-reference/v3/secrets/list-secrets) | Full Refresh | Secret metadata (no secret values are synced) |
@@ -78,6 +85,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.0 | 2026-04-20 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Add `sessions_insights` stream for analytics (message counts, session size, AI-generated classification) |
 | 0.1.0 | 2026-03-10 | | Initial release with sessions, session messages, playbooks, secrets, and knowledge notes streams |
 
 </details>
