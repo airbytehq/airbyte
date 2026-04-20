@@ -139,6 +139,42 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
+def test_read_records_skips_non_member_channels_when_join_disabled(token_config, requests_mock, components_module):
+    """When join_channels=false, non-member channels should be skipped to prevent cursor pollution."""
+    config = {**token_config, "join_channels": False}
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C001", "name": "member-channel", "is_member": True},
+                {"id": "C002", "name": "non-member-channel", "is_member": False},
+                {"id": "C003", "name": "another-member", "is_member": True},
+            ]
+        },
+    )
+    retriever = get_channels_retriever_instance(config, components_module)
+    records = list(retriever.read_records(records_schema={}))
+    assert len(records) == 2
+    assert {r["id"] for r in records} == {"C001", "C003"}
+
+
+def test_read_records_yields_all_channels_when_join_enabled(token_config, requests_mock, components_module):
+    """When join_channels=true, all channels are yielded (non-members get joined)."""
+    requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": {}})
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={
+            "channels": [
+                {"id": "C001", "name": "member-channel", "is_member": True},
+                {"id": "C002", "name": "non-member-channel", "is_member": False},
+            ]
+        },
+    )
+    retriever = get_channels_retriever_instance(token_config, components_module)
+    records = list(retriever.read_records(records_schema={}))
+    assert len(records) == 2
+
+
 @pytest.mark.parametrize(
     "response_status_code, api_response, config, expected_policy",
     (

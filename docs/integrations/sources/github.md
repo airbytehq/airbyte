@@ -229,6 +229,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.20 | 2026-04-13 | [76275](https://github.com/airbytehq/airbyte/pull/76275) | Bump airbyte-cdk to >=7.12.0 to fix OAuth `scope=null` in consent URL |
 | 2.1.19 | 2026-04-06 | [76090](https://github.com/airbytehq/airbyte/pull/76090) | Fix 403 permission errors misclassified as retryable, causing infinite retry loops |
 | 2.1.18 | 2026-04-07 | [76124](https://github.com/airbytehq/airbyte/pull/76124) | Fix silent error swallowing in exception handlers for ContributorActivity, GithubStreamABC, and Releases streams |
 | 2.1.17 | 2026-04-03 | [76080](https://github.com/airbytehq/airbyte/pull/76080) | Fix remaining NameError references to removed MessageRepresentationAirbyteTracedErrors in ContributorActivity stream |
