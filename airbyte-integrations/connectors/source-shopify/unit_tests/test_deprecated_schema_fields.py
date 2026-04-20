@@ -46,6 +46,5 @@ def test_deprecated_pre_tax_price_fields_removed(schema_name: str) -> None:
     declared = set(_walk_properties(schema))
     for field in DEPRECATED_FIELDS:
         assert field not in declared, (
-            f"{schema_name} still declares deprecated field '{field}' which Shopify removed "
-            "from the REST Admin API on 2026-03-23."
+            f"{schema_name} still declares deprecated field '{field}' which Shopify removed from the REST Admin API on 2026-03-23."
         )
