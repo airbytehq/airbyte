@@ -104,6 +104,9 @@ Pydantic
 LangChain
 LangGraph
 FastMCP
+Supabase
+Lovable
+Deno
 
 # Acceptable non-words that shouldn't trigger spellcheck
 
