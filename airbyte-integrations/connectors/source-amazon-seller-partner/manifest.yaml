@@ -1099,6 +1099,161 @@ definitions:
         schema:
           $ref: "#/schemas/list_financial_events"
 
+    fba_inbound_shipments:
+      type: DeclarativeStream
+      name: FbaInboundShipments
+      primary_key:
+        - ShipmentId
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: LastUpdatedBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P{{ min(config.get('period_in_days', 90), 30) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else (now_utc() - duration('PT2M')).strftime('%Y-%m-%dT%H:%M:%SZ'), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: LastUpdatedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: LastUpdatedBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["LastUpdatedBefore"]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "fba/inbound/v0/shipments"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          request_parameters:
+            MarketplaceId: '{{ config["marketplace_id"] }}'
+            QueryType: '{{ "NEXT_TOKEN" if next_page_token else "DATE_RANGE" }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
+                backoff_strategies:
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "ShipmentData"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.payload.NextToken }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fba_inbound_shipments"
+
+    fba_inbound_shipment_items:
+      type: DeclarativeStream
+      name: FbaInboundShipmentItems
+      primary_key:
+        - ShipmentId
+        - SellerSKU
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: LastUpdatedBefore
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P{{ min(config.get('period_in_days', 90), 30) }}D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else (now_utc() - duration('PT2M')).strftime('%Y-%m-%dT%H:%M:%SZ'), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          field_name: LastUpdatedAfter
+          inject_into: request_parameter
+        end_time_option:
+          field_name: LastUpdatedBefore
+          inject_into: request_parameter
+      transformations:
+        - type: AddFields
+          fields:
+            - path: ["LastUpdatedBefore"]
+              value: "{{ stream_slice['end_time'] }}"
+      retriever:
+        type: SimpleRetriever
+        ignore_stream_slicer_parameters_on_paginated_requests: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "fba/inbound/v0/shipmentItems"
+          http_method: GET
+          request_headers:
+            content-type: "application/json"
+          request_parameters:
+            MarketplaceId: '{{ config["marketplace_id"] }}'
+            QueryType: '{{ "NEXT_TOKEN" if next_page_token else "DATE_RANGE" }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 403
+                backoff_strategies:
+                  - class_name: "source_declarative_manifest.components.AmazonSellerPartnerWaitTimeFromHeaderBackoffStrategy"
+                    type: CustomBackoffStrategy
+                    header: x-amzn-RateLimit-Limit
+                    default_backoff_time: 60
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["payload", "ItemData"]
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: NextToken
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.payload.NextToken }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/fba_inbound_shipment_items"
+
     get_flat_file_all_orders_data_by_order_date_general:
       type: DeclarativeStream
       name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
@@ -3246,6 +3401,25 @@ api_budget:
         - method: GET
           url_path_pattern: "finances/v0/financialEvents(\\?.*)?$"
 
+    # SP-API Fulfillment Inbound v0
+    # getShipments: Rate 2 rps, Burst 30
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "fba/inbound/v0/shipments(\\?.*)?$"
+
+    # getShipmentItems: Rate 2 rps, Burst 30
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 2
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "fba/inbound/v0/shipmentItems(\\?.*)?$"
+
   # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
 
@@ -3255,6 +3429,8 @@ streams:
   - $ref: "#/definitions/streams/order_items"
   - $ref: "#/definitions/streams/list_financial_event_groups"
   - $ref: "#/definitions/streams/list_financial_events"
+  - $ref: "#/definitions/streams/fba_inbound_shipments"
+  - $ref: "#/definitions/streams/fba_inbound_shipment_items"
   - $ref: "#/definitions/streams/vendor_direct_fulfillment_shipping"
   - $ref: "#/definitions/streams/vendor_orders"
   - $ref: "#/definitions/streams/vendor_orders_status"
@@ -12799,6 +12975,222 @@ schemas:
               - array
       PostedBefore:
         description: Date and time filter for events posted before a specific date
+        type:
+        - 'null'
+        - string
+        format: date-time
+
+  fba_inbound_shipments:
+    title: FbaInboundShipments
+    description: FBA inbound shipments returned by SP-API getShipments (fba/inbound/v0/shipments).
+    type:
+    - 'null'
+    - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ShipmentId:
+        description: Unique identifier for the shipment.
+        type:
+        - 'null'
+        - string
+      ShipmentName:
+        description: Name of the inbound shipment.
+        type:
+        - 'null'
+        - string
+      ShipFromAddress:
+        description: Return address for the shipment.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          Name:
+            type:
+            - 'null'
+            - string
+          AddressLine1:
+            type:
+            - 'null'
+            - string
+          AddressLine2:
+            type:
+            - 'null'
+            - string
+          DistrictOrCounty:
+            type:
+            - 'null'
+            - string
+          City:
+            type:
+            - 'null'
+            - string
+          StateOrProvinceCode:
+            type:
+            - 'null'
+            - string
+          CountryCode:
+            type:
+            - 'null'
+            - string
+          PostalCode:
+            type:
+            - 'null'
+            - string
+      DestinationFulfillmentCenterId:
+        description: Identifier of the Amazon fulfillment center the shipment is destined for.
+        type:
+        - 'null'
+        - string
+      ShipmentStatus:
+        description: Status of the inbound shipment.
+        type:
+        - 'null'
+        - string
+      LabelPrepType:
+        description: Labeling preparation type for the shipment.
+        type:
+        - 'null'
+        - string
+      AreCasesRequired:
+        description: Whether case-packed boxes are required for the shipment.
+        type:
+        - 'null'
+        - boolean
+      ConfirmedNeedByDate:
+        description: Date by which Amazon expects to receive the shipment.
+        type:
+        - 'null'
+        - string
+        format: date
+      BoxContentsSource:
+        description: How the seller intends to provide box contents information.
+        type:
+        - 'null'
+        - string
+      EstimatedBoxContentsFee:
+        description: Manual processing fee per unit and total fee for the shipment when box contents are not supplied.
+        type:
+        - 'null'
+        - object
+        additionalProperties: true
+        properties:
+          TotalUnits:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              Value:
+                type:
+                - 'null'
+                - integer
+              Unit:
+                type:
+                - 'null'
+                - string
+          FeePerUnit:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              CurrencyCode:
+                type:
+                - 'null'
+                - string
+              Value:
+                type:
+                - 'null'
+                - number
+          TotalFee:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              CurrencyCode:
+                type:
+                - 'null'
+                - string
+              Value:
+                type:
+                - 'null'
+                - number
+      LastUpdatedBefore:
+        description: Upper bound (exclusive) of the LastUpdatedBefore filter window used to retrieve this record. Populated by the connector for incremental sync.
+        type:
+        - 'null'
+        - string
+        format: date-time
+
+  fba_inbound_shipment_items:
+    title: FbaInboundShipmentItems
+    description: FBA inbound shipment items returned by SP-API getShipmentItems (fba/inbound/v0/shipmentItems).
+    type:
+    - 'null'
+    - object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      ShipmentId:
+        description: Identifier of the inbound shipment that the item belongs to.
+        type:
+        - 'null'
+        - string
+      SellerSKU:
+        description: Seller SKU of the item.
+        type:
+        - 'null'
+        - string
+      FulfillmentNetworkSKU:
+        description: Amazon fulfillment network SKU of the item.
+        type:
+        - 'null'
+        - string
+      QuantityShipped:
+        description: Number of units shipped of this item.
+        type:
+        - 'null'
+        - integer
+      QuantityReceived:
+        description: Number of units received by Amazon of this item.
+        type:
+        - 'null'
+        - integer
+      QuantityInCase:
+        description: Number of units in each case for case-packed shipments.
+        type:
+        - 'null'
+        - integer
+      ReleaseDate:
+        description: Date that inventory may be released for this item.
+        type:
+        - 'null'
+        - string
+        format: date
+      PrepDetailsList:
+        description: Item preparation instructions and the party responsible for them.
+        type:
+        - 'null'
+        - array
+        items:
+          type:
+          - 'null'
+          - object
+          additionalProperties: true
+          properties:
+            PrepInstruction:
+              type:
+              - 'null'
+              - string
+            PrepOwner:
+              type:
+              - 'null'
+              - string
+      LastUpdatedBefore:
+        description: Upper bound (exclusive) of the LastUpdatedBefore filter window used to retrieve this record. Populated by the connector for incremental sync.
         type:
         - 'null'
         - string

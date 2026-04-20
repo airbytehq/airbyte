@@ -1,0 +1,21 @@
+{
+  "payload": {
+    "ItemData": [
+      {
+        "ShipmentId": "FBA15ABCD1234",
+        "SellerSKU": "TEST-SKU-001",
+        "FulfillmentNetworkSKU": "X001ABCDEF",
+        "QuantityShipped": 10,
+        "QuantityReceived": 0,
+        "QuantityInCase": 0,
+        "ReleaseDate": "2024-07-15",
+        "PrepDetailsList": [
+          {
+            "PrepInstruction": "Polybagging",
+            "PrepOwner": "AMAZON"
+          }
+        ]
+      }
+    ]
+  }
+}
