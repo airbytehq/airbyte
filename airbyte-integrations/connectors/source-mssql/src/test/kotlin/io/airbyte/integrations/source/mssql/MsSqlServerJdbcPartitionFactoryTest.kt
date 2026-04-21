@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.discover.TableName
@@ -88,8 +88,8 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 metadataQuerierFactory
             )
 
-        val fieldId = Field("id", IntFieldType)
-        val fieldName = Field("name", io.airbyte.cdk.jdbc.StringFieldType)
+        val fieldId = EmittedField("id", IntFieldType)
+        val fieldName = EmittedField("name", io.airbyte.cdk.jdbc.StringFieldType)
         val stream =
             Stream(
                 id =
@@ -101,7 +101,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 configuredPrimaryKey = listOf(fieldId),
                 configuredCursor = fieldId,
             )
-        val timestampFieldId = Field("created_at", OffsetDateTimeFieldType)
+        val timestampFieldId = EmittedField("created_at", OffsetDateTimeFieldType)
 
         val timestampStream =
             Stream(
@@ -115,7 +115,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 configuredCursor = timestampFieldId,
             )
 
-        val binaryFieldId = Field("binary_col", BinaryStreamFieldType)
+        val binaryFieldId = EmittedField("binary_col", BinaryStreamFieldType)
 
         val binaryStream =
             Stream(
@@ -129,7 +129,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 configuredCursor = binaryFieldId,
             )
 
-        val datetimeFieldId = Field("datetime_col", LocalDateTimeFieldType)
+        val datetimeFieldId = EmittedField("datetime_col", LocalDateTimeFieldType)
 
         val datetimeStream =
             Stream(
@@ -510,7 +510,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
         // correctly
         // This tests the fix for the infinite loop bug where state had "13" but MAX query returned
         // 13
-        val numericField = Field("numericId", io.airbyte.cdk.jdbc.BigDecimalFieldType)
+        val numericField = EmittedField("numericId", io.airbyte.cdk.jdbc.BigDecimalFieldType)
         val numericStream =
             Stream(
                 id =
