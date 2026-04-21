@@ -183,7 +183,7 @@ jobs:
           echo "playbook_id=${match}" >> $GITHUB_OUTPUT
 
       - name: Post error comment
-        if: failure() && inputs.comment-id != ''
+        if: failure() && steps.validate.outcome == 'failure' && inputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ steps.get-app-token.outputs.token }}
