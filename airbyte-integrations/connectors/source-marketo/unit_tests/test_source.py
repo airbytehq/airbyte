@@ -16,6 +16,7 @@ from source_marketo.source import Activities, IncrementalMarketoStream, Leads, M
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 from .conftest import START_DATE, get_stream_by_name
 
@@ -49,6 +50,23 @@ def test_should_retry_quota_exceeded(config, requests_mock):
         MarketoExportCreate(config).should_retry(response)
 
     assert e.value.message == "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
+
+
+def test_should_retry_daily_api_call_quota_reached(config, requests_mock):
+    create_job_url = "https://602-euo-598.mktorest.com/rest/v1/leads/export/create.json?batchSize=300"
+    response_json = {
+        "requestId": "bc2#19dad72856d",
+        "success": False,
+        "errors": [{"code": "607", "message": "Daily quota '50000' reached"}],
+    }
+    requests_mock.register_uri("GET", create_job_url, status_code=200, json=response_json)
+
+    response = requests.get(create_job_url)
+    with pytest.raises(AirbyteTracedException) as e:
+        MarketoExportCreate(config).should_retry(response)
+
+    assert e.value.message == "Marketo daily API call quota reached (resets daily at 12:00AM CST)."
+    assert e.value.failure_type == FailureType.config_error
 
 
 @pytest.mark.parametrize(

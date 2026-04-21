@@ -337,6 +337,13 @@ class MarketoExportCreate(MarketoStream):
                     message=message,
                     failure_type=FailureType.config_error,
                 )
+            if errors[0].get("code") == "607":
+                message = "Marketo daily API call quota reached (resets daily at 12:00AM CST)."
+                raise AirbyteTracedException(
+                    internal_message=response.text,
+                    message=message,
+                    failure_type=FailureType.config_error,
+                )
         result = response.json().get("result")
         if not result:
             self.logger.warning(
