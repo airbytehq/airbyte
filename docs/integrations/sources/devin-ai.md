@@ -80,7 +80,8 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.2.0 | 2026-04-21 | [76520](https://github.com/airbytehq/airbyte/pull/76520) | Add incremental sync support to the `sessions` stream (new `start_date` and `lookback_window_days` config fields) |
+| 0.2.0 | 2026-04-21 | [76505](https://github.com/airbytehq/airbyte/pull/76505) | Add incremental sync support to the `sessions` stream (new `start_date` and `lookback_window_days` config fields) |
+| 0.1.1 | 2026-04-21 | [76504](https://github.com/airbytehq/airbyte/pull/76504) | Update dependencies |
 | 0.1.0 | 2026-03-10 | | Initial release with sessions, session messages, playbooks, secrets, and knowledge notes streams |
 
 </details>
