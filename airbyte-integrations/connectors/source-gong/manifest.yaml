@@ -83,7 +83,11 @@ definitions:
               - calls
           record_filter:
             type: RecordFilter
-            condition: "{{ not record.get('isPrivate', False) }}"
+            # Gong requires calls with `isPrivate: true` to be filtered client-side
+            # when accessing the API via OAuth (hard listing requirement). Under
+            # basic-auth access keys the customer still owns every call returned
+            # by the API, so the filter is scoped to OAuth2.0 only.
+            condition: "{{ config['credentials']['auth_type'] != 'OAuth2.0' or not record.get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -175,7 +179,8 @@ definitions:
               - calls
           record_filter:
             type: RecordFilter
-            condition: "{{ not record.get('metaData', {}).get('isPrivate', False) }}"
+            # Scoped to OAuth2.0 only — see `calls` stream above for rationale.
+            condition: "{{ config['credentials']['auth_type'] != 'OAuth2.0' or not record.get('metaData', {}).get('isPrivate', False) }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
