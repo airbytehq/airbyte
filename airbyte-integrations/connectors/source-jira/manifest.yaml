@@ -7353,157 +7353,217 @@ definitions:
   workflows_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: workflows
-    primary_key: [["entityId"], ["name"]]
+    primary_key: [["id"]]
     $parameters:
       path: "workflows/search"
       extract_field: "values"
-    transformations:
-    - type: AddFields
-      fields:
-      - path: ["entityId"]
-        value_type: string
-        value: "{{ record.id.entityId }}"
-      - path: ["name"]
-        value_type: string
-        value: "{{ record.id.name }}"
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/draft-07/schema#
         type: object
+        additionalProperties: true
         properties:
           id:
-            description: The unique identifier and name of the workflow.
-            type: object
-            properties:
-              entityId:
-                type:
-                - 'null'
-                - string
-              name:
-                description: The name of the workflow.
-                type: string
-          entityId:
-            description: The unique identifier of the workflow.
+            description: The ID of the workflow.
             type:
             - 'null'
             - string
           name:
-            description: The unique name the workflow.
+            description: The name of the workflow.
             type:
             - 'null'
             - string
           description:
-            description: The detailed description of the workflow.
-            type: string
-          transitions:
-            description: The transitions available within the workflow.
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  description: The unique identifier of the transition.
-                  type: string
-                name:
-                  description: The name of the transition.
-                  type: string
-                description:
-                  description: The detailed description of the transition.
-                  type: string
-                from:
-                  description: The statuses the transition can start from.
-                  type: array
-                  items:
-                    description: The statuses the transition can start from.
-                    type: string
-                to:
-                  description: The status that the transition moves the issue to.
-                  type: string
+            description: The description of the workflow.
+            type:
+            - 'null'
+            - string
+          isEditable:
+            description: Indicates whether the workflow can be edited.
+            type:
+            - 'null'
+            - boolean
+          scope:
+            description: The scope of the workflow.
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+            properties:
+              type:
                 type:
-                  description: The type of the transition.
-                  type: string
-                  enum:
-                  - global
-                  - initial
-                  - directed
-                screen:
-                  description: The screen associated with the transition.
-                  type: object
-                  properties:
-                    id:
-                      description: The unique identifier of the screen.
-                      type: string
-                rules:
-                  type: object
-                  properties:
-                    conditions:
-                      description: The conditions that must be met for the transition
-                        to occur.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          type:
-                            description: The type of the transition rule.
-                            type: string
-                          configuration:
-                            description: The configuration of the transition rule
-                              (availability may vary).
-                    validators:
-                      description: Validation checks performed during the transition.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          type:
-                            description: The type of the validator.
-                            type: string
-                          configuration:
-                            description: The configuration of the validator (availability
-                              may vary).
-                    postFunctions:
-                      description: Actions that occur after a transition.
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          type:
-                            description: The type of the post function.
-                            type: string
-                          configuration:
-                            description: The configuration of the post function (availability
-                              may vary).
+                - 'null'
+                - string
+              project:
+                type:
+                - 'null'
+                - object
+                additionalProperties: true
+                properties:
+                  id:
+                    type:
+                    - 'null'
+                    - string
           statuses:
-            description: The various statuses that the workflow can have.
-            type: array
+            description: The statuses referenced in this workflow.
+            type:
+            - 'null'
+            - array
             items:
               type: object
+              additionalProperties: true
               properties:
                 id:
-                  description: The unique identifier of the issue status.
-                  type: string
+                  type:
+                  - 'null'
+                  - string
                 name:
-                  description: The name of the status in the workflow.
-                  type: string
+                  type:
+                  - 'null'
+                  - string
+                description:
+                  type:
+                  - 'null'
+                  - string
+                statusReference:
+                  type:
+                  - 'null'
+                  - string
+                statusCategory:
+                  type:
+                  - 'null'
+                  - string
                 properties:
-                  type: object
-                  properties:
-                    issueEditable:
-                      description: Indicates whether issues are editable in this status.
-                      type: boolean
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                layout:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                scope:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                usages:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+          transitions:
+            description: The transitions of the workflow.
+            type:
+            - 'null'
+            - array
+            items:
+              type: object
+              additionalProperties: true
+              properties:
+                id:
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  type:
+                  - 'null'
+                  - string
+                description:
+                  type:
+                  - 'null'
+                  - string
+                type:
+                  type:
+                  - 'null'
+                  - string
+                toStatusReference:
+                  type:
+                  - 'null'
+                  - string
+                customIssueEventId:
+                  type:
+                  - 'null'
+                  - string
+                links:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                actions:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                conditions:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                validators:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                triggers:
+                  type:
+                  - 'null'
+                  - array
+                  items:
+                    type: object
+                    additionalProperties: true
+                properties:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+                transitionScreen:
+                  type:
+                  - 'null'
+                  - object
+                  additionalProperties: true
+          taskId:
+            description: ID of an in-progress asynchronous operation for this workflow,
+              if any.
+            type:
+            - 'null'
+            - string
+          version:
+            description: Details about the workflow document version.
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          loopedTransitionContainerLayout:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
+          startPointLayout:
+            type:
+            - 'null'
+            - object
+            additionalProperties: true
           created:
-            description: The date and time when the workflow was created.
+            description: The creation date of the workflow.
             type:
             - 'null'
             - string
-            format: date-time
           updated:
-            description: The date and time when the workflow was last updated.
+            description: The last edited date of the workflow.
             type:
             - 'null'
             - string
-            format: date-time
         readOnly: true
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
