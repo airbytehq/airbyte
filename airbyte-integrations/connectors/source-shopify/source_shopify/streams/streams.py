@@ -88,9 +88,7 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
     @stream_state_cache.cache_stream_state
-    def stream_slices(
-        self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs: Any
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Generate bulk query slices for `metafield_customers` starting from
         `start_date` on every sync, regardless of the persisted cursor state.
