@@ -20,6 +20,8 @@ import json
 from typing import Any, Mapping
 
 import pytest
+from source_asana.source import SourceAsana
+
 from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStateMessage,
@@ -32,8 +34,6 @@ from airbyte_cdk.models import (
     StreamDescriptor,
     SyncMode,
 )
-
-from source_asana.source import SourceAsana
 
 
 ASANA_API = "https://app.asana.com/api/1.0"
@@ -126,9 +126,7 @@ def test_tasks_injects_modified_since_from_state(requests_mock):
     _read_records(source, _config(), catalog, _state_for_tasks())
 
     task_req = _find_task_request(requests_mock)
-    assert "modified_since" in task_req.qs, (
-        f"Expected `modified_since` in /tasks query string but got: {task_req.qs}"
-    )
+    assert "modified_since" in task_req.qs, f"Expected `modified_since` in /tasks query string but got: {task_req.qs}"
     assert task_req.qs["modified_since"] == [STATE_CURSOR.lower()], (
         f"Expected modified_since={STATE_CURSOR}, got {task_req.qs['modified_since']}"
     )
@@ -194,8 +192,9 @@ def test_child_stream_parent_is_incremental(child_stream_name, requests_mock):
 
 def test_manifest_tasks_stream_declares_incremental_sync():
     """Static guard: the manifest must declare `incremental_sync` on the `tasks` stream and `incremental_dependency: true` on its downstream partition router."""
-    import yaml
     from pathlib import Path
+
+    import yaml
 
     manifest_path = Path(__file__).parent.parent / "source_asana" / "manifest.yaml"
     manifest = yaml.safe_load(manifest_path.read_text())
