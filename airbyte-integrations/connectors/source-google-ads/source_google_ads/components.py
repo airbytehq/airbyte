@@ -40,7 +40,7 @@ logger = logging.getLogger("airbyte")
 # Default socket-level timeout (in seconds) for all Google Ads API HTTP calls.
 # This is an idle timeout per recv() call, not a total request timeout,
 # so streaming responses that keep sending data are unaffected.
-DEFAULT_HTTP_TIMEOUT = 300  # 5 minutes
+DEFAULT_HTTP_TIMEOUT = 120  # 2 minutes
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
