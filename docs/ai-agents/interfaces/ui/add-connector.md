@@ -4,64 +4,98 @@ sidebar_position: 3
 
 # Add a connector
 
-Before your AI agents can interact with external data sources, you need to add connectors to your workspace. Adding a connector makes it available for your end users to authenticate and use with their own credentials.
+Before an Airbyte agent can read from or write to a data source, someone has to authenticate that source for the workspace. In the web app, that happens on the **Credentials** page. Adding a connector means picking a workspace, picking a data source, and completing an authentication flow once; after that, every interface you use—Chats, Automations, the SDK, the API, and the MCP server—can use the resulting connector.
 
-## What adding a connector does
+This page walks through adding connectors end-to-end: where to add them, how to add them from inside a chat or the Automation Builder, how workspaces and multiple connectors fit together, and how to update or remove connectors you've already added.
 
-When you add a connector in Airbyte Agents, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
+## What "adding a connector" means
 
-Adding a connector (creating a source template) does the following.
+It helps to separate two ideas that both get called "a connector":
 
-- Makes the connector available in your organization's connector catalog
-- Allows your end users to authenticate with their own credentials for that data source
-- Configures which modes the connector operates in: direct, replication, or both
+- A **connector type**, like GitHub, Salesforce, or Google Drive. These come from the [Airbyte connector catalog](../../connectors) and are the same for every organization.
+- A **connector** you've added to a workspace. This is a connector type plus real credentials (an OAuth token, an API key, a service-account file) that Airbyte can use to make calls.
 
-To do the same thing programmatically, see [Add a connector](../api/add-connector) in the API section.
+When this doc says "add a connector," it means the second thing: creating an authenticated instance of a connector type inside one of your workspaces. Once it exists, any Chat, Automation, or external client that runs in the same workspace can use it without re-authenticating.
 
-## Connector modes
+Adding a connector is a one-time setup step per workspace. You don't need to pick a "mode" or opt into specific use cases. The same connector is available to agents in Chats, scheduled Automations, the [SDK](../sdk), the [API](../api), and the [MCP server](../mcp).
 
-Airbyte Agents connectors can operate in two modes:
+## Workspaces and connectors
 
-- **Direct mode** allows AI agents to execute real-time queries against connected data sources. When a user asks a question, the agent calls the third-party API directly to fetch fresh data. This mode is ideal for operational queries, real-time lookups, and actions that need current information.
+A **workspace** is the scope that a connector lives in. Every organization starts with a `default` workspace and a `Test Environment` workspace, and you can create more. Use workspaces to separate credentials that shouldn't mix—for example, production data from sandbox data, or one customer's credentials from another customer's.
 
-- **Replication mode** syncs data from connected sources to object storage like S3, GCS, or Azure Blob Storage. This mode is useful for analytics, RAG pipelines, and scenarios where you need to process large volumes of historical data.
+A workspace can hold as many connectors as you need:
 
-Some connectors support both modes, while others support only one. When adding a connector, you can choose which modes to activate based on your application's needs.
+- Connectors of different types. A workspace might have GitHub, Linear, and Salesforce connectors side by side so a single agent can answer cross-system questions.
+- Multiple connectors of the same type. For example, two GitHub connectors for different organizations, or one Salesforce connector for a sandbox and one for production. Airbyte keeps them separate and the agent picks among them based on your prompt and [context](./chats#context).
 
-## Add a new connector
+Each Chat or Automation runs in one workspace at a time and sees only the connectors in that workspace. If you can't find a connector you expect, check that you're in the right workspace.
 
-Add a connector through the Airbyte Agents dashboard.
+## Add a connector from the Credentials page
 
-1. Click **Connectors**.
+The Credentials page is the primary place to add, view, and manage connectors for every workspace in your organization. This is the right flow when you're setting up a new workspace, onboarding a data source before you need it, or adding a second account for a connector type you already use.
 
-2. Click **Manage Connectors** (or **Enable Connector** if you haven't added any connectors yet).
+1. Click **Credentials** in the left sidebar.
 
-3. In the slide-out panel, browse or search for the connector you want to add, and click it.
+2. Click **Add Credential** in the top right. A slide-out panel opens.
 
-4. Click the **Existing Connectors** tab and select the modes you want to enable for the connector:
+3. Under **Select Workspace**, pick the workspace the connector should belong to. To create a new workspace on the fly, click **+ Add new workspace** and give it a name.
 
-   - Check **Direct** to enable real-time agent queries
+4. Under **Select a connector to add credentials for**, browse or search for the data source you want, then click its tile.
 
-   - Check **Replication** to enable replicating data to object storage
+5. Airbyte opens the authentication module for that connector in a dialog. Complete the flow it asks for: typically an OAuth consent screen, or a short form for API keys and endpoint URLs. Refer to the connector's [setup guide](../../connectors) if you're not sure what a field expects.
 
-5. Click **Done**.
+6. When authentication finishes, the dialog closes and a **Credential Added** confirmation appears in the slide-out. From there you can click **Add Another Credential** to add more, or **Chat with your Agent** to jump straight into a Chat that uses the new connector.
 
-The connector appears in your active connectors list. Your end users can authenticate with this connector and use it in the modes you defined.
+The new connector appears immediately in the Credentials table and in the **Available context** list on the Chat and Automation landing pages. You don't need to reload other tabs.
 
-![Managing connectors in the user interface](img/managing-connectors.png)
+## Add a connector during a Chat
 
-## Update connectors
+You don't have to add connectors up front. If you start a Chat and the agent realizes it needs a data source it doesn't have, it can ask you to authenticate one inline without leaving the conversation.
 
-To modify or delete connectors you've already added, follow these steps.
+When this happens, the agent's message includes one or more connector tiles next to its reply. Each tile shows the connector's logo, name, and current status. To authenticate:
 
-1. Click **Connectors** > **Manage Connectors** > **Existing Connectors**.
+1. Click the tile for the connector you want to connect. The authentication module opens in a dialog, the same flow the Credentials page uses.
 
-2. For each connector, you can:
+2. Complete the OAuth or API-key flow. When it finishes, the tile flips to a success state.
 
-   - Toggle Direct mode on or off
+3. If the agent requested more than one connector, repeat for each tile you want to authenticate. Click **Skip** on any tile you don't want to add right now.
 
-   - Toggle Replication mode on or off, if data replication is enabled
+4. Once you've handled the tiles you care about, the agent picks up the new connectors automatically and continues its response.
 
-   - Remove the connector entirely by clicking the trash icon
+Anything you add through this inline flow is saved to the workspace the Chat is running in, just like credentials added from the Credentials page. It's visible afterward in the Credentials table and usable by other Chats and Automations in the same workspace.
 
-At least one mode must remain enabled for each active connector.
+If you'd rather not add a connector inline—for example, because you want to pick a different workspace, or because you need to finish authentication elsewhere first—you can also open the **Credentials** page in another tab, add the connector there, then come back to the Chat. Send the agent a short message like "try again" and it re-reads the available context and picks up the new connector on its next turn.
+
+## Add a connector from the Automation Builder
+
+Automations run without a person sitting in the loop, so every connector an automation uses must be authenticated ahead of time. The [Automation Builder](./automations#the-automation-builder) makes this part of the setup conversation.
+
+The fastest path is to tell the Automation Builder Agent what you want and let it flag missing connectors. Describe the automation in plain language. If a required data source isn't authenticated yet, the agent says so—often with connector tiles right in the chat—exactly like in a regular Chat. Click a tile, authenticate, and continue iterating on the automation. The agent re-reads the workspace context and adjusts its plan once the new connector is available.
+
+You can also ask the Builder Agent to change which connectors the automation uses. Sending a message like "use the Salesforce connector instead" or "add HubSpot" tells it to update the automation's [**Context**](./automations#properties) to match. Airbyte blocks direct edits to the Context list in the Properties panel on purpose, so that the prompt and the connectors it relies on stay in sync.
+
+If you prefer, you can still pre-authenticate everything from the Credentials page first, then open the Automation Builder with the connectors already in place. That path is often faster when you already know exactly which sources the automation needs.
+
+## Manage existing connectors
+
+The Credentials page also shows every connector that's already been added across every workspace. Use it to audit what's authenticated, see how much each connector is being used, and retire ones you no longer need.
+
+- **Filter the list**. Use the **All workspaces** and **All connectors** filters at the top of the table to narrow the list by workspace or connector type.
+
+- **Inspect a connector's history**. Click the clock icon on a row to see an agent-request history for that connector, including which tool calls hit it, when, and what succeeded.
+
+- **Re-authenticate a connector**. If credentials expire or get revoked on the third-party side, click the pencil icon to re-launch the authentication module and update them. The connector keeps its identity, so Chats and Automations that reference it don't need to be rewired.
+
+- **Remove a connector**. Click the trash icon on a row to delete that connector. The credential is removed from the workspace immediately. Any Chat or Automation that was relying on it needs a replacement connector, or a different approach, the next time it runs.
+
+You don't have to turn off a connector before deleting it, and there's no minimum number of connectors per workspace. An empty workspace is a valid state. It just means no agent running in it can reach external data.
+
+## Doing this without the web app
+
+Everything on this page has programmatic equivalents:
+
+- Use the [API](../api/add-connector) to create, update, and delete connectors from a script or backend service.
+- Use the [SDK](../sdk) to manage connectors from Python code, including inside your own agent implementations.
+- Use the [MCP server](../mcp) to expose an authenticated connector to any MCP-compatible client.
+
+All three act on the same underlying connectors, so a connector added in the web app is immediately usable from the API, SDK, and MCP server, and vice versa.
