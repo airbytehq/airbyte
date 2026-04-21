@@ -7,10 +7,10 @@ import DocCardList from '@theme/DocCardList';
 
 # Skills
 
-Skills are self-contained packages of context and instructions you give to an AI app builder so it can generate working code against Airbyte. A skill teaches the builder's AI agent the architecture, endpoints, authentication flow, and code patterns it needs to integrate Airbyte connectors into the app it's creating for you.
+Skills are self-contained packages of context and instructions you give to an AI agent so it can generate working code against Airbyte. A skill teaches the agent the architecture, endpoints, authentication flow, and code patterns it needs to integrate Airbyte connectors into whatever it's building for you.
 
-Use a skill when you want a builder to scaffold an app that talks to Airbyte without having to explain the API, the widget, or the context store yourself. Paste the skill into the builder's knowledge or context area, then prompt it to build.
+Use a skill when you want an AI app builder like Lovable, or a coding agent like Claude Code or Codex, to scaffold something that talks to Airbyte without having to explain the API, the widget, the SDK, or the context store yourself. Install the skill into the agent, then prompt it to build.
 
-Each skill below targets a specific AI app builder. Pick the one that matches the tool you're using.
+Each page below targets a specific agent. Pick the one that matches the tool you're using.
 
 <DocCardList />
