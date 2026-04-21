@@ -48,7 +48,7 @@ jobs:
       - name: Authenticate as GitHub App
         # NOTE: When re-enabling the commented-out APPROVE flow further down in
         # this workflow, extend this condition back to:
-        #   result == 'FAIL' || result == 'APPROVE'
+        #   if: steps.parse-marker.outputs.result == 'FAIL' || steps.parse-marker.outputs.result == 'APPROVE'
         if: steps.parse-marker.outputs.result == 'FAIL'
         uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
