@@ -17,6 +17,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_mixpanel.property_transformation import transform_property_names
 
 from .utils import fix_date_time
@@ -454,7 +455,18 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
-            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
+            time_value = item["time"]
+            if time_value.lstrip("-").isdigit():
+                item["time"] = pendulum.from_timestamp(int(time_value), tz="UTC").to_iso8601_string()
+            else:
+                try:
+                    item["time"] = pendulum.parse(time_value, tz="UTC").to_iso8601_string()
+                except ValueError as e:
+                    raise AirbyteTracedException(
+                        message="Export stream received an unexpected time format from the Mixpanel API.",
+                        internal_message=f"Cannot parse time value '{time_value}' as Unix timestamp or datetime string: {e}",
+                        failure_type=FailureType.system_error,
+                    ) from e
 
             yield item
 
