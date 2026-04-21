@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
@@ -65,7 +65,7 @@ class MsSqlServerJdbcPartitionFactory(
      * Returns the ordered column (from clustered index or PK) as a single-element list, or null if
      * no ordered column is available. This is used for resumable partitioning.
      */
-    private fun getOrderedColumnAsList(stream: Stream): List<Field>? {
+    private fun getOrderedColumnAsList(stream: Stream): List<EmittedField>? {
         val orderedColumnName = metadataQuerier.getOrderedColumnForSync(stream.id) ?: return null
         val orderedColumn = stream.fields.find { it.id == orderedColumnName } ?: return null
         return listOf(orderedColumn)
@@ -145,8 +145,8 @@ class MsSqlServerJdbcPartitionFactory(
             )
         }
 
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: EmittedField =
+            stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
 
         // Calculate cutoff time for cursor if exclude today's data is enabled
         val cursorCutoffTime = getCursorCutoffTime(cursorChosenFromCatalog)
@@ -297,8 +297,9 @@ class MsSqlServerJdbcPartitionFactory(
             // Resume from full refresh
             if (sv.pkName != null) {
                 // Still in snapshot phase (PK read)
-                val cursorChosenFromCatalog: Field =
-                    stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+                val cursorChosenFromCatalog: EmittedField =
+                    stream.configuredCursor as? EmittedField
+                        ?: throw ConfigErrorException("no cursor")
 
                 // Views can't be sampled with TABLESAMPLE, so use non-resumable partitions
                 if (isView(stream) || orderedColumns == null) {
@@ -334,7 +335,7 @@ class MsSqlServerJdbcPartitionFactory(
             }
 
             // Cursor read phase (incremental read)
-            val cursor: Field? = stream.fields.find { it.id == sv.cursorField.first() }
+            val cursor: EmittedField? = stream.fields.find { it.id == sv.cursorField.first() }
             if (cursor == null) {
                 log.warn {
                     "Cursor field '${sv.cursorField.first()}' not found in stream ${stream.name}, resetting stream"
@@ -385,7 +386,10 @@ class MsSqlServerJdbcPartitionFactory(
         )
     }
 
-    private fun extractPkLowerBound(pkValue: JsonNode?, orderedColumnForSync: Field): JsonNode {
+    private fun extractPkLowerBound(
+        pkValue: JsonNode?,
+        orderedColumnForSync: EmittedField
+    ): JsonNode {
         return when {
             pkValue == null || pkValue.isNull -> Jsons.nullNode()
             pkValue.isTextual -> stateValueToJsonNode(orderedColumnForSync, pkValue.asText())
@@ -393,7 +397,7 @@ class MsSqlServerJdbcPartitionFactory(
         }
     }
 
-    private fun getCursorCutoffTime(cursorField: Field): JsonNode? {
+    private fun getCursorCutoffTime(cursorField: EmittedField): JsonNode? {
         val incrementalConfig = config.incrementalReplicationConfiguration
         return if (
             incrementalConfig is UserDefinedCursorIncrementalConfiguration &&
