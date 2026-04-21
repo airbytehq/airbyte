@@ -34,6 +34,7 @@ Note that this connector uses the Google API OAuth2.0 for authentication. To get
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
 | 0.1.0 | 2026-04-17 | [76431](https://github.com/airbytehq/airbyte/pull/76431) | Add incremental sync to `messages_details`, enable concurrency, and add Gmail-aware rate-limit handling |
+| 0.0.51 | 2026-04-21 | [76616](https://github.com/airbytehq/airbyte/pull/76616) | Update dependencies |
 | 0.0.50 | 2026-03-24 | [75387](https://github.com/airbytehq/airbyte/pull/75387) | Update dependencies |
 | 0.0.49 | 2026-03-10 | [74532](https://github.com/airbytehq/airbyte/pull/74532) | Update dependencies |
 | 0.0.48 | 2026-03-03 | [74205](https://github.com/airbytehq/airbyte/pull/74205) | Update dependencies |
