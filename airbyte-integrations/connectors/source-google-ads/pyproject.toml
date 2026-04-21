@@ -38,3 +38,12 @@ include = [
     # Run `poe` or `poe --help` to see the list of available tasks.
     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 ]
+
+[tool.poe.tasks]
+# Override the default `install-cdk-cli` task to pin the CDK CLI (used by the
+# Docker acceptance-test harness) to the same prerelease build as the poetry
+# dependency above. This is required to validate
+# https://github.com/airbytehq/airbyte-python-cdk/pull/991 end-to-end —
+# otherwise the CLI tool would be installed from the latest released CDK
+# version and the fix under test would not run.
+install-cdk-cli = "uv tool install --force 'airbyte-cdk[dev]==7.17.2.post3.dev24730905870'"
