@@ -126,9 +126,9 @@ def test_tasks_injects_modified_since_from_state(requests_mock):
 
     task_req = _find_task_request(requests_mock)
     assert "modified_since" in task_req.qs, f"Expected `modified_since` in /tasks query string but got: {task_req.qs}"
-    assert task_req.qs["modified_since"] == [STATE_CURSOR.lower()], (
-        f"Expected modified_since={STATE_CURSOR}, got {task_req.qs['modified_since']}"
-    )
+    assert task_req.qs["modified_since"] == [
+        STATE_CURSOR.lower()
+    ], f"Expected modified_since={STATE_CURSOR}, got {task_req.qs['modified_since']}"
 
 
 def test_tasks_uses_default_start_date_when_no_state(requests_mock):
@@ -184,9 +184,9 @@ def test_child_stream_parent_is_incremental(child_stream_name, requests_mock):
     _read_records(source, _config(), catalog, [])
 
     task_req = _find_task_request(requests_mock)
-    assert "modified_since" in task_req.qs, (
-        f"Expected parent `/tasks` fetch (triggered by child `{child_stream_name}`) to inject `modified_since`; got qs={task_req.qs}"
-    )
+    assert (
+        "modified_since" in task_req.qs
+    ), f"Expected parent `/tasks` fetch (triggered by child `{child_stream_name}`) to inject `modified_since`; got qs={task_req.qs}"
 
 
 def test_manifest_tasks_stream_declares_incremental_sync():
@@ -203,9 +203,9 @@ def test_manifest_tasks_stream_declares_incremental_sync():
 
     tasks_router = manifest["definitions"]["tasks_partition_router"]
     parent = tasks_router["parent_stream_configs"][0]
-    assert parent.get("incremental_dependency") is True, (
-        "tasks_partition_router parent_stream_configs[0] must set `incremental_dependency: true`"
-    )
+    assert (
+        parent.get("incremental_dependency") is True
+    ), "tasks_partition_router parent_stream_configs[0] must set `incremental_dependency: true`"
 
     # incremental_sync_modified_at definition present and well-formed
     inc = manifest["definitions"]["incremental_sync_modified_at"]
