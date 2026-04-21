@@ -8,6 +8,7 @@ import sys
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CollectionProduct,
@@ -20,6 +21,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     InventoryLevel,
     MetafieldCollection,
     MetafieldCustomer,
+    MetafieldCustomerByDefinition,
     MetafieldDraftOrder,
     MetafieldLocation,
     MetafieldOrder,
@@ -37,10 +39,12 @@ from source_shopify.shopify_graphql.bulk.query import (
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 
 from airbyte_cdk import HttpSubStream
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 
 from .base_streams import (
     FullRefreshShopifyGraphQlBulkStream,
@@ -83,8 +87,100 @@ class Customers(IncrementalShopifyStream):
 
 
 class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
+    """Customer metafields stream.
+
+    Runs two complementary bulk jobs per slice and merges their output
+    (deduplicating by the metafield's `admin_graphql_api_id`) to mitigate
+    Shopify's Bulk API nested-connection limitation, which silently drops
+    some nested rows from `customers { metafields { ... } }` JSONL output.
+
+    **Pass 1** — `metafieldDefinitions(ownerType: CUSTOMER) { metafields }`
+    (via `MetafieldCustomerByDefinition`). Iterates metafields through
+    `MetafieldDefinition` parents; the outer connection has far fewer rows
+    than `customers`, so per-parent fan-out is much smaller and less prone
+    to the nested drop.
+
+    **Pass 2** — legacy `customers { metafields }` (via `MetafieldCustomer`).
+    Retained to cover ad-hoc customer metafields that have no associated
+    `MetafieldDefinition`.
+
+    See airbytehq/oncall#12004 and airbytehq/airbyte#72849 (the analogous
+    `fulfillmentOrders` fix).
+    """
+
     parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
+
+    def __init__(self, config: Mapping[str, Any]) -> None:
+        super().__init__(config)
+        self.by_definition_job_manager: ShopifyBulkManager = ShopifyBulkManager(
+            http_client=self.bulk_http_client,
+            base_url=f"{self.url_base}{self.path()}",
+            query=MetafieldCustomerByDefinition(config, self.parent_stream_query_cursor_alias),
+            job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
+            job_size=config.get("bulk_window_in_days", 30.0),
+            job_checkpoint_interval=config.get("job_checkpoint_interval", 200_000),
+            parent_stream_name=self.parent_stream_name,
+            parent_stream_cursor=self.parent_stream_cursor,
+        )
+
+    def _run_bulk_pass(
+        self,
+        job_manager: ShopifyBulkManager,
+        stream_slice: Optional[Mapping[str, Any]],
+        filter_field: Optional[str],
+        cached_state: Mapping[str, Any],
+        seen_ids: set,
+    ) -> Iterable[StreamData]:
+        """Run a single bulk job through `job_manager`, filter records against
+        `cached_state`, and yield metafields not already emitted in this slice.
+
+        Records are keyed by `admin_graphql_api_id` for dedup, which is the
+        canonical Shopify `gid://...` string and is globally unique across
+        both query shapes.
+        """
+        job_manager.create_job(stream_slice, filter_field)
+        records = self.add_shop_url_field(job_manager.job_get_results())
+        for record in self.filter_records_newer_than_state(cached_state, self.sort_output_asc(records)):
+            dedup_key = record.get("admin_graphql_api_id") or record.get("id")
+            if dedup_key in seen_ids:
+                continue
+            seen_ids.add(dedup_key)
+            yield record
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[list] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        cached_state = stream_state_cache.cached_state.get(
+            self.name, {self.cursor_field: self.default_state_comparison_value}
+        )
+        seen_ids: set = set()
+        # Pass 1: definition-based bulk job runs at full scope — the
+        # `metafieldDefinitions.updatedAt` field does not gate metafield
+        # emission, so applying the slice `updated_at` filter would exclude
+        # definitions whose metafields we still need. `filter_records_newer_than_state`
+        # handles cursor-based dedup using each metafield's own `updated_at`.
+        yield from self._run_bulk_pass(
+            self.by_definition_job_manager,
+            stream_slice,
+            None,
+            cached_state,
+            seen_ids,
+        )
+        # Pass 2: legacy customer-based bulk job — covers ad-hoc metafields
+        # that have no associated `MetafieldDefinition`.
+        yield from self._run_bulk_pass(
+            self.job_manager,
+            stream_slice,
+            self.filter_field,
+            cached_state,
+            seen_ids,
+        )
+        self.emit_checkpoint_message()
 
 
 class Orders(IncrementalShopifyStreamWithDeletedEvents):

@@ -8,6 +8,7 @@ from graphql_query import Argument, Field, InlineFragment, Operation, Query
 from source_shopify.shopify_graphql.bulk.query import (
     InventoryLevel,
     MetafieldCustomer,
+    MetafieldCustomerByDefinition,
     MetafieldProductImage,
     ShopifyBulkQuery,
     ShopifyBulkTemplates,
@@ -381,3 +382,66 @@ def test_bulk_query(auth_config, query_class, filter_field, start, end, parent_s
         stream_query = query_class(auth_config)
 
     assert stream_query.get(filter_field, start, end) == expected.render()
+
+
+def test_bulk_query_metafield_customer_by_definition(auth_config) -> None:
+    """`MetafieldCustomerByDefinition` renders the definition-keyed query
+    shape with no `sortKey`, no `updatedAt` filter, and an inline `owner`
+    selection on `Customer.id`.
+    """
+    expected = Operation(
+        type="",
+        queries=[
+            Query(
+                name="metafieldDefinitions",
+                arguments=[Argument(name="ownerType", value="CUSTOMER")],
+                fields=[
+                    Field(
+                        name="edges",
+                        fields=[
+                            Field(
+                                name="node",
+                                fields=[
+                                    "__typename",
+                                    "id",
+                                    Field(
+                                        name="metafields",
+                                        fields=[
+                                            Field(
+                                                name="edges",
+                                                fields=[
+                                                    Field(
+                                                        name="node",
+                                                        fields=[
+                                                            "__typename",
+                                                            "id",
+                                                            "namespace",
+                                                            "value",
+                                                            "key",
+                                                            "description",
+                                                            "createdAt",
+                                                            "updatedAt",
+                                                            "type",
+                                                            Field(
+                                                                name="owner",
+                                                                fields=[InlineFragment(type="Customer", fields=["id"])],
+                                                            ),
+                                                        ],
+                                                    )
+                                                ],
+                                            )
+                                        ],
+                                    ),
+                                ],
+                            )
+                        ],
+                    )
+                ],
+            )
+        ],
+    )
+
+    stream_query = MetafieldCustomerByDefinition(auth_config)
+    # `filter_field` is ignored by this query shape (see class docstring); the
+    # full-scope query renders regardless of the values passed.
+    assert stream_query.get("updated_at", "2023-01-01", "2023-01-02") == expected.render()

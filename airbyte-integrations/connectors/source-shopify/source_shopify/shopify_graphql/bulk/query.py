@@ -408,6 +408,126 @@ class MetafieldCustomer(Metafield):
     }
 
 
+class MetafieldCustomerByDefinition(Metafield):
+    """
+    Secondary bulk query for `metafield_customers` that iterates metafields
+    through `metafieldDefinitions(ownerType: CUSTOMER)` instead of
+    `customers { metafields }`. Used alongside `MetafieldCustomer` to mitigate
+    Shopify's Bulk API nested-connection limitation (see
+    airbytehq/airbyte#72849 for the analogous `fulfillmentOrders` fix).
+
+    The outer `metafieldDefinitions` connection has far fewer rows than the
+    `customers` connection, so the nested fan-out under each parent is much
+    smaller and less likely to trigger the silent drop. `metafields` here
+    still has the limitation structurally, but per-parent emission is
+    cardinally smaller.
+
+    Only definition-backed metafields are returned. Ad-hoc customer
+    metafields (no `MetafieldDefinition`) are still covered by the legacy
+    `MetafieldCustomer` pass, which the stream continues to run.
+
+    Output JSONL rows for each metafield carry the `MetafieldDefinition` gid
+    as `__parentId`; the true owner (the `Customer`) is carried inline via
+    the metafield's `owner { ... on Customer { id } }` selection. The
+    processor reads `owner.id` to set `owner_id` and hard-codes
+    `owner_resource = "customer"`.
+
+    ```graphql
+    {
+      metafieldDefinitions(ownerType: CUSTOMER) {
+        edges {
+          node {
+            __typename
+            id
+            metafields {
+              edges {
+                node {
+                  __typename
+                  id
+                  namespace
+                  value
+                  key
+                  description
+                  createdAt
+                  updatedAt
+                  type
+                  owner {
+                    ... on Customer { id }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ```
+    """
+
+    # No sort key: `metafieldDefinitions` does not accept `sortKey` and the
+    # inner `metafields` connection cannot be filtered or sorted by updatedAt.
+    sort_key = None
+    # `metafieldDefinitions` does not accept an `updated_at` filter that
+    # propagates to nested metafields, so this query always runs at full
+    # scope. Cursor-based dedup happens in `filter_records_newer_than_state`
+    # using each metafield's own `updated_at`.
+    type = MetafieldType.CUSTOMERS
+
+    record_composition = {
+        "new_record": "MetafieldDefinition",
+        "record_components": ["Metafield"],
+    }
+
+    _owner_query_args: Mapping[str, Any] = {"ownerType": "CUSTOMER"}
+
+    @property
+    def query_name(self) -> str:
+        return "metafieldDefinitions"
+
+    @property
+    def metafield_fields(self) -> List[Field]:
+        owner_field = Field(name="owner", fields=[InlineFragment(type="Customer", fields=["id"])])
+        return [
+            "__typename",
+            "id",
+            "namespace",
+            "value",
+            "key",
+            "description",
+            "createdAt",
+            "updatedAt",
+            "type",
+            owner_field,
+        ]
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        definition_node_fields: List[Field] = ["__typename", "id"]
+        metafield_node = self.get_edge_node("metafields", self.metafield_fields)
+        return [*definition_node_fields, metafield_node]
+
+    def query(self, filter_query: Optional[str] = None) -> Query:
+        # `filter_query` intentionally ignored: a filter on
+        # `metafieldDefinitions.updatedAt` would exclude definitions whose
+        # metafields are the very rows we need. Always run full scope.
+        return self.build(
+            name=self.query_name,
+            edges=self.query_nodes,
+            additional_query_args=self._owner_query_args,
+        )
+
+    def _process_metafield(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        owner = record.pop("owner", None) or {}
+        owner_gid = owner.get("id", "")
+        record["owner_id"] = self.tools.resolve_str_id(owner_gid)
+        record["owner_resource"] = "customer"
+        record.pop(BULK_PARENT_KEY, None)
+        record["createdAt"] = self.tools.from_iso8601_to_rfc3339(record, "createdAt")
+        record["updatedAt"] = self.tools.from_iso8601_to_rfc3339(record, "updatedAt")
+        record = self.tools.fields_names_to_snake_case(record)
+        return record
+
+
 class MetafieldLocation(Metafield):
     """
     {
