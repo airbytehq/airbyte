@@ -89,6 +89,75 @@ definitions:
         error_message: >-
           Bad request (400). Please verify your credentials and try again.
 
+  error_handler_ignore_invalid_object_type_for_list:
+    # Same as the base error handler, but ignores 400 responses with
+    # `subCategory: ListError.INVALID_OBJECT_TYPE_FOR_LIST`. The
+    # `GET /crm/v3/lists/{listId}/memberships` endpoint rejects lists whose
+    # `objectTypeId` is not active for the portal (e.g. Leads, `0-136`),
+    # even though `POST /crm/v3/lists/search` happily returns them. Those
+    # lists are unsyncable via this endpoint, so we skip them instead of
+    # failing the whole stream.
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.HubspotErrorHandler
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: Retry-After
+      # HubSpot API does not always return Retry-After value for 429 HTTP error
+      - type: ExponentialBackoffStrategy
+    response_filters:
+      - type: HttpResponseFilter
+        action: RATE_LIMITED
+        http_codes:
+          - 429
+        error_message: >-
+          HubSpot rate limit reached (429). Backoff based on 'Retry-After' header, then exponential backoff fallback.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 502
+          - 503
+        error_message: >-
+          HubSpot server error (5xx). Retrying with exponential backoff...
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        error_message: >-
+          Authentication to HubSpot has expired. Authentication will be retried, but if this issue persists, re-authenticate to restore access to HubSpot."
+      # we get a 530 Cloudflare Origin DNS Error when the provided API Token has incorrect format
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 530
+        error_message: >-
+          The user cannot be authorized with provided credentials. Please verify that your credentials are valid and try again.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        error_message: >-
+          Access denied (403). The authenticated user does not have permissions to access the resource.
+          Verify your scopes: {{ parameters.required_scopes }} to access stream {{ parameters.name }}.
+          See details: https://docs.airbyte.com/integrations/sources/hubspot#step-2-configure-the-scopes-for-your-streams-private-app-only
+      - type: HttpResponseFilter
+        action: IGNORE
+        # `http_codes`, `predicate`, and `error_message_contains` are OR'd by the CDK
+        # (see `HttpResponseFilter._matches_filter`), so we cannot combine
+        # `http_codes: [400]` with `error_message_contains` to narrow the match.
+        # Instead, we key solely on the HubSpot error body's `subCategory` field
+        # via `predicate`. That field is specific enough on its own — HubSpot only
+        # returns `ListError.INVALID_OBJECT_TYPE_FOR_LIST` on the 400 response when
+        # a list's `objectTypeId` is not active for the portal.
+        predicate: "{{ response.get('subCategory') == 'ListError.INVALID_OBJECT_TYPE_FOR_LIST' }}"
+        error_message: >-
+          Ignoring list whose objectTypeId is not valid for this portal (VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST).
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 400
+        error_message: >-
+          Bad request (400). Please verify your credentials and try again.
+
   error_handler_ignore_403:
     # Same as the base error handler, but ignores 403 errors
     # to avoid failing the sync when fetching dynamic streams.
@@ -1211,6 +1280,14 @@ definitions:
       requester:
         $ref: "#/definitions/base_requester"
         path: "/crm/v3/lists/{{ stream_partition['list_id'] }}/memberships"
+        # Some lists returned by `POST /crm/v3/lists/search` reference an
+        # `objectTypeId` that is not active for the portal (notably Leads,
+        # `0-136`). The memberships endpoint then rejects them with a 400
+        # `VALIDATION_ERROR` / `ListError.INVALID_OBJECT_TYPE_FOR_LIST`. We
+        # ignore that specific 400 so the unsyncable list is skipped without
+        # failing the rest of the stream.
+        error_handler:
+          $ref: "#/definitions/error_handler_ignore_invalid_object_type_for_list"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1231,6 +1308,7 @@ definitions:
         fields:
           - path: ["listId"]
             value: "{{ stream_partition['list_id'] }}"
+            value_type: string
     schema_loader:
       type: InlineSchemaLoader
       schema:

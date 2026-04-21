@@ -36,9 +36,14 @@ For more information, see the [Linear API documentation](https://developers.line
 
 ## Supported sync modes
 
-The Linear source connector supports the following sync mode:
+The Linear source connector supports the following sync modes:
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---append)
+- [Incremental - Append](https://docs.airbyte.com/cloud/core-concepts/#incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/cloud/core-concepts/#incremental-append--deduped)
+
+Incremental sync is supported on the following streams using `updatedAt` as the cursor field: `issues`, `customers`, `users`, `comments`, `cycles`, `customer_needs`, `projects`, `project_milestones`, `issue_labels`, `workflow_states`, `teams`, and `attachments`. The remaining streams (`project_statuses`, `issue_relations`, `customer_statuses`, `customer_tiers`) are full-refresh only because Linear's GraphQL API does not expose a filter argument for them.
 
 ## Supported streams
 
@@ -80,6 +85,7 @@ The connector retrieves data that the authenticated user has access to. If you c
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.0 | 2026-04-17 | [76429](https://github.com/airbytehq/airbyte/pull/76429) | Add incremental sync support for 12 streams using the `updatedAt` cursor field |
 | 0.0.36 | 2026-03-31 | [75720](https://github.com/airbytehq/airbyte/pull/75720) | Update dependencies |
 | 0.0.35 | 2026-03-17 | [75023](https://github.com/airbytehq/airbyte/pull/75023) | Update dependencies |
 | 0.0.34 | 2026-03-03 | [74239](https://github.com/airbytehq/airbyte/pull/74239) | Update dependencies |
