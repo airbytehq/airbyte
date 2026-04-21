@@ -561,11 +561,12 @@ streams:
 # Concurrency calculated using highest rate limit across all endpoints:
 # highest = 50 req/sec (Talk API all endpoints), initial = floor(50 / 4) = 12
 # Tuning iteration 2: decreased to 9 after Phase 1 showed +6% duration regression
+# Tuning iteration 3: decreased to 6 after rc.2 showed persistent heartbeat_timeout failures on high-volume connections
 # Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 9
-  max_concurrency: 36
+  default_concurrency: 6
+  max_concurrency: 24
 
 # HTTP API Budget: throttle requests per Zendesk Talk API rate limits
 # Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/

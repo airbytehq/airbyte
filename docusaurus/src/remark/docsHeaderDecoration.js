@@ -22,7 +22,7 @@ const plugin = () => {
 
     const rawCDKVersion = getFromPaths(
       registryEntry,
-      "packageInfo_[oss|cloud].cdk_version",
+      "packageInfo.cdk_version",
     );
 
     let firstHeading = true;
@@ -33,15 +33,15 @@ const plugin = () => {
 
         const syncSuccessRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].sync_success_rate",
+          "generated.metrics.[all|cloud|oss].sync_success_rate",
         );
         const usageRate = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].metrics.[all|cloud|oss].usage",
+          "generated.metrics.[all|cloud|oss].usage",
         );
         const lastUpdated = getFromPaths(
           registryEntry,
-          "generated_[oss|cloud].source_file_info.metadata_last_modified",
+          "generated.source_file_info.metadata_last_modified",
         );
 
         const { version, isLatest, url } = parseCDKVersion(
@@ -52,9 +52,9 @@ const plugin = () => {
         const attrDict = {
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          supportLevel: registryEntry.supportLevel_oss,
-          dockerImageTag: registryEntry.dockerImageTag_oss,
-          iconUrl: registryEntry.iconUrl_oss,
+          supportLevel: registryEntry.supportLevel,
+          dockerImageTag: registryEntry.dockerImageTag,
+          iconUrl: registryEntry.iconUrl,
           github_url: registryEntry.github_url,
           issue_url: registryEntry.issue_url,
           originalTitle,
