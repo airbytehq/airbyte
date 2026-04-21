@@ -55,14 +55,19 @@ def _mock_schema_loader(mocker, fields_metadata):
 
 def test_check_validates_valid_custom_query(requests_mock, mocker):
     """check succeeds when a custom GAQL query is valid and returns data."""
-    config = _make_config([
-        {"query": "SELECT campaign.id, segments.date FROM campaign", "table_name": "test_valid_query"},
-    ])
+    config = _make_config(
+        [
+            {"query": "SELECT campaign.id, segments.date FROM campaign", "table_name": "test_valid_query"},
+        ]
+    )
 
-    _mock_schema_loader(mocker, {
-        "campaign.id": Obj(data_type=Obj(name="INT64"), is_repeated=False),
-        "segments.date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
-    })
+    _mock_schema_loader(
+        mocker,
+        {
+            "campaign.id": Obj(data_type=Obj(name="INT64"), is_repeated=False),
+            "segments.date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+        },
+    )
 
     # OAuth token
     requests_mock.post("https://www.googleapis.com/oauth2/v3/token", json={"access_token": "test", "expires_in": 3600})
@@ -92,15 +97,20 @@ def test_check_validates_valid_custom_query(requests_mock, mocker):
 
 def test_check_fails_on_invalid_custom_query(requests_mock, mocker):
     """check fails when the API rejects the custom GAQL query with a 400 error."""
-    config = _make_config([
-        {"query": "SELECT campaign.id, date, segments.date FROM campaign", "table_name": "test_invalid_query"},
-    ])
+    config = _make_config(
+        [
+            {"query": "SELECT campaign.id, date, segments.date FROM campaign", "table_name": "test_invalid_query"},
+        ]
+    )
 
-    _mock_schema_loader(mocker, {
-        "campaign.id": Obj(data_type=Obj(name="INT64"), is_repeated=False),
-        "date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
-        "segments.date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
-    })
+    _mock_schema_loader(
+        mocker,
+        {
+            "campaign.id": Obj(data_type=Obj(name="INT64"), is_repeated=False),
+            "date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+            "segments.date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+        },
+    )
 
     requests_mock.post("https://www.googleapis.com/oauth2/v3/token", json={"access_token": "test", "expires_in": 3600})
     requests_mock.get(

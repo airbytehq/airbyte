@@ -347,9 +347,7 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
         )
     else:
         assert requester_class_name == "CustomGAQueryHttpRequester", (
-            f"Regular queries should use CustomGAQueryHttpRequester.\n"
-            f"Query: {query}\n"
-            f"Actual requester class: {requester_class_name}"
+            f"Regular queries should use CustomGAQueryHttpRequester.\nQuery: {query}\nActual requester class: {requester_class_name}"
         )
 
 
@@ -481,11 +479,7 @@ def test_custom_query_click_view_retention_and_step(
     expected_step_days = 1 if is_click_view else 14
 
     assert actual_step_days == expected_step_days, (
-        f"Step days mismatch.\n"
-        f"Query: {query}\n"
-        f"State: {state_date}\n"
-        f"Expected: {expected_step_days} days\n"
-        f"Actual: {actual_step_days} days"
+        f"Step days mismatch.\nQuery: {query}\nState: {state_date}\nExpected: {expected_step_days} days\nActual: {actual_step_days} days"
     )
 
     # Verify start date (retention behavior)

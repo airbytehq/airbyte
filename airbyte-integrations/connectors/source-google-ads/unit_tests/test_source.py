@@ -144,8 +144,9 @@ def test_read_missing_stream(config):
     output = read(source, config, catalog)
     fake_stream_statuses = list(
         filter(
-            lambda message: message.trace.type == TraceType.STREAM_STATUS
-            and message.trace.stream_status.stream_descriptor.name == "fake_stream",
+            lambda message: (
+                message.trace.type == TraceType.STREAM_STATUS and message.trace.stream_status.stream_descriptor.name == "fake_stream"
+            ),
             output.trace_messages,
         )
     )
