@@ -694,15 +694,22 @@ def _external_merge_sort(
 
         yield from heapq.merge(*(_iter_jsonl(p) for p in chunk_paths), key=key)
     finally:
+        # Best-effort cleanup: sort-spill files live under a private tmpdir, so
+        # cleanup failures are not actionable by the connector — log at debug
+        # level and keep going rather than masking the sort's actual outcome.
         for p in chunk_paths:
             try:
                 p.unlink()
-            except OSError:
-                pass
+            except OSError as exc:
+                logging.getLogger("airbyte").debug(
+                    "Failed to remove sort-spill chunk %s: %s", p, exc
+                )
         try:
             os.rmdir(tmp_dir)
-        except OSError:
-            pass
+        except OSError as exc:
+            logging.getLogger("airbyte").debug(
+                "Failed to remove sort-spill tmpdir %s: %s", tmp_dir, exc
+            )
 
 
 def _flush_sorted_chunk(
