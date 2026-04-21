@@ -8,6 +8,7 @@ from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests as req
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
     ClickViewHttpRequester,
@@ -21,8 +22,10 @@ from source_google_ads.components import (
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
 
 from .conftest import Obj, get_source
@@ -154,27 +157,69 @@ class TestCustomGAQueryHttpRequester:
 class TestErrorHandler:
     """Verify that the manifest's base_error_handler produces actionable error messages."""
 
-    def test_unrecognized_field_error_surfaces_field_name(self, config):
+    @pytest.mark.parametrize(
+        "response_body",
+        [
+            pytest.param(
+                [
+                    {
+                        "error": {
+                            "code": 400,
+                            "message": "Request contains an invalid argument.",
+                            "status": "INVALID_ARGUMENT",
+                            "details": [
+                                {
+                                    "errors": [
+                                        {
+                                            "errorCode": {"queryError": "UNRECOGNIZED_FIELD"},
+                                            "message": "Unrecognized field in the query: 'date'.",
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    }
+                ],
+                id="list-wrapped (real searchStream shape)",
+            ),
+            pytest.param(
+                {
+                    "error": {
+                        "code": 400,
+                        "message": "Request contains an invalid argument.",
+                        "status": "INVALID_ARGUMENT",
+                        "details": [
+                            {
+                                "errors": [
+                                    {
+                                        "errorCode": {"queryError": "UNRECOGNIZED_FIELD"},
+                                        "message": "Unrecognized field in the query: 'date'.",
+                                    }
+                                ]
+                            }
+                        ],
+                    }
+                },
+                id="object-wrapped",
+            ),
+        ],
+    )
+    def test_unrecognized_field_error_surfaces_field_name(self, config, response_body):
         """
         When the Google Ads API returns UNRECOGNIZED_FIELD, the error handler should surface
         the specific field name from the API response instead of the generic "Bad request" message.
+
+        The Google Ads `searchStream` endpoint returns errors wrapped in a top-level JSON list
+        (`[{"error": {...}}]`), while other endpoints may return a bare object. The template
+        must handle both.
         """
         source = get_source(config)
 
-        # Walk the resolved manifest to find the base_error_handler's first response filter
         error_handler_def = source.resolved_manifest["definitions"]["base_error_handler"]
         filters = error_handler_def["response_filters"]
 
-        # The UNRECOGNIZED_FIELD filter should be the first one (highest priority)
         unrecognized_filter = filters[0]
         assert "UNRECOGNIZED_FIELD" in unrecognized_filter.get("predicate", ""), "First response filter should match UNRECOGNIZED_FIELD"
-
-        # Now test the actual error resolution by constructing the error handler component
-        from unittest.mock import MagicMock
-
-        from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
-        from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
-        from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
         response_filter = HttpResponseFilter(
             config=config,
@@ -184,29 +229,10 @@ class TestErrorHandler:
             error_message=unrecognized_filter["error_message"],
         )
 
-        # Simulate a Google Ads API UNRECOGNIZED_FIELD 400 response
-        import requests as req
-
         mock_response = MagicMock(spec=req.Response)
         mock_response.status_code = 400
         mock_response.ok = False
-        mock_response.json.return_value = {
-            "error": {
-                "code": 400,
-                "message": "Request contains an invalid argument.",
-                "status": "INVALID_ARGUMENT",
-                "details": [
-                    {
-                        "errors": [
-                            {
-                                "errorCode": {"queryError": "UNRECOGNIZED_FIELD"},
-                                "message": "Unrecognized field in the query: 'date'.",
-                            }
-                        ]
-                    }
-                ],
-            }
-        }
+        mock_response.json.return_value = response_body
         mock_response.headers = {}
 
         resolution = response_filter.matches(mock_response)
@@ -219,16 +245,10 @@ class TestErrorHandler:
         assert (
             "query_validator" in resolution.error_message
         ), f"Error message should include link to query validator, got: {resolution.error_message}"
-        # Should NOT contain the generic CDK message
         assert "Bad request" not in resolution.error_message
 
     def test_non_unrecognized_field_400_not_matched(self, config):
         """A 400 error without UNRECOGNIZED_FIELD should NOT be caught by this filter."""
-        from unittest.mock import MagicMock
-
-        from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
-        from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
-
         response_filter = HttpResponseFilter(
             config=config,
             parameters={},
@@ -236,8 +256,6 @@ class TestErrorHandler:
             predicate="{{ 'UNRECOGNIZED_FIELD' in (response | string) }}",
             error_message="should not matter",
         )
-
-        import requests as req
 
         mock_response = MagicMock(spec=req.Response)
         mock_response.status_code = 400
