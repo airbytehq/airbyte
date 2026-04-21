@@ -293,16 +293,30 @@ class MsSqlSourceOperations :
         return "SELECT $topClause" + selectNode.projection()
     }
 
-    /**
-     * Renders the projection list for a [SelectNode]. Used by both the outer SELECT and by
-     * [FromSample] so that the inner subquery projects the same explicit column list instead of
-     * `*`. Projecting `*` breaks on system-versioned temporal tables where the `PERIOD FOR
-     * SYSTEM_TIME` columns are declared `HIDDEN` and therefore excluded from `*`.
-     */
+    /** Renders the projection list for the outer SELECT of a [SelectQuerySpec]. */
     fun SelectNode.projection(): String =
         when (this) {
             is SelectColumns -> columns.joinToString(", ") { it.sql() }
             is SelectColumnMaxValue -> "MAX(${column.sql()})"
+        }
+
+    /**
+     * Renders the projection list used by the inner subquery of [FromSample]. Emits raw quoted
+     * column identifiers (never per-column transformations such as `[col].ToString()` used for
+     * hierarchy columns) so that:
+     * 1. The derived `randomly_sampled` table exposes every column by its original name, which is
+     * ```
+     *    what the outer SELECT references when applying transformations.
+     * ```
+     * 2. HIDDEN period columns on system-versioned temporal tables (`PERIOD FOR SYSTEM_TIME`)
+     * ```
+     *    remain accessible to the outer query; `SELECT *` would silently drop them.
+     * ```
+     */
+    fun SelectNode.innerSampleProjection(): String =
+        when (this) {
+            is SelectColumns -> columns.joinToString(", ") { it.id.quoted() }
+            is SelectColumnMaxValue -> column.id.quoted()
         }
 
     /**
@@ -332,10 +346,7 @@ class MsSqlSourceOperations :
                     val tableName =
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
-                    // Project the same explicit column list as the outer SELECT so that HIDDEN
-                    // columns (e.g. PERIOD FOR SYSTEM_TIME columns on system-versioned temporal
-                    // tables) remain accessible to the outer query, which SELECT * would exclude.
-                    val innerProjection = outerSelect.projection()
+                    val innerProjection = outerSelect.innerSampleProjection()
 
                     "FROM (SELECT TOP $sampleSize $innerProjection FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
                 }

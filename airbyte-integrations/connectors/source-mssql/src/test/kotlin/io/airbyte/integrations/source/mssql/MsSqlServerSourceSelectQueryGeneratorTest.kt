@@ -258,6 +258,34 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     }
 
     @Test
+    fun testSamplingQueryWithHierarchyIdProjectsRawColumn() {
+        // Regression test: the inner TABLESAMPLE subquery must project the raw hierarchyid
+        // column (e.g. `[org_node]`) rather than `[org_node].ToString()`. If the inner subquery
+        // projected the transformed expression, SQL Server would reject the query with
+        // "No column name was specified for column N of 'randomly_sampled'", and the outer
+        // SELECT (which calls `.ToString()` itself) would have no raw column to reference.
+        val employeeId = EmittedField("employee_id", IntFieldType)
+        val orgNode = EmittedField("org_node", MsSqlSourceOperations.MsSqlServerHierarchyFieldType)
+        SelectQuerySpec(
+                SelectColumns(listOf(employeeId, orgNode)),
+                FromSample(
+                    name = "employees",
+                    namespace = "hr",
+                    sampleRateInvPow2 = 5,
+                    sampleSize = 512,
+                ),
+                orderBy = OrderBy(listOf(employeeId)),
+                limit = Limit(512),
+            )
+            .assertSqlEquals(
+                """SELECT TOP 512 [employee_id], [org_node].ToString() FROM """ +
+                    """(SELECT TOP 512 [employee_id], [org_node] FROM [hr].[employees] """ +
+                    """TABLESAMPLE (3.12500 PERCENT)  ORDER BY NEWID()) AS randomly_sampled """ +
+                    """ORDER BY [employee_id]""",
+            )
+    }
+
+    @Test
     fun testSamplingQueryIncludesHiddenTemporalColumns() {
         // Simulates a catalog for a SQL Server system-versioned temporal table where the user has
         // selected the HIDDEN period columns (HistoryStart/HistoryEnd) explicitly. The generated
