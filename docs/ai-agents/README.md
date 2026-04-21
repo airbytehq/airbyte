@@ -12,7 +12,7 @@ Airbyte Agents is now generally available. Plans start as low as... free! Sign u
 
 Airbyte Agents is a context and data layer for AI Agents. It's the easiest way to give your agents access to the context and data they need to do real work. The platform has built-in no-code automation and scheduling. You can also use it with the agents you already use, like Claude, ChatGPT, and even your own custom-built agents.
 
-Airbyte's Airbyte Agents is a data layer for AI agents. Use the Airbyte Agents as a cloud platform to manage connectors, credentials, and data replication for your agents. You can also use Airbyte's open source agent connectors as standalone Python packages, import them into your AI agents, and manage storage and credentials yourself.
+Airbyte Agents is a data layer for AI agents. Use the Airbyte Agents as a cloud platform to manage connectors, credentials, and data replication for your agents. You can also use Airbyte's open source agent connectors as standalone Python packages, import them into your AI agents, and manage storage and credentials yourself.
 
 <!-- - **Agents hallucinate or fail**: Stale and incomplete data erodes agent effectiveness. AI agents need real-time context from multiple business systems to be fully effective.
 
@@ -70,7 +70,7 @@ The result is that agentic features never scale. They remain expensive, fragile 
 
 ## How Airbyte solves that problem
 
-Airbyte's Airbyte Agents solves this problem with three components.
+Airbyte Agents solves this problem with three components.
 
 - Open-source, type-safe connectors designed for AI agents. These connectors allow agents to retrieve information they don't have, perform computations or transformations, interact with external systems, and trigger side-effects, like sending emails, updating databases, and starting workflows
 
@@ -106,7 +106,7 @@ It's helpful to think of agent connectors as equivalent to sets of tools. Tools 
 
 <Grid columns="2">
 
-<CardWithIcon title="SDK" description="Use Airbyte's Airbyte Agents to store and manage credentials, run connectors, and power agentic search." ctaText="SDK docs" ctaLink="/ai-agents/interfaces/sdk/" icon="fa-lock" />
+<CardWithIcon title="SDK" description="Use Airbyte Agents to store and manage credentials, run connectors, and power agentic search." ctaText="SDK docs" ctaLink="/ai-agents/interfaces/sdk/" icon="fa-lock" />
 
 <CardWithIcon title="MCP server" description="Connect MCP-capable agents, like Claude, Cursor, and ChatGPT, to your data through the Airbyte-hosted Model Context Protocol server." ctaText="MCP docs" ctaLink="/ai-agents/interfaces/mcp/" icon="fa-plug" />
 
