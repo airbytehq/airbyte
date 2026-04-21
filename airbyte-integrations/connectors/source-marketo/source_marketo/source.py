@@ -330,8 +330,17 @@ class MarketoExportCreate(MarketoStream):
         if response.status_code == 429 or 500 <= response.status_code < 600:
             return True
         if errors := response.json().get("errors"):
-            if errors[0].get("code") == "1029" and re.match("Export daily quota \d+MB exceeded", errors[0].get("message")):
+            error_code = errors[0].get("code")
+            error_message = errors[0].get("message") or ""
+            if error_code == "1029" and re.match("Export daily quota \d+MB exceeded", error_message):
                 message = "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
+                raise AirbyteTracedException(
+                    internal_message=response.text,
+                    message=message,
+                    failure_type=FailureType.config_error,
+                )
+            if error_code == "607":
+                message = "Marketo daily API call quota reached. Quota resets at 12:00 AM CST."
                 raise AirbyteTracedException(
                     internal_message=response.text,
                     message=message,
