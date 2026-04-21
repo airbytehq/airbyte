@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: df19571f-208a-4a12-a402-a4cdf70a44d6
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-defillama
   githubIssueLabel: source-defillama
   icon: icon.svg
