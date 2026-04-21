@@ -72,6 +72,7 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| 1.1.1 | 2026-04-21 | [76507](https://github.com/airbytehq/airbyte/pull/76507) | Update dependencies |
 | 1.1.0 | 2026-04-01 | [69218](https://github.com/airbytehq/airbyte/pull/69218) | Add two new streams - `ads` & `ads_report_daily` |
 | 1.0.11 | 2026-03-31 | [75879](https://github.com/airbytehq/airbyte/pull/75879) | Update dependencies |
 | 1.0.10 | 2026-03-24 | [75015](https://github.com/airbytehq/airbyte/pull/75015) | Update dependencies |

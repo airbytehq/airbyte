@@ -139,8 +139,13 @@ def test_threads_state_migration(token_config, threads_stream_state, expected_pa
     assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
-def test_read_records_skips_non_member_channels_when_join_disabled(token_config, requests_mock, components_module):
-    """When join_channels=false, non-member channels should be skipped to prevent cursor pollution."""
+def test_read_records_yields_all_channels_when_join_disabled(token_config, requests_mock, components_module):
+    """
+    The retriever itself does not filter by membership. Filtering for streams that
+    actually require membership (channel_messages / threads) is applied at the
+    manifest level via a RecordFilter on the substream partition router, so the
+    top-level channels stream and channel_members keep seeing every channel.
+    """
     config = {**token_config, "join_channels": False}
     requests_mock.get(
         url="https://slack.com/api/conversations.list",
@@ -154,8 +159,8 @@ def test_read_records_skips_non_member_channels_when_join_disabled(token_config,
     )
     retriever = get_channels_retriever_instance(config, components_module)
     records = list(retriever.read_records(records_schema={}))
-    assert len(records) == 2
-    assert {r["id"] for r in records} == {"C001", "C003"}
+    assert len(records) == 3
+    assert {r["id"] for r in records} == {"C001", "C002", "C003"}
 
 
 def test_read_records_yields_all_channels_when_join_enabled(token_config, requests_mock, components_module):
