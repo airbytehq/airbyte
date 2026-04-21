@@ -701,15 +701,11 @@ def _external_merge_sort(
             try:
                 p.unlink()
             except OSError as exc:
-                logging.getLogger("airbyte").debug(
-                    "Failed to remove sort-spill chunk %s: %s", p, exc
-                )
+                logging.getLogger("airbyte").debug("Failed to remove sort-spill chunk %s: %s", p, exc)
         try:
             os.rmdir(tmp_dir)
         except OSError as exc:
-            logging.getLogger("airbyte").debug(
-                "Failed to remove sort-spill tmpdir %s: %s", tmp_dir, exc
-            )
+            logging.getLogger("airbyte").debug("Failed to remove sort-spill tmpdir %s: %s", tmp_dir, exc)
 
 
 def _flush_sorted_chunk(
