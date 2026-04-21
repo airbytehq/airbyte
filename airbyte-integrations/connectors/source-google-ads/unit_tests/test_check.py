@@ -10,6 +10,7 @@ from airbyte_cdk.models import Status
 
 from .conftest import Obj
 
+
 CUSTOMER_CLIENT_RESPONSE = {
     "results": [
         {
@@ -24,12 +25,8 @@ CUSTOMER_CLIENT_RESPONSE = {
         }
     ]
 }
-CUSTOMER_RESPONSE = {
-    "results": [{"customer": {"id": "1234567890", "descriptiveName": "Test"}}]
-}
-VALID_CUSTOM_QUERY_RESPONSE = {
-    "results": [{"campaign": {"id": "456"}, "segments": {"date": "2021-01-08"}}]
-}
+CUSTOMER_RESPONSE = {"results": [{"customer": {"id": "1234567890", "descriptiveName": "Test"}}]}
+VALID_CUSTOM_QUERY_RESPONSE = {"results": [{"campaign": {"id": "456"}, "segments": {"date": "2021-01-08"}}]}
 EMPTY_RESPONSE = {"results": []}
 
 
@@ -89,13 +86,9 @@ def test_check_validates_valid_custom_query(requests_mock, mocker):
     requests_mock.post(
         "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream",
         [
-            {
-                "json": CUSTOMER_CLIENT_RESPONSE
-            },  # customer_client query (for customer stream)
+            {"json": CUSTOMER_CLIENT_RESPONSE},  # customer_client query (for customer stream)
             {"json": CUSTOMER_RESPONSE},  # customer stream check
-            {
-                "json": CUSTOMER_CLIENT_RESPONSE
-            },  # customer_client query (for dynamic stream)
+            {"json": CUSTOMER_CLIENT_RESPONSE},  # customer_client query (for dynamic stream)
             {"json": VALID_CUSTOM_QUERY_RESPONSE},  # custom query check
             {"json": EMPTY_RESPONSE},
             {"json": EMPTY_RESPONSE},
@@ -139,13 +132,9 @@ def test_check_fails_on_invalid_custom_query(requests_mock, mocker):
     requests_mock.post(
         "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream",
         [
-            {
-                "json": CUSTOMER_CLIENT_RESPONSE
-            },  # customer_client query (for customer stream)
+            {"json": CUSTOMER_CLIENT_RESPONSE},  # customer_client query (for customer stream)
             {"json": CUSTOMER_RESPONSE},  # customer stream check
-            {
-                "json": CUSTOMER_CLIENT_RESPONSE
-            },  # customer_client query (for dynamic stream)
+            {"json": CUSTOMER_CLIENT_RESPONSE},  # customer_client query (for dynamic stream)
             {
                 "json": {
                     "error": {
