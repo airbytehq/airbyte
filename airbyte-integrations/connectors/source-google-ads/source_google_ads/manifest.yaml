@@ -59,7 +59,7 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
-  #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
+      #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
       # Catch-all filter that surfaces the specific Google Ads API error message from the nested
       # `error.details[0].errors[0].message` response field. Placed LAST so it only matches
       # responses not already handled by the http_codes filters above. See

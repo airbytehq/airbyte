@@ -25,8 +25,8 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
-from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.sources.types import StreamSlice
 
 from .conftest import Obj, get_source
 
@@ -235,9 +235,7 @@ class TestErrorHandler:
 
         assert resolution is not None, "Catch-all filter should match a response with nested error details"
         assert resolution.response_action == ResponseAction.FAIL
-        assert resolution.error_message == (
-            "Google Ads API error: The developer token is not approved for production access."
-        )
+        assert resolution.error_message == ("Google Ads API error: The developer token is not approved for production access.")
 
     @pytest.mark.parametrize(
         "body",
@@ -284,11 +282,7 @@ class TestErrorHandler:
         # existing transient-error message rather than the catch-all's config_error message.
         response = self._build_response(
             status_code=500,
-            body={
-                "error": {
-                    "details": [{"errors": [{"message": "Internal server error happened on server side."}]}]
-                }
-            },
+            body={"error": {"details": [{"errors": [{"message": "Internal server error happened on server side."}]}]}},
         )
 
         resolution = http_500_filter.matches(response)
