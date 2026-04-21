@@ -2477,6 +2477,7 @@ spec:
           - scope: "crm.schemas.companies.read"
           - scope: "crm.schemas.custom.read"
           - scope: "crm.schemas.deals.read"
+          - scope: "settings.users.read"
         extract_output:
           - refresh_token
       complete_oauth_output_specification:
