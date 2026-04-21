@@ -2,7 +2,7 @@
 package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
@@ -33,8 +33,8 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
         SelectQuerySpec(
                 SelectColumns(
                     listOf(
-                        Field("id", IntFieldType),
-                        Field("name", StringFieldType),
+                        EmittedField("id", IntFieldType),
+                        EmittedField("name", StringFieldType),
                     ),
                 ),
                 From("users", "dbo"),
@@ -46,7 +46,7 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectMaxCursor() {
         SelectQuerySpec(
-                SelectColumnMaxValue(Field("updated_at", OffsetDateTimeFieldType)),
+                SelectColumnMaxValue(EmittedField("updated_at", OffsetDateTimeFieldType)),
                 From("orders", "dbo"),
             )
             .assertSqlEquals("""SELECT MAX([updated_at]) FROM [dbo].[orders]""")
@@ -57,8 +57,8 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
         SelectQuerySpec(
                 SelectColumns(
                     listOf(
-                        Field("id", IntFieldType),
-                        Field("description", StringFieldType),
+                        EmittedField("id", IntFieldType),
+                        EmittedField("description", StringFieldType),
                     ),
                 ),
                 From("products", "dbo"),
@@ -68,14 +68,14 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
 
     @Test
     fun testSelectForResumableInitialSync() {
-        val k1 = Field("pk1", IntFieldType)
+        val k1 = EmittedField("pk1", IntFieldType)
         val v1 = Jsons.numberNode(100)
-        val k2 = Field("pk2", IntFieldType)
+        val k2 = EmittedField("pk2", IntFieldType)
         val v2 = Jsons.numberNode(200)
-        val k3 = Field("pk3", IntFieldType)
+        val k3 = EmittedField("pk3", IntFieldType)
         val v3 = Jsons.numberNode(300)
         SelectQuerySpec(
-                SelectColumns(listOf(k1, k2, k3, Field("data", StringFieldType))),
+                SelectColumns(listOf(k1, k2, k3, EmittedField("data", StringFieldType))),
                 From("composite_table", "dbo"),
                 Where(
                     Or(
@@ -106,11 +106,11 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
 
     @Test
     fun testSelectForCursorBasedIncrementalSync() {
-        val c = Field("last_modified", DoubleFieldType)
+        val c = EmittedField("last_modified", DoubleFieldType)
         val lb = Jsons.numberNode(1.5)
         val ub = Jsons.numberNode(3.5)
         SelectQuerySpec(
-                SelectColumns(listOf(Field("content", StringFieldType), c)),
+                SelectColumns(listOf(EmittedField("content", StringFieldType), c)),
                 From("documents", "dbo"),
                 Where(And(listOf(Greater(c, lb), LesserOrEqual(c, ub)))),
                 OrderBy(listOf(c)),
@@ -128,13 +128,14 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectWithHierarchyId() {
         // Test special handling for hierarchyid field type in SQL Server
-        val hierarchyField = Field("org_node", MsSqlSourceOperations.MsSqlServerHierarchyFieldType)
+        val hierarchyField =
+            EmittedField("org_node", MsSqlSourceOperations.MsSqlServerHierarchyFieldType)
         SelectQuerySpec(
                 SelectColumns(
                     listOf(
-                        Field("employee_id", IntFieldType),
+                        EmittedField("employee_id", IntFieldType),
                         hierarchyField,
-                        Field("employee_name", StringFieldType),
+                        EmittedField("employee_name", StringFieldType),
                     ),
                 ),
                 From("employees", "hr"),
@@ -150,8 +151,8 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
         SelectQuerySpec(
                 SelectColumns(
                     listOf(
-                        Field("col1", IntFieldType),
-                        Field("col2", StringFieldType),
+                        EmittedField("col1", IntFieldType),
+                        EmittedField("col2", StringFieldType),
                     ),
                 ),
                 From("simple_table", null),
@@ -163,10 +164,10 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectWithLargeLimit() {
         // Test with a large limit value
-        val cursor = Field("sequence_id", LongFieldType)
+        val cursor = EmittedField("sequence_id", LongFieldType)
         val startValue = Jsons.numberNode(1000000L)
         SelectQuerySpec(
-                SelectColumns(listOf(cursor, Field("payload", StringFieldType))),
+                SelectColumns(listOf(cursor, EmittedField("payload", StringFieldType))),
                 From("events", "dbo"),
                 Where(Greater(cursor, startValue)),
                 OrderBy(listOf(cursor)),
@@ -181,13 +182,13 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectWithMultipleDateTimeFields() {
         // Test with multiple datetime fields for time-based filtering
-        val created = Field("created_at", OffsetDateTimeFieldType)
-        val updated = Field("updated_at", OffsetDateTimeFieldType)
+        val created = EmittedField("created_at", OffsetDateTimeFieldType)
+        val updated = EmittedField("updated_at", OffsetDateTimeFieldType)
         val createdAfter = Jsons.textNode("2025-01-01T00:00:00Z")
         val updatedBefore = Jsons.textNode("2025-12-31T23:59:59Z")
 
         SelectQuerySpec(
-                SelectColumns(listOf(Field("id", IntFieldType), created, updated)),
+                SelectColumns(listOf(EmittedField("id", IntFieldType), created, updated)),
                 From("records", "dbo"),
                 Where(
                     And(
@@ -211,12 +212,14 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectWithReservedKeywords() {
         // Test with reserved SQL Server keywords as column names (e.g., "End", "Start")
-        val endField = Field("End", OffsetDateTimeFieldType)
-        val startField = Field("Start", OffsetDateTimeFieldType)
-        val orderField = Field("Order", IntFieldType)
+        val endField = EmittedField("End", OffsetDateTimeFieldType)
+        val startField = EmittedField("Start", OffsetDateTimeFieldType)
+        val orderField = EmittedField("Order", IntFieldType)
 
         SelectQuerySpec(
-                SelectColumns(listOf(Field("Id", IntFieldType), startField, endField, orderField)),
+                SelectColumns(
+                    listOf(EmittedField("Id", IntFieldType), startField, endField, orderField)
+                ),
                 From("CustomerAgreementProfiles", "dbo"),
                 limit = Limit(100),
             )
