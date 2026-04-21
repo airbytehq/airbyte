@@ -1,46 +1,84 @@
 # Brevo
+
 This page contains the setup guide and reference information for the [Brevo](https://www.brevo.com/) source connector.
 
-## Documentation reference:
-Visit `https://developers.brevo.com/reference/getting-started-1` for API documentation
+Brevo (formerly Sendinblue) is a marketing platform that provides email, SMS, CRM, and automation tools. This connector syncs contacts, companies, deals, campaigns, and related metadata from the [Brevo API](https://developers.brevo.com/reference/getting-started-1).
 
-## Authentication setup
-Brevo uses api key authentication,
-Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
+## Prerequisites
 
-## Configuration
+- A Brevo account. [Sign up](https://onboarding.brevo.com/account/register) if you don't have one.
+- A user with the **API keys** permission. Only users with this permission can view or create API keys. See [User permissions and permission levels in Brevo](https://help.brevo.com/hc/en-us/articles/360001096239) for details.
+- A Brevo API key (generated in the next step).
 
-| Input | Type | Description | Default Value |
-|-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `start_date` | `string` | Start date.  |  |
+## Generate an API key
 
-## Streams
-| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
-| contacts | id | DefaultPaginator | ✅ |  ✅  |
-| contacts_attributes |  | DefaultPaginator | ❌ |  ❌  |
-| contacts_folders_lists | id | DefaultPaginator | ✅ |  ❌  |
-| contacts_folders | id | DefaultPaginator | ✅ |  ❌  |
-| contacts_segments | id | DefaultPaginator | ✅ |  ❌  |
-| contacts_lists_contacts |  | DefaultPaginator | ✅ |  ✅  |
-| contacts_lists | id | DefaultPaginator | ✅ |  ❌  |
-| senders | id | DefaultPaginator | ✅ |  ❌  |
-| companies | id | DefaultPaginator | ✅ |  ✅ |
-| companies_attributes |  | DefaultPaginator | ✅ |  ❌  |
-| crm_pipeline_stages | id | DefaultPaginator | ✅ |  ❌  |
-| crm_pipeline_details_all | pipeline | DefaultPaginator | ✅ |  ❌  |
-| crm_attributes_deals |  | DefaultPaginator | ✅ |  ❌  |
-| crm_deals | id | DefaultPaginator | ✅ |  ✅  |
-| crm_tasktypes | id | DefaultPaginator | ✅ |  ❌  |
-| crm_tasks | id | DefaultPaginator | ✅ |  ✅  |
-| crm_notes | id | DefaultPaginator | ✅ |  ✅  |
-| domains | id | DefaultPaginator | ✅ |  ❌ |
-| webhooks | id | No pagination | ✅ |  ❌ |
-| account | organization_id | DefaultPaginator | ✅ |  ❌  |
-| organization_invited_users | email | DefaultPaginator | ✅ |  ❌  |
-| emailCampaigns | id | DefaultPaginator | ✅ |  ✅  |
-| smsCampaigns | id | DefaultPaginator | ✅ |  ✅  |
+1. Sign in to Brevo and open the [API Keys & MCP](https://app.brevo.com/settings/keys/api) page.
+2. Under the **API keys** tab, select **Generate a new API key**.
+3. Enter a descriptive name (for example, `Airbyte`) and select **Generate**.
+4. Copy the key and store it securely. Brevo displays the key only once. If you lose it, generate a new one.
+
+For more details, see Brevo's [Create and manage your API keys](https://help.brevo.com/hc/en-us/articles/209467485-Create-and-manage-your-API-keys) article.
+
+The key inherits the permissions of the user who created it. Make sure that user has access to the data you want to sync (contacts, CRM, campaigns, and so on).
+
+## Set up the Brevo source in Airbyte
+
+1. In the Airbyte UI, add a new source and select **Brevo**.
+2. Enter your **API Key**.
+3. Enter a **Start date** as a UTC timestamp in the format `YYYY-MM-DDTHH:MM:SSZ` (for example, `2024-01-01T00:00:00Z`). Incremental streams only return records modified on or after this date.
+4. Select **Set up source** and Airbyte verifies the credentials by calling the `contacts` endpoint.
+
+## Configuration reference
+
+| Input | Type | Description |
+|-------|------|-------------|
+| `api_key` | string | Brevo API key. Sent in the `api-key` request header. |
+| `start_date` | string | UTC timestamp (`YYYY-MM-DDTHH:MM:SSZ`) used as the lower bound for incremental streams. |
+
+## Supported sync modes
+
+The connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
+
+- Full Refresh | Overwrite
+- Full Refresh | Append
+- Incremental | Append (for streams marked as supporting incremental below)
+- Incremental | Append + Deduped (for streams with a primary key that support incremental)
+
+## Supported streams
+
+| Stream | Primary key | Supports full refresh | Supports incremental |
+|--------|-------------|-----------------------|----------------------|
+| `account` | `organization_id` | Yes | No |
+| `companies` | `id` | Yes | Yes |
+| `companies_attributes` | | Yes | No |
+| `contacts` | `id` | Yes | Yes |
+| `contacts_attributes` | | No | No |
+| `contacts_folders` | `id` | Yes | No |
+| `contacts_folders_lists` | `id` | Yes | No |
+| `contacts_lists` | `id` | Yes | No |
+| `contacts_lists_contacts` | | Yes | Yes |
+| `contacts_segments` | `id` | Yes | No |
+| `crm_attributes_deals` | | Yes | No |
+| `crm_deals` | `id` | Yes | Yes |
+| `crm_notes` | `id` | Yes | Yes |
+| `crm_pipeline_details_all` | `pipeline` | Yes | No |
+| `crm_pipeline_stages` | `id` | Yes | No |
+| `crm_tasks` | `id` | Yes | Yes |
+| `crm_tasktypes` | `id` | Yes | No |
+| `domains` | `id` | Yes | No |
+| `emailCampaigns` | `id` | Yes | Yes |
+| `organization_invited_users` | `email` | Yes | No |
+| `senders` | `id` | Yes | No |
+| `smsCampaigns` | `id` | Yes | Yes |
+| `webhooks` | `id` | Yes | No |
+
+Incremental streams pass the cursor value to Brevo as a `modifiedSince` query parameter so that only records modified on or after that timestamp are returned.
+
+## Performance considerations
+
+Brevo enforces per-endpoint rate limits that vary by account tier. On the general tier available to all accounts, endpoints under `/v3/contacts/…` allow 10 requests per second, while most other endpoints this connector uses (CRM, campaigns, senders, domains, webhooks, account, organization) share a limit of 100 requests per hour. See Brevo's [rate limits documentation](https://developers.brevo.com/docs/api-limits) for the full per-tier breakdown.
+
+When Brevo returns `429 Too Many Requests`, the connector retries with exponential backoff. If you run other integrations against the same API key, consider creating a dedicated key for Airbyte to avoid contention.
 
 ## Changelog
 
@@ -50,7 +88,7 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
 | 0.2.31 | 2026-04-21 | [76844](https://github.com/airbytehq/airbyte/pull/76844) | Bump SDM base image to stable 7.17.2 |
-| 0.2.30 | 2026-03-31 | [75946](https://github.com/airbytehq/airbyte/pull/75946) | Bump SDM base image for memory monitor (CDK PR #962) |
+| 0.2.30 | 2026-04-01 | [75946](https://github.com/airbytehq/airbyte/pull/75946) | Bump SDM base image for memory monitor (CDK PR #962) |
 | 0.2.29 | 2026-03-31 | [75672](https://github.com/airbytehq/airbyte/pull/75672) | Update dependencies |
 | 0.2.28 | 2026-03-24 | [75312](https://github.com/airbytehq/airbyte/pull/75312) | Update dependencies |
 | 0.2.27 | 2026-02-17 | [73432](https://github.com/airbytehq/airbyte/pull/73432) | Update dependencies |
