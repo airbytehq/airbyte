@@ -245,6 +245,7 @@ On Airbyte Cloud, if you select `disable`, `allow`, or `prefer` without also con
 ```text
 Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel. Current SSL mode: prefer
 ```
+
 </FieldAnchor>
 
 ### SSH Tunneling
