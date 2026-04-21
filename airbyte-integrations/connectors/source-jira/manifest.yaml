@@ -10065,6 +10065,7 @@ definitions:
           stream: "#/definitions/issues_stream"
           parent_key: "key"
           partition_field: "issue_property_key"
+          incremental_dependency: true
       requester:
         $ref: "#/definitions/retriever_use_cache/requester"
         error_handler:
@@ -10144,6 +10145,7 @@ definitions:
           stream: "#/definitions/issues_stream"
           parent_key: "key"
           partition_field: "issue_property_key"
+          incremental_dependency: true
     transformations:
     - type: AddFields
       fields:
@@ -10281,6 +10283,7 @@ definitions:
           stream: "#/definitions/issues_stream"
           parent_key: "key"
           partition_field: "issue_property_key"
+          incremental_dependency: true
     transformations:
     - type: AddFields
       fields:
@@ -10423,6 +10426,7 @@ definitions:
           stream: "#/definitions/issues_stream"
           parent_key: "key"
           partition_field: "issue_property_key"
+          incremental_dependency: true
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
@@ -10674,6 +10678,7 @@ definitions:
           stream: "#/definitions/issues_stream"
           parent_key: "key"
           partition_field: "issue_property_key"
+          incremental_dependency: true
       record_selector:
         $ref: "#/definitions/selector"
         extractor:

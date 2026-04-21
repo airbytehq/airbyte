@@ -169,6 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.0 | 2026-04-21 | [76839](https://github.com/airbytehq/airbyte/pull/76839) | Propagate incremental state from `issues` parent to `issue_remote_links`, `issue_transitions`, `issue_votes`, `issue_watchers`, and `issue_properties` via `incremental_dependency` |
 | 4.3.19 | 2026-04-21 | [76631](https://github.com/airbytehq/airbyte/pull/76631) | Update dependencies |
 | 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
