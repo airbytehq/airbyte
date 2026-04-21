@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift2.client
 
+import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -19,6 +21,7 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.io.ByteArrayInputStream
 import java.sql.ResultSet
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -31,15 +34,15 @@ private const val COLUMN_NAME_COLUMN = "column_name"
 @Singleton
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
-    private val sqlGenerator: RedshiftSqlGenerator
+    private val sqlGenerator: RedshiftSqlGenerator,
+    private val s3Client: AmazonS3,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     override suspend fun createNamespace(namespace: String) {
         try {
             execute(sqlGenerator.createNamespace(namespace))
         } catch (e: SQLException) {
-            // Swallow race condition where concurrent connections both try CREATE SCHEMA IF NOT
-            // EXISTS
+            // Swallow race condition where concurrent connections both try CREATE SCHEMA
             if (e.message?.contains("already exists") != true) {
                 throw e
             }
@@ -76,9 +79,7 @@ class RedshiftAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        val metaColumnNames = getMetaColumnNames()
-        val targetColumnNames = (metaColumnNames + columnNameMapping.values).toList()
-        execute(sqlGenerator.copyTable(targetColumnNames, sourceTableName, targetTableName))
+        execute(sqlGenerator.copyTable(sourceTableName, targetTableName))
     }
 
     override suspend fun upsertTable(
@@ -124,8 +125,13 @@ class RedshiftAirbyteClient(
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columnsInDb = getColumnsFromDbForDiscovery(tableName)
-        val hasAllAirbyteColumns = columnsInDb.keys.containsAll(COLUMN_NAMES)
 
+        // Table does not exist -- return empty schema so the CDK creates it.
+        if (columnsInDb.isEmpty()) {
+            return TableSchema(emptyMap())
+        }
+
+        val hasAllAirbyteColumns = columnsInDb.keys.containsAll(COLUMN_NAMES)
         if (!hasAllAirbyteColumns) {
             val message =
                 "The target table (${tableName.namespace}.${tableName.name}) already exists " +
@@ -176,6 +182,64 @@ class RedshiftAirbyteClient(
     }
 
     // ================================================================
+    // Checker / staging operations
+    // ================================================================
+
+    /** Validates JDBC connectivity by executing a trivial query. */
+    suspend fun ping() {
+        execute("SELECT 1")
+    }
+
+    /**
+     * Executes a Redshift COPY command to load data from S3. Logging is suppressed because the
+     * generated SQL contains plaintext AWS credentials in the CREDENTIALS clause.
+     */
+    suspend fun copyFromS3(
+        tableName: TableName,
+        s3Path: String,
+        accessKeyId: String,
+        secretAccessKey: String,
+        region: String,
+    ) {
+        execute(
+            sqlGenerator.copyFromS3(tableName, s3Path, accessKeyId, secretAccessKey, region),
+            logStatement = false,
+        )
+    }
+
+    /** Adds a column to an existing table. */
+    suspend fun addColumn(tableName: TableName, columnName: String, columnType: String) {
+        execute(sqlGenerator.addColumn(tableName, columnName, columnType))
+    }
+
+    /** Deletes a row by its `_airbyte_raw_id` using a parameterized query. */
+    suspend fun deleteByRawId(tableName: TableName, rawId: String) {
+        val sql = sqlGenerator.deleteByRawId(tableName)
+        log.info { sql }
+        dataSource.connection.use { conn ->
+            conn.prepareStatement(sql).use { ps ->
+                ps.setString(1, rawId)
+                ps.executeUpdate()
+            }
+        }
+    }
+
+    /** Uploads data to S3. */
+    suspend fun uploadToS3(
+        bucketName: String,
+        key: String,
+        data: ByteArray,
+        metadata: ObjectMetadata,
+    ) {
+        s3Client.putObject(bucketName, key, ByteArrayInputStream(data), metadata)
+    }
+
+    /** Deletes an object from S3. */
+    suspend fun deleteFromS3(bucketName: String, key: String) {
+        s3Client.deleteObject(bucketName, key)
+    }
+
+    // ================================================================
     // Internal helpers
     // ================================================================
 
@@ -215,9 +279,16 @@ class RedshiftAirbyteClient(
             else -> redshiftType
         }
 
-    /** Executes a SQL statement (DDL or DML) against Redshift */
-    internal fun execute(query: String) {
-        log.info { query.trimIndent() }
+    /**
+     * Executes a SQL statement (DDL or DML) against Redshift.
+     *
+     * @param logStatement set to `false` for statements that contain secrets (e.g. COPY with inline
+     * AWS credentials) to prevent plaintext credentials from appearing in logs.
+     */
+    internal fun execute(query: String, logStatement: Boolean = true) {
+        if (logStatement) {
+            log.info { query.trimIndent() }
+        }
         try {
             dataSource.connection.use { connection ->
                 connection.createStatement().use { it.execute(query) }
