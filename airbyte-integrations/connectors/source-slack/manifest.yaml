@@ -479,7 +479,7 @@ spec:
               airbyte_secret: true
           order: 0
         - type: object
-          title: API Token
+          title: Bot Token
           required:
             - option_title
             - api_token
@@ -489,8 +489,8 @@ spec:
               const: API Token Credentials
             api_token:
               type: string
-              title: API Token
-              description: A Slack bot token. See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
+              title: Bot Token
+              description: A Slack bot token (xoxb-). See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
               airbyte_secret: true
           order: 1
       num_workers:

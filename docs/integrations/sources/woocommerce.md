@@ -109,6 +109,7 @@ If your hosting environment supports higher throughput, you can increase the **N
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.36 | 2026-04-21 | [76804](https://github.com/airbytehq/airbyte/pull/76804) | Update dependencies |
 | 0.5.35 | 2026-04-14 | [76330](https://github.com/airbytehq/airbyte/pull/76330) | Promoted release candidate to GA |
 | 0.5.35-rc.2 | 2026-04-12 | [76253](https://github.com/airbytehq/airbyte/pull/76253) | Increase default concurrency from 4 to 5 for tuning iteration 2 |
 | 0.5.35-rc.1 | 2026-04-10 | [76205](https://github.com/airbytehq/airbyte/pull/76205) | Add concurrency_level and num_workers for concurrent stream syncing |
