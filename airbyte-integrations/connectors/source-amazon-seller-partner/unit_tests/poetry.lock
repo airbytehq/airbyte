@@ -2,15 +2,15 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "7.6.3"
+version = "7.7.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 markers = "python_version <= \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "airbyte_cdk-7.6.3-py3-none-any.whl", hash = "sha256:f44f001fcd21f448eff3a82e2b30e446199d974b6d6cf03579a1f6f0b8a0e850"},
-    {file = "airbyte_cdk-7.6.3.tar.gz", hash = "sha256:8c406c1738d5c5ba85715c841da9e05315f2121ca9522328c8603815fd4d8be0"},
+    {file = "airbyte_cdk-7.7.0-py3-none-any.whl", hash = "sha256:a803ec0fd251208f6e8ad6c429f762573b299bff61d79bb95e227c1d4a6a6285"},
+    {file = "airbyte_cdk-7.7.0.tar.gz", hash = "sha256:af718e09d47b5c25e505a424abc3700da51680c9bba9de253ad6b49f3fe3e370"},
 ]
 
 [package.dependencies]
@@ -60,7 +60,7 @@ dev = ["pytest (>=7,<8)"]
 file-based = ["avro (>=1.11.2,<1.13.0)", "fastavro (>=1.11.0,<2.0.0)", "markdown", "openpyxl (>=3.1.0,<4.0.0)", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=19.0.0,<20.0.0)", "pytesseract (==0.3.10)", "python-calamine (==0.2.3)", "python-snappy (==0.7.3)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 manifest-server = ["ddtrace (>=3,<4)", "fastapi (>=0.116.1)", "uvicorn (>=0.35.0)"]
 sql = ["sqlalchemy (>=2.0,!=2.0.36,<3.0)"]
-vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.0.0,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
+vector-db-based = ["cohere (>=4.21,<6.0.0)", "langchain_community (>=0.4,<0.5)", "langchain_core (>=1.2.5,<2.0.0)", "langchain_text_splitters (>=1.0.0,<2.0.0)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.8.0)"]
 
 [[package]]
 name = "airbyte-protocol-models-dataclasses"
@@ -2780,4 +2780,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.13"
-content-hash = "691487d43b448a0f8d54c70b34c9155612da3cc7336a3117f8a2b7a2e6ef3f4b"
+content-hash = "e5c72ca737393c752d868e7c7e5999aaee33bbe10c9b1d233b53e92431d27f9d"

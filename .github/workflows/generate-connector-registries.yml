@@ -7,7 +7,25 @@ on:
         description: "The git ref to check out from the repository"
         required: false
         type: string
+      force:
+        description: "Force resync of all latest/ directories even if version markers are current. Useful when metadata changes without a version bump."
+        required: false
+        type: boolean
+        default: false
+      connector-name:
+        description: "A connector name to limit the latest/ resync scope (e.g. 'source-faker'). Leave empty to compile all connectors."
+        required: false
+        type: string
+      pr:
+        description: "Associated pull request number, for linking in notifications."
+        required: false
+        type: string
   workflow_call:
+    inputs:
+      pr:
+        description: "Associated pull request number, for linking in notifications."
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -21,136 +39,89 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  generate-cloud-registry:
-    name: Generate Cloud Registry
+  compile-registries:
+    name: Compile Registries (ops CLI)
     runs-on: ubuntu-24.04
+    env:
+      REGISTRY_STORE: "coral:prod"
 
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
-          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+          submodules: true
 
-      - name: Set up Python
-        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
-      - name: Install Poetry
-        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
-        with:
-          version: 2.1.4
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+      - name: Install Ops CLI
+        run: uv tool install airbyte-internal-ops
 
-      - name: Install metadata_service
-        working-directory: airbyte-ci/connectors/metadata_service/lib
-        run: poetry install
-
-      - name: Generate Cloud Registry
+      - name: Compile Registries
+        id: compile-registries
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
-          SENTRY_TRACES_SAMPLE_RATE: 1.0
-          SENTRY_ENVIRONMENT: production
-        working-directory: airbyte-ci/connectors/metadata_service/lib
+          FORCE_FLAG: ${{ inputs.force == true && '--force' || '' }}
+          CONNECTOR_NAME_FLAG: ${{ inputs.connector-name && format('--connector-name {0}', inputs.connector-name) || '' }}
         shell: bash
+        run: >
+          airbyte-ops registry store compile
+          --store "${REGISTRY_STORE}"
+          --with-secrets-mask
+          --with-legacy-migration v1
+          ${FORCE_FLAG}
+          ${CONNECTOR_NAME_FLAG}
+
+      - name: Build notification context
+        id: notification-context
+        if: always()
         run: |
-          poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service cloud
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          PR_NUMBER="${{ inputs.pr }}"
+          CONNECTOR_NAME="${{ inputs.connector-name }}"
+          FORCE="${{ inputs.force }}"
 
-  generate-oss-registry:
-    name: Generate OSS Registry
-    runs-on: ubuntu-24.04
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "0" ]]; then
+            RUN_URL="${RUN_URL}?pr=${PR_NUMBER}"
+            echo "pr-text=\nPR: <${{ github.server_url }}/${{ github.repository }}/pull/${PR_NUMBER}|#${PR_NUMBER}>" >> $GITHUB_OUTPUT
+          else
+            echo "pr-text=" >> $GITHUB_OUTPUT
+          fi
 
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+          DETAILS=""
+          if [[ -n "$CONNECTOR_NAME" ]]; then
+            DETAILS="${DETAILS}\nConnector: \`${CONNECTOR_NAME}\`"
+          fi
+          if [[ "$FORCE" == "true" ]]; then
+            DETAILS="${DETAILS}\nForce: true"
+          fi
+          echo "details-text=${DETAILS}" >> $GITHUB_OUTPUT
+
+          echo "run-url=${RUN_URL}" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack on Registry Compile Success
+        if: steps.compile-registries.outcome == 'success'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
-          ref: ${{ github.event.inputs.gitref || github.ref }}
-          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
-
-      - name: Set up Python
-        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
-
-      - name: Install Poetry
-        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
-        with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-
-      - name: Install metadata_service
-        working-directory: airbyte-ci/connectors/metadata_service/lib
-        run: poetry install
-
-      - name: Generate OSS Registry
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "☑️ *Registry Compile SUCCESS*${{ steps.notification-context.outputs.details-text }}${{ steps.notification-context.outputs.pr-text }}\nReference: <https://connectors.airbyte.com/files/registries/v0/cloud_registry.json|Cloud Registry> · <https://connectors.airbyte.com/files/registries/v0/oss_registry.json|OSS Registry> · <https://console.cloud.google.com/storage/browser/prod-airbyte-cloud-connector-metadata-service/registries/v0|GCS Bucket> · <${{ steps.notification-context.outputs.run-url }}|CI Logs>"
+            }
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
-          SENTRY_TRACES_SAMPLE_RATE: 1.0
-          SENTRY_ENVIRONMENT: production
-        working-directory: airbyte-ci/connectors/metadata_service/lib
-        shell: bash
-        run: |
-          poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service oss
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
 
-  post-registry-generation:
-    name: Post registry generation steps
-    runs-on: ubuntu-24.04
-    needs: [generate-cloud-registry, generate-oss-registry]
-
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
+      - name: Notify Slack on Registry Compile Failure
+        if: always() && steps.compile-registries.outcome == 'failure'
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
-          ref: ${{ github.event.inputs.gitref || github.ref }}
-          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
-
-      - name: Set up Python
-        uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
-
-      - name: Install Poetry
-        uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
-        with:
-          version: latest
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-
-      - name: Install metadata_service
-        working-directory: airbyte-ci/connectors/metadata_service/lib
-        run: poetry install
-
-      - name: Generate Specs Secrets Mask
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "❌ *Registry Compile FAILED*${{ steps.notification-context.outputs.details-text }}\n<${{ steps.notification-context.outputs.run-url }}|View workflow run>${{ steps.notification-context.outputs.pr-text }}"
+            }
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN_METADATA_SERVICE }}
-          SENTRY_TRACES_SAMPLE_RATE: 1.0
-          SENTRY_ENVIRONMENT: production
-        working-directory: airbyte-ci/connectors/metadata_service/lib
-        shell: bash
-        run: |
-          poetry run metadata_service generate-specs-secrets-mask prod-airbyte-cloud-connector-metadata-service
-
-      - name: Generate connector registry report
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        # Note: --project because we're on poetry 2.x
-        run: poetry run --project airbyte-ci/connectors/metadata_service/lib metadata_service generate-registry-report prod-airbyte-cloud-connector-metadata-service
+          SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}

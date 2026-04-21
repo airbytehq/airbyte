@@ -10,11 +10,11 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta.Companion.CHECKPOINT_ID_NAME
@@ -50,6 +50,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class DestinationMessageTest {
+    private val coercer = AirbyteValueCoercer(useFastTimestampParsing = true)
     private val uuidGenerator = UUIDGenerator()
 
     private fun factory(
@@ -62,8 +63,6 @@ internal class DestinationMessageTest {
                     DestinationStream(
                         unmappedNamespace = descriptor.namespace,
                         unmappedName = descriptor.name,
-                        Append,
-                        ObjectTypeWithEmptySchema,
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,
@@ -499,11 +498,9 @@ internal class DestinationMessageTest {
             DestinationStream(
                 unmappedNamespace = "namespace",
                 unmappedName = "name",
-                importType = Append,
                 generationId = 1,
                 minimumGenerationId = 0,
                 syncId = 1,
-                schema = streamSchema,
                 namespaceMapper = NamespaceMapper(),
                 tableSchema =
                     io.airbyte.cdk.load.schema.model.StreamTableSchema(
@@ -556,14 +553,14 @@ internal class DestinationMessageTest {
             1234,
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .emittedAtMs
         )
         assertEquals(
             1,
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["id"]
                 ?.let { (it.abValue as IntegerValue).value.toInt() }
         )
@@ -571,7 +568,7 @@ internal class DestinationMessageTest {
             "test",
             destinationRecord
                 .asDestinationRecordRaw()
-                .asEnrichedDestinationRecordAirbyteValue()
+                .asEnrichedDestinationRecordAirbyteValue(coercer)
                 .declaredFields["name"]
                 ?.let { (it.abValue as StringValue).value }
         )

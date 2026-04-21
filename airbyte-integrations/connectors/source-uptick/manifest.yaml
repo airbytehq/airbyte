@@ -27,7 +27,7 @@ definitions:
           - type: WaitTimeFromHeader
             header: Retry-After
       request_headers:
-        User-Agent: Airbyte (Connector Version 0.5.0)
+        User-Agent: Airbyte (Connector Version 0.5.3)
     SimpleRetriever:
       requester:
         $ref: "#/definitions/linked/HttpRequester"
@@ -1544,7 +1544,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Project]: id,created,updated,status,ref,name,is_active,category,scope_of_works,retention_rate,final_rebate_rate,expected_start_date,expected_completion_date,actual_start_date,retention_date
+          fields[Project]: id,created,updated,status,ref,name,is_active,category,scope_of_works,retention_rate,final_rebate_rate,expected_start_date,expected_completion_date,actual_start_date,actual_completion_date,retention_date,order_no,description,extra_fields,branch,costcentre,client,property,billingcard,supervisor,salesperson
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1605,11 +1605,54 @@ streams:
               - "null"
             format: date-time
             airbyte_type: timestamp_with_timezone
+          actual_completion_date:
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_with_timezone
           retention_date:
             type:
               - string
               - "null"
             format: date
+          order_no:
+            type:
+              - string
+          description:
+            type:
+              - string
+          extra_fields:
+            type:
+              - object
+          branch_id:
+            type:
+              - integer
+              - "null"
+          costcentre_id:
+            type:
+              - integer
+              - "null"
+          client_id:
+            type:
+              - integer
+              - "null"
+          property_id:
+            type:
+              - integer
+              - "null"
+          billingcard_id:
+            type:
+              - integer
+              - "null"
+          supervisor_id:
+            type:
+              - integer
+              - "null"
+          salesperson_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -1671,8 +1714,52 @@ streams:
             value: '{{ record["attributes"]["actual_start_date"] or "None"}}'
           - type: AddedFieldDefinition
             path:
+              - actual_completion_date
+            value: '{{ record["attributes"]["actual_completion_date"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
               - retention_date
             value: '{{ record["attributes"]["retention_date"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - order_no
+            value: '{{ record["attributes"]["order_no"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - description
+            value: '{{ record["attributes"]["description"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - extra_fields
+            value: '{{ record["attributes"]["extra_fields"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - branch_id
+            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - costcentre_id
+            value: '{{ record["relationships"]["costcentre"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - client_id
+            value: '{{ record["relationships"]["client"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - property_id
+            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - billingcard_id
+            value: '{{ record["relationships"]["billingcard"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - supervisor_id
+            value: '{{ record["relationships"]["supervisor"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - salesperson_id
+            value: '{{ record["relationships"]["salesperson"]["data"]["id"] or "None"}}'
   - type: DeclarativeStream
     name: servicequotes
     primary_key:
@@ -1857,7 +1944,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[DefectQuote]: id,description,ref,created,updated,status,date,due_date,expiry_date,last_actioned,email_template,reminder_email_template,scope_of_works
+          fields[DefectQuote]: id,description,ref,created,updated,status,date,due_date,expiry_date,last_actioned,email_template,reminder_email_template,scope_of_works,branch,client,property,author,salesperson
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1917,6 +2004,26 @@ streams:
           scope_of_works:
             type:
               - string
+          branch_id:
+            type:
+              - integer
+              - "null"
+          client_id:
+            type:
+              - integer
+              - "null"
+          property_id:
+            type:
+              - integer
+              - "null"
+          author_id:
+            type:
+              - integer
+              - "null"
+          salesperson_id:
+            type:
+              - integer
+              - "null"
     transformations:
       - type: AddFields
         fields:
@@ -1972,6 +2079,26 @@ streams:
             path:
               - scope_of_works
             value: '{{ record["attributes"]["scope_of_works"] }}'
+          - type: AddedFieldDefinition
+            path:
+              - branch_id
+            value: '{{ record["relationships"]["branch"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - client_id
+            value: '{{ record["relationships"]["client"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - property_id
+            value: '{{ record["relationships"]["property"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - author_id
+            value: '{{ record["relationships"]["author"]["data"]["id"] or "None"}}'
+          - type: AddedFieldDefinition
+            path:
+              - salesperson_id
+            value: '{{ record["relationships"]["salesperson"]["data"]["id"] or "None"}}'
   - type: DeclarativeStream
     name: suppliers
     primary_key:

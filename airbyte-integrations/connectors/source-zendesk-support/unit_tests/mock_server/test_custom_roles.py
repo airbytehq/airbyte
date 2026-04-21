@@ -8,6 +8,7 @@ import freezegun
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
@@ -48,13 +49,13 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        # Use a recent updated_at to pass the semi_incremental_stream record filter
-        recent_updated_at = "2025-01-01T00:00:00Z"
+        # Create a record with updated_at timestamp after start_date so it passes the date filter
+        recent_date = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        test_record = CustomRolesRecordBuilder.custom_roles_record().with_field(FieldPath("updated_at"), recent_date)
+
         http_mocker.get(
-            self._base_custom_roles_request(api_token_authenticator).build(),
-            CustomRolesResponseBuilder.custom_roles_response()
-            .with_record(CustomRolesRecordBuilder.custom_roles_record().with_updated_at(recent_updated_at))
-            .build(),
+            self._base_custom_roles_request(api_token_authenticator).with_any_query_params().build(),
+            CustomRolesResponseBuilder.custom_roles_response().with_record(test_record).build(),
         )
 
         output = read_stream("custom_roles", SyncMode.incremental, self._config)
@@ -69,25 +70,28 @@ class TestCustomRolesStreamFullRefresh(TestCase):
         """Test that pagination fetches records from 2 pages and stops when last_page_size == 0.
 
         This test covers pagination behavior for streams using next_page URL pagination.
+        The custom_roles stream uses next_page URL from response (not query params).
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        # Build the next page request using the request builder with after_cursor like other tests
-        next_page_http_request = self._base_custom_roles_request(api_token_authenticator).with_after_cursor("after-cursor").build()
+        # Build the next page request - custom_roles uses full URL in next_page response field
+        # The paginator uses RequestPath, so the next_page URL replaces the entire path
+        next_page_url = f"https://d3v-airbyte.zendesk.com/api/v2/custom_roles?page=2"
+        next_page_http_request = (
+            ZendeskSupportRequestBuilder.custom_roles_endpoint(api_token_authenticator).with_custom_url(next_page_url).build()
+        )
 
-        # Use a recent updated_at to pass the semi_incremental_stream record filter
-        recent_updated_at = "2025-01-01T00:00:00Z"
+        # Create records with updated_at timestamps after start_date so they pass the date filter
+        recent_date = ab_datetime_now().subtract(timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        record1 = CustomRolesRecordBuilder.custom_roles_record().with_id(1001).with_field(FieldPath("updated_at"), recent_date)
+        record2 = CustomRolesRecordBuilder.custom_roles_record().with_id(1002).with_field(FieldPath("updated_at"), recent_date)
 
-        # Create records for page 1 with recent updated_at
-        record1 = CustomRolesRecordBuilder.custom_roles_record().with_id(1001).with_updated_at(recent_updated_at)
-        record2 = CustomRolesRecordBuilder.custom_roles_record().with_id(1002).with_updated_at(recent_updated_at)
-
-        # Create record for page 2 with recent updated_at
-        record3 = CustomRolesRecordBuilder.custom_roles_record().with_id(1003).with_updated_at(recent_updated_at)
+        # Create record for page 2
+        record3 = CustomRolesRecordBuilder.custom_roles_record().with_id(1003).with_field(FieldPath("updated_at"), recent_date)
 
         # Page 1: has records and provides next_page URL
         http_mocker.get(
-            self._base_custom_roles_request(api_token_authenticator).build(),
+            self._base_custom_roles_request(api_token_authenticator).with_any_query_params().build(),
             CustomRolesResponseBuilder.custom_roles_response(next_page_http_request)
             .with_record(record1)
             .with_record(record2)

@@ -13,7 +13,6 @@ Subscribe to the [discussion](https://github.com/airbytehq/airbyte/discussions/3
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
 | Incremental - Append + Deduped | No                   |       |
-| Namespaces                     | Yes                  |       |
 
 #### Output Schema
 
@@ -91,6 +90,10 @@ From [ClickHouse SQL Identifiers syntax](https://clickhouse.com/docs/en/sql-refe
 - If you want to write portable applications you are advised to always quote a particular name or never quote it.
 
 Therefore, Airbyte ClickHouse destination will create tables and schemas using the Unquoted identifiers when possible or fallback to Quoted Identifiers if the names are containing special characters.
+
+## Namespace support
+
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
 
 ## Changelog
 

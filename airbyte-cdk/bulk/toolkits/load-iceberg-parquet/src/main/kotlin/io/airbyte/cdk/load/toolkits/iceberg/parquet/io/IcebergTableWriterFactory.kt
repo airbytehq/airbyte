@@ -30,7 +30,19 @@ import org.apache.iceberg.util.PropertyUtil
  * and whether primary keys are configured on the destination table's schema.
  */
 @Singleton
-class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
+class IcebergTableWriterFactory {
+    class InvalidGenerationIdException(message: String) : Exception(message)
+
+    private val generationIdRegex = Regex("""ab-generation-id-\d+-e""")
+
+    private fun assertGenerationIdSuffixIsOfValidFormat(generationId: String) {
+        if (!generationIdRegex.matches(generationId)) {
+            throw InvalidGenerationIdException(
+                "Invalid format: $generationId. Expected format is 'ab-generation-id-<number>-e'",
+            )
+        }
+    }
+
     /**
      * Creates a new [BaseTaskWriter] based on the configuration of the destination target [Table].
      *
@@ -45,7 +57,7 @@ class IcebergTableWriterFactory(private val icebergUtil: IcebergUtil) {
         importType: ImportType,
         schema: Schema
     ): BaseTaskWriter<Record> {
-        icebergUtil.assertGenerationIdSuffixIsOfValidFormat(generationId)
+        assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
             FileFormat.valueOf(
                 table
