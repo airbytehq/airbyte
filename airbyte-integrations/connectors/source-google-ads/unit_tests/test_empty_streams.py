@@ -346,9 +346,9 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
             f"Actual requester class: {requester_class_name}"
         )
     else:
-        assert requester_class_name == "CustomGAQueryHttpRequester", (
-            f"Regular queries should use CustomGAQueryHttpRequester.\nQuery: {query}\nActual requester class: {requester_class_name}"
-        )
+        assert (
+            requester_class_name == "CustomGAQueryHttpRequester"
+        ), f"Regular queries should use CustomGAQueryHttpRequester.\nQuery: {query}\nActual requester class: {requester_class_name}"
 
 
 @pytest.mark.parametrize(
@@ -478,9 +478,9 @@ def test_custom_query_click_view_retention_and_step(
     actual_step_days = cursor._slice_range.days
     expected_step_days = 1 if is_click_view else 14
 
-    assert actual_step_days == expected_step_days, (
-        f"Step days mismatch.\nQuery: {query}\nState: {state_date}\nExpected: {expected_step_days} days\nActual: {actual_step_days} days"
-    )
+    assert (
+        actual_step_days == expected_step_days
+    ), f"Step days mismatch.\nQuery: {query}\nState: {state_date}\nExpected: {expected_step_days} days\nActual: {actual_step_days} days"
 
     # Verify start date (retention behavior)
     expected_start_date = expected_start_click_view if is_click_view else expected_start_regular
