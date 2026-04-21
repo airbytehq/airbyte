@@ -16,7 +16,6 @@ tests assert at the *call site* (the outgoing HTTP request) that:
    read for task partitions newer than the inherited cursor state.
 """
 
-import json
 from typing import Any, Mapping
 
 import pytest
