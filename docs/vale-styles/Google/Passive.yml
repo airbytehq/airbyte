@@ -1,5 +1,5 @@
 extends: existence
-link: 'https://developers.google.com/style/voice'
+link: "https://developers.google.com/style/voice"
 message: "In general, use active voice instead of passive voice ('%s')."
 ignorecase: true
 level: suggestion

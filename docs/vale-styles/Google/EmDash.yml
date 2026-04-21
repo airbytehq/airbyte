@@ -10,4 +10,3 @@ action:
     - " "
 tokens:
   - '\s[—–]\s'
-
