@@ -3,6 +3,7 @@
 #
 
 
+import logging
 from enum import Enum
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
@@ -18,7 +19,8 @@ from proto.marshal.collections import Repeated, RepeatedComposite
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .utils import logger
+
+logger = logging.getLogger("airbyte")
 
 
 API_VERSION = "v20"

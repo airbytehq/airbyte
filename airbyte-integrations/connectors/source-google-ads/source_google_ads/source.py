@@ -3,20 +3,12 @@
 #
 
 
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, Optional
 
-from pendulum import parse, today
-
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
-
-from .google_ads import GoogleAds
-from .models import CustomerModel
-from .streams import (
-    CustomerClient,
-)
 
 
 class SourceGoogleAds(YamlDeclarativeSource):
