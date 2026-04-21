@@ -28,7 +28,7 @@
 [tasks]
 
 get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
-fetch-secrets = "airbyte-internal-ops secrets fetch"
+fetch-secrets = "airbyte-ops secrets fetch"
 
 install = [
   "gradle-warmup",
