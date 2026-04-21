@@ -57,9 +57,7 @@ def test_stream_declares_incremental_cursor(stream_name: str, streams_by_name: M
 @pytest.mark.parametrize("stream_name", FULL_REFRESH_ONLY_STREAMS)
 def test_full_refresh_only_stream_has_no_cursor(stream_name: str, streams_by_name: Mapping[str, Any]) -> None:
     stream = streams_by_name[stream_name]
-    assert not stream.cursor_field, (
-        f"stream {stream_name} should not declare a cursor_field but got {stream.cursor_field!r}"
-    )
+    assert not stream.cursor_field, f"stream {stream_name} should not declare a cursor_field but got {stream.cursor_field!r}"
 
 
 def _get_retriever_and_slice(stream: Any) -> tuple[Any, StreamSlice]:
@@ -101,9 +99,7 @@ def test_sessions_initial_request_defaults_to_epoch_zero_when_start_date_missing
     params = retriever._request_params(stream_slice=stream_slice, next_page_token=None)
 
     assert "updated_after" in params
-    assert str(params["updated_after"]) == "0", (
-        f"expected `updated_after`=0 when start_date missing, got {params['updated_after']!r}"
-    )
+    assert str(params["updated_after"]) == "0", f"expected `updated_after`=0 when start_date missing, got {params['updated_after']!r}"
 
 
 def test_sessions_slice_uses_epoch_seconds(streams_by_name: Mapping[str, Any]) -> None:
