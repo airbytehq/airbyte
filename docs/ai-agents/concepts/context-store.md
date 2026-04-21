@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Context store
 
-The context store is a managed, searchable cache that Airbyte populates from the connectors in your workspace. It gives agents a fast, consistent way to search your business data in natural language, without hitting the underlying APIs for every request.
+The context store is a managed, searchable replica of select entities from all your connected data sources. Airbyte populates it from the connectors in your workspace and gives agents a fast, consistent way to search your business data in natural language, without hitting the underlying APIs for every request.
 
 Some third-party APIs have search endpoints, but many don't. Without the context store, prompts like these force your agent to list, page through, and filter records from the API in real time:
 
@@ -20,7 +20,7 @@ Working this way causes a variety of problems:
 
 The result is a query that takes substantial time and resources to process, a degraded experience, and inflated costs.
 
-The context store solves this problem by making key fields available to your agents in Airbyte-managed storage. When you turn it on, Airbyte copies a curated subset of the data in your agent connectors into the store and keeps it up to date. Agents then answer these kinds of questions with fast, indexed searches instead of live API crawls.
+The context store solves this problem by making key fields available to your agents in Airbyte-managed storage. When you turn it on, Airbyte replicates a curated subset of the entities in your agent connectors into the store and keeps it up to date. Agents then answer these kinds of questions with fast, indexed searches instead of live API crawls.
 
 ## What's in the context store
 
@@ -85,7 +85,7 @@ Use this view to confirm which entities are ready to query and which are still p
 
 3. In the slide-out, turn off **Enable Context Store**.
 
-When you turn off the context store, Airbyte removes stored data from the cache. Agents can no longer use the search action until you turn the store back on and Airbyte repopulates it.
+When you turn off the context store, Airbyte removes the replicated data from the store. Agents can no longer use the search action until you turn the store back on and Airbyte repopulates it.
 
 ## When to use the context store
 
