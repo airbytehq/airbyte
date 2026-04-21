@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.integrations.destination.redshift2.schema.toRedshiftCompatibleName
 import jakarta.inject.Singleton
 
 @Singleton
@@ -111,19 +112,23 @@ class RedshiftSqlGenerator {
     fun deleteByRawId(tableName: TableName): String =
         "DELETE FROM ${getFullyQualifiedName(tableName)} WHERE ${quoteIdentifier("_airbyte_raw_id")} = ?;"
 
-    /** Generates an `INSERT INTO target SELECT FROM source` to copy data between tables. */
+    /**
+     * Generates an `ALTER TABLE APPEND` to efficiently move data from the source table to the
+     * target table. This moves the underlying data blocks instead of copying row-by-row, which is
+     * significantly faster for large datasets. The source table is emptied after the operation.
+     *
+     * Requires both tables to have the same column structure (names, types, order). Cannot be
+     * executed inside a transaction block (autoCommit must be true).
+     *
+     * @see <a
+     * href="https://docs.aws.amazon.com/redshift/latest/dg/r_ALTER_TABLE_APPEND.html">Redshift
+     * ALTER TABLE APPEND</a>
+     */
     fun copyTable(
-        columnNames: List<String>,
         sourceTableName: TableName,
         targetTableName: TableName,
-    ): String {
-        val quotedColumnNames = columnNames.joinToString(", ") { quoteIdentifier(it) }
-        return """
-            |INSERT INTO ${getFullyQualifiedName(targetTableName)} ($quotedColumnNames)
-            |SELECT $quotedColumnNames
-            |FROM ${getFullyQualifiedName(sourceTableName)};
-        """.trimMargin()
-    }
+    ): String =
+        "ALTER TABLE ${getFullyQualifiedName(targetTableName)} APPEND FROM ${getFullyQualifiedName(sourceTableName)};"
 
     /**
      * Generates a rename-based table swap within a transaction:
@@ -182,10 +187,11 @@ class RedshiftSqlGenerator {
             stream.tableSchema.columnSchema.inputSchema.containsKey(CDC_DELETED_AT_COLUMN)
 
         // Redshift doesn't support writable CTEs (DELETE/UPDATE inside WITH clauses).
-        // Execute dedup as a temp table, then run DELETE, UPDATE, INSERT as separate statements.
-        val dedupTempTable = "_airbyte_dedup_${sourceTableName.name.take(100)}"
-        val dedupFqn =
-            "${quoteIdentifier(sourceTableName.namespace)}.${quoteIdentifier(dedupTempTable)}"
+        // Use a session-scoped TEMP TABLE for deduped rows, then run DELETE, UPDATE, INSERT
+        // as separate statements. Temp tables are session-scoped so concurrent syncs on
+        // different connections cannot collide.
+        val dedupTempTable = "_airbyte_dedup_${sourceTableName.name}".toRedshiftCompatibleName()
+        val dedupRef = quoteIdentifier(dedupTempTable)
 
         val selectDedupedQuery =
             selectDeduped(
@@ -197,7 +203,7 @@ class RedshiftSqlGenerator {
 
         val updateExistingRowsQuery =
             updateExistingRows(
-                dedupFqn,
+                dedupRef,
                 targetTableName,
                 allTargetColumns,
                 primaryKeyTargetColumns,
@@ -207,7 +213,7 @@ class RedshiftSqlGenerator {
 
         val insertNewRowsQuery =
             insertNewRows(
-                dedupFqn,
+                dedupRef,
                 targetTableName,
                 allTargetColumns,
                 primaryKeyTargetColumns,
@@ -216,23 +222,23 @@ class RedshiftSqlGenerator {
 
         val statements = mutableListOf<String>()
 
-        // Step 1: Materialize deduped rows into a temp table
-        statements.add("CREATE TABLE $dedupFqn AS\n$selectDedupedQuery;")
+        // Step 1: Materialize deduped rows into a session-scoped temp table
+        statements.add("CREATE TEMP TABLE $dedupRef AS\n$selectDedupedQuery;")
 
         // Step 2: CDC hard-delete (if enabled)
         if (cdcHardDeleteEnabled) {
             val primaryKeysMatchingCondition =
                 primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-                    "${getFullyQualifiedName(targetTableName)}.$pk = $dedupFqn.$pk"
+                    "${getFullyQualifiedName(targetTableName)}.$pk = $dedupRef.$pk"
                 }
             val cursorComparison =
-                buildCursorComparison(cursorTargetColumn, targetTableName, dedupFqn)
+                buildCursorComparison(cursorTargetColumn, targetTableName, dedupRef)
             statements.add(
                 """
                 |DELETE FROM ${getFullyQualifiedName(targetTableName)}
-                |USING $dedupFqn
+                |USING $dedupRef
                 |WHERE $primaryKeysMatchingCondition
-                |  AND $dedupFqn.$DELETED_AT_COLUMN_NAME IS NOT NULL
+                |  AND $dedupRef.$DELETED_AT_COLUMN_NAME IS NOT NULL
                 |  AND ($cursorComparison);
                 """.trimMargin()
             )
@@ -245,7 +251,7 @@ class RedshiftSqlGenerator {
         statements.add("$insertNewRowsQuery;")
 
         // Step 5: Drop temp table
-        statements.add("DROP TABLE IF EXISTS $dedupFqn;")
+        statements.add("DROP TABLE IF EXISTS $dedupRef;")
 
         return """
             |BEGIN TRANSACTION;
@@ -412,7 +418,7 @@ class RedshiftSqlGenerator {
 
         // Add new columns (no NOT NULL -- preexisting rows would have no default)
         columnsToAdd.forEach { (name, columnType) ->
-            clauses.add("ALTER TABLE $fqn ADD COLUMN ${quoteIdentifier(name)} ${columnType.type};")
+            clauses.add(addColumn(tableName, name, columnType.type))
         }
 
         // Remove columns

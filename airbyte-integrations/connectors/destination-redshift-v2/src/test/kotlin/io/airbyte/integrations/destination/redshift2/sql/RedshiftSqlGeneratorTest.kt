@@ -18,6 +18,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -195,17 +196,15 @@ internal class RedshiftSqlGeneratorTest {
     // ================================================================
 
     @Test
-    fun `copyTable generates INSERT INTO SELECT`() {
+    fun `copyTable generates ALTER TABLE APPEND`() {
         val source = TableName(namespace = "ns", name = "src")
         val target = TableName(namespace = "ns", name = "tgt")
 
-        val sql = sqlGenerator.copyTable(listOf("col_a", "col_b"), source, target)
+        val sql = sqlGenerator.copyTable(source, target)
 
         val expected =
             """
-            INSERT INTO "ns"."tgt" ("col_a", "col_b")
-            SELECT "col_a", "col_b"
-            FROM "ns"."src";
+            ALTER TABLE "ns"."tgt" APPEND FROM "ns"."src";
             """
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -402,10 +401,10 @@ internal class RedshiftSqlGeneratorTest {
 
         val sql = sqlGenerator.upsertTable(stream, source, target)
 
-        // Redshift uses separate statements (not writable CTEs) with a temp dedup table
-        val dedup = """"ns"."_airbyte_dedup_staging""""
+        // Redshift uses separate statements with a session-scoped TEMP TABLE (no namespace prefix)
+        val dedup = """"_airbyte_dedup_staging""""
         assertTrue(sql.contains("BEGIN TRANSACTION;"))
-        assertTrue(sql.contains("CREATE TABLE $dedup AS"))
+        assertTrue(sql.contains("CREATE TEMP TABLE $dedup AS"))
         assertTrue(sql.contains("ROW_NUMBER() OVER"))
         assertTrue(sql.contains("""PARTITION BY "id""""))
         // CDC delete as a separate statement
@@ -445,13 +444,55 @@ internal class RedshiftSqlGeneratorTest {
         val sql = sqlGenerator.upsertTable(stream, source, target)
 
         assertTrue(sql.contains("BEGIN TRANSACTION;"))
-        assertTrue(sql.contains("CREATE TABLE"))
+        assertTrue(sql.contains("CREATE TEMP TABLE"))
         assertTrue(sql.contains("_airbyte_dedup_staging"))
         assertFalse(sql.contains("DELETE FROM"))
         assertTrue(sql.contains("UPDATE"))
         assertTrue(sql.contains("INSERT INTO"))
         assertFalse(sql.contains("_ab_cdc_deleted_at"))
         assertTrue(sql.contains("COMMIT;"))
+    }
+
+    @Test
+    fun `upsertTable truncates dedup temp table name when source name is long`() {
+        val longName = "a".repeat(127) // already at Redshift max
+        val finalSchema =
+            mapOf(
+                "id" to ColumnType("bigint", false),
+                "name" to ColumnType("varchar(65535)", true),
+                "updated_at" to ColumnType("timestamptz", true),
+            )
+        val stream =
+            mockStream(
+                finalSchema = finalSchema,
+                primaryKey = listOf(listOf("id")),
+                cursor = listOf("updated_at"),
+            )
+
+        val source = TableName(namespace = "ns", name = longName)
+        val target = TableName(namespace = "ns", name = "final")
+
+        val sql = sqlGenerator.upsertTable(stream, source, target)
+
+        // The dedup temp table name should be truncated to 127 chars
+        // "_airbyte_dedup_" + 127 chars = 143 chars > 127, so it must be truncated with a hash
+        val dedupPrefix = "_airbyte_dedup_"
+        assertTrue(sql.contains("CREATE TEMP TABLE"))
+        // The full un-truncated name should NOT appear
+        assertFalse(sql.contains("$dedupPrefix$longName"))
+        // Extract the dedup table name from the CREATE TEMP TABLE statement
+        val createTempRegex = Regex("""CREATE TEMP TABLE "([^"]+)" AS""")
+        val match = createTempRegex.find(sql)
+        assertNotNull(match)
+        val dedupTableName = match!!.groupValues[1]
+        assertTrue(
+            dedupTableName.length <= 127,
+            "Dedup temp table name exceeds 127 chars: ${dedupTableName.length}"
+        )
+        assertTrue(
+            dedupTableName.startsWith(dedupPrefix),
+            "Dedup temp table name should start with $dedupPrefix"
+        )
     }
 
     @Test
