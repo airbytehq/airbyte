@@ -58,7 +58,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 | Stream | Sync Mode | Description |
 |--------|-----------|-------------|
-| [Sessions](https://docs.devin.ai/api-reference/v3/sessions/list-sessions) | Full Refresh | All Devin sessions in your organization |
+| [Sessions](https://docs.devin.ai/api-reference/v3/sessions/list-sessions) | Full Refresh \| Incremental | All Devin sessions in your organization |
 | [Session Messages](https://docs.devin.ai/api-reference/v3/sessions/get-session-messages) | Full Refresh | Conversation messages for each session |
 | [Playbooks](https://docs.devin.ai/api-reference/v3/playbooks/list-playbooks) | Full Refresh | Team playbooks for the organization |
 | [Secrets](https://docs.devin.ai/api-reference/v3/secrets/list-secrets) | Full Refresh | Secret metadata (no secret values are synced) |
@@ -70,6 +70,8 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 |-----------|------|----------|---------|-------------|
 | `api_token` | string | Yes | | Devin API key for authentication. Service user tokens use the `cog_*` prefix. |
 | `org_id` | string | Yes | | Your Devin organization ID. Uses the `org_*` prefix. |
+| `start_date` | string (date-time) | No | `1970-01-01T00:00:00Z` | UTC timestamp (`YYYY-MM-DDTHH:MM:SSZ`). Only sessions updated on or after this date are replicated during incremental syncs of the `sessions` stream. |
+| `lookback_window_days` | integer | No | `1` | Number of days to re-read on each incremental sync of the `sessions` stream to catch sessions whose `updated_at` advanced after the previous sync. |
 
 ## Changelog
 
@@ -78,6 +80,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.2.0 | 2026-04-21 | [76520](https://github.com/airbytehq/airbyte/pull/76520) | Add incremental sync support to the `sessions` stream (new `start_date` and `lookback_window_days` config fields) |
 | 0.1.0 | 2026-03-10 | | Initial release with sessions, session messages, playbooks, secrets, and knowledge notes streams |
 
 </details>

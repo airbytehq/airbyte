@@ -63,6 +63,21 @@ definitions:
             - items
       paginator:
         $ref: "#/definitions/cursor_paginator"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%s') }}"
+        datetime_format: "%s"
+      lookback_window: "P{{ config.get('lookback_window_days', 1) }}D"
+      start_time_option:
+        type: RequestOption
+        field_name: updated_after
+        inject_into: request_parameter
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -454,6 +469,22 @@ spec:
         title: Organization ID
         description: "Your Devin organization ID (org_* prefix)."
         order: 1
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2024-01-01T00:00:00Z"
+        description: "UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Only sessions updated on or after this date are replicated during incremental syncs. If omitted, syncs start from the earliest available data."
+        order: 2
+      lookback_window_days:
+        type: integer
+        title: Lookback Window (days)
+        description: "Number of days to look back from the cursor on each incremental sync to catch sessions whose `updated_at` advanced after the previous sync (for example, in-progress sessions that change state). Defaults to 1."
+        default: 1
+        minimum: 0
+        order: 3
     required:
       - api_token
       - org_id
