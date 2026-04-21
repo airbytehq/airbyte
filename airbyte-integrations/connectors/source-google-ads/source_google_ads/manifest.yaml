@@ -6,6 +6,15 @@ check:
   type: CheckStream
   stream_names:
     - customer
+  # Validate custom GAQL queries at check time by executing them against the Google Ads API.
+  # This catches invalid field references (e.g. UNRECOGNIZED_FIELD errors) before a sync starts.
+  # Caveat: This makes `check` slower because it must resolve all dynamic streams and execute
+  # an API call per custom query to validate it. With stream_count=1, only the first custom
+  # query stream is checked to limit the added latency.
+  dynamic_streams_check_configs:
+    - type: DynamicStreamCheckConfig
+      dynamic_stream_name: custom_ga_query_stream
+      stream_count: 1
 
 definitions:
   # Authenticator Definitions
@@ -981,6 +990,7 @@ definitions:
 
   custom_ga_query_stream:
     type: DynamicDeclarativeStream
+    name: custom_ga_query_stream
     stream_template:
       $ref: "#/definitions/dynamic_stream_template"
     components_resolver:
