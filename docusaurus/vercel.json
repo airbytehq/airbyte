@@ -828,7 +828,12 @@
     },
     {
       "source": "/ai-agents/quickstarts/tutorial-hosted",
-      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-hosted",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-pydantic",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/get-started/tutorials/quickstarts/tutorial-hosted",
+      "destination": "/ai-agents/get-started/tutorials/quickstarts/tutorial-pydantic",
       "statusCode": 301
     },
     {
