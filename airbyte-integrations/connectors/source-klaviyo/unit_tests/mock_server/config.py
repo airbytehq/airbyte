@@ -44,7 +44,7 @@ class ConfigBuilder:
         return self
 
     def with_num_workers(self, num_workers: int) -> "ConfigBuilder":
-        """Set the number of concurrent workers."""
+        """Set the number of concurrent threads."""
         self._num_workers = num_workers
         return self
 
