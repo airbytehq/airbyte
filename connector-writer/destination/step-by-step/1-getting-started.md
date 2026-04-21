@@ -329,7 +329,7 @@ package io.airbyte.integrations.destination.{db}.spec
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import io.airbyte.cdk.command.ConfigurationSpecification
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 open class {DB}Specification : ConfigurationSpecification() {
@@ -372,7 +372,7 @@ package io.airbyte.integrations.destination.{db}.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 // Runtime configuration (used by your code)
 data class {DB}Configuration(
@@ -422,7 +422,7 @@ package io.airbyte.integrations.destination.{db}.spec
 
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class {DB}SpecificationExtension : DestinationSpecificationExtension {

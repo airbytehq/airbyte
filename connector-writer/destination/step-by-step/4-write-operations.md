@@ -36,7 +36,7 @@ Phase 7 validates "can we start?" Phase 8 validates "can we write data?"
 package io.airbyte.integrations.destination.{db}.write.load
 
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -208,13 +208,13 @@ package io.airbyte.integrations.destination.{db}.dataflow
 
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
-import io.airbyte.cdk.load.orchestration.db.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.state.StoreKey
-import io.airbyte.cdk.load.state.StreamStateStore
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
 import io.airbyte.integrations.destination.{db}.write.load.{DB}InsertBuffer
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Factory
 class {DB}AggregateFactory(
@@ -256,90 +256,101 @@ class {DB}AggregateFactory(
 ```kotlin
 package io.airbyte.integrations.destination.{db}.write
 
+import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.*
-import io.airbyte.cdk.load.state.StreamStateStore
-import io.airbyte.cdk.load.table.TableCatalog
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.DatabaseInitialStatusGatherer
+import io.airbyte.cdk.load.table.directload.DirectLoadInitialStatus
+import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableAppendTruncateStreamLoader
+import io.airbyte.cdk.load.table.directload.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.{db}.client.{DB}AirbyteClient
-import io.micronaut.context.annotation.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class {DB}Writer(
-    private val names: TableCatalog,
+    private val catalog: DestinationCatalog,
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val client: {DB}AirbyteClient,
-    private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
 
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
     override suspend fun setup() {
         // Create all namespaces
-        names.values
-            .map { it.tableNames.finalTableName!!.namespace }
+        catalog.streams
+            .map { it.tableSchema.tableNames.finalTableName!!.namespace }
             .toSet()
             .forEach { client.createNamespace(it) }
 
         // Gather initial state (which tables exist, generation IDs, etc.)
-        initialStatuses = stateGatherer.gatherInitialStatus(names)
+        initialStatuses = stateGatherer.gatherInitialStatus()
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
-        // Defensive: Handle streams not in catalog (for test compatibility)
-        val initialStatus = if (::initialStatuses.isInitialized) {
-            initialStatuses[stream] ?: DirectLoadInitialStatus(null, null)
-        } else {
-            DirectLoadInitialStatus(null, null)
-        }
+        val initialStatus = initialStatuses[stream]!!
 
-        val tableNameInfo = names[stream]
-        val (realTableName, tempTableName, columnNameMapping) = if (tableNameInfo != null) {
-            // Stream in catalog - use configured names
-            Triple(
-                tableNameInfo.tableNames.finalTableName!!,
-                tempTableNameGenerator.generate(tableNameInfo.tableNames.finalTableName!!),
-                tableNameInfo.columnNameMapping
-            )
-        } else {
-            // Dynamic stream (test-generated) - use descriptor names directly
-            val tableName = TableName(
-                namespace = stream.mappedDescriptor.namespace ?: "test",
-                name = stream.mappedDescriptor.name
-            )
-            Triple(tableName, tempTableNameGenerator.generate(tableName), ColumnNameMapping(emptyMap()))
-        }
-
-        // Phase 8: Append mode only
-        // Phase 10: Add truncate mode (minimumGenerationId = generationId)
-        // Phase 13: Add dedupe mode (importType is Dedupe)
-        return DirectLoadTableAppendStreamLoader(
-            stream,
-            initialStatus,
-            realTableName,
-            tempTableName,
-            columnNameMapping,
-            client,  // TableOperationsClient
-            client,  // TableSchemaEvolutionClient
-            streamStateStore,
+        // Access schema directly from stream (modern CDK pattern)
+        val realTableName = stream.tableSchema.tableNames.finalTableName!!
+        val tempTableName = stream.tableSchema.tableNames.tempTableName!!
+        val columnNameMapping = ColumnNameMapping(
+            stream.tableSchema.columnSchema.inputToFinalColumnNames
         )
+
+        // Choose StreamLoader based on sync mode
+        return when (stream.minimumGenerationId) {
+            0L ->
+                // Append mode: just insert records
+                DirectLoadTableAppendStreamLoader(
+                    stream,
+                    initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping,
+                    client,  // TableOperationsClient
+                    client,  // TableSchemaEvolutionClient
+                    streamStateStore,
+                )
+            stream.generationId ->
+                // Overwrite/truncate mode: replace table contents
+                DirectLoadTableAppendTruncateStreamLoader(
+                    stream,
+                    initialStatus,
+                    realTableName = realTableName,
+                    tempTableName = tempTableName,
+                    columnNameMapping,
+                    client,
+                    client,
+                    streamStateStore,
+                )
+            else ->
+                throw SystemErrorException(
+                    "Cannot execute a hybrid refresh - current generation ${stream.generationId}; minimum generation ${stream.minimumGenerationId}"
+                )
+        }
     }
 }
 ```
 
 **What this does:**
 - **setup()**: Creates namespaces, gathers initial table state
-- **createStreamLoader()**: Creates StreamLoader for each stream
-  - AppendStreamLoader: Just insert records (this phase)
-  - TruncateStreamLoader: Overwrite table (Phase 10)
-  - DedupStreamLoader: Upsert with primary key (Phase 13)
+- **createStreamLoader()**: Creates StreamLoader for each stream based on sync mode
 
-**Defensive pattern (lines 27-52):**
-- Handles ConnectorWiringSuite creating dynamic test streams
-- Test streams not in TableCatalog → use descriptor names directly
-- Prevents NullPointerException in tests
+**Modern CDK pattern (stream.tableSchema):**
+- Schema info is embedded in `stream.tableSchema` (set by CDK)
+- Access via `stream.tableSchema.tableNames.finalTableName!!`
+- Column mappings via `stream.tableSchema.columnSchema.inputToFinalColumnNames`
+- No need for defensive null checks (CDK guarantees schema exists)
+
+**StreamLoader selection:**
+- `minimumGenerationId == 0`: Append mode (DirectLoadTableAppendStreamLoader)
+- `minimumGenerationId == generationId`: Overwrite mode (DirectLoadTableAppendTruncateStreamLoader)
+- Other combinations: Error (hybrid refresh not supported)
 
 **StreamLoader responsibilities:**
 - start(): Create/prepare table

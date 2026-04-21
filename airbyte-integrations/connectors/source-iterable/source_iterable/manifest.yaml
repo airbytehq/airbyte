@@ -27,6 +27,18 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 1
         format: "date-time"
+      lookback_window:
+        type: "integer"
+        title: "Lookback Window (Minutes)"
+        description: >-
+          Number of minutes to re-read from the current time when determining the end of each sync window
+          for export-based streams. This accounts for eventual consistency delays in Iterable's Export API,
+          preventing silent data loss for events not yet indexed. Increase this value if you observe missing
+          events near the end of sync windows.
+        default: 5
+        minimum: 0
+        examples: [5, 10, 15]
+        order: 2
 type: DeclarativeSource
 check:
   type: CheckStream

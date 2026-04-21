@@ -42,14 +42,27 @@ To view the connection status:
 
 3. Select a single connection to view more details about the connection and for a breakdown of the status of each Stream in that connection.  
 
-    | Icon                                               | Status      | Description                                                         |
-    | -------------------------------------------------- | ----------- | ------------------------------------------------------------------- |
-    | ![Healthy](./assets/connection_synced.png)         | **Healthy** | The most recent sync for this connection succeeded                  |
-    | ![Failed](./assets/connection_action_required.png) | **Failed**  | The most recent sync for this connection failed                     |
-    | ![Running](./assets/connection_syncing.png)        | **Running** | The connection is currently actively syncing                        |
-    | ![Paused](./assets/connection_disabled.png)        | **Paused**  | The connection is disabled and isn't scheduled to run automatically |
+    | Icon                                               | Status      | Description                                                                                          |
+    | -------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+    | ![Healthy](./assets/connection_synced.png)         | **Healthy** | The most recent sync for this connection succeeded                                                   |
+    | ![Failed](./assets/connection_action_required.png) | **Failed**  | The most recent sync for this connection failed                                                      |
+    | ![Running](./assets/connection_syncing.png)        | **Running** | The connection is currently actively syncing                                                         |
+    | ![Paused](./assets/connection_disabled.png)        | **Paused**  | The connection is disabled and isn't scheduled to run automatically                                  |
+    | ![Queued](./assets/connection_queued.png)          | **Queued**  | The connection's sync is waiting for data worker capacity to become available (Cloud Pro and Enterprise Flex only) |
 
 4. On the **Status** tab for a connection, there is a list of associated Streams. To the left of the name for each Stream, there is an icon that displays its status.
+
+### Queued connections (Cloud Pro and Enterprise Flex)
+
+On capacity-based Cloud plans, when your organization's committed data worker capacity is fully utilized, newly triggered sync jobs enter a "Queued" state. Queued connections display an orange hourglass icon.
+
+A queued job is cancelled when:
+
+- The connection is updated, cancelled, deleted, or reset.
+- The next scheduled sync for that connection arrives. The newer sync replaces the queued one so the most recent data syncs when capacity frees up.
+- Eight hours have elapsed and the connection uses a manual schedule type.
+
+You can filter the Connections page by "Queued" status to identify all queued connections. For information about monitoring and managing data worker capacity, see [Monitor data worker usage](./manage-data-workers.md).
 
 ## Review one stream's status
 
@@ -63,6 +76,10 @@ The stream status allows you to monitor an individual stream's latest status. Co
 | ![Queued for next sync](./assets/connection_not_yet_synced.png) | **Queued for next sync** | The stream hasn't synced yet, and is going to sync in the next scheduled sync                                                            |
 | ![Error](./assets/connection_incomplete.png)                    | **Error**                | The connection didn't succeed on its most recent sync, but Airbyte expects it to recover on the next one                                                 |
 | ![Action Required](./assets/connection_action_required.png)     | **Action Required**      | A breaking change related to the source or destination requires attention to resolve                                                               |
+
+:::note
+Stream-level "Queued" status means the stream is waiting to sync within an active connection sync. This is different from a connection-level "Queued" status, which means the entire sync job is waiting for data worker capacity. When a connection is queued for data worker capacity, its individual streams display as **Pending** (not Queued). For more information about capacity-based queuing, see [Monitor data worker usage](./manage-data-workers.md).
+:::
 
 Once the sync is complete, each stream displays the time since Airbyte loaded the last record to the destination. You can click **Last record loaded** in the header to optionally display the exact datetime the last record loaded.
 

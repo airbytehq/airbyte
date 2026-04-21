@@ -72,6 +72,18 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.2.14-rc.4 | 2026-04-17 | | Revert default_concurrency from 6 to 5 and disable HTTPAPIBudget for tuning experiment |
+| 3.2.14-rc.3 | 2026-04-14 | | Concurrency tuning iteration 3: increase default_concurrency from 5 to 6 |
+| 3.2.14-rc.2 | 2026-04-13 | [76272](https://github.com/airbytehq/airbyte/pull/76272) | Concurrency tuning iteration 2: increase default_concurrency from 4 to 5 |
+| 3.2.14-rc.1 | 2026-04-10 | [76202](https://github.com/airbytehq/airbyte/pull/76202) | Add concurrency_level and num_workers for concurrency tuning |
+| 3.2.13 | 2026-03-31 | [75719](https://github.com/airbytehq/airbyte/pull/75719) | Update dependencies |
+| 3.2.12 | 2026-03-24 | [74647](https://github.com/airbytehq/airbyte/pull/74647) | Update dependencies |
+| 3.2.11 | 2026-03-03 | [74188](https://github.com/airbytehq/airbyte/pull/74188) | Update dependencies |
+| 3.2.10 | 2026-02-17 | [73400](https://github.com/airbytehq/airbyte/pull/73400) | Update dependencies |
+| 3.2.9 | 2026-02-10 | [72557](https://github.com/airbytehq/airbyte/pull/72557) | Update dependencies |
+| 3.2.8 | 2026-01-20 | [71949](https://github.com/airbytehq/airbyte/pull/71949) | Update dependencies |
+| 3.2.7 | 2026-01-14 | [71629](https://github.com/airbytehq/airbyte/pull/71629) | Update dependencies |
+| 3.2.6 | 2025-12-18 | [70595](https://github.com/airbytehq/airbyte/pull/70595) | Update dependencies |
 | 3.2.5 | 2025-11-25 | [70016](https://github.com/airbytehq/airbyte/pull/70016) | Update dependencies |
 | 3.2.4 | 2025-11-18 | [69435](https://github.com/airbytehq/airbyte/pull/69435) | Update dependencies |
 | 3.2.3 | 2025-10-29 | [68786](https://github.com/airbytehq/airbyte/pull/68786) | Update dependencies |

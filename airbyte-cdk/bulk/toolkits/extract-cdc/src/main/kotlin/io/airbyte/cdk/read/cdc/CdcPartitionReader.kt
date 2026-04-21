@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.read.cdc
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
@@ -45,7 +46,7 @@ import org.apache.kafka.connect.source.SourceRecord
 
 /** [PartitionReader] implementation for CDC with Debezium. */
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class CdcPartitionReader<T : Comparable<T>>(
+class CdcPartitionReader<T : PartiallyOrdered<T>>(
     val resourceAcquirer: ResourceAcquirer,
     val readerOps: CdcPartitionReaderDebeziumOperations<T>,
     val upperBound: T,
@@ -210,6 +211,18 @@ class CdcPartitionReader<T : Comparable<T>>(
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
+        // During the initial CDC snapshot (synthetic mode), Debezium reads the schema/structure
+        // of all CDC-enabled tables. If the watchdog times out during this phase, it means the
+        // database has too many tables or the timeout is configured too low.
+        // Throw ConfigErrorException to fail fast and prevent saving corrupted state
+        // (offset without schema history).
+        if (isInputStateSynthetic && closeReasonReference.get() == CloseReason.WATCHDOG_TIMEOUT) {
+            throw ConfigErrorException(
+                "Watchdog timeout during initial snapshot. " +
+                    "Please increase 'Initial Waiting Time' in the source configuration page. " +
+                    "Visit our Best Practices guide for more details: https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices"
+            )
+        }
         val offset: DebeziumOffset = stateFilesAccessor.readUpdatedOffset(startingOffset)
         val schemaHistory: DebeziumSchemaHistory? =
             if (DebeziumPropertiesBuilder().with(decoratedProperties).expectsSchemaHistoryFile) {
@@ -400,7 +413,9 @@ class CdcPartitionReader<T : Comparable<T>>(
                 if (currentPosition == null) {
                     return null
                 }
-                val isProgressing = lastHeartbeatPosition?.let { currentPosition > it } ?: true
+                val isProgressing =
+                    lastHeartbeatPosition == null ||
+                        currentPosition.isGreater(lastHeartbeatPosition)
                 if (isProgressing) {
                     lastHeartbeatPosition = currentPosition
                     lastHeartbeatTime = now
@@ -420,20 +435,21 @@ class CdcPartitionReader<T : Comparable<T>>(
                 }
             }
 
-            if (currentPosition == null || currentPosition < upperBound) {
-                return null
+            if (currentPosition.isGreaterOrEqual(upperBound)) {
+                // Close because the current event is at or past the sync upper bound.
+                return when (eventType) {
+                    EventType.TOMBSTONE,
+                    EventType.HEARTBEAT ->
+                        CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
+                    EventType.KEY_JSON_INVALID,
+                    EventType.VALUE_JSON_INVALID,
+                    EventType.RECORD_EMITTED,
+                    EventType.RECORD_DISCARDED_BY_DESERIALIZE,
+                    EventType.RECORD_DISCARDED_BY_STREAM_ID ->
+                        CloseReason.RECORD_REACHED_TARGET_POSITION
+                }
             }
-            // Close because the current event is past the sync upper bound.
-            return when (eventType) {
-                EventType.TOMBSTONE,
-                EventType.HEARTBEAT -> CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
-                EventType.KEY_JSON_INVALID,
-                EventType.VALUE_JSON_INVALID,
-                EventType.RECORD_EMITTED,
-                EventType.RECORD_DISCARDED_BY_DESERIALIZE,
-                EventType.RECORD_DISCARDED_BY_STREAM_ID ->
-                    CloseReason.RECORD_REACHED_TARGET_POSITION
-            }
+            return null // Keep processing.
         }
 
         private fun position(sourceRecord: SourceRecord?): T? {

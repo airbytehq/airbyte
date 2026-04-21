@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.data.icerberg.parquet
 
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.isNamespaceOld
 import io.airbyte.cdk.load.test.util.IntegrationTest.Companion.randomizedNamespaceRegex
@@ -26,7 +27,8 @@ class IcebergDestinationCleaner(private val catalog: Catalog) : DestinationClean
             }
 
         // we're passing explicit TableIdentifier to clearTable, so just use SimpleTableIdGenerator
-        val tableCleaner = IcebergTableCleaner(IcebergUtil(SimpleTableIdGenerator()))
+        val tableCleaner =
+            IcebergTableCleaner(IcebergUtil(SimpleTableIdGenerator(), AirbyteValueCoercer()))
 
         runBlocking(Dispatchers.IO) {
             namespaces.forEach { namespace ->

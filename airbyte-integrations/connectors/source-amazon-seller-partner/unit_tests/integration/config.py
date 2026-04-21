@@ -44,5 +44,9 @@ class ConfigBuilder:
         self._config["replication_end_date"] = end_date.strftime(TIME_FORMAT)
         return self
 
+    def with_asin_granularity(self, granularity: str) -> ConfigBuilder:
+        self._config["sales_and_traffic_report_asin_granularity"] = granularity
+        return self
+
     def build(self) -> Dict[str, str]:
         return self._config

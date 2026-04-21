@@ -1,0 +1,14 @@
+{
+  "list": [
+    {
+      "contact": {
+        "id": "contact_001",
+        "first_name": "Contact",
+        "last_name": "Person",
+        "email": "contact@example.com",
+        "cf_contact_type": "Primary",
+        "cf_department": "Sales"
+      }
+    }
+  ]
+}

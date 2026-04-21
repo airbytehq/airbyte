@@ -1,0 +1,18 @@
+{
+  "list": [
+    {
+      "differential_price": {
+        "id": "dp_001",
+        "item_price_id": "item_price_001",
+        "parent_item_id": "item_001",
+        "price": 800,
+        "status": "active",
+        "created_at": 1705312800,
+        "updated_at": 1705312800,
+        "object": "differential_price",
+        "cf_price_tier": "Enterprise",
+        "cf_discount_code": "BULK20"
+      }
+    }
+  ]
+}

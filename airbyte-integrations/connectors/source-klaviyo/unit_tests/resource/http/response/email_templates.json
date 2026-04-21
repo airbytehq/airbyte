@@ -1,0 +1,17 @@
+[
+  {
+    "type": "template",
+    "id": "template_001",
+    "attributes": {
+      "name": "Welcome Email",
+      "editor_type": "DRAG_AND_DROP",
+      "html": "<html><body><h1>Welcome!</h1></body></html>",
+      "text": "Welcome!",
+      "created": "2024-01-01T10:00:00+00:00",
+      "updated": "2024-01-15T12:30:00+00:00"
+    },
+    "links": {
+      "self": "https://a.klaviyo.com/api/templates/template_001"
+    }
+  }
+]

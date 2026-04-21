@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2026 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.cdk.load.dataflow.transform.medium
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
+import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import jakarta.inject.Singleton
@@ -13,11 +15,15 @@ import jakarta.inject.Singleton
 class JsonConverter(
     private val coercer: ValueCoercer,
     private val validationResultHandler: ValidationResultHandler,
+    private val converterConfig: MediumConverterConfig,
+    private val airbyteValueCoercer: AirbyteValueCoercer,
 ) : MediumConverter {
     override fun convert(input: ConversionInput): Map<String, AirbyteValue> {
         val enriched =
             input.msg.asEnrichedDestinationRecordAirbyteValue(
-                extractedAtAsTimestampWithTimezone = true
+                coercer = airbyteValueCoercer,
+                extractedAtAsTimestampWithTimezone =
+                    converterConfig.extractedAtAsTimestampWithTimezone,
             )
 
         val munged = HashMap<String, AirbyteValue>()
