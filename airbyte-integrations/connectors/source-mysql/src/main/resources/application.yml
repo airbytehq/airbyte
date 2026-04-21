@@ -87,7 +87,7 @@ airbyte:
           - pattern: (?i).*communications link failure.*
             input-example: >-
               com.mysql.cj.exceptions.CommunicationsException: Communications link failure
-              
+
               The last packet sent successfully to the server was 0 milliseconds ago.
               The driver has not received any packets from the server.
             error: transient
