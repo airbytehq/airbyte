@@ -868,12 +868,17 @@
     },
     {
       "source": "/ai-agents/entity-cache",
-      "destination": "/ai-agents/interfaces/ui/context-store",
+      "destination": "/ai-agents/concepts/context-store",
       "statusCode": 301
     },
     {
       "source": "/ai-agents/entity-cache/:path*",
-      "destination": "/ai-agents/interfaces/ui/context-store",
+      "destination": "/ai-agents/concepts/context-store",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/interfaces/ui/context-store",
+      "destination": "/ai-agents/concepts/context-store",
       "statusCode": 301
     },
     {
@@ -963,7 +968,7 @@
     },
     {
       "source": "/ai-agents/interfaces/sdk/context-store",
-      "destination": "/ai-agents/interfaces/ui/context-store",
+      "destination": "/ai-agents/concepts/context-store",
       "statusCode": 301
     },
     {
