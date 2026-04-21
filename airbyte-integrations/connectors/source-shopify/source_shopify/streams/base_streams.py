@@ -3,11 +3,16 @@
 #
 
 
+import heapq
+import json
 import logging
+import os
+import tempfile
 from abc import ABC, abstractmethod
 from datetime import datetime
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
@@ -647,6 +652,81 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
         yield from self.deleted_events.read_records(stream_state=stream_state, **kwargs)
 
 
+_BULK_SORT_CHUNK_SIZE_ENV = "SHOPIFY_BULK_SORT_CHUNK_SIZE"
+_DEFAULT_BULK_SORT_CHUNK_SIZE = 50_000
+
+
+def _external_merge_sort(
+    records: Iterable[Mapping[str, Any]],
+    key: Callable[[Mapping[str, Any]], Any],
+    chunk_size: int = _DEFAULT_BULK_SORT_CHUNK_SIZE,
+) -> Iterable[Mapping[str, Any]]:
+    """Yield `records` in ASC order of `key(record)` using on-disk external merge sort.
+
+    Buffers at most `chunk_size` records in memory at a time: each chunk is sorted
+    in memory and spilled to a JSONL temp file, then `heapq.merge` streams the
+    sorted chunks into a globally sorted sequence. Temp files are removed when
+    the returned generator is exhausted or closed.
+
+    This is a drop-in replacement for `sorted(records, key=...)` that preserves
+    the full-slice ASC ordering contract while keeping peak memory bounded
+    regardless of total record count.
+    """
+    tmp_dir = tempfile.mkdtemp(prefix="shopify-bulk-sort-")
+    chunk_paths: List[Path] = []
+    try:
+        buf: List[Mapping[str, Any]] = []
+        for record in records:
+            buf.append(record)
+            if len(buf) >= chunk_size:
+                chunk_paths.append(_flush_sorted_chunk(buf, key, tmp_dir))
+                buf = []
+        if buf:
+            chunk_paths.append(_flush_sorted_chunk(buf, key, tmp_dir))
+
+        if not chunk_paths:
+            return
+
+        if len(chunk_paths) == 1:
+            # single chunk: no merge needed, just stream it back
+            yield from _iter_jsonl(chunk_paths[0])
+            return
+
+        yield from heapq.merge(*(_iter_jsonl(p) for p in chunk_paths), key=key)
+    finally:
+        for p in chunk_paths:
+            try:
+                p.unlink()
+            except OSError:
+                pass
+        try:
+            os.rmdir(tmp_dir)
+        except OSError:
+            pass
+
+
+def _flush_sorted_chunk(
+    buf: List[Mapping[str, Any]],
+    key: Callable[[Mapping[str, Any]], Any],
+    tmp_dir: str,
+) -> Path:
+    buf.sort(key=key)
+    fd, path_str = tempfile.mkstemp(prefix="chunk-", suffix=".jsonl", dir=tmp_dir)
+    path = Path(path_str)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        for record in buf:
+            f.write(json.dumps(record))
+            f.write("\n")
+    return path
+
+
+def _iter_jsonl(path: Path) -> Iterable[Mapping[str, Any]]:
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line:
+                yield json.loads(line)
+
+
 class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     filter_field = "updated_at"
     cursor_field = "updated_at"
@@ -839,18 +919,47 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         """
         Apply sorting for collected records, to guarantee the `ASC` output.
         This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
+
+        Uses an on-disk external merge sort so peak memory stays bounded by
+        `SHOPIFY_BULK_SORT_CHUNK_SIZE` (default 50,000 records) regardless of
+        total slice size. Child records of a parent (e.g. `metafields`) have
+        their own `updated_at` that is independent of the parent's sort order,
+        so client-side sorting is required for the state/checkpoint contract.
         """
-        if non_sorted_records:
-            if not self.cursor_field:
-                yield from non_sorted_records
-            else:
-                yield from sorted(
-                    non_sorted_records,
-                    key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_state_comparison_value,
-                )
-        else:
-            # always return an empty iterable, if no records
-            return []
+        if not non_sorted_records:
+            return
+        if not self.cursor_field:
+            yield from non_sorted_records
+            return
+
+        cursor_field = self.cursor_field
+        default_state_value = self.default_state_comparison_value
+
+        def _sort_key(record: Mapping[str, Any]) -> Any:
+            value = record.get(cursor_field)
+            return value if value else default_state_value
+
+        yield from _external_merge_sort(
+            non_sorted_records,
+            key=_sort_key,
+            chunk_size=self._bulk_sort_chunk_size,
+        )
+
+    @property
+    def _bulk_sort_chunk_size(self) -> int:
+        """Chunk size for the external merge sort in `sort_output_asc`.
+
+        Controlled by the `SHOPIFY_BULK_SORT_CHUNK_SIZE` env var so support can
+        tune it without a code change; falls back to the module default.
+        """
+        raw = os.environ.get(_BULK_SORT_CHUNK_SIZE_ENV)
+        if not raw:
+            return _DEFAULT_BULK_SORT_CHUNK_SIZE
+        try:
+            value = int(raw)
+        except ValueError:
+            return _DEFAULT_BULK_SORT_CHUNK_SIZE
+        return value if value > 0 else _DEFAULT_BULK_SORT_CHUNK_SIZE
 
     def read_records(
         self,
