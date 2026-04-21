@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -34,6 +34,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
+from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 
 from airbyte_cdk import HttpSubStream
@@ -86,26 +87,33 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
-    def _get_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[Union[str, int]]:
+    @stream_state_cache.cache_stream_state
+    def stream_slices(
+        self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs: Any
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
-        Always derive the bulk query date window lower bound from `start_date`, ignoring
-        any previously persisted cursor state.
+        Generate bulk query slices for `metafield_customers` starting from
+        `start_date` on every sync, regardless of the persisted cursor state.
 
-        Shopify's Bulk API nests `customers.metafields` and applies the `query` argument
-        to the parent `customers.updated_at` only. The nested `metafields` connection
-        does not accept its own filter, so any customer whose metafield is updated
-        without a corresponding bump to the customer's own `updated_at` falls outside
-        the incremental window and its metafields are silently dropped.
+        Shopify's Bulk API nests `customers.metafields` under `customers` and only
+        applies the `query` filter to the parent `customers.updated_at`. The nested
+        `metafields` connection does not accept its own filter, so a customer whose
+        metafield is updated without a corresponding bump to the customer's own
+        `updated_at` (for example, via Shopify Flow or a direct metafield write)
+        falls outside the incremental window and its metafields are silently dropped.
 
-        Scanning from `start_date` on every sync ensures such parents are re-evaluated
-        and their updated metafields are captured. Record-level filtering in
-        `filter_records_newer_than_state` still drops already-emitted metafield records
-        based on the stream's persisted `updated_at` cursor, so this does not produce
-        duplicates.
+        Re-scanning from `start_date` on every sync ensures those customers are
+        re-evaluated and their updated metafields are captured. The persisted
+        cursor state is still honored for deduplication: the outer
+        `cache_stream_state` decorator populates the shared state cache with the
+        real `stream_state`, which `read_records` reads back to pass to
+        `filter_records_newer_than_state`. Super is called with `stream_state=None`
+        only to bypass `_get_state_value` for slice-window derivation, not to
+        discard state.
 
-        See: https://github.com/airbytehq/oncall/issues/12004
+        See https://github.com/airbytehq/oncall/issues/12004
         """
-        return self.config.get("start_date")
+        yield from super().stream_slices(stream_state=None, **kwargs)
 
 
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
