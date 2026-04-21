@@ -78,7 +78,7 @@ jobs:
 
       - name: Fetch connector secrets
         if: matrix.connector && (vars.GCP_PROJECT_ID != '')
-        run: airbyte-cdk secrets fetch ${{ matrix.connector }}
+        run: uvx airbyte-internal-ops secrets fetch ${{ matrix.connector }}
 
       - name: Run CDK upgrade
         if: matrix.connector

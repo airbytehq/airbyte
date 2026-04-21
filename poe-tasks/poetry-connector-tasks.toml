@@ -17,7 +17,7 @@
 [tool.poe.tasks]
 
 get-connector-name = 'basename "$PWD"' # Use with -qq to get just the connector name
-fetch-secrets = "airbyte-cdk secrets fetch"
+fetch-secrets = "uvx airbyte-internal-ops secrets fetch"
 
 install = ["install-project", "install-cdk-cli"]
 install-project = "poetry install --all-extras"
