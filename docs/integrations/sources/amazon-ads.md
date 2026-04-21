@@ -155,6 +155,7 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.19 | 2026-04-21 | [76501](https://github.com/airbytehq/airbyte/pull/76501) | Update dependencies |
 | 7.3.18 | 2026-04-15 | [76333](https://github.com/airbytehq/airbyte/pull/76333) | Fix cursorId pagination for all attribution report streams: ensure cursorId remains a string and stop pagination on null cursor |
 | 7.3.17 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 7.3.16 | 2026-03-30 | [74313](https://github.com/airbytehq/airbyte/pull/74313) | Fix profile ID type mismatch in record filter |
