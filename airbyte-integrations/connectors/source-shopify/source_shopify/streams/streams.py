@@ -36,6 +36,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProfileLocationGroups,
     Transaction,
 )
+from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import LimitReducingErrorHandler, ShopifyNonRetryableErrors
 
 from airbyte_cdk import HttpSubStream
@@ -44,7 +45,6 @@ from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 
 from .base_streams import (
     FullRefreshShopifyGraphQlBulkStream,
@@ -155,9 +155,7 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        cached_state = stream_state_cache.cached_state.get(
-            self.name, {self.cursor_field: self.default_state_comparison_value}
-        )
+        cached_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.default_state_comparison_value})
         seen_ids: set = set()
         # Pass 1: definition-based bulk job runs at full scope — the
         # `metafieldDefinitions.updatedAt` field does not gate metafield
