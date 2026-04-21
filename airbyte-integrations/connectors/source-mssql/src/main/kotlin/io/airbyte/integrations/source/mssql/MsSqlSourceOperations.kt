@@ -275,7 +275,7 @@ class MsSqlSourceOperations :
 
     fun SelectQuerySpec.sql(): String {
         val components: List<String> =
-            listOf(sql(select, limit), from.sql(), where.sql(), orderBy.sql())
+            listOf(sql(select, limit), from.sql(select), where.sql(), orderBy.sql())
         val sql: String = components.filter { it.isNotBlank() }.joinToString(" ")
         return sql
     }
@@ -290,12 +290,20 @@ class MsSqlSourceOperations :
                 Limit(0) -> "TOP 0 "
                 is Limit -> "TOP ${limit.n} "
             }
-        return "SELECT $topClause" +
-            when (selectNode) {
-                is SelectColumns -> selectNode.columns.joinToString(", ") { it.sql() }
-                is SelectColumnMaxValue -> "MAX(${selectNode.column.sql()})"
-            }
+        return "SELECT $topClause" + selectNode.projection()
     }
+
+    /**
+     * Renders the projection list for a [SelectNode]. Used by both the outer SELECT and by
+     * [FromSample] so that the inner subquery projects the same explicit column list instead of
+     * `*`. Projecting `*` breaks on system-versioned temporal tables where the
+     * `PERIOD FOR SYSTEM_TIME` columns are declared `HIDDEN` and therefore excluded from `*`.
+     */
+    fun SelectNode.projection(): String =
+        when (this) {
+            is SelectColumns -> columns.joinToString(", ") { it.sql() }
+            is SelectColumnMaxValue -> "MAX(${column.sql()})"
+        }
 
     /**
      * Quotes an identifier for SQL Server using square brackets. If the identifier contains a
@@ -307,7 +315,7 @@ class MsSqlSourceOperations :
     fun DataField.sql(): String =
         if (type is MsSqlServerHierarchyFieldType) "${id.quoted()}.ToString()" else id.quoted()
 
-    fun FromNode.sql(): String =
+    fun FromNode.sql(outerSelect: SelectNode): String =
         when (this) {
             NoFrom -> ""
             is From -> {
@@ -324,8 +332,12 @@ class MsSqlSourceOperations :
                     val tableName =
                         if (ns == null) name.quoted() else "${ns.quoted()}.${name.quoted()}"
                     val samplePercent = sampleRatePercentage.toPlainString()
+                    // Project the same explicit column list as the outer SELECT so that HIDDEN
+                    // columns (e.g. PERIOD FOR SYSTEM_TIME columns on system-versioned temporal
+                    // tables) remain accessible to the outer query, which SELECT * would exclude.
+                    val innerProjection = outerSelect.projection()
 
-                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
+                    "FROM (SELECT TOP $sampleSize $innerProjection FROM $tableName TABLESAMPLE ($samplePercent PERCENT) $maybeWhere ORDER BY NEWID()) AS randomly_sampled"
                 }
             }
         }

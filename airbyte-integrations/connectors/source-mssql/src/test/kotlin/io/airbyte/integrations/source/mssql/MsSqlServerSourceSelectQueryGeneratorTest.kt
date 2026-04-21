@@ -12,6 +12,7 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
+import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
@@ -226,6 +227,70 @@ class MsSqlServerSourceSelectQueryGeneratorTest {
             .assertSqlEquals(
                 """SELECT TOP 100 [Id], [Start], [End], [Order] FROM [dbo].[CustomerAgreementProfiles]"""
             )
+    }
+
+    @Test
+    fun testSamplingQueryProjectsExplicitColumns() {
+        // Regression test for https://github.com/airbytehq/oncall/issues/12048:
+        // the inner TABLESAMPLE subquery must project the same explicit column list as the outer
+        // SELECT, not `*`. Otherwise HIDDEN columns on system-versioned temporal tables
+        // (PERIOD FOR SYSTEM_TIME) are dropped from the derived table and the outer SELECT fails
+        // with "Invalid column name".
+        val id = EmittedField("id", IntFieldType)
+        val name = EmittedField("name", StringFieldType)
+        SelectQuerySpec(
+                SelectColumns(listOf(id, name)),
+                FromSample(
+                    name = "users",
+                    namespace = "dbo",
+                    sampleRateInvPow2 = 6,
+                    sampleSize = 1024,
+                ),
+                orderBy = OrderBy(listOf(id)),
+                limit = Limit(1024),
+            )
+            .assertSqlEquals(
+                """SELECT TOP 1024 [id], [name] FROM """ +
+                    """(SELECT TOP 1024 [id], [name] FROM [dbo].[users] """ +
+                    """TABLESAMPLE (1.562500 PERCENT)  ORDER BY NEWID()) AS randomly_sampled """ +
+                    """ORDER BY [id]""",
+            )
+    }
+
+    @Test
+    fun testSamplingQueryIncludesHiddenTemporalColumns() {
+        // Simulates a catalog for a SQL Server system-versioned temporal table where the user has
+        // selected the HIDDEN period columns (HistoryStart/HistoryEnd) explicitly. The generated
+        // SQL must name those columns in both the inner sample subquery and the outer SELECT so
+        // that SELECT * in the inner query does not drop them.
+        val id = EmittedField("Id", IntFieldType)
+        val payload = EmittedField("Payload", StringFieldType)
+        val historyStart = EmittedField("HistoryStart", OffsetDateTimeFieldType)
+        val historyEnd = EmittedField("HistoryEnd", OffsetDateTimeFieldType)
+        val sql =
+            SelectQuerySpec(
+                    SelectColumns(listOf(id, payload, historyStart, historyEnd)),
+                    FromSample(
+                        name = "TemporalRecords",
+                        namespace = "dbo",
+                        sampleRateInvPow2 = 7,
+                        sampleSize = 2048,
+                    ),
+                    orderBy = OrderBy(listOf(id)),
+                    limit = Limit(2048),
+                )
+                .let { MsSqlSourceOperations().generate(it.optimize()).sql }
+        // Both the inner and outer projections must name the HIDDEN columns explicitly.
+        Assertions.assertTrue(sql.contains("[HistoryStart]")) {
+            "Expected HistoryStart column to appear in generated SQL: $sql"
+        }
+        Assertions.assertTrue(sql.contains("[HistoryEnd]")) {
+            "Expected HistoryEnd column to appear in generated SQL: $sql"
+        }
+        // Guard against regression: the inner sample subquery must not use SELECT *.
+        Assertions.assertFalse(sql.contains("SELECT TOP 2048 *")) {
+            "Inner sample subquery must not project * (it drops HIDDEN columns): $sql"
+        }
     }
 
     private fun SelectQuerySpec.assertSqlEquals(
