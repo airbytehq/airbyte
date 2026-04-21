@@ -109,6 +109,93 @@ jobs:
           tags: |
             oss-issue-triage
             community-issue
+          structured-output-schema: |
+            type: object
+            additionalProperties: false
+            required: [event_type, classification, escalation, public_response]
+            properties:
+              event_type:
+                type: string
+                enum: [issue, discussion]
+                description: Whether triage was for a GitHub Issue or Discussion.
+              source_url:
+                type: string
+                format: uri
+                description: Link to the original issue or discussion.
+              reporter:
+                type: string
+                description: GitHub username (without @) of the community member who opened the report.
+              classification:
+                type: object
+                additionalProperties: false
+                required: [category]
+                properties:
+                  category:
+                    type: string
+                    enum:
+                      - bug_report
+                      - feature_request
+                      - question
+                      - configuration_issue
+                      - connector_issue
+                      - other
+                  connector_name:
+                    type: string
+                    description: Connector identifier if applicable (e.g. source-postgres, destination-snowflake). Empty string when not connector-related.
+                  connector_version:
+                    type: string
+                    description: Connector version reported by the user, if any. Empty string if not provided.
+                  airbyte_version:
+                    type: string
+                    description: Airbyte OSS or Cloud version reported by the user, if any. Empty string if not provided.
+                  has_sonar_counterpart:
+                    type: boolean
+                    description: True if this connector has an agent-connector counterpart in airbytehq/sonar.
+                  appears_to_be_regression:
+                    type: boolean
+                  likely_affects_multiple_users:
+                    type: boolean
+              escalation:
+                type: object
+                additionalProperties: false
+                required: [decision]
+                properties:
+                  decision:
+                    type: string
+                    enum: [new_oncall_issue, duplicate_oncall_issue, no_escalation]
+                  oncall_issue_url:
+                    type: string
+                    description: URL of the new or existing oncall issue. Empty when decision is no_escalation.
+                  reason:
+                    type: string
+                    description: Short justification for the escalation decision.
+                  suggested_priority:
+                    type: string
+                    enum: ["", P0, P1, P2, P3, P4]
+                    description: Suggested priority for the oncall issue. Empty when decision is no_escalation.
+                  applied_labels:
+                    type: array
+                    items: { type: string }
+                    description: Labels applied to the oncall issue (e.g. connectors/source/postgres, Sonar, bug, P2).
+              public_response:
+                type: object
+                additionalProperties: false
+                required: [posted]
+                properties:
+                  posted:
+                    type: boolean
+                    description: Whether a public comment was posted on the original issue or discussion.
+                  comment_url:
+                    type: string
+                    description: Permalink to the posted comment. Empty if not posted.
+                  asked_clarifying_questions:
+                    type: boolean
+                  provided_workaround_or_docs:
+                    type: boolean
+              followups:
+                type: array
+                description: Remaining actions or observations for human reviewers.
+                items: { type: string }
 
   ai-triage-discussion:
     name: AI Triage for Community Discussion
@@ -173,3 +260,90 @@ jobs:
           tags: |
             oss-issue-triage
             community-discussion
+          structured-output-schema: |
+            type: object
+            additionalProperties: false
+            required: [event_type, classification, escalation, public_response]
+            properties:
+              event_type:
+                type: string
+                enum: [issue, discussion]
+                description: Whether triage was for a GitHub Issue or Discussion.
+              source_url:
+                type: string
+                format: uri
+                description: Link to the original issue or discussion.
+              reporter:
+                type: string
+                description: GitHub username (without @) of the community member who opened the report.
+              classification:
+                type: object
+                additionalProperties: false
+                required: [category]
+                properties:
+                  category:
+                    type: string
+                    enum:
+                      - bug_report
+                      - feature_request
+                      - question
+                      - configuration_issue
+                      - connector_issue
+                      - other
+                  connector_name:
+                    type: string
+                    description: Connector identifier if applicable (e.g. source-postgres, destination-snowflake). Empty string when not connector-related.
+                  connector_version:
+                    type: string
+                    description: Connector version reported by the user, if any. Empty string if not provided.
+                  airbyte_version:
+                    type: string
+                    description: Airbyte OSS or Cloud version reported by the user, if any. Empty string if not provided.
+                  has_sonar_counterpart:
+                    type: boolean
+                    description: True if this connector has an agent-connector counterpart in airbytehq/sonar.
+                  appears_to_be_regression:
+                    type: boolean
+                  likely_affects_multiple_users:
+                    type: boolean
+              escalation:
+                type: object
+                additionalProperties: false
+                required: [decision]
+                properties:
+                  decision:
+                    type: string
+                    enum: [new_oncall_issue, duplicate_oncall_issue, no_escalation]
+                  oncall_issue_url:
+                    type: string
+                    description: URL of the new or existing oncall issue. Empty when decision is no_escalation.
+                  reason:
+                    type: string
+                    description: Short justification for the escalation decision.
+                  suggested_priority:
+                    type: string
+                    enum: ["", P0, P1, P2, P3, P4]
+                    description: Suggested priority for the oncall issue. Empty when decision is no_escalation.
+                  applied_labels:
+                    type: array
+                    items: { type: string }
+                    description: Labels applied to the oncall issue (e.g. connectors/source/postgres, Sonar, bug, P2).
+              public_response:
+                type: object
+                additionalProperties: false
+                required: [posted]
+                properties:
+                  posted:
+                    type: boolean
+                    description: Whether a public comment was posted on the original issue or discussion.
+                  comment_url:
+                    type: string
+                    description: Permalink to the posted comment. Empty if not posted.
+                  asked_clarifying_questions:
+                    type: boolean
+                  provided_workaround_or_docs:
+                    type: boolean
+              followups:
+                type: array
+                description: Remaining actions or observations for human reviewers.
+                items: { type: string }
