@@ -13,11 +13,10 @@ import org.junit.jupiter.api.Test
  *
  * Covers:
  * - [MsSqlServerAuthentication.toJdbcProperties] — the canonical auth-mode → mssql-jdbc properties
- *   translation.
+ * translation.
  * - [MsSqlServerAuthentication.toDebeziumDatabaseProperties] — delegates to the same map.
- * - [MsSqlServerSourceConfigurationFactory] resolving the auth mode, rejecting invalid
- *   combinations (Entra ID + unencrypted; missing legacy credentials), and populating
- *   `jdbcProperties` correctly.
+ * - [MsSqlServerSourceConfigurationFactory] resolving the auth mode, rejecting invalid combinations
+ * (Entra ID + unencrypted; missing legacy credentials), and populating `jdbcProperties` correctly.
  */
 class MsSqlServerEntraIdAuthTest {
 
@@ -67,46 +66,6 @@ class MsSqlServerEntraIdAuthTest {
         Assertions.assertEquals("ActiveDirectoryServicePrincipal", props["authentication"])
     }
 
-    @Test
-    fun managedIdentitySystemAssignedEmitsOnlyAuthenticationKey() {
-        val auth = ActiveDirectoryManagedIdentityAuthentication(msiClientId = null)
-        val props = auth.toJdbcProperties()
-        Assertions.assertEquals("ActiveDirectoryManagedIdentity", props["authentication"])
-        Assertions.assertFalse(props.containsKey("user"))
-        Assertions.assertFalse(props.containsKey("password"))
-        Assertions.assertFalse(props.containsKey("msiClientId"))
-        Assertions.assertEquals(1, props.size)
-    }
-
-    @Test
-    fun managedIdentityUserAssignedEmitsMsiClientId() {
-        val auth = ActiveDirectoryManagedIdentityAuthentication(msiClientId = "msi-uuid")
-        val props = auth.toJdbcProperties()
-        Assertions.assertEquals("ActiveDirectoryManagedIdentity", props["authentication"])
-        Assertions.assertEquals("msi-uuid", props["msiClientId"])
-        Assertions.assertFalse(props.containsKey("user"))
-        Assertions.assertFalse(props.containsKey("password"))
-        Assertions.assertEquals(2, props.size)
-    }
-
-    @Test
-    fun defaultCredentialAuthEmitsOnlyAuthenticationKey() {
-        val auth = ActiveDirectoryDefaultAuthentication()
-        val props = auth.toJdbcProperties()
-        Assertions.assertEquals("ActiveDirectoryDefault", props["authentication"])
-        Assertions.assertFalse(props.containsKey("user"))
-        Assertions.assertFalse(props.containsKey("password"))
-        Assertions.assertEquals(1, props.size)
-    }
-
-    @Test
-    fun defaultCredentialAuthInstancesAreEqual() {
-        Assertions.assertEquals(
-            ActiveDirectoryDefaultAuthentication(),
-            ActiveDirectoryDefaultAuthentication(),
-        )
-    }
-
     // --- Factory resolution: spec → MsSqlServerSourceConfiguration ---
 
     @Test
@@ -143,12 +102,9 @@ class MsSqlServerEntraIdAuthTest {
     @Test
     fun factoryResolvesAuthBlockServicePrincipalAndPopulatesJdbcProperties() {
         val pojo = baseEncryptedPojo()
-        pojo.authenticationJson =
-            ActiveDirectoryServicePrincipalAuthenticationSpecification().also {
-                it.tenantId = "tenant-uuid"
-                it.clientId = "client-uuid"
-                it.clientSecret = "secret-value"
-            }
+        pojo.tenantId = "tenant-uuid"
+        pojo.clientId = "client-uuid"
+        pojo.clientSecret = "secret-value"
 
         val config = MsSqlServerSourceConfigurationFactory().make(pojo)
         Assertions.assertEquals(
@@ -169,66 +125,10 @@ class MsSqlServerEntraIdAuthTest {
     }
 
     @Test
-    fun factoryResolvesAuthBlockManagedIdentityWithoutUserPassword() {
-        val pojo = baseEncryptedPojo()
-        pojo.authenticationJson =
-            ActiveDirectoryManagedIdentityAuthenticationSpecification().also {
-                it.msiClientId = "msi-uuid"
-            }
-
-        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
-        Assertions.assertEquals(
-            ActiveDirectoryManagedIdentityAuthentication(msiClientId = "msi-uuid"),
-            config.authentication,
-        )
-        Assertions.assertEquals(
-            "ActiveDirectoryManagedIdentity",
-            config.jdbcProperties["authentication"],
-        )
-        Assertions.assertEquals("msi-uuid", config.jdbcProperties["msiClientId"])
-        Assertions.assertFalse(config.jdbcProperties.containsKey("user"))
-        Assertions.assertFalse(config.jdbcProperties.containsKey("password"))
-    }
-
-    @Test
-    fun factoryResolvesAuthBlockManagedIdentityWithBlankMsiClientIdAsSystemAssigned() {
-        val pojo = baseEncryptedPojo()
-        pojo.authenticationJson =
-            ActiveDirectoryManagedIdentityAuthenticationSpecification().also {
-                it.msiClientId = "   "
-            }
-
-        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
-        Assertions.assertEquals(
-            ActiveDirectoryManagedIdentityAuthentication(msiClientId = null),
-            config.authentication,
-        )
-        Assertions.assertFalse(config.jdbcProperties.containsKey("msiClientId"))
-    }
-
-    @Test
-    fun factoryResolvesAuthBlockDefault() {
-        val pojo = baseEncryptedPojo()
-        pojo.authenticationJson = ActiveDirectoryDefaultAuthenticationSpecification()
-
-        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
-        Assertions.assertTrue(config.authentication is ActiveDirectoryDefaultAuthentication)
-        Assertions.assertEquals(
-            "ActiveDirectoryDefault",
-            config.jdbcProperties["authentication"],
-        )
-        Assertions.assertFalse(config.jdbcProperties.containsKey("user"))
-        Assertions.assertFalse(config.jdbcProperties.containsKey("password"))
-    }
-
-    @Test
     fun factoryRejectsEntraIdAuthWithUnencryptedSslMode() {
         val pojo = baseUnencryptedPojo()
-        pojo.authenticationJson =
-            ActiveDirectoryServicePrincipalAuthenticationSpecification().also {
-                it.clientId = "client-uuid"
-                it.clientSecret = "secret-value"
-            }
+        pojo.clientId = "client-uuid"
+        pojo.clientSecret = "secret-value"
 
         val ex =
             Assertions.assertThrows(ConfigErrorException::class.java) {

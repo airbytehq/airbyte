@@ -78,21 +78,11 @@ data class ActiveDirectoryServicePrincipalAuthentication(
     val clientSecret: String,
 ) : MsSqlServerAuthentication
 
-data class ActiveDirectoryManagedIdentityAuthentication(
-    val msiClientId: String?,
-) : MsSqlServerAuthentication
-
-class ActiveDirectoryDefaultAuthentication : MsSqlServerAuthentication {
-    override fun equals(other: Any?): Boolean = other is ActiveDirectoryDefaultAuthentication
-    override fun hashCode(): Int = javaClass.hashCode()
-    override fun toString(): String = "ActiveDirectoryDefaultAuthentication"
-}
-
 /**
  * Translates a resolved authentication mode into the driver properties the Microsoft JDBC driver
  * expects. These keys are intentionally the exact names mssql-jdbc consumes so the map can be
- * forwarded as-is to both [JdbcConnectionFactory] (via [MsSqlServerSourceConfiguration.jdbcProperties])
- * and Debezium's `database.*` passthrough.
+ * forwarded as-is to both [JdbcConnectionFactory] (via
+ * [MsSqlServerSourceConfiguration.jdbcProperties]) and Debezium's `database.*` passthrough.
  */
 fun MsSqlServerAuthentication.toJdbcProperties(): Map<String, String> =
     when (this) {
@@ -111,15 +101,6 @@ fun MsSqlServerAuthentication.toJdbcProperties(): Map<String, String> =
                 "password" to clientSecret,
                 "authentication" to "ActiveDirectoryServicePrincipal",
             )
-        is ActiveDirectoryManagedIdentityAuthentication ->
-            buildMap {
-                put("authentication", "ActiveDirectoryManagedIdentity")
-                if (!msiClientId.isNullOrBlank()) {
-                    put("msiClientId", msiClientId)
-                }
-            }
-        is ActiveDirectoryDefaultAuthentication ->
-            mapOf("authentication" to "ActiveDirectoryDefault")
     }
 
 /**
@@ -205,43 +186,32 @@ constructor(
 
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
 
-        // Resolve the authentication mode. If the new `authentication` block is present, use it;
-        // otherwise fall back to the legacy flat `username`/`password` fields (soft back-compat).
+        // Resolve the authentication mode. If the Entra ID fields are filled, use service
+        // principal auth; otherwise fall back to the top-level username/password fields.
         val resolvedAuth: MsSqlServerAuthentication =
-            when (val authSpec = pojo.getAuthenticationValue()) {
-                is SqlPasswordAuthenticationSpecification ->
-                    SqlPasswordAuthentication(authSpec.username, authSpec.password)
-                is ActiveDirectoryServicePrincipalAuthenticationSpecification -> {
-                    if (!authSpec.tenantId.isNullOrBlank()) {
-                        log.info {
-                            "authentication.tenant_id is informational only at the currently " +
-                                "pinned mssql-jdbc version (12.10); multi-tenant service " +
-                                "principals require driver 13.x or newer."
-                        }
+            if (!pojo.clientId.isNullOrBlank() && !pojo.clientSecret.isNullOrBlank()) {
+                if (!pojo.tenantId.isNullOrBlank()) {
+                    log.info {
+                        "tenant_id is informational only at the currently pinned " +
+                            "mssql-jdbc version (12.10); multi-tenant service " +
+                            "principals require driver 13.x or newer."
                     }
-                    ActiveDirectoryServicePrincipalAuthentication(
-                        tenantId = authSpec.tenantId,
-                        clientId = authSpec.clientId,
-                        clientSecret = authSpec.clientSecret,
+                }
+                ActiveDirectoryServicePrincipalAuthentication(
+                    tenantId = pojo.tenantId,
+                    clientId = pojo.clientId!!,
+                    clientSecret = pojo.clientSecret!!,
+                )
+            } else {
+                val username = pojo.username
+                val password = pojo.password
+                if (username.isNullOrBlank() || password.isNullOrBlank()) {
+                    throw ConfigErrorException(
+                        "Authentication is not configured: provide username/password " +
+                            "or configure Entra ID authentication."
                     )
                 }
-                is ActiveDirectoryManagedIdentityAuthenticationSpecification ->
-                    ActiveDirectoryManagedIdentityAuthentication(
-                        msiClientId = authSpec.msiClientId?.takeIf { it.isNotBlank() },
-                    )
-                is ActiveDirectoryDefaultAuthenticationSpecification ->
-                    ActiveDirectoryDefaultAuthentication()
-                null -> {
-                    val legacyUsername = pojo.username
-                    val legacyPassword = pojo.password
-                    if (legacyUsername.isNullOrBlank() || legacyPassword.isNullOrBlank()) {
-                        throw ConfigErrorException(
-                            "Authentication is not configured: provide either the legacy " +
-                                "username/password fields or an `authentication` block."
-                        )
-                    }
-                    SqlPasswordAuthentication(legacyUsername, legacyPassword)
-                }
+                SqlPasswordAuthentication(username, password)
             }
 
         // Hard error: Microsoft Entra ID authentication requires an encrypted connection.

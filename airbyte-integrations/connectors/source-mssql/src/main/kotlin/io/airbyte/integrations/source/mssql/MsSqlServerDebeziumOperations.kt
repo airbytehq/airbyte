@@ -624,9 +624,7 @@ class MsSqlServerDebeziumOperations(
         //  - user/password always come from the trusted resolved `authentication` mode, not
         //    from any jdbc_url_params leakage.
         val debeziumDatabaseProps: Map<String, String> = buildMap {
-            putAll(
-                configuration.jdbcProperties.filterKeys { it !in DEBEZIUM_RESERVED_DB_KEYS }
-            )
+            putAll(configuration.jdbcProperties.filterKeys { it !in DEBEZIUM_RESERVED_DB_KEYS })
             // Auth keys come from the trusted resolved authentication, never from
             // jdbcProperties (which can be polluted by jdbc_url_params).
             putAll(configuration.authentication.toDebeziumDatabaseProperties())
