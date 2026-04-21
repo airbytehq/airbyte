@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
@@ -57,7 +56,9 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
 
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
-    @JsonSchemaInject(json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"],"group":"db"}""")
+    @JsonSchemaInject(
+        json = """{"order":1,"minimum": 0,"maximum": 65536, "examples":["1433"],"group":"db"}"""
+    )
     @JsonSchemaDefault("1433")
     @JsonPropertyDescription(
         "The port of the database.",
@@ -93,7 +94,9 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
         "The password associated with the username. " +
             "Not required if Microsoft Entra ID authentication is configured below.",
     )
-    @JsonSchemaInject(json = """{"order":5,"airbyte_secret":true,"always_show":true,"group":"auth"}""")
+    @JsonSchemaInject(
+        json = """{"order":5,"airbyte_secret":true,"always_show":true,"group":"auth"}"""
+    )
     var password: String? = null
 
     @JsonProperty("jdbc_url_params")
@@ -388,4 +391,3 @@ class MicronautPropertiesFriendlyIncrementalConfigurationSpecification {
             else -> throw ConfigErrorException("invalid value $method")
         }
 }
-
