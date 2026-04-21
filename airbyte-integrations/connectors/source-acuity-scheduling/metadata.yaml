@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bc7db25c-bdfb-4ec2-96ae-a4687cead916
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-acuity-scheduling
   githubIssueLabel: source-acuity-scheduling
   icon: icon.svg
