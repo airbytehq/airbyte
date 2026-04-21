@@ -130,6 +130,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.20 | 2026-04-14 | [76316](https://github.com/airbytehq/airbyte/pull/76316) | Promote 0.13.20-rc.1 to stable and disable progressive rollout |
 | 0.13.20-rc.1 | 2026-04-09 | [73717](https://github.com/airbytehq/airbyte/pull/73717) | Add configurable concurrency (`num_workers`), configurable API rate limit (`api_rate_limit`), HTTPAPIBudget, and ErrorHandlerWithRateLimiter for conversation_parts |
 | 0.13.19 | 2026-04-09 | [76182](https://github.com/airbytehq/airbyte/pull/76182) | Promote 0.13.19-rc.1 to stable and disable progressive rollout |
 | 0.13.19-rc.1 | 2026-04-07 | [76122](https://github.com/airbytehq/airbyte/pull/76122) | Increase HTTP connection pool size |

@@ -25,6 +25,7 @@ Documentation: https://developer.awin.com/apidocs/for-advertisers
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.22 | 2026-04-21 | [76491](https://github.com/airbytehq/airbyte/pull/76491) | Update dependencies |
 | 0.0.21 | 2026-03-24 | [75313](https://github.com/airbytehq/airbyte/pull/75313) | Update dependencies |
 | 0.0.20 | 2026-03-10 | [74511](https://github.com/airbytehq/airbyte/pull/74511) | Update dependencies |
 | 0.0.19 | 2026-02-24 | [73820](https://github.com/airbytehq/airbyte/pull/73820) | Update dependencies |
