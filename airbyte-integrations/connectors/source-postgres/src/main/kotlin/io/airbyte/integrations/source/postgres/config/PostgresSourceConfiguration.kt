@@ -158,18 +158,6 @@ constructor(
         val sshOpts: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.additionalPropertiesMap)
 
-        // Configure SSL encryption.
-        if (
-            pojo.getEncryptionValue() in
-                listOf(EncryptionDisable, EncryptionAllow, EncryptionPrefer) &&
-                sshTunnel is SshNoTunnelMethod &&
-                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
-        ) {
-            throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
-            )
-        }
-
         val sslJdbcProperties: Map<String, String> = pojo.getEncryptionValue()!!.jdbcProperties()
         jdbcProperties.putAll(sslJdbcProperties)
         log.info { "SSL mode: ${sslJdbcProperties["sslmode"]}" }
