@@ -67,6 +67,7 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| 1.3.49 | 2026-04-21 | [76552](https://github.com/airbytehq/airbyte/pull/76552) | Update dependencies |
 | 1.3.48 | 2026-03-17 | [75068](https://github.com/airbytehq/airbyte/pull/75068) | Update dependencies |
 | 1.3.47 | 2026-02-24 | [73803](https://github.com/airbytehq/airbyte/pull/73803) | Update dependencies |
 | 1.3.46 | 2026-02-17 | [73451](https://github.com/airbytehq/airbyte/pull/73451) | Update dependencies |
