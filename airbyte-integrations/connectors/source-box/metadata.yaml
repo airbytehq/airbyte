@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3eab5d94-2e12-4bca-ab0c-3af869b2dcd8
-  dockerImageTag: 0.0.20
+  dockerImageTag: 0.0.21
   dockerRepository: airbyte/source-box
   githubIssueLabel: source-box
   icon: icon.svg
