@@ -30,6 +30,9 @@ To obtain a refresh token, you'd need to register an [oauth application](https:/
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.35 | 2026-03-31 | [75947](https://github.com/airbytehq/airbyte/pull/75947) | Bump SDM base image for memory monitor (CDK PR #962) |
+| 0.0.34 | 2026-03-31 | [75892](https://github.com/airbytehq/airbyte/pull/75892) | Update dependencies |
+| 0.0.33 | 2026-03-17 | [75000](https://github.com/airbytehq/airbyte/pull/75000) | Update dependencies |
 | 0.0.32 | 2026-02-24 | [73800](https://github.com/airbytehq/airbyte/pull/73800) | Update dependencies |
 | 0.0.31 | 2026-02-03 | [72685](https://github.com/airbytehq/airbyte/pull/72685) | Update dependencies |
 | 0.0.30 | 2026-01-20 | [71898](https://github.com/airbytehq/airbyte/pull/71898) | Update dependencies |

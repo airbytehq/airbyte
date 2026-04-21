@@ -49,14 +49,11 @@ In open source mode, you provide API credentials directly to the connector.
 
 ```python
 from airbyte_agent_hubspot import HubspotConnector
-from airbyte_agent_hubspot.models import HubspotAuthConfig
+from airbyte_agent_hubspot.models import HubspotPrivateAppAuthConfig
 
 connector = HubspotConnector(
-    auth_config=HubspotAuthConfig(
-        client_id="<Your HubSpot OAuth2 Client ID>",
-        client_secret="<Your HubSpot OAuth2 Client Secret>",
-        refresh_token="<Your HubSpot OAuth2 Refresh Token>",
-        access_token="<Your HubSpot OAuth2 Access Token (optional if refresh_token is provided)>"
+    auth_config=HubspotPrivateAppAuthConfig(
+        private_app_token="<Access token from a HubSpot Private App>"
     )
 )
 
@@ -117,7 +114,7 @@ See the official [Hubspot API reference](https://developers.hubspot.com/docs/api
 
 ## Version information
 
-- **Package version:** 0.15.116
-- **Connector version:** 0.1.13
-- **Generated with Connector SDK commit SHA:** e50d6dd2afcab025208f4c255431a51c213a1c5c
+- **Package version:** 0.15.126
+- **Connector version:** 0.1.16
+- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
 - **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/hubspot/CHANGELOG.md)

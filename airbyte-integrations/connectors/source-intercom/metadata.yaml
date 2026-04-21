@@ -6,11 +6,11 @@ data:
     hosts:
       - api.intercom.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.6.1@sha256:b433ec72f88e69bd836f3c7c815c21bfeeeb32501aeabf586bc421875289e5e2
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.0.post4.dev24089021469@sha256:c2cf578631b268f392b6c950475fbc1df5bb4ac2d7aef7b23d93bf2c1ccc4f5e
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
-  dockerImageTag: 0.13.16-rc.4
+  dockerImageTag: 0.13.20
   dockerRepository: airbyte/source-intercom
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   externalDocumentationUrls:
@@ -43,7 +43,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
   suggestedStreams:
     streams:
       - conversations

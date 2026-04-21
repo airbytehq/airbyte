@@ -17,7 +17,7 @@ This authentication method isn't available for this connector.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Linear API key from Settings > API > Personal API keys |
+| `api_key` | `str` | Yes | Your Linear API key from Settings \> API \> Personal API keys |
 
 Example request:
 
@@ -50,7 +50,7 @@ Create a connector with Token credentials.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Linear API key from Settings > API > Personal API keys |
+| `api_key` | `str` | Yes | Your Linear API key from Settings \> API \> Personal API keys |
 
 Example request:
 

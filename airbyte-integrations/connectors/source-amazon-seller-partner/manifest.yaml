@@ -133,11 +133,25 @@ spec:
         default: 90
         minimum: 1
         order: 10
+      sales_and_traffic_report_asin_granularity:
+        title: Sales and Traffic Report ASIN Granularity
+        type: string
+        description: The level of ASIN granularity for the Sales and Traffic report
+          streams. PARENT returns data aggregated at the parent ASIN level. CHILD
+          returns data at the child ASIN level with populated childAsin values. SKU
+          returns data at the individual SKU level with populated childAsin and sku
+          values.
+        default: PARENT
+        enum:
+          - PARENT
+          - CHILD
+          - SKU
+        order: 11
       report_options_list:
         title: Report Options
         description: Additional information passed to reports. This varies by report
           type.
-        order: 11
+        order: 12
         type: array
         items:
           type: object
@@ -220,14 +234,14 @@ spec:
                     type: string
                     order: 1
       wait_to_avoid_fatal_errors:
-        title: Wait between requests to avoid fatal statuses in reports
+        title: "[Deprecated] Wait between requests to avoid fatal statuses in reports"
         type: boolean
-        description: For report based streams with known amount of requests per time
-          period, this option will use waiting time between requests to avoid fatal
-          statuses in reports. See <a href="https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting"
-          target="_blank">Troubleshooting</a> section for more details
+        description: "Deprecated - this option is no longer functional and will be
+          removed in a future version. Rate limiting is now handled automatically
+          by the connector."
         default: false
-        order: 12
+        order: 13
+        airbyte_hidden: true
       financial_events_step:
         title: Financial Events Step Size
         description: 'The time window size for fetching financial events data in chunks
@@ -282,6 +296,19 @@ spec:
         default: 2
         minimum: 1
         order: 15
+      include_pii:
+        title: Include PII (Personally Identifiable Information)
+        description: >-
+          When enabled, the connector requests a Restricted Data Token (RDT) to
+          access PII fields such as BuyerInfo and ShippingAddress in the Orders
+          and OrderItems streams. Your Amazon SP-API developer profile must have
+          an approved Restricted Role (Direct-to-Consumer Shipping or Tax
+          Invoicing). If the RDT request is denied (HTTP 403), the connector
+          falls back to the standard token automatically and PII fields remain
+          empty.
+        type: boolean
+        default: false
+        order: 16
       financial_events_max_results_per_page:
         title: Financial Events Max Results Per Page
         description: >-
@@ -293,7 +320,7 @@ spec:
         default: 100
         minimum: 1
         maximum: 100
-        order: 16
+        order: 17
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -500,6 +527,25 @@ definitions:
     request_headers:
       Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
 
+  orders_authenticator:
+    type: CustomAuthenticator
+    class_name: source_declarative_manifest.components.AmazonSPRdtAuthenticator
+    client_id: "{{ config['lwa_app_id'] }}"
+    client_secret: "{{ config['lwa_client_secret'] }}"
+    refresh_token: "{{ config['refresh_token'] }}"
+    token_refresh_endpoint: "https://api.amazon.com/auth/o2/token"
+    host: "{{ config['endpoint'].replace('https://', '') }}"
+    restricted_resource_paths:
+      - "/orders/v0/orders"
+      - "/orders/v0/orders/*/orderItems"
+
+  orders_requester:
+    type: HttpRequester
+    url_base: "{{ config['endpoint'] }}"
+    authenticator: "#/definitions/orders_authenticator"
+    request_headers:
+      Amazon-Advertising-API-ClientId: '{{ config["client_id"] }}'
+
   streams:
     orders:
       type: DeclarativeStream
@@ -533,7 +579,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/orders_requester"
           path: "orders/v0/orders"
           http_method: GET
           request_headers:
@@ -610,7 +656,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          $ref: "#/definitions/orders_requester"
           path: "orders/v0/orders/{{ stream_slice['AmazonOrderId'] }}/orderItems"
           http_method: GET
           request_headers:
@@ -2532,7 +2578,7 @@ definitions:
               incremental_dependency: true
         requester:
           type: HttpRequester
-          path: "reports/2021-06-30/{{ stream_slice['reportId'] }}"
+          path: "reports/2021-06-30/reports/{{ stream_slice['reportId'] }}"
           url_base: "{{ config['endpoint'] }}"
           http_method: GET
           authenticator: "#/definitions/authenticator"
@@ -2773,6 +2819,8 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time }}"
             dataEndTime: "{{ stream_slice.cursor_slice.end_time }}"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              asinGranularity: "{{ config.get('sales_and_traffic_report_asin_granularity', 'PARENT') }}"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -2826,6 +2874,7 @@ definitions:
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
             reportOptions:
               dateGranularity: "MONTH"
+              asinGranularity: "{{ config.get('sales_and_traffic_report_asin_granularity', 'PARENT') }}"
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -8592,6 +8641,10 @@ schemas:
         type:
         - 'null'
         - string
+      sku:
+        type:
+        - 'null'
+        - string
       salesByAsin:
         type: object
         properties:
@@ -9384,7 +9437,28 @@ schemas:
         type:
         - 'null'
         - object
+        additionalProperties: true
         properties:
+          Name:
+            description: Name of the recipient
+            type:
+            - 'null'
+            - string
+          AddressLine1:
+            description: First line of the street address
+            type:
+            - 'null'
+            - string
+          AddressLine2:
+            description: Second line of the street address
+            type:
+            - 'null'
+            - string
+          AddressLine3:
+            description: Third line of the street address
+            type:
+            - 'null'
+            - string
           City:
             description: City of the shipping address
             type:
@@ -9392,6 +9466,11 @@ schemas:
             - string
           CountryCode:
             description: Country code of the shipping address
+            type:
+            - 'null'
+            - string
+          Phone:
+            description: Phone number of the recipient
             type:
             - 'null'
             - string

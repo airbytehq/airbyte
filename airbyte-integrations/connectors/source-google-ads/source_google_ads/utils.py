@@ -109,10 +109,11 @@ def traced_exception(
                 )
 
         elif is_error_type(query_error, QueryErrorEnum.QueryError.UNRECOGNIZED_FIELD):
+            query_label = f'"{query_name}" ' if query_name else ""
             message = (
-                f"The Custom Query: `{query_name}` has {error.message.lower()} Please make sure the field exists or name entered is valid."
+                f"Custom query {query_label}references an unrecognized field for the queried resource."
+                " Verify all selected fields are valid for the resource."
             )
-            # additionally log the error for visability during `check_connection` in UI.
             logger.error(message)
 
         elif query_error:
