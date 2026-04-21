@@ -49,9 +49,9 @@ def streams_by_name(source: YamlDeclarativeSource) -> Mapping[str, Any]:
 @pytest.mark.parametrize("stream_name", INCREMENTAL_STREAMS)
 def test_stream_declares_incremental_cursor(stream_name: str, streams_by_name: Mapping[str, Any]) -> None:
     stream = streams_by_name[stream_name]
-    assert stream.cursor_field == "updated_at", (
-        f"stream {stream_name} should be incremental with cursor_field=updated_at, got {stream.cursor_field!r}"
-    )
+    assert (
+        stream.cursor_field == "updated_at"
+    ), f"stream {stream_name} should be incremental with cursor_field=updated_at, got {stream.cursor_field!r}"
 
 
 @pytest.mark.parametrize("stream_name", FULL_REFRESH_ONLY_STREAMS)
@@ -79,9 +79,9 @@ def test_sessions_initial_request_injects_updated_after(streams_by_name: Mapping
 
     assert "updated_after" in params, f"expected `updated_after` in request params, got {params!r}"
     # 2024-01-01T00:00:00Z -> epoch seconds 1704067200
-    assert str(params["updated_after"]) == "1704067200", (
-        f"expected `updated_after`=1704067200 (2024-01-01T00:00:00Z), got {params['updated_after']!r}"
-    )
+    assert (
+        str(params["updated_after"]) == "1704067200"
+    ), f"expected `updated_after`=1704067200 (2024-01-01T00:00:00Z), got {params['updated_after']!r}"
 
 
 def test_sessions_initial_request_defaults_to_epoch_zero_when_start_date_missing() -> None:
@@ -110,6 +110,6 @@ def test_sessions_slice_uses_epoch_seconds(streams_by_name: Mapping[str, Any]) -
     slice_dict = partitions[0].to_slice()
 
     # 2024-01-01T00:00:00Z -> 1704067200
-    assert slice_dict.get("start_time") == "1704067200", (
-        f"expected start_time=1704067200 (epoch seconds for 2024-01-01T00:00:00Z), got {slice_dict!r}"
-    )
+    assert (
+        slice_dict.get("start_time") == "1704067200"
+    ), f"expected start_time=1704067200 (epoch seconds for 2024-01-01T00:00:00Z), got {slice_dict!r}"
