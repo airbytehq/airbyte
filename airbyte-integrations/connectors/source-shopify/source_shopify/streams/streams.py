@@ -5,7 +5,7 @@
 
 import logging
 import sys
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from source_shopify.shopify_graphql.bulk.query import (
@@ -85,6 +85,27 @@ class Customers(IncrementalShopifyStream):
 class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
+
+    def _get_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[Union[str, int]]:
+        """
+        Always derive the bulk query date window lower bound from `start_date`, ignoring
+        any previously persisted cursor state.
+
+        Shopify's Bulk API nests `customers.metafields` and applies the `query` argument
+        to the parent `customers.updated_at` only. The nested `metafields` connection
+        does not accept its own filter, so any customer whose metafield is updated
+        without a corresponding bump to the customer's own `updated_at` falls outside
+        the incremental window and its metafields are silently dropped.
+
+        Scanning from `start_date` on every sync ensures such parents are re-evaluated
+        and their updated metafields are captured. Record-level filtering in
+        `filter_records_newer_than_state` still drops already-emitted metafield records
+        based on the stream's persisted `updated_at` cursor, so this does not produce
+        duplicates.
+
+        See: https://github.com/airbytehq/oncall/issues/12004
+        """
+        return self.config.get("start_date")
 
 
 class Orders(IncrementalShopifyStreamWithDeletedEvents):

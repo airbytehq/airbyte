@@ -17,6 +17,7 @@ from source_shopify.streams.streams import (
     FulfillmentOrders,
     InventoryItems,
     InventoryLevels,
+    MetafieldCustomers,
     MetafieldOrders,
     OrderRisks,
     ProductImages,
@@ -475,6 +476,32 @@ def test_stream_slices(
     stream.job_manager._job_size = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     assert test_result[0].get("start") == expected_start
+
+
+def test_metafield_customers_stream_slices_always_start_from_start_date(auth_config) -> None:
+    """
+    Regression test for https://github.com/airbytehq/oncall/issues/12004.
+
+    The `metafield_customers` stream is built on top of Shopify's Bulk API with a
+    nested `customers.metafields` query. The `query` argument filters only on the
+    parent `customers.updated_at`, so customers whose metafields change without a
+    corresponding bump to the customer's own `updated_at` are excluded from the
+    incremental window, silently dropping their metafields.
+
+    To avoid this, `MetafieldCustomers` must ignore any previously persisted cursor
+    state and always scan from `start_date` on every sync. Record-level filtering
+    via the `updated_at` cursor continues to prevent duplicate records.
+    """
+    stream = MetafieldCustomers(auth_config)
+    stream.job_manager._job_size = 1000
+
+    # Simulate a stream state that is well after `start_date`. The stream must still
+    # produce its first slice starting from `start_date`, not from the state value.
+    stream_state = {"updated_at": "2024-06-01T00:00:00Z"}
+    slices = list(stream.stream_slices(stream_state=stream_state))
+
+    assert slices, "MetafieldCustomers produced no slices"
+    assert slices[0].get("start") == "2023-01-01T00:00:00+00:00"
 
 
 @pytest.mark.parametrize(
