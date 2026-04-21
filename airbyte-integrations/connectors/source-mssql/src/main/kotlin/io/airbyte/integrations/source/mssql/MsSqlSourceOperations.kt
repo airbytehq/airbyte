@@ -296,8 +296,8 @@ class MsSqlSourceOperations :
     /**
      * Renders the projection list for a [SelectNode]. Used by both the outer SELECT and by
      * [FromSample] so that the inner subquery projects the same explicit column list instead of
-     * `*`. Projecting `*` breaks on system-versioned temporal tables where the
-     * `PERIOD FOR SYSTEM_TIME` columns are declared `HIDDEN` and therefore excluded from `*`.
+     * `*`. Projecting `*` breaks on system-versioned temporal tables where the `PERIOD FOR
+     * SYSTEM_TIME` columns are declared `HIDDEN` and therefore excluded from `*`.
      */
     fun SelectNode.projection(): String =
         when (this) {
