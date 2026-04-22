@@ -44,19 +44,45 @@ definitions:
       field_name: after
       inject_into: request_parameter
 
+  incremental_cursor_server_side:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: updated_after
+
+  incremental_cursor_client_side:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%s"
+    datetime_format: "%s"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
   sessions_stream:
     type: DeclarativeStream
     name: sessions
     description: "List all Devin sessions for your organization."
     primary_key:
       - session_id
+    incremental_sync:
+      $ref: "#/definitions/incremental_cursor_server_side"
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
         path: "/v3/organizations/{{ config['org_id'] }}/sessions"
-        request_parameters:
-          created_after: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else 0 }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -164,13 +190,13 @@ definitions:
     description: "List all Devin sessions for your organization with aggregate insights (message counts, session size classification, and AI-generated analysis). Analysis fields may be null for sessions where insights have not been generated yet."
     primary_key:
       - session_id
+    incremental_sync:
+      $ref: "#/definitions/incremental_cursor_server_side"
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/base_requester"
         path: "/v3/organizations/{{ config['org_id'] }}/sessions/insights"
-        request_parameters:
-          created_after: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else 0 }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -366,6 +392,16 @@ definitions:
     description: "List all messages in a Devin session conversation."
     primary_key:
       - event_id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     retriever:
       type: SimpleRetriever
       requester:
@@ -387,6 +423,7 @@ definitions:
               $ref: "#/definitions/sessions_stream"
             parent_key: session_id
             partition_field: session_id
+            incremental_dependency: true
     transformations:
       - type: AddFields
         fields:
@@ -425,6 +462,8 @@ definitions:
     description: "List all team playbooks for the organization."
     primary_key:
       - playbook_id
+    incremental_sync:
+      $ref: "#/definitions/incremental_cursor_client_side"
     retriever:
       type: SimpleRetriever
       requester:
@@ -490,6 +529,8 @@ definitions:
     description: "List metadata for all secrets in your organization. Does not return secret values."
     primary_key:
       - secret_id
+    incremental_sync:
+      $ref: "#/definitions/incremental_cursor_client_side"
     retriever:
       type: SimpleRetriever
       requester:
@@ -555,6 +596,8 @@ definitions:
     description: "List all knowledge notes for the organization."
     primary_key:
       - note_id
+    incremental_sync:
+      $ref: "#/definitions/incremental_cursor_client_side"
     retriever:
       type: SimpleRetriever
       requester:
@@ -662,7 +705,7 @@ spec:
       start_date:
         type: string
         title: Start Date
-        description: "Optional UTC date-time. Only sessions created on or after this instant are returned for the `sessions`, `sessions_insights`, and `session_messages` streams. Leave empty to fetch full history."
+        description: "Optional UTC date-time used as the initial lower bound for the incremental cursor on all streams. On the first sync, only records updated (or created, for `session_messages`) on or after this instant are returned. Subsequent syncs advance the cursor automatically. Leave empty to fetch full history."
         format: date-time
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
