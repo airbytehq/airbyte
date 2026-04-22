@@ -463,9 +463,9 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
-            "enterprise-flex/external-secrets",
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
+            "enterprise-flex/log-collection",
           ],
         },
         {
@@ -527,6 +527,10 @@ module.exports = {
               type: "doc",
               id: "operating-airbyte/privatelink",
             },
+            {
+              type: "doc",
+              id: "operating-airbyte/external-secrets",
+            },
           ],
         },
         {
@@ -534,7 +538,6 @@ module.exports = {
           label: "Integrating with Airbyte",
           items: [
             "operator-guides/using-the-airflow-airbyte-operator",
-            "operator-guides/using-prefect-task",
             "operator-guides/using-dagster-integration",
             "operator-guides/using-kestra-plugin",
             "operator-guides/using-orchestra-task",

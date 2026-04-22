@@ -85,7 +85,7 @@ def test_streams(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     streams = get_source(config).streams(config)
 
-    assert len(streams) == 34
+    assert len(streams) == 36
 
 
 def test_streams_forbidden_returns_default_streams(requests_mock, config):
@@ -96,7 +96,7 @@ def test_streams_forbidden_returns_default_streams(requests_mock, config):
         status_code=403,
     )
     streams = get_source(config).streams(config)
-    assert len(streams) == 34
+    assert len(streams) == 36
 
 
 def test_check_credential_title_exception(config):
@@ -115,7 +115,7 @@ def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_s
     )
     streams = discover(get_source(config), config).catalog.catalog.streams
     assert adapter.called
-    assert len(streams) == 35
+    assert len(streams) == 37
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
