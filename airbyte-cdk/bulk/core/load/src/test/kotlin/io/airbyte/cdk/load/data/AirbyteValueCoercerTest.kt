@@ -96,6 +96,27 @@ class AirbyteValueCoercerTest {
         assertNull(fastCoercer.coerce(StringValue("not-a-timestamp"), TimestampTypeWithTimezone))
     }
 
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("outOfRangeYearArgs")
+    fun testCoerceTimestampWithYearOutsideSupportedRangeReturnsNull(input: String) {
+        // Postgres TIMESTAMP supports years up to 294276, but Airbyte warehouse destinations
+        // (Snowflake, BigQuery, etc.) only accept years in the ISO 8601 range 0001-9999.
+        // Reject out-of-range years at coercion time instead of letting them fail downstream
+        // COPY/INSERT statements. See airbytehq/oncall#10231 (Snowflake) and oncall#11930
+        // (BigQuery) for reports of this class of failure.
+        assertNull(legacyCoercer.coerce(StringValue(input), TimestampTypeWithTimezone))
+        assertNull(fastCoercer.coerce(StringValue(input), TimestampTypeWithTimezone))
+        assertNull(legacyCoercer.coerce(StringValue(input), TimestampTypeWithoutTimezone))
+        assertNull(fastCoercer.coerce(StringValue(input), TimestampTypeWithoutTimezone))
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("outOfRangeYearDateArgs")
+    fun testCoerceDateWithYearOutsideSupportedRangeReturnsNull(input: String) {
+        assertNull(legacyCoercer.coerce(StringValue(input), DateType))
+        assertNull(fastCoercer.coerce(StringValue(input), DateType))
+    }
+
     companion object {
         // Expected values below were captured from the output of the legacy coercion code
         // (the original try-ZonedDateTime/catch-LocalDateTime pattern) to ensure the new
@@ -437,6 +458,22 @@ class AirbyteValueCoercerTest {
                 "2021-1-1 BC",
                 DateValue(LocalDate.of(-2020, 1, 1)),
             ),
+        )
+
+        @JvmStatic
+        fun outOfRangeYearArgs(): Stream<Arguments> = Stream.of(
+            // Exactly the failing input from airbytehq/oncall#10231 (Snowflake COPY rejection).
+            Arguments.of("+10000-10-08T00:00"),
+            // Multi-digit years without the leading '+' also bypass the [yyyy][yy] pattern in SMART
+            // mode. Prior art: airbytehq/oncall#11930.
+            Arguments.of("22026-12-06T00:00:00.000000Z"),
+            Arguments.of("99999-01-01T00:00:00Z"),
+        )
+
+        @JvmStatic
+        fun outOfRangeYearDateArgs(): Stream<Arguments> = Stream.of(
+            Arguments.of("+10000-10-08"),
+            Arguments.of("22026-12-06"),
         )
     }
 }

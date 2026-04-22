@@ -14,6 +14,7 @@ import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.text.ParsePosition
+import java.time.DateTimeException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -138,7 +139,9 @@ class AirbyteValueCoercer(
             is DateValue -> value
             else ->
                 requireType<StringValue, DateValue>(value) {
-                    DateValue(LocalDate.parse(it.value, TemporalFormatters.DATE_TIME_FORMATTER))
+                    val parsed = LocalDate.parse(it.value, TemporalFormatters.DATE_TIME_FORMATTER)
+                    requireSupportedYear(parsed.year)
+                    DateValue(parsed)
                 }
         }
 
@@ -202,10 +205,32 @@ class AirbyteValueCoercer(
         }
 
     private fun offsetDateTime(it: StringValue): OffsetDateTime {
-        return if (useFastTimestampParsing) {
-            offsetDateTimeFast(it.value)
-        } else {
-            offsetDateTimeLegacy(it.value)
+        val parsed =
+            if (useFastTimestampParsing) {
+                offsetDateTimeFast(it.value)
+            } else {
+                offsetDateTimeLegacy(it.value)
+            }
+        // The DATE_TIME_FORMATTER pattern [yyyy][yy] in SMART mode can parse years with more than
+        // 4 digits (e.g. "+10000-10-08T00:00" parses as year 10000), and Postgres TIMESTAMP
+        // supports years well beyond 9999. Most destinations only accept years in the ISO 8601
+        // range 0001-9999, so reject out-of-range years here to surface a clear coercion failure
+        // instead of letting invalid data reach the downstream warehouse COPY/INSERT.
+        requireSupportedYear(parsed.year)
+        return parsed
+    }
+
+    /**
+     * Reject years above 9999 (the upper bound of the ISO 8601 4-digit year and the maximum year
+     * accepted by most data warehouses, e.g. Snowflake and BigQuery). Throws [DateTimeException]
+     * so that the top-level [coerce] catch block converts the record field to null rather than
+     * letting invalid data reach the destination COPY/INSERT.
+     */
+    private fun requireSupportedYear(year: Int) {
+        if (year > MAX_SUPPORTED_YEAR) {
+            throw DateTimeException(
+                "Year $year is outside the supported range (max $MAX_SUPPORTED_YEAR)"
+            )
         }
     }
 
@@ -301,5 +326,13 @@ class AirbyteValueCoercer(
         } else {
             null
         }
+    }
+
+    companion object {
+        /**
+         * Inclusive upper bound for supported calendar years. Matches the ISO 8601 4-digit year
+         * limit as well as the documented TIMESTAMP/DATE range of Snowflake and BigQuery.
+         */
+        const val MAX_SUPPORTED_YEAR = 9999
     }
 }
