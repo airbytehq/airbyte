@@ -430,10 +430,7 @@ class InsightAsyncJob(AsyncJob):
             # slice" rather than a hard failure; the caller records the empty
             # outcome via `_no_data_in_window` so the sync advances past the
             # interval.
-            logger.info(
-                f"{self}: no {level} entities found in lookback window for "
-                f"interval={self._interval}; treating slice as empty."
-            )
+            logger.info(f"{self}: no {level} entities found in lookback window for interval={self._interval}; treating slice as empty.")
             return []
 
         return [
