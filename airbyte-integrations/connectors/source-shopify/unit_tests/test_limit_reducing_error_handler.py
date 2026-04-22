@@ -4,9 +4,10 @@
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from source_shopify.streams.streams import OrderRefunds, Orders
 from source_shopify.utils import LimitReducingErrorHandler
+
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 
 
 # Mock data for Orders stream with pagination via Link headers
