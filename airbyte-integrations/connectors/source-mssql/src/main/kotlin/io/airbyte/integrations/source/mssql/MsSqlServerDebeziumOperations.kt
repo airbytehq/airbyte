@@ -755,8 +755,8 @@ class MsSqlServerDebeziumOperations(
         const val MSSQL_IS_COMPRESSED = "is_compressed"
 
         /**
-         * JDBC property keys that Debezium owns directly under `database.*` and must NOT be set
-         * via the bulk `jdbcProperties` passthrough. `hostname`, `port`, `dbname`, `names`, and
+         * JDBC property keys that Debezium owns directly under `database.*` and must NOT be set via
+         * the bulk `jdbcProperties` passthrough. `hostname`, `port`, `dbname`, `names`, and
          * `instance` are derived from the SSH tunnel session and configured database name.
          *
          * The auth identity keys (`user`, `password`) are pinned to the trusted resolved
