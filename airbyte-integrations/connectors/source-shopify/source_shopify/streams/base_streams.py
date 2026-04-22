@@ -7,6 +7,7 @@ import heapq
 import json
 import logging
 import os
+import shutil
 import tempfile
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -700,18 +701,15 @@ def _external_merge_sort(
         # descriptors will be held open here — keep that in mind before shrinking it.
         yield from heapq.merge(*(_iter_jsonl(p) for p in chunk_paths), key=key)
     finally:
-        # Best-effort cleanup: sort-spill files live under a private tmpdir, so
-        # cleanup failures are not actionable by the connector — log at debug
-        # level and keep going rather than masking the sort's actual outcome.
-        for p in chunk_paths:
-            try:
-                p.unlink()
-            except OSError as exc:
-                logging.getLogger("airbyte").debug("Failed to remove sort-spill chunk %s: %s", p, exc)
+        # Remove the entire private spill tmpdir in one pass. `shutil.rmtree` is
+        # atomic from the caller's perspective (files + dir) and we log at
+        # `warning` so persistent cleanup failures are visible to ops — failing
+        # silently here would let `/tmp` fill up across many slices/syncs before
+        # anyone notices.
         try:
-            os.rmdir(tmp_dir)
+            shutil.rmtree(tmp_dir)
         except OSError as exc:
-            logging.getLogger("airbyte").debug("Failed to remove sort-spill tmpdir %s: %s", tmp_dir, exc)
+            logging.getLogger("airbyte").warning("Failed to remove sort-spill tmpdir %s: %s", tmp_dir, exc)
 
 
 def _flush_sorted_chunk(

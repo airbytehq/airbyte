@@ -123,6 +123,70 @@ def test_external_merge_sort_cleans_up_on_early_close(tmp_path: Path, monkeypatc
     assert leftover == [], f"temp files not cleaned up on early close: {leftover}"
 
 
+def test_external_merge_sort_preserves_record_content_through_spill() -> None:
+    """The spill layer serializes via `json.dumps` / `json.loads`. Lock in that
+    the record shapes Shopify's bulk pipeline actually produces round-trip
+    identically: snake-cased keys, nested dicts/lists, unicode, nulls/booleans,
+    empty strings, ints and floats, and deeply-nested structures. If a future
+    upstream transform ever injects a non-JSON-native type (datetime, Decimal,
+    set, bytes, non-string dict keys), this test will fail loudly instead of
+    silently corrupting records.
+    """
+    records = [
+        {
+            "id": "gid://shopify/Product/1",
+            "updated_at": "2024-03-01T00:00:00Z",
+            "title": "Café — naïve façade 🚀",
+            "tags": ["a", "b", "c"],
+            "variants": [
+                {"id": "gid://shopify/ProductVariant/10", "price": "9.99", "inventory_quantity": 0},
+                {"id": "gid://shopify/ProductVariant/11", "price": "0.00", "inventory_quantity": 5},
+            ],
+            "metafields": {
+                "custom": {
+                    "nested": {"deeply": {"value": None}},
+                },
+            },
+            "is_published": True,
+            "archived": False,
+            "description": "",
+            "weight": 1.5,
+            "count": 42,
+            "handle": None,
+        },
+        {
+            "id": "gid://shopify/Product/2",
+            "updated_at": "2024-01-15T12:34:56Z",
+            "title": "minimal",
+            "tags": [],
+            "variants": [],
+            "metafields": {},
+            "is_published": False,
+            "archived": True,
+            "description": "line-1\nline-2\ttabbed",
+            "weight": 0.0,
+            "count": -1,
+            "handle": "minimal",
+        },
+    ]
+
+    actual = list(_external_merge_sort(iter(records), key=_sort_key, chunk_size=1))
+    expected = sorted(records, key=_sort_key)
+
+    assert actual == expected
+    # Explicit shape checks to catch silent lossy conversions (e.g. tuple→list,
+    # int-keys→str-keys) that dict equality alone might paper over.
+    assert actual[0]["tags"] == ["a"] * 0 + []
+    assert actual[1]["metafields"]["custom"]["nested"]["deeply"]["value"] is None
+    assert actual[1]["is_published"] is True
+    assert actual[1]["archived"] is False
+    assert actual[1]["weight"] == 1.5
+    assert actual[1]["count"] == 42
+    assert actual[1]["handle"] is None
+    assert actual[1]["description"] == ""
+    assert actual[1]["title"] == "Café — naïve façade 🚀"
+
+
 class _StubIncrementalBulkStream(IncrementalShopifyGraphQlBulkStream):
     """Minimal subclass that exposes `sort_output_asc` without touching the
     network or the parent `__init__` (which requires a full connector config).
