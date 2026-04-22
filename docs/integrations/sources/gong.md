@@ -78,6 +78,7 @@ The call transcripts stream fetches transcripts one call at a time as a substrea
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.1.1 | 2026-04-21 | [76593](https://github.com/airbytehq/airbyte/pull/76593) | Update dependencies |
 | 1.1.0 | 2026-04-16 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Filter out private calls (`isPrivate: true`) from `calls` and `extensiveCalls` streams per Gong API listing requirements |
 | 1.0.1 | 2026-04-10 | [76229](https://github.com/airbytehq/airbyte/pull/76229) | Set deadlineAction to auto_upgrade for 1.0.0 breaking change |
 | 1.0.0 | 2026-03-30 | [75248](https://github.com/airbytehq/airbyte/pull/75248) | Fix schema bugs in `extensiveCalls` stream: define `context` as array type and widen `value` field to accept string, number, boolean, object, and array types. This is a breaking change for users syncing the `extensiveCalls` stream. See the [migration guide](https://docs.airbyte.com/integrations/sources/gong-migrations). |
