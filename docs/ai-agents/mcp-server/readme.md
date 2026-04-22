@@ -71,7 +71,25 @@ Add the MCP server to your Claude Code command line tool.
 </TabItem>
 <TabItem value="cursor" label="Cursor">
 
-Add the MCP server to your Cursor app.
+Add the MCP server to your Cursor app. The fastest way is a one-click install from the Agent Engine web app. Manual setup is available as a fallback.
+
+**Install with one click (recommended).**
+
+1. Open [app.airbyte.ai](https://app.airbyte.ai) and sign in.
+
+2. In the left sidebar, click **MCP Server**.
+
+3. Click **Add to Cursor**. Your browser prompts you to open Cursor.
+
+4. Approve the prompt. Cursor opens and registers the Airbyte MCP server.
+
+5. In Cursor, click **Connect** next to the Airbyte MCP server.
+
+6. If you're not logged into the Agent Engine, log in now, then grant access.
+
+7. Return to Cursor. The MCP server tools are now available.
+
+**Install manually.**
 
 1. Go to **Cursor** > **Settings** > **Cursor Settings** > **Tools and MCP**.
 
@@ -98,6 +116,60 @@ Add the MCP server to your Cursor app.
 7. Grant access to the Agent Engine MCP.
 
 8. Return to Cursor. The MCP server tools are now available.
+
+</TabItem>
+<TabItem value="vscode" label="VS Code">
+
+Add the MCP server to VS Code. The fastest way is a one-click install from the Agent Engine web app. Manual setup is available as a fallback.
+
+:::note GitHub Copilot is required
+VS Code exposes MCP servers through Copilot Chat's agent mode. Install the GitHub Copilot and GitHub Copilot Chat extensions and sign in before you add the server, or the Airbyte tools don't appear.
+:::
+
+**Install with one click (recommended).**
+
+1. Open [app.airbyte.ai](https://app.airbyte.ai) and sign in.
+
+2. In the left sidebar, click **MCP Server**.
+
+3. Click **Add to VS Code**. Your browser prompts you to open VS Code.
+
+4. Approve the prompt. VS Code opens and asks you to confirm the new MCP server.
+
+5. Click **Trust** to start the server.
+
+6. When prompted, log in to the Agent Engine and grant access. The MCP server tools are now available in Copilot Chat.
+
+**Install manually.** If the one-click install doesn't open VS Code, add the server manually.
+
+1. In VS Code, open the Command Palette and run **MCP: Add Server**.
+
+2. Select **HTTP**.
+
+3. Enter the server URL: `https://mcp.airbyte.ai/mcp`
+
+4. Enter the server name: `Airbyte`
+
+5. Choose **User** to install the server in your user profile.
+
+6. When VS Code asks you to trust the server, click **Trust** to start it.
+
+7. Copilot Chat opens a browser window for OAuth. Log in to the Agent Engine and grant access.
+
+8. Return to VS Code. The MCP server tools are now available in Copilot Chat.
+
+You can also edit `mcp.json` directly. Run **MCP: Open User Configuration** from the Command Palette and add the server:
+
+```json
+{
+  "servers": {
+    "Airbyte": {
+      "type": "http",
+      "url": "https://mcp.airbyte.ai/mcp"
+    }
+  }
+}
+```
 
 </TabItem>
 <TabItem value="claude-desktop" label="Claude Desktop">
