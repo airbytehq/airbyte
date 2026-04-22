@@ -52,10 +52,7 @@ def _sync(stream_name: str):
 
 
 def _config_error_messages(output) -> list[str]:
-    assert output.errors, (
-        "expected at least one error trace message, got none. "
-        f"logs: {[m.log.message for m in output.logs if m.log]}"
-    )
+    assert output.errors, f"expected at least one error trace message, got none. logs: {[m.log.message for m in output.logs if m.log]}"
     messages: list[str] = []
     for error in output.errors:
         if not (error.trace and error.trace.error):
