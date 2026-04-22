@@ -254,6 +254,27 @@ class TestUpdateInBatch:
         assert len(api.new_batch.return_value) == 49
         assert batch.execute.call_count == 3
 
+    def test_malformed_batch_response_is_swallowed(self, api, started_job, batch):
+        """
+        When Facebook's batch endpoint returns a non-JSON body, the SDK's
+        `FacebookAdsApiBatch.execute()` falls back to iterating the raw
+        string body and raises `AttributeError: 'str' object has no
+        attribute 'get'` before any per-call handler runs.
+
+        `update_in_batch` runs on a polling loop and the next poll will
+        re-request status for the same jobs, so a transient malformed
+        response must be logged and swallowed rather than crashing the sync.
+        """
+        jobs = [started_job for _ in range(5)]
+        batch.execute.side_effect = AttributeError("'str' object has no attribute 'get'")
+
+        # Should not raise — the malformed response is recoverable on the
+        # next _check_jobs_status() poll cycle.
+        update_in_batch(api=api, jobs=jobs)
+
+        assert started_job.update_job.call_count == 5
+        batch.execute.assert_called_once()
+
 
 class TestInsightAsyncJob:
     """Test InsightAsyncJob class"""
