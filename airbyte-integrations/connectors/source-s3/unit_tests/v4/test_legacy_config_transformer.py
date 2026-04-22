@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pytest
 from source_s3.source import SourceS3Spec
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
@@ -442,3 +444,47 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
     else:
         actual_config = LegacyConfigTransformer.convert(parsed_legacy_config)
         assert actual_config == expected_config
+
+
+def test_csv_newlines_in_values_emits_warning(caplog):
+    """The v3 `newlines_in_values` CSV option has no equivalent in the v4 file-based CDK `CsvFormat`
+    and is dropped during legacy config migration. This test pins the current drop-and-warn behavior so
+    users who relied on the v3 option see a breadcrumb in their sync logs instead of a silent regression.
+    See airbytehq/oncall#12046.
+    """
+    legacy_config = {
+        "dataset": "test_data",
+        "provider": {"storage": "S3", "bucket": "test_bucket"},
+        "format": {"filetype": "csv", "newlines_in_values": True},
+        "path_pattern": "**/*.csv",
+    }
+    parsed_legacy_config = SourceS3Spec(**legacy_config)
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        converted = LegacyConfigTransformer.convert(parsed_legacy_config)
+
+    assert "newlines_in_values" not in converted["streams"][0]["format"]
+    assert any(
+        "newlines_in_values" in record.message and record.levelno == logging.WARNING
+        for record in caplog.records
+    ), f"Expected a WARNING log mentioning `newlines_in_values`, got: {[r.message for r in caplog.records]}"
+
+
+def test_csv_newlines_in_values_false_does_not_warn(caplog):
+    """Only the permissive `newlines_in_values: True` case is a regression worth warning about. When the
+    legacy config has the default `False`, migration is lossless and no warning should be emitted.
+    """
+    legacy_config = {
+        "dataset": "test_data",
+        "provider": {"storage": "S3", "bucket": "test_bucket"},
+        "format": {"filetype": "csv", "newlines_in_values": False},
+        "path_pattern": "**/*.csv",
+    }
+    parsed_legacy_config = SourceS3Spec(**legacy_config)
+
+    with caplog.at_level(logging.WARNING, logger="airbyte"):
+        LegacyConfigTransformer.convert(parsed_legacy_config)
+
+    assert not any(
+        "newlines_in_values" in record.message for record in caplog.records
+    ), f"Did not expect a warning for `newlines_in_values: False`, got: {[r.message for r in caplog.records]}"

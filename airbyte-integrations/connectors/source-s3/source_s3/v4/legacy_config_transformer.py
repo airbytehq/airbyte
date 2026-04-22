@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, Union
 
@@ -12,6 +13,8 @@ from source_s3.source_files_abstract.formats.csv_spec import CsvFormat
 from source_s3.source_files_abstract.formats.jsonl_spec import JsonlFormat
 from source_s3.source_files_abstract.formats.parquet_spec import ParquetFormat
 
+
+logger = logging.getLogger("airbyte")
 
 SECONDS_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -113,6 +116,14 @@ class LegacyConfigTransformer:
                 csv_options["escape_char"] = format_options.escape_char
             if format_options.encoding:
                 csv_options["encoding"] = format_options.encoding
+            if format_options.newlines_in_values:
+                logger.warning(
+                    "The legacy CSV option `newlines_in_values` is not supported by source-s3 v4 and is being dropped during "
+                    "config migration. Rows with newlines embedded inside quoted CSV values may now fail to parse. "
+                    "As a workaround, set `ignore_errors_on_fields_mismatch: true` on the stream's CSV format to skip offending rows, "
+                    "or pre-process non-compliant files. See the source-s3 migration guide for details: "
+                    "https://docs.airbyte.com/integrations/sources/s3-migrations"
+                )
             if skip_rows := advanced_options.pop("skip_rows", None):
                 csv_options["skip_rows_before_header"] = skip_rows
             if skip_rows_after_names := advanced_options.pop("skip_rows_after_names", None):
