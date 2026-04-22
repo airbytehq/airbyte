@@ -197,8 +197,8 @@ class ReplicationSlotManager(
 
     companion object {
         /**
-         * Returns `true` when the replication slot's current `confirmed_flush_lsn` is already at
-         * or beyond the target `lsn`, meaning no further acknowledgement is needed.
+         * Returns `true` when the replication slot's current `confirmed_flush_lsn` is already at or
+         * beyond the target `lsn`, meaning no further acknowledgement is needed.
          */
         internal fun isAlreadyAdvanced(confirmedFlushLsn: Lsn?, lsn: Lsn): Boolean =
             confirmedFlushLsn != null && confirmedFlushLsn >= lsn
