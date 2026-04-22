@@ -63,10 +63,17 @@ Each connector defines its own credential shape. See the connector's page in the
 
 ### Find a `definition_id`
 
-The `definition_id` identifies the connector type. You can look it up two ways:
+The `definition_id` identifies the connector type. The fastest way to look one up is to call the definitions endpoint and filter by connector name:
 
-- Browse the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) and copy the `sourceDefinitionId` for your connector.
-- Call the API `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID.
+```bash
+curl -s 'https://api.airbyte.ai/api/v1/integrations/definitions/sources' \
+  -H 'Authorization: Bearer <application_token>' \
+  | jq '.data[] | select(.name | test("hubspot"; "i")) | {name, id: .sourceDefinitionId}'
+```
+
+See [Make your first request](../api/#make-your-first-request) for token details.
+
+You can also browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) JSON and copy `sourceDefinitionId` for the entry you want.
 
 ## List connectors
 
