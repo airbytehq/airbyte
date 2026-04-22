@@ -1102,7 +1102,7 @@ dynamic_streams:
                 - {{ dimension }}
             {% endfor %}
 
-            {% if "date" not in dimensions and not (cohort and cohort.get("enabled") == "true") %}
+            {% if "date" not in dimensions and "yearMonth" not in dimensions and "yearWeek" not in dimensions and not (cohort and cohort.get("enabled") == "true") %}
                 - startDate
                 - endDate
             {% endif %}
