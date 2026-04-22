@@ -303,6 +303,10 @@ For an existing Google Ads source, when you are updating or removing Custom GAQL
 :::note
 Custom queries that use `click_view` as the resource are subject to the same limitations as the built-in `click_view` stream: data can only be retrieved for the past 90 days, and syncs are performed one day at a time.
 :::
+
+:::note
+MESSAGE-type fields selected by a custom GAQL query (for example, `change_event.old_resource` and `change_event.new_resource` on the `change_event` resource) are synced as JSON-encoded strings. Parse these values downstream if you need to read individual nested fields.
+:::
 </FieldAnchor>
 
 <HideInUI>
