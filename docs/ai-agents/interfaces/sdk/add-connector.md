@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Add a connector
 
-A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reuse the returned `connector_id` on every subsequent call.
+A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reference it on every subsequent call — by its slug (preferred) when the workspace has one connector of that type, or by its `connector_id` when you need to disambiguate.
 
 The `Workspace` class covers every connector operation: create, list, get, and delete.
 
@@ -12,7 +12,7 @@ The `Workspace` class covers every connector operation: create, list, get, and d
 
 Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the connector type (GitHub, HubSpot, and so on) and the credentials in the shape that connector expects.
 
-`create_connector` returns a string `connector_id`. Store it somewhere you can retrieve it later.
+`create_connector` returns a string `connector_id`. You can ignore it if the workspace only ever has one connector of this type — later calls can resolve the connector by slug. Store the ID if you plan to run multiple connectors of the same type in the same workspace.
 
 ### API token connectors
 
@@ -24,14 +24,13 @@ from airbyte_agent_sdk import Workspace
 
 async def main():
     async with Workspace() as ws:
-        connector_id = await ws.create_connector(
+        await ws.create_connector(
             definition_id="<github_definition_id>",
             name="My GitHub Connector",
             credentials={
                 "token": "<github_personal_access_token>",
             },
         )
-        print(connector_id)
 
 asyncio.run(main())
 ```
@@ -46,7 +45,7 @@ from airbyte_agent_sdk import Workspace
 
 async def main():
     async with Workspace() as ws:
-        connector_id = await ws.create_connector(
+        await ws.create_connector(
             definition_id="<hubspot_definition_id>",
             name="My HubSpot Connector",
             credentials={
@@ -86,9 +85,7 @@ async with Workspace() as ws:
 
 ## Get a connector
 
-When you already have the `connector_id`, you don't need to list or look it up. Pass it straight to `connect()`. See [Execute operations](./execute).
-
-When you don't have the ID but you know there's exactly one connector of a given type in the workspace, resolve by name:
+When the workspace has exactly one connector of a given type, resolve it by slug. This is the recommended pattern for most apps — you never hard-code a UUID.
 
 ```python title="agent.py"
 async with Workspace() as ws:
@@ -99,9 +96,15 @@ async with Workspace() as ws:
         await stripe.close()
 ```
 
-`get_connector(name=...)` raises `ValueError` if zero or more than one connector of that type exists. Use `connector_id` explicitly when multiple connectors of the same type might exist.
+`get_connector(name=...)` raises `ValueError` if zero or more than one connector of that type exists. When multiple connectors of the same type exist in the workspace — for example, two separate Stripe accounts — pass `connector_id` explicitly:
 
-`get_connector(name=...)` always returns a generic `HostedExecutor` with `.execute(entity, action, params)`. To get a typed connector with IDE autocompletion and structured method shortcuts (for example, `stripe.customers.list(...)`), call `connect(slug, connector_id=...)` with the ID you stored. See [Typed connectors and `HostedExecutor`](./execute#typed-connectors-and-hostedexecutor).
+```python title="agent.py"
+async with Workspace() as ws:
+    stripe_us = await ws.get_connector(connector_id="<us_account_connector_id>")
+    stripe_eu = await ws.get_connector(connector_id="<eu_account_connector_id>")
+```
+
+`get_connector(name=...)` always returns a generic `HostedExecutor` with `.execute(entity, action, params)`. To get a typed connector with IDE autocompletion and structured method shortcuts (for example, `stripe.customers.list(...)`), call `connect(slug)` for slug resolution or `connect(slug, connector_id=...)` when you need to pin a specific connector. See [Typed connectors and `HostedExecutor`](./execute#typed-connectors-and-hostedexecutor).
 
 ## Delete a connector
 
