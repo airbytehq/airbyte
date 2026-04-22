@@ -50,7 +50,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
   -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "customer_name": "default",
+    "workspace_name": "default",
     "definition_id": "<hubspot_definition_id>",
     "name": "My HubSpot Connector",
     "credentials": {

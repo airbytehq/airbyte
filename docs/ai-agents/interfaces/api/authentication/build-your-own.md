@@ -173,6 +173,43 @@ curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/h
 
 When your user wants to connect a third-party service, initiate the OAuth flow to get a consent URL.
 
+### Prerequisite: enable the connector for your organization
+
+Initiate requires an organization-specific source template for the connector type. Without one, the call returns `400` with `"No organization-specific source template configured for this connector type."` (This differs from [Add a connector](../add-connector), which falls back to Airbyte-managed defaults when no org template exists.)
+
+The easiest way to enable a connector is in the Airbyte Agents app — it's a one-time setup and anyone on your team can do it.
+
+<Tabs>
+<TabItem value="ui" label="Airbyte Agents app" default>
+
+Open the Airbyte Agents app and add the connector once for your organization. See [Add a connector](../../ui/add-connector) for the full walkthrough. The app handles enabling the connector type and configuring the OAuth client in one flow.
+
+</TabItem>
+<TabItem value="api" label="API">
+
+Clone one of Airbyte's global source template stubs into your organization:
+
+```bash title="1. Find the global template for your connector type"
+curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources/global' \
+  -H 'Authorization: Bearer <application_token>'
+```
+
+Pick the entry whose `actor_definition_id` matches the connector type you want to enable.
+
+```bash title="2. Clone it into your organization"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
+  -H 'Authorization: Bearer <application_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "original_source_template_id": "<global_template_id_from_step_1>"
+  }'
+```
+
+After the clone succeeds, initiate calls for that connector type will resolve to the new org-specific template.
+
+</TabItem>
+</Tabs>
+
 ### Endpoint
 
 ```text
@@ -376,6 +413,10 @@ app.listen(3000);
 **"Workspace not found" error:**
 
 - Ensure the `workspace_name` you provide in the initiate step is correct. Airbyte creates the workspace automatically on first use.
+
+**`"No organization-specific source template configured for this connector type."`:**
+
+- This connector type isn't enabled for your organization yet. Enable it once from the Airbyte Agents app ([Add a connector](../../ui/add-connector)), or clone the global template via the API (see the Prerequisite section above). Initiate only resolves against org-specific templates; Airbyte-managed defaults don't apply to this endpoint.
 
 **OAuth consent URL returns an error:**
 
