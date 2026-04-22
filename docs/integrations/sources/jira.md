@@ -169,7 +169,8 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0 | 2026-04-21 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
+| 5.0.0 | 2026-04-22 | [70448](https://github.com/airbytehq/airbyte/pull/70448) | Migrate the `workflows` stream from the deprecated `/rest/api/3/workflow/search` endpoint to its replacement `/rest/api/3/workflows/search`. Primary key changes from `[entityId, name]` to `[id]`, and the record schema is updated to match the new endpoint. |
+| 4.3.20 | 2026-04-21 | [76354](https://github.com/airbytehq/airbyte/pull/76354) | Bump SDM base image for deadlock fix |
 | 4.3.19 | 2026-04-21 | [76631](https://github.com/airbytehq/airbyte/pull/76631) | Update dependencies |
 | 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 4.3.17 | 2026-03-17 | [75080](https://github.com/airbytehq/airbyte/pull/75080) | Update dependencies |
