@@ -706,6 +706,33 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
+    fun testExecuteWithInsufficientPrivilegesError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "CREATE TABLE test_table (id INT)"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.close() } just Runs
+
+        // Simulate the "Insufficient privileges to operate on" permission error pattern
+        // that Snowflake returns for object-level access denials (e.g., table create/alter).
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException(
+                "SQL access control error:\n" +
+                    "Insufficient privileges to operate on table 'TEST_TABLE'"
+            )
+        every { connection.close() } just Runs
+
+        val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
+
+        // Verify the error message was wrapped as ConfigErrorException with original message
+        assertTrue(exception.message!!.contains("Insufficient privileges to operate on table"))
+        // Verify the cause is the original SnowflakeSQLException
+        assertTrue(exception.cause is SnowflakeSQLException)
+    }
+
+    @Test
     fun testExecuteWithNonPermissionError() {
         val connection = mockk<Connection>()
         val statement = mockk<Statement>()
