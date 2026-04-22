@@ -205,6 +205,10 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 
 <FieldAnchor field="custom_insights.breakdowns">
    4. (Optional) For **Breakdowns**, use the dropdown list to select the breakdowns you want to configure.
+
+   :::info High-cardinality breakdowns
+   Some breakdowns, such as `product_id`, can produce thousands of rows per day. Connection setup still succeeds for these breakdowns: if Facebook's synchronous validation call returns `"Please reduce the amount of data you're asking for"`, the connector retries with a one-day window to validate the breakdown combination, and falls back to a logged warning if the single-day call also exceeds the limit. Real syncs use async jobs and are not affected by this limit.
+   :::
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights.action_breakdowns">
@@ -384,11 +388,17 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 ### Handling "Please reduce the amount of data you're asking for, then retry your request"
 
-This response indicates that the Facebook Graph API requires you to reduce the fields (amount of data) requested. To resolve this issue:
+This response indicates that the Facebook Graph API is refusing a synchronous request because it would return too much data in a single response. Where the error occurs determines what action, if any, you should take.
+
+**During a sync** (on a stream other than `ad_creatives`): reduce the fields requested for that stream.
 
 1. **Go to the Schema Tab**: Navigate to the schema tab of your connection.
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
+
+**During a sync on the `ad_creatives` stream**: switch to the `ad_creatives_from_ads` stream. See [the next section](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) for details.
+
+**During connection setup** for a custom insight that uses a high-cardinality breakdown (for example, `product_id`): no action is required. Since v5.2.7, the connector retries the breakdown validation call with a one-day time range and, if that also exceeds the limit, logs a warning and continues. The breakdown combination is still validated and real syncs are not affected, because they use async jobs that handle large result sets.
 
 ### "Please reduce the amount of data" error on the Ad Creatives stream
 
@@ -446,7 +456,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.7-rc.1 | 2026-04-16 | [74127](https://github.com/airbytehq/airbyte/pull/74127) | Constrain check_breakdowns time range for high-cardinality breakdowns like product_id |
+| 5.2.7-rc.1 | 2026-04-16 | [74127](https://github.com/airbytehq/airbyte/pull/74127) | Allow connection setup to succeed for custom insights with high-cardinality breakdowns (for example, `product_id`) |
 | 5.2.6 | 2026-04-09 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
 | 5.2.5 | 2026-04-07 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
 | 5.2.4 | 2026-04-01 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |

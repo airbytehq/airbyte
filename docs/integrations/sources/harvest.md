@@ -101,6 +101,7 @@ This connector uses Harvest's granular permission model. If your credentials lac
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.34 | 2026-04-21 | [76845](https://github.com/airbytehq/airbyte/pull/76845) | Bump SDM base image to stable 7.17.2 |
 | 1.2.33 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.2.32 | 2026-04-10 | [76247](https://github.com/airbytehq/airbyte/pull/76247) | Promoted release candidate to GA |
 | 1.2.32-rc.4 | 2026-03-27 | [75543](https://github.com/airbytehq/airbyte/pull/75543) | Added configurable concurrency level with `num_workers` parameter and HTTP API budget rate limiting |

@@ -55,6 +55,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.1.24 | 2026-04-21 | [76661](https://github.com/airbytehq/airbyte/pull/76661) | Update dependencies |
 | 0.1.23 | 2026-03-17 | [75081](https://github.com/airbytehq/airbyte/pull/75081) | Update dependencies |
 | 0.1.22 | 2026-03-10 | [74503](https://github.com/airbytehq/airbyte/pull/74503) | Update dependencies |
 | 0.1.21 | 2026-02-26 | [74072](https://github.com/airbytehq/airbyte/pull/74072) | feat: source-incident-io: use incident_roles v2 + add escalations stream |
