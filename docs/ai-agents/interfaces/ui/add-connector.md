@@ -48,6 +48,31 @@ The Credentials page is the primary place to add, view, and manage connectors fo
 
 The new connector appears immediately in the Credentials table and in the **Available context** list on the Chat and Automation landing pages. You don't need to reload other tabs.
 
+## OAuth versus access tokens
+
+Most connectors let you authenticate with either an OAuth flow or an access token you paste into a form. Both options produce a working connector, but they give Airbyte different levels of control over what that connector can reach. If a connector offers both, prefer OAuth.
+
+### OAuth
+
+In an OAuth flow, the third-party service asks you to authorize Airbyte to act on your behalf. For connectors that publish OAuth scope metadata, the entity picker shows **Read** and **Write** columns, and you can select access per entity. Your selections map to the narrowest set of OAuth scopes that covers what you chose, and the third-party service enforces those scopes on every request the connector makes.
+
+The result is granular, read/write scope control. The connector can only reach the entities and operations the service agreed to, and you can see what you consented to in the authorization dialog.
+
+### Access tokens and personal access tokens (PATs)
+
+When you paste an access token, API key, or PAT into the form, you're handing Airbyte a credential that already carries whatever permissions you assigned to it on the third-party side. Airbyte has no way to narrow that credential. The token grants access to data, but Airbyte can't see what data.
+
+In token mode, selecting entities controls what Airbyte replicates into the [Context Store](../../concepts/context-store), not what the token can reach. The entity picker shows a single **Include** column—there are no read/write modes, because the mode isn't Airbyte's to enforce. If you need to keep the connector away from a piece of data, restrict the token itself on the third-party service before you paste it in.
+
+### Why the entity list can differ
+
+The list of entities the picker shows can differ between the two authentication methods:
+
+- In OAuth mode, the picker shows every entity the connector knows about, including write-only ones, because OAuth scopes can express write-only access.
+- In token mode, the picker hides write-only entities, because selecting one wouldn't put anything into the Context Store.
+
+This is by design, not a bug. In token mode the picker only shows entities you can actually replicate, so the options you see match the outcome you get and the UI doesn't imply a level of access control Airbyte can't enforce.
+
 ## Add a connector during a Chat
 
 You don't have to add connectors up front. If you start a Chat and the agent realizes it needs a data source it doesn't have, it can ask you to authenticate one inline without leaving the conversation.
