@@ -82,6 +82,14 @@ abstract class LosslessJdbcFieldType<R, W>(
         paramIdx: Int,
         value: JsonNode,
     ) {
+        // Bind SQL NULL directly when the incoming JsonNode is a null node.
+        // Otherwise, delegate to the json decoder + typed setter. Typed
+        // decoders (e.g. TextCodec, LocalDateTimeCodec) are strict and throw
+        // on null nodes, so they must be skipped here.
+        if (value.isNull) {
+            stmt.setObject(paramIdx, null)
+            return
+        }
         jdbcSetter.set(stmt, paramIdx, jsonDecoder.decode(value))
     }
 }
