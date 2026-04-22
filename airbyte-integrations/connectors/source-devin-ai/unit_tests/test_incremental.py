@@ -29,6 +29,7 @@ CONFIG: Mapping[str, Any] = {
 
 INCREMENTAL_STREAMS = ["sessions"]
 FULL_REFRESH_ONLY_STREAMS = [
+    "sessions_insights",
     "session_messages",
     "playbooks",
     "secrets",
