@@ -68,7 +68,7 @@ airbyte:
               org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery
             error: transient
             group: Postgres Query Conflicts
-            output: Database connection failed due to conflict with recovery. Will retry.
+            output: Postgres replication conflict terminated the sync connection.
             reference-links: https://github.com/airbytehq/oncall/issues/6296
 
           - pattern: (?i).*permission denied for table.*
