@@ -106,6 +106,7 @@ The Forms, Responses, and Webhooks streams make separate API calls for each form
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.4.8-rc.5 | 2026-04-16 | [76418](https://github.com/airbytehq/airbyte/pull/76418) | Increase max_concurrency to 75, no api_budget (reviewed/explored, relying on CDK 429 backoff) |
 | 1.4.8-rc.4 | 2026-04-15 | [76363](https://github.com/airbytehq/airbyte/pull/76363) | Remove API budget, set concurrency to 25 |
 | 1.4.8-rc.3 | 2026-04-14 | [76319](https://github.com/airbytehq/airbyte/pull/76319) | Adjust default_concurrency from 3 to 2 for tuning retry |
 | 1.4.8-rc.2 | 2026-04-13 | [76270](https://github.com/airbytehq/airbyte/pull/76270) | Adjust default_concurrency from 4 to 3 for tuning retry |

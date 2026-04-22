@@ -122,6 +122,7 @@ The Blocks stream recursively fetches child blocks up to 30 levels deep. Pages w
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.6 | 2026-04-21 | [76681](https://github.com/airbytehq/airbyte/pull/76681) | Update dependencies |
 | 4.0.5 | 2026-04-01 | [75577](https://github.com/airbytehq/airbyte/pull/75577) | Add `oauth_connector_input_specification` for declarative OAuth |
 | 4.0.4 | 2026-03-31 | [75747](https://github.com/airbytehq/airbyte/pull/75747) | Update dependencies |
 | 4.0.3 | 2026-03-30 | [75603](https://github.com/airbytehq/airbyte/pull/75603) | Fix 429 status code mapping from RETRY to RATE_LIMITED for improved rate limit handling and observability |
