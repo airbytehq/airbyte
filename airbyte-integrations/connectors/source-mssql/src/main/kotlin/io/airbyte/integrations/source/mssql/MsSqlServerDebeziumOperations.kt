@@ -612,20 +612,27 @@ class MsSqlServerDebeziumOperations(
         val messageKeyColumns = buildMessageKeyColumns(streams)
         val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
 
-        // Forward every JDBC driver property (encrypt, trustServerCertificate,
-        // hostNameInCertificate, trustStore, trustStorePassword, authentication, msiClientId,
-        // and anything else the config factory placed in jdbcProperties) to Debezium as
-        // `database.<key>` entries. Debezium passes every `database.*` connector property to
-        // mssql-jdbc as a java.util.Properties entry on DriverManager.getConnection.
+        // Debezium 3.5 split SQL Server connector properties across two prefixes:
+        //  - `database.*` owns the Debezium-level keys (hostname, port, dbname, names, instance)
+        //    plus the auth identity (user, password). `database.password` is optional under
+        //    Microsoft Entra managed identity.
+        //  - `driver.*` is a pass-through to the Microsoft JDBC Driver for SQL Server. Debezium
+        //    strips the `driver.` prefix and forwards the key/value to mssql-jdbc as a connection
+        //    property. This includes SSL/TLS (`encrypt`, `trustServerCertificate`,
+        //    `hostNameInCertificate`, `trustStore`, `trustStorePassword`) and — critically for
+        //    Entra ID — the `authentication` mode (`SqlPassword`,
+        //    `ActiveDirectoryServicePrincipal`, `ActiveDirectoryManagedIdentity`, etc.).
         //
-        // Reserved keys are excluded from the passthrough and set explicitly below so that:
-        //  - hostname/port are always derived from the SSH tunnel session;
+        // We split the flat `jdbcProperties` map from the config factory accordingly, and:
+        //  - hostname/port are always derived from the SSH tunnel session (not from
+        //    jdbc_url_params);
         //  - dbname/names always match the configured database;
         //  - user/password always come from the trusted resolved `authentication` mode, not
-        //    from any jdbc_url_params leakage.
+        //    from any jdbc_url_params leakage (defense against `jdbc_url_params=user=attacker`);
+        //  - `authentication` under `driver.*` also comes from the trusted resolved mode for the
+        //    same reason.
         val debeziumDatabaseProps: Map<String, String> = buildMap {
-            putAll(configuration.jdbcProperties.filterKeys { it !in DEBEZIUM_RESERVED_DB_KEYS })
-            // Auth keys come from the trusted resolved authentication, never from
+            // Auth identity comes from the trusted resolved authentication, never from
             // jdbcProperties (which can be polluted by jdbc_url_params).
             putAll(configuration.authentication.toDebeziumDatabaseProperties())
             // Debezium owns these and they are derived from tunnel session / config.
@@ -633,6 +640,22 @@ class MsSqlServerDebeziumOperations(
             put("port", tunnelSession.address.port.toString())
             put("dbname", databaseName)
             put("names", databaseName)
+        }
+
+        val debeziumDriverProps: Map<String, String> = buildMap {
+            // Bulk-forward every JDBC connection property (encrypt, trustServerCertificate,
+            // hostNameInCertificate, trustStore, trustStorePassword, msiClientId, anything else
+            // the config factory placed in jdbcProperties) via Debezium's `driver.*` pass-through
+            // to mssql-jdbc. Exclude Debezium-owned keys and the auth identity (user/password)
+            // which are handled above under `database.*`.
+            putAll(
+                configuration.jdbcProperties.filterKeys {
+                    it !in DEBEZIUM_RESERVED_DB_KEYS && it !in DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS
+                }
+            )
+            // `authentication` mode comes from the trusted resolved authentication, overriding
+            // any stray value from jdbc_url_params.
+            putAll(configuration.authentication.toDebeziumDriverProperties())
         }
 
         return DebeziumPropertiesBuilder()
@@ -655,6 +678,7 @@ class MsSqlServerDebeziumOperations(
                 }
             }
             .withDatabase(debeziumDatabaseProps)
+            .with(debeziumDriverProps.mapKeys { (k, _) -> "driver.$k" })
             // Register the MSSQL custom converter
             .with("converters", "mssql_converter")
             .with("mssql_converter.type", MsSqlServerDebeziumConverter::class.java.name)
@@ -731,13 +755,23 @@ class MsSqlServerDebeziumOperations(
         const val MSSQL_IS_COMPRESSED = "is_compressed"
 
         /**
-         * JDBC property keys that Debezium owns directly and must NOT be set via the bulk
-         * `jdbcProperties` passthrough. `hostname`, `port`, `dbname`, `names`, and `instance` are
-         * derived from the SSH tunnel session and configured database name. `user` and `password`
-         * are pinned to the trusted resolved authentication mode so that a mistyped or malicious
-         * `jdbc_url_params=user=root` cannot silently override the auth identity.
+         * JDBC property keys that Debezium owns directly under `database.*` and must NOT be set
+         * via the bulk `jdbcProperties` passthrough. `hostname`, `port`, `dbname`, `names`, and
+         * `instance` are derived from the SSH tunnel session and configured database name.
+         *
+         * The auth identity keys (`user`, `password`) are pinned to the trusted resolved
+         * authentication mode via [DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS] below, so that a mistyped
+         * or malicious `jdbc_url_params=user=root` cannot silently override the auth identity.
          */
         private val DEBEZIUM_RESERVED_DB_KEYS: Set<String> =
-            setOf("hostname", "port", "dbname", "names", "instance", "user", "password")
+            setOf("hostname", "port", "dbname", "names", "instance")
+
+        /**
+         * Auth identity keys forwarded to Debezium under `database.*` from the trusted resolved
+         * authentication mode only (not from `jdbcProperties`, which can be polluted by
+         * `jdbc_url_params`). Mirrors the constant in
+         * `MsSqlServerSourceConfiguration.toDebeziumDatabaseProperties`.
+         */
+        private val DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS: Set<String> = setOf("user", "password")
     }
 }

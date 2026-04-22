@@ -16,8 +16,8 @@ airbyteBulkConnector {
 dependencies {
     implementation 'com.microsoft.sqlserver:mssql-jdbc:12.10.1.jre11'
     implementation 'com.azure:azure-identity:1.16.2'
-    implementation 'io.debezium:debezium-embedded:3.3.0.Final'
-    implementation 'io.debezium:debezium-connector-sqlserver:3.3.0.Final'
+    implementation 'io.debezium:debezium-embedded:3.5.0.Final'
+    implementation 'io.debezium:debezium-connector-sqlserver:3.5.0.Final'
     implementation 'org.apache.commons:commons-lang3:3.18.0'
 
     testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'

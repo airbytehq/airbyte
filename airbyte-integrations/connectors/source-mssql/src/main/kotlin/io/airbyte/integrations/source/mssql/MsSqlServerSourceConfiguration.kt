@@ -81,8 +81,11 @@ data class ActiveDirectoryServicePrincipalAuthentication(
 /**
  * Translates a resolved authentication mode into the driver properties the Microsoft JDBC driver
  * expects. These keys are intentionally the exact names mssql-jdbc consumes so the map can be
- * forwarded as-is to both [JdbcConnectionFactory] (via
- * [MsSqlServerSourceConfiguration.jdbcProperties]) and Debezium's `database.*` passthrough.
+ * forwarded as-is to [JdbcConnectionFactory] via [MsSqlServerSourceConfiguration.jdbcProperties].
+ *
+ * For Debezium wiring, see [toDebeziumDatabaseProperties] and [toDebeziumDriverProperties], which
+ * split this same set of keys across Debezium's `database.*` (auth identity) and `driver.*` (JDBC
+ * pass-through) prefixes as required by Debezium 3.5+.
  */
 fun MsSqlServerAuthentication.toJdbcProperties(): Map<String, String> =
     when (this) {
@@ -104,12 +107,35 @@ fun MsSqlServerAuthentication.toJdbcProperties(): Map<String, String> =
     }
 
 /**
- * Kept as a single source of truth for teammate 2's Debezium wiring. Debezium forwards every
- * `database.*` connector property to mssql-jdbc as a `java.util.Properties` entry, so the same
- * key/value shape works in both places.
+ * Auth identity keys that Debezium expects under its `database.*` namespace. Everything else (the
+ * `authentication` mode and any other mssql-jdbc connection property) is forwarded through
+ * Debezium's `driver.*` pass-through instead.
+ */
+private val DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS: Set<String> = setOf("user", "password")
+
+/**
+ * Properties that should be forwarded to Debezium under the `database.*` prefix. For Entra ID
+ * service principal, this is `user`=`clientId` and `password`=`clientSecret`; the driver-level
+ * `authentication` mode is separate — see [toDebeziumDriverProperties].
+ *
+ * Per the Debezium 3.5 SQL Server docs: `database.user`/`database.password` are the auth identity;
+ * `database.password` is optional when using Microsoft Entra managed identity authentication.
  */
 fun MsSqlServerAuthentication.toDebeziumDatabaseProperties(): Map<String, String> =
-    toJdbcProperties()
+    toJdbcProperties().filterKeys { it in DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS }
+
+/**
+ * Properties that should be forwarded to Debezium under the `driver.*` prefix, which Debezium
+ * strips and passes through to the Microsoft JDBC Driver for SQL Server as connection properties.
+ *
+ * The key property here is `driver.authentication` — introduced in Debezium 3.5 for Microsoft
+ * Entra authentication — which maps to the mssql-jdbc `authentication` connection property
+ * (`SqlPassword`, `ActiveDirectoryServicePrincipal`, `ActiveDirectoryManagedIdentity`, etc.).
+ *
+ * See: https://debezium.io/documentation/reference/3.5/connectors/sqlserver.html#sqlserver-property-driver-authentication
+ */
+fun MsSqlServerAuthentication.toDebeziumDriverProperties(): Map<String, String> =
+    toJdbcProperties().filterKeys { it !in DEBEZIUM_DATABASE_AUTH_IDENTITY_KEYS }
 
 data class UserDefinedCursorIncrementalConfiguration(val excludeTodaysData: Boolean = false) :
     IncrementalConfiguration
