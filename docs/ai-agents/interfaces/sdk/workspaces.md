@@ -33,6 +33,23 @@ stripe = connect("stripe", workspace_name="acme_corp", connector_id="<connector_
 result = await ask("list my 5 most recent customers", workspace_name="acme_corp")
 ```
 
+## `async with` vs direct construction
+
+`Workspace` can be used as an async context manager or constructed directly. The context manager form is recommended — it closes the underlying HTTP client when the block exits. If you construct a `Workspace` directly, call `await ws.close()` yourself when you're done with it.
+
+```python title="agent.py"
+# Preferred — automatic cleanup
+async with Workspace() as ws:
+    connectors = await ws.list_connectors()
+
+# Also valid — you own the lifecycle
+ws = Workspace()
+try:
+    connectors = await ws.list_connectors()
+finally:
+    await ws.close()
+```
+
 ## Auto-creation
 
 You don't explicitly create a workspace. The first `create_connector` call against a new `workspace_name` provisions it on the fly.

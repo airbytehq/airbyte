@@ -30,14 +30,14 @@ Retrieve all workspaces in your organization.
 
 ```bash
 curl https://api.airbyte.ai/api/v1/workspaces \
-  -H 'Authorization: Bearer <your_operator_token>'
+  -H 'Authorization: Bearer <application_token>'
 ```
 
 You can filter workspaces by name and status.
 
 ```bash
 curl 'https://api.airbyte.ai/api/v1/workspaces?name_contains=acme&status=active' \
-  -H 'Authorization: Bearer <your_operator_token>'
+  -H 'Authorization: Bearer <application_token>'
 ```
 
 ### Get workspace details
@@ -46,7 +46,7 @@ Retrieve details for a specific workspace:
 
 ```bash
 curl https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
-  -H 'Authorization: Bearer <your_operator_token>'
+  -H 'Authorization: Bearer <application_token>'
 ```
 
 ### Get workspace info from a scoped token
@@ -64,7 +64,7 @@ Update a workspace's name or status.
 
 ```bash
 curl -X PUT https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
-  -H 'Authorization: Bearer <your_operator_token>' \
+  -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
     "name": "Acme Corp - Enterprise",
@@ -72,7 +72,7 @@ curl -X PUT https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
   }'
 ```
 
-Setting status to `inactive` automatically disables all connections in that workspace.
+Setting status to `inactive` automatically disables all connectors in that workspace.
 
 ### Delete a workspace
 
@@ -80,7 +80,7 @@ Delete a workspace and all associated resources:
 
 ```bash
 curl -X DELETE https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
-  -H 'Authorization: Bearer <your_operator_token>'
+  -H 'Authorization: Bearer <application_token>'
 ```
 
 ## Best practices

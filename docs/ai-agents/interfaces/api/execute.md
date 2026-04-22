@@ -35,33 +35,33 @@ The request body contains three fields:
 | `action` | `string` | The action to perform, such as `list`, `get`, or `search`. |
 | `params` | `object` | Parameters for the action. The required parameters depend on the entity and action. |
 
-### Example: List users
+### Example: List issues
 
-This example lists users from a Gong connector.
+This example lists issues from a Linear connector.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "entity": "users",
+    "entity": "issues",
     "action": "list"
   }'
 ```
 
 ### Example: Get a specific record
 
-This example retrieves a specific user by ID.
+This example retrieves a specific issue by ID.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "entity": "users",
+    "entity": "issues",
     "action": "get",
     "params": {
-      "id": "<user_id>"
+      "id": "<issue_id>"
     }
   }'
 ```
@@ -87,6 +87,10 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ## Download files
 
 Some connectors support a `download` action for entities like attachments and media files. Unlike other actions that return JSON, download responses return raw binary content with a `Content-Disposition` header.
+
+:::note Download responses bypass the envelope
+`download` is the one execute response that does not use the `{status, result, connector_metadata, execution_metadata}` envelope described in [Response format](#response-format). The server streams the file bytes directly with an appropriate `Content-Type`, so your client reads the body as bytes instead of parsing JSON.
+:::
 
 To find downloadable files, first list the relevant entity to discover IDs. For example, list a ticket's comments to find attachment metadata, then download a specific attachment.
 

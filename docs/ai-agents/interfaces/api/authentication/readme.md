@@ -4,11 +4,11 @@ sidebar_position: 1
 
 # Authentication
 
-You authenticate with the Airbyte Agent API using your Airbyte Cloud client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
+You authenticate with the Airbyte Agent API using your Airbyte Agents client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
 
-- You authenticate using Airbyte Cloud client credentials.
+- You authenticate using Airbyte Agents client credentials.
 - Airbyte stores connector credentials securely and handles refresh for you.
-- API calls are proxied through Airbyte Cloud.
+- API calls are proxied through Airbyte Agents.
 
 If you're building a Python app, the [SDK](../../sdk/authenticate) handles token refresh and most of these concerns for you.
 
@@ -26,7 +26,7 @@ The Airbyte Agent API uses a hierarchical token system. Each token type has a di
 
 The application token provides organization-level access. Use it for administrative operations like managing connectors, listing workspaces, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
 
-To obtain an application token, send your app credentials to the token endpoint. Find your credentials in the Airbyte Agents under **Authentication Module** > **Installation**.
+To obtain an application token, send your app credentials to the token endpoint. Copy your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents app.
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
@@ -63,6 +63,14 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
   }'
 ```
 
+The response carries the scoped token as a single `token` field:
+
+```json title="Response"
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
 If the workspace doesn't exist, Airbyte creates it automatically. Scoped tokens expire after 20 minutes.
 
 ### Widget token
@@ -77,6 +85,14 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
     "workspace_name": "default",
     "allowed_origin": "https://yourapp.com"
   }'
+```
+
+The widget token response also has a `token` field. The value is a JWT that wraps both a scoped token and the widget URL. The embedded authentication widget decodes this itself — your backend just forwards the `token` string to the frontend.
+
+```json title="Response"
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
 ```
 
 ## Authentication flow

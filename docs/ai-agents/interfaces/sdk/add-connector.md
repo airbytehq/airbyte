@@ -68,7 +68,7 @@ The `definition_id` identifies the connector type. The fastest way to look one u
 ```bash
 curl -s 'https://api.airbyte.ai/api/v1/integrations/definitions/sources' \
   -H 'Authorization: Bearer <application_token>' \
-  | jq '.data[] | select(.name | test("hubspot"; "i")) | {name, id: .sourceDefinitionId}'
+  | jq '.definitions[] | select(.name | test("hubspot"; "i")) | {name, id: .sourceDefinitionId}'
 ```
 
 See [Make your first request](../api/#make-your-first-request) for token details.
@@ -105,9 +105,9 @@ async with Workspace() as ws:
 
 ## Delete a connector
 
+`delete_connector(connector_id)` takes the connector ID as its first positional argument (or you can pass it by name for clarity). Airbyte removes the stored credentials.
+
 ```python title="agent.py"
 async with Workspace() as ws:
-    await ws.delete_connector("<connector_id>")
+    await ws.delete_connector(connector_id="<connector_id>")
 ```
-
-Delete a connector when you no longer need it. Airbyte removes the stored credentials.
