@@ -135,7 +135,9 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
         "Optional Microsoft Entra tenant ID. If omitted, the driver uses the tenant " +
             "inferred from the service principal.",
     )
-    @JsonSchemaInject(json = """{"order":9,"group":"entra_id"}""")
+    @JsonSchemaInject(
+        json = """{"order":9,"group":"entra_id","airbyte_hidden":true}""",
+    )
     var tenantId: String? = null
 
     @JsonIgnore
