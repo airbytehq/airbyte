@@ -79,6 +79,12 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------|
+| 2.0.11-rc.4 | 2026-04-21 | [](https://github.com/airbytehq/airbyte/pull/) | Decrease default_concurrency from 6 to 4 and remove HTTPAPIBudget for tuning iteration 4 |
+| 2.0.11-rc.3 | 2026-04-17 | [76449](https://github.com/airbytehq/airbyte/pull/76449) | Decrease default_concurrency from 9 to 6 for tuning iteration 3 |
+| 2.0.11-rc.2 | 2026-04-13 | [76266](https://github.com/airbytehq/airbyte/pull/76266) | Decrease default_concurrency from 12 to 9 for tuning iteration 2 |
+| 2.0.11-rc.1 | 2026-04-09 | [76203](https://github.com/airbytehq/airbyte/pull/76203) | Add concurrency support with default_concurrency of 12 |
+| 2.0.10 | 2026-04-06 | [](https://github.com/airbytehq/airbyte/pull/) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
+| 2.0.9 | 2026-03-31 | [75808](https://github.com/airbytehq/airbyte/pull/75808) | Update dependencies |
 | 2.0.8 | 2026-03-11 | [74395](https://github.com/airbytehq/airbyte/pull/74395) | Migrate to scopes object array format |
 | 2.0.7 | 2026-03-10 | [74446](https://github.com/airbytehq/airbyte/pull/74446) | Update dependencies |
 | 2.0.6 | 2026-02-24 | [73990](https://github.com/airbytehq/airbyte/pull/73990) | Update dependencies |

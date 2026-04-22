@@ -183,10 +183,20 @@ definitions:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 30
       response_filters:
-        - predicate: ""
+        - type: HttpResponseFilter
+          http_codes: [400]
           action: FAIL
           failure_type: config_error
-          error_message: "Incorrect Property ID. Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id to find your Property ID."
+          error_message: "{{ response.error.message }}"
+        - type: HttpResponseFilter
+          predicate: "{{ response.error.status == 'PERMISSION_DENIED' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: "{{ response.error.message }}"
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: RETRY
+          error_message: "{{ response.error.message }}"
 
 dynamic_streams:
   - type: DynamicDeclarativeStream
@@ -2985,6 +2995,14 @@ spec:
       - auth_type
     predicate_value: Client
     oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "https://www.googleapis.com/auth/analytics.readonly"
+        consent_url: "https://accounts.google.com/o/oauth2/v2/auth?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{scopes_param}}&access_type=offline&{{state_param}}&include_granted_scopes=true&prompt=consent"
+        access_token_url: "https://oauth2.googleapis.com/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}&grant_type=authorization_code"
+        extract_output:
+          - refresh_token
+          - access_token
       complete_oauth_output_specification:
         type: object
         properties:

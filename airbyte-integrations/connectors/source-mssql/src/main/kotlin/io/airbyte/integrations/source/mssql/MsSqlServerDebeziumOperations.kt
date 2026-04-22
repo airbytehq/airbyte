@@ -33,6 +33,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
+import io.airbyte.cdk.read.cdc.PartiallyOrdered
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
@@ -57,7 +58,7 @@ import kotlin.collections.plus
 import org.apache.kafka.connect.source.SourceRecord
 import org.apache.mina.util.Base64
 
-data class MsSqlServerCdcPosition(val lsn: String) : Comparable<MsSqlServerCdcPosition> {
+data class MsSqlServerCdcPosition(val lsn: String) : PartiallyOrdered<MsSqlServerCdcPosition> {
     override fun compareTo(other: MsSqlServerCdcPosition): Int {
         return lsn.compareTo(other.lsn)
     }

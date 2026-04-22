@@ -158,8 +158,8 @@ definitions:
     type: DefaultPaginator
     pagination_strategy:
       type: CursorPagination
-      cursor_value: "{{ response['links']['next'] }}"
-      stop_condition: "{{ not response['meta']['has_more'] }}"
+      cursor_value: "{{ response.get('links', {}).get('next') }}"
+      stop_condition: "{{ not response.get('meta', {}).get('has_more', false) }}"
       page_size: 100
     page_token_option:
       type: RequestPath
@@ -1543,7 +1543,7 @@ spec:
         airbyte_hidden: true
       num_workers:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 3
@@ -1591,6 +1591,12 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false
