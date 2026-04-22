@@ -346,6 +346,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
 | 6.5.3 | 2026-04-20 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
 | 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |
 | 6.5.1 | 2026-04-16 | [76395](https://github.com/airbytehq/airbyte/pull/76395) | Fix Avro serialization for `listId` in the `list_memberships` stream (emit as string) and ignore `400 VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST` responses so lists with an `objectTypeId` that is not active for the portal (e.g. Leads, `0-136`) are skipped instead of failing the sync |
