@@ -820,4 +820,46 @@ class MsSqlServerJdbcPartitionFactoryTest {
             "Views in full refresh mode should use non-resumable partitions"
         )
     }
+
+    @Test
+    fun testCursorIncrementalSamplingQueryDoesNotUseTablesample() {
+        // Regression test for oncall#12051 / PR #74729: the cursor-incremental
+        // samplingQuery must NOT emit TABLESAMPLE because cursor-incremental reads
+        // are also served for views, and TABLESAMPLE can only be applied to local
+        // tables in SQL Server ("The TABLESAMPLE clause can only be used with
+        // local tables.").
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+                  {
+                    "cursor": "12345",
+                    "version": 3,
+                    "state_type": "cursor_based",
+                    "stream_name": "test_table",
+                    "cursor_field": [
+                      "id"
+                    ],
+                    "stream_namespace": "dbo",
+                    "cursor_record_count": 1
+                  }
+                """.trimIndent()
+            )
+
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        val samplingSql: String =
+            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition)
+                .samplingQuery(sampleRateInvPow2 = 8)
+                .sql
+        assertTrue(
+            !samplingSql.contains("TABLESAMPLE", ignoreCase = true),
+            "Cursor-incremental samplingQuery must not emit TABLESAMPLE (fails on views); got: $samplingSql"
+        )
+        assertTrue(
+            samplingSql.contains("FROM [dbo].[test_table]"),
+            "Cursor-incremental samplingQuery should select directly from the stream's relation; got: $samplingSql"
+        )
+    }
 }

@@ -430,16 +430,19 @@ sealed class MsSqlServerJdbcCursorPartition(
                 SelectQuerySpec(SelectColumnMaxValue(cursor), from)
             }
 
-    // Override samplingQuery to avoid TABLESAMPLE for cursor-based operations
-    // TABLESAMPLE fails on views and isn't needed for cursor-based incremental reads
-    // which are typically small (only new/changed data)
+    // Override samplingQuery to avoid TABLESAMPLE for cursor-based operations.
+    // TABLESAMPLE fails on views ("The TABLESAMPLE clause can only be used with local
+    // tables.") and isn't needed for cursor-based incremental reads which are
+    // typically small (only new/changed data). Use the plain `from` with the cursor
+    // `where` clause so the sampling query is safe on both tables and views while
+    // still respecting the cursor bounds that drive incremental state.
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
-                NoWhere,
+                from,
+                where,
                 OrderBy(checkpointColumns),
                 Limit(sampleSize.toLong())
             )
