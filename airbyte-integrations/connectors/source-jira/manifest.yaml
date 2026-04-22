@@ -5083,6 +5083,17 @@ definitions:
         description: Details about a field.
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
+  # DEPRECATION NOTICE: Atlassian announced on 2026-01-21 that the Field Configuration APIs
+  # (including `GET /rest/api/3/fieldconfiguration`) will be removed in July 2026 as part of
+  # RFC-103 (Jira Field Configuration Overhaul). See:
+  #   - https://community.developer.atlassian.com/t/rfc-103-jira-field-configuration-overhaul-admin-experience-and-api-changes/94205
+  #   - https://developer.atlassian.com/cloud/jira/platform/changelog/
+  # The replacement `Field schemes` API (`GET /rest/api/3/config/fieldschemes`) is still
+  # marked Experimental/beta and is not a drop-in replacement (different schema). A follow-up
+  # breaking change will introduce the new stream once the replacement API reaches GA.
+  # Until then, the error_handler below gracefully IGNOREs `404 Not Found` so that once
+  # the endpoint is removed the stream emits zero records with a clear log message instead
+  # of failing the entire connector sync.
   issue_field_configurations_stream:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_field_configurations
@@ -5090,6 +5101,25 @@ definitions:
     $parameters:
       path: "fieldconfiguration"
       extract_field: "values"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+          response_filters:
+            - type: HttpResponseFilter
+              http_codes: [400]
+              action: IGNORE
+            - type: HttpResponseFilter
+              http_codes: [404]
+              action: IGNORE
+              error_message: >
+                The `issue_field_configurations` stream endpoint `GET /rest/api/3/fieldconfiguration`
+                was deprecated by Atlassian on 2026-01-21 and scheduled for removal in July 2026
+                (see RFC-103). A 404 response indicates the endpoint has been removed on this
+                tenant. No records will be synced for this stream. A replacement stream backed by
+                the new Field schemes API will be added once Atlassian promotes it to GA.
     schema_loader:
       type: InlineSchemaLoader
       schema:

@@ -9,7 +9,7 @@ from conftest import get_source
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import JiraRequestBuilder
 from mock_server.response_builder import JiraPaginatedResponseBuilder
@@ -127,3 +127,25 @@ class TestIssueFieldConfigurationsStream(TestCase):
 
         assert len(output.records) == 0
         assert not any(log.log.level == "ERROR" for log in output.logs)
+
+    @HttpMocker()
+    def test_deprecated_endpoint_404_is_ignored(self, http_mocker: HttpMocker):
+        """
+        Atlassian announced on 2026-01-21 that `GET /rest/api/3/fieldconfiguration` will be
+        removed in July 2026 (RFC-103). Once removed, the endpoint is expected to return
+        `404 Not Found`. The connector must handle this gracefully: the stream should yield
+        zero records and the overall sync must not fail, so that other streams continue syncing.
+        """
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+
+        http_mocker.get(
+            JiraRequestBuilder.issue_field_configurations_endpoint(_DOMAIN).with_any_query_params().build(),
+            HttpResponse(body='{"errorMessages":["The endpoint has been removed."],"errors":{}}', status_code=404),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 0
+        assert output.errors == []
