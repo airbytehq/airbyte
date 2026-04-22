@@ -74,7 +74,7 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id
 
 ## Make your first request
 
-A good zero-setup starting point is listing the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Airbyte Agents, so it returns data even if you haven't configured anything yet.
+Once you have an application token, a good starting point is listing the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Airbyte Agents, so it returns data even if you haven't configured anything yet. It requires the bearer token like every other endpoint.
 
 ```bash title="Request"
 curl https://api.airbyte.ai/api/v1/integrations/definitions/sources \
