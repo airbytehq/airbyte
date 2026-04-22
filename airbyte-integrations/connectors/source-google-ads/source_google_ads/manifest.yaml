@@ -990,7 +990,6 @@ definitions:
 
   custom_ga_query_stream:
     type: DynamicDeclarativeStream
-    name: custom_ga_query_stream
     stream_template:
       $ref: "#/definitions/dynamic_stream_template"
     components_resolver:
