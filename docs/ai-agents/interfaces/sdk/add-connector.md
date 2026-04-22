@@ -4,15 +4,15 @@ sidebar_position: 2
 
 # Add a connector
 
-A **connector** in Airbyte Agents is a per-end-user instance that stores one set of credentials for a third-party service and executes operations against it. You create a connector the first time an end user connects their account, then reuse the returned `connector_id` on every subsequent call.
+A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reuse the returned `connector_id` on every subsequent call.
 
 The `Workspace` class covers every connector operation: create, list, get, and delete.
 
 ## Create a connector
 
-Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the connector type (GitHub, HubSpot, and so on) and the end user's credentials in the shape that connector expects.
+Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the connector type (GitHub, HubSpot, and so on) and the credentials in the shape that connector expects.
 
-`create_connector` returns a string `connector_id`. Store it in your app database, keyed by your end user.
+`create_connector` returns a string `connector_id`. Store it somewhere you can retrieve it later.
 
 ### API token connectors
 
@@ -28,7 +28,7 @@ async def main():
             definition_id="<github_definition_id>",
             name="My GitHub Connector",
             credentials={
-                "token": "<user_github_personal_access_token>",
+                "token": "<github_personal_access_token>",
             },
         )
         print(connector_id)
@@ -103,4 +103,4 @@ async with Workspace() as ws:
     await ws.delete_connector("<connector_id>")
 ```
 
-Delete a connector when an end user disconnects their account. Airbyte removes the stored credentials.
+Delete a connector when you no longer need it. Airbyte removes the stored credentials.

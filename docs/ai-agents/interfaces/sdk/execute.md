@@ -67,7 +67,7 @@ result = ask_sync("list my 5 most recent Stripe customers")
 print(result.answer)
 ```
 
-Prefer `connect()` plus `execute()` when you know exactly which entity and action to call. Prefer `ask()` when you want the platform to pick the right operation based on an end user's intent.
+Prefer `connect()` plus `execute()` when you know exactly which entity and action to call. Prefer `ask()` when you want the platform to pick the right operation based on a natural-language request.
 
 ## Expose a connector as an agent tool
 

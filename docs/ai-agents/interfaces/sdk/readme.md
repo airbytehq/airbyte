@@ -25,7 +25,7 @@ pip install airbyte-agent-sdk
 
 ## End-to-end example
 
-The example below authenticates with Airbyte, adds a HubSpot connector for an end user, and executes an operation against it. The pages in this section explain each step in detail.
+The example below authenticates with Airbyte, adds a HubSpot connector, and executes an operation against it. The pages in this section explain each step in detail.
 
 ```python title="agent.py"
 import asyncio
@@ -35,7 +35,7 @@ async def main():
     # Authenticate. The SDK reads AIRBYTE_CLIENT_ID and AIRBYTE_CLIENT_SECRET
     # from the environment.
     async with Workspace() as ws:
-        # Add a connector for the end user and store the returned ID.
+        # Add a connector and store the returned ID.
         connector_id = await ws.create_connector(
             definition_id="<hubspot_definition_id>",
             name="My HubSpot Connector",
