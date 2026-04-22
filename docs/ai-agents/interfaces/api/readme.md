@@ -2,9 +2,17 @@
 sidebar_position: 3
 ---
 
+import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
+
 # API
 
 The Airbyte Agent API lets you manage connectors, credentials, and data operations programmatically. Use it to integrate Airbyte's agent connectors into any language or framework, or to build custom backend services that interact with your end-users' data sources.
+
+## Choose your interface
+
+<SdkVsApi />
+
+## Base URL
 
 All API requests use the base URL `https://api.airbyte.ai`.
 
