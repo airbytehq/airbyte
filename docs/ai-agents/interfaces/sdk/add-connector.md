@@ -73,7 +73,7 @@ curl -s 'https://api.airbyte.ai/api/v1/integrations/definitions/sources' \
 
 See [Make your first request](../api/#make-your-first-request) for token details.
 
-You can also browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) JSON and copy `sourceDefinitionId` for the entry you want.
+You can also browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) JSON (large file — approximately 100 MB) and copy `sourceDefinitionId` for the entry you want.
 
 ## List connectors
 

@@ -64,8 +64,8 @@ Airbyte doesn't validate credentials at creation time. A `200 OK` response means
 
 The `definition_id` identifies the connector type. You can look it up two ways:
 
-- Browse the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) and copy the `sourceDefinitionId` for your connector.
-- Call `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID. See [Make your first request](./#make-your-first-request).
+- Call `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID. See [Make your first request](./#make-your-first-request). Recommended.
+- Browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) (large file — approximately 100 MB) and copy the `sourceDefinitionId` for the entry you want.
 
 ### About `workspace_name`
 
