@@ -51,7 +51,6 @@ async def main():
         "stripe",
         client_id="<your_client_id>",
         client_secret="<your_client_secret>",
-        connector_id="<connector_id>",
     )
     try:
         result = await stripe.execute("customers", "list", params={"limit": 10})
@@ -75,7 +74,7 @@ configure(
     client_secret="<your_client_secret>",
 )
 
-stripe = connect("stripe", connector_id="<connector_id>")
+stripe = connect("stripe")
 ```
 
 `configure()` accepts the following keyword arguments (all must be passed by name):
