@@ -688,11 +688,10 @@ class TestInsightAsyncJob:
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_no_child_ids(self, mocker, api):
         """
-        When _collect_child_ids returns an empty list, _split_by_edge_class should
-        raise AirbyteTracedException with system_error.
+        When `_collect_child_ids` returns an empty list, `_split_by_edge_class`
+        should return an empty list of sub-jobs so the sync can advance past
+        the interval instead of raising a hard failure.
         """
-        from airbyte_cdk.models import FailureType
-
         job = InsightAsyncJob(
             api=api,
             edge_object=AdAccount(1),
@@ -712,10 +711,9 @@ class TestInsightAsyncJob:
 
         mocker.patch.object(job._edge_object, "get_insights", return_value=completed_run)
 
-        with pytest.raises(AirbyteTracedException, match="No child IDs at level=campaign") as exc_info:
-            job._split_by_edge_class(Campaign)
+        result = job._split_by_edge_class(Campaign)
 
-        assert exc_info.value.failure_type == FailureType.system_error
+        assert result == []
 
     @freezegun.freeze_time("2023-10-29")
     def test_collect_child_ids_timeout(self, mocker, api):
