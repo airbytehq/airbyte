@@ -33,7 +33,9 @@ See the connector's page in the [Connectors](../../connectors) reference for the
 
 For connectors with a generated typed submodule, `connect()` returns a typed connector with IDE autocompletion, method-level docstrings, and structured call shortcuts. For example: `await hubspot.contacts.list(limit=10)`. For the full list of typed connectors, see the [SDK reference](../../reference/sdk).
 
-For every other connector, `connect()` returns a generic `HostedExecutor` with the same `execute(entity, action, params)` method but without typed shortcuts. The execution behavior is otherwise identical.
+For every other connector in the bundled registry, `connect()` returns a generic `HostedExecutor` with the same `execute(entity, action, params)` method but without typed shortcuts. The execution behavior is otherwise identical.
+
+`connect()` raises `ValueError` if the slug isn't in the bundled registry or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing — YAML-only connectors return a `HostedExecutor`.
 
 ### Resolve a connector by name
 
@@ -193,11 +195,14 @@ for entity in entities:
     # contacts: ['list', 'get', 'search']
 ```
 
-`entity_schema(entity)` returns the JSON schema for records of that entity.
+`entity_schema(entity)` returns the JSON schema for records of that entity, or `None` if the connector doesn't ship one for that entity. Always guard the result:
 
 ```python title="agent.py"
 schema = hubspot.entity_schema("contacts")
-print(list(schema.get("properties", {}).keys()))
+if schema is None:
+    print("No schema available for contacts")
+else:
+    print(list(schema.get("properties", {}).keys()))
 ```
 
 ## Handle errors

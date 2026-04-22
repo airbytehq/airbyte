@@ -35,7 +35,9 @@ result = await ask("list my 5 most recent customers", workspace_name="acme_corp"
 
 ## Auto-creation
 
-The SDK creates a workspace on first reference. You don't explicitly create one. The first `create_connector` or `ask()` call against a new `workspace_name` provisions it on the fly.
+You don't explicitly create a workspace. The first `create_connector` call against a new `workspace_name` provisions it on the fly.
+
+Other operations do not provision the workspace. `list_connectors()`, `get_connector()`, and `ask()` against a `workspace_name` that hasn't been created yet return an empty result or a 404 — they won't implicitly create it for you. If you need to start from an empty workspace, call `create_connector` first (or add a connector in the Airbyte Agents app).
 
 ## Operations that require the API
 
