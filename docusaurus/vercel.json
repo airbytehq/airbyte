@@ -942,13 +942,13 @@
       "statusCode": 301
     },
     {
-      "source": "/ai-agents/interfaces/sdk/workspaces",
-      "destination": "/ai-agents/interfaces/api/workspaces",
+      "source": "/ai-agents/interfaces/sdk/authenticate/hosted",
+      "destination": "/ai-agents/interfaces/sdk/authenticate",
       "statusCode": 301
     },
     {
-      "source": "/ai-agents/interfaces/sdk/authenticate/hosted",
-      "destination": "/ai-agents/interfaces/api/authenticate",
+      "source": "/ai-agents/interfaces/sdk/authenticate/open-source",
+      "destination": "/ai-agents/interfaces/sdk/authenticate",
       "statusCode": 301
     },
     {

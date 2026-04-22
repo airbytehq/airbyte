@@ -85,13 +85,4 @@ When using hosted authentication, follow these best practices:
 
 - **Validate the `allowed_origin`** when using widget tokens to ensure requests can only come from your application.
 
-## When to use hosted mode
-
-Hosted authentication is most appropriate when:
-
-- You're building a production application with multiple end-users.
-- You want centralized credential management without storing credentials yourself.
-- You need Airbyte to handle credential lifecycle management, including token refresh.
-- Security and compliance are priorities for your application.
-
-For development, testing, or single-user scenarios, you might find it easier to use [open source authentication](../sdk/authenticate/open-source.md).
+If you're building a Python app, the [SDK](../sdk/authenticate) handles token refresh and most of these concerns for you.
