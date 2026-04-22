@@ -77,6 +77,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 |-----------|------|----------|---------|-------------|
 | `api_token` | string | Yes | | Devin API key for authentication. Service user tokens use the `cog_*` prefix. |
 | `org_id` | string | Yes | | Your Devin organization ID. Uses the `org_*` prefix. |
+| `start_date` | string (ISO 8601, UTC) | No | (epoch 0, i.e. no filter) | Optional lower bound on `created_at` for the `sessions`, `sessions_insights`, and `session_messages` streams. Sessions created before this instant are excluded. Format: `YYYY-MM-DDTHH:MM:SSZ`. Example: `2026-01-01T00:00:00Z`. |
 
 ## Changelog
 

@@ -56,7 +56,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: "/v3/organizations/{{ config['org_id'] }}/sessions"
         request_parameters:
-          created_after: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '' }}"
+          created_after: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else 0 }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -170,7 +170,7 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: "/v3/organizations/{{ config['org_id'] }}/sessions/insights"
         request_parameters:
-          created_after: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else '' }}"
+          created_after: "{{ format_datetime(config['start_date'], '%s') if config.get('start_date') else 0 }}"
       record_selector:
         type: RecordSelector
         extractor:
