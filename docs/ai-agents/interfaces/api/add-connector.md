@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Add a connector
 
-A **connector** in Airbyte Agents is a per-end-user instance that stores one set of credentials for a third-party service and executes operations against it. You create a connector the first time an end user connects their account, then reuse the returned connector ID on every subsequent call.
+A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reuse the returned connector ID on every subsequent call.
 
 The `/api/v1/integrations/connectors` endpoints cover every connector operation: create, list, get, and delete.
 
@@ -12,9 +12,7 @@ To do the same thing from Python, see [Add a connector](../sdk/add-connector) in
 
 ## Create a connector
 
-Send a `POST` to `/api/v1/integrations/connectors`. Pass the `definition_id` for the connector type and the end user's credentials in the shape that connector expects. The response includes a connector ID. Store it in your app database, keyed by your end user.
-
-Most apps call this endpoint from their backend with an application token and identify the end user with `customer_name`. Airbyte uses that value as the workspace identifier, so the same string you pass here is the one that appears everywhere else in the API. If you prefer, use a [scoped token](./authentication#scoped-token) minted for that end user's workspace and omit `customer_name`; the token already carries the workspace scope.
+Send a `POST` to `/api/v1/integrations/connectors`. Pass the `definition_id` for the connector type and the credentials in the shape that connector expects. The response includes a connector ID. Store it somewhere you can retrieve it later.
 
 ### API token connectors
 
@@ -25,11 +23,11 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   --header 'Authorization: Bearer <application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "customer_name": "user_12345",
+    "customer_name": "default",
     "definition_id": "<github_definition_id>",
     "name": "My GitHub Connector",
     "credentials": {
-      "token": "<user_github_personal_access_token>"
+      "token": "<github_personal_access_token>"
     }
   }'
 ```
@@ -43,7 +41,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   --header 'Authorization: Bearer <application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "customer_name": "user_12345",
+    "customer_name": "default",
     "definition_id": "<hubspot_definition_id>",
     "name": "My HubSpot Connector",
     "credentials": {
@@ -65,14 +63,18 @@ The `definition_id` identifies the connector type. You can look it up two ways:
 - Browse the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) and copy the `sourceDefinitionId` for your connector.
 - Call `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID. See [Make your first request](./#make-your-first-request).
 
+### About `customer_name`
+
+The `customer_name` field identifies which [workspace](./workspaces) the connector belongs to. Most apps use `"default"` and don't think about this again. If you need to isolate credentials across tenants or teams, pass a different value; Airbyte treats that string as the workspace name and creates the workspace on first use. See [Manage workspaces](./workspaces) for the administrative operations on top.
+
 ## List connectors
 
-Filter by `customer_name` to list one end user's connectors, or by `definition_id` to find every connector of a given type.
-
 ```bash title="Request"
-curl 'https://api.airbyte.ai/api/v1/integrations/connectors?customer_name=user_12345' \
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   --header 'Authorization: Bearer <application_token>'
 ```
+
+Filter by `customer_name` or `definition_id` with query parameters to narrow the result set.
 
 ## Get a connector
 
@@ -83,7 +85,7 @@ curl 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>' \
 
 ## Delete a connector
 
-Delete a connector when an end user disconnects their account. Airbyte removes the stored credentials.
+Delete a connector when it's no longer in use. Airbyte removes the stored credentials.
 
 ```bash title="Request"
 curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>' \
@@ -92,4 +94,4 @@ curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector
 
 ## Next steps
 
-Once you have a connector ID, use [Execute operations](./execute) to read or act on the end user's data.
+Once you have a connector ID, use [Execute operations](./execute) to read data from or take actions on the connected service.

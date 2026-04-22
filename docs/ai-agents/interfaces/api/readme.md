@@ -6,7 +6,7 @@ import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
 
 # API
 
-The Airbyte Agent API lets you manage connectors, credentials, and data operations programmatically over HTTP. Use it to integrate Airbyte Agents into any language or framework, or to build custom backend services that interact with your end-users' data sources.
+The Airbyte Agent API lets you manage connectors, credentials, and data operations programmatically over HTTP. Use it to integrate Airbyte Agents into any language or framework, or to build custom backend services that interact with third-party data sources.
 
 This section walks through the four operations most apps need: authenticate, add a connector, execute operations, and manage workspaces. Deeper endpoint details (every parameter, response schema, and error code) live in the [API reference](/ai-agents/reference/api).
 
@@ -26,15 +26,15 @@ The four pages in this section are designed to map one-to-one with the [SDK](../
 
 1. **[Authentication](./authentication)**: Get an application token (and, when needed, scoped and widget tokens). This is how every subsequent call is authorized.
 
-2. **[Add a connector](./add-connector)**: Create a per-end-user connector instance from a `definition_id` plus the user's credentials. For connectors that support OAuth with your own branding, see [Build your own OAuth flow](./authentication/build-your-own).
+2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service. For connectors that support OAuth with your own branding, see [Build your own OAuth flow](./authentication/build-your-own).
 
-3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read or act on an end user's data.
+3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
 
-4. **[Manage workspaces](./workspaces)**: Isolate each end user's connectors and credentials, and administer workspaces (list, update, delete) — operations the SDK defers to the API.
+4. **[Manage workspaces](./workspaces)**: Administer workspaces (list, update, delete) — operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
 
 ## End-to-end example
 
-This snippet authenticates, creates a connector for an end user, and executes a single operation. It parallels the [SDK end-to-end example](../sdk).
+This snippet authenticates, creates a connector, and executes a single operation. It parallels the [SDK end-to-end example](../sdk).
 
 ```bash title="1. Get an application token"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
@@ -45,12 +45,12 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   }'
 ```
 
-```bash title="2. Create a connector for an end user"
+```bash title="2. Create a connector"
 curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
   -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "customer_name": "user_12345",
+    "customer_name": "default",
     "definition_id": "<hubspot_definition_id>",
     "name": "My HubSpot Connector",
     "credentials": {

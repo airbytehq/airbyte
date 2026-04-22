@@ -4,12 +4,11 @@ sidebar_position: 1
 
 # Authentication
 
-When you subscribe to the Airbyte Agents, you authenticate with Airbyte Cloud using your Airbyte client credentials, and Airbyte manages your end users' credentials securely. This approach is ideal for production B2B applications where you need centralized credential management across multiple customers. When your agent executes operations, your app proxies API calls through Airbyte Cloud.
+You authenticate with the Airbyte Agent API using your Airbyte Cloud client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
 
 - You authenticate using Airbyte Cloud client credentials.
-- You store end-user API credentials securely in Airbyte Cloud.
+- Airbyte stores connector credentials securely and handles refresh for you.
 - API calls are proxied through Airbyte Cloud.
-- Airbyte handles credential lifecycle management, including token refresh.
 
 If you're building a Python app, the [SDK](../../sdk/authenticate) handles token refresh and most of these concerns for you.
 
@@ -20,7 +19,7 @@ The Airbyte Agent API uses a hierarchical token system. Each token type has a di
 | Token type        | Use case                                                                                     | Scope                                |
 | ----------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
 | Application token | Organization management, generating scoped and widget tokens, executing connector operations | Organization-wide                    |
-| Scoped token      | Company-level administration                                                                 | Single workspace                     |
+| Scoped token      | Workspace-scoped access                                                                      | Single workspace                     |
 | Widget token      | Embedding the authentication module in your app                                              | Single workspace with CORS protection |
 
 ### Application token
@@ -53,14 +52,14 @@ Application tokens expire after 15 minutes. Request a new token when needed.
 
 ### Scoped token
 
-Scoped tokens provide workspace-level access for some end-user operations. Each scoped token is limited to a single workspace, ensuring data isolation between workspaces. Generate a scoped token using your application token:
+Scoped tokens are limited to a single [workspace](../workspaces). Most apps use the `default` workspace and can skip this token type; generate a scoped token only when you need to isolate credentials across tenants or teams. Generate a scoped token using your application token:
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
   -H 'Authorization: Bearer <your_application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_name": "workspace_123"
+    "workspace_name": "default"
   }'
 ```
 
@@ -75,68 +74,22 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
   -H 'Authorization: Bearer <your_application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_name": "workspace_123",
+    "workspace_name": "default",
     "allowed_origin": "https://yourapp.com"
   }'
 ```
 
 ## Authentication flow
 
-A typical flow for authenticating an end user and executing an operation looks like this:
+A typical flow for getting connected and executing an operation looks like this:
 
 1. **Get an application token** using your Airbyte client credentials.
 
-2. **Generate a scoped token** for the end user's workspace.
+2. **Create a connector** for the third-party service you want to access. Airbyte stores the credentials securely. See [Add a connector](../add-connector).
 
-3. **Create a connector** using the end user's API credentials. Airbyte stores these credentials securely. See [Add a connector](../add-connector).
+3. **Execute operations** against the connector using your application token. See [Execute operations](../execute).
 
-4. **Execute operations** against the connector using your application token. See [Execute operations](../execute).
-
-## Creating connectors with credentials
-
-Once you have a scoped token, create a connector to store your end user's credentials. The shape of the `credentials` object varies by connector and by authentication method. See the [Connectors](../../../connectors) reference for exact field names.
-
-### With API tokens
-
-For connectors that authenticate with an API token or personal access token:
-
-```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
-  -H "Authorization: Bearer <scoped_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workspace_name": "<your_workspace_name>",
-    "connector_type": "github",
-    "name": "My GitHub Connector",
-    "credentials": {
-      "token": "<user_github_personal_access_token>"
-    }
-  }'
-```
-
-### With OAuth credentials
-
-For connectors that authenticate with OAuth, pass the end user's `client_id`, `client_secret`, and `refresh_token`. Airbyte uses the refresh token to mint and rotate access tokens automatically at execution time.
-
-```bash
-curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
-  -H "Authorization: Bearer <scoped_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "workspace_name": "<your_workspace_name>",
-    "connector_type": "hubspot",
-    "name": "My HubSpot Connector",
-    "credentials": {
-      "client_id": "<hubspot_client_id>",
-      "client_secret": "<hubspot_client_secret>",
-      "refresh_token": "<hubspot_refresh_token>"
-    }
-  }'
-```
-
-### With your own OAuth flow
-
-You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints to handle the token exchange. This allows you to show your own branding on the OAuth consent screen. See [Build your own OAuth flow](./build-your-own) for details.
+For OAuth connectors where you want to drive the consent screen yourself with your own branding, see [Build your own OAuth flow](./build-your-own).
 
 ## Security considerations
 

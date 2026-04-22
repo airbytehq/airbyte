@@ -5,43 +5,16 @@ sidebar_position: 4
 # Manage workspaces
 
 :::note API-only operations
-Listing every workspace, updating a workspace's status, deleting a workspace, and reading workspace metadata are exposed through the API only. The [SDK's workspace class](../sdk/workspaces) covers everything an end-user-scoped app needs; come here for the administrative operations on top.
+Listing every workspace, updating a workspace's status, deleting a workspace, and reading workspace metadata are exposed through the API only. The [SDK's workspace class](../sdk/workspaces) covers what most apps need day-to-day; come here for the administrative operations on top.
 :::
 
-In Airbyte Agents, a **workspace** represents an end-user of your service who connects their own data sources. Each workspace gets an isolated environment that stores their credentials, connectors, and data separately from other workspaces.
+A **workspace** is a container inside your Airbyte Agents organization that holds a set of connectors and credentials. Every organization starts with a `default` workspace, and most apps stay there. Create additional workspaces only when you need to isolate credentials across distinct tenants, teams, or environments.
 
-The `workspace_name` you provide when creating scoped tokens serves as the unique workspace identifier within your organization. Use any string that makes sense for your service, like an internal user ID or company name.
-
-## Why workspaces exist
-
-Airbyte Agents uses the workspace concept to provide data isolation in multi-tenant applications.
-
-Airbyte isolates each workspace's data, credentials, and configurations. A [scoped token](./authentication#scoped-token) can only access a single workspace. Workspace data never crosses the workspace boundary. This architecture means you can safely serve multiple end-users from a single Airbyte Agents organization without worrying about data leakage between workspaces.
-
-## Workspaces and authentication
-
-Airbyte Agents uses a hierarchical token system where each token type has a different scope. For complete details on token types and how to generate them, see [Token types](./authentication#token-types).
+Every request that touches a connector carries the workspace it belongs to. In the REST body that's `customer_name`; in a scoped or widget token request it's `workspace_name`. Airbyte uses the value as the workspace identifier and creates the workspace on first use.
 
 ## Create a new workspace
 
-You create a new workspace when you generate a scoped token with a new `workspace_name`. If the workspace doesn't exist, Airbyte creates it automatically.
-
-```bash title="Request"
-curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
-  -H 'Authorization: Bearer <your_operator_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "workspace_name": "acme_corp"
-  }'
-```
-
-The response contains a scoped token you can use for all operations on behalf of this workspace:
-
-```json title="Response"
-{
-  "token": "eyJhbGci..."
-}
-```
+You don't create workspaces directly. Airbyte creates one automatically the first time you reference a new `workspace_name` when generating a [scoped token](./authentication#scoped-token), or a new `customer_name` when creating a connector. Use any stable string that makes sense in your app.
 
 ## Manage workspaces
 
@@ -108,7 +81,7 @@ curl -X DELETE https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
 
 ## Best practices
 
-- Use meaningful, consistent naming for `workspace_name`. Your internal user ID or company name works well, and makes it easy to correlate Airbyte Agents workspaces with your own records.
+- Pick a naming convention for `workspace_name` up front and stick with it. Airbyte uses whatever string you first pass, so picking a stable identifier now avoids orphaned workspaces later.
 
 - Handle token expiration appropriately. Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes.
 

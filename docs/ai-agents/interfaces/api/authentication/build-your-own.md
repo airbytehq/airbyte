@@ -7,7 +7,7 @@ sidebar_position: 2
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-If you provide an environment where your users can create connectors on their own, they need to supply their credentials so agents can access their data. You might prefer a fully customized OAuth flow with your own branding, UX, and OAuth app. This page shows how to implement one.
+When a connector authenticates through OAuth, Airbyte can drive the consent screen for you. If you'd rather drive it yourself — with your own branding, UX, and OAuth app — you can build a server-side OAuth flow that still lands the credentials in Airbyte at the end. This page shows how.
 
 :::note
 Initiating an OAuth consent URL is an API-only operation. The SDK wraps the [OAuth override configuration](#part-1-configure-oauth-overrides-optional) (`configure_oauth_app_parameters`), but [Part 2](#part-2-initiate-the-oauth-flow) and [Part 3](#part-3-handle-the-callback) use the API directly from your backend.
