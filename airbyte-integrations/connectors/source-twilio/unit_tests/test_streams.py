@@ -318,9 +318,7 @@ class TestTwilioNestedStream:
             },
             status_code=200,
         )
-        chat_roles_matcher = requests_mock.get(
-            f"https://chat.twilio.com/v2/Services/{service_sid}/Roles", status_code=410
-        )
+        chat_roles_matcher = requests_mock.get(f"https://chat.twilio.com/v2/Services/{service_sid}/Roles", status_code=410)
         conversations_roles_matcher = requests_mock.get(
             f"https://conversations.twilio.com/v1/Services/{service_sid}/Roles",
             json={
