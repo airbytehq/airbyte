@@ -4,107 +4,94 @@ sidebar_position: 2
 
 # Add a connector
 
-Before your AI agents can interact with external data sources, you need to add connectors to your workspace. Adding a connector makes it available for your end users to authenticate and use with their own credentials.
+A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reuse the returned connector ID on every subsequent call.
 
-## What adding a connector does
+The `/api/v1/integrations/connectors` endpoints cover every connector operation: create, list, get, and delete.
 
-When you add a connector in Airbyte Agents, you're configuring which data sources your app supports. This is separate from authentication, which happens when individual users connect their accounts.
+To do the same thing from Python, see [Add a connector](../sdk/add-connector) in the SDK section.
 
-Adding a connector creates a **source template** in the API, which is the organization-level configuration for a connector type. The Airbyte Agents uses three layers:
+## Create a connector
 
-- **Definition**: A connector type available in the Airbyte catalog (for example, GitHub or Salesforce), identified by a `sourceDefinitionId`. List definitions with `GET /api/v1/integrations/definitions/sources`.
-- **Source template**: Your organization's configuration of a definition, including default settings and enabled modes. Managed through `GET/POST/PATCH/DELETE /api/v1/integrations/templates/sources`.
-- **Connector**: A per-user instance with actual credentials, created when an end user authenticates. Managed through `/api/v1/integrations/connectors`.
+Send a `POST` to `/api/v1/integrations/connectors`. Pass the `definition_id` for the connector type and the credentials in the shape that connector expects. The response includes a connector ID. Store it somewhere you can retrieve it later.
 
-Adding a connector (creating a source template) does the following.
+### API token connectors
 
-- Makes the connector available in your organization's connector catalog
-- Allows your end users to authenticate with their own credentials for that data source
-- Configures which modes the connector operates in: direct, replication, or both
-
-To do the same thing without writing code, see [Add a connector](../ui/add-connector) in the Web app section.
-
-## Connector modes
-
-Airbyte Agents connectors can operate in two modes:
-
-- **Direct mode** allows AI agents to execute real-time queries against connected data sources. When a user asks a question, the agent calls the third-party API directly to fetch fresh data. This mode is ideal for operational queries, real-time lookups, and actions that need current information.
-
-- **Replication mode** syncs data from connected sources to object storage like S3, GCS, or Azure Blob Storage. This mode is useful for analytics, RAG pipelines, and scenarios where you need to process large volumes of historical data.
-
-Some connectors support both modes, while others support only one. When adding a connector, you can choose which modes to activate based on your application's needs.
-
-## Get an application token
-
-Request an application token using your Airbyte client credentials.
+Connectors that authenticate with an API key or personal access token accept a `token` field inside `credentials`.
 
 ```bash title="Request"
-curl --location 'https://api.airbyte.ai/api/v1/account/applications/token' \
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
+  --header 'Authorization: Bearer <application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "client_id": "<your_client_id>",
-    "client_secret": "<your_client_secret>"
-  }'
-```
-
-Save the returned access token for subsequent API calls.
-
-## List source templates
-
-To see which connectors are added (as source templates) for your organization:
-
-```bash title="Request"
-curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
-```
-
-This returns both source templates you've created and standard source templates available to all Airbyte Agents users.
-
-## Create a source template
-
-If you don't see the connector you need, create a source template for it.
-
-```bash title="Request"
-curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "organization_id": "<your_organization_id>",
-    "actor_definition_id": "<connector_definition_id>",
-    "partial_default_config": {}
-  }'
-```
-
-The `actor_definition_id` is the identifier for the connector type. This corresponds to the `sourceDefinitionId` returned by the [definitions endpoint](./#make-your-first-request). You can also find these IDs in the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
-
-The `partial_default_config` object lets you pre-configure default values for the source template, so your users don't need to provide them during authentication.
-
-## Update a source template
-
-To modify an existing source template.
-
-```bash title="Request"
-curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "partial_default_config": {
-      "some_field": "new_default_value"
+    "customer_name": "default",
+    "definition_id": "<github_definition_id>",
+    "name": "My GitHub Connector",
+    "credentials": {
+      "token": "<github_personal_access_token>"
     }
   }'
 ```
 
-When you update a source template, the changes apply to all connectors created from it.
+### OAuth connectors
 
-## Delete a source template
-
-To delete a source template, follow these steps. Once you do this, the connector type is no longer available for end users to authenticate with.
+Connectors that use OAuth accept a `client_id`, `client_secret`, and `refresh_token` inside `credentials`. Airbyte uses the refresh token to mint and rotate access tokens automatically at execution time.
 
 ```bash title="Request"
-curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<template_id>' \
-  --header 'Authorization: Bearer <APPLICATION_TOKEN>'
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
+  --header 'Authorization: Bearer <application_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "customer_name": "default",
+    "definition_id": "<hubspot_definition_id>",
+    "name": "My HubSpot Connector",
+    "credentials": {
+      "client_id": "<hubspot_client_id>",
+      "client_secret": "<hubspot_client_secret>",
+      "refresh_token": "<hubspot_refresh_token>"
+    }
+  }'
+```
+
+Each connector defines its own credential shape. See the connector's page in the [Connectors](../../connectors) reference for the exact field names.
+
+If you need to drive the OAuth consent screen yourself with your own branding, see [Build your own OAuth flow](./authentication/build-your-own). The final step of that flow calls this same endpoint with a `server_side_oauth_secret_id` in place of `credentials`.
+
+### Find a `definition_id`
+
+The `definition_id` identifies the connector type. You can look it up two ways:
+
+- Browse the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) and copy the `sourceDefinitionId` for your connector.
+- Call `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID. See [Make your first request](./#make-your-first-request).
+
+### About `customer_name`
+
+The `customer_name` field identifies which [workspace](./workspaces) the connector belongs to. Most apps use `"default"` and don't think about this again. If you need to isolate credentials across tenants or teams, pass a different value; Airbyte treats that string as the workspace name and creates the workspace on first use. See [Manage workspaces](./workspaces) for the administrative operations on top.
+
+## List connectors
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors' \
+  --header 'Authorization: Bearer <application_token>'
+```
+
+Filter by `customer_name` or `definition_id` with query parameters to narrow the result set.
+
+## Get a connector
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>' \
+  --header 'Authorization: Bearer <application_token>'
+```
+
+## Delete a connector
+
+Delete a connector when it's no longer in use. Airbyte removes the stored credentials.
+
+```bash title="Request"
+curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>' \
+  --header 'Authorization: Bearer <application_token>'
 ```
 
 ## Next steps
 
-After enabling connectors, set up [authentication](authenticate) to let users connect their accounts.
+Once you have a connector ID, use [Execute operations](./execute) to read data from or take actions on the connected service.

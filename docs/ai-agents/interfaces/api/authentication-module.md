@@ -1,3 +1,7 @@
+---
+draft: true
+---
+
 # Authentication module
 
 The authentication module (also known as Airbyte Embedded) is a pre-built UI component you embed in your application so your end users can connect their data sources without leaving your app. Instead of building a custom credential collection flow, you integrate Airbyte's widget and let it handle connector selection, credential input, and validation.

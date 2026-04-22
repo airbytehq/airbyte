@@ -10,7 +10,7 @@ To execute operations from Python code instead, see [Execute operations](../sdk/
 
 ## Authentication
 
-Before making API calls, you need an application token. For details on obtaining tokens, see [Token types](./#token-types).
+Before making API calls, you need an application token. For details on obtaining tokens, see [Token types](./authentication#token-types).
 
 ## Execute an operation
 
