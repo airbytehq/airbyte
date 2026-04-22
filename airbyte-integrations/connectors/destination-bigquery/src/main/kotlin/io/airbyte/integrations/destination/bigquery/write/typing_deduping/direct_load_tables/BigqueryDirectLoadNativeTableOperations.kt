@@ -364,10 +364,15 @@ class BigqueryDirectLoadNativeTableOperations(
         typeChangePlans.forEach {
             (realColumnName, tempColumnName, backupColumnName, originalType, newType) ->
             // first, update the temp column to contain the casted value.
+            // Alias the updated table so that the source column reference inside the CAST
+            // expression (emitted by getColumnCastStatement with a src. prefix) is always
+            // unambiguously resolved to the column and not to the row STRUCT when the table
+            // name collides with a column name.
+            // See https://github.com/airbytehq/oncall/issues/10671.
             val castStatement = getColumnCastStatement(realColumnName, originalType, newType)
             try {
                 databaseHandler.executeWithRetries(
-                    """UPDATE $tableId SET `$tempColumnName` = $castStatement WHERE 1=1"""
+                    """UPDATE $tableId AS $SOURCE_TABLE_ALIAS SET `$tempColumnName` = $castStatement WHERE 1=1"""
                 )
             } catch (e: Exception) {
                 val message =
