@@ -107,4 +107,4 @@ curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/templates/sources/<te
 
 ## Next steps
 
-After enabling connectors, set up [authentication](authenticate) to let users connect their accounts.
+After enabling connectors, set up [authentication](./authentication) to let users connect their accounts.

@@ -6,7 +6,9 @@ import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
 
 # API
 
-The Airbyte Agent API lets you manage connectors, credentials, and data operations programmatically. Use it to integrate Airbyte's agent connectors into any language or framework, or to build custom backend services that interact with your end-users' data sources.
+The Airbyte Agent API lets you manage connectors, credentials, and data operations programmatically over HTTP. Use it to integrate Airbyte Agents into any language or framework, or to build custom backend services that interact with your end-users' data sources.
+
+This section walks through the four operations most apps need: authenticate, add a connector, execute operations, and manage workspaces. Deeper endpoint details (every parameter, response schema, and error code) live in the [API reference](/ai-agents/reference/api).
 
 ## Choose your interface
 
@@ -18,25 +20,23 @@ All API requests use the base URL `https://api.airbyte.ai`.
 
 If your account belongs to multiple organizations, include the `X-Organization-Id` header in every request to specify which organization you're targeting. If you belong to a single organization, this header is optional.
 
-For the complete list of endpoints, request and response schemas, and authentication requirements, see the [Airbyte Agent API reference](/ai-agents/reference/api).
+## How the pieces fit together
 
-## Token types
+The four pages in this section are designed to map one-to-one with the [SDK](../sdk) section so the same mental model works in either environment.
 
-The Airbyte Agents uses a hierarchical token system. Each token type has a different scope and is designed for specific use cases.
+1. **[Authentication](./authentication)**: Get an application token (and, when needed, scoped and widget tokens). This is how every subsequent call is authorized.
 
-| Token type        | Use case                                                                                     | Scope                                |
-| ----------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| Application Token | Organization management, generating scoped and widget tokens, executing connector operations | Organization-wide                    |
-| Scoped Token      | Company-level administration                                                                 | Single workspace                     |
-| Widget Token      | Embedding the authentication module in your app                                              | Single workspace with CORS protection |
+2. **[Add a connector](./add-connector)**: Enable a connector type in your organization, then create per-end-user connector instances that hold each user's credentials. For connectors that support OAuth with your own branding, see [Build your own OAuth flow](./authentication/build-your-own).
 
-### Application token
+3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read or act on an end user's data.
 
-The application token provides organization-level access. Use it for administrative operations like managing connectors, listing workspaces, and generating other tokens lower in the hierarchy. Most API endpoints require an application token.
+4. **[Manage workspaces](./workspaces)**: Isolate each end user's connectors and credentials, and administer workspaces (list, update, delete) — operations the SDK defers to the API.
 
-To obtain an application token, send your app credentials to the token endpoint. Find your credentials in the Airbyte Agents under **Authentication Module** > **Installation**.
+## End-to-end example
 
-```bash title="Request"
+This snippet authenticates, creates a connector for an end user, and executes a single operation. It parallels the [SDK end-to-end example](../sdk).
+
+```bash title="1. Get an application token"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   -H 'Content-Type: application/json' \
   -d '{
@@ -45,68 +45,41 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
   }'
 ```
 
-The response contains your application token:
-
-```json title="Response"
-{
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "token_type": "bearer",
-  "expires_in": 900,
-  "organization_id": "12345678-1234-1234-1234-123456789012"
-}
-```
-
-application tokens expire after 15 minutes. Request a new token when needed.
-
-### Scoped token
-
-Scoped tokens provide workspace-level access for some end-user operations. Each scoped token is limited to a single workspace, ensuring data isolation between workspaces. Generate a scoped token using your application token:
-
-```bash title="Request"
-curl -X POST https://api.airbyte.ai/api/v1/account/applications/scoped-token \
-  -H 'Authorization: Bearer <your_operator_token>' \
+```bash title="2. Create a connector for an end user"
+curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
+  -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_name": "workspace_123"
+    "workspace_name": "user_12345",
+    "connector_type": "hubspot",
+    "name": "My HubSpot Connector",
+    "credentials": {
+      "client_id": "<hubspot_client_id>",
+      "client_secret": "<hubspot_client_secret>",
+      "refresh_token": "<hubspot_refresh_token>"
+    }
   }'
 ```
 
-If the workspace doesn't exist, Airbyte creates it automatically. Scoped tokens expire after 20 minutes.
-
-### Widget token
-
-Widget tokens are specialized tokens for embedding the [authentication module](authentication-module) in your app. They include all features of scoped tokens plus origin validation for CORS protection.
-
-```bash title="Request"
-curl -X POST https://api.airbyte.ai/api/v1/account/applications/widget-token \
-  -H 'Authorization: Bearer <your_operator_token>' \
+```bash title="3. Execute an operation"
+curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute \
+  -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "workspace_name": "workspace_123",
-    "allowed_origin": "https://yourapp.com"
+    "entity": "contacts",
+    "action": "list",
+    "params": { "limit": 10 }
   }'
 ```
-
-For more details on widget tokens and template filtering, see the [authentication module](authentication-module) documentation.
-
-### Security considerations
-
-- **Never expose tokens in client-side code.** These tokens provide organization-wide access and should only be used in your backend.
-
-- **Handle token expiration.** Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes. The Python SDK handles token refresh automatically, but API users must request new tokens when the current token expires.
-
-- **Validate the `allowed_origin`** when using widget tokens to ensure requests only come from your app.
 
 ## Make your first request
 
-After you obtain an application token, you can make your first API call. A good starting point is to list the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Airbyte Agents, so it returns data even if you haven't configured anything yet.
+A good zero-setup starting point is listing the available source connector definitions. This read-only endpoint returns the catalog of connectors available in Airbyte Agents, so it returns data even if you haven't configured anything yet.
 
 ```bash title="Request"
 curl https://api.airbyte.ai/api/v1/integrations/definitions/sources \
-  -H 'Authorization: Bearer <your_operator_token>'
+  -H 'Authorization: Bearer <application_token>'
 ```
-
-The response contains a list of available source connectors:
 
 ```json title="Response"
 {
@@ -131,7 +104,7 @@ You can filter results by name using the `name` query parameter:
 
 ```bash title="Request"
 curl 'https://api.airbyte.ai/api/v1/integrations/definitions/sources?name=github' \
-  -H 'Authorization: Bearer <your_operator_token>'
+  -H 'Authorization: Bearer <application_token>'
 ```
 
 ## Use the API
