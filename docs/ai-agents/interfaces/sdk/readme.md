@@ -46,11 +46,14 @@ async def main():
             },
         )
 
-    # Execute an operation against the connector.
-    hubspot = connect("hubspot", connector_id=connector_id)
-    result = await hubspot.execute("contacts", "list", params={"limit": 10})
-    for row in result.data:
-        print(row)
+        # Execute an operation against the connector.
+        hubspot = connect("hubspot", connector_id=connector_id)
+        try:
+            result = await hubspot.execute("contacts", "list", params={"limit": 10})
+            for row in result.data:
+                print(row)
+        finally:
+            await hubspot.close()
 
 asyncio.run(main())
 ```

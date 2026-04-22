@@ -94,6 +94,8 @@ async with Workspace() as ws:
 
 `get_connector(name=...)` raises `ValueError` if zero or more than one connector of that type exists. Use `connector_id` explicitly when multiple connectors of the same type might exist.
 
+`get_connector(name=...)` always returns a generic `HostedExecutor` with `.execute(entity, action, params)`. To get a typed connector with IDE autocompletion and structured method shortcuts (for example, `stripe.customers.list(...)`), call `connect(slug, connector_id=...)` with the ID you stored. See [Typed connectors and `HostedExecutor`](./execute#typed-connectors-and-hostedexecutor).
+
 ## Delete a connector
 
 ```python title="agent.py"

@@ -150,9 +150,10 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 Some connectors support a `download` action for binary entities like attachments, audio recordings, and documents. Download responses return a byte stream instead of JSON.
 
-Normally, you first list a parent resource to find the file's ID, then download the file.
+Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support", connector_id="<connector_id>")`.
 
 ```python title="agent.py"
+zendesk_support = connect("zendesk-support", connector_id="<connector_id>")
 comments = await zendesk_support.ticket_comments.list(ticket_id="456")
 for comment in comments.data:
     for attachment in comment.attachments or []:
@@ -181,21 +182,21 @@ To see which entities support `download`, check the [connector's reference page]
 
 ## Introspection
 
-At runtime, you can ask a connector what it supports.
+On typed connectors, you can ask at runtime what the connector supports. These methods are not available on `HostedExecutor`; call `connect()` with a connector that has a generated typed submodule.
 
 `list_entities()` returns every entity, its available actions, and the parameters each action accepts.
 
 ```python title="agent.py"
-entities = connector.list_entities()
+entities = hubspot.list_entities()
 for entity in entities:
     print(f"{entity['entity_name']}: {entity['available_actions']}")
-    # customers: ['list', 'get', 'search']
+    # contacts: ['list', 'get', 'search']
 ```
 
 `entity_schema(entity)` returns the JSON schema for records of that entity.
 
 ```python title="agent.py"
-schema = connector.entity_schema("customers")
+schema = hubspot.entity_schema("contacts")
 print(list(schema.get("properties", {}).keys()))
 ```
 

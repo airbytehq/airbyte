@@ -79,7 +79,7 @@ You can build your own OAuth flow and use Airbyte's server-side OAuth endpoints 
 
 When using hosted authentication, follow these best practices:
 
-- **Never expose tokens in client-side code**. Only use tokens in your backend and ensure you frontend calls the backend instead of the API's authentication endpoints.
+- **Never expose tokens in client-side code**. Only use tokens in your backend and ensure your frontend calls the backend instead of the API's authentication endpoints.
 
 - **Handle token expiration**. Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes. The Python SDK handles token refresh automatically, but if you use the API, you must request new tokens manually.
 

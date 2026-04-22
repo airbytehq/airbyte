@@ -37,7 +37,7 @@ result = await ask("list my 5 most recent customers", workspace_name="acme_corp"
 
 The SDK creates a workspace on first reference. You don't explicitly create one. The first `create_connector` or `ask()` call against a new `workspace_name` provisions it on the fly.
 
-## Use the API for
+## Operations that require the API
 
 The SDK doesn't expose every workspace operation. If you need to do any of the following, use the [API](../api/workspaces) instead:
 

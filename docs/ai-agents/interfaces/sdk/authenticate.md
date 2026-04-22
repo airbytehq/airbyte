@@ -43,14 +43,24 @@ asyncio.run(main())
 Pass credentials directly to `Workspace`, `connect()`, `ask()`, or `ask_sync()`. Useful when you rotate credentials per request or run against multiple Airbyte organizations from the same process.
 
 ```python title="agent.py"
+import asyncio
 from airbyte_agent_sdk import connect
 
-stripe = connect(
-    "stripe",
-    client_id="<your_client_id>",
-    client_secret="<your_client_secret>",
-    connector_id="<connector_id>",
-)
+async def main():
+    stripe = connect(
+        "stripe",
+        client_id="<your_client_id>",
+        client_secret="<your_client_secret>",
+        connector_id="<connector_id>",
+    )
+    try:
+        result = await stripe.execute("customers", "list", params={"limit": 10})
+        for row in result.data:
+            print(row)
+    finally:
+        await stripe.close()
+
+asyncio.run(main())
 ```
 
 ### Global `configure()` call
