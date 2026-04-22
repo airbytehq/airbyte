@@ -1042,6 +1042,12 @@ definitions:
                 http_codes:
                   - 400
                 error_message_contains: does not support querying for values data
+                error_message: >-
+                  Skipping conversion metric that does not support values data
+                  queries in the Klaviyo reporting API. This is expected for
+                  metrics whose underlying events do not record a monetary
+                  $value property. No records will be emitted for this
+                  partition.
               - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
@@ -1189,6 +1195,12 @@ definitions:
                 http_codes:
                   - 400
                 error_message_contains: does not support querying for values data
+                error_message: >-
+                  Skipping conversion metric that does not support values data
+                  queries in the Klaviyo reporting API. This is expected for
+                  metrics whose underlying events do not record a monetary
+                  $value property. No records will be emitted for this
+                  partition.
               - type: HttpResponseFilter
                 action: RATE_LIMITED
                 http_codes:
