@@ -23,7 +23,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   --header 'Authorization: Bearer <application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "customer_name": "default",
+    "workspace_name": "default",
     "definition_id": "<github_definition_id>",
     "name": "My GitHub Connector",
     "credentials": {
@@ -41,7 +41,7 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   --header 'Authorization: Bearer <application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "customer_name": "default",
+    "workspace_name": "default",
     "definition_id": "<hubspot_definition_id>",
     "name": "My HubSpot Connector",
     "credentials": {
@@ -56,25 +56,40 @@ Each connector defines its own credential shape. See the connector's page in the
 
 If you need to drive the OAuth consent screen yourself with your own branding, see [Build your own OAuth flow](./authentication/build-your-own). The final step of that flow calls this same endpoint with a `server_side_oauth_secret_id` in place of `credentials`.
 
+:::note Credentials aren't validated until first execute
+Airbyte doesn't validate credentials at creation time. A `200 OK` response means the request body parsed, not that the credentials work. Expect an authentication error at the first [execute](./execute) call if any credential is wrong.
+:::
+
 ### Find a `definition_id`
 
 The `definition_id` identifies the connector type. You can look it up two ways:
 
-- Browse the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) and copy the `sourceDefinitionId` for your connector.
-- Call `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID. See [Make your first request](./#make-your-first-request).
+- Call `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID. See [Make your first request](./#make-your-first-request). Recommended.
+- Browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) (large file — approximately 100 MB) and copy the `sourceDefinitionId` for the entry you want.
 
-### About `customer_name`
+### About `workspace_name`
 
-The `customer_name` field identifies which [workspace](./workspaces) the connector belongs to. Most apps use `"default"` and don't think about this again. If you need to isolate credentials across tenants or teams, pass a different value; Airbyte treats that string as the workspace name and creates the workspace on first use. See [Manage workspaces](./workspaces) for the administrative operations on top.
+The `workspace_name` field identifies which [workspace](./workspaces) the connector belongs to. Most apps use `"default"` and don't think about this again. If you need to isolate credentials across tenants or teams, pass a different value; Airbyte treats that string as the workspace name and creates the workspace on first use. See [Manage workspaces](./workspaces) for the administrative operations on top.
+
+:::note Accepted aliases
+The API also accepts `customer_name` and `external_user_id` in place of `workspace_name` for backward compatibility. Both are deprecated. Use `workspace_name` in new code.
+:::
 
 ## List connectors
 
+List the connectors in a workspace. A workspace identifier is required — pass `workspace_name` (or `workspace_id`) as a query parameter.
+
 ```bash title="Request"
-curl 'https://api.airbyte.ai/api/v1/integrations/connectors' \
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default' \
   --header 'Authorization: Bearer <application_token>'
 ```
 
-Filter by `customer_name` or `definition_id` with query parameters to narrow the result set.
+Add `definition_id` to narrow results to a single connector type.
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default&definition_id=<hubspot_definition_id>' \
+  --header 'Authorization: Bearer <application_token>'
+```
 
 ## Get a connector
 

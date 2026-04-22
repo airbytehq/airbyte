@@ -35,33 +35,33 @@ The request body contains three fields:
 | `action` | `string` | The action to perform, such as `list`, `get`, or `search`. |
 | `params` | `object` | Parameters for the action. The required parameters depend on the entity and action. |
 
-### Example: List users
+### Example: List issues
 
-This example lists users from a Gong connector.
+This example lists issues from a Linear connector.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "entity": "users",
+    "entity": "issues",
     "action": "list"
   }'
 ```
 
 ### Example: Get a specific record
 
-This example retrieves a specific user by ID.
+This example retrieves a specific issue by ID.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
   --header 'Authorization: Bearer <your_application_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "entity": "users",
+    "entity": "issues",
     "action": "get",
     "params": {
-      "id": "<user_id>"
+      "id": "<issue_id>"
     }
   }'
 ```
@@ -87,6 +87,10 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 ## Download files
 
 Some connectors support a `download` action for entities like attachments and media files. Unlike other actions that return JSON, download responses return raw binary content with a `Content-Disposition` header.
+
+:::note Download responses bypass the envelope
+`download` is the one execute response that does not use the `{status, result, connector_metadata, execution_metadata}` envelope described in [Response format](#response-format). The server streams the file bytes directly with an appropriate `Content-Type`, so your client reads the body as bytes instead of parsing JSON.
+:::
 
 To find downloadable files, first list the relevant entity to discover IDs. For example, list a ticket's comments to find attachment metadata, then download a specific attachment.
 
@@ -144,23 +148,33 @@ const url = URL.createObjectURL(blob);
 
 ## Response format
 
-Responses include the requested data along with pagination information when applicable.
+Every execute response uses the same top-level envelope. The connector's records land in `result`, pagination details land in `connector_metadata`, and timing and identity land in `execution_metadata`.
 
 ```json title="Response"
 {
-  "data": [...],
-  "meta": {
-    "pagination": {
-      "totalRecords": 150,
-      "currentPageSize": 50,
-      "currentPageNumber": 1,
-      "cursor": "<cursor_for_next_page>"
-    }
+  "status": "success",
+  "result": [
+    { "id": "1", "name": "Ada Lovelace" },
+    { "id": "2", "name": "Grace Hopper" }
+  ],
+  "connector_metadata": {
+    "hasNextPage": true,
+    "endCursor": "<cursor_for_next_page>"
+  },
+  "execution_metadata": {
+    "connector_instance_id": "<connector_id>",
+    "execution_time_ms": 1189
   }
 }
 ```
 
-To retrieve additional pages, include the cursor in subsequent requests.
+- `result` is whatever the operation returns — an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
+- `connector_metadata` surfaces pagination state. The exact key names depend on the connector. Expect `hasNextPage` and `endCursor` on most connectors; some connectors return `has_next_page` and `end_cursor` instead. Both mean the same thing.
+- `execution_metadata` always includes `connector_instance_id` and `execution_time_ms`.
+
+### Paginate through results
+
+When `connector_metadata.hasNextPage` is `true`, pass the cursor from the previous response as `params.cursor` to get the next page.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
@@ -170,10 +184,12 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
     "entity": "users",
     "action": "list",
     "params": {
-      "cursor": "<cursor_from_previous_response>"
+      "cursor": "<endCursor_from_previous_response>"
     }
   }'
 ```
+
+Keep requesting pages until `hasNextPage` is `false`.
 
 ## Next steps
 

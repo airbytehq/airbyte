@@ -78,6 +78,15 @@ configure(
 stripe = connect("stripe", connector_id="<connector_id>")
 ```
 
+`configure()` accepts the following keyword arguments (all must be passed by name):
+
+| Argument          | Type          | Default     | Description                                                                  |
+| ----------------- | ------------- | ----------- | ---------------------------------------------------------------------------- |
+| `client_id`       | `str`         | —           | Airbyte `client_id`. Required.                                               |
+| `client_secret`   | `str`         | —           | Airbyte `client_secret`. Required.                                           |
+| `organization_id` | `str \| None` | `None`      | Organization to target when your account belongs to multiple organizations.  |
+| `workspace_name`  | `str`         | `"default"` | Default workspace for `connect()`, `ask()`, and `Workspace()` calls.         |
+
 Explicit keyword arguments always override `configure()`, and `configure()` always overrides environment variables.
 
 ## Token refresh

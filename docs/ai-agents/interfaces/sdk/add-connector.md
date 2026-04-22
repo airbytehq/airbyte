@@ -4,15 +4,15 @@ sidebar_position: 2
 
 # Add a connector
 
-A **connector** in Airbyte Agents is a per-end-user instance that stores one set of credentials for a third-party service and executes operations against it. You create a connector the first time an end user connects their account, then reuse the returned `connector_id` on every subsequent call.
+A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reuse the returned `connector_id` on every subsequent call.
 
 The `Workspace` class covers every connector operation: create, list, get, and delete.
 
 ## Create a connector
 
-Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the connector type (GitHub, HubSpot, and so on) and the end user's credentials in the shape that connector expects.
+Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the connector type (GitHub, HubSpot, and so on) and the credentials in the shape that connector expects.
 
-`create_connector` returns a string `connector_id`. Store it in your app database, keyed by your end user.
+`create_connector` returns a string `connector_id`. Store it somewhere you can retrieve it later.
 
 ### API token connectors
 
@@ -28,7 +28,7 @@ async def main():
             definition_id="<github_definition_id>",
             name="My GitHub Connector",
             credentials={
-                "token": "<user_github_personal_access_token>",
+                "token": "<github_personal_access_token>",
             },
         )
         print(connector_id)
@@ -63,10 +63,17 @@ Each connector defines its own credential shape. See the connector's page in the
 
 ### Find a `definition_id`
 
-The `definition_id` identifies the connector type. You can look it up two ways:
+The `definition_id` identifies the connector type. The fastest way to look one up is to call the definitions endpoint and filter by connector name:
 
-- Browse the [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) and copy the `sourceDefinitionId` for your connector.
-- Call the API `GET /api/v1/integrations/definitions/sources` to list every available connector type with its definition ID.
+```bash
+curl -s 'https://api.airbyte.ai/api/v1/integrations/definitions/sources' \
+  -H 'Authorization: Bearer <application_token>' \
+  | jq '.definitions[] | select(.name | test("hubspot"; "i")) | {name, id: .sourceDefinitionId}'
+```
+
+See [Make your first request](../api/#make-your-first-request) for token details.
+
+You can also browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) JSON (large file — approximately 100 MB) and copy `sourceDefinitionId` for the entry you want.
 
 ## List connectors
 
@@ -98,9 +105,9 @@ async with Workspace() as ws:
 
 ## Delete a connector
 
+`delete_connector(connector_id)` takes the connector ID as its first positional argument (or you can pass it by name for clarity). Airbyte removes the stored credentials.
+
 ```python title="agent.py"
 async with Workspace() as ws:
-    await ws.delete_connector("<connector_id>")
+    await ws.delete_connector(connector_id="<connector_id>")
 ```
-
-Delete a connector when an end user disconnects their account. Airbyte removes the stored credentials.

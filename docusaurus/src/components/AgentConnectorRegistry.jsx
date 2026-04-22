@@ -35,6 +35,7 @@ export default function AgentConnectorRegistry() {
       <thead>
         <tr>
           <th>Connector</th>
+          <th>Slug</th>
           <th style={{ textAlign: "center" }}>Links</th>
         </tr>
       </thead>
@@ -56,6 +57,9 @@ export default function AgentConnectorRegistry() {
                 </div>
                 <a href={connector.href}>{connector.name}</a>
               </div>
+            </td>
+            <td>
+              <code>{connector.slug}</code>
             </td>
             <td>
               <div className={styles.links}>

@@ -45,13 +45,13 @@ sequenceDiagram
 
 Before implementing an OAuth flow, ensure you have:
 
-1. **Airbyte Agents credentials**: Your `client_id` and `client_secret` from the Airbyte Agents under **Authentication Module**.
+1. **Airbyte Agents credentials**: Your `AIRBYTE_CLIENT_ID` and `AIRBYTE_CLIENT_SECRET` from the [Profile page](https://app.airbyte.ai/profile) in the Airbyte Agents app.
 
-2. **A bearer token**: See [Authentication](./) for how to obtain one.
+2. **An application token**: See [Authentication](./) for how to obtain one.
 
-3. **A scoped token**: Required for some workspace-level operations. Generate one using your application token.
+3. **A redirect URL**: A URL in your app that receives the OAuth callback with the `connector_id`.
 
-4. **A redirect URL**: A URL in your app that receives the OAuth callback with the `connector_id`.
+A **scoped token** is optional — you only need one if you want to issue initiate calls from a workspace-scoped context (for example, from a per-tenant backend session). The application token in step 2 is sufficient for the whole flow.
 
 ## Part 1: Configure OAuth overrides (optional)
 
@@ -83,7 +83,7 @@ Requires a bearer token.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `connector_type` | string | Yes | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`. |
+| `connector_type` | string | Yes | Connector display name, case-insensitive on letters but otherwise spelled exactly as it appears in the [connector catalog](../../../connectors) (spaces included). For example, `hubspot`, `Salesforce`, `Facebook Marketing`. Snake-case forms like `facebook_marketing` return `404`. |
 | `configuration` | object | Yes | Your OAuth app credentials (client_id, client_secret, etc.). |
 
 ### Example
@@ -113,7 +113,7 @@ await HubspotConnector.configure_oauth_app_parameters(
 
 ```bash title="Request"
 curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
-  -H 'Authorization: Bearer <operator_token>' \
+  -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
     "connector_type": "hubspot",
@@ -139,7 +139,7 @@ curl -X PUT https://api.airbyte.ai/api/v1/oauth/credentials \
 </TabItem>
 </Tabs>
 
-The configuration schema varies by connector. To get the required fields for a specific connector, call `GET /api/v1/oauth/credentials/spec?connector_type=<connector_type>`.
+The configuration schema varies by connector. Refer to the connector's page in the [agent connectors](../../../connectors) reference for its OAuth credential fields.
 
 ### Removing an override
 
@@ -163,7 +163,7 @@ await HubspotConnector.configure_oauth_app_parameters(
 
 ```bash title="Request"
 curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/hubspot" \
-  -H "Authorization: Bearer <operator_token>"
+  -H "Authorization: Bearer <application_token>"
 ```
 
 </TabItem>
@@ -172,6 +172,43 @@ curl -X DELETE "https://api.airbyte.ai/api/v1/oauth/credentials/connector_type/h
 ## Part 2: Initiate the OAuth flow
 
 When your user wants to connect a third-party service, initiate the OAuth flow to get a consent URL.
+
+### Prerequisite: enable the connector for your organization
+
+Initiate requires an organization-specific source template for the connector type. Without one, the call returns `400` with `"No organization-specific source template configured for this connector type."` (This differs from [Add a connector](../add-connector), which falls back to Airbyte-managed defaults when no org template exists.)
+
+The easiest way to enable a connector is in the Airbyte Agents app — it's a one-time setup and anyone on your team can do it.
+
+<Tabs>
+<TabItem value="ui" label="Airbyte Agents app" default>
+
+Open the Airbyte Agents app and add the connector once for your organization. See [Add a connector](../../ui/add-connector) for the full walkthrough. The app handles enabling the connector type and configuring the OAuth client in one flow.
+
+</TabItem>
+<TabItem value="api" label="API">
+
+Clone one of Airbyte's global source template stubs into your organization:
+
+```bash title="1. Find the global template for your connector type"
+curl 'https://api.airbyte.ai/api/v1/integrations/templates/sources/global' \
+  -H 'Authorization: Bearer <application_token>'
+```
+
+Pick the entry whose `actor_definition_id` matches the connector type you want to enable.
+
+```bash title="2. Clone it into your organization"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/templates/sources' \
+  -H 'Authorization: Bearer <application_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "original_source_template_id": "<global_template_id_from_step_1>"
+  }'
+```
+
+After the clone succeeds, initiate calls for that connector type will resolve to the new org-specific template.
+
+</TabItem>
+</Tabs>
 
 ### Endpoint
 
@@ -188,7 +225,7 @@ Requires a bearer token or scoped token.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `workspace_name` | string | Yes | Your workspace identifier. Maps to a workspace in Airbyte. |
-| `connector_type` | string | Yes* | Connector name (case-insensitive). For example, `hubspot`, `Salesforce`, `Intercom`. |
+| `connector_type` | string | Yes* | Connector display name, case-insensitive on letters but otherwise spelled exactly as it appears in the [connector catalog](../../../connectors) (spaces included). For example, `hubspot`, `Salesforce`, `Facebook Marketing`. Snake-case forms like `facebook_marketing` return `404`. |
 | `redirect_url` | string | Yes | Your callback URL. After OAuth consent, Airbyte auto-creates the connector and redirects the user here with `?connector_id=<value>`. |
 | `name` | string | No | Display name for the connector. Auto-generated if not provided. |
 | `replication_config` | object | No | Replication configuration for the source, such as `start_date` or `lookback_window`. Merged with OAuth credentials during source creation. |
@@ -199,7 +236,7 @@ Requires a bearer token or scoped token.
 
 ```bash title="Request"
 curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initiate \
-  -H 'Authorization: Bearer <operator_token>' \
+  -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
     "workspace_name": "user_12345",
@@ -296,7 +333,7 @@ const app = express();
 app.use(express.json());
 
 const AIRBYTE_API_BASE = 'https://api.airbyte.ai/api/v1';
-const OPERATOR_TOKEN = process.env.AIRBYTE_OPERATOR_TOKEN;
+const APPLICATION_TOKEN = process.env.AIRBYTE_APPLICATION_TOKEN;
 
 // Step 1: Initiate OAuth when user clicks "Connect HubSpot"
 app.post('/api/connect/:connectorType', async (req, res) => {
@@ -309,7 +346,7 @@ app.post('/api/connect/:connectorType', async (req, res) => {
   const response = await fetch(`${AIRBYTE_API_BASE}/integrations/connectors/oauth/initiate`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${OPERATOR_TOKEN}`,
+      'Authorization': `Bearer ${APPLICATION_TOKEN}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
@@ -376,6 +413,10 @@ app.listen(3000);
 **"Workspace not found" error:**
 
 - Ensure the `workspace_name` you provide in the initiate step is correct. Airbyte creates the workspace automatically on first use.
+
+**`"No organization-specific source template configured for this connector type."`:**
+
+- This connector type isn't enabled for your organization yet. Enable it once from the Airbyte Agents app ([Add a connector](../../ui/add-connector)), or clone the global template via the API (see the Prerequisite section above). Initiate only resolves against org-specific templates; Airbyte-managed defaults don't apply to this endpoint.
 
 **OAuth consent URL returns an error:**
 
