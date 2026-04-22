@@ -156,7 +156,6 @@ A plan to explore Airbyte Agents and prototype agents.
 
 - $0 per month.
 - 1,000 AOs per month.
-- Daily limit of 500 AOs. When you reach the daily limit, agent operations pause until the next day.
 - Overage isn't available. When you reach your monthly limit, agent operations pause until the next billing period.
 - Context Store refreshes hourly during your first month, then daily.
 - AI and community support.
