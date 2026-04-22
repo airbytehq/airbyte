@@ -18,7 +18,7 @@ This section walks through the four operations most apps need: authenticate, add
 
 All API requests use the base URL `https://api.airbyte.ai`.
 
-If your account belongs to multiple organizations, include the `X-Organization-Id` header in every request to specify which organization you're targeting. If you belong to a single organization, this header is optional.
+If your account belongs to multiple organizations, generate your application token from the organization you want to target. The API resolves the target organization from the token, so you don't need to pass an extra header.
 
 ## How the pieces fit together
 
@@ -85,7 +85,7 @@ curl https://api.airbyte.ai/api/v1/integrations/definitions/sources \
 {
   "definitions": [
     {
-      "sourceDefinitionId": "acd81c8-0aeb-4e29-955d-a4a25d550401",
+      "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
       "name": "GitHub",
       "iconUrl": "https://connectors.airbyte.com/files/metadata/airbyte/source-github/latest/icon.svg",
       "supportLevel": "certified"

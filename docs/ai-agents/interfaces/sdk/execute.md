@@ -31,7 +31,7 @@ See the connector's page in the [Connectors](../../connectors) reference for the
 
 ### Typed connectors and `HostedExecutor`
 
-For connectors with a generated typed submodule, `connect()` returns a typed connector with IDE autocompletion, method-level docstrings, and structured call shortcuts. For example: `await hubspot.contacts.list(limit=10)`. For the full list of typed connectors, see the [SDK reference](../../reference/sdk).
+For connectors with a generated typed submodule, `connect()` returns a typed connector with IDE autocompletion, method-level docstrings, and structured call shortcuts. For example: `await hubspot.contacts.list(limit=10)`. The [agent connectors](../../connectors) page lists every connector; the **Slug** column is the string to pass to `connect()`.
 
 For every other connector in the bundled registry, `connect()` returns a generic `HostedExecutor` with the same `execute(entity, action, params)` method but without typed shortcuts. The execution behavior is otherwise identical.
 
@@ -58,7 +58,20 @@ async def main():
 asyncio.run(main())
 ```
 
-Check `result.outcome == "success"` before trusting `result.answer`. The `result.results` list contains one entry per tool call the dispatcher made.
+Check `result.outcome == "success"` before trusting `result.answer`. The `result.results` list contains one entry per tool call the dispatcher made. Each entry is an `AskToolCallResult` with the fields the dispatcher saw end-to-end:
+
+```python title="Example result.results[0]"
+AskToolCallResult(
+    source_id="<connector_id>",
+    entity="customers",
+    action="list",
+    params={"limit": 5},
+    status="success",
+    data=[{"id": "cus_…", "email": "…"}, ...],
+    connector_metadata={"has_next_page": True, "end_cursor": "…"},
+    execution_time_ms=2635,
+)
+```
 
 Use `ask_sync()` in scripts and notebooks where you don't want to manage an event loop:
 
@@ -152,7 +165,7 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 Some connectors support a `download` action for binary entities like attachments, audio recordings, and documents. Download responses return a byte stream instead of JSON.
 
-Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support", connector_id="<connector_id>")`.
+Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support", connector_id="<connector_id>")`. Zendesk Support has a generated typed submodule, so `connect()` returns a typed connector here — YAML-only connectors would return a `HostedExecutor` and use the generic `execute(entity, action, params)` API instead.
 
 ```python title="agent.py"
 zendesk_support = connect("zendesk-support", connector_id="<connector_id>")
@@ -207,7 +220,7 @@ else:
 
 ## Handle errors
 
-Most SDK-owned errors inherit from `AirbyteError`. The hosted execution path also propagates `httpx` HTTP errors unwrapped. Catch both in one place.
+Most SDK-owned errors inherit from `AirbyteError`, including `HTTPStatusError` (non-2xx responses from the API) and `AuthenticationError` (invalid or expired credentials). The hosted execution path also propagates raw `httpx` errors unwrapped. Catch both in one place.
 
 ```python title="agent.py"
 import httpx
@@ -220,4 +233,4 @@ except (AirbyteError, httpx.HTTPError) as err:
     print(f"Execution failed: {err!r}")
 ```
 
-For the full exception hierarchy, see the [SDK reference](../../reference/sdk).
+For the full exception hierarchy, including `HTTPStatusError` and other SDK-defined subclasses in `airbyte_agent_sdk.http.exceptions`, see the [SDK reference](../../reference/sdk).

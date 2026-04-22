@@ -64,4 +64,6 @@ To get started with agent connectors, follow one of the [quick start tutorials](
 
 ## All agent connectors
 
+The **Slug** column is the value to pass to the SDK's [`connect()`](../interfaces/sdk/execute) factory (for example, `connect("github", connector_id="...")`) and the connector's typed submodule (for example, `from airbyte_agent_sdk.connectors.github import GithubConnector`).
+
 <AgentConnectorRegistry />
