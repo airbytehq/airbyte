@@ -16,16 +16,20 @@ from airbyte_agent_sdk import connect
 
 async def main():
     hubspot = connect("hubspot")
-    result = await hubspot.execute("contacts", "list", params={"limit": 10})
-    for row in result.data:
-        print(row)
+    try:
+        result = await hubspot.execute("contacts", "list")
+        for row in result.data:
+            print(row)
+    finally:
+        await hubspot.close()
 
 asyncio.run(main())
 ```
 
 - `entity` is the resource, such as `contacts`, `tickets`, or `issues`.
 - `action` is one of the connector's supported actions, such as `list`, `get`, or `search`.
-- `params` contains action-specific arguments.
+- `params` contains action-specific arguments. The exact keys are connector- and entity-specific — for example, `source-github`'s `issues` list accepts `per_page`, `source-hubspot`'s `contacts` list paginates via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
+- Always wrap the call in `try`/`finally` and `await connector.close()` once you're done to release the underlying HTTP client.
 
 See the connector's page in the [Connectors](../../connectors) reference for the entities and actions it supports.
 
@@ -39,7 +43,7 @@ For every other connector in the bundled registry, `connect()` returns a generic
 
 ### Multiple connectors of the same type
 
-If your workspace has more than one connector of a given type — for example, two separate Stripe accounts — slug resolution is ambiguous and raises `ValueError`. Pass an explicit `connector_id` in that case:
+If your workspace has more than one connector of a given type — for example, two separate Stripe accounts — slug resolution is ambiguous. `connect("stripe")` still returns an executor successfully; the `ValueError("Multiple connectors found for workspace_name '...' and connector definition '...'. Expected exactly 1, found N")` is raised on the first `.execute(...)` call, when the SDK actually needs a single connector ID. Pass an explicit `connector_id` up front to avoid it:
 
 ```python title="agent.py"
 stripe_us = connect("stripe", connector_id="<us_account_connector_id>")
@@ -67,7 +71,7 @@ asyncio.run(main())
 
 Check `result.outcome == "success"` before trusting `result.answer`. The `result.results` list contains one entry per tool call the dispatcher made. Each entry is an `AskToolCallResult` with the fields the dispatcher saw end-to-end:
 
-```python title="Example result.results[0]"
+```python title="Example result.results[0] for a routed list call"
 AskToolCallResult(
     source_id="<resolved_connector_id>",
     entity="customers",
@@ -79,6 +83,15 @@ AskToolCallResult(
     execution_time_ms=2635,
 )
 ```
+
+:::note `data` shape depends on the routed action
+`AskToolCallResult.data` mirrors the raw connector response, so the shape varies by action:
+
+- For connector-native reads (`action="list"`, `"get"`, and so on) `data` is a flat list or a single record, and pagination lives in `connector_metadata`.
+- For `action="context_store_search"`, the backend nests records and pagination together: `data={"data": […], "meta": {"has_more": true, "cursor": "…", "took_ms": 123}}`, and `connector_metadata` is `None`.
+
+Check `call.action` before indexing into `call.data` so a routed `context_store_search` call doesn't surprise you with a `dict` where you expected a `list`.
+:::
 
 Use `ask_sync()` in scripts and notebooks where you don't want to manage an event loop:
 

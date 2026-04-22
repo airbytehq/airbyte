@@ -48,7 +48,7 @@ The response contains your application token:
 }
 ```
 
-Application tokens expire after 15 minutes. Request a new token when needed.
+Application tokens are short-lived — `expires_in` is 900 seconds (15 minutes) by design, because they carry organization-wide privileges. Request a new token when yours expires. [Scoped tokens](#scoped-token) and [widget tokens](#widget-token) live longer (20 minutes) because they're already limited to a single workspace and their exposure is lower. If you're building a long-running app, cache the current token and refresh it just before `expires_in` elapses.
 
 ### Scoped token
 

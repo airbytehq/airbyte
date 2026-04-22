@@ -46,7 +46,7 @@ app.use(express.json());
 
 const AIRBYTE_API = "https://api.airbyte.ai/api/v1";
 
-async function getOperatorToken() {
+async function getApplicationToken() {
   const response = await fetch(`${AIRBYTE_API}/account/applications/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -56,7 +56,7 @@ async function getOperatorToken() {
     }),
   });
   if (!response.ok) {
-    throw new Error(`Operator token request failed: ${response.status}`);
+    throw new Error(`Application token request failed: ${response.status}`);
   }
   const data = await response.json();
   return data.access_token;
@@ -65,12 +65,12 @@ async function getOperatorToken() {
 app.post("/api/airbyte/widget-token", async (req, res) => {
   try {
     const { userId } = req.body;
-    const operatorToken = await getOperatorToken();
+    const applicationToken = await getApplicationToken();
 
     const response = await fetch(`${AIRBYTE_API}/account/applications/widget-token`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${operatorToken}`,
+        Authorization: `Bearer ${applicationToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

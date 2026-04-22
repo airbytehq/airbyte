@@ -98,6 +98,7 @@ Zendesk
 Okta
 Entra
 Slack
+Jira
 Fargate
 MinIO
 Pydantic
@@ -162,3 +163,5 @@ workspace's
 [Dd]ocstring(s)?
 expirations
 httpx
+[Aa]uto-?create(s|d)?
+async

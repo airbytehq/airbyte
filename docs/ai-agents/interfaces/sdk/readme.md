@@ -23,6 +23,8 @@ Log in or sign up at [app.airbyte.ai](https://app.airbyte.ai/).
 pip install airbyte-agent-sdk
 ```
 
+The install name uses dashes. The Python import name uses underscores: `from airbyte_agent_sdk import Workspace, connect`.
+
 ## End-to-end example
 
 The example below authenticates with Airbyte, adds a HubSpot connector, and executes an operation against it. The pages in this section explain each step in detail.
@@ -51,7 +53,9 @@ async def main():
         # when the workspace has one connector of this type.
         hubspot = connect("hubspot")
         try:
-            result = await hubspot.execute("contacts", "list", params={"limit": 10})
+            # Parameter names are connector- and entity-specific. Call
+            # `hubspot.list_entities()` to see what each entity accepts.
+            result = await hubspot.execute("contacts", "list")
             for row in result.data:
                 print(row)
         finally:

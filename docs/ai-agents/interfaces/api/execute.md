@@ -81,7 +81,11 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 
 ### Example: Search with filters
 
-This example searches for records using filter conditions. The search action is available when you have the context store enabled.
+This example searches for records using filter conditions.
+
+:::note `search` requires the context store
+The `search` action reads from Airbyte's pre-indexed context store, not the live third-party API. It's only available on connectors where the context store has been enabled. If the context store isn't enabled for the target connector, the execute call returns an error at runtime. Enable it from the connector's page in the Airbyte Agents UI before using `search`.
+:::
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
@@ -103,6 +107,10 @@ Some connectors support a `download` action for entities like attachments and me
 
 :::note Download responses bypass the envelope
 `download` is the one execute response that does not use the `{status, result, connector_metadata, execution_metadata}` envelope described in [Response format](#response-format). The server streams the file bytes directly with an appropriate `Content-Type`, so your client reads the body as bytes instead of parsing JSON.
+:::
+
+:::warning Verify the downloaded file
+If the target attachment ID doesn't exist (or the connector can't fetch it), the server currently returns `200 OK` with a zero-byte body rather than a structured error. Always check `Content-Length > 0` (or inspect the saved file size) before treating a download as successful.
 :::
 
 To find downloadable files, first list the relevant entity to discover IDs. For example, list a ticket's comments to find attachment metadata, then download a specific attachment.
@@ -175,7 +183,7 @@ Every execute response uses the same top-level envelope. The connector's records
     "endCursor": "<cursor_for_next_page>"
   },
   "execution_metadata": {
-    "connector_instance_id": "<connector_id>",
+    "connector_instance_id": "source_id:<connector_id>",
     "execution_time_ms": 1189
   }
 }
@@ -183,11 +191,11 @@ Every execute response uses the same top-level envelope. The connector's records
 
 - `result` is whatever the operation returns — an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
 - `connector_metadata` surfaces pagination state. The exact key names depend on the connector. Expect `hasNextPage` and `endCursor` on most connectors; some connectors return `has_next_page` and `end_cursor` instead. Both mean the same thing.
-- `execution_metadata` always includes `connector_instance_id` and `execution_time_ms`.
+- `execution_metadata` always includes `connector_instance_id` and `execution_time_ms`. `connector_instance_id` is a typed identifier string — for a connector created through [Add a connector](./add-connector), it currently comes back as `"source_id:<connector_id>"`. Strip the `source_id:` prefix if you need to compare it against the bare `connector_id` you passed in the URL.
 
 ### Paginate through results
 
-When `connector_metadata.hasNextPage` is `true`, pass the cursor from the previous response as `params.cursor` to get the next page.
+When `connector_metadata.hasNextPage` is `true`, pass the cursor from the previous response as `params.cursor` to get the next page. On the request side, `cursor` is the conventional parameter name for pagination across Airbyte connectors, even when the response key is `endCursor` or `end_cursor`. A small number of connectors use different request keys (for example, an offset-based pager might accept `offset` and `limit`); check the connector's reference page if `cursor` is rejected.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \

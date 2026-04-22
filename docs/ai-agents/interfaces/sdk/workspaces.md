@@ -52,9 +52,27 @@ finally:
 
 ## Auto-creation
 
-You don't explicitly create a workspace. The first `create_connector` call against a new `workspace_name` provisions it on the fly.
+You don't explicitly create a workspace. Airbyte provisions one automatically the first time you mint a scoped or widget token for a new `workspace_name` (see [Authentication](../api/authentication#scoped-token) on the API side). Under the hood, `Workspace()` and `connect()` both mint a scoped token on first use, so opening a `Workspace` is enough.
 
-Other operations do not provision the workspace. `list_connectors()`, `get_connector()`, and `ask()` against a `workspace_name` that hasn't been created yet return an empty result or a 404 — they won't implicitly create it for you. If you need to start from an empty workspace, call `create_connector` first (or add a connector in the Airbyte Agents app).
+`list_connectors()`, `get_connector()`, and `ask()` against a `workspace_name` that hasn't been created yet raise `httpx.HTTPStatusError` with a `404` status — they don't return an empty list and they don't implicitly create the workspace. If you want to start from a known-empty workspace, catch the 404 and then call `create_connector` (or open the workspace in the Airbyte Agents app and add a connector there):
+
+```python title="agent.py"
+import httpx
+from airbyte_agent_sdk import Workspace
+
+async with Workspace(workspace_name="tenant-123") as ws:
+    try:
+        connectors = await ws.list_connectors()
+    except httpx.HTTPStatusError as err:
+        if err.response.status_code == 404:
+            connectors = []
+        else:
+            raise
+```
+
+:::note `create_connector` doesn't autocreate a workspace
+Calling `create_connector` against a new `workspace_name` currently fails with `404 "Workspace not found"` unless a scoped token has already been minted against that name. In practice you rarely hit this because `Workspace(...)` mints one on open, but if you skip `Workspace` and call the create-connector API directly, mint a scoped token first.
+:::
 
 ## Operations that require the API
 

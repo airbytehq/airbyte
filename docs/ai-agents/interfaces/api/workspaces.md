@@ -10,15 +10,15 @@ Listing every workspace, updating a workspace's status, deleting a workspace, an
 
 A **workspace** is a container inside your Airbyte Agents organization that holds a set of connectors and credentials. Every organization starts with a `default` workspace, and most apps stay there. Create additional workspaces only when you need to isolate credentials across distinct tenants, teams, or environments.
 
-Every request that touches a connector carries the workspace it belongs to in a `workspace_name` field. Airbyte uses the value as the workspace identifier and creates the workspace on first use.
-
-:::note Accepted aliases
-Some endpoints still accept `customer_name` or `external_user_id` in place of `workspace_name` for backward compatibility. Both are deprecated — use `workspace_name` in new code.
-:::
+Every request that touches a connector carries the workspace it belongs to in a `workspace_name` field. Airbyte treats that string as a stable identifier for the workspace — once a workspace exists under a given name, later requests against the same name always resolve to the same workspace. Renaming a workspace (see [Update a workspace](#update-a-workspace)) changes its display name in list responses but does not change the identifier your backend sends in request bodies; keep using the original `workspace_name`.
 
 ## Create a new workspace
 
-You don't create workspaces directly. Airbyte creates one automatically the first time you reference a new `workspace_name` when [creating a connector](./add-connector) or generating a [scoped token](./authentication#scoped-token). Use any stable string that makes sense in your app.
+You don't create workspaces directly. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) or [widget token](./authentication#widget-token) against a new `workspace_name`. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.
+
+:::warning Create-connector does not autocreate
+The [create-connector](./add-connector) endpoint does not autocreate workspaces. Calling it with a `workspace_name` Airbyte hasn't seen before fails with `404 "Workspace not found for workspace_name '...'"`. Mint a scoped token (or open the workspace in the Airbyte Agents UI) first.
+:::
 
 ## Manage workspaces
 
@@ -40,6 +40,29 @@ curl 'https://api.airbyte.ai/api/v1/workspaces?name_contains=acme&status=active'
   -H 'Authorization: Bearer <application_token>'
 ```
 
+```json title="Response"
+{
+  "next": null,
+  "data": [
+    {
+      "id": "<workspace_id>",
+      "name": "default",
+      "organization_id": "<organization_id>",
+      "status": "active",
+      "cache_enabled": null,
+      "tombstone": false,
+      "created_at": "2026-04-20T21:57:20.991787Z",
+      "updated_at": "2026-04-20T21:57:20.991787Z"
+    }
+  ]
+}
+```
+
+- `next` is a cursor. Pass its value as a query parameter to page forward; a `null` value means this is the last page.
+- `status` is `"active"` or `"inactive"`.
+- `tombstone: true` indicates a soft-deleted workspace. Workspaces are filtered to `tombstone: false` by default.
+- `cache_enabled` may be `null` if the workspace predates that feature.
+
 ### Get workspace details
 
 Retrieve details for a specific workspace:
@@ -48,6 +71,8 @@ Retrieve details for a specific workspace:
 curl https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
   -H 'Authorization: Bearer <application_token>'
 ```
+
+The response has the same per-workspace shape as each entry in the [List workspaces](#list-workspaces) response.
 
 ### Get workspace info from a scoped token
 
@@ -82,6 +107,8 @@ Delete a workspace and all associated resources:
 curl -X DELETE https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
   -H 'Authorization: Bearer <application_token>'
 ```
+
+Deleting a workspace with many connectors and long-lived credentials can take a few seconds. If the server times out with a `504`, retry once — the first call typically finishes in the background.
 
 ## Best practices
 
