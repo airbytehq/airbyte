@@ -12,6 +12,17 @@ To execute operations from Python code instead, see [Execute operations](../sdk/
 
 Before making API calls, you need an application token. For details on obtaining tokens, see [Token types](./authentication#token-types).
 
+## Find the connector ID
+
+Every execute call targets a specific connector by its `connector_id` in the URL. If you didn't store the ID from the [create response](./add-connector), look it up by workspace and connector type (`definition_id`):
+
+```bash title="Request"
+curl 'https://api.airbyte.ai/api/v1/integrations/connectors?workspace_name=default&definition_id=<hubspot_definition_id>' \
+  --header 'Authorization: Bearer <your_application_token>'
+```
+
+The Airbyte Agent Python SDK can resolve a connector by slug (for example, `"hubspot"`) without the ID. Consider using the [SDK](../sdk/execute) if you want to avoid managing connector IDs in application code.
+
 ## Execute an operation
 
 To execute an operation against a connector, send a POST request to the execute endpoint with the entity, action, and any required parameters.

@@ -29,7 +29,7 @@ asyncio.run(main())
 ```python title="agent.py"
 from airbyte_agent_sdk import ask, connect
 
-stripe = connect("stripe", workspace_name="acme_corp", connector_id="<connector_id>")
+stripe = connect("stripe", workspace_name="acme_corp")
 result = await ask("list my 5 most recent customers", workspace_name="acme_corp")
 ```
 

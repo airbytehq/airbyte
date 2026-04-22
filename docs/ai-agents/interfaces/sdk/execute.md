@@ -4,18 +4,18 @@ sidebar_position: 3
 
 # Execute operations
 
-Once you have a `connector_id`, you can run operations against that connector from Python. The SDK offers three execution paths and patterns for exposing a connector as a tool to an AI agent framework.
+Once you've added a connector to your workspace, you can run operations against it from Python. The SDK offers three execution paths and patterns for exposing a connector as a tool to an AI agent framework.
 
 ## Direct execution
 
-The `connect()` factory takes a connector slug and a `connector_id` and returns an execution object. Call its `execute(entity, action, params)` method to run an operation.
+The `connect()` factory takes a connector slug and returns an execution object. Call its `execute(entity, action, params)` method to run an operation. When your workspace has exactly one connector of a given type, you don't need to pass a `connector_id` — the SDK resolves the connector by its slug automatically.
 
 ```python title="agent.py"
 import asyncio
 from airbyte_agent_sdk import connect
 
 async def main():
-    hubspot = connect("hubspot", connector_id="<connector_id>")
+    hubspot = connect("hubspot")
     result = await hubspot.execute("contacts", "list", params={"limit": 10})
     for row in result.data:
         print(row)
@@ -37,9 +37,16 @@ For every other connector in the bundled registry, `connect()` returns a generic
 
 `connect()` raises `ValueError` if the slug isn't in the bundled registry or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing — YAML-only connectors return a `HostedExecutor`.
 
-### Resolve a connector by name
+### Multiple connectors of the same type
 
-If you have a workspace with exactly one connector of a given type and don't want to pass `connector_id` explicitly, resolve by name. See [Get a connector](./add-connector#get-a-connector).
+If your workspace has more than one connector of a given type — for example, two separate Stripe accounts — slug resolution is ambiguous and raises `ValueError`. Pass an explicit `connector_id` in that case:
+
+```python title="agent.py"
+stripe_us = connect("stripe", connector_id="<us_account_connector_id>")
+stripe_eu = connect("stripe", connector_id="<eu_account_connector_id>")
+```
+
+For patterns that look up a connector ID without hard-coding it, see [Get a connector](./add-connector#get-a-connector).
 
 ## Natural-language queries
 
@@ -62,7 +69,7 @@ Check `result.outcome == "success"` before trusting `result.answer`. The `result
 
 ```python title="Example result.results[0]"
 AskToolCallResult(
-    source_id="<connector_id>",
+    source_id="<resolved_connector_id>",
     entity="customers",
     action="list",
     params={"limit": 5},
@@ -97,7 +104,7 @@ from pydantic_ai import Agent
 from airbyte_agent_sdk import connect
 
 agent = Agent("openai:gpt-4o")
-github = connect("github", connector_id="<connector_id>")
+github = connect("github")
 
 @agent.tool_plain
 async def list_issues(owner: str, repo: str, limit: int = 10) -> str:
@@ -118,7 +125,7 @@ from airbyte_agent_sdk import connect
 from airbyte_agent_sdk.connectors.github import GithubConnector
 
 agent = Agent("openai:gpt-4o")
-github = connect("github", connector_id="<connector_id>")
+github = connect("github")
 
 @agent.tool_plain
 @GithubConnector.tool_utils
@@ -165,10 +172,10 @@ async def github_execute(entity: str, action: str, params: dict | None = None):
 
 Some connectors support a `download` action for binary entities like attachments, audio recordings, and documents. Download responses return a byte stream instead of JSON.
 
-Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support", connector_id="<connector_id>")`. Zendesk Support has a generated typed submodule, so `connect()` returns a typed connector here — YAML-only connectors would return a `HostedExecutor` and use the generic `execute(entity, action, params)` API instead.
+Normally, you first list a parent resource to find the file's ID, then download the file. The examples below assume `zendesk_support = connect("zendesk-support")`. Zendesk Support has a generated typed submodule, so `connect()` returns a typed connector here — YAML-only connectors would return a `HostedExecutor` and use the generic `execute(entity, action, params)` API instead.
 
 ```python title="agent.py"
-zendesk_support = connect("zendesk-support", connector_id="<connector_id>")
+zendesk_support = connect("zendesk-support")
 comments = await zendesk_support.ticket_comments.list(ticket_id="456")
 for comment in comments.data:
     for attachment in comment.attachments or []:
@@ -226,7 +233,7 @@ Most SDK-owned errors inherit from `AirbyteError`, including `HTTPStatusError` (
 import httpx
 from airbyte_agent_sdk import AirbyteError, connect
 
-stripe = connect("stripe", connector_id="<connector_id>")
+stripe = connect("stripe")
 try:
     result = await stripe.execute("customers", "list")
 except (AirbyteError, httpx.HTTPError) as err:

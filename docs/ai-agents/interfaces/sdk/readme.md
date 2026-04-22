@@ -35,8 +35,8 @@ async def main():
     # Authenticate. The SDK reads AIRBYTE_CLIENT_ID and AIRBYTE_CLIENT_SECRET
     # from the environment.
     async with Workspace() as ws:
-        # Add a connector and store the returned ID.
-        connector_id = await ws.create_connector(
+        # Add a connector.
+        await ws.create_connector(
             definition_id="<hubspot_definition_id>",
             name="My HubSpot Connector",
             credentials={
@@ -46,8 +46,10 @@ async def main():
             },
         )
 
-        # Execute an operation against the connector.
-        hubspot = connect("hubspot", connector_id=connector_id)
+        # Execute an operation against the connector. `connect()` resolves the
+        # connector by its slug within the current workspace — no ID needed
+        # when the workspace has one connector of this type.
+        hubspot = connect("hubspot")
         try:
             result = await hubspot.execute("contacts", "list", params={"limit": 10})
             for row in result.data:
