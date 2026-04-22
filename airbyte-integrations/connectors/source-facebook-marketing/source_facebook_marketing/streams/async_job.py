@@ -40,6 +40,34 @@ backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=1
 
 
 # ----------------------------- batching -------------------------------------
+def _safe_execute_batch(batch: FacebookAdsApiBatch) -> None:
+    """Drain `batch` by repeatedly calling `batch.execute()`.
+
+    Facebook's batch endpoint occasionally returns a non-JSON body (for
+    example, an HTML error page or a truncated response). When that
+    happens, `FacebookResponse.json()` falls back to returning the raw
+    string body. The SDK's `FacebookAdsApiBatch.execute()` then iterates
+    that string and calls `.get('body')` on each character, which raises
+    `AttributeError: 'str' object has no attribute 'get'` before any
+    per-call success or failure handler runs.
+
+    Since `update_in_batch` is called from a polling loop in
+    `AsyncJobManager._check_jobs_status()`, a transient malformed batch
+    response is safely recoverable: the next poll cycle re-requests
+    status for the same jobs. Log a warning with the response type for
+    diagnostics and return so the outer polling loop can retry.
+    """
+    while batch:
+        try:
+            batch = batch.execute()
+        except AttributeError as e:
+            logger.warning(
+                f"Facebook batch status update returned a malformed response; "
+                f"skipping this poll cycle and retrying on the next iteration: {e}"
+            )
+            return
+
+
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
     """Update status of each job in the list in a batch, making it most efficient way to update status.
 
@@ -53,17 +81,11 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
             continue
         # we check it here because job can be already finished
         if len(batch) == max_batch_size:
-            while batch:
-                # If some of the calls from batch have failed, it returns  a new
-                # FacebookAdsApiBatch object with those calls
-                batch = batch.execute()
+            _safe_execute_batch(batch)
             batch = api.new_batch()
         job.update_job(batch=batch)
 
-    while batch:
-        # If some of the calls from batch have failed, it returns  a new
-        # FacebookAdsApiBatch object with those calls
-        batch = batch.execute()
+    _safe_execute_batch(batch)
 
 
 # ------------------------------ status --------------------------------------
