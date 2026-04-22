@@ -1,4 +1,4 @@
-You can use Airbyte Agents two ways:
+You can use Airbyte Agents programmatically two ways:
 
 - [**SDK**](/ai-agents/interfaces/sdk): a typed Python library. Best for Python apps, notebooks, scripts, and AI agents.
 - [**API**](/ai-agents/interfaces/api): an HTTP API. Best for non-Python backends and languages the SDK doesn't cover.
