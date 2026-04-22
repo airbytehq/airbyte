@@ -138,7 +138,11 @@ class GithubStreamABC(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if not hasattr(e, "_exception") or not hasattr(e._exception, "response"):
+            # `requests.RequestException` subclasses always expose a `response` attribute, but it
+            # defaults to `None` for transport-layer failures (ConnectionError, ConnectTimeout,
+            # ReadTimeout, SSLError, DNS failures, etc.). Treat a missing or `None` response as
+            # something this handler cannot classify, and let the CDK surface it.
+            if not hasattr(e, "_exception") or getattr(e._exception, "response", None) is None:
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
