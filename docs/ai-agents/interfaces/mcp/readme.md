@@ -11,24 +11,6 @@ The Airbyte Airbyte Agent MCP server connects your AI agent to your data through
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
-## What connectors do
-
-Each connector is a type-safe integration that gives your AI agent direct access to a third-party platform's API. Connectors let your agent list, search, retrieve, and in some cases create or update records in the connected service. Every connector exposes a set of **entities** (such as contacts, deals, issues, or invoices) and **actions** (such as list, get, search, create, or update) that the agent can call.
-
-For example:
-
-- A **CRM connector** like Salesforce or HubSpot lets your agent query contacts, companies, deals, and tickets.
-- A **billing connector** like Stripe lets your agent look up customers, invoices, charges, and subscriptions.
-- A **communication connector** like Slack lets your agent read channel messages and threads, and send or update messages.
-- A **revenue intelligence connector** like Gong lets your agent retrieve call recordings, transcripts, and activity statistics.
-- A **project management connector** like Jira or Linear lets your agent search issues, projects, and comments.
-
-Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
-
-When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [context store](../../concepts/context-store). The context store is a managed, searchable replica of select entities from all your connected data sources. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
-
-For the complete list of connectors and their supported entities, see [Agent connectors](../../connectors).
-
 ## Requirements
 
 Before you begin, make sure you have the following:
@@ -62,7 +44,7 @@ Add the MCP server to your Claude Code command line tool.
 
 5. Select **Authenticate**. Your web browser opens.
 
-6. If you're not logged into the Airbyte Agents, log in now.
+6. If you're not logged into the Airbyte, log in now.
 
 7. Grant access to the Airbyte Agent MCP.
 
@@ -93,7 +75,7 @@ Add the MCP server to your Cursor app.
 
 5. Find the Airbyte MCP server and click **Connect**.
 
-6. If you're not logged into the Airbyte Agents, log in now.
+6. If you're not logged into the Airbyte, log in now.
 
 7. Grant access to the Airbyte Agent MCP.
 
@@ -114,9 +96,11 @@ Claude Desktop uses Custom Connectors for remote MCP servers. Don't use the `cla
 
 5. Find the Airbyte connector in the list and click **Connect**. Your browser opens.
 
-6. Log in with your Airbyte account and grant access.
+6. If you're not logged into the Airbyte, log in now.
 
-7. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
+7. Grant access to the Airbyte Agent MCP.
+
+8. Return to Claude Desktop. The MCP server is automatically enabled. If it isn't, in your chat, click **+** > **Connectors** > **Airbyte** to turn it on.
 
 </TabItem>
 <TabItem value="codex" label="Codex">
@@ -131,11 +115,13 @@ Add the MCP server to your Codex command line tool.
 
 2. Codex detects that the server requires OAuth and opens your browser.
 
-3. Log in with your Airbyte account and grant access.
+3. If you're not logged into the Airbyte, log in now.
 
-4. Launch Codex with `codex`.
+4. Grant access to the Airbyte Agent MCP.
 
-5. Begin using the MCP server.
+5. Launch Codex with `codex`.
+
+6. Begin using the MCP server.
 
 </TabItem>
 <TabItem value="chatgpt" label="ChatGPT">
@@ -164,9 +150,11 @@ On Business, Enterprise, and Education plans, you must be a workspace owner or a
 
 7. Accept ChatGPT's disclaimer and click **Create**. The app appears under **Drafts** in your Apps settings.
 
-8. When prompted, log into Airbyte Agents if necessary, then accept the access privileges.
+8. If you're not logged into the Airbyte, log in now.
 
-9. Open a new conversation to start using the MCP server.
+9. Grant access to the Airbyte Agent MCP.
+
+10. Open a new conversation to start using the MCP server.
 
 </TabItem>
 <TabItem value="other" label="Other clients">
@@ -189,7 +177,7 @@ Most clients that support remote MCP servers accept a JSON configuration like th
 }
 ```
 
-When your client first connects, it detects that the server requires OAuth. It may or may not open your browser automatically. You may need to click a button to do this. Log in with your app.airbyte.ai account and grant access. After you authenticate, the MCP server's tools are available to your agent.
+When your client first connects, it detects that the server requires OAuth. It may or may not open your browser automatically. You may need to click a button to do this. Log into Airbyte and grant access. After you authenticate, the MCP server's tools are available to your agent.
 
 </TabItem>
 </Tabs>
@@ -271,7 +259,7 @@ sequenceDiagram
 
 1. Your client detects that the MCP server at `https://mcp.airbyte.ai/mcp` requires authentication.
 2. Your client opens a browser window to the Airbyte login page.
-3. You log in with your [Airbyte Agents](https://app.airbyte.ai) account (or create one).
+3. You log in with your [Airbyte](https://app.airbyte.ai) account (or create one).
 4. You grant the MCP server access to your Airbyte account.
 5. The browser redirects back to your client with an OAuth token.
 6. Your client stores the token and uses it for all subsequent MCP requests.
@@ -316,6 +304,24 @@ Your third-party credentials are always entered in the browser, never in the age
 :::
 
 Once a connector is created, the agent uses it for all subsequent queries to that service. You don't need to re-authenticate unless your credentials expire or are revoked by the third-party service.
+
+## What connectors do
+
+Each connector is a type-safe integration that gives your AI agent direct access to a third-party platform's API. Connectors let your agent list, search, retrieve, and in some cases create or update records in the connected service. Every connector exposes a set of **entities** (such as contacts, deals, issues, or invoices) and **actions** (such as list, get, search, create, or update) that the agent can call.
+
+For example:
+
+- A **CRM connector** like Salesforce or HubSpot lets your agent query contacts, companies, deals, and tickets.
+- A **billing connector** like Stripe lets your agent look up customers, invoices, charges, and subscriptions.
+- A **communication connector** like Slack lets your agent read channel messages and threads, and send or update messages.
+- A **revenue intelligence connector** like Gong lets your agent retrieve call recordings, transcripts, and activity statistics.
+- A **project management connector** like Jira or Linear lets your agent search issues, projects, and comments.
+
+Connectors handle authentication, pagination, schema validation, and error handling so the agent can focus on answering questions and performing tasks. The agent automatically discovers which entities and actions are available for each connector you've added, so you only need to describe what you want in natural language.
+
+When you connect a service through the MCP server, the Airbyte Agents can copy key data from that connector into a [context store](../../concepts/context-store). The context store is a managed, searchable replica of select entities from all your connected data sources. This improves search speed and reduces token consumption compared to querying third-party APIs directly, especially for prompts that involve filtering or searching large datasets.
+
+For the complete list of connectors and their supported entities, see [Agent connectors](../../connectors).
 
 ## Troubleshooting
 
