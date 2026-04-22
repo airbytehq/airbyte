@@ -83,7 +83,9 @@ object RedshiftCatalogSanitizer {
             }
         if (sanitizedPk.size != originalPk.size) {
             val dropped =
-                (originalPk - sanitizedPk.toSet()).map { it.joinToString(".", prefix = "[", postfix = "]") }
+                (originalPk - sanitizedPk.toSet()).map {
+                    it.joinToString(".", prefix = "[", postfix = "]")
+                }
             LOGGER.warn {
                 "Dropping primary key entr${if (dropped.size == 1) "y" else "ies"} $dropped for stream $streamLabel: column is blank or not present in the stream JSON schema."
             }
