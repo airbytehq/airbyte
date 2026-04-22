@@ -9,6 +9,7 @@ The Load CDK provides functionality for destination connectors including stream-
 
 | Version | Date       | Pull Request | Subject                                                                                         |
 |---------|------------|--------------|-------------------------------------------------------------------------------------------------|
+| 1.0.10  | 2026-04-22 | [#76896](https://github.com/airbytehq/airbyte/pull/76896) | Fix: reject timestamps and dates with years above 9999 in `AirbyteValueCoercer` so out-of-range values are coerced to `null` instead of failing downstream destination `COPY`/`INSERT` (e.g. Snowflake `Timestamp '+10000-10-08T00:00' is not recognized`). |
 | 1.0.9   | 2026-04-15 | [#76246](https://github.com/airbytehq/airbyte/pull/76246) | Perf: fix timestamp coercion using exception-as-control-flow. Use ethlo/itu for ISO-8601 fast path (~25x faster), JDK TemporalQueries fallback for exotic formats. Eliminates ~56% destination CPU on timestamp-heavy workloads. |
 | 1.0.8   | 2026-04-14 | [#74728](https://github.com/airbytehq/airbyte/pull/74728) | Fix OAuthAuthenticator to track token expiry via `expires_in` and refresh expired tokens. |
 | 1.0.7   | 2026-03-27 | | Fix: update Iceberg sort order before schema evolution to prevent ValidationException when deleting columns referenced by the sort order. Handles Dedupe-to-Append mode switches and PK changes. |
