@@ -10,11 +10,15 @@ Listing every workspace, updating a workspace's status, deleting a workspace, an
 
 A **workspace** is a container inside your Airbyte Agents organization that holds a set of connectors and credentials. Every organization starts with a `default` workspace, and most apps stay there. Create additional workspaces only when you need to isolate credentials across distinct tenants, teams, or environments.
 
-Every request that touches a connector carries the workspace it belongs to. In the REST body that's `customer_name`; in a scoped or widget token request it's `workspace_name`. Airbyte uses the value as the workspace identifier and creates the workspace on first use.
+Every request that touches a connector carries the workspace it belongs to in a `workspace_name` field. Airbyte uses the value as the workspace identifier and creates the workspace on first use.
+
+:::note Accepted aliases
+Some endpoints still accept `customer_name` or `external_user_id` in place of `workspace_name` for backward compatibility. Both are deprecated — use `workspace_name` in new code.
+:::
 
 ## Create a new workspace
 
-You don't create workspaces directly. Airbyte creates one automatically the first time you reference a new `workspace_name` when generating a [scoped token](./authentication#scoped-token), or a new `customer_name` when creating a connector. Use any stable string that makes sense in your app.
+You don't create workspaces directly. Airbyte creates one automatically the first time you reference a new `workspace_name` when [creating a connector](./add-connector) or generating a [scoped token](./authentication#scoped-token). Use any stable string that makes sense in your app.
 
 ## Manage workspaces
 

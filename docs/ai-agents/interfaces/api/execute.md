@@ -144,23 +144,33 @@ const url = URL.createObjectURL(blob);
 
 ## Response format
 
-Responses include the requested data along with pagination information when applicable.
+Every execute response uses the same top-level envelope. The connector's records land in `result`, pagination details land in `connector_metadata`, and timing and identity land in `execution_metadata`.
 
 ```json title="Response"
 {
-  "data": [...],
-  "meta": {
-    "pagination": {
-      "totalRecords": 150,
-      "currentPageSize": 50,
-      "currentPageNumber": 1,
-      "cursor": "<cursor_for_next_page>"
-    }
+  "status": "success",
+  "result": [
+    { "id": "1", "name": "Ada Lovelace" },
+    { "id": "2", "name": "Grace Hopper" }
+  ],
+  "connector_metadata": {
+    "hasNextPage": true,
+    "endCursor": "<cursor_for_next_page>"
+  },
+  "execution_metadata": {
+    "connector_instance_id": "<connector_id>",
+    "execution_time_ms": 1189
   }
 }
 ```
 
-To retrieve additional pages, include the cursor in subsequent requests.
+- `result` is whatever the operation returns — an array for `list` and `search`, a single object for `get`, or a byte stream for `download`.
+- `connector_metadata` surfaces pagination state. The exact key names depend on the connector. Expect `hasNextPage` and `endCursor` on most connectors; some connectors return `has_next_page` and `end_cursor` instead. Both mean the same thing.
+- `execution_metadata` always includes `connector_instance_id` and `execution_time_ms`.
+
+### Paginate through results
+
+When `connector_metadata.hasNextPage` is `true`, pass the cursor from the previous response as `params.cursor` to get the next page.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id>/execute' \
@@ -170,10 +180,12 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
     "entity": "users",
     "action": "list",
     "params": {
-      "cursor": "<cursor_from_previous_response>"
+      "cursor": "<endCursor_from_previous_response>"
     }
   }'
 ```
+
+Keep requesting pages until `hasNextPage` is `false`.
 
 ## Next steps
 
