@@ -42,7 +42,7 @@ data:
           "Daily report streams now use the `date` field from the API response as the cursor and primary key instead of the synthetic `reportDate` field.
           Previously, all rows within a 30-day window were incorrectly assigned the same `reportDate`, causing ~96% data loss during deduplication.
           Users must refresh all affected daily report streams to backfill the missing data."
-        upgradeDeadline: "2026-05-08"
+        upgradeDeadline: "2026-05-22"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
