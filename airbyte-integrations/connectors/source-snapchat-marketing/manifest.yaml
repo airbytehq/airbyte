@@ -592,7 +592,7 @@ definitions:
           path: adaccounts/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
-            fields: spend,coupon_used_local,coupon_used_usd
+            fields: spend
             granularity: HOUR
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -685,16 +685,6 @@ definitions:
             - path:
                 - spend
               value: "{{ record.get('stats', {}).get('spend') }}"
-        - type: AddFields
-          fields:
-            - path:
-                - coupon_used_local
-              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
-        - type: AddFields
-          fields:
-            - path:
-                - coupon_used_usd
-              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -716,7 +706,7 @@ definitions:
           path: adaccounts/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
-            fields: spend,coupon_used_local,coupon_used_usd
+            fields: spend
             granularity: DAY
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -809,16 +799,6 @@ definitions:
             - path:
                 - spend
               value: "{{ record.get('stats', {}).get('spend') }}"
-        - type: AddFields
-          fields:
-            - path:
-                - coupon_used_local
-              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
-        - type: AddFields
-          fields:
-            - path:
-                - coupon_used_usd
-              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -839,7 +819,7 @@ definitions:
           path: adaccounts/{{ stream_slice['id'] }}/stats
           http_method: GET
           request_parameters:
-            fields: spend,coupon_used_local,coupon_used_usd
+            fields: spend
             granularity: LIFETIME
             action_report_time: "{{ config['action_report_time'] }}"
             view_attribution_window: "{{ config[\"view_attribution_window\"] }}"
@@ -889,16 +869,6 @@ definitions:
             - path:
                 - spend
               value: "{{ record.get('stats', {}).get('spend') }}"
-        - type: AddFields
-          fields:
-            - path:
-                - coupon_used_local
-              value: "{{ record.get('stats', {}).get('coupon_used_local') }}"
-        - type: AddFields
-          fields:
-            - path:
-                - coupon_used_usd
-              value: "{{ record.get('stats', {}).get('coupon_used_usd') }}"
         - type: RemoveFields
           field_pointers:
             - - stats
@@ -6556,16 +6526,6 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
-      coupon_used_local:
-        type:
-          - "null"
-          - number
-        description: Amount spent via coupon in the ad account's currency (micro-currency).
-      coupon_used_usd:
-        type:
-          - "null"
-          - number
-        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -6946,16 +6906,6 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
-      coupon_used_local:
-        type:
-          - "null"
-          - number
-        description: Amount spent via coupon in the ad account's currency (micro-currency).
-      coupon_used_usd:
-        type:
-          - "null"
-          - number
-        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"
@@ -7336,16 +7286,6 @@ schemas:
           - "null"
           - number
         description: Total number of content shares.
-      coupon_used_local:
-        type:
-          - "null"
-          - number
-        description: Amount spent via coupon in the ad account's currency (micro-currency).
-      coupon_used_usd:
-        type:
-          - "null"
-          - number
-        description: Amount spent via coupon in USD (micro-currency).
       spend:
         type:
           - "null"

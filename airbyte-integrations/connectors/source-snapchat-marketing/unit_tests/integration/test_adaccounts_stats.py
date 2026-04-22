@@ -153,8 +153,6 @@ class TestAdaccountsStatsTransformations(TestCase):
         - AddFields: type = AD_ACCOUNT
         - AddFields: granularity = HOUR
         - AddFields: spend (from record.get('stats', {}).get('spend'))
-        - AddFields: coupon_used_local (from record.get('stats', {}).get('coupon_used_local'))
-        - AddFields: coupon_used_usd (from record.get('stats', {}).get('coupon_used_usd'))
         - RemoveFields: stats
         """
         _setup_parent_mocks(http_mocker)
@@ -173,11 +171,6 @@ class TestAdaccountsStatsTransformations(TestCase):
         assert record.get("granularity") == "HOUR"
         # Verify spend field is extracted from stats
         assert "spend" in record
-        # Verify coupon_used_local and coupon_used_usd fields are extracted from stats
-        assert "coupon_used_local" in record
-        assert "coupon_used_usd" in record
-        assert record.get("coupon_used_local") == 123456
-        assert record.get("coupon_used_usd") == 7890
         # Verify RemoveFields transformation - stats should be removed
         assert "stats" not in record
 
