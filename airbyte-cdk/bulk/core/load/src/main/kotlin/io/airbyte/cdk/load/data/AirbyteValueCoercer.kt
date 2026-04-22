@@ -222,9 +222,9 @@ class AirbyteValueCoercer(
 
     /**
      * Reject years above 9999 (the upper bound of the ISO 8601 4-digit year and the maximum year
-     * accepted by most data warehouses, e.g. Snowflake and BigQuery). Throws [DateTimeException]
-     * so that the top-level [coerce] catch block converts the record field to null rather than
-     * letting invalid data reach the destination COPY/INSERT.
+     * accepted by most data warehouses, e.g. Snowflake and BigQuery). Throws [DateTimeException] so
+     * that the top-level [coerce] catch block converts the record field to null rather than letting
+     * invalid data reach the destination COPY/INSERT.
      */
     private fun requireSupportedYear(year: Int) {
         if (year > MAX_SUPPORTED_YEAR) {
