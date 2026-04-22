@@ -240,6 +240,17 @@ definitions:
                 name: channels
                 path: conversations.list
                 extractor_field_path: channels
+              retriever:
+                $ref: "#/definitions/channels_stream/retriever"
+                record_selector:
+                  $ref: "#/definitions/channels_stream/retriever/record_selector"
+                  record_filter:
+                    type: RecordFilter
+                    # Limit message/thread partitions to channels the bot can actually read.
+                    # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
+                    # non-member channels, which poisons the per-partition cursor. The
+                    # top-level channels stream and channel_members still see every channel.
+                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
             parent_key: id
             partition_field: channel
             request_option:
