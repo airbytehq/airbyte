@@ -117,7 +117,7 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 - `read_third_party_fulfillment_orders`
 - `read_translations`
 
-<!-- env:oss -->
+<!-- /env:oss -->
 
 <HideInUI>
 
@@ -136,42 +136,42 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Supported Streams
 
-- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2024-04/resources/abandoned-checkouts#top)
-- [Articles](https://shopify.dev/api/admin-rest/2024-04/resources/article)
-- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2024-04/resources/transactions)
-- [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
-- [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
-- [Collection Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Collection#field-Collection.fields.products) - All products associated with each collection, including smart collection matches
-- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)
-- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/deliveryProfiles)
-- [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)
-- [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
-- [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
-- [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
-- [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
-- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
-- [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
-- [Fulfillments](https://shopify.dev/api/admin-rest/2024-04/resources/fulfillment)
-- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/FulfillmentOrder) - By default, closed fulfillment orders are excluded. To include them, enable the **Include Closed Fulfillment Orders** option in the connector configuration.
-- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryItem)
-- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryLevel)
-- [Locations](https://shopify.dev/api/admin-rest/2024-04/resources/location)
-- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield)
-- [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderAgreement)
-- [Orders](https://shopify.dev/api/admin-rest/2024-04/resources/order#top)
-- [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
-- [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
-- [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
-- [Price Rules](https://shopify.dev/docs/api/admin-rest/2025-07/resources/pricerule)
-- [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
-- [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/events) - Product deletion events
-- [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
-- [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
-- [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
-- [Smart Collections](https://shopify.dev/api/admin-rest/2024-04/resources/smartcollection)
-- [Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/transaction#top)
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
-- [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
+- [Abandoned Checkouts](https://shopify.dev/docs/api/admin-rest/2025-10/resources/abandoned-checkouts)
+- [Articles](https://shopify.dev/docs/api/admin-rest/2025-10/resources/article)
+- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2025-10/resources/transactions)
+- [Blogs](https://shopify.dev/docs/api/admin-rest/2025-10/resources/blog)
+- [Collects](https://shopify.dev/docs/api/admin-rest/2025-10/resources/collect)
+- [Collection Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/Collection#field-Collection.fields.products) - All products associated with each collection, including smart collection matches.
+- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/Collection)
+- [Countries (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/queries/deliveryProfiles)
+- [Custom Collections](https://shopify.dev/docs/api/admin-rest/2025-10/resources/customcollection)
+- [Customers](https://shopify.dev/docs/api/admin-rest/2025-10/resources/customer)
+- [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/customerjourneysummary)
+- [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/Customer#field-customer-addresses)
+- [Draft Orders](https://shopify.dev/docs/api/admin-rest/2025-10/resources/draftorder)
+- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/unions/DiscountCode)
+- [Disputes](https://shopify.dev/docs/api/admin-rest/2025-10/resources/dispute)
+- [Fulfillments](https://shopify.dev/docs/api/admin-rest/2025-10/resources/fulfillment)
+- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/FulfillmentOrder) - By default, closed fulfillment orders are excluded. To include them, enable the **Include Closed Fulfillment Orders** option in the connector configuration.
+- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/InventoryItem)
+- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/InventoryLevel)
+- [Locations](https://shopify.dev/docs/api/admin-rest/2025-10/resources/location)
+- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/Metafield)
+- [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/OrderAgreement)
+- [Orders](https://shopify.dev/docs/api/admin-rest/2025-10/resources/order)
+- [Order Refunds](https://shopify.dev/docs/api/admin-rest/2025-10/resources/refund)
+- [Order Risks (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/OrderRisk)
+- [Pages](https://shopify.dev/docs/api/admin-rest/2025-10/resources/page)
+- [Price Rules](https://shopify.dev/docs/api/admin-rest/2025-10/resources/pricerule)
+- [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/queries/products)
+- [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/queries/events) - Product deletion events.
+- [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/Image)
+- [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/queries/productVariant)
+- [Shop](https://shopify.dev/docs/api/admin-rest/2025-10/resources/shop)
+- [Smart Collections](https://shopify.dev/docs/api/admin-rest/2025-10/resources/smartcollection)
+- [Transactions](https://shopify.dev/docs/api/admin-rest/2025-10/resources/transaction)
+- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2025-10/objects/OrderTransaction)
+- [Tender Transactions](https://shopify.dev/docs/api/admin-rest/2025-10/resources/tendertransaction)
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -182,7 +182,7 @@ The connector captures deletions for records in the `Articles`, `Blogs`, `Custom
 
 For deleted products, use the dedicated `Deleted Products` stream, which queries the Shopify GraphQL Events API for product deletion events. This stream returns records with `id` (the product ID), `deleted_at`, `deleted_message`, and `shop_url` fields.
 
-Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
+Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2025-10/resources/event).
 
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
@@ -250,7 +250,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.1 | 2026-04-22 | [76245](https://github.com/airbytehq/airbyte/pull/76245) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
+| 3.3.1 | 2026-04-22 | [76920](https://github.com/airbytehq/airbyte/pull/76920) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
 | 3.3.0 | 2026-04-14 | [76327](https://github.com/airbytehq/airbyte/pull/76327) | Upgrade airbyte-cdk dependency from v6 to v7 |
 | 3.2.3 | 2026-03-20 | [75255](https://github.com/airbytehq/airbyte/pull/75255) | Upgrade Shopify API version from 2025-01 to 2025-10 |
 | 3.2.2 | 2026-03-09 | [72849](https://github.com/airbytehq/airbyte/pull/72849) | Fix missing fulfillment orders by querying fulfillmentOrders endpoint directly; add configurable `fulfillment_orders_include_closed` option (default: false) |
