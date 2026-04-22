@@ -351,6 +351,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.6 | 2026-04-22 | [76315](https://github.com/airbytehq/airbyte/pull/76315) | Retry HTTP 500 (transient internal error) responses from the Google Ads API instead of failing the attempt |
 | 4.2.5 | 2026-04-21 | [76315](https://github.com/airbytehq/airbyte/pull/76315) | Update CDK to pre-release with heartbeat diagnostics and deadlock fix (PR #953); add 2-minute HTTP socket timeout to prevent worker hangs |
 | 4.2.4 | 2026-04-16 | [76331](https://github.com/airbytehq/airbyte/pull/76331) | Improve UNRECOGNIZED_FIELD error message for custom GAQL queries |
 | 4.2.3 | 2026-04-16 | [75451](https://github.com/airbytehq/airbyte/pull/75451) | Fix NULL values for MESSAGE-type fields (e.g., change_event.old_resource, change_event.new_resource) in custom GAQL queries |
