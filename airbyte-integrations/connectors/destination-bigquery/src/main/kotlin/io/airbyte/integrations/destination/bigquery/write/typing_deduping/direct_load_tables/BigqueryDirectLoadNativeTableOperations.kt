@@ -117,8 +117,8 @@ class BigqueryDirectLoadNativeTableOperations(
      * also prohibits RENAME COLUMN on any column that participates in the table's partitioning or
      * clustering config (see
      * https://cloud.google.com/bigquery/docs/managing-table-schemas#rename_a_column). Our schema
-     * evolution path for type changes relies on a RENAME COLUMN swap, so if a type change targets
-     * a clustering (or partitioning) column, we must recreate the table instead of altering it.
+     * evolution path for type changes relies on a RENAME COLUMN swap, so if a type change targets a
+     * clustering (or partitioning) column, we must recreate the table instead of altering it.
      */
     private fun shouldRecreateTable(
         stream: DestinationStream,

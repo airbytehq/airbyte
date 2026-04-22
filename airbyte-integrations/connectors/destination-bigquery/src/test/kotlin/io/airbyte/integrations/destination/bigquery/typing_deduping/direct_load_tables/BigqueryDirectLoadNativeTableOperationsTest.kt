@@ -287,10 +287,9 @@ class BigqueryDirectLoadNativeTableOperationsTest {
     }
 
     /**
-     * Regression test for https://github.com/airbytehq/oncall/issues/10813. BigQuery rejects
-     * `ALTER TABLE ... RENAME COLUMN` on any column in the table's clustering (or partitioning)
-     * config, so when a type change targets such a column we must recreate the table instead of
-     * altering it.
+     * Regression test for https://github.com/airbytehq/oncall/issues/10813. BigQuery rejects `ALTER
+     * TABLE ... RENAME COLUMN` on any column in the table's clustering (or partitioning) config, so
+     * when a type change targets such a column we must recreate the table instead of altering it.
      */
     @Test
     fun testTypeChangeTargetsClusteringOrPartitioningColumn() {
