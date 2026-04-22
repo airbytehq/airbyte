@@ -10,7 +10,6 @@ import com.azure.identity.ClientSecretCredentialBuilder
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -20,7 +19,6 @@ import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
-import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -116,7 +114,6 @@ enum class InvalidCdcCursorPositionBehavior {
 class PostgresSourceConfigurationFactory
 @Inject
 constructor(
-    val featureFlags: Set<FeatureFlag>,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
@@ -126,7 +123,7 @@ constructor(
         PostgresSourceConfiguration,
     > {
 
-    constructor() : this(emptySet(), STDIO.name, emptyList())
+    constructor() : this(STDIO.name, emptyList())
 
     override fun makeWithoutExceptionHandling(
         pojo: PostgresSourceConfigurationSpecification,
@@ -157,18 +154,6 @@ constructor(
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
         val sshOpts: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.additionalPropertiesMap)
-
-        // Configure SSL encryption.
-        if (
-            pojo.getEncryptionValue() in
-                listOf(EncryptionDisable, EncryptionAllow, EncryptionPrefer) &&
-                sshTunnel is SshNoTunnelMethod &&
-                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
-        ) {
-            throw ConfigErrorException(
-                "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
-            )
-        }
 
         val sslJdbcProperties: Map<String, String> = pojo.getEncryptionValue()!!.jdbcProperties()
         jdbcProperties.putAll(sslJdbcProperties)
