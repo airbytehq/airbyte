@@ -23,13 +23,13 @@ definitions:
   requester:
     type: HttpRequester
     http_method: GET
-    url_base: "https://{{ config['domain'] }}/rest/api/3/"
+    url_base: "{{ 'https://api.atlassian.com/ex/jira/' ~ config['cloud_id'] ~ '/rest/api/3/' if config.get('cloud_id') else 'https://' ~ config['domain'] ~ '/rest/api/3/' }}"
     authenticator: "#/definitions/authenticator"
     error_handler: "#/definitions/error_handler"
 
   requester_v1:
     $ref: "#/definitions/requester"
-    url_base: "https://{{ config['domain'] }}/rest/agile/1.0/"
+    url_base: "{{ 'https://api.atlassian.com/ex/jira/' ~ config['cloud_id'] ~ '/rest/agile/1.0/' if config.get('cloud_id') else 'https://' ~ config['domain'] ~ '/rest/agile/1.0/' }}"
 
   # Selector
 
@@ -14650,9 +14650,10 @@ spec:
       api_token:
         type: string
         title: API Token
-        description: Jira API Token. See the <a href="https://docs.airbyte.com/integrations/sources/jira">docs</a>
-          for more information on how to generate this key. API Token is used for Authorization
-          to your account by BasicAuth.
+        description: Jira API Token. Supports both standard user API tokens and Atlassian
+          Service Account API tokens (when <b>Cloud ID</b> is also set). See the <a
+          href="https://docs.airbyte.com/integrations/sources/jira">docs</a> for more
+          information on how to generate this key.
         airbyte_secret: true
         order: 0
       domain:
@@ -14671,6 +14672,18 @@ spec:
         description: The user email for your Jira account which you used to generate
           the API token. This field is used for Authorization to your account by BasicAuth.
         order: 2
+      cloud_id:
+        type: string
+        title: Cloud ID
+        description: Your Atlassian Cloud ID (UUID). Required only when using an Atlassian
+          Service Account API token. When set, requests are routed through the Platform
+          API Gateway at <code>https://api.atlassian.com/ex/jira/{cloud_id}</code>.
+          Find your Cloud ID at <code>admin.atlassian.com</code> (the string after
+          <code>/s/</code> in the URL) or by calling <code>https://{your-domain}.atlassian.net/_edge/tenant_info</code>.
+        examples:
+        - "1a11d016-8984-4c3e-b9ab-142dd06acb1b"
+        pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        order: 6
       projects:
         type: array
         title: Projects

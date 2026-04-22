@@ -11,12 +11,15 @@ This page contains the setup guide and reference information for the [Jira](http
 - API Token
 - Domain
 - Email
+- Cloud ID (optional, only required when using an Atlassian Service Account API token)
 
 ## Setup guide
 
 ### Step 1: Set up Jira
 
-1. To get access to the Jira API you need to create an API token, please follow the instructions in this [documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+1. To get access to the Jira API you need to create an API token. You can use either:
+   - A standard **user API token**, following the instructions in [Atlassian's documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). This works against the `{your-domain}.atlassian.net` endpoint.
+   - An **Atlassian Service Account API token**, following the instructions in [Atlassian's documentation](https://support.atlassian.com/user-management/docs/manage-api-tokens-for-service-accounts/). Service Account tokens must be routed through the Platform API Gateway at `https://api.atlassian.com/ex/jira/{cloudId}`, so you must also supply the **Cloud ID** for your Atlassian Cloud site. You can find your Cloud ID in the admin URL at `admin.atlassian.com` (the string after `/s/`) or by calling `https://{your-domain}.atlassian.net/_edge/tenant_info`.
 
 ### Step 2: Set up the Jira connector in Airbyte
 
@@ -169,6 +172,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.0 | 2026-04-22 | [PR_NUMBER_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER_PLACEHOLDER) | Add support for Atlassian Service Account API tokens via optional `Cloud ID` field (routes through `api.atlassian.com` gateway) |
 | 4.3.20 | 2026-04-21 | [76354](https://github.com/airbytehq/airbyte/pull/76354) | Bump SDM base image for deadlock fix |
 | 4.3.19 | 2026-04-21 | [76631](https://github.com/airbytehq/airbyte/pull/76631) | Update dependencies |
 | 4.3.18 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
