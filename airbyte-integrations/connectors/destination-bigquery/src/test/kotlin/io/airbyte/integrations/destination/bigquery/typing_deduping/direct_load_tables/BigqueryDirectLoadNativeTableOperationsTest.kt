@@ -170,6 +170,78 @@ class BigqueryDirectLoadNativeTableOperationsTest {
     }
 
     @Test
+    fun testGetColumnCastStatementQualifiesColumnReferences() {
+        // Regression test for https://github.com/airbytehq/oncall/issues/10671.
+        // When the source table name collides with one of its own top-level column names,
+        // BigQuery resolves an unqualified column identifier to the row STRUCT instead of
+        // the column. Every column reference emitted by getColumnCastStatement must therefore
+        // be qualified with the source-table alias.
+        val operations =
+            BigqueryDirectLoadNativeTableOperations(
+                Mockito.mock(),
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+        val collidingName = "customer_journey_summary"
+
+        // Scalar -> JSON path
+        Assertions.assertEquals(
+            "TO_JSON(src.`$collidingName`)",
+            operations.getColumnCastStatement(
+                columnName = collidingName,
+                originalType = StandardSQLTypeName.STRING,
+                newType = StandardSQLTypeName.JSON,
+            ),
+        )
+
+        // JSON -> scalar path
+        val jsonCast =
+            operations.getColumnCastStatement(
+                columnName = collidingName,
+                originalType = StandardSQLTypeName.JSON,
+                newType = StandardSQLTypeName.STRING,
+            )
+        Assertions.assertAll(
+            {
+                Assertions.assertTrue(
+                    jsonCast.contains("JSON_TYPE(src.`$collidingName`)"),
+                    "Expected JSON_TYPE call to reference src.`$collidingName`, got:\n$jsonCast",
+                )
+            },
+            {
+                Assertions.assertTrue(
+                    jsonCast.contains("TO_JSON_STRING(src.`$collidingName`)"),
+                    "Expected TO_JSON_STRING calls to reference src.`$collidingName`, got:\n$jsonCast",
+                )
+            },
+            {
+                Assertions.assertTrue(
+                    jsonCast.contains("JSON_VALUE(src.`$collidingName`)"),
+                    "Expected JSON_VALUE call to reference src.`$collidingName`, got:\n$jsonCast",
+                )
+            },
+            {
+                Assertions.assertFalse(
+                    jsonCast.contains("JSON_TYPE(`$collidingName`)"),
+                    "Unqualified JSON_TYPE reference leaked into cast, got:\n$jsonCast",
+                )
+            },
+        )
+
+        // Scalar -> scalar path
+        Assertions.assertEquals(
+            "CAST(src.`$collidingName` AS INT64)",
+            operations.getColumnCastStatement(
+                columnName = collidingName,
+                originalType = StandardSQLTypeName.STRING,
+                newType = StandardSQLTypeName.INT64,
+            ),
+        )
+    }
+
+    @Test
     fun testClusteringMatches() {
         var stream =
             DestinationStream(
