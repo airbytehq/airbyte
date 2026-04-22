@@ -4,13 +4,13 @@ sidebar_position: 4
 
 # Manage workspaces
 
-A **workspace** is an end user's isolated container inside your Airbyte Agents organization. Each workspace has its own connectors and credentials. A token scoped to one workspace can't reach another, which is how Airbyte Agents keeps each end user's data separate in multi-tenant apps.
+A **workspace** is a container inside your Airbyte Agents organization that holds a set of connectors and credentials. A token scoped to one workspace can't reach another.
 
-Most apps use the `default` workspace and never think about this again. The `Workspace` class, `connect()`, and `ask()` all default to `workspace_name="default"`. Only split into multiple workspaces when you actively need per-end-user isolation inside a single Airbyte Agents organization.
+Most apps use the `default` workspace and never think about this again. The `Workspace` class, `connect()`, and `ask()` all default to `workspace_name="default"`. Reach for multiple workspaces only when you actively need to isolate credentials across distinct tenants, teams, or environments.
 
 ## Use a specific workspace
 
-To target a workspace other than `default`, pass `workspace_name`. Use a stable identifier for your end user, such as your internal user ID or company slug.
+To target a workspace other than `default`, pass `workspace_name`. Use a stable identifier that makes sense in your app, such as an internal tenant ID or team slug.
 
 ```python title="agent.py"
 import asyncio
