@@ -692,6 +692,12 @@ def _external_merge_sort(
             yield from _iter_jsonl(chunk_paths[0])
             return
 
+        # `heapq.merge` primes every input iterator, so all chunk files are opened
+        # simultaneously for the duration of the merge. At the default
+        # `SHOPIFY_BULK_SORT_CHUNK_SIZE` (50k) this stays well under any reasonable
+        # FD limit (e.g. 10M records ≈ 200 files). If the env var is ever tuned to
+        # a much smaller chunk size, `ceil(total_records / chunk_size)` file
+        # descriptors will be held open here — keep that in mind before shrinking it.
         yield from heapq.merge(*(_iter_jsonl(p) for p in chunk_paths), key=key)
     finally:
         # Best-effort cleanup: sort-spill files live under a private tmpdir, so
