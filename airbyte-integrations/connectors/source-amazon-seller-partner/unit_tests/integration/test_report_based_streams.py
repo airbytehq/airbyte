@@ -18,6 +18,7 @@ from airbyte_cdk.models import AirbyteStateMessage, FailureType, Level, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.matcher import HttpRequestMatcher
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import CONFIG_END_DATE, CONFIG_START_DATE, MARKETPLACE_ID, NOW, ConfigBuilder
 from .request_builder import RequestBuilder
@@ -89,6 +90,14 @@ def _get_document_download_url_request(document_id: str) -> RequestBuilder:
     return RequestBuilder.get_document_download_url_endpoint(document_id)
 
 
+def _get_reports_request() -> RequestBuilder:
+    """
+    A GET request used by ReportCreationRequester to look up existing reports
+    before creating a new one.
+    """
+    return RequestBuilder.get_reports_endpoint()
+
+
 def _download_document_request(url: str) -> RequestBuilder:
     """
     A GET request which actually downloads the report.
@@ -139,6 +148,12 @@ def _get_document_download_url_response(
     if compressed:
         # See https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference#compressionalgorithm
         response_body["compressionAlgorithm"] = "GZIP"
+    return build_response(response_body, status_code=HTTPStatus.OK)
+
+
+def _get_reports_response(reports: Optional[List[dict]] = None) -> HttpResponse:
+    """Response for GET /reports — returns an empty list by default (no existing reports found)."""
+    response_body = {"reports": reports or []}
     return build_response(response_body, status_code=HTTPStatus.OK)
 
 
@@ -339,11 +354,15 @@ class TestFullRefresh:
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
-    def test_given_report_status_cancelled_when_read_then_stream_completed_successfully_and_warn_about_cancellation(
+    def test_given_report_status_cancelled_when_read_then_stream_skipped_with_no_records(
         self, stream_name: str, data_format: str, http_mocker: HttpMocker
     ) -> None:
+        """CANCELLED reports are mapped to SKIPPED status in the CDK — the partition is
+        silently dropped (no retries, no record fetching, no error). Per SP-API docs,
+        CANCELLED means 'no data to return'."""
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
 
         http_mocker.post(_create_report_request(stream_name).build(), _create_report_response(_REPORT_ID))
         http_mocker.get(
@@ -351,11 +370,9 @@ class TestFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        message_on_report_cancelled = f"Exception while syncing stream {stream_name}"
-
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message=message_on_report_cancelled, entrypoint_output=output, log_level=Level.ERROR)
         assert len(output.records) == 0
+        assert len(output.errors) == 0
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
@@ -543,6 +560,59 @@ class TestIncremental:
         most_recent_state = output.most_recent_state.stream_state
         # format between record and cursor value can differ hence we rely on pendulum parsing to ignore those discrepancies
         assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(cursor_value_from_latest_record)
+
+    @HttpMocker()
+    def test_given_cancelled_report_when_incremental_read_then_state_unchanged(self, http_mocker: HttpMocker) -> None:
+        """When a CANCELLED report is skipped (via SKIPPED status mapping), verify that:
+        1. The initial state before the read is preserved
+        2. No records are returned
+        3. No errors are raised
+        4. The state after the read matches the initial state (no advancement)
+        This validates that skipping a CANCELLED report does not corrupt or advance the cursor.
+        """
+        stream_name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+        cursor_field = self.default_cursor_field
+        initial_cursor_value = "2023-01-15T00:00:00Z"
+
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: initial_cursor_value}).build()
+
+        # Verify initial state is set correctly before the read
+        assert len(initial_state) == 1
+        assert initial_state[0].stream.stream_state.__dict__[cursor_field] == initial_cursor_value
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        # When state is provided, the stream slices from the cursor value to config end date.
+        # The POST body must match the state-based slice dates.
+        create_body = json.dumps(
+            {
+                "reportType": stream_name,
+                "marketplaceIds": [MARKETPLACE_ID],
+                "dataStartTime": initial_cursor_value,
+                "dataEndTime": CONFIG_END_DATE,
+            }
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
+        )
+
+        output = self._read(stream_name, config(), state=initial_state)
+
+        # No records should be returned for a CANCELLED (skipped) report
+        assert len(output.records) == 0
+        # No errors should be raised — SKIPPED is a clean terminal status
+        assert len(output.errors) == 0
+        # State should be emitted but cursor should not advance past the initial value
+        assert output.most_recent_state is not None
+        most_recent_state = output.most_recent_state.stream_state
+        assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(initial_cursor_value)
 
 
 @freezegun.freeze_time(NOW.isoformat())
@@ -782,11 +852,14 @@ class TestVendorSalesReportsFullRefresh:
 
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
-    def test_given_report_status_cancelled_when_read_then_stream_completed_successfully_and_warn_about_cancellation(
+    def test_given_report_status_cancelled_when_read_then_stream_skipped_with_no_records(
         self, selling_program: str, http_mocker: HttpMocker
     ) -> None:
+        """CANCELLED reports are mapped to SKIPPED status in the CDK — the partition is
+        silently dropped (no retries, no record fetching, no error)."""
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
         stream_name = self._get_stream_name(selling_program)
         create_report_request_body = self._get_report_request_body(selling_program)
         http_mocker.post(
@@ -798,11 +871,9 @@ class TestVendorSalesReportsFullRefresh:
             _check_report_status_response(stream_name, processing_status=ReportProcessingStatus.CANCELLED),
         )
 
-        message_on_report_cancelled = f"Exception while syncing stream {stream_name}"
-
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message=message_on_report_cancelled, entrypoint_output=output, log_level=Level.ERROR)
         assert len(output.records) == 0
+        assert len(output.errors) == 0
 
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
