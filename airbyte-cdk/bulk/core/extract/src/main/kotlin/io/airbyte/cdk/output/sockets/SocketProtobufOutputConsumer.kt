@@ -6,12 +6,14 @@ package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.databind.SequenceWriter
 import com.google.protobuf.CodedOutputStream
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.time.Clock
 
 // Emits Airbyte protobuf messages to a socket data channel.
@@ -66,7 +68,14 @@ class SocketProtobufOutputConsumer(
     private fun withLockFlush() {
         cos.flush()
         if (buffer.size() > 0) {
-            buffer.writeTo(dataChannel.outputStream)
+            try {
+                buffer.writeTo(dataChannel.outputStream)
+            } catch (e: IOException) {
+                throw TransientErrorException(
+                    "Source-to-destination data socket was closed unexpectedly by the downstream consumer.",
+                    e,
+                )
+            }
             buffer.reset()
         }
     }
