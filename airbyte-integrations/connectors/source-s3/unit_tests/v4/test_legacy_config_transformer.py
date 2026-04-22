@@ -465,8 +465,7 @@ def test_csv_newlines_in_values_emits_warning(caplog):
 
     assert "newlines_in_values" not in converted["streams"][0]["format"]
     assert any(
-        "newlines_in_values" in record.message and record.levelno == logging.WARNING
-        for record in caplog.records
+        "newlines_in_values" in record.message and record.levelno == logging.WARNING for record in caplog.records
     ), f"Expected a WARNING log mentioning `newlines_in_values`, got: {[r.message for r in caplog.records]}"
 
 
