@@ -69,7 +69,7 @@ You can toggle Enabled from the table on the Automations page or from the Proper
 
 The Automation Builder is where you design, iterate on, and run an Automation. Open it by creating a new Automation, clicking **Edit** on a row in the Automations page, or opening an Automation from the sidebar.
 
-The Builder has two tabs on the left side:
+The Builder has two tabs:
 
 - **Agent**: A chat with the Automation Builder Agent. Describe what you want the Automation to do, correct its approach, and ask it to try again. Each message runs as a test in the same way a Chat does, so you can validate behavior before committing to a schedule.
 - **Run History**: A list of every live and test run, with status, timestamps, and job-level details. See [Run history](#run-history).

@@ -103,5 +103,5 @@ You may want to skip the context store when:
 ## Limitations
 
 - The refresh rate isn't user-configurable.
-- All agent connectors can use the context store. Limited, temporary exceptions are possible.
-- Turning the store off and on again triggers a fresh population. Plan for this if you rely on search-heavy prompts.
+- All agent connectors and interfaces can use the context store and always try to do so unless you turn it off.
+- Turning the Context Store off and on again triggers a fresh population. Repopulating it can take a long time if your system contains substantial amounts of data. Plan for this if you rely on search-heavy prompts.
