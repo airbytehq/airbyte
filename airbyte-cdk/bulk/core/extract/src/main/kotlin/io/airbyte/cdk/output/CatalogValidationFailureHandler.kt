@@ -43,7 +43,7 @@ data class MultipleStreamsFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Multiple matching streams found for '$streamID' in source. To continue syncing this stream, disambiguate it in source and refresh the source schema."
+        "Multiple matching streams found for '$streamID' in source. To continue syncing this stream, refresh the source schema. If this doesn't work, contact Airbyte support."
 }
 
 data class StreamHasNoFields(
