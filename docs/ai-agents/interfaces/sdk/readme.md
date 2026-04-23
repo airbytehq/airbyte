@@ -21,9 +21,13 @@ Log in or sign up at [app.airbyte.ai](https://app.airbyte.ai/).
 
 ## Install
 
+Add the SDK to a [uv](https://docs.astral.sh/uv/)-managed project:
+
 ```bash
-pip install airbyte-agent-sdk
+uv add airbyte-agent-sdk
 ```
+
+To install into an existing virtual environment instead, run `uv pip install airbyte-agent-sdk`.
 
 The install name uses dashes. The Python import name uses underscores: `from airbyte_agent_sdk import Workspace, connect`.
 
