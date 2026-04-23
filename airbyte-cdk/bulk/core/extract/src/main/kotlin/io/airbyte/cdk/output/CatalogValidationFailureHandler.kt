@@ -50,7 +50,7 @@ data class StreamHasNoFields(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' has no accessible data fields. To continue syncing this stream, grant read access to its columns, or refresh the source schema to remove the stream."
+        "Stream '$streamID' has no accessible data fields. To continue syncing this stream, grant read access to its fields, or refresh the source schema to remove the stream."
 }
 
 data class FieldNotFound(
