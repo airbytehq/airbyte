@@ -94,7 +94,15 @@ It's helpful to think of the Airbyte Agents as a data layer that makes agentic t
 
 It's helpful to think of agent connectors as equivalent to sets of tools. Tools are external capabilities AI agents can invoke. They allow agents to perceive, decide, and act beyond their training data. Tools are one of the most critical bridges between agents that aren't effective and agents with broad capabilities.
 
+## When to use these connectors
 
+Use Airbyte agent Connectors when you want:
+
+- **Agent‑friendly data access**: Let agents call real SaaS APIs, like a CRM, billing, or analytics, with guardrails and typed responses.
+
+- **Consistent auth and schemas**: Reuse a uniform configuration and error‑handling pattern across many APIs.
+
+- **Composable building blocks**: Combine multiple connectors in a single agent to orchestrate multi‑system workflows. Compared to building ad‑hoc API wrappers, these connectors give you a shared structure, generated clients, and alignment with the rest of the Airbyte ecosystem.
 
 <Grid columns="2">
 
