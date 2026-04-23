@@ -123,6 +123,16 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
             parent_stream_name=self.parent_stream_name,
             parent_stream_cursor=self.parent_stream_cursor,
         )
+        # Cross-slice state: dedup metafield ids emitted anywhere in the sync
+        # (Pass 1 runs once at full scope; Pass 2 runs per slice and can
+        # re-encounter the same metafield). Instance-scoped so it persists
+        # across all `read_records` invocations within one stream lifetime.
+        self._seen_metafield_ids: set = set()
+        # Pass 1 (`metafieldDefinitions`) is a full-scope bulk job with no
+        # usable incremental filter (see `MetafieldCustomerByDefinition.query`).
+        # Running it per slice would issue N full-catalog jobs per sync. Gate
+        # to the first slice only.
+        self._definition_pass_done: bool = False
 
     def _run_bulk_pass(
         self,
@@ -156,27 +166,29 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         cached_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.default_state_comparison_value})
-        seen_ids: set = set()
-        # Pass 1: definition-based bulk job runs at full scope — the
-        # `metafieldDefinitions.updatedAt` field does not gate metafield
-        # emission, so applying the slice `updated_at` filter would exclude
-        # definitions whose metafields we still need. `filter_records_newer_than_state`
-        # handles cursor-based dedup using each metafield's own `updated_at`.
-        yield from self._run_bulk_pass(
-            self.by_definition_job_manager,
-            stream_slice,
-            None,
-            cached_state,
-            seen_ids,
-        )
-        # Pass 2: legacy customer-based bulk job — covers ad-hoc metafields
-        # that have no associated `MetafieldDefinition`.
+        # Pass 1 (definition-based): run once per sync at full scope and
+        # rely on cross-slice dedup against `self._seen_metafield_ids`. Its
+        # query has no usable incremental filter, so running it per slice
+        # would issue N full-catalog bulk jobs for an N-slice window.
+        if not self._definition_pass_done:
+            yield from self._run_bulk_pass(
+                self.by_definition_job_manager,
+                stream_slice,
+                None,
+                cached_state,
+                self._seen_metafield_ids,
+            )
+            self._definition_pass_done = True
+        # Pass 2 (legacy customer-based): runs per slice with the slice's
+        # `updated_at` filter. Covers ad-hoc metafields that have no
+        # associated `MetafieldDefinition` and therefore don't appear in
+        # Pass 1's output.
         yield from self._run_bulk_pass(
             self.job_manager,
             stream_slice,
             self.filter_field,
             cached_state,
-            seen_ids,
+            self._seen_metafield_ids,
         )
         self.emit_checkpoint_message()
 

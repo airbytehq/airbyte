@@ -49,6 +49,7 @@ from source_shopify.streams.streams import (
     TransactionsGraphql,
 )
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .conftest import records_per_slice
@@ -191,6 +192,67 @@ def test_read_records(config, mocker) -> None:
     stream = OrderRefunds(config)
     mocker.patch("source_shopify.streams.base_streams.IncrementalShopifyNestedStream.read_records", return_value=records)
     assert stream.read_records(stream_slice=stream_slice)[0] == records[0]
+
+
+def test_metafield_customers_two_pass_no_cross_slice_duplicates(config, mocker) -> None:
+    """Regression: `MetafieldCustomers` must deduplicate across slices and
+    run the definition-based bulk pass only once per sync.
+
+    Bug 1: per-slice-scoped `seen_ids` would emit the same metafield twice
+    if Pass 1 and Pass 2 both surface it in different slices.
+
+    Bug 2: Pass 1 (`metafieldDefinitions`) has no usable incremental filter
+    and would otherwise issue N full-catalog bulk jobs for an N-slice window.
+    """
+    stream = MetafieldCustomers(config)
+
+    shared_metafield = {
+        "id": "gid://shopify/Metafield/1",
+        "admin_graphql_api_id": "gid://shopify/Metafield/1",
+        "updated_at": "2024-01-01T00:00:00+00:00",
+        "owner_id": 100,
+        "owner_resource": "customer",
+    }
+    only_pass2_metafield = {
+        "id": "gid://shopify/Metafield/2",
+        "admin_graphql_api_id": "gid://shopify/Metafield/2",
+        "updated_at": "2024-02-01T00:00:00+00:00",
+        "owner_id": 200,
+        "owner_resource": "customer",
+    }
+
+    by_def_mock = MagicMock()
+    by_def_mock.create_job = MagicMock()
+    by_def_mock.job_get_results = MagicMock(return_value=iter([shared_metafield]))
+    stream.by_definition_job_manager = by_def_mock
+
+    legacy_mock = MagicMock()
+    legacy_mock.create_job = MagicMock()
+    pass2_results = iter([[shared_metafield], [only_pass2_metafield]])
+    legacy_mock.job_get_results = MagicMock(side_effect=lambda: iter(next(pass2_results)))
+    stream.job_manager = legacy_mock
+
+    mocker.patch.object(stream, "emit_checkpoint_message")
+    mocker.patch.object(stream, "add_shop_url_field", side_effect=lambda records: list(records))
+    mocker.patch.object(stream, "filter_records_newer_than_state", side_effect=lambda state, records: list(records))
+    mocker.patch.object(stream, "sort_output_asc", side_effect=lambda records: list(records))
+
+    slice_1 = {"updated_at_min": "2024-01-01", "updated_at_max": "2024-01-31"}
+    slice_2 = {"updated_at_min": "2024-02-01", "updated_at_max": "2024-02-28"}
+
+    emitted = []
+    emitted.extend(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=slice_1))
+    emitted.extend(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=slice_2))
+
+    ids = [r["admin_graphql_api_id"] for r in emitted]
+    assert len(ids) == len(set(ids)), f"cross-slice duplicates emitted: {ids}"
+    assert set(ids) == {"gid://shopify/Metafield/1", "gid://shopify/Metafield/2"}
+    assert (
+        by_def_mock.create_job.call_count == 1
+    ), f"Pass 1 (metafieldDefinitions) ran {by_def_mock.create_job.call_count}x; must run once per sync"
+    assert (
+        legacy_mock.create_job.call_count == 2
+    ), f"Pass 2 (legacy customers) ran {legacy_mock.create_job.call_count}x; must run once per slice"
 
 
 @pytest.mark.parametrize(
