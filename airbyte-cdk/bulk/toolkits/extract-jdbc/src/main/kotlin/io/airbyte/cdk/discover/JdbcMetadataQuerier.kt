@@ -90,24 +90,31 @@ class JdbcMetadataQuerier(
                 }
             }
 
-            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
-                val (catalog: String?, schema: String?) =
-                    when (constants.namespaceKind) {
-                        NamespaceKind.CATALOG -> namespace to null
-                        NamespaceKind.SCHEMA -> null to namespace
-                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
-                    }
+            if (config.namespaces.isEmpty()) {
+                log.info {
+                    "No namespaces configured — discovering tables across all accessible schemas/catalogs."
+                }
+                addTablesFromQuery(null, null, null)
+            } else {
+                for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                    val (catalog: String?, schema: String?) =
+                        when (constants.namespaceKind) {
+                            NamespaceKind.CATALOG -> namespace to null
+                            NamespaceKind.SCHEMA -> null to namespace
+                            NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                        }
 
-                val patterns =
-                    tableFiltersBySchema.entries
-                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
-                        ?.value
-                if (patterns != null && patterns.isNotEmpty()) {
-                    for (pattern in patterns) {
-                        addTablesFromQuery(catalog, schema, pattern)
+                    val patterns =
+                        tableFiltersBySchema.entries
+                            .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                            ?.value
+                    if (patterns != null && patterns.isNotEmpty()) {
+                        for (pattern in patterns) {
+                            addTablesFromQuery(catalog, schema, pattern)
+                        }
+                    } else {
+                        addTablesFromQuery(catalog, schema, null)
                     }
-                } else {
-                    addTablesFromQuery(catalog, schema, null)
                 }
             }
             log.info { "Discovered ${allTables.size} table(s) in namespaces ${config.namespaces}." }
@@ -144,32 +151,40 @@ class JdbcMetadataQuerier(
                 }
             }
             // Query columns using the same pattern as table discovery:
+            // - If no namespaces are configured, query across all accessible schemas/catalogs
             // - If schema has filters, query per filter pattern
             // - If no filters, query entire schema at once
-            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
-                val (catalog: String?, schema: String?) =
-                    when (constants.namespaceKind) {
-                        NamespaceKind.CATALOG -> namespace to null
-                        NamespaceKind.SCHEMA -> null to namespace
-                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
-                    }
-
-                val patterns =
-                    tableFiltersBySchema.entries
-                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
-                        ?.value
-                if (patterns != null && patterns.isNotEmpty()) {
-                    for (pattern in patterns) {
-                        if (constants.includePseudoColumns) {
-                            addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
+            if (config.namespaces.isEmpty()) {
+                if (constants.includePseudoColumns) {
+                    addColumnsFromQuery(null, null, null, isPseudoColumn = true)
+                }
+                addColumnsFromQuery(null, null, null, isPseudoColumn = false)
+            } else {
+                for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                    val (catalog: String?, schema: String?) =
+                        when (constants.namespaceKind) {
+                            NamespaceKind.CATALOG -> namespace to null
+                            NamespaceKind.SCHEMA -> null to namespace
+                            NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                         }
-                        addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = false)
+
+                    val patterns =
+                        tableFiltersBySchema.entries
+                            .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                            ?.value
+                    if (patterns != null && patterns.isNotEmpty()) {
+                        for (pattern in patterns) {
+                            if (constants.includePseudoColumns) {
+                                addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
+                            }
+                            addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = false)
+                        }
+                    } else {
+                        if (constants.includePseudoColumns) {
+                            addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
+                        }
+                        addColumnsFromQuery(catalog, schema, null, isPseudoColumn = false)
                     }
-                } else {
-                    if (constants.includePseudoColumns) {
-                        addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
-                    }
-                    addColumnsFromQuery(catalog, schema, null, isPseudoColumn = false)
                 }
             }
             log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }

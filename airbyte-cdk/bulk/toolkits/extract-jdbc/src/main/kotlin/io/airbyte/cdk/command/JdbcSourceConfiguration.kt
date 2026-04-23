@@ -16,7 +16,15 @@ interface JdbcSourceConfiguration : SourceConfiguration {
     /** Properties map (with username, password, etc.) passed along to the JDBC driver. */
     val jdbcProperties: Map<String, String>
 
-    /** Ordered set of namespaces (typically, schemas) for the connector to consider. */
+    /**
+     * Set of namespaces (typically schemas or catalogs) for the connector to consider.
+     *
+     * An empty set signals "discover every namespace the JDBC user can see" — discovery will
+     * iterate over all accessible schemas/catalogs via [java.sql.DatabaseMetaData.getTables] and
+     * [java.sql.DatabaseMetaData.getColumns] with a null schema/catalog pattern. Individual
+     * connectors are free to enforce a non-empty set in their own
+     * [SourceConfigurationFactory] when a namespace selection is mandatory.
+     */
     val namespaces: Set<String>
 
     /** When set, each table is queried individually to check for SELECT privileges. */
