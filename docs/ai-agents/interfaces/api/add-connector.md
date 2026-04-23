@@ -24,23 +24,7 @@ Exactly one of the three is required. If none is provided, the server responds w
 
 ### API token connectors
 
-Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific — Linear uses `api_key`, Notion uses `token`, Jira uses `api_token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the field name the connector expects.
-
-```bash title="Request"
-curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
-  --header 'Authorization: Bearer <application_token>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "workspace_name": "default",
-    "definition_id": "<linear_definition_id>",
-    "name": "My Linear Connector",
-    "credentials": {
-      "api_key": "<linear_api_key>"
-    }
-  }'
-```
-
-Some connectors also need non-credential configuration. Pass those fields under `replication_config` on the request body — not at the top level. For example, `source-github` requires `replication_config.repositories` to list the repos or orgs to operate on:
+Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific — GitHub uses `personal_access_token`, Linear uses `api_key`, Notion uses `token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the field name the connector expects.
 
 ```bash title="Request"
 curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
@@ -50,14 +34,17 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
     "workspace_name": "default",
     "definition_id": "<github_definition_id>",
     "name": "My GitHub Connector",
-    "credentials": { "token": "<github_pat>" },
+    "credentials": {
+      "option_title": "PAT Credentials",
+      "personal_access_token": "<github_pat>"
+    },
     "replication_config": {
       "repositories": ["airbytehq/airbyte"]
     }
   }'
 ```
 
-Without the `replication_config.repositories` array, create fails with `422 "required property 'repositories' not found"`. Placing `repositories` at the top level of the request body fails with the same error. See the connector's page in the [Connectors](../../connectors) reference for any extra required fields and where they belong.
+Some connectors also need non-credential configuration. Pass those fields under `replication_config` on the request body — not at the top level. GitHub's `replication_config.repositories` above is one example. Without it the call fails with `422 "required property 'repositories' not found"`; the same error applies if you place `repositories` at the top level instead. See the connector's page in the [Connectors](../../connectors) reference for any extra required fields and where they belong.
 
 ### OAuth connectors
 
@@ -79,13 +66,15 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   }'
 ```
 
-Each connector defines its own credential shape. See the connector's page in the [Connectors](../../connectors) reference for the exact field names.
+Each connector defines its own credential shape. See the connector's page in the [Connectors](../../connectors) reference for the exact field names. Airbyte validates credentials on the first [execute](./execute) call; a `200 OK` here means the request body parsed.
 
-If you need to drive the OAuth consent screen yourself with your own branding, see [Build your own OAuth flow](./authentication/build-your-own). The final step of that flow calls this same endpoint with a `server_side_oauth_secret_id` in place of `credentials`.
-
-:::note Credentials aren't validated until first execute
-Airbyte doesn't validate credentials at creation time. A `200 OK` response means the request body parsed, not that the credentials work. Expect an authentication error at the first [execute](./execute) call if any credential is wrong.
-:::
+<!--
+AGENTIC-1141: credentials aren't validated at create-time; any typo in the
+client_id/secret/refresh_token surfaces as an auth error on the first
+execute. Don't highlight this in the public narrative — the single line
+above covers it neutrally. Remove the note once create-time validation
+lands.
+-->
 
 ### Find a `definition_id`
 
@@ -116,9 +105,13 @@ Most apps won't set `source_template_id` explicitly — passing `definition_id` 
 
 The `workspace_name` field identifies which [workspace](./workspaces) the connector belongs to. Most apps use `"default"` and don't think about this again. If you need to isolate credentials across tenants or teams, pass a different value. See [Manage workspaces](./workspaces) for the administrative operations on top.
 
-:::warning The workspace must already exist
-The create-connector endpoint does not autocreate workspaces. If you call it with a `workspace_name` that Airbyte hasn't seen before, the request fails with `404 "Workspace not found for workspace_name '...'"`. To create a new workspace, first mint a scoped or widget token against that `workspace_name` (see [Authentication](./authentication#scoped-token)), which Airbyte autocreates on demand, or add a connector through the Airbyte Agents UI.
-:::
+<!--
+AGENTIC-1140: create-connector doesn't autocreate workspaces (404s when
+the workspace_name is new), while scoped-token and widget-token mint do
+autocreate. Readers following the default narrative on this page stay on
+"default", so they never encounter this. Revisit when autocreate is
+consistent across endpoints.
+-->
 
 ## List connectors
 

@@ -70,9 +70,15 @@ async with Workspace(workspace_name="tenant-123") as ws:
             raise
 ```
 
-:::note `create_connector` doesn't autocreate a workspace
-Calling `create_connector` against a new `workspace_name` currently fails with `404 "Workspace not found"` unless a scoped token has already been minted against that name. In practice you rarely hit this because `Workspace(...)` mints one on open, but if you skip `Workspace` and call the create-connector API directly, mint a scoped token first.
-:::
+<!--
+AGENTIC-1140: create_connector doesn't autocreate a workspace — it 404s if
+no scoped token has been minted for that workspace_name yet. `Workspace(...)`
+mints one on open, so readers who follow the SDK pattern above never hit
+this, which is why we don't surface the quirk in the public narrative.
+Revisit when autocreate is consistent across endpoints.
+-->
+
+
 
 ## Operations that require the API
 
