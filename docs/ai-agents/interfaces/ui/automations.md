@@ -69,7 +69,7 @@ You can toggle Enabled from the table on the Automations page or from the Proper
 
 The Automation Builder is where you design, iterate on, and run an Automation. Open it by creating a new Automation, clicking **Edit** on a row in the Automations page, or opening an Automation from the sidebar.
 
-The Automation Builder has two tabs on the left side:
+The Automation Builder has two tabs:
 
 - **Agent**: A chat with the Automation Builder Agent. Describe what you want the Automation to do, correct its approach, and ask it to try again. Each message runs as a test in the same way a Chat does, so you can validate behavior before committing to a schedule.
 - **Run History**: A list of every live and test run, with status, timestamps, and job-level details. See [Run history](#run-history).
@@ -111,7 +111,19 @@ Scheduled Automations run at times you define. Open the Properties panel, set **
 - **Hourly**, **Daily**, **Weekly**, or **Monthly** for common cases. Airbyte shows the equivalent cron expression so you can verify the schedule.
 - **Custom cron** for anything the builder doesn't cover. Provide the raw cron expression and Airbyte translates it into a human-readable summary.
 
-Pick the **Timezone** the schedule should use. Airbyte defaults to your local timezone. Turn the Automation's **Enabled** toggle on to activate the schedule. Each scheduled run appears in Run History tagged **Live run**.
+Pick the **Timezone** the schedule should use. Airbyte defaults to your local timezone. See [Time zones](../../concepts/time-zones) for how Airbyte stores and displays times across interfaces. Turn the Automation's **Enabled** toggle on to activate the schedule. Each scheduled run appears in Run History tagged **Live run**.
+
+#### How scheduled runs are dispatched
+
+Airbyte dispatches scheduled Automations at the exact moment the cron expression matches, in the timezone you selected. The scheduler doesn't apply jitter or a random offset, so every Automation whose schedule matches the same instant is dispatched together. For example, two Automations scheduled for `0 * * * *` in the same timezone both fire at the top of the hour.
+
+Keep this in mind when you design schedules:
+
+- **Avoid stacking many heavy Automations on the same round cadence.** If you have several Automations that each do substantial work, stagger them across different minutes (for example, `5 * * * *`, `15 * * * *`, `25 * * * *`) rather than running them all at `0 * * * *`. This spreads load on your connectors, reduces the chance of hitting upstream rate limits at the same moment, and makes failures easier to diagnose one Automation at a time.
+- **Expect near-simultaneous webhook or connector calls** when multiple Automations share a trigger time and hit the same third-party API. If that API enforces per-minute rate limits, consider splitting the schedules.
+- **Dispatch time isn't execution time.** Airbyte dispatches the run on the dot, but the agent work itself takes as long as it takes. A 9:00 schedule doesn't guarantee results by 9:00—only that the run starts then.
+
+If you need a schedule that's more fine-grained than the Automation Builder's presets allow, use **Custom cron** and pick a specific minute offset that isn't shared with your other Automations.
 
 ### From a webhook
 

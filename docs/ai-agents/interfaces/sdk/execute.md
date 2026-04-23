@@ -15,20 +15,20 @@ import asyncio
 from airbyte_agent_sdk import connect
 
 async def main():
-    hubspot = connect("hubspot")
+    github = connect("github")
     try:
-        result = await hubspot.execute("contacts", "list", params={"limit": 10})
+        result = await github.execute("issues", "list", params={"per_page": 10})
         for row in result.data:
             print(row)
     finally:
-        await hubspot.close()
+        await github.close()
 
 asyncio.run(main())
 ```
 
-- `entity` is the resource, such as `contacts`, `tickets`, or `issues`.
-- `action` is one of the connector's supported actions, such as `list`, `get`, or `search`.
-- `params` contains action-specific arguments. The exact keys are connector- and entity-specific — for example, `source-github`'s `issues` list accepts `per_page`, `source-hubspot`'s `contacts` list paginates via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
+- `entity` is the resource, such as `issues`, `repositories`, or `pull_requests`.
+- `action` is one of the connector's supported actions, such as `list` or `get`. Some connectors support additional actions like `search` or `download`; check the connector's reference page.
+- `params` contains action-specific arguments. The exact keys are connector- and entity-specific — GitHub's `issues.list` accepts `per_page`, for example, while other connectors paginate via `cursor`. Use [`list_entities()`](#introspection) to discover the parameters a connector supports at runtime.
 - Always wrap the call in `try`/`finally` and `await connector.close()` once you're done to release the underlying HTTP client.
 
 See the connector's page in the [Connectors](../../connectors) reference for the entities and actions it supports.
@@ -43,12 +43,19 @@ For every other connector in the bundled registry, `connect()` returns a generic
 
 ### Multiple connectors of the same type
 
-If your workspace has more than one connector of a given type — for example, two separate Stripe accounts — slug resolution is ambiguous. `connect("stripe")` still returns an executor successfully; the `ValueError("Multiple connectors found for workspace_name '...' and connector definition '...'. Expected exactly 1, found N")` is raised on the first `.execute(...)` call, when the SDK actually needs a single connector ID. Pass an explicit `connector_id` up front to avoid it:
+If your workspace has more than one connector of a given type — for example, two separate Stripe accounts — slug resolution is ambiguous. Pass an explicit `connector_id` to `connect()` so the SDK knows which one to target:
 
 ```python title="agent.py"
 stripe_us = connect("stripe", connector_id="<us_account_connector_id>")
 stripe_eu = connect("stripe", connector_id="<eu_account_connector_id>")
 ```
+
+<!--
+AGENTIC-1134: Without a connector_id, connect("stripe") returns an executor
+successfully and only raises ValueError("Multiple connectors found ...") on
+the first .execute() call. Public docs shouldn't call out the exact timing;
+instead steer readers to pass connector_id up front.
+-->
 
 For patterns that look up a connector ID without hard-coding it, see [Get a connector](./add-connector#get-a-connector).
 
@@ -84,14 +91,14 @@ AskToolCallResult(
 )
 ```
 
-:::note `data` shape depends on the routed action
-`AskToolCallResult.data` mirrors the raw connector response, so the shape varies by action:
+When the dispatcher routes to a connector-native read (`action="list"` or `"get"`), `data` is a flat list or a single record, and pagination lives in `connector_metadata`.
 
-- For connector-native reads (`action="list"`, `"get"`, and so on) `data` is a flat list or a single record, and pagination lives in `connector_metadata`.
-- For `action="context_store_search"`, the backend nests records and pagination together: `data={"data": […], "meta": {"has_more": true, "cursor": "…", "took_ms": 123}}`, and `connector_metadata` is `None`.
-
-Check `call.action` before indexing into `call.data` so a routed `context_store_search` call doesn't surprise you with a `dict` where you expected a `list`.
-:::
+<!--
+AGENTIC-1138 problem 1: context_store_search routing nests records and
+pagination together under data.{data,meta}, and leaves connector_metadata
+null. Don't document this in the public narrative; once the backend
+normalizes to the connector-native envelope this paragraph can go.
+-->
 
 Use `ask_sync()` in scripts and notebooks where you don't want to manage an event loop:
 
@@ -222,18 +229,18 @@ On typed connectors, you can ask at runtime what the connector supports. These m
 `list_entities()` returns every entity, its available actions, and the parameters each action accepts.
 
 ```python title="agent.py"
-entities = hubspot.list_entities()
+entities = github.list_entities()
 for entity in entities:
     print(f"{entity['entity_name']}: {entity['available_actions']}")
-    # contacts: ['list', 'get', 'search']
+    # issues: ['list', 'get']
 ```
 
 `entity_schema(entity)` returns the JSON schema for records of that entity, or `None` if the connector doesn't ship one for that entity. Always guard the result:
 
 ```python title="agent.py"
-schema = hubspot.entity_schema("contacts")
+schema = github.entity_schema("issues")
 if schema is None:
-    print("No schema available for contacts")
+    print("No schema available for issues")
 else:
     print(list(schema.get("properties", {}).keys()))
 ```

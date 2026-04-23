@@ -2,6 +2,17 @@
 sidebar_position: 2
 ---
 
+<!--
+BLOCKS MERGE until AGENTIC-1133 ships.
+
+The published airbyte-agent-sdk (as of 0.1.55) raises TypeError from
+Workspace.create_connector and Workspace.get_connector(name=...) because
+Workspace passes `customer_name=` to AirbyteCloudClient, which expects
+`workspace_name=`. Every snippet on this page depends on that call path.
+Confirm the fix ships and the docs' pinned SDK version includes it before
+merging.
+-->
+
 # Add a connector
 
 A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reference it on every subsequent call — by its slug (preferred) when the workspace has one connector of that type, or by its `connector_id` when you need to disambiguate.
@@ -16,7 +27,7 @@ Call `create_connector` on an open `Workspace`. Pass the `definition_id` for the
 
 ### API token connectors
 
-Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific — Linear uses `api_key`, Notion uses `token`, Jira uses `api_token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the exact field name.
+Connectors that authenticate with a single API key or personal access token take one credential field. The exact field name is connector-specific — GitHub uses `personal_access_token`, Linear uses `api_key`, Notion uses `token`, and so on. See the connector's page in the [Connectors](../../connectors) reference for the exact field name.
 
 ```python title="agent.py"
 import asyncio
@@ -25,17 +36,19 @@ from airbyte_agent_sdk import Workspace
 async def main():
     async with Workspace() as ws:
         await ws.create_connector(
-            definition_id="<linear_definition_id>",
-            name="My Linear Connector",
+            definition_id="<github_definition_id>",
+            name="My GitHub Connector",
             credentials={
-                "api_key": "<linear_api_key>",
+                "option_title": "PAT Credentials",
+                "personal_access_token": "<github_pat>",
             },
+            replication_config={"repositories": ["airbytehq/airbyte"]},
         )
 
 asyncio.run(main())
 ```
 
-Some connectors also require non-credential configuration alongside `credentials`. For example, `source-github` requires a `repositories` array of `owner/repo` strings; create fails with a `422` if it's missing. Check the connector's page for any required configuration.
+Some connectors also require non-credential configuration alongside `credentials`. Pass those fields as `replication_config` — not alongside `credentials`. GitHub, for example, requires a `repositories` array of `owner/repo` strings; the create call above fails with a `422` without it. Check the connector's page for any required configuration.
 
 ### OAuth connectors
 
@@ -64,31 +77,7 @@ Each connector defines its own credential shape. See the connector's page in the
 
 ### Find a `definition_id`
 
-The `definition_id` identifies the connector type. The SDK doesn't currently ship a helper for listing definitions, but `Workspace` exposes the `AirbyteCloudClient` it uses under `ws._cloud_client`, and that client already holds a valid bearer token. You can reuse it to hit the definitions endpoint from Python:
-
-```python title="find_definition_id.py"
-import asyncio
-from airbyte_agent_sdk import Workspace
-
-async def main():
-    async with Workspace() as ws:
-        token = await ws._cloud_client.get_bearer_token()
-        response = await ws._cloud_client._http_client.get(
-            f"{ws._cloud_client.API_BASE_URL}/api/v1/integrations/definitions/sources",
-            params={"name": "hubspot"},
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        for definition in response.json()["definitions"]:
-            print(definition["name"], definition["sourceDefinitionId"])
-
-asyncio.run(main())
-```
-
-The response returns `sourceDefinitionId`. The `create_connector` request expects it as `definition_id` — the two names refer to the same UUID.
-
-If you prefer to avoid private attributes, the same endpoint is documented under [Find a `definition_id`](../api/add-connector#find-a-definition_id) on the API side; it takes an application token you mint with `POST /account/applications/token`.
-
-You can also browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) JSON (large file — approximately 100 MB) and copy `sourceDefinitionId` for the entry you want.
+The `definition_id` identifies the connector type. Look it up once from the public `GET /api/v1/integrations/definitions/sources` endpoint and paste the value into your `create_connector` call. See [Find a `definition_id`](../api/add-connector#find-a-definition_id) on the API side for the exact request, including the `?name=github` filter you can use to fetch a single entry. The endpoint returns `sourceDefinitionId`; the SDK accepts it as `definition_id` — both names refer to the same UUID.
 
 ## List connectors
 
@@ -99,7 +88,7 @@ async with Workspace() as ws:
         print(info.id, info.name, info.connector_type)
 ```
 
-Each `ConnectorInfo` carries `id`, `name`, `connector_type` (the connector slug, such as `"stripe"` or `"hubspot"`), `created_at`, and `updated_at`.
+Each `ConnectorInfo` carries `id`, `name`, `connector_type` (the template display name, such as `"GitHub"` or `"Linear"`), `created_at`, and `updated_at`. Use the display name for logging or UI; use the slug you passed to `connect()` or `create_connector` when you need to reopen the connector.
 
 ## Get a connector
 

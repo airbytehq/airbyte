@@ -25,7 +25,7 @@ The Sessions table lists the most recent sessions first. Each row represents one
 - **Input Tokens**: The total tokens the agent received as input, across every turn in the session.
 - **Output Tokens**: The total tokens the agent produced, across every turn in the session.
 - **Tool Calls**: The number of tool calls the agent made during the session. Drill into [tool calls](./tool-calls.md) to see individual calls.
-- **Date**: When the session last updated. Sessions that are still running show the most recent activity time.
+- **Date**: When the session last updated. Sessions that are still running show the most recent activity time. Dates display in your browser's local [time zone](../concepts/time-zones).
 - **Actions**: Per-row buttons to review or resume the session.
     - Click the **View** icon to open the session and see its messages and tool calls.
     - Click the **Open** icon to jump to the chat or automation the session belongs to.

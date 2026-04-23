@@ -26,7 +26,7 @@ The four pages in this section are designed to map one-to-one with the [SDK](../
 
 1. **[Authentication](./authentication)**: Get an application token (and, when needed, scoped and widget tokens). This is how every subsequent call is authorized.
 
-2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service. For connectors that support OAuth with your own branding, see [Build your own OAuth flow](./authentication/build-your-own).
+2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
 
 3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
 
@@ -51,12 +51,14 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors \
   -H 'Content-Type: application/json' \
   -d '{
     "workspace_name": "default",
-    "definition_id": "<hubspot_definition_id>",
-    "name": "My HubSpot Connector",
+    "definition_id": "<github_definition_id>",
+    "name": "My GitHub Connector",
     "credentials": {
-      "client_id": "<hubspot_client_id>",
-      "client_secret": "<hubspot_client_secret>",
-      "refresh_token": "<hubspot_refresh_token>"
+      "option_title": "PAT Credentials",
+      "personal_access_token": "<github_pat>"
+    },
+    "replication_config": {
+      "repositories": ["airbytehq/airbyte"]
     }
   }'
 ```
@@ -66,9 +68,9 @@ curl -X POST https://api.airbyte.ai/api/v1/integrations/connectors/<connector_id
   -H 'Authorization: Bearer <application_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-    "entity": "contacts",
+    "entity": "issues",
     "action": "list",
-    "params": { "limit": 10 }
+    "params": { "per_page": 10 }
   }'
 ```
 

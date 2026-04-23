@@ -1,6 +1,16 @@
 ---
 sidebar_position: 2
+draft: true
 ---
+
+<!--
+Hidden pending multi-tenant scope work. Single-workspace usage is the
+documented path for now (see ../add-connector for the PAT/refresh-token
+flows). This page also depends on an org-level source template being
+pre-configured for each connector type — when that prerequisite has a
+public API and the multi-tenant narrative comes back into scope, unhide
+by removing `draft: true` and re-running the OAuth tutorial end-to-end.
+-->
 
 # Build your own OAuth flow
 
