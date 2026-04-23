@@ -24,7 +24,7 @@ If your account belongs to multiple organizations, generate your application tok
 
 The four pages in this section are designed to map one-to-one with the [SDK](../sdk) section so the same mental model works in either environment.
 
-1. **[Authentication](./authentication)**: Get an application token (and, when needed, scoped and widget tokens). This is how every subsequent call is authorized.
+1. **[Authentication](./authentication)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
 
 2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
 
