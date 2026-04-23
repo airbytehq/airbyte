@@ -2988,6 +2988,20 @@ spec:
           float values for any `conversions:*` fields.
         default: false
         order: 8
+      property_quota_tier:
+        type: string
+        title: Property Quota Tier
+        description:
+          Quota tier of the Google Analytics 4 property being queried. Select
+          "Analytics 360 Property" only if all configured property IDs belong to an
+          Analytics 360 subscription; selecting it for Standard properties will cause
+          requests to be throttled upstream by Google rather than locally. See
+          https://developers.google.com/analytics/devguides/reporting/data/v1/quotas.
+        enum:
+          - Standard Property
+          - Analytics 360 Property
+        default: Standard Property
+        order: 9
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -3051,17 +3065,16 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 12) }}"
   max_concurrency: 40
 
-# Existing api_budget is commented out during the concurrency tuning rollout so a
-# proactive request budget does not throttle and skew the concurrency signal. It
-# will be re-introduced (tier-aware, Path B) once the optimal concurrency is
-# selected. Tracking: airbytehq/airbyte-internal-issues#15332.
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 10
-#           interval: PT1S
-#       matchers:
-#         - method: POST
-#           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
+# Rate limits for GA4 Data API Core methods are per-property and tier-dependent;
+# the `property_quota_tier` config field selects the policy applied locally so
+# Analytics 360 customers are not throttled down to Standard limits.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ 50 if config.get('property_quota_tier') == 'Analytics 360 Property' else 10 }}"
+          interval: PT1S
+      matchers:
+        - method: POST
+          url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
