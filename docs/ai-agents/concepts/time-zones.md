@@ -42,7 +42,6 @@ The default time zone depends on how you create the Automation:
   3. UTC, if neither is available.
 
   The agent only ever passes IANA identifiers. If you say "EST" or "Eastern Time," it translates to `America/New_York` before calling the tool.
-- **From the API or SDK**: The `timezone` field is optional on the automation create and update endpoints. If you omit it, Airbyte stores the schedule as UTC.
 
 ### Interpreting times in an Automation's prompt
 
