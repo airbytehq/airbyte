@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # MCP server
 
-The Airbyte Airbyte Agent MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors) for a list of available connectors.
+The Airbyte Agent MCP server connects your AI agent to your data through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). It gives your agent authenticated access to the platforms you use every day, like your CRM, support desk, analytics tools, and more, so your agent can read and write data on your behalf. See [Connectors](../../connectors) for a list of available connectors.
 
 Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 
@@ -64,7 +64,7 @@ Add the MCP server to your Cursor app.
     ```json
     {
       "mcpServers": {
-        "Airbyte Airbyte Agent MCP": {
+        "Airbyte Agent MCP": {
           "url": "https://mcp.airbyte.ai/mcp"
         }
       }
@@ -144,7 +144,7 @@ On Business, Enterprise, and Education plans, you must be a workspace owner or a
 
 6. Enter the server details:
 
-    - **Name**: `Airbyte Airbyte Agents`
+    - **Name**: `Airbyte Agents`
     - **Server URL**: `https://mcp.airbyte.ai/mcp`
     - **Authentication**: Select **OAuth**
 
@@ -170,7 +170,7 @@ Most clients that support remote MCP servers accept a JSON configuration like th
 ```json
 {
   "mcpServers": {
-    "Airbyte Airbyte Agent MCP": {
+    "Airbyte Agent MCP": {
       "url": "https://mcp.airbyte.ai/mcp"
     }
   }
@@ -236,7 +236,7 @@ The agent uses field selection to return only the data you need, which reduces t
 
 ## How authentication works
 
-The MCP server uses a two-layer authentication model: one layer to authenticate you with the Airbyte Airbyte Agents, and a second layer to authenticate with each third-party service you connect.
+The MCP server uses a two-layer authentication model: one layer to authenticate you with the Airbyte Agents, and a second layer to authenticate with each third-party service you connect.
 
 ### Layer 1: Authenticating with the MCP server
 
@@ -246,7 +246,7 @@ When your AI client first connects to the MCP server, it initiates an [OAuth 2.0
 sequenceDiagram
     participant Client as AI Client
     participant Browser as Browser
-    participant Airbyte as Airbyte Airbyte Agents
+    participant Airbyte as Airbyte Agents
 
     Client->>Airbyte: Connect to MCP server
     Airbyte-->>Client: Authentication required
