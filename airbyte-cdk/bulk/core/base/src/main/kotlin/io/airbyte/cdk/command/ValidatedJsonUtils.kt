@@ -107,6 +107,13 @@ object ValidatedJsonUtils {
     fun <T> generateAirbyteJsonSchema(klazz: Class<T>): JsonNode {
         // Generate the real JSON schema for the class object.
         val root: ObjectNode = generator.generateJsonSchema(klazz) as ObjectNode
+        // The mbknor-jackson-jsonschema generator does not recognize Jackson's
+        // `@JsonAnyGetter` semantics. A method `getAdditionalProperties(): Map<String, Any>`
+        // annotated with `@JsonAnyGetter` is treated as a regular bean property named
+        // "additionalProperties", which then appears in `properties` and, because the
+        // Kotlin return type is non-nullable, in `required`. Strip this spurious
+        // property so that the generated schema reflects only user-facing config fields.
+        stripSpuriousAdditionalPropertiesField(root)
         // Now perform any post-processing required by Airbyte.
         if (!root.contains("definitions")) {
             // Nothing needs to be done where there are no "$ref" fields anywhere.
@@ -174,5 +181,50 @@ object ValidatedJsonUtils {
         walk(root)
         // Return the transformed object.
         return root
+    }
+
+    /**
+     * Remove the spurious top-level `"additionalProperties"` bean property that
+     * mbknor-jackson-jsonschema emits for classes which expose Jackson's `@JsonAnyGetter fun
+     * getAdditionalProperties(): Map<String, *>` convention. The generator does not understand
+     * `@JsonAnyGetter`, so it introspects the getter as if it were a regular bean property, names
+     * it after the getter ("additionalProperties"), and — because the Kotlin return type is
+     * non-nullable — also adds it to the object's `required` array. The result is a schema that
+     * declares a user-facing required field that users cannot reasonably set.
+     *
+     * This only removes the field when its shape matches the kjetland emission for a `Map<String,
+     * *>` getter:
+     * - `"type": "object"`
+     * - an `"additionalProperties"` key describing the map's value type — either the boolean `true`
+     * (for `Map<String, Any>`) or a nested object schema (for `Map<String, T>`)
+     * - no declared bean `"properties"` (or an empty one)
+     *
+     * A legitimate user-facing config field named exactly `"additionalProperties"` with that exact
+     * shape is vanishingly unlikely, so this heuristic is safe while preserving other uses of
+     * `additionalProperties` elsewhere in the schema.
+     */
+    private fun stripSpuriousAdditionalPropertiesField(root: ObjectNode) {
+        val properties = root["properties"] as? ObjectNode ?: return
+        val candidate = properties["additionalProperties"] as? ObjectNode ?: return
+        val typeIsObject = candidate["type"]?.asText() == "object"
+        val hasMapValueSchema =
+            candidate["additionalProperties"]?.let { node ->
+                (node.isBoolean && node.asBoolean()) || node.isObject
+            } == true
+        val beanPropertiesAbsentOrEmpty =
+            candidate["properties"]?.let { it.isObject && it.size() == 0 } != false
+        if (!typeIsObject || !hasMapValueSchema || !beanPropertiesAbsentOrEmpty) {
+            return
+        }
+        properties.remove("additionalProperties")
+        val required = root["required"] as? ArrayNode ?: return
+        val retained: List<JsonNode> =
+            required
+                .elements()
+                .asSequence()
+                .filter { it.asText() != "additionalProperties" }
+                .toList()
+        required.removeAll()
+        retained.forEach { required.add(it) }
     }
 }

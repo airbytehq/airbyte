@@ -1,3 +1,7 @@
+## Version 1.0.4
+
+Fix JSON schema generation so that `@JsonAnyGetter`-backed `additionalProperties` maps are no longer emitted as a spurious required field in the connector spec.
+
 ## Version 1.0.3
 
 Use AIRBYTE_EDITION env var instead of DEPLOYMENT_MODE for the AIRBYTE_CLOUD_DEPLOYMENT feature flag, matching the platform's current environment variable.
