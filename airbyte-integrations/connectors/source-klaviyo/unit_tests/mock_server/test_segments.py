@@ -55,8 +55,20 @@ def _segment_record(segment_id: str, name: str, updated: str, created: str = "20
                     "related": f"https://a.klaviyo.com/api/segments/{segment_id}/profiles",
                 }
             },
-            "tags": {"data": [], "links": {"self": f"https://a.klaviyo.com/api/segments/{segment_id}/relationships/tags", "related": f"https://a.klaviyo.com/api/segments/{segment_id}/tags"}},
-            "flow-triggers": {"data": [], "links": {"self": f"https://a.klaviyo.com/api/segments/{segment_id}/relationships/flow-triggers", "related": f"https://a.klaviyo.com/api/segments/{segment_id}/flow-triggers"}},
+            "tags": {
+                "data": [],
+                "links": {
+                    "self": f"https://a.klaviyo.com/api/segments/{segment_id}/relationships/tags",
+                    "related": f"https://a.klaviyo.com/api/segments/{segment_id}/tags",
+                },
+            },
+            "flow-triggers": {
+                "data": [],
+                "links": {
+                    "self": f"https://a.klaviyo.com/api/segments/{segment_id}/relationships/flow-triggers",
+                    "related": f"https://a.klaviyo.com/api/segments/{segment_id}/flow-triggers",
+                },
+            },
         },
     }
 
@@ -305,12 +317,12 @@ class TestSegmentsStream(TestCase):
         assert output.records[0].record.data["id"] == "segment_after_retry"
 
         log_messages = [log.log.message for log in output.logs]
-        assert any(
-            "Backing off" in msg and "UserDefinedBackoffException" in msg and "429" in msg for msg in log_messages
-        ), "Expected backoff log message for 429 rate limit"
-        assert any(
-            "Sleeping for" in msg and "seconds" in msg for msg in log_messages
-        ), "Expected retry sleeping log message for 429 rate limit"
+        assert any("Backing off" in msg and "UserDefinedBackoffException" in msg and "429" in msg for msg in log_messages), (
+            "Expected backoff log message for 429 rate limit"
+        )
+        assert any("Sleeping for" in msg and "seconds" in msg for msg in log_messages), (
+            "Expected retry sleeping log message for 429 rate limit"
+        )
 
     @HttpMocker()
     def test_unauthorized_401_error_fails(self, http_mocker: HttpMocker):
@@ -336,9 +348,9 @@ class TestSegmentsStream(TestCase):
         assert len(output.records) == 0
         expected_error_message = "Please provide a valid API key and make sure it has permissions to read specified streams."
         log_messages = [log.log.message for log in output.logs]
-        assert any(
-            expected_error_message in msg for msg in log_messages
-        ), f"Expected error message '{expected_error_message}' in logs for 401 authentication failure"
+        assert any(expected_error_message in msg for msg in log_messages), (
+            f"Expected error message '{expected_error_message}' in logs for 401 authentication failure"
+        )
 
     @HttpMocker()
     def test_forbidden_403_error_fails(self, http_mocker: HttpMocker):
@@ -364,9 +376,9 @@ class TestSegmentsStream(TestCase):
         assert len(output.records) == 0
         expected_error_message = "Please provide a valid API key and make sure it has permissions to read specified streams."
         log_messages = [log.log.message for log in output.logs]
-        assert any(
-            expected_error_message in msg for msg in log_messages
-        ), f"Expected error message '{expected_error_message}' in logs for 403 permission failure"
+        assert any(expected_error_message in msg for msg in log_messages), (
+            f"Expected error message '{expected_error_message}' in logs for 403 permission failure"
+        )
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker):
