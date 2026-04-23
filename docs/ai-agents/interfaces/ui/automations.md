@@ -111,7 +111,7 @@ Scheduled Automations run at times you define. Open the Properties panel, set **
 - **Hourly**, **Daily**, **Weekly**, or **Monthly** for common cases. Airbyte shows the equivalent cron expression so you can verify the schedule.
 - **Custom cron** for anything the builder doesn't cover. Provide the raw cron expression and Airbyte translates it into a human-readable summary.
 
-Pick the **Timezone** the schedule should use. Airbyte defaults to your local timezone. Turn the Automation's **Enabled** toggle on to activate the schedule. Each scheduled run appears in Run History tagged **Live run**.
+Pick the **Timezone** the schedule should use. Airbyte defaults to your local timezone. See [Time zones](../../concepts/time-zones) for how Airbyte stores and displays times across interfaces. Turn the Automation's **Enabled** toggle on to activate the schedule. Each scheduled run appears in Run History tagged **Live run**.
 
 ### From a webhook
 
