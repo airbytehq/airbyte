@@ -172,6 +172,7 @@ The Infor Nexus Data API returns the following status codes during dataset expor
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.5 | 2026-04-21 | [73832](https://github.com/airbytehq/airbyte/pull/73832) | Update dependencies |
 | 0.1.4 | 2026-04-09 | [76138](https://github.com/airbytehq/airbyte/pull/76138) | Add missing imports for AirbyteTracedException and FailureType in components.py |
 | 0.1.3 | 2026-02-17 | [73548](https://github.com/airbytehq/airbyte/pull/73548) | Update dependencies |
 | 0.1.2 | 2026-02-10 | [73030](https://github.com/airbytehq/airbyte/pull/73030) | Update dependencies |

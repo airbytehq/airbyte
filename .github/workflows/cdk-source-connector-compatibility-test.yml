@@ -76,9 +76,13 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe install
 
+      - name: Install Ops CLI
+        if: matrix.connector && (vars.GCP_PROJECT_ID != '')
+        run: uv tool install --upgrade airbyte-internal-ops
+
       - name: Fetch connector secrets
         if: matrix.connector && (vars.GCP_PROJECT_ID != '')
-        run: airbyte-cdk secrets fetch ${{ matrix.connector }}
+        run: airbyte-ops secrets fetch ${{ matrix.connector }}
 
       - name: Run CDK upgrade
         if: matrix.connector

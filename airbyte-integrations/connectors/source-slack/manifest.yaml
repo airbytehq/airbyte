@@ -240,6 +240,17 @@ definitions:
                 name: channels
                 path: conversations.list
                 extractor_field_path: channels
+              retriever:
+                $ref: "#/definitions/channels_stream/retriever"
+                record_selector:
+                  $ref: "#/definitions/channels_stream/retriever/record_selector"
+                  record_filter:
+                    type: RecordFilter
+                    # Limit message/thread partitions to channels the bot can actually read.
+                    # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
+                    # non-member channels, which poisons the per-partition cursor. The
+                    # top-level channels stream and channel_members still see every channel.
+                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
             parent_key: id
             partition_field: channel
             request_option:
@@ -479,7 +490,7 @@ spec:
               airbyte_secret: true
           order: 0
         - type: object
-          title: API Token
+          title: Bot Token
           required:
             - option_title
             - api_token
@@ -489,8 +500,8 @@ spec:
               const: API Token Credentials
             api_token:
               type: string
-              title: API Token
-              description: A Slack bot token. See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
+              title: Bot Token
+              description: A Slack bot token (xoxb-). See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
               airbyte_secret: true
           order: 1
       num_workers:
