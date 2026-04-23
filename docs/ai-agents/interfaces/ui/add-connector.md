@@ -72,8 +72,6 @@ When you paste an access token, API key, or PAT into the form, you're handing Ai
 
 In token mode, selecting entities controls what Airbyte replicates into the [Context Store](../../concepts/context-store), not what the token can reach. The entity picker shows a single **Include** column—there are no read/write modes, because the mode isn't Airbyte's to enforce. If you need to keep the connector away from a piece of data, restrict the token itself on the third-party service before you paste it in.
 
-Bot tokens and workspace-level tokens behave the same way in this regard. Their permissions come from how they were provisioned on the third-party service, and Airbyte replicates only the entities you select.
-
 ### Why the entity list can differ
 
 The list of entities the picker shows can differ between the two authentication methods:
