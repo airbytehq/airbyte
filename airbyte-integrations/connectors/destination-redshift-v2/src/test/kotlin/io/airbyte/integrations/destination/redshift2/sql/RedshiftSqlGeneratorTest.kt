@@ -176,10 +176,13 @@ internal class RedshiftSqlGeneratorTest {
     @Test
     fun `getGenerationId generates SELECT with LIMIT 1`() {
         val sql = sqlGenerator.getGenerationId(TableName(namespace = "ns", name = "tbl"))
-        assertEquals(
-            """SELECT "_airbyte_generation_id" FROM "ns"."tbl" LIMIT 1;""",
-            sql,
-        )
+        val expected =
+            """
+            SELECT "_airbyte_generation_id"
+            FROM "ns"."tbl"
+            LIMIT 1;
+            """
+        assertEqualsIgnoreWhitespace(expected, sql)
     }
 
     @Test
@@ -204,7 +207,9 @@ internal class RedshiftSqlGeneratorTest {
 
         val expected =
             """
-            ALTER TABLE "ns"."tgt" APPEND FROM "ns"."src";
+            ALTER TABLE "ns"."tgt"
+            APPEND FROM "ns"."src"
+            FILLTARGET;
             """
         assertEqualsIgnoreWhitespace(expected, sql)
     }
@@ -574,12 +579,15 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_json_col" varchar(65535);"""))
         assertTrue(sql.contains("""JSON_SERIALIZE("json_col")"""))
+        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
+        assertTrue(sql.contains(""""json_col" IS NOT NULL"""))
+        assertTrue(sql.contains(""""_airbyte_tmp_json_col" IS NULL"""))
         assertTrue(sql.contains("""DROP COLUMN "json_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_json_col" TO "json_col";"""))
     }
 
     @Test
-    fun `matchSchemas VARCHAR to SUPER wraps as JSON string`() {
+    fun `matchSchemas VARCHAR to SUPER uses IS_VALID_JSON`() {
         val tableName = TableName(namespace = "ns", name = "tbl")
         val sql =
             sqlGenerator.matchSchemas(
@@ -597,8 +605,12 @@ internal class RedshiftSqlGeneratorTest {
             )
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_data_col" super;"""))
+        assertTrue(sql.contains("IS_VALID_JSON("))
         assertTrue(sql.contains("JSON_PARSE("))
-        assertTrue(sql.contains("REPLACE("))
+        assertFalse(sql.contains("REPLACE("))
+        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
+        assertTrue(sql.contains(""""data_col" IS NOT NULL"""))
+        assertTrue(sql.contains(""""_airbyte_tmp_data_col" IS NULL"""))
         assertTrue(sql.contains("""DROP COLUMN "data_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_data_col" TO "data_col";"""))
     }
@@ -623,6 +635,9 @@ internal class RedshiftSqlGeneratorTest {
 
         assertTrue(sql.contains("""ADD COLUMN "_airbyte_tmp_num_col" numeric(38,9);"""))
         assertTrue(sql.contains("""CAST("num_col" AS numeric(38,9))"""))
+        assertTrue(sql.contains("""DESTINATION_TYPECAST_ERROR"""))
+        assertTrue(sql.contains(""""num_col" IS NOT NULL"""))
+        assertTrue(sql.contains(""""_airbyte_tmp_num_col" IS NULL"""))
         assertTrue(sql.contains("""DROP COLUMN "num_col";"""))
         assertTrue(sql.contains("""RENAME COLUMN "_airbyte_tmp_num_col" TO "num_col";"""))
     }
