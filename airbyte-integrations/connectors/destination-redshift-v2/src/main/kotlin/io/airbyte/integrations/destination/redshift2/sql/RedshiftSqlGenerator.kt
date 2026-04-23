@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.integrations.destination.redshift2.schema.toRedshiftCompatibleName
@@ -103,11 +104,11 @@ class RedshiftSqlGenerator {
         "SELECT COUNT(*) AS \"total\" FROM ${getFullyQualifiedName(tableName)};"
 
     fun getGenerationId(tableName: TableName): String =
-        "SELECT ${quoteIdentifier(COLUMN_NAME_AB_GENERATION_ID)} FROM ${
-            getFullyQualifiedName(
-                tableName,
-            )
-        } LIMIT 1;"
+        """
+            |SELECT ${quoteIdentifier(COLUMN_NAME_AB_GENERATION_ID)}
+            |FROM ${getFullyQualifiedName(tableName)}
+            |LIMIT 1;
+        """.trimMargin()
 
     fun deleteByRawId(tableName: TableName): String =
         "DELETE FROM ${getFullyQualifiedName(tableName)} WHERE ${quoteIdentifier("_airbyte_raw_id")} = ?;"
@@ -118,7 +119,8 @@ class RedshiftSqlGenerator {
      * significantly faster for large datasets. The source table is emptied after the operation.
      *
      * Requires both tables to have the same column structure (names, types, order). Cannot be
-     * executed inside a transaction block (autoCommit must be true).
+     * executed inside a transaction block (autoCommit must be true). So If the target table has
+     * more columns than the source table, we specify the FILLTARGET parameter.
      *
      * @see <a
      * href="https://docs.aws.amazon.com/redshift/latest/dg/r_ALTER_TABLE_APPEND.html">Redshift
@@ -128,7 +130,11 @@ class RedshiftSqlGenerator {
         sourceTableName: TableName,
         targetTableName: TableName,
     ): String =
-        "ALTER TABLE ${getFullyQualifiedName(targetTableName)} APPEND FROM ${getFullyQualifiedName(sourceTableName)};"
+        """
+            |ALTER TABLE ${getFullyQualifiedName(targetTableName)}
+            |APPEND FROM ${getFullyQualifiedName(sourceTableName)}
+            |FILLTARGET;
+        """.trimMargin()
 
     /**
      * Generates a rename-based table swap within a transaction:
@@ -139,11 +145,11 @@ class RedshiftSqlGenerator {
     fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
         val moveSchemaSql =
             if (sourceTableName.namespace != targetTableName.namespace) {
-                "\nALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)} SET SCHEMA ${
-                    getNamespace(
-                        targetTableName,
-                    )
-                };"
+                """
+                    |
+                    |ALTER TABLE ${getNamespace(sourceTableName)}.${getName(targetTableName)}
+                    |SET SCHEMA ${getNamespace(targetTableName)};
+                """.trimMargin()
             } else {
                 ""
             }
@@ -439,11 +445,17 @@ class RedshiftSqlGenerator {
     }
 
     /**
-     * Builds the 4-step ALTER TABLE statements to change a column's type in Redshift.
+     * Builds the ALTER TABLE statements to change a column's type in Redshift.
      *
-     * For SUPER -> VARCHAR: uses `JSON_SERIALIZE(col)` to preserve JSON structure as a string. For
-     * VARCHAR -> SUPER: uses `JSON_PARSE(col)` to parse the JSON string into a SUPER value. For all
-     * other conversions: uses `CAST(col AS new_type)`.
+     * The sequence is:
+     * 1. ADD a temp column with the new type
+     * 2. UPDATE to cast data from the old column into the temp column
+     * 3. UPDATE `_airbyte_meta` to record a `DESTINATION_TYPECAST_ERROR` for any row where the
+     * ```
+     *    original value was non-null but the cast produced null (following the v1 pattern)
+     * ```
+     * 4. DROP the original column
+     * 5. RENAME the temp column to the original name
      */
     private fun buildTypeChangeStatements(
         fullyQualifiedTableName: String,
@@ -452,6 +464,7 @@ class RedshiftSqlGenerator {
     ): List<String> {
         val quotedName = quoteIdentifier(columnName)
         val tempColumn = quoteIdentifier("_airbyte_tmp_$columnName")
+        val quotedMeta = quoteIdentifier(COLUMN_NAME_AB_META)
         val oldType = typeChange.originalType.type
         val newType = typeChange.newType.type
 
@@ -460,24 +473,62 @@ class RedshiftSqlGenerator {
                 // SUPER -> VARCHAR: serialize JSON to string
                 oldType == RedshiftDataType.SUPER.typeName && newType.startsWith("varchar") ->
                     "JSON_SERIALIZE($quotedName)"
-                // VARCHAR -> SUPER: wrap as JSON string value before parsing, so that plain
-                // text like "foo" becomes the JSON string "foo" rather than failing JSON_PARSE.
+                // VARCHAR -> SUPER: parse if valid JSON, otherwise NULL
                 oldType.startsWith("varchar") && newType == RedshiftDataType.SUPER.typeName ->
-                    "JSON_PARSE('\"' || REPLACE(REPLACE($quotedName, '\\\\', '\\\\\\\\'), '\"', '\\\\\"') || '\"')"
+                    "CASE WHEN IS_VALID_JSON($quotedName) OR IS_VALID_JSON_ARRAY($quotedName) THEN JSON_PARSE($quotedName) END"
                 // All other conversions: standard CAST
                 else -> "CAST($quotedName AS $newType)"
             }
 
-        return listOf(
+        return buildList {
             // Step 1: Add temp column with the new type
-            "ALTER TABLE $fullyQualifiedTableName ADD COLUMN $tempColumn $newType;",
+            add("ALTER TABLE $fullyQualifiedTableName ADD COLUMN $tempColumn $newType;")
             // Step 2: Cast data from old column to temp column
-            "UPDATE $fullyQualifiedTableName SET $tempColumn = $castExpression;",
-            // Step 3: Drop the original column
-            "ALTER TABLE $fullyQualifiedTableName DROP COLUMN $quotedName;",
-            // Step 4: Rename temp column to the original name
-            "ALTER TABLE $fullyQualifiedTableName RENAME COLUMN $tempColumn TO $quotedName;",
-        )
+            add("UPDATE $fullyQualifiedTableName SET $tempColumn = $castExpression;")
+            // Step 3: Record DESTINATION_TYPECAST_ERROR in _airbyte_meta for rows where
+            // the original value was non-null but the cast produced null.
+            add(
+                buildMetaUpdateForTypecastError(
+                    fullyQualifiedTableName,
+                    quotedName,
+                    tempColumn,
+                    quotedMeta,
+                    columnName
+                )
+            )
+            // Step 4: Drop the original column
+            add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN $quotedName;")
+            // Step 5: Rename temp column to the original name
+            add("ALTER TABLE $fullyQualifiedTableName RENAME COLUMN $tempColumn TO $quotedName;")
+        }
+    }
+
+    /**
+     * Builds an UPDATE statement that appends a DESTINATION_TYPECAST_ERROR change entry to
+     * `_airbyte_meta.changes` for rows where the original column was non-null but the cast into the
+     * temp column produced null.
+     */
+    private fun buildMetaUpdateForTypecastError(
+        fullyQualifiedTableName: String,
+        quotedOriginalColumn: String,
+        quotedTempColumn: String,
+        quotedMeta: String,
+        columnName: String,
+    ): String {
+        val changeEntry =
+            """{"field":"$columnName","change":"NULLED","reason":"DESTINATION_TYPECAST_ERROR"}"""
+        return """
+            |UPDATE $fullyQualifiedTableName
+            |SET $quotedMeta = OBJECT(
+            |    'sync_id', $quotedMeta."sync_id",
+            |    'changes', ARRAY_CONCAT(
+            |        COALESCE($quotedMeta."changes", ARRAY()),
+            |        ARRAY(JSON_PARSE('$changeEntry'))
+            |    )
+            |)
+            |WHERE $quotedOriginalColumn IS NOT NULL
+            |AND $quotedTempColumn IS NULL;
+        """.trimMargin()
     }
 
     /** Generates a query to retrieve column metadata from `information_schema.columns` */

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift2.check
 
+import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
@@ -84,6 +85,10 @@ class RedshiftChecker(
             log.info { "Redshift connection check completed successfully" }
         } catch (e: SQLException) {
             val errorMessage = buildErrorMessage(e)
+            log.error(e) { "Redshift connection check failed: $errorMessage" }
+            throw IllegalStateException(errorMessage, e)
+        } catch (e: AmazonServiceException) {
+            val errorMessage = e.errorMessage ?: e.message ?: "Unknown S3 error"
             log.error(e) { "Redshift connection check failed: $errorMessage" }
             throw IllegalStateException(errorMessage, e)
         } catch (e: Exception) {

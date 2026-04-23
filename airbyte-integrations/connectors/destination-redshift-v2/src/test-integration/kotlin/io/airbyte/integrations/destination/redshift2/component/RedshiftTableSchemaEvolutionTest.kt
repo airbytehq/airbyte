@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.integrations.destination.redshift2.client.RedshiftAirbyteClient
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["component"], resolveParameters = false)
@@ -88,11 +89,13 @@ class RedshiftTableSchemaEvolutionTest(
     }
 
     @Test
+    @Disabled("Redshift only supports valid JSON objects/arrays for VARCHAR -> SUPER conversion")
     override fun `change from string type to unknown type`() {
         super.`change from string type to unknown type`()
     }
 
     @Test
+    @Disabled("Redshift only supports valid JSON objects/arrays for VARCHAR -> SUPER conversion")
     override fun `change from unknown type to string type`() {
         super.`change from unknown type to string type`()
     }
