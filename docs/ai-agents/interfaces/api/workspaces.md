@@ -15,22 +15,32 @@ Every workspace has two identifiers:
 - `id`: an Airbyte-assigned UUID that never changes for the lifetime of the workspace. This is the durable identifier. Persist it in your backend.
 - `name` (referred to in request bodies as `workspace_name`): a human-readable label you choose. It's also what routing endpoints like [mint a scoped token](./authentication#scoped-token) and [create a connector](./add-connector) accept as a lookup key, so it acts like an identifier in day-to-day use — but it isn't guaranteed to be stable.
 
-:::warning Rename footgun
-If you [rename a workspace](#update-a-workspace), requests keyed by the old name break in two different ways:
-
-- Reads that require an existing workspace — for example, listing a workspace's connectors — fail with `404 "Workspace not found for workspace_name '...'"`.
-- Endpoints that autocreate on first use — [scoped-token](./authentication#scoped-token) and [widget-token](./authentication#widget-token) mint — silently create a brand-new empty workspace under the old name, with a new UUID and no connectors. Your app keeps working, but it's pointing at a different workspace.
-
+:::warning Persist the UUID
 Persist each workspace's UUID in your backend when it's created, and reference it — not the name — wherever the API accepts a `workspace_id` (for example, in this page's [Get](#get-workspace-details), [Update](#update-a-workspace), and [Delete](#delete-a-workspace) endpoints). Treat `workspace_name` as a routing convenience, not an identifier.
 :::
+
+<!--
+AGENTIC-1140: renaming a workspace makes name-keyed reads 404 while
+scoped-token/widget-token mint silently autocreates a brand-new empty
+workspace under the old name with a new UUID. The "persist the UUID"
+guidance above is the safe path for readers; we don't surface the mint
+behavior publicly. Revisit when autocreate is consistent across endpoints
+and/or rename rejects reuse of the old name.
+-->
+
 
 ## Create a new workspace
 
 You don't create workspaces directly. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) or [widget token](./authentication#widget-token) against a new `workspace_name`. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.
 
-:::warning Create-connector does not autocreate
-The [create-connector](./add-connector) endpoint does not autocreate workspaces. Calling it with a `workspace_name` Airbyte hasn't seen before fails with `404 "Workspace not found for workspace_name '...'"`. Mint a scoped token (or open the workspace in the Airbyte Agents UI) first.
-:::
+<!--
+AGENTIC-1140: create-connector doesn't autocreate a workspace — it 404s
+when the workspace_name is new. Minting a scoped or widget token against
+that name is the canonical way to create a workspace, and the paragraph
+above already routes readers through that path, so we don't need to call
+out the asymmetry publicly. Revisit when autocreate is consistent.
+-->
+
 
 ## Manage workspaces
 

@@ -51,17 +51,17 @@ import asyncio
 from airbyte_agent_sdk import connect
 
 async def main():
-    stripe = connect(
-        "stripe",
+    github = connect(
+        "github",
         client_id="<your_client_id>",
         client_secret="<your_client_secret>",
     )
     try:
-        result = await stripe.execute("customers", "list", params={"limit": 10})
+        result = await github.execute("issues", "list", params={"per_page": 10})
         for row in result.data:
             print(row)
     finally:
-        await stripe.close()
+        await github.close()
 
 asyncio.run(main())
 ```
@@ -78,7 +78,7 @@ configure(
     client_secret="<your_client_secret>",
 )
 
-stripe = connect("stripe")
+github = connect("github")
 ```
 
 `configure()` accepts the following keyword arguments (all must be passed by name):
