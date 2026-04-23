@@ -107,10 +107,10 @@ The `workspace_name` field identifies which [workspace](./workspaces) the connec
 
 <!--
 AGENTIC-1140: create-connector doesn't autocreate workspaces (404s when
-the workspace_name is new), while scoped-token and widget-token mint do
-autocreate. Readers following the default narrative on this page stay on
-"default", so they never encounter this. Revisit when autocreate is
-consistent across endpoints.
+the workspace_name is new), while scoped-token mint does autocreate.
+Readers following the default narrative on this page stay on "default",
+so they never encounter this. Revisit when autocreate is consistent
+across endpoints.
 -->
 
 ## List connectors
