@@ -2076,11 +2076,12 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 50
-        default: 3
-        examples: [1, 2, 3]
+        default: 14
+        examples: [1, 2, 14]
         description: >-
           The number of worker threads to use for the sync.
           The performance upper boundary is based on the limit of your Chargebee plan.
+          The default of 14 targets the Enterprise tier (3500 req/min); lower-tier customers (Starter 150/min, Performance 1000/min) may want to reduce this to avoid rate-limit errors.
           More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://support.chargebee.com/support/solutions/articles/243576-what-are-the-chargebee-api-limits-">docs</a>.
         order: 4
     additionalProperties: true
@@ -11812,14 +11813,48 @@ schemas:
         description: The timestamp when the differential price data was last updated.
 
 
-# Chargebee offers three tiers of rate limits:
+# Rate limits: https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits
+# Chargebee offers three tiers of rate limits (all endpoints share a single global limit):
 # - Starter: 150 req/min (2.5 req/sec)
 # - Performance: 1000 req/min (16 req/sec)
-# - Enterprise: 3500 req/min (58 req/sec)
+# - Enterprise (default): 3500 req/min (58 req/sec)
+# - Enterprise (custom): no upper limit
+# TEST sites are always capped at 150 req/min regardless of plan.
+# Rate-limit errors return HTTP 429 with a Retry-After header.
 #
-# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
-# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
+# No active HTTPAPIBudget is shipped during concurrency tuning so the tuned default_concurrency
+# can be validated empirically. Two budget shapes are recorded below as YAML comments for
+# easy reference during the follow-up rate-limit application step:
+#
+# (1) Starter-tier budget (from the original AI-triage PR #74345) — preserved here for reference:
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 150
+#           interval: PT1M
+#       matchers: []
+#   ratelimit_reset_header: Retry-After
+#   status_codes_for_ratelimit_hit:
+#     - 429
+#
+# (2) Enterprise-tier (highest documented tier) budget — Path B target for follow-up activation:
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 3500
+#           interval: PT1M
+#       matchers: []
+#   ratelimit_reset_header: Retry-After
+#   status_codes_for_ratelimit_hit:
+#     - 429
+#
+# default_concurrency is set to 14 = floor(58 req/sec / 4) against the Enterprise tier (Path B tuning baseline).
+# Customers on lower-tier plans may reduce num_workers in the spec to avoid rate-limit errors.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 14) }}"
   max_concurrency: 50
