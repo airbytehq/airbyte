@@ -105,8 +105,6 @@ A typical flow for getting connected and executing an operation looks like this:
 
 3. **Execute operations** against the connector using your application token. See [Execute operations](../execute).
 
-For OAuth connectors where you want to drive the consent screen yourself with your own branding, see [Build your own OAuth flow](./build-your-own).
-
 ## Security considerations
 
 When using hosted authentication, follow these best practices:
