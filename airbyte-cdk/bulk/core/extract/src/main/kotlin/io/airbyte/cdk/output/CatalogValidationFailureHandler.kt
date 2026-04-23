@@ -36,21 +36,21 @@ data class StreamNotFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' not found or not accessible in source. Restore access to it or update the connection schema to remove it from the catalog."
+        "Stream '$streamID' not found or not accessible in source. Restore access to it or refresh the source schema to remove it."
 }
 
 data class MultipleStreamsFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Multiple matching streams found for '$streamID' in source. Disambiguate the stream or remove duplicates from the catalog."
+        "Multiple matching streams found for '$streamID' in source. Disambiguate the stream in source and refresh the source schema."
 }
 
 data class StreamHasNoFields(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' has no accessible data fields. Grant read access to its columns or remove the stream from the catalog."
+        "Stream '$streamID' has no accessible data fields. Grant read access to its columns or refresh the source schema to remove the stream."
 }
 
 data class FieldNotFound(
@@ -58,7 +58,7 @@ data class FieldNotFound(
     val fieldName: String,
 ) : CatalogValidationFailure {
     override val message =
-        "Field '$fieldName' not found in stream '$streamID'. Remove the field from the catalog or refresh the source schema."
+        "Field '$fieldName' not found in stream '$streamID'. Refresh the source schema to continue syncing this stream."
 }
 
 data class FieldTypeMismatch(
@@ -68,7 +68,7 @@ data class FieldTypeMismatch(
     val actual: AirbyteSchemaType,
 ) : CatalogValidationFailure {
     override val message =
-        "Field '$fieldName' in stream '$streamID' has type $actual in source but catalog expects $expected. Refresh the source schema to align the catalog with the current field type."
+        "Field '$fieldName' in stream '$streamID' has type $actual in source but schema expects $expected. Refresh the source schema to continue syncing this stream."
 }
 
 data class InvalidPrimaryKey(
