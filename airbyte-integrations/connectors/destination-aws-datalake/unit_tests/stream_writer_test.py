@@ -10,7 +10,6 @@ from typing import Any, Dict, Mapping
 import numpy as np
 import pandas as pd
 import pyarrow as pa
-import pytest
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import ConnectorConfig
