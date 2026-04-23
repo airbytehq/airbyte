@@ -69,6 +69,36 @@ class JdbcMetadataQuerier(
             .groupBy { it.schemaName }
             .mapValues { (_, filters) -> filters.flatMap { it.patterns } }
 
+    /**
+     * The set of namespaces to discover against. When [JdbcSourceConfiguration.namespaces] is
+     * non-empty this is just that set; otherwise it is resolved at discovery time to every
+     * schema/catalog the JDBC user can see via [DatabaseMetaData.getSchemas] or
+     * [DatabaseMetaData.getCatalogs].
+     */
+    val effectiveNamespaces: Set<String> by lazy {
+        if (config.namespaces.isNotEmpty()) {
+            return@lazy config.namespaces
+        }
+        val dbmd: DatabaseMetaData = conn.metaData
+        val discovered: Set<String> =
+            when (constants.namespaceKind) {
+                NamespaceKind.CATALOG ->
+                    dbmd.catalogs.use { rs: ResultSet ->
+                        buildSet { while (rs.next()) rs.getString("TABLE_CAT")?.let(::add) }
+                    }
+                NamespaceKind.SCHEMA,
+                NamespaceKind.CATALOG_AND_SCHEMA ->
+                    dbmd.schemas.use { rs: ResultSet ->
+                        buildSet { while (rs.next()) rs.getString("TABLE_SCHEM")?.let(::add) }
+                    }
+            }
+        log.info {
+            "No namespaces configured — resolved ${discovered.size} accessible namespace(s) " +
+                "(${constants.namespaceKind}) from the JDBC driver."
+        }
+        discovered
+    }
+
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
         try {
@@ -90,34 +120,28 @@ class JdbcMetadataQuerier(
                 }
             }
 
-            if (config.namespaces.isEmpty()) {
-                log.info {
-                    "No namespaces configured — discovering tables across all accessible schemas/catalogs."
-                }
-                addTablesFromQuery(null, null, null)
-            } else {
-                for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
-                    val (catalog: String?, schema: String?) =
-                        when (constants.namespaceKind) {
-                            NamespaceKind.CATALOG -> namespace to null
-                            NamespaceKind.SCHEMA -> null to namespace
-                            NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
-                        }
-
-                    val patterns =
-                        tableFiltersBySchema.entries
-                            .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
-                            ?.value
-                    if (patterns != null && patterns.isNotEmpty()) {
-                        for (pattern in patterns) {
-                            addTablesFromQuery(catalog, schema, pattern)
-                        }
-                    } else {
-                        addTablesFromQuery(catalog, schema, null)
+            val namespacesToQuery: Set<String> = effectiveNamespaces
+            for (namespace in namespacesToQuery + namespacesToQuery.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                     }
+
+                val patterns =
+                    tableFiltersBySchema.entries
+                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                        ?.value
+                if (patterns != null && patterns.isNotEmpty()) {
+                    for (pattern in patterns) {
+                        addTablesFromQuery(catalog, schema, pattern)
+                    }
+                } else {
+                    addTablesFromQuery(catalog, schema, null)
                 }
             }
-            log.info { "Discovered ${allTables.size} table(s) in namespaces ${config.namespaces}." }
+            log.info { "Discovered ${allTables.size} table(s) in namespaces $namespacesToQuery." }
             return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
@@ -150,41 +174,34 @@ class JdbcMetadataQuerier(
                     }
                 }
             }
-            // Query columns using the same pattern as table discovery:
-            // - If no namespaces are configured, query across all accessible schemas/catalogs
+            // Query columns per namespace, consistent with table discovery:
             // - If schema has filters, query per filter pattern
-            // - If no filters, query entire schema at once
-            if (config.namespaces.isEmpty()) {
-                if (constants.includePseudoColumns) {
-                    addColumnsFromQuery(null, null, null, isPseudoColumn = true)
-                }
-                addColumnsFromQuery(null, null, null, isPseudoColumn = false)
-            } else {
-                for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
-                    val (catalog: String?, schema: String?) =
-                        when (constants.namespaceKind) {
-                            NamespaceKind.CATALOG -> namespace to null
-                            NamespaceKind.SCHEMA -> null to namespace
-                            NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
-                        }
-
-                    val patterns =
-                        tableFiltersBySchema.entries
-                            .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
-                            ?.value
-                    if (patterns != null && patterns.isNotEmpty()) {
-                        for (pattern in patterns) {
-                            if (constants.includePseudoColumns) {
-                                addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
-                            }
-                            addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = false)
-                        }
-                    } else {
-                        if (constants.includePseudoColumns) {
-                            addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
-                        }
-                        addColumnsFromQuery(catalog, schema, null, isPseudoColumn = false)
+            // - If no filters, query the entire schema at once
+            val namespacesToQuery: Set<String> = effectiveNamespaces
+            for (namespace in namespacesToQuery + namespacesToQuery.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                     }
+
+                val patterns =
+                    tableFiltersBySchema.entries
+                        .firstOrNull { it.key.equals(namespace, ignoreCase = true) }
+                        ?.value
+                if (patterns != null && patterns.isNotEmpty()) {
+                    for (pattern in patterns) {
+                        if (constants.includePseudoColumns) {
+                            addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = true)
+                        }
+                        addColumnsFromQuery(catalog, schema, pattern, isPseudoColumn = false)
+                    }
+                } else {
+                    if (constants.includePseudoColumns) {
+                        addColumnsFromQuery(catalog, schema, null, isPseudoColumn = true)
+                    }
+                    addColumnsFromQuery(catalog, schema, null, isPseudoColumn = false)
                 }
             }
             log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
