@@ -191,7 +191,7 @@ Every execute response uses the same top-level envelope. The connector's records
     "end_cursor": "<cursor_for_next_page>"
   },
   "execution_metadata": {
-    "connector_instance_id": "<connector_id>",
+    "connector_instance_id": "source_id:<connector_id>",
     "execution_time_ms": 1189
   }
 }
