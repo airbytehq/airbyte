@@ -50,15 +50,6 @@ The new connector appears immediately in the Credentials table and in the **Avai
 
 ## OAuth versus access tokens {#oauth-vs-tokens}
 
-Most connectors let you authenticate with either an OAuth flow or an access token you paste into a form. Both options produce a working connector, but the selections you make during authentication mean different things in each case. If a connector offers both, prefer OAuth.
-
-### What you're selecting when you add credentials
-
-When you pick entities in the authentication flow, the selection has a different effect depending on how you're authenticating:
-
-- **OAuth selects scopes.** Your entity selections are translated into the narrowest set of OAuth scopes that covers what you chose, and the third-party service enforces those scopes on every request.
-- **Tokens select what populates the [Context Store](../../concepts/context-store).** A token can grant other permissions that Airbyte can't see or restrict; selecting entities only controls which of those the connector replicates.
-- **The entity list can differ by authentication method.** Seeing different options doesn't mean you can't reach the same data—it means the picker is showing you the subset that's meaningful to select in that mode. The set of entities the connector can actually read is the same in both modes.
 
 ### OAuth
 
