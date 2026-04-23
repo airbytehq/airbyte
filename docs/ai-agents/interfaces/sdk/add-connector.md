@@ -110,7 +110,7 @@ from airbyte_agent_sdk import connect
 
 stripe = connect("stripe")
 try:
-    result = await stripe.execute("customers", "list")
+    result = await stripe.execute("customers", "list", params={"limit": 10})
 finally:
     await stripe.close()
 ```

@@ -9,6 +9,8 @@ import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
 
 The Airbyte Agents Python SDK (`airbyte_agent_sdk`) is the Python front door to Airbyte Agents. With one install you get typed connectors, automatic credential handling, direct execution, natural-language queries across a workspace, and patterns for exposing connectors as tools to AI agent frameworks.
 
+This section walks through the three operations most apps need: authenticate, add a connector, and execute operations. Deeper class and method signatures live in the [SDK reference](/ai-agents/reference/sdk).
+
 ## Choose your interface
 
 <SdkVsApi />
@@ -55,7 +57,7 @@ async def main():
         try:
             # Parameter names are connector- and entity-specific. Call
             # `hubspot.list_entities()` to see what each entity accepts.
-            result = await hubspot.execute("contacts", "list")
+            result = await hubspot.execute("contacts", "list", params={"limit": 10})
             for row in result.data:
                 print(row)
         finally:

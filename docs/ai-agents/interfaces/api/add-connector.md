@@ -40,7 +40,24 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
   }'
 ```
 
-Some connectors also require non-credential configuration at the top level of the request body. For example, `source-github` requires a `"repositories": ["<owner>/<repo>", …]` array alongside `credentials` — without it, create fails with `422 "required property 'repositories' not found"`. Check the connector's page for any extra required fields.
+Some connectors also need non-credential configuration. Pass those fields under `replication_config` on the request body — not at the top level. For example, `source-github` requires `replication_config.repositories` to list the repos or orgs to operate on:
+
+```bash title="Request"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors' \
+  --header 'Authorization: Bearer <application_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "workspace_name": "default",
+    "definition_id": "<github_definition_id>",
+    "name": "My GitHub Connector",
+    "credentials": { "token": "<github_pat>" },
+    "replication_config": {
+      "repositories": ["airbytehq/airbyte"]
+    }
+  }'
+```
+
+Without the `replication_config.repositories` array, create fails with `422 "required property 'repositories' not found"`. Placing `repositories` at the top level of the request body fails with the same error. See the connector's page in the [Connectors](../../connectors) reference for any extra required fields and where they belong.
 
 ### OAuth connectors
 
@@ -75,7 +92,13 @@ Airbyte doesn't validate credentials at creation time. A `200 OK` response means
 The `definition_id` identifies the connector type. You can look it up two ways:
 
 - Call `GET /api/v1/integrations/definitions/sources` to list every available connector type. See [Make your first request](./#make-your-first-request). Recommended.
-- Browse the raw [Airbyte Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json) (large file — approximately 100 MB) and copy the `sourceDefinitionId` for the entry you want.
+- Filter by name to get a single connector in one call — for example, to grab the GitHub `definition_id`:
+
+```bash
+curl -s 'https://api.airbyte.ai/api/v1/integrations/definitions/sources?name=github' \
+  -H 'Authorization: Bearer <application_token>' \
+  | jq -r '.definitions[0].sourceDefinitionId'
+```
 
 :::note Naming
 The definitions endpoint returns the ID as `sourceDefinitionId`. The connector creation endpoint accepts it as `definition_id`. Both names refer to the same UUID.
@@ -83,7 +106,9 @@ The definitions endpoint returns the ID as `sourceDefinitionId`. The connector c
 
 ### Source templates
 
-A **source template** is the organization-level catalog entry a connector is provisioned from: a connector definition plus the default configuration, stream selection, and customizations your organization has agreed on for that connector. Every connector instance belongs to exactly one source template, which is why list and get responses carry a nested `summarized_source_template` (the `source_template_id` field of `create`) alongside the underlying `source_definition_id`.
+A **source template** is the organization-level catalog entry a connector is provisioned from: a connector definition plus the default configuration, stream selection, and customizations your organization has agreed on for that connector. Every connector instance belongs to exactly one source template.
+
+That's why [list](#list-connectors) and [get](#get-a-connector) responses carry a nested `summarized_source_template` alongside the underlying `source_definition_id`. The template's UUID also appears as the `source_template_id` field when you [create](#create-a-connector) a connector from a specific template.
 
 Most apps won't set `source_template_id` explicitly — passing `definition_id` or `connector_type` picks the default template for that connector type. Use `source_template_id` when your organization has more than one template for the same connector type and you need to pin a specific one.
 
