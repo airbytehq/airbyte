@@ -186,6 +186,46 @@ internal class RedshiftValueCoercerTest {
     }
 
     // ================================================================
+    // validate() — String (VARCHAR 65535 bytes) tests
+    // ================================================================
+
+    @Test
+    fun `validate accepts short string`() {
+        val result = coercer.validate(enriched(StringValue("hello"), StringType))
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun `validate accepts string at VARCHAR byte limit`() {
+        val value = "a".repeat(VARCHAR_MAX_BYTES) // 65535 ASCII chars = 65535 bytes
+        val result = coercer.validate(enriched(StringValue(value), StringType))
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun `validate nullifies string exceeding VARCHAR byte limit`() {
+        val value = "a".repeat(VARCHAR_MAX_BYTES + 1) // 65536 ASCII chars = 65536 bytes
+        val result = coercer.validate(enriched(StringValue(value), StringType))
+        assertShouldNullify(result)
+    }
+
+    @Test
+    fun `validate nullifies multi-byte string exceeding VARCHAR byte limit`() {
+        // Each emoji is 4 bytes in UTF-8. 16384 emojis = 65536 bytes > 65535 limit.
+        val value = "\uD83D\uDE00".repeat(16384)
+        val result = coercer.validate(enriched(StringValue(value), StringType))
+        assertShouldNullify(result)
+    }
+
+    @Test
+    fun `validate accepts multi-byte string within VARCHAR byte limit`() {
+        // Each 'é' is 2 bytes in UTF-8. 32000 chars = 64000 bytes < 65535 limit.
+        val value = "é".repeat(32000)
+        val result = coercer.validate(enriched(StringValue(value), StringType))
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    // ================================================================
     // validate() — Object/Array (SUPER 16MB) tests
     // ================================================================
 

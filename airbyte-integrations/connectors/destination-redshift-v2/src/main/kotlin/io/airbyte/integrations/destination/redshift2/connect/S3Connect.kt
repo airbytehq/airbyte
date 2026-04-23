@@ -4,28 +4,26 @@
 
 package io.airbyte.integrations.destination.redshift2.connect
 
-import com.amazonaws.ClientConfiguration
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.retry.RetryMode
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import io.airbyte.integrations.destination.redshift2.config.RedshiftConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
 
 private val log = KotlinLogging.logger {}
 
 /**
  * Manages S3 client creation for staging operations.
  *
- * Creates an [AmazonS3] client from the S3 staging configuration using static credentials (access
- * key + secret key) and the configured region.
+ * Creates an [S3Client] from the S3 staging configuration using static credentials (access key +
+ * secret key) and the configured region.
  */
 @Singleton
 class S3Connect(private val configuration: RedshiftConfiguration) {
 
-    fun createS3Client(): AmazonS3 {
+    fun createS3Client(): S3Client {
         val s3Config = configuration.uploadingMethod!!
 
         log.info {
@@ -33,14 +31,13 @@ class S3Connect(private val configuration: RedshiftConfiguration) {
                 "in region '${s3Config.s3BucketRegion}'"
         }
 
-        return AmazonS3ClientBuilder.standard()
-            .withCredentials(
-                AWSStaticCredentialsProvider(
-                    BasicAWSCredentials(s3Config.accessKeyId, s3Config.secretAccessKey)
-                ),
+        return S3Client.builder()
+            .credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(s3Config.accessKeyId, s3Config.secretAccessKey)
+                )
             )
-            .withClientConfiguration(ClientConfiguration().withRetryMode(RetryMode.STANDARD))
-            .withRegion(s3Config.s3BucketRegion)
+            .region(Region.of(s3Config.s3BucketRegion))
             .build()
     }
 }

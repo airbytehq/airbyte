@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.client
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -25,7 +23,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.InputStream
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -42,13 +39,18 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.DeleteObjectResponse
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectResponse
 
 @ExtendWith(MockKExtension::class)
 internal class RedshiftAirbyteClientTest {
 
     @MockK lateinit var dataSource: DataSource
     @MockK lateinit var sqlGenerator: RedshiftSqlGenerator
-    @MockK lateinit var s3Client: AmazonS3
+    @MockK lateinit var s3Client: S3Client
     @MockK lateinit var mockConnection: Connection
     @MockK lateinit var mockStatement: Statement
     @MockK lateinit var mockPreparedStatement: PreparedStatement
@@ -719,13 +721,21 @@ internal class RedshiftAirbyteClientTest {
     @Test
     fun `uploadToS3 delegates to s3Client`() = runTest {
         val data = "test".toByteArray()
-        val metadata = ObjectMetadata()
-        every { s3Client.putObject(any<String>(), any(), any<InputStream>(), any()) } returns
-            mockk()
+        every {
+            s3Client.putObject(
+                any<PutObjectRequest>(),
+                any<software.amazon.awssdk.core.sync.RequestBody>()
+            )
+        } returns PutObjectResponse.builder().build()
 
-        client.uploadToS3("bucket", "key", data, metadata)
+        client.uploadToS3("bucket", "key", data)
 
-        verify { s3Client.putObject(eq("bucket"), eq("key"), any<InputStream>(), eq(metadata)) }
+        verify {
+            s3Client.putObject(
+                match<PutObjectRequest> { it.bucket() == "bucket" && it.key() == "key" },
+                any<software.amazon.awssdk.core.sync.RequestBody>(),
+            )
+        }
     }
 
     // ================================================================
@@ -734,10 +744,15 @@ internal class RedshiftAirbyteClientTest {
 
     @Test
     fun `deleteFromS3 delegates to s3Client`() = runTest {
-        every { s3Client.deleteObject("bucket", "key") } returns Unit
+        every { s3Client.deleteObject(any<DeleteObjectRequest>()) } returns
+            DeleteObjectResponse.builder().build()
 
         client.deleteFromS3("bucket", "key")
 
-        verify { s3Client.deleteObject("bucket", "key") }
+        verify {
+            s3Client.deleteObject(
+                match<DeleteObjectRequest> { it.bucket() == "bucket" && it.key() == "key" }
+            )
+        }
     }
 }

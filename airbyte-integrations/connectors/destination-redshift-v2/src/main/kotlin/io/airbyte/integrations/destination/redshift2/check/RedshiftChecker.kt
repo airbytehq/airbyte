@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.check
 
-import com.amazonaws.AmazonServiceException
-import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
@@ -29,6 +27,7 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import java.util.zip.GZIPOutputStream
 import kotlinx.coroutines.runBlocking
+import software.amazon.awssdk.services.s3.model.S3Exception
 
 private val log = KotlinLogging.logger {}
 
@@ -87,8 +86,9 @@ class RedshiftChecker(
             val errorMessage = buildErrorMessage(e)
             log.error(e) { "Redshift connection check failed: $errorMessage" }
             throw IllegalStateException(errorMessage, e)
-        } catch (e: AmazonServiceException) {
-            val errorMessage = e.errorMessage ?: e.message ?: "Unknown S3 error"
+        } catch (e: S3Exception) {
+            val errorMessage =
+                e.awsErrorDetails()?.errorMessage() ?: e.message ?: "Unknown S3 error"
             log.error(e) { "Redshift connection check failed: $errorMessage" }
             throw IllegalStateException(errorMessage, e)
         } catch (e: Exception) {
@@ -130,12 +130,7 @@ class RedshiftChecker(
         val s3Config = configuration.uploadingMethod!!
 
         val csvBytes = buildGzipCsv(rawId)
-        val metadata =
-            ObjectMetadata().apply {
-                contentLength = csvBytes.size.toLong()
-                contentType = "application/gzip"
-            }
-        client.uploadToS3(s3Config.s3BucketName, s3Key, csvBytes, metadata)
+        client.uploadToS3(s3Config.s3BucketName, s3Key, csvBytes)
     }
 
     /**

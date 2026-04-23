@@ -24,7 +24,7 @@ application {
 
 val hikariCpVersion = "7.0.2"
 val redshiftJdbcVersion = "2.1.0.30"
-val awsSdkVersion = "1.12.780"
+val awsSdkV2Version = "2.31.1"
 val testContainersVersion = "1.20.5"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
@@ -36,8 +36,8 @@ dependencies {
     // Connection pooling
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     
-    // AWS S3 for staging (used by load-aws toolkit)
-    implementation("com.amazonaws:aws-java-sdk-s3:$awsSdkVersion")
+    // AWS S3 for staging (SDK v2)
+    implementation("software.amazon.awssdk:s3:$awsSdkV2Version")
     
     // Utilities from old CDK (for JDBC URL parsing)
     implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
@@ -55,6 +55,7 @@ dependencies {
 
     // Integration test dependencies
     integrationTestImplementation("com.amazon.redshift:redshift-jdbc42:$redshiftJdbcVersion")
+    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
     integrationTestImplementation("org.testcontainers:postgresql:$testContainersVersion") // Redshift is Postgres-compatible
     integrationTestImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     integrationTestImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")

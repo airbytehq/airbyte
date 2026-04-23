@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.redshift2.client
 
-import com.amazonaws.services.s3.AmazonS3
-import com.amazonaws.services.s3.model.ObjectMetadata
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -21,10 +19,13 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.redshift2.sql.RedshiftSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.io.ByteArrayInputStream
 import java.sql.ResultSet
 import java.sql.SQLException
 import javax.sql.DataSource
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 private val log = KotlinLogging.logger {}
 
@@ -38,7 +39,7 @@ private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: RedshiftSqlGenerator,
-    private val s3Client: AmazonS3,
+    private val s3Client: S3Client,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     override suspend fun createNamespace(namespace: String) {
@@ -147,6 +148,11 @@ class RedshiftAirbyteClient(
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columnsInDb = getColumnsFromDbForDiscovery(tableName)
+
+        // Table does not exist -- return empty schema so the CDK creates it.
+        if (columnsInDb.isEmpty()) {
+            return TableSchema(emptyMap())
+        }
 
         val hasAllAirbyteColumns = columnsInDb.keys.containsAll(COLUMN_NAMES)
         if (!hasAllAirbyteColumns) {
@@ -261,14 +267,22 @@ class RedshiftAirbyteClient(
         bucketName: String,
         key: String,
         data: ByteArray,
-        metadata: ObjectMetadata,
+        contentType: String = "application/gzip",
     ) {
-        s3Client.putObject(bucketName, key, ByteArrayInputStream(data), metadata)
+        val request =
+            PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentLength(data.size.toLong())
+                .contentType(contentType)
+                .build()
+        s3Client.putObject(request, RequestBody.fromBytes(data))
     }
 
     /** Deletes an object from S3. */
     suspend fun deleteFromS3(bucketName: String, key: String) {
-        s3Client.deleteObject(bucketName, key)
+        val request = DeleteObjectRequest.builder().bucket(bucketName).key(key).build()
+        s3Client.deleteObject(request)
     }
 
     // ================================================================
@@ -349,6 +363,22 @@ class RedshiftAirbyteClient(
                 log.error { message }
                 throw ConfigErrorException(message, e)
             }
+
+            // Enrich COPY load errors with details from stl_load_errors
+            if (e.message?.contains("stl_load_errors") == true) {
+                val details = queryLoadErrors()
+                val enrichedMessage = buildString {
+                    append("COPY command failed. ")
+                    append(e.message)
+                    if (details.isNotEmpty()) {
+                        append("\n\nLoad error details from stl_load_errors:\n")
+                        details.forEach { append("  - $it\n") }
+                    }
+                }
+                log.error { enrichedMessage }
+                throw SQLException(enrichedMessage, e.sqlState, e.errorCode, e)
+            }
+
             throw e
         }
     }
@@ -362,4 +392,32 @@ class RedshiftAirbyteClient(
             }
         }
     }
+
+    /** Queries `stl_load_errors` for the most recent COPY error within the last minute */
+    private fun queryLoadErrors(): List<String> =
+        try {
+            executeQuery(
+                """
+                SELECT *
+                FROM stl_load_errors
+                WHERE starttime >= GETDATE() - INTERVAL '1 minute'
+                ORDER BY starttime DESC
+                LIMIT 1
+                """.trimIndent()
+            ) { rs ->
+                val errors = mutableListOf<String>()
+                while (rs.next()) {
+                    val metadata = rs.metaData
+                    val row =
+                        (1..metadata.columnCount).joinToString(", ") { i ->
+                            "${metadata.getColumnName(i)}=${rs.getString(i)?.trim()}"
+                        }
+                    errors.add(row)
+                }
+                errors
+            }
+        } catch (e: Exception) {
+            log.warn(e) { "Failed to query stl_load_errors for additional details" }
+            emptyList()
+        }
 }
