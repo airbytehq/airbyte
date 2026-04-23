@@ -198,6 +198,43 @@ class MsSqlServerEntraIdAuthTest {
         Assertions.assertEquals("false", config.jdbcProperties["encrypt"])
     }
 
+    @Test
+    fun jdbcUrlParamsCannotSpoofResolvedEntraIdAuth() {
+        // Defense-in-depth: a jdbc_url_params string attempting to override the resolved Entra ID
+        // service-principal auth with a SqlPassword identity must NOT take effect on the JDBC
+        // session path. The trusted resolved auth wins.
+        val pojo = baseEncryptedPojo()
+        pojo.clientId = "client-uuid"
+        pojo.clientSecret = "secret-value"
+        pojo.jdbcUrlParams =
+            "user=attacker&password=pwned&authentication=SqlPassword&applicationIntent=ReadOnly"
+
+        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
+        Assertions.assertEquals("client-uuid", config.jdbcProperties["user"])
+        Assertions.assertEquals("secret-value", config.jdbcProperties["password"])
+        Assertions.assertEquals(
+            "ActiveDirectoryServicePrincipal",
+            config.jdbcProperties["authentication"],
+        )
+        // Unrelated operator-supplied params still pass through.
+        Assertions.assertEquals("ReadOnly", config.jdbcProperties["applicationIntent"])
+    }
+
+    @Test
+    fun jdbcUrlParamsCannotSpoofResolvedSqlPasswordAuth() {
+        // Same guarantee for the legacy SQL password path: jdbc_url_params cannot swap in a
+        // different user/password/auth mode.
+        val pojo = baseEncryptedPojo()
+        pojo.username = "legit"
+        pojo.password = "legit-pw"
+        pojo.jdbcUrlParams = "user=attacker&password=pwned&authentication=ActiveDirectoryPassword"
+
+        val config = MsSqlServerSourceConfigurationFactory().make(pojo)
+        Assertions.assertEquals("legit", config.jdbcProperties["user"])
+        Assertions.assertEquals("legit-pw", config.jdbcProperties["password"])
+        Assertions.assertEquals("SqlPassword", config.jdbcProperties["authentication"])
+    }
+
     // --- fixtures ---
 
     private fun baseEncryptedPojo(): MsSqlServerSourceConfigurationSpecification =
