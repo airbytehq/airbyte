@@ -7,49 +7,29 @@ check:
   stream_names:
     - tags
 
-# Existing HTTPAPIBudget commented out for concurrency tuning (Path B).
-# The three endpoint-specific policies below are preserved as comments so the
-# original values can be re-applied after tuning completes via the follow-up
-# rate-limit application work. See airbytehq/airbyte-internal-issues#15330.
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 10
-#           interval: PT1M
-#       matchers:
-#         - url_path_pattern: "^/api/v2/incremental/.*"
-#
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 100
-#           interval: PT1M
-#       matchers:
-#         - url_path_pattern: "^/api/v2/search/export$"
-#
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 10
-#           interval: PT1M
-#       matchers:
-#         - url_path_pattern: "^/api/v2/deleted_tickets$"
-
-# Highest-tier rate-limit config (Path B) scoped to the Zendesk Support
-# "High Volume API add-on" plan: 2500 requests per minute across all endpoints.
-# This lets customers on the highest documented tier realize the expected
-# throughput. Lower-tier customers are expected to override `num_workers` if
-# their plan's limit is lower. See rate tier table in the concurrency_level
-# comment below for per-plan limits.
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 2500
+        - limit: 10
           interval: PT1M
-      matchers: []
-  status_codes_for_ratelimit_hit: [429]
+      matchers:
+        - url_path_pattern: "^/api/v2/incremental/.*"
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/search/export$"
+
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1M
+      matchers:
+        - url_path_pattern: "^/api/v2/deleted_tickets$"
 
 definitions:
   bearer_authenticator:
