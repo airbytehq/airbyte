@@ -22,8 +22,8 @@ interface JdbcSourceConfiguration : SourceConfiguration {
      * An empty set signals "discover every namespace the JDBC user can see" — discovery will
      * iterate over all accessible schemas/catalogs via [java.sql.DatabaseMetaData.getTables] and
      * [java.sql.DatabaseMetaData.getColumns] with a null schema/catalog pattern. Individual
-     * connectors are free to enforce a non-empty set in their own
-     * [SourceConfigurationFactory] when a namespace selection is mandatory.
+     * connectors are free to enforce a non-empty set in their own [SourceConfigurationFactory] when
+     * a namespace selection is mandatory.
      */
     val namespaces: Set<String>
 
