@@ -2988,11 +2988,11 @@ spec:
           float values for any `conversions:*` fields.
         default: false
         order: 8
-      property_quota_tier:
+      subscription_tier:
         type: string
-        title: Property Quota Tier
+        title: Subscription Plan/Tier
         description:
-          Quota tier of the Google Analytics 4 property being queried. Select
+          Quota tier of the Google Analytics 4 properties being queried. Select
           "Analytics 360 Property" only if all configured property IDs belong to an
           Analytics 360 subscription; selecting it for Standard properties will cause
           requests to be throttled upstream by Google rather than locally. See
@@ -3002,6 +3002,17 @@ spec:
           - Analytics 360 Property
         default: Standard Property
         order: 9
+      num_workers:
+        type: integer
+        title: Number of Concurrent Workers
+        description:
+          Number of concurrent threads used by the source. Higher values can speed
+          up full syncs. Adjust based on your GA4 subscription tier; Standard
+          properties are subject to a 10 concurrent-request per-property quota.
+        default: 12
+        minimum: 2
+        maximum: 40
+        order: 10
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -3073,7 +3084,7 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 50 if config.get('property_quota_tier') == 'Analytics 360 Property' else 10 }}"
+        - limit: "{{ 50 if config.get('subscription_tier') == 'Analytics 360 Property' else 10 }}"
           interval: PT1S
       matchers:
         - method: POST
