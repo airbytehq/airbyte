@@ -300,10 +300,6 @@
                 "description": "Manages the inventory for the variant",
                 "type": ["null", "string"]
               },
-              "pre_tax_price": {
-                "description": "Price of the product before taxes",
-                "type": ["null", "number"]
-              },
               "variant_title": {
                 "description": "Title of the variant",
                 "type": ["null", "string"]
@@ -384,36 +380,6 @@
                   },
                   "type": ["null", "object"]
                 }
-              },
-              "pre_tax_price_set": {
-                "description": "Details of the pre-tax price",
-                "properties": {
-                  "shop_money": {
-                    "description": "Pre-tax price in the shop's currency",
-                    "properties": {
-                      "currency_code": {
-                        "type": ["null", "string"]
-                      },
-                      "amount": {
-                        "type": ["null", "number"]
-                      }
-                    },
-                    "type": ["null", "object"]
-                  },
-                  "presentment_money": {
-                    "description": "Pre-tax price in the currency presented to the customer",
-                    "properties": {
-                      "currency_code": {
-                        "type": ["null", "string"]
-                      },
-                      "amount": {
-                        "type": ["null", "number"]
-                      }
-                    },
-                    "type": ["null", "object"]
-                  }
-                },
-                "type": ["null", "object"]
               },
               "fulfillable_quantity": {
                 "description": "Quantity that can be fulfilled",

@@ -1235,9 +1235,6 @@
                     }
                   }
                 },
-                "pre_tax_price": {
-                  "type": ["null", "number"]
-                },
                 "product_exists": {
                   "type": ["null", "boolean"]
                 },
@@ -1682,10 +1679,6 @@
                 }
               }
             }
-          },
-          "pre_tax_price": {
-            "description": "Price before tax",
-            "type": ["null", "number"]
           },
           "product_exists": {
             "description": "Whether the product exists",
