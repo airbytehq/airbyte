@@ -9,12 +9,15 @@ from typing import Any, Dict, Mapping
 
 import numpy as np
 import pandas as pd
+import pyarrow as pa
+import pytest
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import ConnectorConfig
 from destination_aws_datalake.stream_writer import DictEncoder, StreamWriter
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def get_config() -> Mapping[str, Any]:
@@ -756,3 +759,75 @@ def test_json_dict_encoder():
         json.dumps(input, cls=DictEncoder)
         == '{"boolean": false, "integer": 1, "float": 2.0, "decimal": "13.232", "datetime": "2023-08-01T23:32:11Z", "date": "2023-08-01", "timestamp": "2023-08-01T23:32:11Z", "nested": {"boolean": false, "datetime": "2023-08-01T23:32:11Z", "very_nested": {"boolean": false, "datetime": "2023-08-01T23:32:11Z"}}}'
     )
+
+
+def test_build_type_mismatch_exception_identifies_nested_field():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "location": {
+                    "city": "Paris",
+                    "country": "FR",
+                    "latitude": "48.8566;2.3522",
+                    "longitude": 2.3522,
+                    "state": "",
+                    "zipcode": "75000",
+                }
+            }
+        ]
+    )
+    ex = pa.ArrowInvalid(
+        "('object of type <class \\'str\\'> cannot be converted to int', 'Conversion failed for column location with type object')"
+    )
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert traced.failure_type == FailureType.config_error
+    assert 'Stream "append_stream_big"' in traced.message
+    assert 'field "location.latitude"' in traced.message
+    assert "type str" in traced.message
+    assert "declared type number" in traced.message
+
+
+def test_build_type_mismatch_exception_identifies_array_field():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame(
+        [
+            {
+                "questions": [
+                    {"id": 1, "question": "q1", "answer": "a1"},
+                    {"id": "not-an-int", "question": "q2", "answer": "a2"},
+                ]
+            }
+        ]
+    )
+    ex = pa.ArrowInvalid("Conversion failed for column questions with type object")
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert "questions[1].id" in traced.message
+
+
+def test_build_type_mismatch_exception_falls_back_to_column_when_no_leaf_mismatch():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame([{"location": {"city": "Paris"}}])
+    ex = pa.ArrowInvalid("Conversion failed for column location with type object")
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert "location" in traced.message
+
+
+def test_build_type_mismatch_exception_when_column_unknown():
+    writer = get_big_schema_writer(get_config())
+    df = pd.DataFrame([{"sourceId": "abc"}])
+    ex = pa.ArrowInvalid("some other pyarrow failure we cannot parse")
+
+    traced = writer._build_type_mismatch_exception(df, ex)
+
+    assert isinstance(traced, AirbyteTracedException)
+    assert "append_stream_big" in traced.message

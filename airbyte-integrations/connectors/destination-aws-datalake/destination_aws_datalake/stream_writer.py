@@ -4,17 +4,23 @@
 
 import json
 import logging
+import re
 from datetime import date, datetime
 from decimal import Decimal, getcontext
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
+import pyarrow as pa
 
-from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode
+from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode, FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .aws import AwsHandler
 from .config_reader import ConnectorConfig, PartitionOptions
 from .constants import EMPTY_VALUES, GLUE_TYPE_MAPPING_DECIMAL, GLUE_TYPE_MAPPING_DOUBLE, PANDAS_TYPE_MAPPING
+
+
+_PYARROW_COLUMN_RE = re.compile(r"Conversion failed for column ([^\s]+) with type")
 
 
 # By default we set glue decimal type to decimal(28,25)
@@ -414,32 +420,138 @@ class StreamWriter:
             if col in df.columns:
                 df[col] = df[col].apply(lambda x: json.dumps(x, cls=DictEncoder))
 
-        if self._sync_mode == DestinationSyncMode.overwrite and self._partial_flush_count < 1:
-            logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
-            self._aws_handler.write(
-                df,
-                self._database,
-                self._table,
-                dtype,
-                partition_fields,
-            )
+        try:
+            if self._sync_mode == DestinationSyncMode.overwrite and self._partial_flush_count < 1:
+                logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
+                self._aws_handler.write(
+                    df,
+                    self._database,
+                    self._table,
+                    dtype,
+                    partition_fields,
+                )
 
-        elif self._sync_mode == DestinationSyncMode.append or self._partial_flush_count > 0:
-            logger.debug(f"Appending {len(df)} records to {self._database}:{self._table}")
-            self._aws_handler.append(
-                df,
-                self._database,
-                self._table,
-                dtype,
-                partition_fields,
-            )
+            elif self._sync_mode == DestinationSyncMode.append or self._partial_flush_count > 0:
+                logger.debug(f"Appending {len(df)} records to {self._database}:{self._table}")
+                self._aws_handler.append(
+                    df,
+                    self._database,
+                    self._table,
+                    dtype,
+                    partition_fields,
+                )
 
-        else:
-            self._messages = []
-            raise Exception(f"Unsupported sync mode: {self._sync_mode}")
+            else:
+                self._messages = []
+                raise Exception(f"Unsupported sync mode: {self._sync_mode}")
+        except (pa.ArrowInvalid, pa.ArrowTypeError) as ex:
+            raise self._build_type_mismatch_exception(df, ex) from ex
 
         if partial:
             self._partial_flush_count += 1
 
         del df
+
+    def _build_type_mismatch_exception(self, df: pd.DataFrame, ex: Exception) -> AirbyteTracedException:
+        """
+        Build an `AirbyteTracedException` describing a pyarrow type-conversion failure.
+
+        The underlying pyarrow error only names the top-level column (for example
+        `Conversion failed for column properties with type object`). For nested
+        struct/array columns that makes it hard to tell which specific subfield
+        actually violated the declared schema. This helper parses the column name
+        out of the error, walks the offending column's values against the stream's
+        JSON schema, and returns the first dotted field path whose value type does
+        not match the declared type along with the observed Python type and the
+        declared JSON Schema type.
+        """
+        err_msg = str(ex)
+        column_match = _PYARROW_COLUMN_RE.search(err_msg)
+        column = column_match.group(1) if column_match else None
+
+        bad_path: Optional[str] = None
+        observed_type: Optional[str] = None
+        declared_type: Optional[str] = None
+        if column and column in df.columns and column in self._schema:
+            bad_path, observed_type, declared_type = self._find_first_type_mismatch(
+                df[column].tolist(), self._schema[column], prefix=column
+            )
+
+        if bad_path is not None:
+            message = (
+                f'Stream "{self._table}" field "{bad_path}" has values of type '
+                f"{observed_type} that do not match declared type {declared_type}."
+            )
+        elif column is not None:
+            message = f'Stream "{self._table}" column "{column}" has values that do not match the declared schema type.'
+        else:
+            message = f'Stream "{self._table}" produced values that cannot be converted to the declared schema types.'
+
+        internal_message = (
+            f"[stream={self._table} column={column} field={bad_path} "
+            f"observed_type={observed_type} declared_type={declared_type}] "
+            f"pyarrow conversion failed: {ex!r}"
+        )
+        return AirbyteTracedException(
+            message=message,
+            internal_message=internal_message,
+            failure_type=FailureType.config_error,
+        )
+
+    def _find_first_type_mismatch(
+        self, values: List[Any], schema_entry: Dict[str, Any], prefix: str
+    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+        """
+        Walk each value in `values` against `schema_entry` and return the first
+        `(dotted_path, observed_python_type, declared_json_schema_type)` where
+        the observed Python type does not match the declared JSON Schema type.
+        Returns `(None, None, None)` if no mismatch is found.
+        """
+        for value in values:
+            path, observed, declared = self._walk_value(value, schema_entry, prefix)
+            if path is not None:
+                return path, observed, declared
+        return None, None, None
+
+    def _walk_value(
+        self, value: Any, schema_entry: Dict[str, Any], prefix: str
+    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+        if value is None or value in EMPTY_VALUES:
+            return None, None, None
+
+        declared = self._get_json_schema_type(schema_entry.get("type"))
+
+        if declared == "object" and isinstance(value, dict):
+            props = schema_entry.get("properties") or {}
+            for key, sub_value in value.items():
+                sub_schema = props.get(key)
+                if sub_schema is None:
+                    continue
+                path, observed, sub_declared = self._walk_value(sub_value, sub_schema, f"{prefix}.{key}")
+                if path is not None:
+                    return path, observed, sub_declared
+            return None, None, None
+
+        if declared == "array" and isinstance(value, list):
+            items_schema = schema_entry.get("items") or {}
+            for idx, item in enumerate(value):
+                path, observed, sub_declared = self._walk_value(item, items_schema, f"{prefix}[{idx}]")
+                if path is not None:
+                    return path, observed, sub_declared
+            return None, None, None
+
+        observed_type = type(value).__name__
+        if declared in ("integer", "number"):
+            # `bool` is a subclass of `int` in Python, but does not round-trip as a number here.
+            if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
+                return prefix, observed_type, declared
+            return None, None, None
+
+        if declared == "boolean" and not isinstance(value, bool):
+            return prefix, observed_type, declared
+
+        if declared == "string" and not isinstance(value, str):
+            return prefix, observed_type, declared
+
+        return None, None, None
         self._messages.clear()
