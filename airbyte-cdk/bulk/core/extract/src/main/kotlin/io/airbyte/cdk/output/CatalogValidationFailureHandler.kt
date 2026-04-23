@@ -58,7 +58,7 @@ data class FieldNotFound(
     val fieldName: String,
 ) : CatalogValidationFailure {
     override val message =
-        "Field '$fieldName' not found in stream '$streamID'. Refresh the source schema to continue syncing this stream."
+        "Field '$fieldName' not found in stream '$streamID'. To continue syncing this stream, restore access to the field or refresh the source schema to remove it."
 }
 
 data class FieldTypeMismatch(
