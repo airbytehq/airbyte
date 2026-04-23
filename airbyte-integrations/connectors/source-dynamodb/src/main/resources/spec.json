@@ -108,7 +108,6 @@
         "title": "Reserved attribute names",
         "type": "string",
         "description": "Comma separated reserved attribute names present in your tables",
-        "airbyte_secret": true,
         "examples": ["name, field_name, field-name"]
       },
       "ignore_missing_read_permissions_tables": {
