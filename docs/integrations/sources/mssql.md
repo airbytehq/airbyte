@@ -24,6 +24,7 @@ Airbyte's certified MSSQL connector offers the following features:
 | CDC \(Change Data Capture\)   | Yes       |                    |
 | SSL Support                   | Yes       |                    |
 | SSH Tunnel Connection         | Yes       |                    |
+| Microsoft Entra ID Auth       | Yes       | Service principal  |
 | Namespaces                    | Yes       | Enabled by default |
 
 The MSSQL source does not alter the schema present in your database. Depending on the destination
@@ -58,6 +59,34 @@ Alternatively, you can use Airbyte with an existing user in your database.
 On Airbyte Cloud, only secured connections to your MSSQL instance are supported in source
 configuration. You may either configure your connection using one of the supported SSL Methods or by
 using an SSH Tunnel.
+
+## Authentication with Microsoft Entra ID
+
+In addition to standard SQL Server username/password authentication, this connector supports [Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/) (formerly Azure Active Directory) authentication using a **service principal**.
+
+When the Entra ID fields (`Entra ID Client ID` and `Entra ID Client Secret`) are configured, the connector uses Entra ID service principal authentication instead of the username and password.
+
+### Prerequisites
+
+1. An Azure SQL Database, Azure SQL Managed Instance, or SQL Server configured for Microsoft Entra ID authentication. See the [Microsoft documentation on configuring Microsoft Entra authentication](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure) for setup instructions.
+2. A [registered application (service principal)](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app) in Microsoft Entra ID with a client secret.
+3. The service principal must be granted access to the database. See [Create Microsoft Entra users using service principals](https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-service-principal-tutorial) for details.
+
+### Configuration
+
+In the Airbyte connector configuration, fill in the following fields under the **Microsoft Entra ID** section:
+
+| Field | Description | Required |
+| :--- | :--- | :--- |
+| **Entra ID Client ID** | The application (client) ID of the service principal. | Yes |
+| **Entra ID Client Secret** | The client secret generated for the service principal. | Yes |
+| **Entra ID Tenant ID** | The Azure AD tenant ID. Optional — if omitted, the driver infers the tenant from the service principal. | No |
+
+When these fields are provided, the connector authenticates using `ActiveDirectoryServicePrincipal` mode via the Microsoft JDBC driver. The `Username` and `Password` fields are ignored in this case.
+
+:::note
+Entra ID authentication requires an encrypted connection. Make sure the **Encryption** setting is set to `Encrypted (trust server certificate)` or `Encrypted (verify certificate)`.
+:::
 
 ## Change Data Capture \(CDC\)
 
@@ -442,6 +471,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.0       | 2026-04-08 | [76143](https://github.com/airbytehq/airbyte/pull/76143)                                                          | Add Microsoft Entra ID service principal authentication for both JDBC and CDC paths.                                                           |
 | 4.3.6       | 2026-04-02 | [74729](https://github.com/airbytehq/airbyte/pull/74729)                                                          | Fix snapshot partitions restarting from the beginning of the table instead of resuming from the last checkpoint.                                   |
 | 4.3.5       | 2026-02-23 | [73606](https://github.com/airbytehq/airbyte/pull/73606)                                                          | Fix CDC cursor overflow.                                                                                                                        |
 | 4.3.4       | 2026-02-17 | [72935](https://github.com/airbytehq/airbyte/pull/72935)                                                          | Update LSN validation to correctly detect when saved offset has been truncated.                                                                 |
