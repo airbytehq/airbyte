@@ -17,7 +17,7 @@ from airbyte_agent_sdk import connect
 async def main():
     hubspot = connect("hubspot")
     try:
-        result = await hubspot.execute("contacts", "list")
+        result = await hubspot.execute("contacts", "list", params={"limit": 10})
         for row in result.data:
             print(row)
     finally:
@@ -39,7 +39,7 @@ For connectors with a generated typed submodule, `connect()` returns a typed con
 
 For every other connector in the bundled registry, `connect()` returns a generic `HostedExecutor` with the same `execute(entity, action, params)` method but without typed shortcuts. The execution behavior is otherwise identical.
 
-`connect()` raises `ValueError` if the slug isn't in the bundled registry or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing — YAML-only connectors return a `HostedExecutor`.
+`connect()` raises `ValueError` if the slug isn't in the bundled registry (the message lists every supported slug) or if no Airbyte credentials are available. It does *not* raise when a typed submodule is missing — YAML-only connectors return a `HostedExecutor`.
 
 ### Multiple connectors of the same type
 
@@ -73,7 +73,7 @@ Check `result.outcome == "success"` before trusting `result.answer`. The `result
 
 ```python title="Example result.results[0] for a routed list call"
 AskToolCallResult(
-    source_id="<resolved_connector_id>",
+    source_id="58caf5e9-7a6b-4d1e-9f3c-d4a2e81b9f70",
     entity="customers",
     action="list",
     params={"limit": 5},
@@ -248,7 +248,7 @@ from airbyte_agent_sdk import AirbyteError, connect
 
 stripe = connect("stripe")
 try:
-    result = await stripe.execute("customers", "list")
+    result = await stripe.execute("customers", "list", params={"limit": 10})
 except (AirbyteError, httpx.HTTPError) as err:
     print(f"Execution failed: {err!r}")
 ```

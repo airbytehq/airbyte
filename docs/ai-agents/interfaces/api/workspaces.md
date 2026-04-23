@@ -10,7 +10,19 @@ Listing every workspace, updating a workspace's status, deleting a workspace, an
 
 A **workspace** is a container inside your Airbyte Agents organization that holds a set of connectors and credentials. Every organization starts with a `default` workspace, and most apps stay there. Create additional workspaces only when you need to isolate credentials across distinct tenants, teams, or environments.
 
-Every request that touches a connector carries the workspace it belongs to in a `workspace_name` field. Airbyte treats that string as a stable identifier for the workspace — once a workspace exists under a given name, later requests against the same name always resolve to the same workspace. Renaming a workspace (see [Update a workspace](#update-a-workspace)) changes its display name in list responses but does not change the identifier your backend sends in request bodies; keep using the original `workspace_name`.
+Every workspace has two identifiers:
+
+- `id`: an Airbyte-assigned UUID that never changes for the lifetime of the workspace. This is the durable identifier. Persist it in your backend.
+- `name` (referred to in request bodies as `workspace_name`): a human-readable label you choose. It's also what routing endpoints like [mint a scoped token](./authentication#scoped-token) and [create a connector](./add-connector) accept as a lookup key, so it acts like an identifier in day-to-day use — but it isn't guaranteed to be stable.
+
+:::warning Rename footgun
+If you [rename a workspace](#update-a-workspace), requests keyed by the old name break in two different ways:
+
+- Reads that require an existing workspace — for example, listing a workspace's connectors — fail with `404 "Workspace not found for workspace_name '...'"`.
+- Endpoints that autocreate on first use — [scoped-token](./authentication#scoped-token) and [widget-token](./authentication#widget-token) mint — silently create a brand-new empty workspace under the old name, with a new UUID and no connectors. Your app keeps working, but it's pointing at a different workspace.
+
+Persist each workspace's UUID in your backend when it's created, and reference it — not the name — wherever the API accepts a `workspace_id` (for example, in this page's [Get](#get-workspace-details), [Update](#update-a-workspace), and [Delete](#delete-a-workspace) endpoints). Treat `workspace_name` as a routing convenience, not an identifier.
+:::
 
 ## Create a new workspace
 
@@ -108,11 +120,18 @@ curl -X DELETE https://api.airbyte.ai/api/v1/workspaces/<workspace_id> \
   -H 'Authorization: Bearer <application_token>'
 ```
 
+```json title="Response"
+{
+  "id": "<workspace_id>",
+  "deleted_at": "2026-04-23T01:32:22.512509Z"
+}
+```
+
 Deleting a workspace with many connectors and long-lived credentials can take a few seconds. If the server times out with a `504`, retry once — the first call typically finishes in the background.
 
 ## Best practices
 
-- Pick a naming convention for `workspace_name` up front and stick with it. Airbyte uses whatever string you first pass, so picking a stable identifier now avoids orphaned workspaces later.
+- Persist each workspace's UUID (`id`) in your backend on creation and reference it wherever the API accepts a `workspace_id`. `workspace_name` is a human-readable label, not a durable identifier — renaming breaks name-keyed requests, as described at the top of this page.
 
 - Handle token expiration appropriately. Application tokens expire after 15 minutes and scoped tokens expire after 20 minutes.
 
