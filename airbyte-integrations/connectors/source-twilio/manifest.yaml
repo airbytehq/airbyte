@@ -163,7 +163,7 @@ definitions:
         - "%Y-%m-%d"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: P1D
-      step: P1Y
+      step: "{{ config.get('slice_step_duration', 'P1M') }}"
       lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
@@ -221,7 +221,7 @@ definitions:
       cursor_field: date_generated
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
-      step: P1Y
+      step: "{{ config.get('slice_step_duration', 'P1M') }}"
       lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
@@ -880,6 +880,22 @@ spec:
         examples: [1, 2, 3]
         order: 5
         description: The number of worker threads to use for the sync.
+      slice_step_duration:
+        type: string
+        title: Slice Step Duration
+        description: The time window size for each data slice when syncing incremental streams. Smaller windows may help avoid timeouts for accounts with large data volumes.
+        default: P1M
+        enum:
+          - P1D
+          - P1W
+          - P1M
+          - P1Y
+        enum_labels:
+          P1D: 1 Day
+          P1W: 1 Week
+          P1M: 1 Month
+          P1Y: 1 Year
+        order: 6
 
 schemas:
   accounts:

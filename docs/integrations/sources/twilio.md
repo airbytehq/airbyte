@@ -100,7 +100,8 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0 | 2026-04-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate `services` and `roles` streams from the deprecated Programmable Chat API to the Conversations API |
+| 1.0.0 | 2026-04-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate `services` and `roles` streams from the deprecated Programmable Chat API to the Conversations API |
+| 0.17.7 | 2026-04-21 | [72494](https://github.com/airbytehq/airbyte/pull/72494) | Add configurable slice step duration (default: 1 month) |
 | 0.17.6 | 2026-04-21 | [76801](https://github.com/airbytehq/airbyte/pull/76801) | Update dependencies |
 | 0.17.5 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 0.17.4 | 2026-01-22 | [72260](https://github.com/airbytehq/airbyte/pull/72260) | Update CDK version from 7.0.1 to 7.6.5 |
