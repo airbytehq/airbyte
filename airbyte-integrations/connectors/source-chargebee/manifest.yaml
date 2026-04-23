@@ -2088,15 +2088,16 @@ spec:
         title: Chargebee Subscription Plan
         description: >-
           Your Chargebee subscription plan. Determines the API rate-limit ceiling the connector
-          will respect once rate-limit enforcement is enabled in a follow-up release
-          (Starter: 150 req/min, Performance: 1000 req/min, Enterprise: 3500 req/min).
-          Defaults to the lowest tier for safety; customers on higher tiers should update this
-          to take advantage of their plan's higher rate limit.
+          enforces locally (Starter: 150 req/min, Performance: 1000 req/min, Enterprise: 3500 req/min).
+          Defaults to `enterprise` (the highest documented tier) so by default the connector
+          does not under-utilize Enterprise customers' plans. Customers on Starter or Performance
+          should set this explicitly so the local budget matches their plan and avoids Chargebee
+          server-side 429 responses.
         enum:
           - starter
           - performance
           - enterprise
-        default: starter
+        default: enterprise
         order: 5
     additionalProperties: true
 
@@ -11833,31 +11834,30 @@ schemas:
 # - Performance: 1000 req/min (16 req/sec)
 # - Enterprise (default): 3500 req/min (58 req/sec)
 # - Enterprise (custom): no upper limit (Enterprise-custom customers can treat the 'enterprise'
-#   spec value as a conservative ceiling and rely on Chargebee's 429/Retry-After response for
-#   any overflow during the rare case they configure a lower concurrency than their custom cap).
+#   spec value as a conservative ceiling — their Chargebee-side cap is higher, so the 3500 req/min
+#   local budget simply leaves some headroom unused).
 # TEST sites are always capped at 150 req/min regardless of plan.
 # Rate-limit errors return HTTP 429 with a Retry-After header.
 #
-# No active HTTPAPIBudget is shipped during concurrency tuning so the tuned default_concurrency
-# can be validated empirically. The budget block below is recorded as YAML comments and uses
-# config.subscription_tier interpolation so the follow-up rate-limit activation PR only needs
-# to uncomment these lines — no further edits required.
-#
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: "{{ {'starter': 150, 'performance': 1000, 'enterprise': 3500}[config.get('subscription_tier', 'starter')] }}"
-#           interval: PT1M
-#       matchers: []
-#   ratelimit_reset_header: Retry-After
-#   status_codes_for_ratelimit_hit:
-#     - 429
-#
+# The HTTPAPIBudget below is active and interpolates its limit from config.subscription_tier
+# (Path B: ship a rate-limit config for the highest documented tier as the default). Tuning the
+# concurrency knob happens against the `enterprise` default (3500 req/min / 58 req/sec).
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ {'starter': 150, 'performance': 1000, 'enterprise': 3500}[config.get('subscription_tier', 'enterprise')] }}"
+          interval: PT1M
+      matchers: []
+  ratelimit_reset_header: Retry-After
+  status_codes_for_ratelimit_hit:
+    - 429
+
 # default_concurrency is set to 14 = floor(58 req/sec / 4) against the Enterprise tier (Path B tuning baseline).
-# Once the budget above is activated in the follow-up PR, Starter/Performance customers will be
-# throttled smoothly via 429/Retry-After; they can also lower num_workers in the spec for fewer round-trips.
+# Starter/Performance customers who set their subscription_tier correctly will be throttled
+# smoothly by the HTTPAPIBudget above; customers who leave it on the default and are actually
+# on a lower tier will be throttled by Chargebee's server-side 429/Retry-After response.
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 14) }}"
