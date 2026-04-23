@@ -55,7 +55,7 @@ The MCP server at [`mcp.airbyte.ai`](../interfaces/mcp) is accessed by external 
 - **Times on the wire are UTC.** The MCP tools accept and return UTC timestamps.
 - **Time zone reasoning is the client agent's job.** When you ask your agent "what happened today?" or "show me deals closing this month," the agent needs to decide what "today" and "this month" mean. Most clients resolve relative dates using their host environment's time zone. Tell the agent the zone explicitly if you need precision.
 
-The MCP server doesn't currently expose tools for creating, updating, or running Automations. Build and schedule Automations in the web app, API, or SDK.
+The MCP server doesn't currently expose tools for creating, updating, or running Automations. However, if you used it with an agent that supports automations, it runs according to the settings that agent is designed to use.
 
 ## Related topics
 
