@@ -5090,31 +5090,35 @@ check:
 # The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_threads'] or 2 }}"
+  default_concurrency: "{{ config['num_threads'] or 4 }}"
   max_concurrency: 50
 
-api_budget:
-  type: HTTPAPIBudget
-  status_codes_for_ratelimit_hit: [429]
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - interval: "PT60S"
-          limit: 300
-      matchers:
-        # ad account analytics (NOT user_account/analytics)
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/analytics"
-        # campaign analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/campaigns/analytics"
-        # ad group analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ad_groups/analytics"
-        # ad analytics
-        - type: HttpRequestRegexMatcher
-          method: GET
-          url_path_pattern: "ad_accounts/[^/]+/ads/analytics"
+# HTTPAPIBudget temporarily commented out for concurrency tuning (Path A).
+# Original values preserved here so they can be restored / re-evaluated after
+# tuning via a follow-up rate-limit application playbook. Do not uncomment
+# during tuning — proactive throttling would skew the concurrency signal.
+# api_budget:
+#   type: HTTPAPIBudget
+#   status_codes_for_ratelimit_hit: [429]
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - interval: "PT60S"
+#           limit: 300
+#       matchers:
+#         # ad account analytics (NOT user_account/analytics)
+#         - type: HttpRequestRegexMatcher
+#           method: GET
+#           url_path_pattern: "ad_accounts/[^/]+/analytics"
+#         # campaign analytics
+#         - type: HttpRequestRegexMatcher
+#           method: GET
+#           url_path_pattern: "ad_accounts/[^/]+/campaigns/analytics"
+#         # ad group analytics
+#         - type: HttpRequestRegexMatcher
+#           method: GET
+#           url_path_pattern: "ad_accounts/[^/]+/ad_groups/analytics"
+#         # ad analytics
+#         - type: HttpRequestRegexMatcher
+#           method: GET
+#           url_path_pattern: "ad_accounts/[^/]+/ads/analytics"
