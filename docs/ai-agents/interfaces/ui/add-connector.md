@@ -50,7 +50,15 @@ The new connector appears immediately in the Credentials table and in the **Avai
 
 ## OAuth versus access tokens
 
-Most connectors let you authenticate with either an OAuth flow or an access token you paste into a form. Both options produce a working connector, but they give Airbyte different levels of control over what that connector can reach. If a connector offers both, prefer OAuth.
+Most connectors let you authenticate with either an OAuth flow or an access token you paste into a form. Both options produce a working connector, but the selections you make during authentication mean different things in each case. If a connector offers both, prefer OAuth.
+
+### What you're selecting when you add credentials
+
+When you pick entities in the authentication flow, the selection has a different effect depending on how you're authenticating:
+
+- **OAuth selects scopes.** Your entity selections are translated into the narrowest set of OAuth scopes that covers what you chose, and the third-party service enforces those scopes on every request.
+- **Tokens select what populates the [Context Store](../../concepts/context-store).** A token can grant other permissions that Airbyte can't see or restrict; selecting entities only controls which of those the connector replicates.
+- **The entity list can differ by authentication method.** Seeing different options doesn't mean you can't reach the same data—it means the picker is showing you the subset that's meaningful to select in that mode. The set of entities the connector can actually read is the same in both modes.
 
 ### OAuth
 
@@ -64,6 +72,8 @@ When you paste an access token, API key, or PAT into the form, you're handing Ai
 
 In token mode, selecting entities controls what Airbyte replicates into the [Context Store](../../concepts/context-store), not what the token can reach. The entity picker shows a single **Include** column—there are no read/write modes, because the mode isn't Airbyte's to enforce. If you need to keep the connector away from a piece of data, restrict the token itself on the third-party service before you paste it in.
 
+Bot tokens and workspace-level tokens behave the same way in this regard. Their permissions come from how they were provisioned on the third-party service, and Airbyte replicates only the entities you select.
+
 ### Why the entity list can differ
 
 The list of entities the picker shows can differ between the two authentication methods:
@@ -71,7 +81,7 @@ The list of entities the picker shows can differ between the two authentication 
 - In OAuth mode, the picker shows every entity the connector knows about, including write-only ones, because OAuth scopes can express write-only access.
 - In token mode, the picker hides write-only entities, because selecting one wouldn't put anything into the Context Store.
 
-This is by design, not a bug. In token mode the picker only shows entities you can actually replicate, so the options you see match the outcome you get and the UI doesn't imply a level of access control Airbyte can't enforce.
+This is by design, not a bug. A different entity list doesn't mean one method gives you less data than the other—the connector can still read the same underlying entities from the third-party service. In token mode the picker just limits itself to the entities you can actually replicate, so the options you see match the outcome you get and the UI doesn't imply a level of access control Airbyte can't enforce.
 
 ## Add a connector during a Chat
 
