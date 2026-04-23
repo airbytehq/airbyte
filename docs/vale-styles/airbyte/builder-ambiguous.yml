@@ -1,0 +1,9 @@
+extends: existence
+message: "'Builder' on its own is ambiguous. Use 'Connector Builder' (for the low-code connector tool) or 'Automation Builder' (for the Airbyte Agents tool) as appropriate."
+link: https://docs.airbyte.com/platform/next/contributing-to-airbyte/writing-docs
+level: suggestion
+ignorecase: false
+# "Connector Builder" and "Automation Builder" are ignored globally via
+# TokenIgnores in vale.ini, so this rule only fires on bare "Builder".
+tokens:
+  - '\bBuilder\b'

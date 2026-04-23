@@ -28,7 +28,6 @@ Agent Engine
 [Aa]gent(ic)? [Oo]peration(s)?
 AO
 AOs
-[Aa]utomation(s)?
 SAML
 
 #
