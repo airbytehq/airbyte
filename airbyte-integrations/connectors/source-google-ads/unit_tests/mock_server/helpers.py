@@ -137,7 +137,7 @@ def mock_oauth(
     client_secret: str = "test_client_secret",
     refresh_token: str = "test_refresh_token",
 ) -> None:
-    body = f"grant_type=refresh_token" f"&client_id={client_id}" f"&client_secret={client_secret}" f"&refresh_token={refresh_token}"
+    body = f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}"
     http_mocker.post(
         HttpRequest(url=OAUTH_URL, body=body),
         HttpResponse(
