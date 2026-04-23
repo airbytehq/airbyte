@@ -10,11 +10,22 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-/** Provides a single shared [HikariDataSource] for all integration tests */
+/**
+ * Provides a single shared [HikariDataSource] for all integration tests. This avoids the overhead
+ * of creating and destroying a connection pool on every [RedshiftDataDumper.dumpRecords] or
+ * [RedshiftDataCleaner.cleanup] call (~1-3 seconds of Redshift connection establishment each time).
+ *
+ * The DataSource is lazily initialized on first access and should be explicitly closed via [close]
+ * in an `@AfterAll` method (see [RedshiftAcceptanceTest]).
+ */
 class RedshiftTestDataSourceProvider private constructor() {
     companion object {
         @Volatile private var dataSource: HikariDataSource? = null
 
+        /**
+         * Returns the shared [HikariDataSource], creating it on first access. Thread-safe via
+         * double-checked locking.
+         */
         fun get(): HikariDataSource {
             return dataSource
                 ?: synchronized(this) {
