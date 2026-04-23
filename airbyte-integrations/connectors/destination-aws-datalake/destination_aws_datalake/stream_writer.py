@@ -513,9 +513,7 @@ class StreamWriter:
                 return path, observed, declared
         return None, None, None
 
-    def _walk_value(
-        self, value: Any, schema_entry: Dict[str, Any], prefix: str
-    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def _walk_value(self, value: Any, schema_entry: Dict[str, Any], prefix: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         if value is None or value in EMPTY_VALUES:
             return None, None, None
 
