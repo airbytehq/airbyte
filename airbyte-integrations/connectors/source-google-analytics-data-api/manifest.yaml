@@ -2992,15 +2992,16 @@ spec:
         type: string
         title: Subscription Plan/Tier
         description:
-          Quota tier of the Google Analytics 4 properties being queried. Select
-          "Analytics 360 Property" only if all configured property IDs belong to an
-          Analytics 360 subscription; selecting it for Standard properties will cause
-          requests to be throttled upstream by Google rather than locally. See
+          Quota tier of the Google Analytics 4 properties being queried. Keep
+          "Analytics 360 Property" if all configured property IDs belong to an
+          Analytics 360 subscription; switch to "Standard Property" if any of the
+          configured properties are on the free Standard tier so local throttling
+          matches the stricter per-property quota. See
           https://developers.google.com/analytics/devguides/reporting/data/v1/quotas.
         enum:
           - Standard Property
           - Analytics 360 Property
-        default: Standard Property
+        default: Analytics 360 Property
         order: 9
       num_workers:
         type: integer
@@ -3084,7 +3085,7 @@ api_budget:
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: "{{ 50 if config.get('subscription_tier') == 'Analytics 360 Property' else 10 }}"
+        - limit: "{{ 10 if config.get('subscription_tier') == 'Standard Property' else 50 }}"
           interval: PT1S
       matchers:
         - method: POST
