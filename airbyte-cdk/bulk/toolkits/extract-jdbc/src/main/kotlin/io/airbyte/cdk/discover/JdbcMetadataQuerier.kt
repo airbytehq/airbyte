@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
@@ -73,7 +74,8 @@ class JdbcMetadataQuerier(
      * The set of namespaces to discover against. When [JdbcSourceConfiguration.namespaces] is
      * non-empty this is just that set; otherwise it is resolved at discovery time to every
      * schema/catalog the JDBC user can see via [DatabaseMetaData.getSchemas] or
-     * [DatabaseMetaData.getCatalogs].
+     * [DatabaseMetaData.getCatalogs]. Throws [ConfigErrorException] when nothing is configured and
+     * nothing is accessible.
      */
     val effectiveNamespaces: Set<String> by lazy {
         if (config.namespaces.isNotEmpty()) {
@@ -92,6 +94,12 @@ class JdbcMetadataQuerier(
                         buildSet { while (rs.next()) rs.getString("TABLE_SCHEM")?.let(::add) }
                     }
             }
+        if (discovered.isEmpty()) {
+            throw ConfigErrorException(
+                "No namespaces are configured and no ${constants.namespaceKind} " +
+                    "is accessible to the JDBC user."
+            )
+        }
         log.info {
             "No namespaces configured — resolved ${discovered.size} accessible namespace(s) " +
                 "(${constants.namespaceKind}) from the JDBC driver."
