@@ -322,9 +322,11 @@ constructor(
                 }
             }
 
-        // Parse JDBC URL parameters
+        // Parse JDBC URL parameters. Operator-supplied jdbc_url_params is treated as the base
+        // layer; trusted resolved auth and the explicit encryption settings are layered on top
+        // so a stray (or malicious) jdbc_url_params=user=...&password=...&authentication=... can
+        // never override the resolved auth identity/mode. Mirrors the CDC path's exclusion set.
         val jdbcProperties = mutableMapOf<String, String>()
-        jdbcProperties.putAll(resolvedAuth.toJdbcProperties())
 
         // Parse URL parameters from jdbcUrlParams
         val pattern = "^([^=]+)=(.*)$".toRegex()
@@ -341,6 +343,7 @@ constructor(
                 jdbcProperties[key] = URLDecoder.decode(urlEncodedValue, StandardCharsets.UTF_8)
             }
         }
+        jdbcProperties.putAll(resolvedAuth.toJdbcProperties())
         jdbcProperties.putAll(jdbcEncryption)
 
         // Validate and process configuration values
