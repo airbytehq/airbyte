@@ -97,7 +97,7 @@ Automations run without a person sitting in the loop, so every connector an auto
 
 The fastest path is to tell the Automation Builder Agent what you want and let it flag missing connectors. Describe the automation in plain language. If a required data source isn't authenticated yet, the agent says so—often with connector tiles right in the chat—exactly like in a regular Chat. Click a tile, authenticate, and continue iterating on the automation. The agent re-reads the workspace context and adjusts its plan once the new connector is available.
 
-You can also ask the Builder Agent to change which connectors the automation uses. Sending a message like "use the Salesforce connector instead" or "add HubSpot" tells it to update the automation's [**Context**](./automations#properties) to match. Airbyte blocks direct edits to the Context list in the Properties panel on purpose, so that the prompt and the connectors it relies on stay in sync.
+You can also ask the Automation Builder Agent to change which connectors the automation uses. Sending a message like "use the Salesforce connector instead" or "add HubSpot" tells it to update the automation's [**Context**](./automations#properties) to match. Airbyte blocks direct edits to the Context list in the Properties panel on purpose, so that the prompt and the connectors it relies on stay in sync.
 
 If you prefer, you can still pre-authenticate everything from the Credentials page first, then open the Automation Builder with the connectors already in place. That path is often faster when you already know exactly which sources the automation needs.
 
