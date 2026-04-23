@@ -84,8 +84,8 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 
 This example searches for records using filter conditions.
 
-:::note `search` reads from the [context store](../../concepts/context-store)
-The `search` action reads from Airbyte's pre-indexed context store, not the live third-party API. The store is enabled by default in new organizations, and Airbyte populates it per connector after the connector is created. If you call `search` while the connector's context store still shows `Loading` or `Building Preview` on the Credentials page, the call returns an error at runtime. Wait for the status to reach `Preview` or `Ready`, or use `list`/`get` against the live API until it does.
+:::note `search` reads from the [Context Store](../../concepts/context-store)
+The `search` action reads from Airbyte's pre-indexed Context Store, not the live third-party API. The store is enabled by default in new organizations, and Airbyte populates it per connector after the connector is created. If you call `search` while the connector's Context Store still shows `Loading` or `Building Preview` on the Credentials page, the call returns an error at runtime. Wait for the status to reach `Preview` or `Ready`, or use `list`/`get` against the live API until it does.
 :::
 
 ```bash title="Request"

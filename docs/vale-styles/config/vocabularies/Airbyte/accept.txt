@@ -8,7 +8,9 @@ abctl
 Airbox
 PyAirbyte
 [Nn]amespace
+Automation Builder
 Connector Builder
+Context Store
 abctl
 Low-Code CDK
 Connection Timeline
@@ -28,7 +30,6 @@ Agent Engine
 [Aa]gent(ic)? [Oo]peration(s)?
 AO
 AOs
-[Aa]utomation(s)?
 SAML
 
 #
