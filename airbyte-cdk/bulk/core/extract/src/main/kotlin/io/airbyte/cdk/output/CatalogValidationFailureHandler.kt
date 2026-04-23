@@ -91,7 +91,7 @@ data class InvalidIncrementalSyncMode(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' has no cursor configured for incremental sync. To sync this stream incrementally, configure a cursor field, or switch the stream to full refresh."
+        "Stream '$streamID' has no cursor configured for incremental sync. To sync this stream incrementally, configure a cursor field, or switch the stream to the full refresh sync mode."
 }
 
 data class ResetStream(
