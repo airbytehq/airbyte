@@ -7,29 +7,49 @@ check:
   stream_names:
     - tags
 
+# Existing HTTPAPIBudget commented out for concurrency tuning (Path B).
+# The three endpoint-specific policies below are preserved as comments so the
+# original values can be re-applied after tuning completes via the follow-up
+# rate-limit application work. See airbytehq/airbyte-internal-issues#15330.
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 10
+#           interval: PT1M
+#       matchers:
+#         - url_path_pattern: "^/api/v2/incremental/.*"
+#
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 100
+#           interval: PT1M
+#       matchers:
+#         - url_path_pattern: "^/api/v2/search/export$"
+#
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 10
+#           interval: PT1M
+#       matchers:
+#         - url_path_pattern: "^/api/v2/deleted_tickets$"
+
+# Highest-tier rate-limit config (Path B) scoped to the Zendesk Support
+# "High Volume API add-on" plan: 2500 requests per minute across all endpoints.
+# This lets customers on the highest documented tier realize the expected
+# throughput. Lower-tier customers are expected to override `num_workers` if
+# their plan's limit is lower. See rate tier table in the concurrency_level
+# comment below for per-plan limits.
 api_budget:
   type: HTTPAPIBudget
   policies:
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 10
+        - limit: 2500
           interval: PT1M
-      matchers:
-        - url_path_pattern: "^/api/v2/incremental/.*"
-
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 100
-          interval: PT1M
-      matchers:
-        - url_path_pattern: "^/api/v2/search/export$"
-
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10
-          interval: PT1M
-      matchers:
-        - url_path_pattern: "^/api/v2/deleted_tickets$"
+      matchers: []
+  status_codes_for_ratelimit_hit: [429]
 
 definitions:
   bearer_authenticator:
@@ -1382,11 +1402,13 @@ streams:
 # - Enterprise: 700 req/min (11.7 req/sec)
 # - High Volume API add-on: 2500 req/min (41.7 req/sec)
 #
-# We use defer to a level of 3 because we assume by default that customers are on the Team tier, but
-# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
+# Default concurrency is tuned against the highest documented tier (High Volume
+# add-on, 41.7 req/sec) per Path B of the connector concurrency tuning playbook:
+#   starting_concurrency = max(floor(41.7 / 4), 2) = 10
+# Customers on lower tiers may reduce `num_workers` if their plan limit is hit.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
   max_concurrency: 40
 
 spec:
@@ -1546,15 +1568,19 @@ spec:
         title: Number of concurrent threads
         minimum: 1
         maximum: 40
-        default: 3
+        default: 10
         examples:
           - 1
           - 2
           - 3
+          - 10
         description: >-
-          The number of worker threads to use for the sync. The performance upper
-          boundary is based on the limit of your Zendesk Support plan. More info
-          about the rate limit plan tiers can be found on Zendesk's API <a
+          The number of worker threads to use for the sync. The default (10) is
+          tuned against the Zendesk "High Volume API add-on" tier (2500 req/min).
+          Customers on lower tiers (Team 200 req/min, Professional 400 req/min,
+          Enterprise 700 req/min) may want to reduce this value if they hit rate
+          limits. More info about the rate limit plan tiers can be found on
+          Zendesk's API <a
           href="https://developer.zendesk.com/api-reference/introduction/rate-limits/#zendesk-support-plan-limits">docs</a>.
         order: 3
       page_size:

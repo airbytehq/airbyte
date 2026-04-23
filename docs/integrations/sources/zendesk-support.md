@@ -220,6 +220,7 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.7-rc.1 | 2026-04-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Comment out existing HTTP API budget, add High Volume tier (2500/min) rate limit, and raise default concurrency from 3 to 10 for progressive rollout tuning |
 | 5.2.6 | 2026-04-22 | [76153](https://github.com/airbytehq/airbyte/pull/76153) | Fix links_next_paginator crash when Zendesk API response lacks cursor pagination keys |
 | 5.2.5 | 2026-04-21 | [74696](https://github.com/airbytehq/airbyte/pull/74696) | Update dependencies |
 | 5.2.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
