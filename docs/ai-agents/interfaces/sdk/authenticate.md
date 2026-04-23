@@ -98,7 +98,7 @@ The SDK obtains a short-lived token on first use and refreshes it automatically 
 
 ## Multiple organizations
 
-If your Airbyte account belongs to multiple organizations, pass `organization_id` to route requests to the right one.
+If your Airbyte account belongs to multiple organizations, pass `organization_id` (the organization's UUID) to route requests to the right one. The value appears as `organization_id` on every workspace returned by [List workspaces](../api/workspaces#list-workspaces).
 
 ```python title="agent.py"
 from airbyte_agent_sdk import Workspace
