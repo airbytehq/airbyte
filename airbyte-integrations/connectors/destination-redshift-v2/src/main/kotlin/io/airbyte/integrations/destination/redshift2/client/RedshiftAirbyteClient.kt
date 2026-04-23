@@ -148,11 +148,6 @@ class RedshiftAirbyteClient(
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
         val columnsInDb = getColumnsFromDbForDiscovery(tableName)
 
-        // Table does not exist -- return empty schema so the CDK creates it.
-        if (columnsInDb.isEmpty()) {
-            return TableSchema(emptyMap())
-        }
-
         val hasAllAirbyteColumns = columnsInDb.keys.containsAll(COLUMN_NAMES)
         if (!hasAllAirbyteColumns) {
             val message =
