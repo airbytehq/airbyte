@@ -362,4 +362,4 @@ ChatGPT may not realize it has access to data through the MCP server. If ChatGPT
 ### Queries return unexpected results
 
 - Ask the agent to describe the available entities before querying, so it picks the right one.
-- For time-based queries, the agent resolves relative dates like "this week" or "last month" automatically.
+- For time-based queries, the agent resolves relative dates like "this week" or "last month" automatically. The MCP server returns timestamps in UTC; see [Time zones](../../concepts/time-zones) for how this interacts with your local time.
