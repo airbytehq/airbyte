@@ -13,11 +13,14 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
-class ClickhouseSqlGenerator {
+class ClickhouseSqlGenerator(
+    private val config: ClickhouseConfiguration,
+) {
     private val log = KotlinLogging.logger {}
 
     fun createNamespace(namespace: String): String {
@@ -48,6 +51,10 @@ class ClickhouseSqlGenerator {
                 }
             }
 
+        // When the target database uses the Replicated engine, ClickHouse auto-manages the
+        // zookeeper path and replica name for Replicated*MergeTree tables. Passing them
+        // explicitly is rejected, so the engine is emitted path-less.
+        val replicatedPrefix = if (config.useReplicatedTables) "Replicated" else ""
         val engine =
             when (tableSchema.importType) {
                 is Dedupe -> {
@@ -65,9 +72,9 @@ class ClickhouseSqlGenerator {
                             // is invalid
                             COLUMN_NAME_AB_EXTRACTED_AT
                         }
-                    "ReplacingMergeTree($versionColumn)"
+                    "${replicatedPrefix}ReplacingMergeTree($versionColumn)"
                 }
-                else -> "MergeTree()"
+                else -> "${replicatedPrefix}MergeTree()"
             }
 
         return """
