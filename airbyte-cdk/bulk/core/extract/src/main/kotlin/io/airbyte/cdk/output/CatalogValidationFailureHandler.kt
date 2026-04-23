@@ -36,21 +36,21 @@ data class StreamNotFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' not found or not accessible in source. Restore access to it or refresh the source schema to remove it."
+        "Stream '$streamID' not found or not accessible in source. To continue syncing this stream, restore access to it, or refresh the source schema to remove it."
 }
 
 data class MultipleStreamsFound(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Multiple matching streams found for '$streamID' in source. Disambiguate the stream in source and refresh the source schema."
+        "Multiple matching streams found for '$streamID' in source. To continue syncing this stream, disambiguate it in source and refresh the source schema."
 }
 
 data class StreamHasNoFields(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' has no accessible data fields. Grant read access to its columns or refresh the source schema to remove the stream."
+        "Stream '$streamID' has no accessible data fields. To continue syncing this stream, grant read access to its columns, or refresh the source schema to remove the stream."
 }
 
 data class FieldNotFound(
@@ -76,7 +76,7 @@ data class InvalidPrimaryKey(
     val primaryKey: List<String>,
 ) : CatalogValidationFailure {
     override val message =
-        "Primary key $primaryKey not found in stream '$streamID'. Refresh the source schema and reselect a primary key that exists in the stream."
+        "Primary key $primaryKey not found in stream '$streamID'. To continue syncing this stream, refresh the source schema and reselect a primary key that exists in the stream."
 }
 
 data class InvalidCursor(
@@ -84,14 +84,14 @@ data class InvalidCursor(
     val cursor: String,
 ) : CatalogValidationFailure {
     override val message =
-        "Cursor '$cursor' not found in stream '$streamID'. Refresh the source schema and reselect a cursor field that exists in the stream."
+        "Cursor '$cursor' not found in stream '$streamID'. To continue syncing this stream, refresh the source schema and reselect a cursor field that exists in the stream."
 }
 
 data class InvalidIncrementalSyncMode(
     override val streamID: StreamIdentifier,
 ) : CatalogValidationFailure {
     override val message =
-        "Stream '$streamID' has no cursor configured for incremental sync. Configure a cursor field for incremental sync or switch the stream to full refresh."
+        "Stream '$streamID' has no cursor configured for incremental sync. To sync this stream incrementally, configure a cursor field, or switch the stream to full refresh."
 }
 
 data class ResetStream(
