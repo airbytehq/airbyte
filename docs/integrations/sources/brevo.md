@@ -49,6 +49,12 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.2.31 | 2026-04-21 | [76844](https://github.com/airbytehq/airbyte/pull/76844) | Bump SDM base image to stable 7.17.2 |
+| 0.2.30 | 2026-03-31 | [75946](https://github.com/airbytehq/airbyte/pull/75946) | Bump SDM base image for memory monitor (CDK PR #962) |
+| 0.2.29 | 2026-03-31 | [75672](https://github.com/airbytehq/airbyte/pull/75672) | Update dependencies |
+| 0.2.28 | 2026-03-24 | [75312](https://github.com/airbytehq/airbyte/pull/75312) | Update dependencies |
+| 0.2.27 | 2026-02-17 | [73432](https://github.com/airbytehq/airbyte/pull/73432) | Update dependencies |
+| 0.2.26 | 2026-02-03 | [72612](https://github.com/airbytehq/airbyte/pull/72612) | Update dependencies |
 | 0.2.25 | 2026-01-20 | [72057](https://github.com/airbytehq/airbyte/pull/72057) | Update dependencies |
 | 0.2.24 | 2026-01-14 | [71464](https://github.com/airbytehq/airbyte/pull/71464) | Update dependencies |
 | 0.2.23 | 2025-12-18 | [70627](https://github.com/airbytehq/airbyte/pull/70627) | Update dependencies |

@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Platform
+# Data replication platform
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -11,6 +11,10 @@ import Taxonomy from "@site/static/_taxonomy_of_data_movement.md";
 Use Airbyte's data replication platform to consolidate data from hundreds of sources into your data warehouses, data lakes, and databases. Then, move data into the operational tools where work happens, like CRMs, marketing platforms, and support systems.
 
 Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you. Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
+
+## Interactive product tour
+
+<Navattic id="cmhfnvz6w000004jrbwla348h" title="Airbyte Interactive Product Tour" />
 
 ## Why Airbyte?
 

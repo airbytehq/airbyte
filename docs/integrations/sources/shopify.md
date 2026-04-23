@@ -152,7 +152,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
 - [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
 - [Fulfillments](https://shopify.dev/api/admin-rest/2024-04/resources/fulfillment)
-- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/FulfillmentOrder)
+- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/FulfillmentOrder) - By default, closed fulfillment orders are excluded. To include them, enable the **Include Closed Fulfillment Orders** option in the connector configuration.
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/2024-04/resources/location)
@@ -236,7 +236,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 ### Troubleshooting
 
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
-- If you recieve a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
+- If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
 - If you need to cancel a `Shopify GraphQL BULK`job, please follow [these steps](https://shopify.dev/docs/api/usage/bulk-operations/queries#canceling-an-operation).  You will need the current in-progress job ID to cancel.
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
@@ -250,6 +250,11 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.1 | 2026-04-22 | [76245](https://github.com/airbytehq/airbyte/pull/76245) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
+| 3.3.0 | 2026-04-14 | [76327](https://github.com/airbytehq/airbyte/pull/76327) | Upgrade airbyte-cdk dependency from v6 to v7 |
+| 3.2.3 | 2026-03-20 | [75255](https://github.com/airbytehq/airbyte/pull/75255) | Upgrade Shopify API version from 2025-01 to 2025-10 |
+| 3.2.2 | 2026-03-09 | [72849](https://github.com/airbytehq/airbyte/pull/72849) | Fix missing fulfillment orders by querying fulfillmentOrders endpoint directly; add configurable `fulfillment_orders_include_closed` option (default: false) |
+| 3.2.1 | 2026-02-04 | [72810](https://github.com/airbytehq/airbyte/pull/72810) | feat(source-shopify): Add id and position fields to product_variants.options schema (AI-Triage PR) |
 | 3.2.0 | 2026-01-20 | [72209](https://github.com/airbytehq/airbyte/pull/72209) | Add `CollectionProducts` stream for all product-collection associations |
 | 3.1.2 | 2026-01-15 | [71188](https://github.com/airbytehq/airbyte/pull/71188) | Handle CDK exceptions in connection check |
 | 3.1.1 | 2026-01-06 | [71035](https://github.com/airbytehq/airbyte/pull/71035) | Fix IndexError in countries stream when profile_location_groups is empty |

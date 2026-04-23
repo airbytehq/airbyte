@@ -123,23 +123,22 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        # Note: The stateful ticket_metrics stream uses the parent's generated_timestamp as the cursor
-        # (see manifest.yaml transformation: record['generated_timestamp'] if 'generated_timestamp' in record else stream_slice.extra_fields['generated_timestamp'])
-        # So the cursor value is the parent's timestamp, not the child's updated_at
-        # Flexible assertion: generated_timestamp can be int or string depending on environment
+        # The parent tickets stream uses DatetimeBasedCursor with datetime_format: "%s".
+        # The cursor field is now updated_at, and the DatetimeBasedCursor normalizes cursor
+        # values to Unix timestamp format when storing state.
         state_dict = output.most_recent_state.stream_state.__dict__
-        expected_timestamp = int(parent_cursor_value.timestamp())
+        expected_parent_cursor_unix = str(int(parent_cursor_value.timestamp()))
 
         assert state_dict["lookback_window"] == 0
         assert state_dict["use_global_cursor"] == False
         assert "_ab_updated_at" in state_dict["state"]
         assert len(state_dict["states"]) == 1
 
-        # Check parent_state timestamp (can be int or string)
-        actual_generated_ts = state_dict["parent_state"]["tickets"]["generated_timestamp"]
-        assert actual_generated_ts == expected_timestamp or actual_generated_ts == str(
-            expected_timestamp
-        ), f"Expected {expected_timestamp} or '{expected_timestamp}', got {actual_generated_ts}"
+        # Parent state cursor is stored in Unix timestamp format by DatetimeBasedCursor
+        actual_updated_at = state_dict["parent_state"]["tickets"]["updated_at"]
+        assert (
+            actual_updated_at == expected_parent_cursor_unix
+        ), f"Expected Unix format '{expected_parent_cursor_unix}', got {actual_updated_at}"
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -224,7 +223,7 @@ class TestTicketMetricsTransformations(TestCase):
 
     The ticket_metrics stream adds _ab_updated_at transformation:
     - Stateless mode: _ab_updated_at = format_datetime(record['updated_at'], '%s')
-    - Stateful mode: _ab_updated_at = record['generated_timestamp'] or stream_slice.extra_fields['generated_timestamp']
+    - Stateful mode: _ab_updated_at = format_datetime(record['updated_at'], '%s') or format_datetime(stream_slice.extra_fields['updated_at'], '%s')
     """
 
     @property

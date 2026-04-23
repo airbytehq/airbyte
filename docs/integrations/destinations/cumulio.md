@@ -11,6 +11,16 @@ seamlessly embedded in their product. Cumul.io's intuitive, low-code interface e
 users with insight-driven actions in record time **without straining engineering resources from the
 core product**.
 
+## Supported sync modes
+
+| Sync mode | Supported? |
+| :--- | :--- |
+| [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite) | Yes |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append) | Yes |
+| [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | No |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
+| [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No |
+
 ## Getting started
 
 In order to use the Cumul.io destination, you'll first need to **create a
@@ -43,16 +53,15 @@ _If you have any questions or want to get started with Cumul.io, don't hesitate 
 
 | [Sync modes](https://docs.airbyte.com/understanding-airbyte/connections/#sync-modes)                                     | Supported?\(Yes/No\) | Notes                                                 |
 | :----------------------------------------------------------------------------------------------------------------------- | :------------------- | :---------------------------------------------------- |
-| [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append/)                 | Yes                  | /                                                     |
-| [Full Refresh - Replace](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)             | Yes                  | /                                                     |
-| [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/)              | Yes                  | /                                                     |
-| [Incremental - Append + Deduped ](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
+| [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append/)                 | Yes                  | /                                                     |
+| [Full Refresh - Replace](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)             | Yes                  | /                                                     |
+| [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append/)              | Yes                  | /                                                     |
+| [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | No                   | Cumul.io's data warehouse does not support dbt (yet). |
 
 ### Airbyte Features support
 
 | Feature                                                                  | Supported?\(Yes/No\) | Notes                                                                                                                                                                                                                                                                                                                                                                                               |
 | :----------------------------------------------------------------------- | :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Namespaces](https://docs.airbyte.com/understanding-airbyte/namespaces/) | Yes                  | (**_Highly recommended_**) A **concatenation of the namespace and stream name** will be used as a unique identifier for the related Cumul.io dataset (using [Tags](https://academy.cumul.io/article/mam7lkdt)) and ensures next synchronizations can target the same dataset. Use this property to **ensure identically named destination streams** from different connections **do not coincide**! |
 | [Clear data](https://docs.airbyte.com/operator-guides/clear)             | Yes                  | **Existing data** in a dataset is **not deleted** upon resetting a stream in Airbyte, however the next synchronization batch will replace all existing data. This ensures that the dataset is never empty (e.g. upon disabling the synchronization), which would otherwise result in "No data" upon querying it.                                                                                    |
 
 ### Airbyte data types support
@@ -153,6 +162,10 @@ data less frequently** rather than _smaller amounts of data more frequently_!
        [Associate Dataset Column API Documentation](https://developer.cumul.io/#column_assoc_dataset)
     5. From there on out, you can replace/append data for this dataset based on the tag (already
        implemented).
+
+## Namespace support
+
+This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
 
 ## Changelog
 

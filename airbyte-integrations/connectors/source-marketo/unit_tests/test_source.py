@@ -155,7 +155,7 @@ def test_activities_schema(activity, expected_schema, config):
 )
 def test_export_parse_response(send_email_stream, response_text, expected_records):
     def iter_lines(*args, **kwargs):
-        yield from response_text.splitlines()
+        yield from response_text.split("\n")
 
     assert list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1")))) == expected_records
 
@@ -245,10 +245,10 @@ def test_source_streams(config, activity, requests_mock):
     requests_mock.get("/rest/v1/activities/types.json", json={"result": [activity]})
     streams = source.streams(config)
 
-    # 5 declarative streams (activity_types, segmentations, campaigns, lists, programs),
+    # 7 declarative streams (activity_types, segmentations, campaigns, lists, programs, emails, program_tokens),
     # 1 python stream (leads)
     # 1 dynamically created (activities_send_email)
-    assert len(streams) == 7
+    assert len(streams) == 9
     assert all(isinstance(stream, (MarketoStream, DeclarativeStream)) for stream in streams)
 
 
@@ -334,6 +334,41 @@ def test_csv_rows(config):
         assert expected_record == record
 
 
+def test_parse_response_with_unicode_line_separator(send_email_stream):
+    """Verify that Unicode line separators (\u2028, \u2029) in CJK field values
+    do not cause CSV column misalignment. This was the root cause of
+    https://github.com/airbytehq/oncall/issues/11468.
+    """
+    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n" "1,\u2028test,true,10,15\n" "2,3,false,11,16"
+
+    def iter_lines(*args, **kwargs):
+        yield from response_text.split("\n")
+
+    records = list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1"))))
+    assert len(records) == 2
+    assert records[0]["Campaign Run ID"] == "1"
+    assert records[0]["Choice Number"] == "\u2028test"
+    assert records[0]["Has Predictive"] == "true"
+    assert records[1]["Campaign Run ID"] == "2"
+
+
+def test_csv_rows_column_count_mismatch(config):
+    stream = Leads(config)
+    # Row has fewer columns than the header
+    test_lines = ["Name,Email,Phone", "John Doe,john@example.com"]
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.csv_rows(test_lines))
+    assert exc_info.value.message == "CSV row column count does not match header column count."
+    assert "expected 3 columns, got 2" in exc_info.value.internal_message
+
+    # Row has more columns than the header
+    test_lines_extra = ["Name,Email", "John Doe,john@example.com,extra"]
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.csv_rows(test_lines_extra))
+    assert exc_info.value.message == "CSV row column count does not match header column count."
+    assert "expected 2 columns, got 3" in exc_info.value.internal_message
+
+
 def test_availability_strategy(config):
     stream = Leads(config)
     assert stream.availability_strategy is None
@@ -356,55 +391,161 @@ def test_set_state(config):
     assert stream._state == expected_state
 
 
-def test_leads_stream_fields_warns_on_no_valid_fields(config, requests_mock, caplog):
-    # Example response with two valid rest fields and one soap-only field
+def test_leads_stream_fields_returns_describe_fields(config, requests_mock):
+    """stream_fields should return only fields confirmed by the describe endpoint,
+    not all static schema fields — this avoids bulk export validation errors for
+    fields that exist in the static schema but not in a particular Marketo instance."""
     describe_json = {
-        "requestId": "def456",
+        "requestId": "abc123",
         "success": True,
         "result": [
             {
                 "id": 1,
                 "displayName": "Email",
-                "dataType": "string",
+                "dataType": "email",
                 "rest": {"name": "email", "readOnly": False},
-                "soap": {"name": "Email", "readOnly": False},
             },
-            {"id": 2, "displayName": "Phone", "dataType": "string", "rest": {"name": "phone", "readOnly": False}},
-            {"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}},
+            {
+                "id": 100,
+                "displayName": "Custom Score",
+                "dataType": "score",
+                "rest": {"name": "customScore__c", "readOnly": False},
+            },
         ],
     }
-
-    # Patch the schema to include all possible fields
-    class DummyLeads(Leads):
-        def get_json_schema(self):
-            return {"properties": {"email": {}, "phone": {}, "LegacyField": {}}}
 
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
         json=describe_json,
     )
 
-    caplog.set_level("WARNING")
-    leads_stream = DummyLeads(config)
+    leads_stream = Leads(config)
     fields = leads_stream.stream_fields
 
-    # Only fields with a 'rest' key should be included
-    assert set(fields) == {"email", "phone"}
-    # No warning should be logged since valid fields exist
-    assert "No valid fields found in leads/describe response" not in caplog.text
+    # stream_fields should contain only describe-confirmed fields
+    assert set(fields) == {"email", "customScore__c"}
 
-    # Now test with no valid rest fields
-    describe_json_no_rest = {
-        "requestId": "def456",
+    # But the full schema should still include all static fields + custom fields
+    schema = leads_stream.get_json_schema()
+    assert "customScore__c" in schema["properties"]
+    # Static-only fields not in describe should still be in the schema
+    assert "firstName" in schema["properties"]
+
+
+def test_leads_stream_fields_uses_configured_json_schema(config, requests_mock):
+    """When the user selects specific fields via the configured catalog,
+    stream_fields should return the intersection of selected fields and
+    describe-confirmed fields — this prevents requesting fields that exist
+    in the static schema but not in this Marketo instance."""
+    describe_json = {
+        "requestId": "abc123",
         "success": True,
-        "result": [{"id": 3, "displayName": "Legacy Field", "dataType": "string", "soap": {"name": "LegacyField", "readOnly": False}}],
+        "result": [
+            {"id": 1, "displayName": "Email", "dataType": "email", "rest": {"name": "email", "readOnly": False}},
+            {"id": 100, "displayName": "Custom Score", "dataType": "score", "rest": {"name": "customScore__c", "readOnly": False}},
+        ],
     }
+
     requests_mock.get(
         f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
-        json=describe_json_no_rest,
+        json=describe_json,
     )
-    leads_stream = DummyLeads(config)
+
+    leads_stream = Leads(config)
+    # Simulate the platform passing user-selected fields via configured catalog.
+    # "firstName" is a static schema field NOT in the describe endpoint for this instance.
+    leads_stream.configured_json_schema = {
+        "properties": {
+            "email": {"type": ["string", "null"]},
+            "firstName": {"type": ["string", "null"]},
+        }
+    }
     fields = leads_stream.stream_fields
 
-    assert fields == []
-    assert "No valid fields found in leads/describe response" in caplog.text
+    # Only fields that are BOTH user-selected AND describe-confirmed should be returned.
+    # "firstName" is excluded because it's not in the describe endpoint.
+    assert fields == ["email"]
+    assert "firstName" not in fields
+    assert "customScore__c" not in fields
+
+
+def test_leads_describe_http_error_falls_back_to_static_schema(config, requests_mock, caplog):
+    """If the describe endpoint returns an HTTP error, fall back to static schema gracefully."""
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        status_code=500,
+    )
+
+    caplog.set_level("WARNING")
+    leads_stream = Leads(config)
+    fields = leads_stream.stream_fields
+
+    # Should fall back to static schema field names
+    assert len(fields) > 0
+    assert "leads/describe.json request failed" in caplog.text
+
+    # Schema should also fall back to static schema (no custom fields added)
+    schema = leads_stream.get_json_schema()
+    assert "email" in schema["properties"]
+
+
+def test_leads_describe_connection_error_falls_back_to_static_schema(config, requests_mock, caplog):
+    """If the describe endpoint is unreachable, fall back to static schema gracefully."""
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        exc=requests.ConnectionError("DNS resolution failed"),
+    )
+
+    caplog.set_level("WARNING")
+    leads_stream = Leads(config)
+    fields = leads_stream.stream_fields
+
+    # Should fall back to static schema field names
+    assert len(fields) > 0
+    assert "leads/describe.json request failed" in caplog.text
+
+
+def test_leads_dynamic_schema_includes_custom_fields(config, requests_mock):
+    """get_json_schema() should dynamically add custom fields from describe endpoint."""
+    describe_json = {
+        "requestId": "abc123",
+        "success": True,
+        "result": [
+            {
+                "id": 1,
+                "displayName": "Email",
+                "dataType": "email",
+                "rest": {"name": "email", "readOnly": False},
+            },
+            {
+                "id": 100,
+                "displayName": "Custom Score",
+                "dataType": "score",
+                "rest": {"name": "customScore__c", "readOnly": False},
+            },
+            {
+                "id": 101,
+                "displayName": "Custom Date",
+                "dataType": "date",
+                "rest": {"name": "customDate__c", "readOnly": False},
+            },
+        ],
+    }
+
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        json=describe_json,
+    )
+
+    leads_stream = Leads(config)
+    schema = leads_stream.get_json_schema()
+
+    # Custom fields should appear in the schema
+    assert "customScore__c" in schema["properties"]
+    assert schema["properties"]["customScore__c"]["type"] == ["integer", "null"]
+    assert "customDate__c" in schema["properties"]
+    assert schema["properties"]["customDate__c"]["type"] == ["string", "null"]
+    assert schema["properties"]["customDate__c"]["format"] == "date"
+
+    # Standard fields from static schema should still be present
+    assert "email" in schema["properties"]
