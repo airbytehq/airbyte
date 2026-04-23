@@ -48,7 +48,7 @@ The Credentials page is the primary place to add, view, and manage connectors fo
 
 The new connector appears immediately in the Credentials table and in the **Available context** list on the Chat and Automation landing pages. You don't need to reload other tabs.
 
-## OAuth versus access tokens
+## OAuth versus access tokens {#oauth-vs-tokens}
 
 Most connectors let you authenticate with either an OAuth flow or an access token you paste into a form. Both options produce a working connector, but the selections you make during authentication mean different things in each case. If a connector offers both, prefer OAuth.
 
