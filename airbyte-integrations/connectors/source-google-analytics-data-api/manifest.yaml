@@ -3042,14 +3042,26 @@ spec:
       - type: CustomConfigTransformation
         class_name: source_declarative_manifest.components.DimensionFilterConfigTransformation
 
+# GA4 Data API Core quotas (per property):
+#   Standard:       10 concurrent requests,  40,000 tokens/hour,  200,000 tokens/day
+#   Analytics 360:  50 concurrent requests, 400,000 tokens/hour, 2,000,000 tokens/day
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 10
-          interval: PT1S
-      matchers:
-        - method: POST
-          url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 12) }}"
+  max_concurrency: 40
+
+# Existing api_budget is commented out during the concurrency tuning rollout so a
+# proactive request budget does not throttle and skew the concurrency signal. It
+# will be re-introduced (tier-aware, Path B) once the optimal concurrency is
+# selected. Tracking: airbytehq/airbyte-internal-issues#15332.
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 10
+#           interval: PT1S
+#       matchers:
+#         - method: POST
+#           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
