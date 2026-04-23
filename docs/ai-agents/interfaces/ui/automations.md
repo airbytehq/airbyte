@@ -123,7 +123,7 @@ Keep this in mind when you design schedules:
 - **Expect near-simultaneous webhook or connector calls** when multiple Automations share a trigger time and hit the same third-party API. If that API enforces per-minute rate limits, consider splitting the schedules.
 - **Dispatch time isn't execution time.** Airbyte dispatches the run on the dot, but the agent work itself takes as long as it takes. A 9:00 schedule doesn't guarantee results by 9:00—only that the run starts then.
 
-If you need a schedule that's more fine-grained than the builder's presets allow, use **Custom cron** and pick a specific minute offset that isn't shared with your other Automations.
+If you need a schedule that's more fine-grained than the Automation Builder's presets allow, use **Custom cron** and pick a specific minute offset that isn't shared with your other Automations.
 
 ### From a webhook
 
