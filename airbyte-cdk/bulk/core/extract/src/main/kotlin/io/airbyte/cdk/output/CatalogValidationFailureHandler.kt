@@ -84,7 +84,7 @@ data class InvalidCursor(
     val cursor: String,
 ) : CatalogValidationFailure {
     override val message =
-        "Cursor '$cursor' not found in stream '$streamID'. To continue syncing this stream, refresh the source schema and reselect a cursor field that exists in the stream."
+        "Cursor '$cursor' not found in stream '$streamID'. To continue syncing this stream, refresh the source schema and reselect a cursor field that exists in the stream, or use the full refresh sync mode."
 }
 
 data class InvalidIncrementalSyncMode(
