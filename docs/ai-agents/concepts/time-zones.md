@@ -35,7 +35,7 @@ Every scheduled [Automation](../interfaces/ui/automations) has its own time zone
 
 The default time zone depends on how you create the Automation:
 
-- **From the web app**: The [schedule builder](../interfaces/ui/automations#the-automation-builder) defaults to your browser's local time zone. Pick a different zone from the dropdown if you want the schedule to fire somewhere else.
+- **From the web app**: The [Automation Builder](../interfaces/ui/automations#the-automation-builder) defaults to your browser's local time zone. Pick a different zone from the dropdown if you want the schedule to fire somewhere else.
 - **From the Automation Builder chat agent**: The agent uses this precedence when it creates or updates a schedule:
   1. An explicit time zone you state in the prompt (for example, "at 9 AM Tokyo time").
   2. Your browser's local time zone, which the web app sends with every message.
