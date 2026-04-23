@@ -19,9 +19,10 @@ interface JdbcSourceConfiguration : SourceConfiguration {
     /**
      * Set of namespaces (typically schemas or catalogs) for the connector to consider.
      *
-     * An empty set signals "discover every namespace the JDBC user can see" — discovery will
-     * iterate over all accessible schemas/catalogs via [java.sql.DatabaseMetaData.getTables] and
-     * [java.sql.DatabaseMetaData.getColumns] with a null schema/catalog pattern. Individual
+     * An empty set signals "discover every namespace the JDBC user can see": at discovery time the
+     * default [io.airbyte.cdk.discover.JdbcMetadataQuerier] resolves the concrete namespace list
+     * from [java.sql.DatabaseMetaData.getSchemas] or [java.sql.DatabaseMetaData.getCatalogs] and
+     * then runs the usual per-namespace table and column queries against each one. Individual
      * connectors are free to enforce a non-empty set in their own [SourceConfigurationFactory] when
      * a namespace selection is mandatory.
      */
