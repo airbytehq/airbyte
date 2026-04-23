@@ -1,6 +1,8 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mssql
 
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
@@ -22,6 +24,32 @@ class MsSqlServerSourceConfigurationSpecificationTest {
     @Test
     fun testSchemaViolation() {
         Assertions.assertThrows(ConfigErrorException::class.java, supplier::get)
+    }
+
+    /**
+     * Regression test for airbytehq/oncall#12062 / airbytehq/airbyte#76942.
+     *
+     * The spec must not expose the `@JsonAnyGetter`-backed `additionalProperties` map as a
+     * user-facing field, either under `properties` or `required`.
+     */
+    @Test
+    fun testSpecDoesNotExposeAdditionalPropertiesAsRequiredField() {
+        val schema = supplier.jsonSchema as ObjectNode
+        val properties = schema["properties"] as ObjectNode
+        Assertions.assertFalse(
+            properties.has("additionalProperties"),
+            "expected 'additionalProperties' not to be declared as a user-facing property; " +
+                "schema=$schema",
+        )
+        val required = schema["required"] as? ArrayNode
+        if (required != null) {
+            val requiredValues = required.elements().asSequence().map { it.asText() }.toList()
+            Assertions.assertFalse(
+                "additionalProperties" in requiredValues,
+                "expected 'additionalProperties' not to be listed as required; " +
+                    "required=$requiredValues",
+            )
+        }
     }
 
     @Test
