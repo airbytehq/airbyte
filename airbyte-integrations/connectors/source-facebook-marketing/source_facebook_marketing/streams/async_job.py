@@ -278,6 +278,7 @@ class InsightAsyncJob(AsyncJob):
         self._start_time = None
         self._finish_time = None
         self._failed = False
+        self._no_data_in_window = False
 
     def _log_throttle(self, where: str):
         throttle = getattr(self._api, "ads_insights_throttle", None)
@@ -382,9 +383,20 @@ class InsightAsyncJob(AsyncJob):
                 self._job = None
                 self._failed = False
                 self._start_time = None
+                self._finish_time = None
             elif self._attempt_number >= 2:
                 self.new_jobs = self._split_job()
-            self._finish_time = None
+                if self.new_jobs:
+                    self._finish_time = None
+                else:
+                    # `_split_by_edge_class` found no child entities with insights
+                    # in the lookback window (e.g. historical date range predating
+                    # any campaign activity on the ad account). Treat the slice as
+                    # empty so the sync advances past it instead of failing.
+                    self._no_data_in_window = True
+                    self._failed = False
+            else:
+                self._finish_time = None
 
         return self.completed
 
@@ -413,11 +425,13 @@ class InsightAsyncJob(AsyncJob):
 
         ids = self._collect_child_ids(pk_name=pk_name, level=level)
         if not ids:
-            raise AirbyteTracedException(
-                message="Facebook Insights API returned no data for the requested breakdown level.",
-                internal_message=f"No child IDs at level={level} for edge_object={self._edge_object}, interval={self._interval}",
-                failure_type=FailureType.system_error,
-            )
+            # Historical date ranges predating the ad account's first campaign
+            # legitimately return no child IDs. Treat this as "no data for this
+            # slice" rather than a hard failure; the caller records the empty
+            # outcome via `_no_data_in_window` so the sync advances past the
+            # interval.
+            logger.info(f"{self}: no {level} entities found in lookback window for interval={self._interval}; treating slice as empty.")
+            return []
 
         return [
             InsightAsyncJob(
@@ -561,6 +575,8 @@ class InsightAsyncJob(AsyncJob):
     @backoff_policy
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
+        if self._no_data_in_window:
+            return iter([])
         if not self._job or self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of get_result - the job is not started or failed")
         return self._job.get_result(params={"limit": self.page_size})
