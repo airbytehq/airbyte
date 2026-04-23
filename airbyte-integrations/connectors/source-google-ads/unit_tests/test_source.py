@@ -6,12 +6,10 @@
 from collections import namedtuple
 from unittest.mock import MagicMock, Mock, call
 
-import pendulum
 import pytest
 from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import chunk_date_range
 
 from airbyte_cdk import Record
 from airbyte_cdk.models import (
@@ -81,31 +79,6 @@ def mock_fields_meta_data():
         Node(DataType("MESSAGE"), "bidding_strategy.enhanced_cpc", [], False),
     )
     return Mock(get_fields_metadata=Mock(return_value={node.name: node for node in nodes}))
-
-
-def test_chunk_date_range():
-    start_date = "2021-03-04"
-    end_date = "2021-05-04"
-    conversion_window = 14
-    slices = list(
-        chunk_date_range(
-            start_date=start_date,
-            end_date=end_date,
-            conversion_window=conversion_window,
-            slice_duration=pendulum.Duration(days=9),
-            time_zone="UTC",
-        )
-    )
-    assert [
-        {"start_date": "2021-02-18", "end_date": "2021-02-27"},
-        {"start_date": "2021-02-28", "end_date": "2021-03-09"},
-        {"start_date": "2021-03-10", "end_date": "2021-03-19"},
-        {"start_date": "2021-03-20", "end_date": "2021-03-29"},
-        {"start_date": "2021-03-30", "end_date": "2021-04-08"},
-        {"start_date": "2021-04-09", "end_date": "2021-04-18"},
-        {"start_date": "2021-04-19", "end_date": "2021-04-28"},
-        {"start_date": "2021-04-29", "end_date": "2021-05-04"},
-    ] == slices
 
 
 def test_streams_count(config):

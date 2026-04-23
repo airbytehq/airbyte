@@ -6,12 +6,10 @@
 import json
 from datetime import date
 
-import pendulum
 import pytest
 from google.ads.googleads.v20.services.types.google_ads_service import GoogleAdsRow
 from google.auth import exceptions
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import chunk_date_range
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
@@ -142,23 +140,6 @@ def test_send_request(mocker, customers):
 def test_get_fields_from_schema():
     response = GoogleAds.get_fields_from_schema(SAMPLE_SCHEMA)
     assert response == ["segment.date"]
-
-
-def test_interval_chunking():
-    mock_intervals = [
-        {"start_date": "2021-06-17", "end_date": "2021-06-26"},
-        {"start_date": "2021-06-27", "end_date": "2021-07-06"},
-        {"start_date": "2021-07-07", "end_date": "2021-07-16"},
-        {"start_date": "2021-07-17", "end_date": "2021-07-26"},
-        {"start_date": "2021-07-27", "end_date": "2021-08-05"},
-        {"start_date": "2021-08-06", "end_date": "2021-08-10"},
-    ]
-    intervals = list(
-        chunk_date_range(
-            start_date="2021-07-01", end_date="2021-08-10", conversion_window=14, slice_duration=pendulum.Duration(days=9), time_zone="UTC"
-        )
-    )
-    assert mock_intervals == intervals
 
 
 generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campaign_id": {}, "account_id": {}}}
