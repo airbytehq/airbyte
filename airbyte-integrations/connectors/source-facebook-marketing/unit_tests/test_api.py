@@ -193,7 +193,9 @@ class TestMyFacebookAdsApi:
             ),
             # String-typed values in x-business-use-case-usage header
             (
-                {"x-business-use-case-usage": '{"biz_123": [{"call_count": "30", "total_cputime": "60", "total_time": "45", "estimated_time_to_regain_access": 0}]}'},
+                {
+                    "x-business-use-case-usage": '{"biz_123": [{"call_count": "30", "total_cputime": "60", "total_time": "45", "estimated_time_to_regain_access": 0}]}'
+                },
                 60,
             ),
             # Missing keys should default to 0
@@ -215,9 +217,7 @@ class TestMyFacebookAdsApi:
 
     def test_update_insights_throttle_limit_casts_string_values(self, fb_api, mocker):
         mock_response = mocker.Mock()
-        mock_response.headers.return_value = {
-            "x-fb-ads-insights-throttle": '{"app_id_util_pct": "55.5", "acc_id_util_pct": "30"}'
-        }
+        mock_response.headers.return_value = {"x-fb-ads-insights-throttle": '{"app_id_util_pct": "55.5", "acc_id_util_pct": "30"}'}
         fb_api._update_insights_throttle_limit(mock_response)
         assert fb_api._ads_insights_throttle.per_application == 55.5
         assert fb_api._ads_insights_throttle.per_account == 30.0
