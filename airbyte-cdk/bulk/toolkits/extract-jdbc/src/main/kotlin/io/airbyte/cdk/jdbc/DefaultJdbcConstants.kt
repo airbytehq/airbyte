@@ -33,20 +33,9 @@ data class DefaultJdbcConstants(
     val maxSequentialQueryLimit: Long? = MAX_SEQUENTIAL_QUERY_LIMIT_NULL,
     /** Whether to fetch pseudo-columns when querying column metadata. */
     val includePseudoColumns: Boolean = true,
-    /**
-     * Namespaces (case-insensitive) to drop from the discovered set when
-     * [io.airbyte.cdk.command.JdbcSourceConfiguration.namespaces] is empty and the CDK resolves it
-     * against the JDBC driver's schema/catalog list. Typically used by connectors to hide
-     * database-internal namespaces (e.g. `pg_catalog`, `information_schema`). The filter does *not*
-     * apply when the user has named namespaces explicitly: anything in `config.namespaces` is
-     * always honored even if it matches this set.
-     */
+    /** Namespaces to ignore when discovering all namespaces. */
     val ignoredNamespaces: Set<String> = emptySet(),
-    /**
-     * Stream (table or view) names (case-insensitive) to drop from the discovered catalog.
-     * Typically used by connectors to hide system/metadata streams that are listed in user-visible
-     * schemas.
-     */
+    /** Stream names to drop from the discovered catalog. */
     val ignoredStreams: Set<String> = emptySet(),
 ) {
 

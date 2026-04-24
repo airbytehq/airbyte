@@ -16,16 +16,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
     /** Properties map (with username, password, etc.) passed along to the JDBC driver. */
     val jdbcProperties: Map<String, String>
 
-    /**
-     * Set of namespaces (typically schemas or catalogs) for the connector to consider.
-     *
-     * An empty set signals "discover every namespace the JDBC user can see": at discovery time the
-     * default [io.airbyte.cdk.discover.JdbcMetadataQuerier] resolves the concrete namespace list
-     * from [java.sql.DatabaseMetaData.getSchemas] or [java.sql.DatabaseMetaData.getCatalogs] and
-     * then runs the usual per-namespace table and column queries against each one. Individual
-     * connectors are free to enforce a non-empty set in their own [SourceConfigurationFactory] when
-     * a namespace selection is mandatory.
-     */
+    /** Namespaces for the connector to consider. Empty means all namespaces. */
     val namespaces: Set<String>
 
     /** When set, each table is queried individually to check for SELECT privileges. */

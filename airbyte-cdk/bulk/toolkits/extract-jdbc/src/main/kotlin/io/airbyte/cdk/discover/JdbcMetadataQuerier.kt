@@ -73,9 +73,9 @@ class JdbcMetadataQuerier(
     /**
      * The set of namespaces to discover against. When [JdbcSourceConfiguration.namespaces] is
      * non-empty this is just that set; otherwise it is resolved at discovery time to every
-     * schema/catalog the JDBC user can see via [DatabaseMetaData.getSchemas] or
-     * [DatabaseMetaData.getCatalogs], with [DefaultJdbcConstants.ignoredNamespaces] subtracted.
-     * Throws [ConfigErrorException] when nothing is configured and the resolved set is empty.
+     * schema/catalog the JDBC user can see, minus [DefaultJdbcConstants.ignoredNamespaces].
+     *
+     * @throws [ConfigErrorException] when nothing is configured and the resolved set is empty.
      */
     val effectiveNamespaces: Set<String> by lazy {
         if (config.namespaces.isNotEmpty()) {
@@ -100,16 +100,9 @@ class JdbcMetadataQuerier(
             else discovered.filterNot { it.uppercase() in ignoredUpper }.toSet()
         val dropped: Set<String> = discovered - filtered
         if (filtered.isEmpty()) {
-            throw ConfigErrorException(
-                "No namespaces are configured and no ${constants.namespaceKind} " +
-                    "is accessible to the JDBC user."
-            )
+            throw ConfigErrorException("No namespaces are accessible to the JDBC user.")
         }
-        log.info {
-            "No namespaces configured — resolved ${filtered.size} accessible namespace(s) " +
-                "(${constants.namespaceKind}) from the JDBC driver" +
-                if (dropped.isEmpty()) "." else ", dropped $dropped via ignoredNamespaces."
-        }
+        log.info { "No namespaces specified. Discovered ${filtered.size} namespace(s)." }
         filtered
     }
 
@@ -125,20 +118,16 @@ class JdbcMetadataQuerier(
                 dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         val tableName: String = rs.getString("TABLE_NAME")
-                        if (
-                            ignoredStreamsUpper.isNotEmpty() &&
-                                tableName.uppercase() in ignoredStreamsUpper
-                        ) {
-                            continue
-                        }
-                        allTables.add(
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = tableName,
-                                type = rs.getString("TABLE_TYPE") ?: "",
+                        if (tableName.uppercase() !in ignoredStreamsUpper) {
+                            allTables.add(
+                                TableName(
+                                    catalog = rs.getString("TABLE_CAT"),
+                                    schema = rs.getString("TABLE_SCHEM"),
+                                    name = tableName,
+                                    type = rs.getString("TABLE_TYPE") ?: "",
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
