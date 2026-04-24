@@ -43,7 +43,7 @@ definitions:
         failure_type: config_error
         error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
       - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-        action: RETRY
+        action: RATE_LIMITED
         error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
       - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
         action: IGNORE
@@ -82,7 +82,7 @@ definitions:
           failure_type: config_error
           error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
         - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-          action: RETRY
+          action: RATE_LIMITED
           error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
         - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
           action: IGNORE
@@ -94,7 +94,7 @@ definitions:
           action: FAIL
           error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
         - http_codes: [429]
-          action: RETRY
+          action: RATE_LIMITED
           error_message: Failed to perform a request due to rate limits.
         - http_codes: [500, 503]
           action: RETRY
@@ -141,7 +141,7 @@ definitions:
               failure_type: config_error
               error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
             - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-              action: RETRY
+              action: RATE_LIMITED
               error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
             - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
               action: IGNORE
@@ -153,7 +153,7 @@ definitions:
               action: FAIL
               error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
             - http_codes: [429]
-              action: RETRY
+              action: RATE_LIMITED
               error_message: Failed to perform a request due to rate limits.
             - http_codes: [403, 400]
               action: FAIL
