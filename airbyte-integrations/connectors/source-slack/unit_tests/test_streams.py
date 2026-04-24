@@ -510,10 +510,27 @@ def test_should_retry(token_config, status_code, response_json, expected):
 @pytest.mark.parametrize(
     "slack_error, expected_error_message, expected_failure_type",
     [
-        pytest.param("missing_scope", "Slack API authentication/permission error: missing_scope.", FailureType.config_error, id="auth_error_missing_scope"),
-        pytest.param("not_authed", "Slack API authentication/permission error: not_authed.", FailureType.config_error, id="auth_error_not_authed"),
-        pytest.param("token_revoked", "Slack API authentication/permission error: token_revoked.", FailureType.config_error, id="auth_error_token_revoked"),
-        pytest.param("token_expired", "Slack API authentication/permission error: token_expired.", FailureType.config_error, id="auth_error_token_expired"),
+        pytest.param(
+            "missing_scope",
+            "Slack API authentication/permission error: missing_scope.",
+            FailureType.config_error,
+            id="auth_error_missing_scope",
+        ),
+        pytest.param(
+            "not_authed", "Slack API authentication/permission error: not_authed.", FailureType.config_error, id="auth_error_not_authed"
+        ),
+        pytest.param(
+            "token_revoked",
+            "Slack API authentication/permission error: token_revoked.",
+            FailureType.config_error,
+            id="auth_error_token_revoked",
+        ),
+        pytest.param(
+            "token_expired",
+            "Slack API authentication/permission error: token_expired.",
+            FailureType.config_error,
+            id="auth_error_token_expired",
+        ),
         pytest.param("method_not_allowed", "Slack API error: method_not_allowed.", FailureType.system_error, id="general_error_catch_all"),
     ],
 )
