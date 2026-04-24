@@ -105,12 +105,7 @@ class TestFlowSeriesReportsIgnoresUnsupportedMetrics(TestCase):
         start_time = "2024-05-02T12:00:00+0000"
         end_time = "2024-06-01T12:00:00+0000"
 
-        config = (
-            ConfigBuilder()
-            .with_api_key(_API_KEY)
-            .with_start_date(datetime(2024, 5, 2, 12, 0, 0, tzinfo=timezone.utc))
-            .build()
-        )
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 2, 12, 0, 0, tzinfo=timezone.utc)).build()
 
         # Mock parent metrics stream returning two metrics
         http_mocker.get(
@@ -120,12 +115,22 @@ class TestFlowSeriesReportsIgnoresUnsupportedMetrics(TestCase):
                     {
                         "type": "metric",
                         "id": "supported_metric",
-                        "attributes": {"name": "Placed Order", "created": "2024-01-01T00:00:00+00:00", "updated": "2024-01-01T00:00:00+00:00", "integration": {}},
+                        "attributes": {
+                            "name": "Placed Order",
+                            "created": "2024-01-01T00:00:00+00:00",
+                            "updated": "2024-01-01T00:00:00+00:00",
+                            "integration": {},
+                        },
                     },
                     {
                         "type": "metric",
                         "id": "unsupported_metric",
-                        "attributes": {"name": "Custom Conversion", "created": "2024-01-01T00:00:00+00:00", "updated": "2024-01-01T00:00:00+00:00", "integration": {}},
+                        "attributes": {
+                            "name": "Custom Conversion",
+                            "created": "2024-01-01T00:00:00+00:00",
+                            "updated": "2024-01-01T00:00:00+00:00",
+                            "integration": {},
+                        },
                     },
                 ]
             ),
@@ -160,7 +165,9 @@ class TestFlowSeriesReportsIgnoresUnsupportedMetrics(TestCase):
         )
 
         # Mock POST for the unsupported metric: returns HTTP 400
-        unsupported_body = _build_report_request_body("flow-series-report", "unsupported_metric", start_time, end_time, _FLOW_SERIES_STATISTICS)
+        unsupported_body = _build_report_request_body(
+            "flow-series-report", "unsupported_metric", start_time, end_time, _FLOW_SERIES_STATISTICS
+        )
         http_mocker.post(
             HttpRequest(
                 url="https://a.klaviyo.com/api/flow-series-reports",
@@ -192,12 +199,7 @@ class TestFlowSeriesReportsIgnoresUnsupportedMetrics(TestCase):
         start_time = "2024-05-02T12:00:00+0000"
         end_time = "2024-06-01T12:00:00+0000"
 
-        config = (
-            ConfigBuilder()
-            .with_api_key(_API_KEY)
-            .with_start_date(datetime(2024, 5, 2, 12, 0, 0, tzinfo=timezone.utc))
-            .build()
-        )
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 2, 12, 0, 0, tzinfo=timezone.utc)).build()
 
         # Mock parent metrics stream returning one metric
         http_mocker.get(
@@ -207,7 +209,12 @@ class TestFlowSeriesReportsIgnoresUnsupportedMetrics(TestCase):
                     {
                         "type": "metric",
                         "id": "unsupported_only",
-                        "attributes": {"name": "Custom Conversion", "created": "2024-01-01T00:00:00+00:00", "updated": "2024-01-01T00:00:00+00:00", "integration": {}},
+                        "attributes": {
+                            "name": "Custom Conversion",
+                            "created": "2024-01-01T00:00:00+00:00",
+                            "updated": "2024-01-01T00:00:00+00:00",
+                            "integration": {},
+                        },
                     },
                 ]
             ),
