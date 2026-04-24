@@ -534,9 +534,9 @@ def test_channels_stream_ok_false_error_handling(requests_mock, token_config, sl
     assert len(output.records) == 0
     assert len(output.errors) > 0
     error_messages = [trace.trace.error.message for trace in output.errors]
-    assert any(expected_error_message in msg for msg in error_messages), (
-        f"Expected error message containing '{expected_error_message}' not found in: {error_messages}"
-    )
+    assert any(
+        expected_error_message in msg for msg in error_messages
+    ), f"Expected error message containing '{expected_error_message}' not found in: {error_messages}"
 
 
 def test_users_stream_ok_false_auth_error(requests_mock, token_config):
