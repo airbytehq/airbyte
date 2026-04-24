@@ -75,6 +75,50 @@ class JdbcMetadataQuerierTest {
     }
 
     @Test
+    fun testEmptyNamespacesRespectsIgnoredNamespaces() {
+        h2.execute("CREATE SCHEMA OTHER_SCHEMA")
+        h2.execute("CREATE TABLE OTHER_SCHEMA.extra (k INT PRIMARY KEY)")
+        val filteringFactory =
+            JdbcMetadataQuerier.Factory(
+                selectQueryGenerator = H2SourceOperations(),
+                fieldTypeMapper = H2SourceOperations(),
+                checkQueries = JdbcCheckQueries(),
+                constants = DefaultJdbcConstants(ignoredNamespaces = setOf("OTHER_SCHEMA")),
+            )
+        val configPojo =
+            H2SourceConfigurationSpecification().apply {
+                port = h2.port
+                database = h2.database
+            }
+        val baseConfig: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
+
+        // Auto-discovery path: OTHER_SCHEMA must be filtered out.
+        val autoConfig: H2SourceConfiguration = baseConfig.copy(namespaces = emptySet())
+        filteringFactory.session(autoConfig).use { mdq: MetadataQuerier ->
+            val namespaces: Set<String> = mdq.streamNamespaces().toSet()
+            Assertions.assertFalse(
+                namespaces.contains("OTHER_SCHEMA"),
+                "OTHER_SCHEMA should have been filtered out, got $namespaces",
+            )
+            Assertions.assertTrue(
+                namespaces.contains("PUBLIC"),
+                "expected PUBLIC in $namespaces",
+            )
+        }
+
+        // Explicit-namespace path: naming OTHER_SCHEMA bypasses the filter.
+        val explicitConfig: H2SourceConfiguration =
+            baseConfig.copy(namespaces = setOf("OTHER_SCHEMA"))
+        filteringFactory.session(explicitConfig).use { mdq: MetadataQuerier ->
+            val namespaces: Set<String> = mdq.streamNamespaces().toSet()
+            Assertions.assertTrue(
+                namespaces.contains("OTHER_SCHEMA"),
+                "expected OTHER_SCHEMA (explicitly requested) in $namespaces",
+            )
+        }
+    }
+
+    @Test
     fun test() {
         val configPojo =
             H2SourceConfigurationSpecification().apply {
