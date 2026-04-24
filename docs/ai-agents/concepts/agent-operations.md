@@ -18,7 +18,7 @@ Simple tasks typically make fewer tool calls and use fewer tokens, so they consu
 Any interaction with an agent consumes AOs. The source of the interaction determines how Airbyte tracks it.
 
 | Source | Description | Tracked as a session? |
-|---|---|---|
+| --- | --- | --- |
 | **Chat** | A conversation with an agent in the web app. | Yes |
 | **Automation** | A single run of a scheduled, webhook-triggered, or manually triggered automation. | Yes |
 | **Automation Builder Chat** | A conversation inside the Automation Builder while designing an automation. | Yes |
