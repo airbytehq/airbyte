@@ -13,7 +13,7 @@ Airbyte provides a growing library of open source, type-safe [agent connectors](
 The platform manages the hard parts of connecting to third-party systems:
 
 - **Authentication.** The platform handles OAuth flows, API keys, and token refresh for you. Store end-user credentials once and use them from any interface.
-- **Multi-tenancy.** Each end user authenticates with their own credentials. The platform isolates credentials per user and per organization.
+- **Multi-tenancy.** [Workspaces](../interfaces/sdk/workspaces) isolate connectors and credentials across tenants, teams, or environments within an organization.
 - **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui), the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack.
 
 Connecting a new data source takes minutes, not weeks. You don't build or maintain API wrappers, manage credential storage, or handle token lifecycle.
@@ -49,7 +49,7 @@ This pattern is the same across every connector and every interface. Whether an 
 Agents act through two modes:
 
 - **[Chats](../interfaces/ui/chats).** Interactive, conversational sessions where an agent responds to prompts in real time.
-- **[Automations](../interfaces/ui/automations).** Scheduled or webhook-triggered workflows that run without human intervention.
+- **[Automations](../interfaces/ui/automations).** Scheduled or webhook-triggered flows that run without human intervention.
 
 Airbyte logs every action an agent takes. You can review what happened, when, and why in the [Sessions](../admin/sessions) and [Tool calls](../admin/tool-calls) views.
 
