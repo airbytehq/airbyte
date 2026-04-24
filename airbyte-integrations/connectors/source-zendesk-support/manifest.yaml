@@ -81,10 +81,14 @@ definitions:
       error_handler:
         type: DefaultErrorHandler
         response_filters:
-          - http_codes: [403, 404]
+          - http_codes: [403]
             action: FAIL
             failure_type: config_error
-            error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
+            error_message: "Stream \"{{ parameters.get('name') }}\" requires permissions not granted to the authenticated account."
+          - http_codes: [404]
+            action: FAIL
+            failure_type: config_error
+            error_message: "Zendesk API returned HTTP 404 for stream \"{{ parameters.get('name') }}\". The configured subdomain may be incorrect or the help desk is no longer available."
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
@@ -918,10 +922,14 @@ definitions:
             - http_codes: [504]
               action: FAIL
               error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
-            - http_codes: [403, 404]
+            - http_codes: [403]
               action: FAIL
               failure_type: config_error
-              error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
+              error_message: "Stream \"{{ parameters.get('name') }}\" requires permissions not granted to the authenticated account."
+            - http_codes: [404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Zendesk API returned HTTP 404 for stream \"{{ parameters.get('name') }}\". The configured subdomain may be incorrect or the help desk is no longer available."
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -969,10 +977,14 @@ definitions:
             - http_codes: [504]
               action: RETRY
               error_message: "Gateway timeout waiting for response from stream `{{ parameters.get('name') }}`. Retrying with exponential backoff..."
-            - http_codes: [403, 404]
+            - http_codes: [403]
               action: FAIL
               failure_type: config_error
-              error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
+              error_message: "Stream \"{{ parameters.get('name') }}\" requires permissions not granted to the authenticated account."
+            - http_codes: [404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Zendesk API returned HTTP 404 for stream \"{{ parameters.get('name') }}\". The configured subdomain may be incorrect or the help desk is no longer available."
       record_selector:
         type: RecordSelector
         extractor:
@@ -1030,9 +1042,14 @@ definitions:
           error_handlers:
             - type: DefaultErrorHandler
               response_filters:
-                - http_codes: [403, 404]
-                  action: FAIL # fail as this stream used to define enterprise plan
-                  error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
+                - http_codes: [403]
+                  action: FAIL
+                  failure_type: config_error
+                  error_message: "Stream \"{{ parameters.get('name') }}\" requires permissions not granted to the authenticated account."
+                - http_codes: [404]
+                  action: FAIL
+                  failure_type: config_error
+                  error_message: "Zendesk API returned HTTP 404 for stream \"{{ parameters.get('name') }}\". The configured subdomain may be incorrect or the help desk is no longer available."
             - type: DefaultErrorHandler
               backoff_strategies:
                 - type: WaitTimeFromHeader
