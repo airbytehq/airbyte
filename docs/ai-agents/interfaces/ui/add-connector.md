@@ -48,9 +48,8 @@ The Credentials page is the primary place to add, view, and manage connectors fo
 
 The new connector appears immediately in the Credentials table and in the **Available context** list on the Chat and Automation landing pages. You don't need to reload other tabs.
 
-## OAuth versus access tokens
+## OAuth versus access tokens {#oauth-vs-tokens}
 
-Most connectors let you authenticate with either an OAuth flow or an access token you paste into a form. Both options produce a working connector, but they give Airbyte different levels of control over what that connector can reach. If a connector offers both, prefer OAuth.
 
 ### OAuth
 
@@ -71,7 +70,7 @@ The list of entities the picker shows can differ between the two authentication 
 - In OAuth mode, the picker shows every entity the connector knows about, including write-only ones, because OAuth scopes can express write-only access.
 - In token mode, the picker hides write-only entities, because selecting one wouldn't put anything into the Context Store.
 
-This is by design, not a bug. In token mode the picker only shows entities you can actually replicate, so the options you see match the outcome you get and the UI doesn't imply a level of access control Airbyte can't enforce.
+This is by design, not a bug. A different entity list doesn't mean one method gives you less data than the other—the connector can still read the same underlying entities from the third-party service. In token mode the picker just limits itself to the entities you can actually replicate, so the options you see match the outcome you get and the UI doesn't imply a level of access control Airbyte can't enforce.
 
 ## Add a connector during a Chat
 
