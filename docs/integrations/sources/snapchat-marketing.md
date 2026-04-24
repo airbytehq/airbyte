@@ -143,6 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.33-rc.5 | 2026-04-23 | [76950](https://github.com/airbytehq/airbyte/pull/76950) | Re-enable api_budget at 100/10s with concurrency 4 for tuning iteration 5 |
 | 1.5.33-rc.4 | 2026-04-21 | [76875](https://github.com/airbytehq/airbyte/pull/76875) | Revert to concurrency 4 without api_budget for tuning iteration 4 |
 | 1.5.33-rc.3 | 2026-04-16 | [76416](https://github.com/airbytehq/airbyte/pull/76416) | Increase api_budget from 80 to 100 calls per 10s for tuning iteration 3 |
 | 1.5.33-rc.2 | 2026-04-13 | [76255](https://github.com/airbytehq/airbyte/pull/76255) | Increase default_concurrency to 5 for tuning iteration 2 |
