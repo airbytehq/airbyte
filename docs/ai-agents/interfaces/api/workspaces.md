@@ -21,24 +21,24 @@ Persist each workspace's UUID in your backend when it's created, and reference i
 
 <!--
 AGENTIC-1140: renaming a workspace makes name-keyed reads 404 while
-scoped-token/widget-token mint silently autocreates a brand-new empty
-workspace under the old name with a new UUID. The "persist the UUID"
-guidance above is the safe path for readers; we don't surface the mint
-behavior publicly. Revisit when autocreate is consistent across endpoints
-and/or rename rejects reuse of the old name.
+scoped-token mint silently autocreates a brand-new empty workspace
+under the old name with a new UUID. The "persist the UUID" guidance
+above is the safe path for readers; we don't surface the mint behavior
+publicly. Revisit when autocreate is consistent across endpoints and/or
+rename rejects reuse of the old name.
 -->
 
 
 ## Create a new workspace
 
-You don't create workspaces directly. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) or [widget token](./authentication#widget-token) against a new `workspace_name`. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.
+You don't create workspaces directly. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) against a new `workspace_name`. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.
 
 <!--
 AGENTIC-1140: create-connector doesn't autocreate a workspace — it 404s
-when the workspace_name is new. Minting a scoped or widget token against
-that name is the canonical way to create a workspace, and the paragraph
-above already routes readers through that path, so we don't need to call
-out the asymmetry publicly. Revisit when autocreate is consistent.
+when the workspace_name is new. Minting a scoped token against that name
+is the canonical way to create a workspace, and the paragraph above
+already routes readers through that path, so we don't need to call out
+the asymmetry publicly. Revisit when autocreate is consistent.
 -->
 
 
