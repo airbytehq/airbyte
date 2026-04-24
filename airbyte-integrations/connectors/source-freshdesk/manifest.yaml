@@ -1690,11 +1690,10 @@ spec:
         title: Subscription Plan/Tier
         description: Your API subscription tier (affects rate limits)
         enum:
-          - free
           - growth
           - pro
           - enterprise
-        default: free
+        default: growth
         order: 5
       num_workers:
         type: integer
