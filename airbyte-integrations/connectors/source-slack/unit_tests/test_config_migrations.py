@@ -62,11 +62,7 @@ def test_include_archived_channels_migration_stamps_true_on_existing_config(requ
     _run_command(source=source, args=SOURCE_INPUT_ARGS_ACTUAL)
 
     captured = capsys.readouterr()
-    control_lines = [
-        json.loads(line)
-        for line in captured.out.strip().splitlines()
-        if line.strip() and '"CONNECTOR_CONFIG"' in line
-    ]
+    control_lines = [json.loads(line) for line in captured.out.strip().splitlines() if line.strip() and '"CONNECTOR_CONFIG"' in line]
     assert len(control_lines) >= 1
     migrated_config = control_lines[-1]["control"]["connectorConfig"]["config"]
     assert migrated_config["include_archived_channels"] is True
