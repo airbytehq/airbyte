@@ -51,6 +51,11 @@ definitions:
     request_body_json: {}
     error_handler:
       type: DefaultErrorHandler
+      backoff_strategies:
+        - type: "WaitTimeFromHeader"
+          header: "retry-after"
+        - type: "WaitTimeFromHeader"
+          header: "Retry-After"
       response_filters:
         - error_message_contains: "invalid_auth"
           action: FAIL
@@ -92,6 +97,11 @@ definitions:
         $ref: "#/definitions/requester"
         error_handler:
           type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
           response_filters:
             - error_message_contains: "invalid_auth"
               action: FAIL
