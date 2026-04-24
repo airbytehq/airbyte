@@ -77,7 +77,7 @@ Credentials you add through one interface are available to all of them. A connec
 
 ### Collecting end-user credentials
 
-If you're building a multi-tenant app and need your end users to connect their own data sources, the [authentication module](../../interfaces/api/authentication-module) is a pre-built UI component you embed in your app. It handles connector selection, credential input, and validation so you don't have to build a custom credential collection flow.
+If you're building a multi-tenant app and need your end users to connect their own data sources, the authentication module (Airbyte Embedded) is a pre-built UI component you embed in your app. It handles connector selection, credential input, and validation so you don't have to build a custom credential collection flow.
 
 ## Security
 
@@ -91,5 +91,4 @@ If you're building a multi-tenant app and need your end users to connect their o
 - [Agent connectors](../../connectors) — Browse the connector catalog.
 - [Authentication (API)](../../interfaces/api/authentication) — Token types and the authentication flow.
 - [Authentication (SDK)](../../interfaces/sdk/authenticate) — Credential configuration for Python apps.
-- [Authentication module](../../interfaces/api/authentication-module) — Embed credential collection in your app.
 - [Context Store](../context-store) — The searchable replica powered by your connectors.
