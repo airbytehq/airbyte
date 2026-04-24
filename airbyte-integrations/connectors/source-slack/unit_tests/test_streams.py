@@ -486,7 +486,7 @@ def test_next_page_token(token_config):
         pytest.param(403, {}, ResponseAction.FAIL, id="403_fail"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_rate_limited"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
-        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RETRY, id="ok_false_ratelimited"),
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RATE_LIMITED, id="ok_false_ratelimited"),
         pytest.param(200, {"ok": False, "error": "not_in_channel"}, ResponseAction.IGNORE, id="ok_false_not_in_channel"),
         pytest.param(200, {"ok": False, "error": "channel_not_found"}, ResponseAction.IGNORE, id="ok_false_channel_not_found"),
         pytest.param(200, {"ok": False, "error": "is_archived"}, ResponseAction.IGNORE, id="ok_false_is_archived"),
