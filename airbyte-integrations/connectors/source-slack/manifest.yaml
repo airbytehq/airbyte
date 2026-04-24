@@ -35,6 +35,20 @@ definitions:
       Default OAuth2.0 authorization: "#/definitions/access_token_auth"
       API Token Credentials: "#/definitions/api_token_auth"
 
+  slack_api_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
+        action: RETRY
+        error_message: "Slack API rate limited."
+      - predicate: "{{ response.get('ok') is false }}"
+        action: FAIL
+        error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
+
   requester:
     type: HttpRequester
     url_base: https://slack.com/api/
@@ -148,19 +162,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           max_retries: 10
-          response_filters:
-            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
-              action: FAIL
-              failure_type: config_error
-              error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
-            - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-              action: RETRY
-              error_message: "Slack API rate limited."
-            - predicate: "{{ response.get('ok') is false }}"
-              action: FAIL
-              error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "retry-after"
@@ -244,18 +247,7 @@ definitions:
           $ref: "#/definitions/authenticator"
         request_body_json: {}
         error_handler:
-          type: DefaultErrorHandler
-          response_filters:
-            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
-              action: FAIL
-              failure_type: config_error
-              error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
-            - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-              action: RETRY
-              error_message: "Slack API rate limited."
-            - predicate: "{{ response.get('ok') is false }}"
-              action: FAIL
-              error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
+          $ref: "#/definitions/slack_api_error_handler"
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "retry-after"
@@ -369,19 +361,8 @@ definitions:
           $ref: "#/definitions/authenticator"
         request_body_json: {}
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           max_retries: 20
-          response_filters:
-            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
-              action: FAIL
-              failure_type: config_error
-              error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
-            - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
-              action: RETRY
-              error_message: "Slack API rate limited."
-            - predicate: "{{ response.get('ok') is false }}"
-              action: FAIL
-              error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "retry-after"
