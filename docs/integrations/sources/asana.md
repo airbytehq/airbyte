@@ -49,7 +49,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 | Feature           | Supported? |
 | :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
+| Incremental Sync  | Yes        |
 | Namespaces        | No         |
 
 ## Supported Streams
