@@ -10,7 +10,7 @@ import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from itertools import groupby
-from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import anyascii
 import requests
@@ -145,6 +145,55 @@ class FlattenNestedDictsTransformation(RecordTransformation):
         for top_key in [k for k, v in list(record.items()) if isinstance(v, dict)]:
             nested = record.pop(top_key)
             _flatten(top_key, nested)
+
+
+@dataclass
+class SerializeMessageFieldsTransformation(RecordTransformation):
+    """
+    Serializes MESSAGE-type fields (nested dict values) to JSON strings before
+    flattening occurs. This prevents FlattenNestedDictsTransformation from
+    recursively flattening MESSAGE fields like change_event.old_resource and
+    change_event.new_resource, which would create sub-keys not present in
+    the schema and cause the original field values to be lost (returned as NULL).
+
+    This transformation must run AFTER KeysToSnakeCaseGoogleAdsTransformation
+    and BEFORE FlattenNestedDictsTransformation in the custom query stream
+    transformation chain.
+
+    The set of MESSAGE-type field names is populated by
+    CustomGAQuerySchemaLoader.get_json_schema() during stream initialization
+    and stored on the CustomGAQuerySchemaLoader class.
+    """
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        message_fields: set = CustomGAQuerySchemaLoader._all_message_fields
+        if not message_fields:
+            return
+
+        for field_name in message_fields:
+            parts = field_name.split(".")
+            current = record
+            for part in parts[:-1]:
+                if isinstance(current, dict) and part in current:
+                    current = current[part]
+                else:
+                    current = None
+                    break
+
+            if current is not None and isinstance(current, dict):
+                last_part = parts[-1]
+                if last_part in current:
+                    value = current[last_part]
+                    if isinstance(value, dict):
+                        current[last_part] = json.dumps(value)
+                    elif isinstance(value, list):
+                        current[last_part] = [json.dumps(item) if isinstance(item, dict) else item for item in value]
 
 
 class DoubleQuotedDictTypeTransformer(TypeTransformer):
@@ -928,6 +977,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
     _google_ads_client: Optional[GoogleAds] = None
     _client_lock = threading.Lock()
+    _all_message_fields: ClassVar[Set[str]] = set()
 
     def __post_init__(self):
         self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
@@ -964,10 +1014,14 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         fields = self._get_list_of_fields()
         fields_metadata = self.google_ads_client(self.config).get_fields_metadata(fields)
 
+        message_fields: set = set()
         for field, field_metadata in fields_metadata.items():
+            if field_metadata.data_type.name == "MESSAGE":
+                message_fields.add(field)
             field_value = self._build_field_value(field, field_metadata)
             local_json_schema["properties"][field] = field_value
 
+        CustomGAQuerySchemaLoader._all_message_fields = CustomGAQuerySchemaLoader._all_message_fields | message_fields
         return local_json_schema
 
     def _build_field_value(self, field: str, field_metadata) -> Any:

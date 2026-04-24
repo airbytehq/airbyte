@@ -76,6 +76,7 @@ To generate a legacy access token, follow Zendesk's [OAuth documentation](https:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.6 | 2026-04-21 | [76833](https://github.com/airbytehq/airbyte/pull/76833) | Update dependencies |
 | 0.4.5 | 2026-03-31 | [75875](https://github.com/airbytehq/airbyte/pull/75875) | Update dependencies |
 | 0.4.4 | 2026-03-17 | [74393](https://github.com/airbytehq/airbyte/pull/74393) | Migrate to scopes object array format |
 | 0.4.3 | 2026-03-17 | [75115](https://github.com/airbytehq/airbyte/pull/75115) | Update dependencies |
