@@ -634,11 +634,6 @@ definitions:
             max_retries: 10
             response_filters:
               - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
-                  response.error.errors[0].message }}
-              - type: HttpResponseFilter
                 action: RETRY
                 http_codes:
                   - 500
@@ -713,7 +708,7 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date
-              value: "{{ stream_slice.start_date }}"
+              value: "{{ stream_slice.start_time }}"
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
