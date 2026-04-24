@@ -372,7 +372,7 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
                 ),
             ),
             "raise",
-            AirbyteTracedException,
+            FacebookRequestError,
             id="airbyte_traced_wrapping_unrelated_fb_error_raises",
         ),
         pytest.param(
