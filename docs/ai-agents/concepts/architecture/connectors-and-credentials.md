@@ -38,7 +38,7 @@ A typical connector lifecycle looks like this:
 2. **Execute operations** — Make tool calls against the connector. Each call targets an entity and an action. See [Execute operations (API)](../../interfaces/api/execute) or [Execute operations (SDK)](../../interfaces/sdk/execute).
 3. **Enable the Context Store** — Optionally turn on the [Context Store](../context-store) to replicate and index a subset of your connector data. This enables fast search operations without hitting the upstream API.
 
-## Entities and actions
+## Entities and actions {#entities-and-actions}
 
 Each connector exposes a set of entities and actions that define what agents can do with that service.
 
