@@ -64,7 +64,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 | Stream | Sync Mode | Description |
 |--------|-----------|-------------|
-| [Sessions](https://docs.devin.ai/api-reference/v3/sessions/list-sessions) | Full Refresh | All Devin sessions in your organization |
+| [Sessions](https://docs.devin.ai/api-reference/v3/sessions/list-sessions) | Full Refresh \| Incremental | All Devin sessions in your organization |
 | [Sessions Insights](https://docs.devin.ai/api-reference/v3/sessions/organizations-sessions-insights) | Full Refresh | Sessions enriched with message counts, size classification, and AI-generated analysis |
 | [Session Messages](https://docs.devin.ai/api-reference/v3/sessions/get-session-messages) | Full Refresh | Conversation messages for each session |
 | [Playbooks](https://docs.devin.ai/api-reference/v3/playbooks/list-playbooks) | Full Refresh | Team playbooks for the organization |
@@ -77,7 +77,8 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 |-----------|------|----------|---------|-------------|
 | `api_token` | string | Yes | | Devin API key for authentication. Service user tokens use the `cog_*` prefix. |
 | `org_id` | string | Yes | | Your Devin organization ID. Uses the `org_*` prefix. |
-| `start_date` | string (ISO 8601, UTC) | No | (epoch 0, i.e. no filter) | Optional lower bound on `created_at` for the `sessions`, `sessions_insights`, and `session_messages` streams. Sessions created before this instant are excluded. Format: `YYYY-MM-DDTHH:MM:SSZ`. Example: `2026-01-01T00:00:00Z`. |
+| `start_date` | string (ISO 8601, UTC) | No | (epoch 0, i.e. no filter) | Optional UTC timestamp (`YYYY-MM-DDTHH:MM:SSZ`). Used as the `created_after` filter for the `sessions`, `sessions_insights`, and `session_messages` streams, and as the incremental cursor start for the `sessions` stream. |
+| `lookback_window_days` | integer | No | `1` | Number of days to re-read on each incremental sync of the `sessions` stream to catch sessions whose `updated_at` advanced after the previous sync. |
 
 ## Changelog
 
@@ -86,6 +87,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.0 | 2026-04-21 | [76505](https://github.com/airbytehq/airbyte/pull/76505) | Add incremental sync support to the `sessions` stream (new `lookback_window_days` config field) |
 | 0.2.0 | 2026-04-20 | [76475](https://github.com/airbytehq/airbyte/pull/76475) | Add `sessions_insights` stream for analytics (message counts, session size, AI-generated classification); add optional `start_date` config to filter `sessions`, `sessions_insights`, and `session_messages` by creation time |
 | 0.1.1 | 2026-04-21 | [76504](https://github.com/airbytehq/airbyte/pull/76504) | Update dependencies |
 | 0.1.0 | 2026-03-10 | | Initial release with sessions, session messages, playbooks, secrets, and knowledge notes streams |
