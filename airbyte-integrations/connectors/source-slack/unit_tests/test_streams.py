@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 from requests import Response
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.entrypoint_wrapper import read
