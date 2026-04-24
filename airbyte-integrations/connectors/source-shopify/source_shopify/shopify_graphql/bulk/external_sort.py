@@ -70,7 +70,7 @@ def external_stable_sort(
             chunk.append((key_fn(record), ordinal, record))
             ordinal += 1
             if len(chunk) >= chunk_size:
-                run_paths.append(_spill_chunk(chunk, tmp_dir))
+                _spill_chunk(chunk, tmp_dir, run_paths)
                 chunk = []
 
         if not run_paths:
@@ -82,7 +82,7 @@ def external_stable_sort(
             return
 
         if chunk:
-            run_paths.append(_spill_chunk(chunk, tmp_dir))
+            _spill_chunk(chunk, tmp_dir, run_paths)
 
         logger.info(f"External sort spilled {len(run_paths)} run file(s) covering {ordinal} record(s); merging.")
         yield from _merge_runs(run_paths)
@@ -96,19 +96,20 @@ def _sort_key(item: Any) -> Any:
     return (item[0], item[1])
 
 
-def _spill_chunk(chunk: List[Any], tmp_dir: Optional[str]) -> str:
-    """Sort `chunk` in place by `(key, ordinal)` and write it to a new temp file.
+def _spill_chunk(chunk: List[Any], tmp_dir: Optional[str], run_paths: List[str]) -> None:
+    """Sort `chunk` in place and write it as a new sorted run file.
 
-    Returns the path of the written run file. Each line is a JSON-encoded
-    `[key, ordinal, record]` triple, which is deserialized during the merge
-    step.
+    The newly created path is appended to `run_paths` **before** any write
+    begins, so a failure in `json.dumps` or `fh.write` still leaves the path
+    visible to the outer `finally` block for cleanup. Each line is a
+    JSON-encoded `[key, ordinal, record]` triple, deserialized during merge.
     """
     chunk.sort(key=_sort_key)
     fd, path = tempfile.mkstemp(prefix="shopify_bulk_sort_", suffix=".jsonl", dir=tmp_dir)
+    run_paths.append(path)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         for key, ord_value, record in chunk:
             fh.write(json.dumps([key, ord_value, record], separators=(",", ":")) + "\n")
-    return path
 
 
 def _iter_run(path: str) -> Iterator[Any]:

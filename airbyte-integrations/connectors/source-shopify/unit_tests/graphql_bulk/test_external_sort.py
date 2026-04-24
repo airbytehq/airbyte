@@ -133,6 +133,28 @@ def test_cleans_up_spill_files_on_consumer_exception(tmp_path):
     assert remaining == []
 
 
+def test_cleans_up_spill_files_when_record_is_not_json_serializable(tmp_path):
+    # Force a chunk boundary that the sort will try to spill, then make the
+    # second chunk contain an unserializable record so `json.dumps` raises
+    # mid-write. The temp file that was created for that chunk must still be
+    # cleaned up by the outer `finally`.
+    class _NotJson:
+        pass
+
+    records = [
+        {"id": 0, "updated_at": "2024-01-01T00:00:00Z"},
+        {"id": 1, "updated_at": "2024-01-02T00:00:00Z"},
+        {"id": 2, "updated_at": "2024-01-03T00:00:00Z", "payload": _NotJson()},
+        {"id": 3, "updated_at": "2024-01-04T00:00:00Z"},
+    ]
+
+    with pytest.raises(TypeError):
+        list(external_stable_sort(records, key_fn=_cursor_key, chunk_size=2, tmp_dir=str(tmp_path)))
+
+    remaining = [p for p in Path(tmp_path).iterdir() if p.name.startswith("shopify_bulk_sort_")]
+    assert remaining == []
+
+
 def test_rejects_non_positive_chunk_size():
     with pytest.raises(ValueError):
         list(external_stable_sort(_records(["a"]), key_fn=_cursor_key, chunk_size=0))
