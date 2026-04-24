@@ -72,6 +72,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.2.15-rc.1 | 2026-04-24 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Update source-declarative-manifest base image to 7.17.3 |
 | 3.2.14 | 2026-04-23 | [76957](https://github.com/airbytehq/airbyte/pull/76957) | Promoted release candidate to GA |
 | 3.2.14-rc.5 | 2026-04-22 | | Re-enable HTTPAPIBudget, keep c=5 for Full Tier 2 rollout |
 | 3.2.14-rc.4 | 2026-04-17 | | Revert default_concurrency from 6 to 5 and disable HTTPAPIBudget for tuning experiment |
