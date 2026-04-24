@@ -456,7 +456,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.8 | 2026-04-24 | [](https://github.com/airbytehq/airbyte/pull/) | Cast API throttle and rate-limit header values to float to prevent TypeError when Facebook returns string-typed numbers |
+| 5.2.8 | 2026-04-24 | [76996](https://github.com/airbytehq/airbyte/pull/76996) | Cast API throttle and rate-limit header values to float to prevent TypeError when Facebook returns string-typed numbers |
 | 5.2.7 | 2026-04-23 | [76951](https://github.com/airbytehq/airbyte/pull/76951) | Promoted release candidate to GA |
 | 5.2.7-rc.1 | 2026-04-16 | [74127](https://github.com/airbytehq/airbyte/pull/74127) | Allow connection setup to succeed for custom insights with high-cardinality breakdowns (for example, `product_id`) |
 | 5.2.6 | 2026-04-09 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
