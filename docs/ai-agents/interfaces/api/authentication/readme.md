@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Authentication
+# Authenticate
 
 You authenticate with the Airbyte Agent API using your Airbyte Agents client credentials. Airbyte stores the credentials for each connector securely and mints short-lived tokens for your backend to call.
 

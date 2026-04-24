@@ -2,6 +2,8 @@
 sidebar_position: 2
 ---
 
+# Add a connector
+
 <!--
 BLOCKS MERGE until AGENTIC-1133 ships.
 
@@ -12,8 +14,6 @@ Workspace passes `customer_name=` to AirbyteCloudClient, which expects
 Confirm the fix ships and the docs' pinned SDK version includes it before
 merging.
 -->
-
-# Add a connector
 
 A **connector** in Airbyte Agents is a stored set of credentials for a third-party service plus everything needed to execute operations against it. You create a connector once, then reference it on every subsequent call — by its slug (preferred) when the workspace has one connector of that type, or by its `connector_id` when you need to disambiguate.
 
