@@ -726,9 +726,7 @@ def test_channels_stream_paginator_page_size_is_999(token_config) -> None:
 def test_other_streams_paginator_page_size_is_1000(token_config) -> None:
     for stream_name in ("users", "channel_members", "channel_messages", "threads"):
         stream = get_stream_by_name(stream_name, token_config)
-        assert get_retriever(stream).paginator.pagination_strategy.page_size == 1000, (
-            f"Expected page_size 1000 for {stream_name}"
-        )
+        assert get_retriever(stream).paginator.pagination_strategy.page_size == 1000, f"Expected page_size 1000 for {stream_name}"
 
 
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:
