@@ -28,7 +28,7 @@ Each connected source has its own isolated store. Airbyte curates the store for 
 
 - Airbyte selects a subset of fields and entities that are useful for search, not every record or field in the source.
 - Each organization's data is only accessible to agents within that organization.
-- Data in the store refreshes hourly.
+- Data in the store refreshes on a schedule that depends on your plan. See [Refresh rates](#refresh-rates) for details.
 
 For the list of entities each connector contributes, see [Agent connectors](../connectors).
 
@@ -87,6 +87,29 @@ Use this view to confirm which entities are ready to query and which are still p
 
 When you turn off the Context Store, Airbyte removes the replicated data from the store. Agents can no longer use the search action until you turn the store back on and Airbyte repopulates it.
 
+## How agents use the Context Store
+
+When an agent processes a prompt, it chooses between two execution paths for each connector operation:
+
+- **Context Store search.** The agent queries the pre-indexed replica in the Context Store. This path handles filtering, sorting, and aggregation without calling the third-party API, so it returns results faster and uses fewer tokens. Agents prefer this path when the entity is available in the Context Store.
+- **Direct request.** The agent calls the third-party API in real time. This path always returns the most current data, and it's the only option for entities that aren't in the Context Store or for write operations like creating and updating records.
+
+Agents choose between these paths automatically. You don't need to specify which path to use in your prompts. In sandbox chat, each tool call displays a badge that indicates whether it used the Context Store or a direct request.
+
+## How search works
+
+The Context Store supports structured search with filter operators, field selection, sorting, and cursor-based pagination. Agents translate natural-language prompts into structured queries automatically, so most users don't need to construct queries by hand.
+
+If you build agents with the SDK or API, you can call `context_store_search` directly and pass structured filters. For details on the query model, see the [SDK reference](../reference/sdk/airbyte_agent_sdk) and individual [connector reference pages](../connectors).
+
+## Initial backfill
+
+The first time you turn on the Context Store, Airbyte begins a backfill for each connector. Backfill time depends on how much data the connector has, typically ranging from minutes to hours.
+
+During the backfill, Airbyte makes data available to agents progressively. You don't have to wait for the backfill to finish before agents can search. An entity in **Preview** status already has partial data that agents can query. As the backfill continues, more records become searchable until the entity reaches **Ready** status.
+
+The per-entity detail view on the Credentials page shows record counts and timestamps so you can track backfill progress.
+
 ## When to use the Context Store
 
 Turn the Context Store on when:
@@ -100,8 +123,17 @@ You may want to skip the Context Store when:
 - You already maintain your own copy of the relevant data and prefer to expose it through your own tools.
 - You only need to read or write a small number of records at a time and don't need to search across a dataset.
 
+## Refresh rates
+
+The Context Store refresh rate depends on your plan:
+
+- **Free plan.** Hourly during your first month, then daily.
+- **Individual, Team, and Custom plans.** Hourly.
+
+The refresh rate isn't user-configurable. For details on plans, see [Billing and pricing](../admin/billing).
+
 ## Limitations
 
-- The refresh rate isn't user-configurable.
 - All agent connectors and interfaces can use the Context Store and always try to do so unless you turn it off.
-- Turning the Context Store off and on again triggers a fresh population. Repopulating it can take a long time if your system contains substantial amounts of data. Plan for this if you rely on search-heavy prompts.
+- Turning the Context Store off and on again triggers a fresh population. Repopulating can take a long time if your system contains substantial amounts of data. Plan for this if you rely on search-heavy prompts.
+- Cancelling your subscription permanently deletes cached data in the Context Store. See [Cancel your subscription](../admin/billing#cancel-your-subscription) for details.
