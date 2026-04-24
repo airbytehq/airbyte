@@ -301,8 +301,32 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
 
 
 @pytest.mark.parametrize(
-    "exception,expected_behavior",
+    "exception,expected_behavior,expected_raise_type",
     [
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "(#200) Requires business_management permission to manage the object", "code": 200}}',
+            ),
+            "remove_owner",
+            None,
+            id="fb_error_owner_permission_removes_owner",
+        ),
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "Unsupported request - method type: get", "code": 100}}',
+            ),
+            "remove_funding_source_details",
+            None,
+            id="fb_error_funding_source_removes_field",
+        ),
         pytest.param(
             AirbyteTracedException(
                 message="Credentials don't have enough permissions.",
@@ -316,6 +340,7 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
                 ),
             ),
             "remove_owner",
+            None,
             id="airbyte_traced_wrapping_owner_permission_error_removes_owner",
         ),
         pytest.param(
@@ -331,6 +356,7 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
                 ),
             ),
             "remove_funding_source_details",
+            None,
             id="airbyte_traced_wrapping_funding_source_error_removes_field",
         ),
         pytest.param(
@@ -346,6 +372,7 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
                 ),
             ),
             "raise",
+            AirbyteTracedException,
             id="airbyte_traced_wrapping_unrelated_fb_error_raises",
         ),
         pytest.param(
@@ -354,13 +381,29 @@ def test_fetch_creative_details_returns_data_on_success(api, some_config):
                 failure_type=FailureType.system_error,
             ),
             "raise",
+            AirbyteTracedException,
             id="airbyte_traced_without_wrapped_fb_error_raises",
+        ),
+        pytest.param(
+            FacebookRequestError(
+                message="Call was not successful",
+                request_context={"method": "GET"},
+                http_status=400,
+                http_headers={},
+                body='{"error": {"message": "Invalid OAuth access token", "code": 190}}',
+            ),
+            "raise",
+            FacebookRequestError,
+            id="fb_error_unrelated_raises",
         ),
     ],
 )
-def test_ad_account_list_objects_handles_airbyte_traced_exception(api, some_config, exception, expected_behavior):
-    """Test that AdAccount.list_objects catches AirbyteTracedException wrapping FacebookRequestError
-    for the owner permission and funding_source_details errors, and re-raises all others."""
+def test_ad_account_list_objects_handles_facebook_and_traced_exceptions(
+    api, some_config, exception, expected_behavior, expected_raise_type
+):
+    """Test that AdAccount.list_objects handles FacebookRequestError and AirbyteTracedException
+    wrapping FacebookRequestError for the owner permission and funding_source_details errors,
+    and re-raises all others."""
     stream = AdAccount(api=api, account_ids=some_config["account_ids"])
     account_id = some_config["account_ids"][0]
 
@@ -374,7 +417,7 @@ def test_ad_account_list_objects_handles_airbyte_traced_exception(api, some_conf
         mock_account_instance.api_get.side_effect = [exception, MagicMock()]
 
         if expected_behavior == "raise":
-            with pytest.raises(AirbyteTracedException):
+            with pytest.raises(expected_raise_type):
                 stream.list_objects(params={}, account_id=account_id)
         elif expected_behavior == "remove_owner":
             stream.list_objects(params={}, account_id=account_id)
