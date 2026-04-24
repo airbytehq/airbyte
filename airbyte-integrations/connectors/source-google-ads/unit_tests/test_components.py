@@ -8,6 +8,7 @@ from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
     ClickViewHttpRequester,
@@ -21,8 +22,10 @@ from source_google_ads.components import (
 
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
 
 from .conftest import Obj, get_source
@@ -149,6 +152,144 @@ class TestCustomGAQueryHttpRequester:
         assert request_body == {
             "query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2025-07-18' AND '2025-07-19' ORDER BY segments.date ASC"
         }
+
+
+class TestErrorHandler:
+    """Verify that the manifest's `base_error_handler` surfaces specific Google Ads API error messages.
+
+    The catch-all filter at the end of `base_error_handler.response_filters` extracts
+    `error.details[0].errors[0].message` from Google Ads API responses. See
+    https://github.com/airbytehq/airbyte-internal-issues/issues/16228.
+    """
+
+    _CATCHALL_PREDICATE = (
+        "{{ (((response.get('error') or {}).get('details') or []) | length > 0)"
+        " and ((((response.get('error') or {}).get('details') or [{}])[0].get('errors') or []) | length > 0) }}"
+    )
+    _CATCHALL_ERROR_MESSAGE = "Google Ads API error: {{ response.error.details[0].errors[0].message }}"
+
+    @staticmethod
+    def _build_response(status_code: int, body: dict) -> requests.Response:
+        mock_response = MagicMock(spec=requests.Response)
+        mock_response.status_code = status_code
+        mock_response.ok = status_code < 400
+        mock_response.json.return_value = body
+        mock_response.headers = {}
+        return mock_response
+
+    def _build_catchall_filter(self, config) -> HttpResponseFilter:
+        return HttpResponseFilter(
+            config=config,
+            parameters={},
+            action=ResponseAction.FAIL,
+            failure_type="config_error",
+            predicate=self._CATCHALL_PREDICATE,
+            error_message=self._CATCHALL_ERROR_MESSAGE,
+        )
+
+    def test_manifest_error_handler_structure(self, config):
+        """The catch-all filter must be the LAST response filter so http_codes filters take priority."""
+        source = get_source(config)
+        error_handler_def = source.resolved_manifest["definitions"]["base_error_handler"]
+        filters = error_handler_def["response_filters"]
+
+        # The catch-all filter (with a predicate, no http_codes) must be LAST so that the
+        # existing http_codes [500] / [403] filters are evaluated first and short-circuit.
+        catchall = filters[-1]
+        assert "predicate" in catchall, "Last response filter should be the catch-all with a predicate"
+        assert "http_codes" not in catchall, "Catch-all filter must not scope by http_codes"
+        assert catchall.get("action") == "FAIL"
+        assert catchall.get("failure_type") == "config_error"
+
+        # Ordering: the 500 filter must appear before the catch-all so transient 500s
+        # are still classified as system errors, not misclassified as config_error.
+        http_500_indices = [i for i, f in enumerate(filters) if 500 in (f.get("http_codes") or [])]
+        assert http_500_indices, "Expected an http_codes=[500] filter in base_error_handler"
+        assert max(http_500_indices) < len(filters) - 1, "http_codes=[500] filter must precede the catch-all"
+
+    def test_catchall_surfaces_google_ads_error_message(self, config):
+        """A Google Ads response with nested `error.details[0].errors[0].message` is surfaced verbatim."""
+        response_filter = self._build_catchall_filter(config)
+        response = self._build_response(
+            status_code=400,
+            body={
+                "error": {
+                    "code": 400,
+                    "message": "Request contains an invalid argument.",
+                    "status": "INVALID_ARGUMENT",
+                    "details": [
+                        {
+                            "errors": [
+                                {
+                                    "errorCode": {"authorizationError": "DEVELOPER_TOKEN_NOT_APPROVED"},
+                                    "message": "The developer token is not approved for production access.",
+                                }
+                            ]
+                        }
+                    ],
+                }
+            },
+        )
+
+        resolution = response_filter.matches(response)
+
+        assert resolution is not None, "Catch-all filter should match a response with nested error details"
+        assert resolution.response_action == ResponseAction.FAIL
+        assert resolution.error_message == ("Google Ads API error: The developer token is not approved for production access.")
+
+    @pytest.mark.parametrize(
+        "body",
+        [
+            {},
+            {"error": {}},
+            {"error": {"code": 400, "message": "Bad request."}},
+            {"error": {"details": []}},
+            {"error": {"details": [{}]}},
+            {"error": {"details": [{"errors": []}]}},
+        ],
+    )
+    def test_catchall_does_not_match_or_raise_on_missing_or_empty_details(self, config, body):
+        """Responses without the nested structure must fall through without raising."""
+        response_filter = self._build_catchall_filter(config)
+        response = self._build_response(status_code=400, body=body)
+
+        # The predicate guards against missing keys and empty arrays, so calling `matches`
+        # must not raise IndexError / AttributeError and must return None (no match).
+        resolution = response_filter.matches(response)
+        assert resolution is None
+
+    def test_http_500_filter_not_preempted_by_catchall(self, config):
+        """A 500 response must still be handled by the existing http_codes=[500] filter.
+
+        This verifies filter ordering: the catch-all must go AFTER the http_codes filters
+        so transient 500s retain their existing error message and are not misclassified.
+        """
+        source = get_source(config)
+        filters = source.resolved_manifest["definitions"]["base_error_handler"]["response_filters"]
+
+        # Locate the http_codes=[500] filter and build a HttpResponseFilter from it.
+        http_500_filter_def = next(f for f in filters if 500 in (f.get("http_codes") or []))
+        http_500_filter = HttpResponseFilter(
+            config=config,
+            parameters={},
+            action=ResponseAction.FAIL,
+            http_codes=http_500_filter_def["http_codes"],
+            error_message=http_500_filter_def["error_message"],
+        )
+
+        # A 500 response whose body also happens to contain a Google Ads-shaped error payload:
+        # the http_codes filter matches first (ordering in the manifest) and surfaces the
+        # existing transient-error message rather than the catch-all's config_error message.
+        response = self._build_response(
+            status_code=500,
+            body={"error": {"details": [{"errors": [{"message": "Internal server error happened on server side."}]}]}},
+        )
+
+        resolution = http_500_filter.matches(response)
+
+        assert resolution is not None
+        assert resolution.response_action == ResponseAction.FAIL
+        assert "temporal error on the Google Ads server" in resolution.error_message
 
 
 class TestClickViewHttpRequester:
