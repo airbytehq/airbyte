@@ -19,6 +19,7 @@ class BigqueryDirectLoadSqlTableOperations(
     private val defaultOperations: DefaultDirectLoadTableSqlOperations,
     private val bq: BigQuery,
     private val jobProjectId: String,
+    private val datasetLocation: String,
 ) : DirectLoadTableSqlOperations by defaultOperations {
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", "kotlin coroutines")
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
@@ -30,7 +31,12 @@ class BigqueryDirectLoadSqlTableOperations(
         // So we'll use a Copy job instead.
         // (this is more efficient than just `insert into tgt select * from src`)
         val sourceTableId = sourceTableName.toTableId()
-        val jobId = JobId.newBuilder().setProject(jobProjectId).setRandomJob().build()
+        val jobId =
+            JobId.newBuilder()
+                .setProject(jobProjectId)
+                .setLocation(datasetLocation)
+                .setRandomJob()
+                .build()
         val job =
             bq.create(
                 JobInfo.of(

@@ -54,8 +54,7 @@ class BigqueryConfigurationFactory :
             }
         return BigqueryConfiguration(
             projectId = pojo.projectId,
-            jobProjectId =
-                if (pojo.jobProjectId.isNullOrBlank()) pojo.projectId else pojo.jobProjectId!!,
+            jobProjectId = pojo.jobProjectId?.takeUnless(String::isBlank) ?: pojo.projectId,
             pojo.datasetLocation,
             datasetId = pojo.datasetId,
             loadingMethodConfig,

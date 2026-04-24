@@ -133,6 +133,7 @@ class BigqueryBeansFactory {
                     ),
                     bigquery,
                     config.jobProjectId,
+                    config.datasetLocation.region,
                 )
             // force smart cast
             @Suppress("UNCHECKED_CAST")

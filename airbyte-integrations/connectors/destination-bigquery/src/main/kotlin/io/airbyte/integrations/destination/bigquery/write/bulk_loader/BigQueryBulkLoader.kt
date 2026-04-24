@@ -67,7 +67,11 @@ class BigQueryBulkLoader(
                 .build()
 
         val jobId =
-            JobId.newBuilder().setProject(bigQueryConfiguration.jobProjectId).setRandomJob().build()
+            JobId.newBuilder()
+                .setProject(bigQueryConfiguration.jobProjectId)
+                .setLocation(bigQueryConfiguration.datasetLocation.region)
+                .setRandomJob()
+                .build()
         val loadJob = bigQueryClient.create(JobInfo.of(jobId, configuration))
 
         try {
