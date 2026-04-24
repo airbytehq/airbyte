@@ -229,6 +229,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.23 | 2026-04-22 | [76921](https://github.com/airbytehq/airbyte/pull/76921) | Handle `None` response in `read_records` error handler so transport-layer failures (connection errors, timeouts) surface as transient errors instead of `AttributeError` |
 | 2.1.22 | 2026-04-22 | [74758](https://github.com/airbytehq/airbyte/pull/74758) | Fix rate limit sleep blocking heartbeat; classify rate limit errors as transient; increase default max_waiting_time to 120 minutes to cover GitHub's hourly rate limit window |
 | 2.1.21 | 2026-04-21 | [74586](https://github.com/airbytehq/airbyte/pull/74586) | Update dependencies |
 | 2.1.20 | 2026-04-13 | [76275](https://github.com/airbytehq/airbyte/pull/76275) | Bump airbyte-cdk to >=7.12.0 to fix OAuth `scope=null` in consent URL |

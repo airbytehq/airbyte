@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 7.3.19
+  dockerImageTag: 8.0.0
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
@@ -37,6 +37,28 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      8.0.0:
+        message:
+          "Daily report streams now use the `date` field from the API response as the cursor and primary key instead of the synthetic `reportDate` field.
+          Previously, all rows within a 30-day window were incorrectly assigned the same `reportDate`, causing ~96% data loss during deduplication.
+          Users must refresh all affected daily report streams to backfill the missing data."
+        upgradeDeadline: "2026-05-22"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "sponsored_brands_v3_report_stream_daily"
+              - "sponsored_display_campaigns_report_stream_daily"
+              - "sponsored_display_adgroups_report_stream_daily"
+              - "sponsored_display_productads_report_stream_daily"
+              - "sponsored_display_targets_report_stream_daily"
+              - "sponsored_display_asins_report_stream_daily"
+              - "sponsored_products_campaigns_report_stream_daily"
+              - "sponsored_products_adgroups_report_stream_daily"
+              - "sponsored_products_keywords_report_stream_daily"
+              - "sponsored_products_targets_report_stream_daily"
+              - "sponsored_products_productads_report_stream_daily"
+              - "sponsored_products_asins_keywords_report_stream_daily"
+              - "sponsored_products_asins_targets_report_stream_daily"
       7.0.0:
         message:
           "This version introduces new report streams, replacing SponsoredDisplayReportStream and SponsoredProductsReportStream with detailed breakdowns.

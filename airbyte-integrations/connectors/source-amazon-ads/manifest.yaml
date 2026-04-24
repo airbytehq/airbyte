@@ -1407,9 +1407,9 @@ definitions:
     sponsored_brands_v3_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_brands_v3_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "purchasedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "purchasedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1548,9 +1548,9 @@ definitions:
     sponsored_display_campaigns_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_campaigns_report_stream_daily
-      primary_key: ["profileId", "reportDate", "campaignId"]
+      primary_key: ["profileId", "date", "campaignId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1735,9 +1735,9 @@ definitions:
     sponsored_display_adgroups_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_adgroups_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      primary_key: ["profileId", "date", "adGroupName", "adGroupId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -1925,9 +1925,9 @@ definitions:
     sponsored_display_productads_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_productads_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      primary_key: ["profileId", "date", "adGroupName", "adId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2110,9 +2110,9 @@ definitions:
     sponsored_display_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "targetingId"]
+      primary_key: ["profileId", "date", "adGroupName", "targetingId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2253,9 +2253,9 @@ definitions:
     sponsored_display_asins_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_display_asins_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "promotedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "promotedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2371,9 +2371,9 @@ definitions:
     sponsored_products_campaigns_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_campaigns_report_stream_daily
-      primary_key: ["profileId", "reportDate", "campaignId"]
+      primary_key: ["profileId", "date", "campaignId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2497,9 +2497,9 @@ definitions:
     sponsored_products_adgroups_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_adgroups_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adGroupId"]
+      primary_key: ["profileId", "date", "adGroupName", "adGroupId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2629,9 +2629,9 @@ definitions:
     sponsored_products_keywords_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_keywords_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      primary_key: ["profileId", "date", "adGroupName", "keywordId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2771,9 +2771,9 @@ definitions:
     sponsored_products_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "keywordId"]
+      primary_key: ["profileId", "date", "adGroupName", "keywordId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -2905,9 +2905,9 @@ definitions:
     sponsored_products_productads_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_productads_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "adId"]
+      primary_key: ["profileId", "date", "adGroupName", "adId"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3023,9 +3023,9 @@ definitions:
     sponsored_products_asins_keywords_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_asins_keywords_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "advertisedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3131,9 +3131,9 @@ definitions:
     sponsored_products_asins_targets_report_stream_daily:
       type: DeclarativeStream
       name: sponsored_products_asins_targets_report_stream_daily
-      primary_key: ["profileId", "reportDate", "adGroupName", "advertisedAsin"]
+      primary_key: ["profileId", "date", "adGroupName", "advertisedAsin"]
       incremental_sync:
-        $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+        $ref: "#/definitions/incremental_sync_report_datetime_cursor_daily"
       transformations:
         $ref: "#/definitions/transformation_report_add_fields"
       retriever:
@@ -3208,6 +3208,10 @@ definitions:
     end_time_option:
       field_name: endDate
       inject_into: body_json
+
+  incremental_sync_report_datetime_cursor_daily:
+    $ref: "#/definitions/incremental_sync_report_datetime_cursor"
+    cursor_field: date
 
   transformation_report_add_fields:
     - type: AddFields
