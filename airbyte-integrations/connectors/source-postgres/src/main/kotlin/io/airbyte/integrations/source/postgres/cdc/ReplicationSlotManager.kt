@@ -34,7 +34,24 @@ class ReplicationSlotManager(
 
     @Synchronized
     fun advanceLsn(lsn: Lsn) {
-        log.info { getSlotInfo() }
+        val slotInfo = getSlotInfo()
+        log.info { slotInfo }
+        // If the slot's confirmed_flush_lsn is already at or beyond the target LSN, there is
+        // nothing to acknowledge. Re-issuing setFlushedLSN/setAppliedLSN with the same value
+        // still opens a logical replication stream at that LSN and has been observed to
+        // interact badly with PostgreSQL 14 WAL reclaim: the acknowledged segment can be
+        // reclaimed, leaving Debezium's WalPositionLocator unable to find the configured
+        // anchor and stalling the sync until FIRST_RECORD_WAIT elapses with a
+        // HEARTBEAT_NOT_PROGRESSING close reason. See airbytehq/oncall#12053.
+        val currentConfirmedFlushLsn = slotInfo.confirmedFlushLsn
+        if (isAlreadyAdvanced(currentConfirmedFlushLsn, lsn)) {
+            log.info {
+                "Replication slot '${cdcConfig.replicationSlot}' confirmed_flush_lsn " +
+                    "($currentConfirmedFlushLsn) is already at or beyond target LSN ($lsn); " +
+                    "skipping setFlushedLSN/setAppliedLSN."
+            }
+            return
+        }
         val logSequenceNumber = lsn.asLogSequenceNumber()
         val conn = connectionFactory.getReplication()
         val builder =
@@ -176,5 +193,14 @@ class ReplicationSlotManager(
                 )
             }
         )
+    }
+
+    companion object {
+        /**
+         * Returns `true` when the replication slot's current `confirmed_flush_lsn` is already at or
+         * beyond the target `lsn`, meaning no further acknowledgement is needed.
+         */
+        internal fun isAlreadyAdvanced(confirmedFlushLsn: Lsn?, lsn: Lsn): Boolean =
+            confirmedFlushLsn != null && confirmedFlushLsn >= lsn
     }
 }
