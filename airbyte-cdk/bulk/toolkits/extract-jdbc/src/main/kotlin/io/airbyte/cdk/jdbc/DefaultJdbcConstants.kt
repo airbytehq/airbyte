@@ -42,6 +42,12 @@ data class DefaultJdbcConstants(
      * always honored even if it matches this set.
      */
     val ignoredNamespaces: Set<String> = emptySet(),
+    /**
+     * Stream (table or view) names (case-insensitive) to drop from the discovered catalog.
+     * Typically used by connectors to hide system/metadata streams that are listed in user-visible
+     * schemas.
+     */
+    val ignoredStreams: Set<String> = emptySet(),
 ) {
 
     enum class NamespaceKind {

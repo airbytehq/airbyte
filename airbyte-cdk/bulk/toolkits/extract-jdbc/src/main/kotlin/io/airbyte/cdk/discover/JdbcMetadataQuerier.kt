@@ -118,15 +118,24 @@ class JdbcMetadataQuerier(
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
+            val ignoredStreamsUpper: Set<String> =
+                constants.ignoredStreams.map { it.uppercase() }.toSet()
 
             fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
                 dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
+                        val tableName: String = rs.getString("TABLE_NAME")
+                        if (
+                            ignoredStreamsUpper.isNotEmpty() &&
+                                tableName.uppercase() in ignoredStreamsUpper
+                        ) {
+                            continue
+                        }
                         allTables.add(
                             TableName(
                                 catalog = rs.getString("TABLE_CAT"),
                                 schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
+                                name = tableName,
                                 type = rs.getString("TABLE_TYPE") ?: "",
                             )
                         )

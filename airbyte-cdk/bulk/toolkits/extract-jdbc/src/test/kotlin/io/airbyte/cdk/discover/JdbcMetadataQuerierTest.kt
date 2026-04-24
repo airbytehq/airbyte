@@ -119,6 +119,40 @@ class JdbcMetadataQuerierTest {
     }
 
     @Test
+    fun testIgnoredStreamsFiltersTablesAndViews() {
+        h2.execute("CREATE TABLE hidden (id INT PRIMARY KEY)")
+        h2.execute("CREATE VIEW kv_view AS SELECT * FROM kv")
+        val filteringFactory =
+            JdbcMetadataQuerier.Factory(
+                selectQueryGenerator = H2SourceOperations(),
+                fieldTypeMapper = H2SourceOperations(),
+                checkQueries = JdbcCheckQueries(),
+                constants = DefaultJdbcConstants(ignoredStreams = setOf("HIDDEN", "KV_VIEW")),
+            )
+        val configPojo =
+            H2SourceConfigurationSpecification().apply {
+                port = h2.port
+                database = h2.database
+            }
+        val config: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
+        filteringFactory.session(config).use { mdq: MetadataQuerier ->
+            val streams: List<String> = mdq.streamNames("PUBLIC").map { it.name }
+            Assertions.assertFalse(
+                streams.contains("HIDDEN"),
+                "HIDDEN table should have been filtered, got $streams",
+            )
+            Assertions.assertFalse(
+                streams.contains("KV_VIEW"),
+                "KV_VIEW view should have been filtered, got $streams",
+            )
+            Assertions.assertTrue(
+                streams.contains("KV"),
+                "expected KV in $streams",
+            )
+        }
+    }
+
+    @Test
     fun test() {
         val configPojo =
             H2SourceConfigurationSpecification().apply {
