@@ -31,10 +31,13 @@ open class RedshiftSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription(
-        "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)"
+        "Enter your Redshift cluster endpoint (must include the cluster-id, region and end with .redshift.amazonaws.com)"
     )
     @get:JsonProperty("host")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 1}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 1, "examples":["my-cluster.abc123xyz.us-east-1.redshift.amazonaws.com"], "pattern": "^[^\\s/?#]+\\.redshift(-serverless)?\\.amazonaws\\.com$", "pattern_descriptor": "{cluster-id}.{random}.{region}.redshift.amazonaws.com"}"""
+    )
     val host: String = ""
 
     @get:JsonSchemaTitle("Port")
@@ -47,21 +50,29 @@ open class RedshiftSpecification : ConfigurationSpecification() {
     val port: Int = 5439
 
     @get:JsonSchemaTitle("Username")
-    @get:JsonPropertyDescription("Username to use to access the database.")
+    @get:JsonPropertyDescription(
+        "Enter the name of the user you want to use to access the database"
+    )
     @get:JsonProperty("username")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 3}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 3, "examples":["airbyte_user"]}"""
+    )
     val username: String = ""
 
     @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Password associated with the username.")
+    @get:JsonPropertyDescription("Enter the password associated with the username.")
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 4, "airbyte_secret": true}""")
     val password: String = ""
 
     @get:JsonSchemaTitle("Database")
-    @get:JsonPropertyDescription("Name of the database.")
+    @get:JsonPropertyDescription(
+        "Enter the name of the <a href=\"https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_DATABASE.html\">database</a> you want to sync data into"
+    )
     @get:JsonProperty("database")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 5}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 5, "examples":["airbyte_database"]}"""
+    )
     val database: String = ""
 
     @get:JsonSchemaTitle("Default Schema")
@@ -77,11 +88,10 @@ open class RedshiftSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
-        "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'."
+        """Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3""",
     )
     @get:JsonProperty("jdbc_url_params")
-    // TODO: check order in UI
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 1}""")
     val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle("Uploading Method")
@@ -126,6 +136,6 @@ class RedshiftSpecificationExtension : DestinationSpecificationExtension {
     override val groups =
         listOf(
             DestinationSpecificationExtension.Group("connection", "Connection"),
-            DestinationSpecificationExtension.Group("tables", "Tables")
+            DestinationSpecificationExtension.Group("advanced", "Advanced"),
         )
 }
