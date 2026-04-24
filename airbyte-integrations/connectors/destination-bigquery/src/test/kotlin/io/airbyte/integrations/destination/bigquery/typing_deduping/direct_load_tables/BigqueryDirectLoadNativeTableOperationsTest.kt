@@ -3,16 +3,24 @@
  */
 package io.airbyte.integrations.destination.bigquery.typing_deduping.direct_load_tables
 
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.Clustering
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.FieldList
+import com.google.cloud.bigquery.FieldValue
+import com.google.cloud.bigquery.FieldValueList
+import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
+import com.google.cloud.bigquery.TableResult
 import com.google.cloud.bigquery.TimePartitioning
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.FieldType
@@ -29,8 +37,10 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
 
@@ -283,5 +293,74 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                     .build()
             )
         Assertions.assertTrue(partitioningMatches(existingTable))
+    }
+
+    @Test
+    fun testGetGenerationIdReturnsZeroForLegacyTable() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        Mockito.`when`(bigquery.query(any<QueryJobConfiguration>()))
+            .thenThrow(
+                BigQueryException(
+                    400,
+                    "Unrecognized name: _airbyte_generation_id at [1:8]"
+                )
+            )
+
+        val ops =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+        val result = runBlocking { ops.getGenerationId(TableName("my_dataset", "my_table")) }
+        Assertions.assertEquals(0L, result)
+    }
+
+    @Test
+    fun testGetGenerationIdRethrowsUnrelatedBigQueryException() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        Mockito.`when`(bigquery.query(any<QueryJobConfiguration>()))
+            .thenThrow(BigQueryException(403, "Access Denied"))
+
+        val ops =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+        Assertions.assertThrows(BigQueryException::class.java) {
+            runBlocking { ops.getGenerationId(TableName("my_dataset", "my_table")) }
+        }
+    }
+
+    @Test
+    fun testGetGenerationIdReturnsValueWhenPresent() {
+        val bigquery = Mockito.mock(BigQuery::class.java)
+        val tableResult = Mockito.mock(TableResult::class.java)
+
+        val fieldValue = Mockito.mock(FieldValue::class.java)
+        Mockito.`when`(fieldValue.isNull).thenReturn(false)
+        Mockito.`when`(fieldValue.longValue).thenReturn(7L)
+
+        val row = Mockito.mock(FieldValueList::class.java)
+        Mockito.`when`(row.get(Meta.COLUMN_NAME_AB_GENERATION_ID)).thenReturn(fieldValue)
+        Mockito.`when`(tableResult.iterateAll()).thenReturn(listOf(row))
+
+        Mockito.`when`(bigquery.query(any<QueryJobConfiguration>())).thenReturn(tableResult)
+
+        val ops =
+            BigqueryDirectLoadNativeTableOperations(
+                bigquery,
+                Mockito.mock(),
+                Mockito.mock(),
+                projectId = "unused",
+                tempTableNameGenerator = DefaultTempTableNameGenerator("unused"),
+            )
+        val result = runBlocking { ops.getGenerationId(TableName("my_dataset", "my_table")) }
+        Assertions.assertEquals(7L, result)
     }
 }
