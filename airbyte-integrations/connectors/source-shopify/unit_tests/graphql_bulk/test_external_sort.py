@@ -12,7 +12,6 @@ These tests cover the behaviors that matter for the metafield OOM fix:
   exceptions raised from downstream consumers
 """
 
-
 import os
 from pathlib import Path
 from typing import Any, Mapping
@@ -66,9 +65,7 @@ def test_stability_on_equal_keys_across_runs():
     # contract is that their original ordinal order is preserved after merge.
     records = _records(["2024-01-01T00:00:00Z"] * 6)
 
-    sorted_records = list(
-        external_stable_sort(records, key_fn=_cursor_key, chunk_size=2)
-    )
+    sorted_records = list(external_stable_sort(records, key_fn=_cursor_key, chunk_size=2))
 
     assert [r["id"] for r in sorted_records] == [0, 1, 2, 3, 4, 5]
 
@@ -106,9 +103,7 @@ def test_handles_missing_cursor_values_via_fallback_key():
         {"id": 2, "updated_at": "2024-01-01T00:00:00Z"},
     ]
 
-    sorted_records = list(
-        external_stable_sort(records, key_fn=_cursor_key, chunk_size=2)
-    )
+    sorted_records = list(external_stable_sort(records, key_fn=_cursor_key, chunk_size=2))
 
     # Record with missing cursor value falls back to `""` and sorts first,
     # ahead of both ISO-8601 strings, matching the existing behavior.
@@ -118,9 +113,7 @@ def test_handles_missing_cursor_values_via_fallback_key():
 def test_cleans_up_spill_files_on_normal_completion(tmp_path):
     records = _records([f"2024-01-{i:02d}T00:00:00Z" for i in range(1, 11)])
 
-    list(
-        external_stable_sort(records, key_fn=_cursor_key, chunk_size=3, tmp_dir=str(tmp_path))
-    )
+    list(external_stable_sort(records, key_fn=_cursor_key, chunk_size=3, tmp_dir=str(tmp_path)))
 
     remaining = [p for p in Path(tmp_path).iterdir() if p.name.startswith("shopify_bulk_sort_")]
     assert remaining == []
@@ -129,9 +122,7 @@ def test_cleans_up_spill_files_on_normal_completion(tmp_path):
 def test_cleans_up_spill_files_on_consumer_exception(tmp_path):
     records = _records([f"2024-01-{i:02d}T00:00:00Z" for i in range(1, 11)])
 
-    gen = external_stable_sort(
-        records, key_fn=_cursor_key, chunk_size=3, tmp_dir=str(tmp_path)
-    )
+    gen = external_stable_sort(records, key_fn=_cursor_key, chunk_size=3, tmp_dir=str(tmp_path))
     next(gen)
 
     # Force the generator to unwind; the `finally` block should remove any

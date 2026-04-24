@@ -23,13 +23,13 @@ spill-and-merge path entirely and sorts in place, so small slices pay no disk
 cost.
 """
 
-
 import heapq
 import json
 import logging
 import os
 import tempfile
 from typing import Any, Callable, Iterable, Iterator, List, Mapping, Optional
+
 
 logger = logging.getLogger("airbyte")
 
@@ -85,9 +85,7 @@ def external_stable_sort(
             run_paths.append(_spill_chunk(chunk, tmp_dir))
             chunk = []
 
-        logger.info(
-            f"External sort spilled {len(run_paths)} run file(s) covering {ordinal} record(s); merging."
-        )
+        logger.info(f"External sort spilled {len(run_paths)} run file(s) covering {ordinal} record(s); merging.")
         yield from _merge_runs(run_paths)
     finally:
         _cleanup_runs(run_paths)
