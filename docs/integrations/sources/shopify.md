@@ -156,7 +156,19 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/2024-04/resources/location)
-- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield)
+- [Metafield Articles](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to articles
+- [Metafield Blogs](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to blogs
+- [Metafield Collections](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to collections
+- [Metafield Customers](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to customers
+- [Metafield Draft Orders](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to draft orders
+- [Metafield Locations](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to locations
+- [Metafield Orders](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to orders
+- [Metafield Pages](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to pages
+- [Metafield Product Images](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to product images
+- [Metafield Products](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to products
+- [Metafield Product Variants](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to product variants
+- [Metafield Shops](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to the shop
+- [Metafield Smart Collections](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield) - Metafields attached to smart collections
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/2024-04/resources/order#top)
 - [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
@@ -169,8 +181,8 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
 - [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
 - [Smart Collections](https://shopify.dev/api/admin-rest/2024-04/resources/smartcollection)
-- [Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/transaction#top)
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
+- [Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/transaction#top) - Uses the REST API when **Add `user_id` to Transactions** is enabled; otherwise uses the GraphQL BULK API by default
+- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction) - GraphQL BULK version of transactions, used by default for faster syncs
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
 ### Entity-Relationship Diagram (ERD)
@@ -189,14 +201,6 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
 - `Orders` (referring_site, source_name)
 - `Abandoned Checkouts` (referring_site, source_name)
-
-## Features
-
-| Feature                   | Supported?\(Yes/No\) |
-| :------------------------ | :------------------- |
-| Full Refresh Sync         | Yes                  |
-| Incremental - Append Sync | Yes                  |
-| Namespaces                | No                   |
 
 ## Data type map
 
@@ -251,9 +255,9 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
-| 3.3.1 | 2026-04-22 | [76245](https://github.com/airbytehq/airbyte/pull/76245) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
-| 3.3.0 | 2026-04-14 | [76327](https://github.com/airbytehq/airbyte/pull/76327) | Upgrade airbyte-cdk dependency from v6 to v7 |
-| 3.2.3 | 2026-03-20 | [75255](https://github.com/airbytehq/airbyte/pull/75255) | Upgrade Shopify API version from 2025-01 to 2025-10 |
+| 3.3.1 | 2026-04-22 | [76920](https://github.com/airbytehq/airbyte/pull/76920) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |
+| 3.3.0 | 2026-04-15 | [76327](https://github.com/airbytehq/airbyte/pull/76327) | Upgrade airbyte-cdk dependency from v6 to v7 |
+| 3.2.3 | 2026-03-26 | [75255](https://github.com/airbytehq/airbyte/pull/75255) | Upgrade Shopify API version from 2025-01 to 2025-10 |
 | 3.2.2 | 2026-03-09 | [72849](https://github.com/airbytehq/airbyte/pull/72849) | Fix missing fulfillment orders by querying fulfillmentOrders endpoint directly; add configurable `fulfillment_orders_include_closed` option (default: false) |
 | 3.2.1 | 2026-02-04 | [72810](https://github.com/airbytehq/airbyte/pull/72810) | feat(source-shopify): Add id and position fields to product_variants.options schema (AI-Triage PR) |
 | 3.2.0 | 2026-01-20 | [72209](https://github.com/airbytehq/airbyte/pull/72209) | Add `CollectionProducts` stream for all product-collection associations |
