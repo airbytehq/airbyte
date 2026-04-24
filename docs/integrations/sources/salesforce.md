@@ -274,6 +274,7 @@ The lookback window uses the ISO 8601 duration format. The format is `PT<number>
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.21-rc.2 | 2026-04-24 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Bump airbyte-cdk to ^7.17.4 |
 | 2.7.21-rc.1 | 2026-04-21 | [76389](https://github.com/airbytehq/airbyte/pull/76389) | Fix bulk job slicing by bypassing deprecated DeclarativeStream.stream_slices() after CDK 7.13+ upgrade |
 | 2.7.20 | 2026-03-18 | [75201](https://github.com/airbytehq/airbyte/pull/75201) | Fix Bulk API INVALID_SESSION_ID by replacing static token provider with auto-refreshing SalesforceTokenProvider |
 | 2.7.19 | 2026-03-30 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
