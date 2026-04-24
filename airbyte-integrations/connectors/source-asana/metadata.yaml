@@ -5,8 +5,10 @@ data:
   registryOverrides:
     oss:
       enabled: true
+      dockerImageTag: 1.5.3
     cloud:
       enabled: true
+      dockerImageTag: 1.5.3
   releases:
     breakingChanges:
       1.0.0:
@@ -16,6 +18,8 @@ data:
           - scopeType: stream
             impactedScopes:
               - events
+    rolloutConfiguration:
+      enableProgressiveRollout: true
   remoteRegistries:
     pypi:
       enabled: true
@@ -28,7 +32,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.5.3
+  dockerImageTag: 1.6.0-rc.1
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg

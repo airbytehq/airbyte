@@ -562,38 +562,40 @@ streams:
 # highest = 50 req/sec (Talk API all endpoints), initial = floor(50 / 4) = 12
 # Tuning iteration 2: decreased to 9 after Phase 1 showed +6% duration regression
 # Tuning iteration 3: decreased to 6 after rc.2 showed persistent heartbeat_timeout failures on high-volume connections
+# Tuning iteration 4: decreased to 4 and commented out HTTPAPIBudget to isolate concurrency effect
 # Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: 6
-  max_concurrency: 24
+  default_concurrency: 4
+  max_concurrency: 16
 
 # HTTP API Budget: throttle requests per Zendesk Talk API rate limits
+# Commented out for tuning iteration 4 to isolate whether budget throttling contributes to heartbeat_timeout
 # Ref: https://developer.zendesk.com/api-reference/voice/talk-api/rate_limits/
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    # Incremental Exports (calls, call_legs): 10 requests per minute
-    - type: FixedWindowCallRatePolicy
-      period: "PT1M"
-      call_limit: 10
-      matchers:
-        - method: GET
-          url_path_pattern: "/stats/incremental/"
-    # Current Queue Activity: 2,500 requests per 5 minutes
-    - type: FixedWindowCallRatePolicy
-      period: "PT5M"
-      call_limit: 2500
-      matchers:
-        - method: GET
-          url_path_pattern: "/stats/current_queue_activity"
-    # All Talk API endpoints (catch-all): 15,000 requests per 5 minutes
-    - type: FixedWindowCallRatePolicy
-      period: "PT5M"
-      call_limit: 15000
-      matchers: []
-  ratelimit_reset_header: "Retry-After"
-  status_codes_for_ratelimit_hit: [429]
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     # Incremental Exports (calls, call_legs): 10 requests per minute
+#     - type: FixedWindowCallRatePolicy
+#       period: "PT1M"
+#       call_limit: 10
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "/stats/incremental/"
+#     # Current Queue Activity: 2,500 requests per 5 minutes
+#     - type: FixedWindowCallRatePolicy
+#       period: "PT5M"
+#       call_limit: 2500
+#       matchers:
+#         - method: GET
+#           url_path_pattern: "/stats/current_queue_activity"
+#     # All Talk API endpoints (catch-all): 15,000 requests per 5 minutes
+#     - type: FixedWindowCallRatePolicy
+#       period: "PT5M"
+#       call_limit: 15000
+#       matchers: []
+#   ratelimit_reset_header: "Retry-After"
+#   status_codes_for_ratelimit_hit: [429]
 
 spec:
   type: Spec
