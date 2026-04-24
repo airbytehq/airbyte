@@ -1875,6 +1875,32 @@ def test_github_stream_abc_read_records_reraises_when_no_response_attr(time_mock
 
 
 @patch("time.sleep")
+def test_github_stream_abc_read_records_reraises_when_response_is_none(time_mock):
+    """Bug fix (oncall/issues/11661): GithubStreamABC.read_records() must re-raise when the wrapped
+    `requests.RequestException` has `response is None` (transport-layer failures such as
+    ConnectionError, ConnectTimeout, ReadTimeout, SSLError, DNS failures). Previously, the
+    guard only checked `hasattr(e._exception, "response")` — which is always True for
+    `RequestException` subclasses — so `e._exception.response.status_code` raised
+    `AttributeError: 'NoneType' object has no attribute 'status_code'`, masking the original
+    transport error."""
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
+
+    # Construct an AirbyteTracedException wrapping a ConnectionError with no response.
+    exc = AirbyteTracedException(message="transport error", failure_type=FailureType.system_error)
+    inner = requests.exceptions.ConnectionError("connection refused")
+    exc._exception = inner
+    assert hasattr(exc._exception, "response"), "Test precondition: RequestException always has `response`"
+    assert exc._exception.response is None, "Test precondition: response must be None for transport errors"
+
+    # Patch HttpStream.read_records (the super() target) to raise our exception
+    with patch("airbyte_cdk.sources.streams.http.http.HttpStream.read_records", side_effect=exc):
+        # The original AirbyteTracedException must propagate — NOT AttributeError.
+        with pytest.raises(AirbyteTracedException):
+            list(stream.read_records(stream_slice={"organization": "org_name"}))
+
+
+@patch("time.sleep")
 def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit_mock_response, requests_mock):
     """Bug fix: ContributorActivity.read_records() should re-raise when the exception has
     a valid _exception.response but the status code is NOT 202 ACCEPTED. Previously, the
