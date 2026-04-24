@@ -8,11 +8,11 @@ AI agents need real-time access to business data spread across dozens of systems
 
 ## Connect
 
-Airbyte provides a growing library of open-source, type-safe [agent connectors](../connectors) that plug AI agents into SaaS APIs. Each connector is a standalone Python package with strongly typed methods, validation, and error handling.
+Airbyte provides a growing library of open source, type-safe [agent connectors](../connectors) that plug AI agents into SaaS APIs. Each connector is a standalone Python package with strongly typed methods, validation, and error handling.
 
 The platform manages the hard parts of connecting to third-party systems:
 
-- **Authentication.** OAuth flows, API keys, and token refresh are handled for you. Store end-user credentials once and use them from any interface.
+- **Authentication.** The platform handles OAuth flows, API keys, and token refresh for you. Store end-user credentials once and use them from any interface.
 - **Multi-tenancy.** Each end user authenticates with their own credentials. The platform isolates credentials per user and per organization.
 - **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui), the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack.
 
@@ -31,7 +31,7 @@ The Context Store solves this:
 - **Cross-source queries.** Agents search across all connected systems through a single interface, even systems whose APIs don't offer a search endpoint.
 - **Automatic refresh.** The store refreshes on a recurring schedule, so agents always work with recent data.
 
-The result is that agents reason over unified, queryable context rather than raw, siloed API responses.
+The result is that agents reason over unified, searchable context rather than raw, isolated API responses.
 
 ## Act
 
@@ -41,7 +41,7 @@ With context in hand, agents execute operations against connected systems in rea
 execute(entity, action, params)
 ```
 
-- **Read.** `list`, `get`, and `search` retrieve records from a connector. When the Context Store is on, `context_store_search` provides fast, indexed lookups.
+- **Read.** `list`, `get`, and `search` retrieve records from a connector. When the Context Store is on, `context_store_search` provides fast, indexed retrieval.
 - **Write.** `create` and `update` push changes back to the source system, such as creating a ticket, updating a contact, or sending a message.
 
 This pattern is the same across every connector and every interface. Whether an agent runs in the web app, through the SDK, over the API, or via MCP, it calls the same entities and actions with the same parameters.
@@ -51,7 +51,7 @@ Agents act through two modes:
 - **[Chats](../interfaces/ui/chats).** Interactive, conversational sessions where an agent responds to prompts in real time.
 - **[Automations](../interfaces/ui/automations).** Scheduled or webhook-triggered workflows that run without human intervention.
 
-Every action an agent takes is logged. You can review what happened, when, and why in the [Sessions](../admin/sessions) and [Tool calls](../admin/tool-calls) views.
+Airbyte logs every action an agent takes. You can review what happened, when, and why in the [Sessions](../admin/sessions) and [Tool calls](../admin/tool-calls) views.
 
 ## How the layers compose
 
