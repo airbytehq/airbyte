@@ -460,10 +460,10 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 | 5.2.8 | 2026-04-24 | [76996](https://github.com/airbytehq/airbyte/pull/76996) | Cast API throttle and rate-limit header values to float to prevent TypeError when Facebook returns string-typed numbers |
 | 5.2.7 | 2026-04-23 | [76951](https://github.com/airbytehq/airbyte/pull/76951) | Promoted release candidate to GA |
 | 5.2.7-rc.1 | 2026-04-16 | [74127](https://github.com/airbytehq/airbyte/pull/74127) | Allow connection setup to succeed for custom insights with high-cardinality breakdowns (for example, `product_id`) |
-| 5.2.6 | 2026-04-09 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
-| 5.2.5 | 2026-04-07 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
-| 5.2.4 | 2026-04-01 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |
-| 5.2.3 | 2026-03-24 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
+| 5.2.6 | 2026-04-13 | [76101](https://github.com/airbytehq/airbyte/pull/76101) | Replace ValueError with AirbyteTracedException for proper error classification in async job splitting |
+| 5.2.5 | 2026-04-08 | [76134](https://github.com/airbytehq/airbyte/pull/76134) | Fix undefined `APILimit` name in `async_job.py` type annotations |
+| 5.2.4 | 2026-04-02 | [75981](https://github.com/airbytehq/airbyte/pull/75981) | Fix ad_creatives_from_ads stream crash by catching AirbyteTracedException in creative detail fetching |
+| 5.2.3 | 2026-04-02 | [75372](https://github.com/airbytehq/airbyte/pull/75372) | Fix `_collect_child_ids`: clamp `since <= until` after retention validation, add retry logic for transient `Job Failed` status, and apply `fields_exceptions` filtering to exclude problematic fields from API requests |
 | 5.2.2 | 2026-03-17 | [75130](https://github.com/airbytehq/airbyte/pull/75130) | Extend upgrade deadline for version 5.0.0 breaking changes to 2026-04-10 |
 | 5.2.1 | 2026-03-09 | [74147](https://github.com/airbytehq/airbyte/pull/74147) | Add calendar-aligned time periods (daily/weekly/monthly) to InsightConfig |
 | 5.2.0 | 2026-03-09 | [72835](https://github.com/airbytehq/airbyte/pull/72835) | Add ad_creatives_from_ads stream as alternative to ad_creatives |
