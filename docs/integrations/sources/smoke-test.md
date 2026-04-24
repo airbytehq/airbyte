@@ -64,7 +64,7 @@ To enable slow streams, set **All Slow Streams** to `true`, or include `large_ba
 | Feature | Supported |
 | :--- | :--- |
 | Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Incremental Sync | Yes (opt-in via `incremental_batch_stream`) |
 | Namespaces | No |
 
 ## Changelog
@@ -74,6 +74,7 @@ To enable slow streams, set **All Slow Streams** to `true`, or include `large_ba
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | 2026-04-24 | [airbytehq/PyAirbyte#1016](https://github.com/airbytehq/PyAirbyte/pull/1016) | Add optional incremental sync scenario (`incremental_batch_stream`) with configurable state checkpoints via `batch_size`, `batch_count`, `partition_by`, `start_date`, and `cursor_step` |
 | 0.1.0 | 2026-03-19 | [75181](https://github.com/airbytehq/airbyte/pull/75181) | Initial release: smoke test source for destination regression testing |
 
 </details>
