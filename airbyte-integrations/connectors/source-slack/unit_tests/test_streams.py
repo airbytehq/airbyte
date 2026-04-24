@@ -634,7 +634,6 @@ def test_channel_members_stream_backoff_retry_after_header(requests_mock, token_
     assert len(output.records) >= 1
 
 
-
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
 
