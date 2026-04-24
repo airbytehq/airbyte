@@ -111,12 +111,7 @@ class TestFlowSeriesReportsUnsupportedMetric(TestCase):
         Verify that when one metric returns the unsupported 400 error,
         the sync continues and returns records from other supported metrics.
         """
-        config = (
-            ConfigBuilder()
-            .with_api_key(_API_KEY)
-            .with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc))
-            .build()
-        )
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         # Mock the parent metrics_for_reporting stream (GET /metrics)
         http_mocker.get(
@@ -154,12 +149,7 @@ class TestFlowSeriesReportsUnsupportedMetric(TestCase):
         Verify that when all metrics are unsupported, the sync completes
         with zero records and no errors.
         """
-        config = (
-            ConfigBuilder()
-            .with_api_key(_API_KEY)
-            .with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc))
-            .build()
-        )
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 1, 1, tzinfo=timezone.utc)).build()
 
         # Mock the parent metrics_for_reporting stream (GET /metrics)
         http_mocker.get(
