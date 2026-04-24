@@ -57,7 +57,7 @@ To fill out the required information:
 1. Enter the hostname, port number, and name for your Postgres database.
 </FieldAnchor>
 <FieldAnchor field="schemas">
-2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive, and multiple schemas may be entered. By default, `public` is the only selected schema.
+2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 </FieldAnchor>
 3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
 4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.

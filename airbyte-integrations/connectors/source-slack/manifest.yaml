@@ -35,6 +35,26 @@ definitions:
       Default OAuth2.0 authorization: "#/definitions/access_token_auth"
       API Token Credentials: "#/definitions/api_token_auth"
 
+  slack_api_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
+        action: FAIL
+        failure_type: config_error
+        error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
+        action: RETRY
+        error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
+        action: IGNORE
+        error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
+        action: RETRY
+        error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
+      - predicate: "{{ response.get('ok') is false }}"
+        action: FAIL
+        error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
+
   requester:
     type: HttpRequester
     url_base: https://slack.com/api/
@@ -51,10 +71,28 @@ definitions:
     request_body_json: {}
     error_handler:
       type: DefaultErrorHandler
+      backoff_strategies:
+        - type: "WaitTimeFromHeader"
+          header: "retry-after"
+        - type: "WaitTimeFromHeader"
+          header: "Retry-After"
       response_filters:
-        - error_message_contains: "invalid_auth"
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
           action: FAIL
-          error_message: Authentication has failed, please update your credentials.
+          failure_type: config_error
+          error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
+          action: RETRY
+          error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
+          action: IGNORE
+          error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
+          action: RETRY
+          error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
+        - predicate: "{{ response.get('ok') is false }}"
+          action: FAIL
+          error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
         - http_codes: [429]
           action: RETRY
           error_message: Failed to perform a request due to rate limits.
@@ -92,10 +130,28 @@ definitions:
         $ref: "#/definitions/requester"
         error_handler:
           type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
           response_filters:
-            - error_message_contains: "invalid_auth"
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
               action: FAIL
-              error_message: Authentication has failed, please update your credentials.
+              failure_type: config_error
+              error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
+              action: RETRY
+              error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
+              action: IGNORE
+              error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
+              action: RETRY
+              error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
+            - predicate: "{{ response.get('ok') is false }}"
+              action: FAIL
+              error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
             - http_codes: [429]
               action: RETRY
               error_message: Failed to perform a request due to rate limits.
@@ -134,7 +190,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           max_retries: 10
           backoff_strategies:
             - type: "WaitTimeFromHeader"
@@ -219,7 +275,7 @@ definitions:
           $ref: "#/definitions/authenticator"
         request_body_json: {}
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "retry-after"
@@ -333,7 +389,7 @@ definitions:
           $ref: "#/definitions/authenticator"
         request_body_json: {}
         error_handler:
-          type: DefaultErrorHandler
+          $ref: "#/definitions/slack_api_error_handler"
           max_retries: 20
           backoff_strategies:
             - type: "WaitTimeFromHeader"
