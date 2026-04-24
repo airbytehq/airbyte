@@ -69,6 +69,27 @@ class JdbcSelectQuerierTest {
     }
 
     @Test
+    fun testNullBinding() {
+        // Regression test for airbytehq/oncall#12049: a null JsonNode binding
+        // must not crash the JDBC setter. SQL three-valued logic makes
+        // `v > NULL` evaluate to UNKNOWN, so the query yields no rows.
+        runTest(
+            SelectQuery(
+                "SELECT k, v FROM kv WHERE v > ?",
+                columns,
+                listOf(SelectQuery.Binding(Jsons.nullNode(), StringFieldType)),
+            ),
+        )
+        runTest(
+            SelectQuery(
+                "SELECT k, v FROM kv WHERE k > ?",
+                columns,
+                listOf(SelectQuery.Binding(Jsons.nullNode(), IntFieldType)),
+            ),
+        )
+    }
+
+    @Test
     fun testProjection() {
         runTest(
             SelectQuery("SELECT v FROM kv", columns.drop(1), listOf()),
