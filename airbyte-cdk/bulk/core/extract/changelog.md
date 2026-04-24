@@ -9,6 +9,7 @@ The Extract CDK provides functionality for source connectors including schema di
 
 | Version | Date       | Pull Request                                         | Subject                                                                                                                                            |
 |---------|------------|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.5   | 2026-04-22 | [76898](https://github.com/airbytehq/airbyte/pull/76898) | Catalog validation failure messages now include an actionable remediation sentence.                                                               |
 | 1.1.4   | 2026-04-20 | [76481](https://github.com/airbytehq/airbyte/pull/76481) | Bump bulk-cdk-core-base to 1.0.3 to pick up AIRBYTE_EDITION feature flag fix.                                                                     |
 | 1.1.3   | 2026-04-14 | [76320](https://github.com/airbytehq/airbyte/pull/76320) | Catalog validation failures are captured as stream-level sync failures.                                                                            |
 | 1.1.2   | 2026-03-31 | [74124](https://github.com/airbytehq/airbyte/pull/74124) | Change the default implementation of JDBC incremental partition to non splittable                                                                  |

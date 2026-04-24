@@ -65,6 +65,11 @@ definitions:
     request_body_json: {}
     error_handler:
       type: DefaultErrorHandler
+      backoff_strategies:
+        - type: "WaitTimeFromHeader"
+          header: "retry-after"
+        - type: "WaitTimeFromHeader"
+          header: "Retry-After"
       response_filters:
         - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
           action: FAIL
@@ -113,6 +118,11 @@ definitions:
         $ref: "#/definitions/requester"
         error_handler:
           type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
           response_filters:
             - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
               action: FAIL

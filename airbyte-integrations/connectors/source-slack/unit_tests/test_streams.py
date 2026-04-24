@@ -569,6 +569,72 @@ def test_users_stream_ok_false_auth_error(requests_mock, token_config):
     assert any("Slack API authentication/permission error: invalid_auth." in msg for msg in error_messages)
 
 
+def test_users_stream_backoff_retry_after_header(requests_mock, token_config):
+    """Verify that the users stream honors Slack's Retry-After header on HTTP 429."""
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/users.list",
+        [
+            {"json": {"error": "ratelimited"}, "headers": {"Retry-After": "1"}, "status_code": 429},
+            {"json": {"members": [{"id": "U1", "name": "alice"}]}, "status_code": 200},
+        ],
+    )
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().build()
+    source_slack = get_source(token_config, "users", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    retry_logs = [log.log.message for log in output.logs if "Sleeping for 1.0 seconds" in log.log.message]
+    assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After for users"
+    assert len(output.records) >= 1
+
+
+def test_channel_members_stream_backoff_retry_after_header(requests_mock, token_config):
+    """Verify that the channel_members stream (via base requester) honors Slack's Retry-After header on HTTP 429."""
+    # The autouse conversations_list fixture provides channels airbyte-for-beginners and good-reads.
+    # Mock conversations.members to return 429 then 200 for the first channel.
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.members?channel=airbyte-for-beginners&limit=1000",
+        [
+            {"json": {"error": "ratelimited"}, "headers": {"Retry-After": "1"}, "status_code": 429},
+            {"json": {"members": ["U1"]}, "status_code": 200},
+        ],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.members?channel=good-reads&limit=1000",
+        json={"members": ["U2"]},
+    )
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channel_members", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    state = StateBuilder().build()
+    source_slack = get_source(token_config, "channel_members", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    retry_logs = [log.log.message for log in output.logs if "Sleeping for 1.0 seconds" in log.log.message]
+    assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After for channel_members"
+    assert len(output.records) >= 1
+
+
+
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
 
