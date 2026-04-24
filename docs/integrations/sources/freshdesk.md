@@ -1,23 +1,26 @@
 # Freshdesk
 
-This page guides you through the process of setting up the Freshdesk source connector.
+This page contains the setup guide and reference information for the [Freshdesk](https://freshdesk.com/) source connector.
 
 ## Prerequisites
 
-To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) and the [API key](https://support.freshdesk.com/support/solutions/articles/215517).
+- A Freshdesk account with an [API key](https://support.freshdesk.com/support/solutions/articles/215517). The API key belongs to the agent whose credentials are used, and that agent must have access to the resources you want to sync.
+- Your Freshdesk [domain](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) in the format `yourcompany.freshdesk.com`.
 
 ## Set up the Freshdesk connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Freshdesk** from the Source type dropdown.
-4. Enter the name for the Freshdesk connector.
-5. For **Domain**, enter your [Freshdesk domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url).
+3. On the Set up the source page, select **Freshdesk** from the **Source type** dropdown.
+4. Enter a name for the Freshdesk connector.
+5. For **Domain**, enter your Freshdesk domain, for example `mycompany.freshdesk.com`.
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
-7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-8. For **Requests per minute**, enter the number of requests per minute that this source allowed to use. The Freshdesk rate limit is 50 requests per minute per app per account.
-9. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. However, keep in mind that records updated before (stream_state - lookback_window) won't be synced. To ensure no data loss, we recommend using a full refresh. The default lookback window is set to 14 days.
-10. Click **Set up source**.
+7. For **Start Date**, optionally enter a date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date will be replicated for incremental streams. If not set, the connector syncs all available data.
+8. For **Requests per minute**, optionally enter a custom rate limit. If left empty, the connector uses the default for your plan. See [Performance considerations](#performance-considerations) for details.
+9. For **Rate Limit Plan**, select your Freshdesk subscription plan. This tells the connector the per-endpoint rate limits for the Tickets and Contacts APIs, which differ from the general rate limit. If you are unsure, select **Free Plan** for the most conservative limits.
+10. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. Records updated before the lookback window boundary are not re-synced. The default is 14 days.
+11. For **Number of Concurrent Threads**, optionally adjust the number of parallel sync threads. Higher values speed up syncs but consume more of your API rate limit. The default is 5.
+12. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -46,7 +49,7 @@ Several output streams are available from this source:
 - [Groups](https://developers.freshdesk.com/api/#groups)
 - [Products](https://developers.freshdesk.com/api/#products)
 - [Roles](https://developers.freshdesk.com/api/#roles)
-- [Satisfaction Ratings](https://developers.freshdesk.com/api/#satisfaction-ratings)
+- [Satisfaction Ratings](https://developers.freshdesk.com/api/#satisfaction-ratings) \(Incremental Sync\)
 - [Scenario Automations](https://developers.freshdesk.com/api/#scenario-automations)
 - [Settings](https://developers.freshdesk.com/api/#settings)
 - [Skills](https://developers.freshdesk.com/api/#skills)
@@ -61,9 +64,18 @@ Several output streams are available from this source:
 
 ## Performance considerations
 
-The Freshdesk connector should not run into Freshdesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+Freshdesk enforces [API rate limits](https://developers.freshdesk.com/api/#ratelimit) that vary by plan:
 
-If you don't use the start date Freshdesk will retrieve only the last 30 days. More information [here](https://developers.freshdesk.com/api/#list_all_tickets).
+| Plan | General rate limit | Tickets list limit | Contacts list limit |
+| :--- | :--- | :--- | :--- |
+| Free | 50/min | 50/min | 50/min |
+| Growth | 200/min | 20/min | 20/min |
+| Pro | 400/min | 100/min | 100/min |
+| Enterprise | 700/min | 200/min | 200/min |
+
+The connector respects the `Retry-After` header and automatically retries when rate-limited. To minimize rate limit errors, select the correct **Rate Limit Plan** in the connector configuration so the connector can budget API calls appropriately.
+
+If you increase **Number of Concurrent Threads**, monitor your rate limit usage. Higher concurrency speeds up syncs but increases the chance of hitting per-minute limits, especially on Free and Growth plans.
 
 ## Changelog
 
