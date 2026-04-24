@@ -62,14 +62,16 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 ## Supported streams
 
-| Stream | Sync Mode | Description |
-|--------|-----------|-------------|
-| [Sessions](https://docs.devin.ai/api-reference/v3/sessions/list-sessions) | Full Refresh | All Devin sessions in your organization |
-| [Sessions Insights](https://docs.devin.ai/api-reference/v3/sessions/organizations-sessions-insights) | Full Refresh | Sessions enriched with message counts, size classification, and AI-generated analysis |
-| [Session Messages](https://docs.devin.ai/api-reference/v3/sessions/get-session-messages) | Full Refresh | Conversation messages for each session |
-| [Playbooks](https://docs.devin.ai/api-reference/v3/playbooks/list-playbooks) | Full Refresh | Team playbooks for the organization |
-| [Secrets](https://docs.devin.ai/api-reference/v3/secrets/list-secrets) | Full Refresh | Secret metadata (no secret values are synced) |
-| [Knowledge Notes](https://docs.devin.ai/api-reference/v3/notes/enterprise-knowledge-notes) | Full Refresh | Knowledge notes for the organization |
+| Stream | Sync Mode | Cursor | Description |
+|--------|-----------|--------|-------------|
+| [Sessions](https://docs.devin.ai/api-reference/v3/sessions/list-sessions) | Full Refresh, Incremental | `updated_at` | All Devin sessions in your organization |
+| [Sessions Insights](https://docs.devin.ai/api-reference/v3/sessions/organizations-sessions-insights) | Full Refresh, Incremental | `updated_at` | Sessions enriched with message counts, size classification, and AI-generated analysis |
+| [Session Messages](https://docs.devin.ai/api-reference/v3/sessions/get-session-messages) | Full Refresh, Incremental | `created_at` | Conversation messages for each session |
+| [Playbooks](https://docs.devin.ai/api-reference/v3/playbooks/list-playbooks) | Full Refresh, Incremental | `updated_at` | Team playbooks for the organization |
+| [Secrets](https://docs.devin.ai/api-reference/v3/secrets/list-secrets) | Full Refresh, Incremental | `updated_at` | Secret metadata (no secret values are synced) |
+| [Knowledge Notes](https://docs.devin.ai/api-reference/v3/notes/enterprise-knowledge-notes) | Full Refresh, Incremental | `updated_at` | Knowledge notes for the organization |
+
+The Devin v3 API exposes `updated_after` / `created_after` query parameters on the `sessions` and `sessions_insights` endpoints, so those streams filter server-side. The `playbooks`, `secrets`, `knowledge_notes`, and `session_messages` endpoints do not accept date filters, so their cursors are tracked in state and records are filtered client-side. This still yields correct incremental behavior but does not reduce API call volume on those endpoints.
 
 ## Configuration reference
 
@@ -77,7 +79,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 |-----------|------|----------|---------|-------------|
 | `api_token` | string | Yes | | Devin API key for authentication. Service user tokens use the `cog_*` prefix. |
 | `org_id` | string | Yes | | Your Devin organization ID. Uses the `org_*` prefix. |
-| `start_date` | string (ISO 8601, UTC) | No | (epoch 0, i.e. no filter) | Optional lower bound on `created_at` for the `sessions`, `sessions_insights`, and `session_messages` streams. Sessions created before this instant are excluded. Format: `YYYY-MM-DDTHH:MM:SSZ`. Example: `2026-01-01T00:00:00Z`. |
+| `start_date` | string (ISO 8601, UTC) | No | (epoch 0, i.e. no filter) | Optional lower bound for the incremental cursor on every stream. On the first sync, only records updated (or created, for `session_messages`) on or after this instant are returned; subsequent syncs advance the cursor automatically. Format: `YYYY-MM-DDTHH:MM:SSZ`. Example: `2026-01-01T00:00:00Z`. |
 
 ## Changelog
 
@@ -86,6 +88,7 @@ Syncs data from the [Devin AI](https://devin.ai) platform API (v3), providing vi
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.3.0 | 2026-04-22 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Add incremental sync on every stream (cursor: `updated_at`; `created_at` for `session_messages`). `start_date` is now the initial cursor lower bound rather than a fixed `created_after` filter |
 | 0.2.0 | 2026-04-20 | [76475](https://github.com/airbytehq/airbyte/pull/76475) | Add `sessions_insights` stream for analytics (message counts, session size, AI-generated classification); add optional `start_date` config to filter `sessions`, `sessions_insights`, and `session_messages` by creation time |
 | 0.1.1 | 2026-04-21 | [76504](https://github.com/airbytehq/airbyte/pull/76504) | Update dependencies |
 | 0.1.0 | 2026-03-10 | | Initial release with sessions, session messages, playbooks, secrets, and knowledge notes streams |
