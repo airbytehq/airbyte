@@ -614,6 +614,80 @@ class TestIncremental:
         most_recent_state = output.most_recent_state.stream_state
         assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(initial_cursor_value)
 
+    @HttpMocker()
+    def test_given_done_empty_report_when_incremental_read_then_state_unchanged(self, http_mocker: HttpMocker) -> None:
+        """When a DONE report contains no data rows (empty CSV with headers only), verify that:
+        1. The initial state before the read is preserved
+        2. No records are returned
+        3. No errors are raised
+        4. The state after the read matches the initial state (no advancement)
+        This validates that an empty DONE report does not corrupt or advance the cursor.
+        """
+        stream_name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
+        cursor_field = self.default_cursor_field
+        initial_cursor_value = "2023-01-15T00:00:00Z"
+
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: initial_cursor_value}).build()
+
+        # Verify initial state is set correctly before the read
+        assert len(initial_state) == 1
+        assert initial_state[0].stream.stream_state.__dict__[cursor_field] == initial_cursor_value
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+
+        # When state is provided, the stream slices from the cursor value to config end date.
+        create_body = json.dumps(
+            {
+                "reportType": stream_name,
+                "marketplaceIds": [MARKETPLACE_ID],
+                "dataStartTime": initial_cursor_value,
+                "dataEndTime": CONFIG_END_DATE,
+            }
+        )
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(create_body).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        # Return a CSV with only the header row — no data rows
+        empty_csv_headers = (
+            "amazon-order-id\tmerchant-order-id\tshipment-id\tshipment-item-id\t"
+            "amazon-order-item-id\tmerchant-order-item-id\tpurchase-date\tpayments-date\t"
+            "shipment-date\treporting-date\tbuyer-email\tbuyer-name\tbuyer-phone-number\t"
+            "sku\tproduct-name\tquantity-shipped\tcurrency\titem-price\titem-tax\t"
+            "shipping-price\tshipping-tax\tgift-wrap-price\tgift-wrap-tax\tship-service-level\t"
+            "recipient-name\tship-address-1\tship-address-2\tship-address-3\tship-city\t"
+            "ship-state\tship-postal-code\tship-country\tship-phone-number\tbill-address-1\t"
+            "bill-address-2\tbill-address-3\tbill-city\tbill-state\tbill-postal-code\t"
+            "bill-country\titem-promotion-discount\tship-promotion-discount\tcarrier\t"
+            "tracking-number\testimated-arrival-date\tfulfillment-center-id\t"
+            "fulfillment-channel\tsales-channel\n"
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            HttpResponse(body=empty_csv_headers, status_code=HTTPStatus.OK),
+        )
+
+        output = self._read(stream_name, config(), state=initial_state)
+
+        # No records should be returned for an empty report document
+        assert len(output.records) == 0
+        # No errors should be raised — the report completed normally, just had no data
+        assert len(output.errors) == 0
+        # State should be emitted but cursor should not advance past the initial value
+        assert output.most_recent_state is not None
+        most_recent_state = output.most_recent_state.stream_state
+        assert pendulum.parse(most_recent_state.__dict__[cursor_field]) == pendulum.parse(initial_cursor_value)
+
 
 @freezegun.freeze_time(NOW.isoformat())
 class TestVendorSalesReportsFullRefresh:
