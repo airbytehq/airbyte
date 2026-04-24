@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 from requests import Response
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, FailureType, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -486,6 +486,16 @@ def test_next_page_token(token_config):
         pytest.param(403, {}, ResponseAction.FAIL, id="403_fail"),
         pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_rate_limited"),
         pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
+        pytest.param(200, {"ok": False, "error": "ratelimited"}, ResponseAction.RETRY, id="ok_false_ratelimited"),
+        pytest.param(200, {"ok": False, "error": "not_in_channel"}, ResponseAction.IGNORE, id="ok_false_not_in_channel"),
+        pytest.param(200, {"ok": False, "error": "channel_not_found"}, ResponseAction.IGNORE, id="ok_false_channel_not_found"),
+        pytest.param(200, {"ok": False, "error": "is_archived"}, ResponseAction.IGNORE, id="ok_false_is_archived"),
+        pytest.param(200, {"ok": False, "error": "request_timeout"}, ResponseAction.RETRY, id="ok_false_request_timeout"),
+        pytest.param(200, {"ok": False, "error": "service_unavailable"}, ResponseAction.RETRY, id="ok_false_service_unavailable"),
+        pytest.param(200, {"ok": False, "error": "internal_error"}, ResponseAction.RETRY, id="ok_false_internal_error"),
+        pytest.param(200, {"ok": False, "error": "missing_scope"}, ResponseAction.FAIL, id="ok_false_auth_error"),
+        pytest.param(200, {"ok": False, "error": "token_expired"}, ResponseAction.FAIL, id="ok_false_token_expired"),
+        pytest.param(200, {"ok": False, "error": "some_unknown_error"}, ResponseAction.FAIL, id="ok_false_catch_all"),
     ),
 )
 def test_should_retry(token_config, status_code, response_json, expected):
@@ -498,16 +508,16 @@ def test_should_retry(token_config, status_code, response_json, expected):
 
 
 @pytest.mark.parametrize(
-    "slack_error, expected_error_message",
+    "slack_error, expected_error_message, expected_failure_type",
     [
-        pytest.param("missing_scope", "Slack API authentication/permission error: missing_scope.", id="auth_error_missing_scope"),
-        pytest.param("not_authed", "Slack API authentication/permission error: not_authed.", id="auth_error_not_authed"),
-        pytest.param("token_revoked", "Slack API authentication/permission error: token_revoked.", id="auth_error_token_revoked"),
-        pytest.param("channel_not_found", "Slack API error: channel_not_found.", id="general_error_channel_not_found"),
-        pytest.param("internal_error", "Slack API error: internal_error.", id="general_error_catch_all"),
+        pytest.param("missing_scope", "Slack API authentication/permission error: missing_scope.", FailureType.config_error, id="auth_error_missing_scope"),
+        pytest.param("not_authed", "Slack API authentication/permission error: not_authed.", FailureType.config_error, id="auth_error_not_authed"),
+        pytest.param("token_revoked", "Slack API authentication/permission error: token_revoked.", FailureType.config_error, id="auth_error_token_revoked"),
+        pytest.param("token_expired", "Slack API authentication/permission error: token_expired.", FailureType.config_error, id="auth_error_token_expired"),
+        pytest.param("method_not_allowed", "Slack API error: method_not_allowed.", FailureType.system_error, id="general_error_catch_all"),
     ],
 )
-def test_channels_stream_ok_false_error_handling(requests_mock, token_config, slack_error, expected_error_message):
+def test_channels_stream_ok_false_error_handling(requests_mock, token_config, slack_error, expected_error_message, expected_failure_type):
     """
     Verify that Slack API ok=false responses are properly detected as errors
     instead of being silently treated as empty successful results.
@@ -537,6 +547,7 @@ def test_channels_stream_ok_false_error_handling(requests_mock, token_config, sl
     assert any(
         expected_error_message in msg for msg in error_messages
     ), f"Expected error message containing '{expected_error_message}' not found in: {error_messages}"
+    assert any(trace.trace.error.failure_type == expected_failure_type for trace in output.errors)
 
 
 def test_users_stream_ok_false_auth_error(requests_mock, token_config):
@@ -567,6 +578,7 @@ def test_users_stream_ok_false_auth_error(requests_mock, token_config):
     assert len(output.errors) > 0
     error_messages = [trace.trace.error.message for trace in output.errors]
     assert any("Slack API authentication/permission error: invalid_auth." in msg for msg in error_messages)
+    assert any(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
 
 
 def test_users_stream_backoff_retry_after_header(requests_mock, token_config):
@@ -632,6 +644,61 @@ def test_channel_members_stream_backoff_retry_after_header(requests_mock, token_
     retry_logs = [log.log.message for log in output.logs if "Sleeping for 1.0 seconds" in log.log.message]
     assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After for channel_members"
     assert len(output.records) >= 1
+
+
+def test_channel_messages_stream_ok_false_auth_error(requests_mock, token_config):
+    """Verify that channel_messages stream properly fails on ok=false auth errors via the shared $ref handler."""
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history",
+        json={"ok": False, "error": "invalid_auth"},
+    )
+    state = StateBuilder().with_stream_state("channel_messages", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channel_messages", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    source_slack = get_source(token_config, "channel_messages", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    assert len(output.records) == 0
+    assert len(output.errors) > 0
+    error_messages = [trace.trace.error.message for trace in output.errors]
+    assert any("Slack API authentication/permission error: invalid_auth." in msg for msg in error_messages)
+    assert any(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
+
+
+def test_channel_messages_stream_ok_false_not_in_channel(requests_mock, token_config):
+    """Verify that channel_messages stream ignores not_in_channel errors instead of failing the sync."""
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history",
+        [
+            {"json": {"ok": False, "error": "not_in_channel"}, "status_code": 200},
+            {"json": {"ok": True, "messages": [{"ts": "1577866844.000100", "text": "hello"}]}, "status_code": 200},
+        ],
+    )
+    state = StateBuilder().with_stream_state("channel_messages", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channel_messages", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    source_slack = get_source(token_config, "channel_messages", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    assert len(output.errors) == 0, f"Expected no errors for IGNORE action, but got: {[t.trace.error.message for t in output.errors]}"
 
 
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:

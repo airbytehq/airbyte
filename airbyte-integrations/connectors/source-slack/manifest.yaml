@@ -38,13 +38,19 @@ definitions:
   slack_api_error_handler:
     type: DefaultErrorHandler
     response_filters:
-      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
         action: FAIL
         failure_type: config_error
         error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
       - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
         action: RETRY
-        error_message: "Slack API rate limited."
+        error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
+        action: IGNORE
+        error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+      - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
+        action: RETRY
+        error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
       - predicate: "{{ response.get('ok') is false }}"
         action: FAIL
         error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
@@ -71,13 +77,19 @@ definitions:
         - type: "WaitTimeFromHeader"
           header: "Retry-After"
       response_filters:
-        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
           action: FAIL
           failure_type: config_error
           error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
         - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
           action: RETRY
-          error_message: "Slack API rate limited."
+          error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
+          action: IGNORE
+          error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+        - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
+          action: RETRY
+          error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
         - predicate: "{{ response.get('ok') is false }}"
           action: FAIL
           error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
@@ -124,13 +136,19 @@ definitions:
             - type: "WaitTimeFromHeader"
               header: "Retry-After"
           response_filters:
-            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['missing_scope', 'not_authed', 'account_inactive', 'invalid_auth', 'token_revoked', 'token_expired', 'no_permission', 'org_login_required', 'ekm_access_denied'] }}"
               action: FAIL
               failure_type: config_error
               error_message: "Slack API authentication/permission error: {{ response.get('error', 'unknown') }}."
             - predicate: "{{ response.get('ok') is false and response.get('error', '') == 'ratelimited' }}"
               action: RETRY
-              error_message: "Slack API rate limited."
+              error_message: "Slack API rate limited: {{ response.get('error', 'ratelimited') }}."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['not_in_channel', 'channel_not_found', 'channel_is_limited_access', 'is_archived'] }}"
+              action: IGNORE
+              error_message: "Slack channel is inaccessible: {{ response.get('error', 'unknown') }}. Skipping partition."
+            - predicate: "{{ response.get('ok') is false and response.get('error', '') in ['request_timeout', 'service_unavailable', 'fatal_error', 'internal_error'] }}"
+              action: RETRY
+              error_message: "Slack API transient error: {{ response.get('error', 'unknown') }}."
             - predicate: "{{ response.get('ok') is false }}"
               action: FAIL
               error_message: "Slack API error: {{ response.get('error', 'unknown') }}."
