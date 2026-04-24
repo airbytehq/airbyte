@@ -132,11 +132,11 @@ For most of the streams, the Slack source connector uses the [Conversations API]
 
 ## Performance considerations
 
-The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits).
+The connector is restricted by Slack [rate limits](https://api.slack.com/docs/rate-limits). When a request is rate-limited with HTTP 429, the connector automatically respects the `Retry-After` header returned by the Slack API and waits the specified duration before retrying.
 
-We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration setings.
+We highly recommend only syncing required channels. This can be done by specifying the `channel_filter` in the Slack configuration settings.
 
-If you expect to sync a large amount of data (like historical data) you can try to increase the number of workers, default is 1. This could cause to being rate limited by Slack, so you should monitor the logs for rate limit errors.
+If you expect to sync a large amount of data, such as historical data, you can try increasing the number of concurrent threads. The default is 1. Increasing this value could cause the connector to be rate-limited by Slack, so monitor the logs for rate limit errors.
 
 ## Data type map
 
@@ -194,13 +194,13 @@ If your Threads stream syncs are slow, consider enabling the **Ignore messages w
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.1.22 | 2026-04-24 | [76983](https://github.com/airbytehq/airbyte/pull/76983) | Honor Slack's `Retry-After` header on HTTP 429 responses for all streams |
-| 3.1.21 | 2026-04-20 | [76477](https://github.com/airbytehq/airbyte/pull/76477) | Scope the non-member channel filter to only `channel_messages` and `threads` so `channel_members` and `channels` keep syncing every public channel |
+| 3.1.21 | 2026-04-21 | [76477](https://github.com/airbytehq/airbyte/pull/76477) | Scope the non-member channel filter to only `channel_messages` and `threads` so `channel_members` and `channels` keep syncing every public channel |
 | 3.1.20 | 2026-04-21 | [76760](https://github.com/airbytehq/airbyte/pull/76760) | Update dependencies |
-| 3.1.19 | 2026-04-15 | [76297](https://github.com/airbytehq/airbyte/pull/76297) | Rename "API Token" to "Bot Token" in connector spec and docs |
-| 3.1.18 | 2026-04-14 | [76324](https://github.com/airbytehq/airbyte/pull/76324) | Skip non-member channels when auto-join is disabled to prevent cursor pollution |
+| 3.1.19 | 2026-04-20 | [76297](https://github.com/airbytehq/airbyte/pull/76297) | Rename "API Token" to "Bot Token" in connector spec and docs |
+| 3.1.18 | 2026-04-15 | [76324](https://github.com/airbytehq/airbyte/pull/76324) | Skip non-member channels when auto-join is disabled to prevent cursor pollution |
 | 3.1.17 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 3.1.16 | 2026-04-02 | [76052](https://github.com/airbytehq/airbyte/pull/76052) | Skip joining archived channels that are rejected by the Slack API |
-| 3.1.15 | 2026-03-31 | [75905](https://github.com/airbytehq/airbyte/pull/75905) | Add configurable option to skip conversations.replies API calls for messages with no replies, reducing unnecessary API usage |
+| 3.1.15 | 2026-04-02 | [75905](https://github.com/airbytehq/airbyte/pull/75905) | Add configurable option to skip conversations.replies API calls for messages with no replies, reducing unnecessary API usage |
 | 3.1.14 | 2026-03-27 | [75197](https://github.com/airbytehq/airbyte/pull/75197) | Add declarative OAuth with `oauth_connector_input_specification` and granular scopes |
 | 3.1.13 | 2026-03-24 | [75329](https://github.com/airbytehq/airbyte/pull/75329) | Update dependencies |
 | 3.1.12 | 2026-03-10 | [74598](https://github.com/airbytehq/airbyte/pull/74598) | Update dependencies |
