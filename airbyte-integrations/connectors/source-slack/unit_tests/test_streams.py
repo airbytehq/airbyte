@@ -480,20 +480,93 @@ def test_next_page_token(token_config):
 
 
 @pytest.mark.parametrize(
-    "status_code, expected",
+    "status_code, response_json, expected",
     (
-        (200, ResponseAction.SUCCESS),
-        (403, ResponseAction.FAIL),
-        (429, ResponseAction.RATE_LIMITED),
-        (500, ResponseAction.RETRY),
+        pytest.param(200, {"ok": True, "messages": []}, ResponseAction.SUCCESS, id="200_ok_true"),
+        pytest.param(403, {}, ResponseAction.FAIL, id="403_fail"),
+        pytest.param(429, {}, ResponseAction.RATE_LIMITED, id="429_rate_limited"),
+        pytest.param(500, {}, ResponseAction.RETRY, id="500_retry"),
     ),
 )
-def test_should_retry(token_config, status_code, expected):
+def test_should_retry(token_config, status_code, response_json, expected):
     stream = get_stream_by_name("threads", token_config)
     mocked_response = MagicMock(spec=Response, status_code=status_code)
     mocked_response.ok = status_code == 200
     mocked_response.headers = {"Content-Type": "application/json"}
+    mocked_response.json.return_value = response_json
     assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
+
+
+@pytest.mark.parametrize(
+    "slack_error, expected_error_message",
+    [
+        pytest.param("missing_scope", "Slack API authentication/permission error: missing_scope.", id="auth_error_missing_scope"),
+        pytest.param("not_authed", "Slack API authentication/permission error: not_authed.", id="auth_error_not_authed"),
+        pytest.param("token_revoked", "Slack API authentication/permission error: token_revoked.", id="auth_error_token_revoked"),
+        pytest.param("channel_not_found", "Slack API error: channel_not_found.", id="general_error_channel_not_found"),
+        pytest.param("internal_error", "Slack API error: internal_error.", id="general_error_catch_all"),
+    ],
+)
+def test_channels_stream_ok_false_error_handling(requests_mock, token_config, slack_error, expected_error_message):
+    """
+    Verify that Slack API ok=false responses are properly detected as errors
+    instead of being silently treated as empty successful results.
+    """
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
+        json={"ok": False, "error": slack_error},
+    )
+    state = StateBuilder().with_stream_state("channels", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channels", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    source_slack = get_source(token_config, "channels", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    assert len(output.records) == 0
+    assert len(output.errors) > 0
+    error_messages = [trace.trace.error.message for trace in output.errors]
+    assert any(expected_error_message in msg for msg in error_messages), (
+        f"Expected error message containing '{expected_error_message}' not found in: {error_messages}"
+    )
+
+
+def test_users_stream_ok_false_auth_error(requests_mock, token_config):
+    """
+    Verify that the users stream properly fails on ok=false auth errors
+    instead of returning empty data (silent data loss).
+    """
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/users.list?limit=1000",
+        json={"ok": False, "error": "invalid_auth"},
+    )
+    state = StateBuilder().with_stream_state("users", {}).build()
+    catalog = ConfiguredAirbyteCatalogSerializer.load(
+        {
+            "streams": [
+                {
+                    "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
+    )
+    source_slack = get_source(token_config, "users", state)
+    output = read(source_slack, config=token_config, catalog=catalog, state=state)
+    assert len(output.records) == 0
+    assert len(output.errors) > 0
+    error_messages = [trace.trace.error.message for trace in output.errors]
+    assert any("Slack API authentication/permission error: invalid_auth." in msg for msg in error_messages)
 
 
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:
