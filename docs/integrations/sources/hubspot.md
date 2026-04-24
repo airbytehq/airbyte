@@ -74,6 +74,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `form_submissions`          | `forms`                                                                                                      |
 | `goals`                     | `crm.objects.goals.read`                                                                                     |
 | `leads`                     | `crm.objects.leads.read`, `crm.schemas.leads.read`                                                   |
+| `list_memberships`          | `crm.lists.read`                                                                                             |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
@@ -180,6 +181,7 @@ The HubSpot source connector supports the following streams:
 - [Form Submissions](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
 - [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
+- [List Memberships](https://developers.hubspot.com/docs/reference/api/crm/lists#retrieve-records-with-list-memberships) \(Full Refresh\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 - [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
 - [Owners](https://developers.hubspot.com/docs/api/crm/owners) \(Client-Side Incremental\)
@@ -344,6 +346,11 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.5.4 | 2026-04-21 | [76848](https://github.com/airbytehq/airbyte/pull/76848) | Fix OAuth optional_scopes to align with connector streams |
+| 6.5.3 | 2026-04-20 | [76073](https://github.com/airbytehq/airbyte/pull/76073) | Update CDK to pre-release with deadlock fix |
+| 6.5.2 | 2026-04-21 | [76641](https://github.com/airbytehq/airbyte/pull/76641) | Update dependencies |
+| 6.5.1 | 2026-04-16 | [76395](https://github.com/airbytehq/airbyte/pull/76395) | Fix Avro serialization for `listId` in the `list_memberships` stream (emit as string) and ignore `400 VALIDATION_ERROR / ListError.INVALID_OBJECT_TYPE_FOR_LIST` responses so lists with an `objectTypeId` that is not active for the portal (e.g. Leads, `0-136`) are skipped instead of failing the sync |
+| 6.5.0 | 2026-04-14 | [75281](https://github.com/airbytehq/airbyte/pull/75281) | Add new `list_memberships` stream via V3 Lists API |
 | 6.4.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 6.4.3 | 2026-04-08 | [76149](https://github.com/airbytehq/airbyte/pull/76149) | Added missing OAuth scopes `crm.objects.users.read` and `settings.users.read` for the `users` stream |
 | 6.4.2 | 2026-04-06 | [76096](https://github.com/airbytehq/airbyte/pull/76096) | Remove registry version overrides pinning to 6.3.1, fix stream count test assertions |

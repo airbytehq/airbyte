@@ -158,8 +158,8 @@ definitions:
     type: DefaultPaginator
     pagination_strategy:
       type: CursorPagination
-      cursor_value: "{{ response['links']['next'] }}"
-      stop_condition: "{{ not response['meta']['has_more'] }}"
+      cursor_value: "{{ response.get('links', {}).get('next') }}"
+      stop_condition: "{{ not response.get('meta', {}).get('has_more', false) }}"
       page_size: 100
     page_token_option:
       type: RequestPath
