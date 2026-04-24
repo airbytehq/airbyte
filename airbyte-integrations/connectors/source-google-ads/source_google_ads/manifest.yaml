@@ -51,6 +51,14 @@ definitions:
     response_filters:
       - type: HttpResponseFilter
         action: FAIL
+        failure_type: config_error
+        predicate: "{{ 'UNRECOGNIZED_FIELD' in (response | string) }}"
+        error_message: >-
+          {{ (response[0] if response is not mapping else response).get('error', {}).get('details', [{}])[0].get('errors', [{}])[0].get('message', 'GAQL query references an unrecognized field.') }}
+          Verify all fields are valid for the queried resource:
+          https://developers.google.com/google-ads/api/fields/v20/query_validator
+      - type: HttpResponseFilter
+        action: FAIL
         http_codes:
           - 500
         error_message: >-
