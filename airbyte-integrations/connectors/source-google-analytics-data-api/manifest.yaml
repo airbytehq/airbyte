@@ -2992,28 +2992,16 @@ spec:
         type: string
         title: Subscription Plan/Tier
         description:
-          Quota tier of the Google Analytics 4 properties being queried. Keep
-          "Analytics 360 Property" if all configured property IDs belong to an
-          Analytics 360 subscription; switch to "Standard Property" if any of the
-          configured properties are on the free Standard tier so local throttling
-          matches the stricter per-property quota. See
+          Quota tier of the Google Analytics 4 properties being queried. Determines
+          the per-property rate-limit policy applied locally once the tier-aware
+          rate-limit budget is activated. Select "Analytics 360 Property" only if
+          all configured property IDs belong to an Analytics 360 subscription. See
           https://developers.google.com/analytics/devguides/reporting/data/v1/quotas.
         enum:
           - Standard Property
           - Analytics 360 Property
-        default: Analytics 360 Property
+        default: Standard Property
         order: 9
-      num_workers:
-        type: integer
-        title: Number of Concurrent Workers
-        description:
-          Number of concurrent threads used by the source. Higher values can speed
-          up full syncs. Adjust based on your GA4 subscription tier; Standard
-          properties are subject to a 10 concurrent-request per-property quota.
-        default: 12
-        minimum: 2
-        maximum: 40
-        order: 10
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -3074,19 +3062,34 @@ spec:
 # https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 12) }}"
+  default_concurrency: 12
   max_concurrency: 40
 
-# Rate limits for GA4 Data API Core methods are per-property and tier-dependent;
-# the `property_quota_tier` config field selects the policy applied locally so
-# Analytics 360 customers are not throttled down to Standard limits.
-api_budget:
-  type: HTTPAPIBudget
-  policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: "{{ 10 if config.get('subscription_tier') == 'Standard Property' else 50 }}"
-          interval: PT1S
-      matchers:
-        - method: POST
-          url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
+# Original single-policy api_budget (pre-tuning). Commented out during the
+# concurrency tuning rollout so proactive throttling does not skew the signal;
+# replaced at GA by the tier-aware block below.
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: 10
+#           interval: PT1S
+#       matchers:
+#         - method: POST
+#           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
+
+# Tier-aware api_budget (Path B). Kept commented during tuning; uncomment at the
+# GA step 22.5 RC to activate. The `subscription_tier` spec field selects the
+# per-property Core rate limit applied locally (Standard 10 req/s, Analytics 360
+# 50 req/s). See https://developers.google.com/analytics/devguides/reporting/data/v1/quotas
+# api_budget:
+#   type: HTTPAPIBudget
+#   policies:
+#     - type: MovingWindowCallRatePolicy
+#       rates:
+#         - limit: "{{ {'Standard Property': 10, 'Analytics 360 Property': 50}[config.get('subscription_tier', 'Standard Property')] }}"
+#           interval: PT1S
+#       matchers:
+#         - method: POST
+#           url_path_pattern: "^/v1/properties/[^/]+:(runReport|runPivotReport)$"
