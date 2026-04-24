@@ -507,7 +507,15 @@ def test_users_stream_backoff_retry_after_header(requests_mock, token_config):
         ],
     )
     catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {"streams": [{"stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}, "sync_mode": "full_refresh", "destination_sync_mode": "append"}]}
+        {
+            "streams": [
+                {
+                    "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
     )
     state = StateBuilder().build()
     source_slack = get_source(token_config, "users", state)
@@ -535,7 +543,15 @@ def test_channel_members_stream_backoff_retry_after_header(requests_mock, token_
         json={"members": ["U2"]},
     )
     catalog = ConfiguredAirbyteCatalogSerializer.load(
-        {"streams": [{"stream": {"name": "channel_members", "json_schema": {}, "supported_sync_modes": ["full_refresh"]}, "sync_mode": "full_refresh", "destination_sync_mode": "append"}]}
+        {
+            "streams": [
+                {
+                    "stream": {"name": "channel_members", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "append",
+                }
+            ]
+        }
     )
     state = StateBuilder().build()
     source_slack = get_source(token_config, "channel_members", state)
