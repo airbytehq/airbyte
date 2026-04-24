@@ -502,7 +502,7 @@ def test_users_stream_backoff_retry_after_header(requests_mock, token_config):
         "GET",
         "https://slack.com/api/users.list",
         [
-            {"json": {"error": "rate_limited"}, "headers": {"Retry-After": "10"}, "status_code": 429},
+            {"json": {"error": "ratelimited"}, "headers": {"Retry-After": "1"}, "status_code": 429},
             {"json": {"members": [{"id": "U1", "name": "alice"}]}, "status_code": 200},
         ],
     )
@@ -520,8 +520,8 @@ def test_users_stream_backoff_retry_after_header(requests_mock, token_config):
     state = StateBuilder().build()
     source_slack = get_source(token_config, "users", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
-    retry_logs = [log.log.message for log in output.logs if "Sleeping for 10.0 seconds" in log.log.message]
-    assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After=10 for users"
+    retry_logs = [log.log.message for log in output.logs if "Sleeping for 1.0 seconds" in log.log.message]
+    assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After for users"
     assert len(output.records) >= 1
 
 
@@ -533,7 +533,7 @@ def test_channel_members_stream_backoff_retry_after_header(requests_mock, token_
         "GET",
         "https://slack.com/api/conversations.members?channel=airbyte-for-beginners&limit=1000",
         [
-            {"json": {"error": "rate_limited"}, "headers": {"Retry-After": "10"}, "status_code": 429},
+            {"json": {"error": "ratelimited"}, "headers": {"Retry-After": "1"}, "status_code": 429},
             {"json": {"members": ["U1"]}, "status_code": 200},
         ],
     )
@@ -556,8 +556,8 @@ def test_channel_members_stream_backoff_retry_after_header(requests_mock, token_
     state = StateBuilder().build()
     source_slack = get_source(token_config, "channel_members", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
-    retry_logs = [log.log.message for log in output.logs if "Sleeping for 10.0 seconds" in log.log.message]
-    assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After=10 for channel_members"
+    retry_logs = [log.log.message for log in output.logs if "Sleeping for 1.0 seconds" in log.log.message]
+    assert len(retry_logs) >= 1, "Expected at least one retry with Retry-After for channel_members"
     assert len(output.records) >= 1
 
 
