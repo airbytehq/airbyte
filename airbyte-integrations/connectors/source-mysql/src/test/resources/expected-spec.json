@@ -87,7 +87,7 @@
           },
           {
             "additionalProperties": true,
-            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using MySQL's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using MySQL's <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
             "properties": {
               "initial_load_timeout_hours": {
                 "always_show": true,
