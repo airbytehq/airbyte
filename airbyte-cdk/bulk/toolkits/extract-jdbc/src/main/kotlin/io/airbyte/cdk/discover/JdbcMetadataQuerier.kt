@@ -94,11 +94,15 @@ class JdbcMetadataQuerier(
                         buildSet { while (rs.next()) rs.getString("TABLE_SCHEM")?.let(::add) }
                     }
             }
-        val ignoredUpper: Set<String> = constants.ignoredNamespaces.map { it.uppercase() }.toSet()
+        val ignoredUpper: Set<String> =
+            constants.ignoredNamespaces
+                .map { it.uppercase() }
+                .plus("AIRBYTE_INTERNAL")
+                .plus("_AB_CDC")
+                .toSet()
         val filtered: Set<String> =
             if (ignoredUpper.isEmpty()) discovered
             else discovered.filterNot { it.uppercase() in ignoredUpper }.toSet()
-        val dropped: Set<String> = discovered - filtered
         if (filtered.isEmpty()) {
             throw ConfigErrorException("No namespaces are accessible to the JDBC user.")
         }
