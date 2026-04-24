@@ -672,6 +672,18 @@ spec:
                   path: ["credentials", "option_title"]
                   value: "API Token Credentials"
               condition: "{{ config.get('api_token', False) }}"
+        - type: ConfigMigration
+          description: |
+            Stamps include_archived_channels=true on configs that pre-date v3.2.0
+            so existing connections continue to sync archived channels.
+            New connections will get false from the spec default.
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["include_archived_channels"]
+                  value: "{{ true }}"
+              condition: "{{ config.get('include_archived_channels') is none }}"
 
 concurrency_level:
   type: ConcurrencyLevel

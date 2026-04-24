@@ -451,6 +451,11 @@ def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
         "https://slack.com/api/conversations.list?limit=1000&types=public_channel&exclude_archived=true",
         json={"channels": expected},
     )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=1000&types=public_channel&exclude_archived=false",
+        json={"channels": expected},
+    )
     state = StateBuilder().with_stream_state("channels", {}).build()
     catalog = ConfiguredAirbyteCatalogSerializer.load(
         {
@@ -737,8 +742,11 @@ def test_channels_stream_with_include_private_channels(token_config) -> None:
     assert params.get("types") == "public_channel,private_channel"
 
 
-def test_channels_stream_excludes_archived_by_default(token_config) -> None:
-    stream = get_stream_by_name("channels", token_config)
+def test_channels_stream_excludes_archived_when_explicitly_disabled(token_config) -> None:
+    config = deepcopy(token_config)
+    config["include_archived_channels"] = False
+
+    stream = get_stream_by_name("channels", config)
 
     params = get_retriever(stream).requester.get_request_params()
 

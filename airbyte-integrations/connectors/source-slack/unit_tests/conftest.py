@@ -49,15 +49,21 @@ def get_stream_by_name(stream_name, config, state=None):
 
 @pytest.fixture(autouse=True)
 def conversations_list(requests_mock):
-    return requests_mock.register_uri(
+    response_json = {
+        "channels": [
+            {"id": "airbyte-for-beginners", "name": "airbyte-for-beginners", "is_member": True},
+            {"id": "good-reads", "name": "good-reads", "is_member": True},
+        ]
+    }
+    requests_mock.register_uri(
         "GET",
         "https://slack.com/api/conversations.list?limit=1000&types=public_channel&exclude_archived=true",
-        json={
-            "channels": [
-                {"id": "airbyte-for-beginners", "name": "airbyte-for-beginners", "is_member": True},
-                {"id": "good-reads", "name": "good-reads", "is_member": True},
-            ]
-        },
+        json=response_json,
+    )
+    return requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.list?limit=1000&types=public_channel&exclude_archived=false",
+        json=response_json,
     )
 
 
