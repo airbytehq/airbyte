@@ -83,7 +83,6 @@ def external_stable_sort(
 
         if chunk:
             run_paths.append(_spill_chunk(chunk, tmp_dir))
-            chunk = []
 
         logger.info(f"External sort spilled {len(run_paths)} run file(s) covering {ordinal} record(s); merging.")
         yield from _merge_runs(run_paths)
@@ -133,6 +132,8 @@ def _cleanup_runs(run_paths: List[str]) -> None:
         try:
             os.unlink(path)
         except FileNotFoundError:
+            # Already removed (for example, by tempfile cleanup on container
+            # shutdown). Best-effort cleanup is intentionally silent here.
             pass
         except OSError as exc:
             logger.warning(f"Failed to remove external-sort spill file `{path}`: {exc}")
