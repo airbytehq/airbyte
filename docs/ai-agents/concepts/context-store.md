@@ -28,7 +28,7 @@ Each connected source has its own isolated store. Airbyte curates the store for 
 
 - Airbyte selects a subset of fields and entities that are useful for search, not every record or field in the source.
 - Each organization's data is only accessible to agents within that organization.
-- Data in the store refreshes on a schedule that depends on your plan. See [Refresh rates](#refresh-rates) for details.
+- Data in the store refreshes on a schedule that depends on your plan. See [Billing and pricing](../admin/billing) for details.
 
 For the list of entities each connector contributes, see [Agent connectors](../connectors).
 
@@ -94,7 +94,7 @@ When an agent processes a prompt, it chooses between two execution paths for eac
 - **Context Store search.** The agent queries the pre-indexed replica in the Context Store. This path handles filtering, sorting, and aggregation without calling the third-party API, so it returns results faster and uses fewer tokens. Agents prefer this path when the entity is available in the Context Store.
 - **Direct request.** The agent calls the third-party API in real time. This path always returns the most current data, and it's the only option for entities that aren't in the Context Store or for write operations like creating and updating records.
 
-Agents choose between these paths automatically. You don't need to specify which path to use in your prompts. In sandbox chat, each tool call displays a badge that indicates whether it used the Context Store or a direct request.
+Agents choose between these paths automatically. You don't need to specify which path to use in your prompts. In chat, each tool call displays a badge that indicates whether it used the Context Store or a direct request.
 
 ## How search works
 
@@ -104,7 +104,7 @@ If you build agents with the SDK or API, you can call `context_store_search` dir
 
 ## Initial backfill
 
-The first time you turn on the Context Store, Airbyte begins a backfill for each connector. Backfill time depends on how much data the connector has, typically ranging from minutes to hours.
+When the Context Store populates data for a connector, Airbyte runs an initial backfill. Backfill time depends on the amount of data and third-party API rate limits, and can range from minutes to days.
 
 During the backfill, Airbyte makes data available to agents progressively. You don't have to wait for the backfill to finish before agents can search. An entity in **Preview** status already has partial data that agents can query. As the backfill continues, more records become searchable until the entity reaches **Ready** status.
 
@@ -123,17 +123,7 @@ You may want to skip the Context Store when:
 - You already maintain your own copy of the relevant data and prefer to expose it through your own tools.
 - You only need to read or write a small number of records at a time and don't need to search across a dataset.
 
-## Refresh rates
-
-The Context Store refresh rate depends on your plan:
-
-- **Free plan.** Hourly during your first month, then daily.
-- **Individual, Team, and Custom plans.** Hourly.
-
-The refresh rate isn't user-configurable. For details on plans, see [Billing and pricing](../admin/billing).
-
 ## Limitations
 
 - All agent connectors and interfaces can use the Context Store and always try to do so unless you turn it off.
 - Turning the Context Store off and on again triggers a fresh population. Repopulating can take a long time if your system contains substantial amounts of data. Plan for this if you rely on search-heavy prompts.
-- Cancelling your subscription permanently deletes cached data in the Context Store. See [Cancel your subscription](../admin/billing#cancel-your-subscription) for details.
