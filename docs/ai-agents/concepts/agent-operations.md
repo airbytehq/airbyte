@@ -6,9 +6,12 @@ sidebar_position: 1
 
 An agent operation (AO) is the unit of work in Airbyte Agents. Every time an agent processes a prompt, reasons about data, or calls a tool, it consumes AOs. AOs measure the processing intensity of a task, not just the number of requests.
 
-Airbyte derives AOs primarily from tool calls. Each action an agent takes against a connector counts as a tool call. Listing records, fetching a single record, searching the Context Store, and writing data back to a source are all tool calls.
+Airbyte derives AOs from a combination of two factors:
 
-Simple tasks typically make fewer tool calls, so they consume fewer AOs. Complex tasks that span multiple connectors, require iterative lookups, or produce long responses consume more.
+- **Tool calls.** Each action an agent takes against a connector counts as a tool call. Listing records, fetching a single record, searching the Context Store, and writing data back to a source are all tool calls.
+- **Token usage.** The input and output tokens an agent consumes while reasoning about your prompt contribute to the AO count.
+
+Simple tasks typically make fewer tool calls and use fewer tokens, so they consume fewer AOs. Complex reasoning tasks that span multiple connectors, require iterative lookups, or produce long responses consume more.
 
 ## What produces agent operations
 
