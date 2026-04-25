@@ -699,6 +699,43 @@ def test_export_iter_dicts():
     assert list(iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
 
 
+@pytest.mark.parametrize(
+    "raw_time, expected_iso",
+    [
+        (1623860880, "2021-06-16T16:28:00Z"),
+        (1623860880.0, "2021-06-16T16:28:00Z"),
+        ("1623860880", "2021-06-16T16:28:00Z"),
+        ("2025-07-20T05:52:45", "2025-07-20T05:52:45Z"),
+        ("2025-07-20T05:52:45Z", "2025-07-20T05:52:45Z"),
+        ("2025-07-20 05:52:45", "2025-07-20T05:52:45Z"),
+    ],
+    ids=["unix-int", "unix-float", "unix-string", "iso-datetime", "iso-datetime-z", "iso-datetime-space"],
+)
+def test_export_parse_time_to_iso(raw_time, expected_iso):
+    assert Export._parse_time_to_iso(raw_time) == expected_iso
+
+
+def test_export_stream_iso_datetime_time(requests_mock, config):
+    """Verify process_response handles time as an ISO datetime string without raising ValueError."""
+    stream = Export(authenticator=MagicMock(), **config)
+    iso_response = setup_response(
+        200,
+        {
+            "event": "Viewed E-commerce Page",
+            "properties": {
+                "time": "2025-07-20T05:52:45",
+                "distinct_id": "user-1",
+                "$browser": "Chrome",
+            },
+        },
+    )
+    requests_mock.register_uri("GET", get_url_to_mock(stream), iso_response)
+    stream_slice = {"start_date": "2025-07-20T00:00:00Z", "end_date": "2025-07-21T00:00:00Z"}
+    records = list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
+    assert len(records) == 1
+    assert records[0]["time"] == "2025-07-20T05:52:45Z"
+
+
 @responses.activate
 def test_export_full_refresh_read(export_config, engage_response):
     config = export_config.copy()

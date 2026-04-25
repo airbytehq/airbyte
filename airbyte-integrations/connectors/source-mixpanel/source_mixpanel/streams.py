@@ -448,15 +448,29 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             # transform record into flat dict structure
             item = {"event": record["event"]}
             properties = record["properties"]
+            raw_time = properties.get("time")
             for result in transform_property_names(properties.keys()):
                 # Convert all values to string (this is default property type)
                 # because API does not provide properties type information
                 item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
-            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
+            # The API normally returns time as a Unix epoch integer, but some
+            # projects return an ISO datetime string instead.
+            item["time"] = self._parse_time_to_iso(raw_time)
 
             yield item
+
+    @staticmethod
+    def _parse_time_to_iso(raw_time: Any) -> str:
+        """Parse a time value that may be a Unix epoch integer or an ISO datetime string."""
+        if isinstance(raw_time, (int, float)):
+            return pendulum.from_timestamp(raw_time, tz="UTC").to_iso8601_string()
+        raw_time_str = str(raw_time)
+        try:
+            return pendulum.from_timestamp(int(raw_time_str), tz="UTC").to_iso8601_string()
+        except (ValueError, OverflowError):
+            return pendulum.parse(raw_time_str, tz="UTC").to_iso8601_string()
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
