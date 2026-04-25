@@ -11,13 +11,15 @@
 [tasks]
 
 get-connector-name = "basename ${POE_PWD}" # Use with -qq to get just the connector name
-fetch-secrets = "airbyte-cdk secrets fetch ${POE_PWD}"
+fetch-secrets = "airbyte-ops secrets fetch ${POE_PWD}"
 
 install = [
   "install-cdk-cli",
+  "install-ops-cli",
   "install-unit-tests-project",
 ]
 install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
+install-ops-cli = "uv tool install --upgrade airbyte-internal-ops"
 install-unit-tests-project.shell = '''
 if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
   echo "Found 'unit_tests/pyproject.toml' file, installing unit tests..."

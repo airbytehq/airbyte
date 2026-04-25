@@ -32,7 +32,7 @@ The Paypal-Transaction connector isn't currently able to handle prompts like the
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-paypal-transaction
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -44,8 +44,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_paypal_transaction import PaypalTransactionConnector
-from airbyte_agent_paypal_transaction.models import PaypalTransactionAuthConfig
+from airbyte_agent_sdk.connectors.paypal_transaction import PaypalTransactionConnector
+from airbyte_agent_sdk.connectors.paypal_transaction.models import PaypalTransactionAuthConfig
 
 connector = PaypalTransactionConnector(
     auth_config=PaypalTransactionAuthConfig(
@@ -70,11 +70,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_paypal_transaction import PaypalTransactionConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.paypal_transaction import PaypalTransactionConnector, AirbyteAuthConfig
 
 connector = PaypalTransactionConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -95,13 +95,13 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Balances | [List](./REFERENCE.md#balances-list), [Search](./REFERENCE.md#balances-search) |
-| Transactions | [List](./REFERENCE.md#transactions-list), [Search](./REFERENCE.md#transactions-search) |
-| List Payments | [List](./REFERENCE.md#list-payments-list), [Search](./REFERENCE.md#list-payments-search) |
-| List Disputes | [List](./REFERENCE.md#list-disputes-list), [Search](./REFERENCE.md#list-disputes-search) |
-| List Products | [List](./REFERENCE.md#list-products-list), [Search](./REFERENCE.md#list-products-search) |
-| Show Product Details | [Get](./REFERENCE.md#show-product-details-get), [Search](./REFERENCE.md#show-product-details-search) |
-| Search Invoices | [List](./REFERENCE.md#search-invoices-list), [Search](./REFERENCE.md#search-invoices-search) |
+| Balances | [List](./REFERENCE.md#balances-list), [Context Store Search](./REFERENCE.md#balances-context-store-search) |
+| Transactions | [List](./REFERENCE.md#transactions-list), [Context Store Search](./REFERENCE.md#transactions-context-store-search) |
+| List Payments | [List](./REFERENCE.md#list-payments-list), [Context Store Search](./REFERENCE.md#list-payments-context-store-search) |
+| List Disputes | [List](./REFERENCE.md#list-disputes-list), [Context Store Search](./REFERENCE.md#list-disputes-context-store-search) |
+| List Products | [List](./REFERENCE.md#list-products-list), [Context Store Search](./REFERENCE.md#list-products-context-store-search) |
+| Show Product Details | [Get](./REFERENCE.md#show-product-details-get), [Context Store Search](./REFERENCE.md#show-product-details-context-store-search) |
+| Search Invoices | [List](./REFERENCE.md#search-invoices-list), [Context Store Search](./REFERENCE.md#search-invoices-context-store-search) |
 
 
 ### Authentication
@@ -114,7 +114,6 @@ See the official [Paypal-Transaction API reference](https://developer.paypal.com
 
 ## Version information
 
-- **Package version:** 0.1.7
-- **Connector version:** 1.0.1
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/paypal-transaction/CHANGELOG.md)
+- **Package version:** 1.0.2
+- **Connector version:** 1.0.2
+- **Generated with Connector SDK commit SHA:** unknown

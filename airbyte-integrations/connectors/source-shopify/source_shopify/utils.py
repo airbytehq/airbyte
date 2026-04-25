@@ -334,7 +334,7 @@ class LimitReducingErrorHandler(HttpStatusErrorHandler):
     """
 
     def __init__(self, max_retries: int, error_mapping: dict):
-        super().__init__(logger=None, max_retries=max_retries, error_mapping=error_mapping)
+        super().__init__(logger=LOGGER, max_retries=max_retries, error_mapping=error_mapping)
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):

@@ -23,8 +23,8 @@ In open source mode, you provide API credentials directly to the connector.
 Example request:
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector
-from airbyte_agent_hubspot.models import HubspotOauth2AuthConfig
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotOauth2AuthConfig
 
 connector = HubspotConnector(
     auth_config=HubspotOauth2AuthConfig(
@@ -47,8 +47,8 @@ connector = HubspotConnector(
 Example request:
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector
-from airbyte_agent_hubspot.models import HubspotPrivateAppAuthConfig
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotPrivateAppAuthConfig
 
 connector = HubspotConnector(
     auth_config=HubspotPrivateAppAuthConfig(
@@ -81,7 +81,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Hubspot",
     "name": "My Hubspot Connector",
     "credentials": {
@@ -105,8 +105,8 @@ By default, Airbyte uses its own OAuth app credentials. You can override these w
 **Python SDK**
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector, AirbyteAuthConfig
-from airbyte_agent_hubspot.models import HubspotOAuthCredentials
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.hubspot.models import HubspotOAuthCredentials
 
 await HubspotConnector.configure_oauth_app_parameters(
     airbyte_config=AirbyteAuthConfig(
@@ -162,7 +162,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Hubspot") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -173,7 +173,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Hubspot",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -209,7 +209,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Hubspot",
     "name": "My Hubspot Connector",
     "credentials": {
@@ -226,11 +226,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_hubspot import HubspotConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.hubspot import HubspotConnector, AirbyteAuthConfig
 
 connector = HubspotConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
