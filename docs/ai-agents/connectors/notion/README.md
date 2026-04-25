@@ -37,7 +37,7 @@ The Notion connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-notion
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -49,8 +49,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_notion import NotionConnector
-from airbyte_agent_notion.models import NotionAccessTokenAuthConfig
+from airbyte_agent_sdk.connectors.notion import NotionConnector
+from airbyte_agent_sdk.connectors.notion.models import NotionAccessTokenAuthConfig
 
 connector = NotionConnector(
     auth_config=NotionAccessTokenAuthConfig(
@@ -72,11 +72,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_notion import NotionConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.notion import NotionConnector, AirbyteAuthConfig
 
 connector = NotionConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -97,10 +97,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Search](./REFERENCE.md#pages-search) |
-| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Search](./REFERENCE.md#data-sources-search) |
-| Blocks | [List](./REFERENCE.md#blocks-list), [Get](./REFERENCE.md#blocks-get), [Search](./REFERENCE.md#blocks-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
+| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Context Store Search](./REFERENCE.md#data-sources-context-store-search) |
+| Blocks | [List](./REFERENCE.md#blocks-list), [Get](./REFERENCE.md#blocks-get), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
 | Comments | [List](./REFERENCE.md#comments-list) |
 
 
@@ -114,7 +114,6 @@ See the official [Notion API reference](https://developers.notion.com/reference/
 
 ## Version information
 
-- **Package version:** 0.1.23
-- **Connector version:** 0.1.6
-- **Generated with Connector SDK commit SHA:** dd2ed97fb6ead6bc3014adf1eaddb9b8b9fb4001
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/notion/CHANGELOG.md)
+- **Package version:** 0.1.11
+- **Connector version:** 0.1.11
+- **Generated with Connector SDK commit SHA:** unknown

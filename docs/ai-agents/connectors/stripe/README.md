@@ -17,6 +17,13 @@ The Stripe connector is optimized to handle prompts like these.
 - Show me details for a recent charge
 - List recent invoices
 - List active subscriptions
+- Create a payment intent for $50.00 USD
+- Create a new invoice for customer cus_123
+- Create a subscription for customer cus_123 with price price_456
+- Create a price of $29.99/month for product prod_789
+- Create a checkout session for price price_456
+- Cancel payment intent pi_123
+- Finalize invoice inv_123
 - Show me my top 10 customers by total revenue this month
 - List all customers who have spent over $5,000 in the last quarter
 - Analyze payment trends for my Stripe customers
@@ -32,16 +39,12 @@ The Stripe connector is optimized to handle prompts like these.
 
 The Stripe connector isn't currently able to handle prompts like these.
 
-- Create a new customer profile in Stripe
-- Update the billing information for \{customer\}
-- Delete a customer record
 - Send a payment reminder to \{customer\}
-- Schedule an automatic invoice for \{company\}
 
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-stripe
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -53,8 +56,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_stripe import StripeConnector
-from airbyte_agent_stripe.models import StripeAuthConfig
+from airbyte_agent_sdk.connectors.stripe import StripeConnector
+from airbyte_agent_sdk.connectors.stripe.models import StripeAuthConfig
 
 connector = StripeConnector(
     auth_config=StripeAuthConfig(
@@ -76,11 +79,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_stripe import StripeConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.stripe import StripeConnector, AirbyteAuthConfig
 
 connector = StripeConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -101,15 +104,22 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search), [Search](./REFERENCE.md#customers-search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search), [Search](./REFERENCE.md#invoices-search) |
-| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search), [Search](./REFERENCE.md#charges-search) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [API Search](./REFERENCE.md#subscriptions-api_search), [Search](./REFERENCE.md#subscriptions-search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get), [Search](./REFERENCE.md#refunds-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Create](./REFERENCE.md#customers-create), [Get](./REFERENCE.md#customers-get), [Update](./REFERENCE.md#customers-update), [Delete](./REFERENCE.md#customers-delete), [API Search](./REFERENCE.md#customers-api_search), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Create](./REFERENCE.md#invoices-create), [Get](./REFERENCE.md#invoices-get), [API Search](./REFERENCE.md#invoices-api_search), [Context Store Search](./REFERENCE.md#invoices-context-store-search) |
+| Invoice Finalizations | [Create](./REFERENCE.md#invoice-finalizations-create) |
+| Invoice Sends | [Create](./REFERENCE.md#invoice-sends-create) |
+| Charges | [List](./REFERENCE.md#charges-list), [Get](./REFERENCE.md#charges-get), [API Search](./REFERENCE.md#charges-api_search), [Context Store Search](./REFERENCE.md#charges-context-store-search) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Create](./REFERENCE.md#subscriptions-create), [Get](./REFERENCE.md#subscriptions-get), [Update](./REFERENCE.md#subscriptions-update), [Delete](./REFERENCE.md#subscriptions-delete), [API Search](./REFERENCE.md#subscriptions-api_search), [Context Store Search](./REFERENCE.md#subscriptions-context-store-search) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Create](./REFERENCE.md#refunds-create), [Get](./REFERENCE.md#refunds-get), [Context Store Search](./REFERENCE.md#refunds-context-store-search) |
 | Products | [List](./REFERENCE.md#products-list), [Create](./REFERENCE.md#products-create), [Get](./REFERENCE.md#products-get), [Update](./REFERENCE.md#products-update), [Delete](./REFERENCE.md#products-delete), [API Search](./REFERENCE.md#products-api_search) |
 | Balance | [Get](./REFERENCE.md#balance-get) |
 | Balance Transactions | [List](./REFERENCE.md#balance-transactions-list), [Get](./REFERENCE.md#balance-transactions-get) |
-| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Get](./REFERENCE.md#payment-intents-get), [API Search](./REFERENCE.md#payment-intents-api_search) |
+| Payment Intents | [List](./REFERENCE.md#payment-intents-list), [Create](./REFERENCE.md#payment-intents-create), [Get](./REFERENCE.md#payment-intents-get), [Update](./REFERENCE.md#payment-intents-update), [API Search](./REFERENCE.md#payment-intents-api_search) |
+| Payment Intent Confirmations | [Create](./REFERENCE.md#payment-intent-confirmations-create) |
+| Payment Intent Cancellations | [Create](./REFERENCE.md#payment-intent-cancellations-create) |
+| Prices | [Create](./REFERENCE.md#prices-create) |
+| Checkout Sessions | [Create](./REFERENCE.md#checkout-sessions-create) |
+| Payment Method Attachments | [Create](./REFERENCE.md#payment-method-attachments-create) |
 | Disputes | [List](./REFERENCE.md#disputes-list), [Get](./REFERENCE.md#disputes-get) |
 | Payouts | [List](./REFERENCE.md#payouts-list), [Get](./REFERENCE.md#payouts-get) |
 
@@ -124,7 +134,6 @@ See the official [Stripe API reference](https://docs.stripe.com/api).
 
 ## Version information
 
-- **Package version:** 0.5.122
-- **Connector version:** 0.1.12
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/stripe/CHANGELOG.md)
+- **Package version:** 0.1.13
+- **Connector version:** 0.1.13
+- **Generated with Connector SDK commit SHA:** unknown

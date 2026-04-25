@@ -38,7 +38,7 @@ The Google-Ads connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-google-ads
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -50,8 +50,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_google_ads import GoogleAdsConnector
-from airbyte_agent_google_ads.models import GoogleAdsAuthConfig
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector
+from airbyte_agent_sdk.connectors.google_ads.models import GoogleAdsAuthConfig
 
 connector = GoogleAdsConnector(
     auth_config=GoogleAdsAuthConfig(
@@ -76,11 +76,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_google_ads import GoogleAdsConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.google_ads import GoogleAdsConnector, AirbyteAuthConfig
 
 connector = GoogleAdsConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -102,13 +102,13 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Accessible Customers | [List](./REFERENCE.md#accessible-customers-list) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Search](./REFERENCE.md#accounts-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Update](./REFERENCE.md#campaigns-update), [Search](./REFERENCE.md#campaigns-search) |
-| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Update](./REFERENCE.md#ad-groups-update), [Search](./REFERENCE.md#ad-groups-search) |
-| Ad Group Ads | [List](./REFERENCE.md#ad-group-ads-list), [Search](./REFERENCE.md#ad-group-ads-search) |
-| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Create](./REFERENCE.md#campaign-labels-create), [Search](./REFERENCE.md#campaign-labels-search) |
-| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Create](./REFERENCE.md#ad-group-labels-create), [Search](./REFERENCE.md#ad-group-labels-search) |
-| Ad Group Ad Labels | [List](./REFERENCE.md#ad-group-ad-labels-list), [Search](./REFERENCE.md#ad-group-ad-labels-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
+| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Update](./REFERENCE.md#ad-groups-update), [Context Store Search](./REFERENCE.md#ad-groups-context-store-search) |
+| Ad Group Ads | [List](./REFERENCE.md#ad-group-ads-list), [Context Store Search](./REFERENCE.md#ad-group-ads-context-store-search) |
+| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Create](./REFERENCE.md#campaign-labels-create), [Context Store Search](./REFERENCE.md#campaign-labels-context-store-search) |
+| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Create](./REFERENCE.md#ad-group-labels-create), [Context Store Search](./REFERENCE.md#ad-group-labels-context-store-search) |
+| Ad Group Ad Labels | [List](./REFERENCE.md#ad-group-ad-labels-list), [Context Store Search](./REFERENCE.md#ad-group-ad-labels-context-store-search) |
 | Labels | [Create](./REFERENCE.md#labels-create) |
 
 
@@ -122,7 +122,6 @@ See the official [Google-Ads API reference](https://developers.google.com/google
 
 ## Version information
 
-- **Package version:** 0.1.19
-- **Connector version:** 1.0.6
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/google-ads/CHANGELOG.md)
+- **Package version:** 1.0.8
+- **Connector version:** 1.0.8
+- **Generated with Connector SDK commit SHA:** unknown

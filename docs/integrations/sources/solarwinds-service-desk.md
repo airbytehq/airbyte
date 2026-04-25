@@ -45,6 +45,7 @@ Documentation: https://apidoc.samanage.com/#section/General-Concepts
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.52 | 2026-04-21 | [76774](https://github.com/airbytehq/airbyte/pull/76774) | Update dependencies |
 | 0.0.51 | 2026-03-31 | [75868](https://github.com/airbytehq/airbyte/pull/75868) | Update dependencies |
 | 0.0.50 | 2026-03-24 | [75381](https://github.com/airbytehq/airbyte/pull/75381) | Update dependencies |
 | 0.0.49 | 2026-03-10 | [74580](https://github.com/airbytehq/airbyte/pull/74580) | Update dependencies |
