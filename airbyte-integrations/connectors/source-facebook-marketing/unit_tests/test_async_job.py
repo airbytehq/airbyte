@@ -570,9 +570,9 @@ class TestInsightAsyncJob:
         The terminal split condition must raise transient_error (not system_error)
         so the platform can retry.
         """
-        from airbyte_cdk.models import FailureType
-
         from source_facebook_marketing.streams.async_job import InsightAsyncJob
+
+        from airbyte_cdk.models import FailureType
 
         interval = DateInterval(date(2024, 1, 1), date(2024, 1, 1))
         pk = ["date_start", "account_id", "ad_id"]
