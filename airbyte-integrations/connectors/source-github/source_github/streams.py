@@ -3,6 +3,7 @@
 #
 
 import base64
+import binascii
 import re
 import struct
 from abc import ABC, abstractmethod
@@ -137,7 +138,11 @@ class GithubStreamABC(HttpStream, ABC):
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if not hasattr(e, "_exception") and not hasattr(e._exception, "response"):
+            # `requests.RequestException` subclasses always expose a `response` attribute, but it
+            # defaults to `None` for transport-layer failures (ConnectionError, ConnectTimeout,
+            # ReadTimeout, SSLError, DNS failures, etc.). Treat a missing or `None` response as
+            # something this handler cannot classify, and let the CDK surface it.
+            if not hasattr(e, "_exception") or getattr(e._exception, "response", None) is None:
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
@@ -189,11 +194,11 @@ class GithubStreamABC(HttpStream, ABC):
 
             self.logger.warning(error_msg)
         except GitHubAPILimitException as e:
-            internal_message = (
-                f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
-            )
-            message = "Rate Limits for all provided tokens are reached. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/github#limitations--troubleshooting"
-            raise AirbyteTracedException(internal_message=internal_message, message=message, failure_type=FailureType.config_error) from e
+            internal_message = f"Stream: `{self.name}`, slice: `{stream_slice}`. {e}"
+            message = "Rate limit exceeded for all configured GitHub API tokens."
+            raise AirbyteTracedException(
+                internal_message=internal_message, message=message, failure_type=FailureType.transient_error
+            ) from e
 
 
 class GithubStream(GithubStreamABC):
@@ -827,7 +832,7 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
             decoded = base64.urlsafe_b64decode(encoded + "==")
             if len(decoded) >= 4:
                 return struct.unpack(">I", decoded[-4:])[0]
-        except Exception:
+        except (ValueError, struct.error, binascii.Error):
             return None
         return None
 
@@ -1787,7 +1792,7 @@ class ContributorActivity(GithubStream):
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        return ContributorActivityErrorHandler(logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
+        return ContributorActivityErrorHandler(stream=self, logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         return ContributorActivityBackoffStrategy()
@@ -1810,8 +1815,8 @@ class ContributorActivity(GithubStream):
         repository = stream_slice.get("repository", "")
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        # HTTP Client wraps BackoffException into MessageRepresentationAirbyteTracedErrors
-        except MessageRepresentationAirbyteTracedErrors as e:
+        # HTTP Client wraps BackoffException into AirbyteTracedException
+        except AirbyteTracedException as e:
             if hasattr(e, "_exception") and hasattr(e._exception, "response"):
                 if e._exception.response.status_code == requests.codes.ACCEPTED:
                     yield AirbyteMessage(
@@ -1828,6 +1833,8 @@ class ContributorActivity(GithubStream):
                     partition_obj = stream_slice.get("partition")
                     if self.cursor and partition_obj:
                         self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+                else:
+                    raise e
             else:
                 raise e
 

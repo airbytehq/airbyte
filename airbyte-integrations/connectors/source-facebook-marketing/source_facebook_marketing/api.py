@@ -64,15 +64,15 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
         if usage_header_ad_account:
             usage_header_ad_account_loaded = json.loads(usage_header_ad_account)
-            usage = max(usage, usage_header_ad_account_loaded.get("acc_id_util_pct"))
+            usage = max(usage, float(usage_header_ad_account_loaded.get("acc_id_util_pct", 0)))
 
         if usage_header_app:
             usage_header_app_loaded = json.loads(usage_header_app)
             usage = max(
                 usage,
-                usage_header_app_loaded.get("call_count"),
-                usage_header_app_loaded.get("total_time"),
-                usage_header_app_loaded.get("total_cputime"),
+                float(usage_header_app_loaded.get("call_count", 0)),
+                float(usage_header_app_loaded.get("total_time", 0)),
+                float(usage_header_app_loaded.get("total_cputime", 0)),
             )
 
         if usage_header_business:
@@ -81,9 +81,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
                 usage = max(
                     usage,
-                    usage_limits.get("call_count"),
-                    usage_limits.get("total_cputime"),
-                    usage_limits.get("total_time"),
+                    float(usage_limits.get("call_count", 0)),
+                    float(usage_limits.get("total_cputime", 0)),
+                    float(usage_limits.get("total_time", 0)),
                 )
                 pause_interval = max(
                     pause_interval,
@@ -142,8 +142,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         if ads_insights_throttle:
             ads_insights_throttle = json.loads(ads_insights_throttle)
             self._ads_insights_throttle = self.Throttle(
-                per_application=ads_insights_throttle.get("app_id_util_pct", 0),
-                per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
+                per_application=float(ads_insights_throttle.get("app_id_util_pct", 0)),
+                per_account=float(ads_insights_throttle.get("acc_id_util_pct", 0)),
             )
 
     def _should_restore_default_page_size(self, params):

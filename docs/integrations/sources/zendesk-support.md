@@ -89,7 +89,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. (Optional) For **Number of concurrent workers**, enter the number of parallel threads to use for the sync. The default is 3. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
+8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 3. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
 9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
 10. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
@@ -195,7 +195,7 @@ Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introd
 | Enterprise | 700 |
 | Enterprise Plus / High Volume API add-on | 2500 |
 
-The connector's **Number of concurrent workers** setting (default: 3) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
+The connector's **Number of concurrent threads** setting (default: 3) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
 
 Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The `tickets` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
@@ -220,6 +220,10 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.2.6 | 2026-04-22 | [76153](https://github.com/airbytehq/airbyte/pull/76153) | Fix sync crash when the Zendesk API returns responses without cursor pagination keys (for example, on single-page results) |
+| 5.2.5 | 2026-04-21 | [74696](https://github.com/airbytehq/airbyte/pull/74696) | Update dependencies |
+| 5.2.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 5.2.3 | 2026-04-07 | [76105](https://github.com/airbytehq/airbyte/pull/76105) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
 | 5.2.2 | 2026-03-23 | [74993](https://github.com/airbytehq/airbyte/pull/74993) | Switch ticket_metric_events to time-based pagination to prevent heartbeat timeout on large datasets |
 | 5.2.1 | 2026-03-17 | [74394](https://github.com/airbytehq/airbyte/pull/74394) | Migrate to scopes object array format |
 | 5.2.0 | 2026-03-12 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | Switch `tickets` stream to Export Search Results endpoint for concurrency and performance. **Behavior change**: deleted tickets are no longer returned in the `tickets` stream — use the new `deleted_tickets` stream instead. Added `deleted_tickets` as a suggested stream for auto-enablement on Cloud. |
