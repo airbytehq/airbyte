@@ -1,7 +1,10 @@
 name: Auto merge connector PRs Cron
-# Dry-run mode is controlled by the org-level variable ENABLE_CONNECTOR_AUTO_MERGE.
-# Set to "true" to enable real merges; any other value (or unset) runs in dry-run mode.
-# In dry-run mode, PRs are still approved and promoted from draft, but merges are skipped.
+# Normal-merge PRs always have native auto-merge enabled and bot approval applied.
+# GitHub waits for required CI checks to pass before merging.
+#
+# Force-merge PRs bypass CI checks and are gated by the org-level variable
+# ENABLE_CONNECTOR_AUTO_MERGE. Set to "true" to enable force-merges;
+# any other value (or unset) runs in dry-run mode for force-merges only.
 # Manage at: https://github.com/organizations/airbytehq/settings/variables/actions
 
 on:
@@ -89,11 +92,77 @@ jobs:
             core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
             core.setOutput('checks', JSON.stringify(checks));
 
+      # ---------- Pre-check: query check statuses for all normal PRs ----------
+      - name: Pre-check required statuses for all normal PRs
+        id: pre-check
+        if: fromJSON(steps.normal-prs.outputs.normal-count) > 0
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ steps.get-hoard-token.outputs.token }}
+          script: |
+            const prs = JSON.parse(process.env.NORMAL_JSON || '[]');
+            const requiredChecks = new Set(JSON.parse(process.env.REQUIRED_CHECKS_JSON || '[]'));
+            const results = [];
+
+            for (const pr of prs) {
+              try {
+                const { data: prData } = await github.rest.pulls.get({
+                  owner: 'airbytehq', repo: 'airbyte', pull_number: pr.number,
+                });
+                const sha = prData.head.sha;
+
+                const statuses = await github.paginate(
+                  github.rest.repos.listCommitStatusesForRef,
+                  { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 }
+                );
+                const successStatuses = new Set(
+                  statuses.filter(s => s.state === 'success').map(s => s.context)
+                );
+
+                const checkRuns = await github.paginate(
+                  github.rest.checks.listForRef,
+                  { owner: 'airbytehq', repo: 'airbyte', ref: sha, per_page: 100 },
+                  (response) => response.data
+                );
+                const successChecks = new Set(
+                  checkRuns
+                    .filter(cr => cr.conclusion === 'success' || cr.conclusion === 'skipped')
+                    .map(cr => cr.name)
+                );
+
+                const allPassing = new Set([...successStatuses, ...successChecks]);
+                const missing = [...requiredChecks].filter(c => !allPassing.has(c));
+
+                results.push({
+                  number: pr.number,
+                  title: pr.title,
+                  ready: missing.length === 0,
+                  missing: missing,
+                });
+              } catch (err) {
+                core.warning(`Failed to check PR #${pr.number}: ${err.message}`);
+                results.push({
+                  number: pr.number,
+                  title: pr.title,
+                  ready: false,
+                  missing: ['(check query failed)'],
+                });
+              }
+            }
+
+            const readyCount = results.filter(r => r.ready).length;
+            core.info(`Pre-check complete: ${readyCount}/${results.length} PRs have all checks passing`);
+            core.setOutput('results', JSON.stringify(results));
+        env:
+          NORMAL_JSON: ${{ steps.normal-prs.outputs.normal-matrix }}
+          REQUIRED_CHECKS_JSON: ${{ steps.required-checks.outputs.checks }}
+
       # ---------- Write candidate summary ----------
       - name: Write candidate summary
         env:
           FORCE_JSON: ${{ steps.force-prs.outputs.force-matrix }}
           NORMAL_JSON: ${{ steps.normal-prs.outputs.normal-matrix }}
+          PRECHECK_JSON: ${{ steps.pre-check.outputs.results }}
         run: |
           {
             echo "## Auto-Merge Candidate Summary"
@@ -123,6 +192,14 @@ jobs:
               deps_count=$(echo "$deps" | jq length)
               other_count=$(echo "$other" | jq length)
 
+              # Count ready vs waiting from pre-check
+              ready_count=0
+              waiting_count=0
+              if [ -n "$PRECHECK_JSON" ] && [ "$PRECHECK_JSON" != "null" ]; then
+                ready_count=$(echo "$PRECHECK_JSON" | jq '[.[] | select(.ready == true)] | length')
+                waiting_count=$(echo "$PRECHECK_JSON" | jq '[.[] | select(.ready == false)] | length')
+              fi
+
               echo "### Normal-Merge PRs by Type"
               echo ""
               echo "| Type | Count |"
@@ -131,7 +208,30 @@ jobs:
               echo "| deps | ${deps_count} |"
               echo "| other | ${other_count} |"
               echo ""
+              echo "**Check status:** ${ready_count} ready, ${waiting_count} waiting on checks"
+              echo ""
 
+              # Show PRs with all checks passing
+              if [ "$ready_count" -gt 0 ]; then
+                echo "<details><summary>:green_circle: Ready to merge (${ready_count})</summary>"
+                echo ""
+                echo "$PRECHECK_JSON" | jq -r '.[] | select(.ready == true) | "- [#\(.number)](https://github.com/airbytehq/airbyte/pull/\(.number)): \(.title)"'
+                echo ""
+                echo "</details>"
+                echo ""
+              fi
+
+              # Show PRs waiting on checks
+              if [ "$waiting_count" -gt 0 ]; then
+                echo "<details><summary>:yellow_circle: Waiting on checks (${waiting_count})</summary>"
+                echo ""
+                echo "$PRECHECK_JSON" | jq -r '.[] | select(.ready == false) | "- [#\(.number)](https://github.com/airbytehq/airbyte/pull/\(.number)): \(.title) — missing: \(.missing | join(", "))"'
+                echo ""
+                echo "</details>"
+                echo ""
+              fi
+
+              # Type breakdown details
               if [ "$docs_count" -gt 0 ]; then
                 echo "<details><summary>Docs PRs (${docs_count})</summary>"
                 echo ""
@@ -168,7 +268,7 @@ jobs:
       force-count: ${{ steps.force-prs.outputs.force-count }}
       required-checks: ${{ steps.required-checks.outputs.checks }}
 
-  # ---------- Job 2: Normal merge (verify CI first) ----------
+  # ---------- Job 2: Normal merge (auto-merge + approve) ----------
   normal-merge:
     name: "Merge #${{ matrix.pr.number }}"
     needs: list-candidates
@@ -279,7 +379,6 @@ jobs:
           echo "result=${{
             steps.check-open.outputs.state == 'OPEN'
             && steps.validate-paths.outputs.valid == 'true'
-            && steps.verify-checks.outputs.ready == 'true'
           }}" | tee -a $GITHUB_OUTPUT
 
       # ---------- Prepare PR for merge ----------
@@ -298,7 +397,13 @@ jobs:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: gh pr ready "$PR_NUMBER" --repo airbytehq/airbyte
 
-      # ---------- Approve and merge ----------
+      # ---------- Enable auto-merge and approve ----------
+      - name: Enable auto-merge on PR
+        if: steps.eligible.outputs.result == 'true'
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash --auto
+
       - name: Authenticate as 'octavia-bot-admin' GitHub App
         if: steps.eligible.outputs.result == 'true'
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
@@ -309,8 +414,9 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
 
-      - name: Approve PR with admin bot
+      - name: Apply bot approval
         if: steps.eligible.outputs.result == 'true'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
         run: >
@@ -318,26 +424,6 @@ jobs:
           --repo airbytehq/airbyte
           --approve
           --body "Auto-approved by auto-merge workflow."
-
-      - name: Squash merge PR
-        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
-        env:
-          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
-        run: |
-          for attempt in 1 2 3; do
-            if gh pr merge "$PR_NUMBER" --repo airbytehq/airbyte --squash; then
-              echo "::notice::Merged PR ${PR_NUMBER}: ${PR_TITLE}"
-              exit 0
-            fi
-            echo "::warning::Merge attempt $attempt/3 failed, retrying in 60s..."
-            sleep 60
-          done
-          echo "::error::Failed to merge PR #$PR_NUMBER after 3 attempts"
-          exit 1
-
-      - name: Dry-run notice
-        if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
-        run: echo "::notice::DRY RUN -- would merge PR ${PR_NUMBER}"
 
       # ---------- Per-PR summary ----------
       - name: Write per-PR summary
@@ -348,27 +434,26 @@ jobs:
           CHECKS_READY: ${{ steps.verify-checks.outputs.ready }}
           MISSING_CHECKS: ${{ steps.verify-checks.outputs.missing }}
           ELIGIBLE: ${{ steps.eligible.outputs.result }}
-          DRY_RUN: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true' }}
         run: |
           link="[#${PR_NUMBER}](https://github.com/airbytehq/airbyte/pull/${PR_NUMBER})"
           if [ "$ELIGIBLE" = "true" ]; then
-            if [ "$DRY_RUN" = "true" ]; then
-              echo "| ${link} | ${PR_TITLE} | :yellow_circle: Would merge (dry-run) |" >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "| ${link} | ${PR_TITLE} | :green_circle: Merged |" >> "$GITHUB_STEP_SUMMARY"
+            checks_note=""
+            if [ "$CHECKS_READY" = "true" ]; then
+              checks_note="all checks passing"
+            elif [ -n "$MISSING_CHECKS" ]; then
+              checks_note="waiting on: ${MISSING_CHECKS}"
             fi
+            echo "| ${link} | ${PR_TITLE} | :green_circle: Auto-merge enabled | ${checks_note} |" >> "$GITHUB_STEP_SUMMARY"
           else
             reason=""
             if [ "$STATE" != "OPEN" ]; then
               reason="PR not open (${STATE})"
             elif [ "$VALID_PATHS" != "true" ]; then
               reason="Non-connector files changed"
-            elif [ "$CHECKS_READY" != "true" ]; then
-              reason="Missing checks: ${MISSING_CHECKS}"
             else
               reason="Unknown"
             fi
-            echo "| ${link} | ${PR_TITLE} | :red_circle: Blocked — ${reason} |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| ${link} | ${PR_TITLE} | :red_circle: Skipped — ${reason} | |" >> "$GITHUB_STEP_SUMMARY"
           fi
 
   # ---------- Job 3: Force merge (bypass CI checks) ----------
@@ -462,8 +547,9 @@ jobs:
           app-id: ${{ secrets.OCTAVIA_BOT_ADMIN_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_ADMIN_PRIVATE_KEY }}
 
-      - name: Approve PR with admin bot
+      - name: Apply bot approval
         if: steps.eligible.outputs.result == 'true'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ steps.get-admin-token.outputs.token }}
         run: >
