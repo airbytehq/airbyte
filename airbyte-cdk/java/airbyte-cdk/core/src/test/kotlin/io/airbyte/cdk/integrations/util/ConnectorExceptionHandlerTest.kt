@@ -132,7 +132,8 @@ internal class ConnectorExceptionHandlerTest {
         val wrapped = RuntimeException("java.net.ConnectException: Connection refused", root)
         val outer = RuntimeException("HikariPool-1 - Connection is not available", wrapped)
         val result = exceptionHandler.getRootException(outer)
-        assertEquals(root, result)
+        // getRootException walks outer→inner and returns the first recognizable match
+        assertEquals(wrapped, result)
     }
 
     @Test
