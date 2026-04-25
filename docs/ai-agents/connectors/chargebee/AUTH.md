@@ -22,8 +22,8 @@ This authentication method isn't available for this connector.
 Example request:
 
 ```python
-from airbyte_agent_chargebee import ChargebeeConnector
-from airbyte_agent_chargebee.models import ChargebeeAuthConfig
+from airbyte_agent_sdk.connectors.chargebee import ChargebeeConnector
+from airbyte_agent_sdk.connectors.chargebee.models import ChargebeeAuthConfig
 
 connector = ChargebeeConnector(
     auth_config=ChargebeeAuthConfig(
@@ -66,7 +66,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Chargebee",
     "name": "My Chargebee Connector",
     "credentials": {
@@ -86,11 +86,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_chargebee import ChargebeeConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.chargebee import ChargebeeConnector, AirbyteAuthConfig
 
 connector = ChargebeeConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"

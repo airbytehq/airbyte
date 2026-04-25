@@ -15,6 +15,8 @@ The Salesforce connector is optimized to handle prompts like these.
 - List recent contacts in my Salesforce account
 - List open cases in my Salesforce account
 - Show me the notes and attachments for a recent account
+- List all available reports in Salesforce
+- Run my quarterly revenue report and show the results
 - Show me my top 5 opportunities this month
 - List all contacts from \{company\} in the last quarter
 - Search for leads in the technology sector with revenue over $10M
@@ -37,7 +39,7 @@ The Salesforce connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-salesforce
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -49,8 +51,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_salesforce import SalesforceConnector
-from airbyte_agent_salesforce.models import SalesforceAuthConfig
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector
+from airbyte_agent_sdk.connectors.salesforce.models import SalesforceAuthConfig
 
 connector = SalesforceConnector(
     auth_config=SalesforceAuthConfig(
@@ -74,11 +76,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_salesforce import SalesforceConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.salesforce import SalesforceConnector, AirbyteAuthConfig
 
 connector = SalesforceConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -100,17 +102,18 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Sobjects | [List](./REFERENCE.md#sobjects-list) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [API Search](./REFERENCE.md#accounts-api_search), [Search](./REFERENCE.md#accounts-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search), [Search](./REFERENCE.md#contacts-search) |
-| Leads | [List](./REFERENCE.md#leads-list), [Get](./REFERENCE.md#leads-get), [API Search](./REFERENCE.md#leads-api_search), [Search](./REFERENCE.md#leads-search) |
-| Opportunities | [List](./REFERENCE.md#opportunities-list), [Get](./REFERENCE.md#opportunities-get), [API Search](./REFERENCE.md#opportunities-api_search), [Search](./REFERENCE.md#opportunities-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [API Search](./REFERENCE.md#tasks-api_search), [Search](./REFERENCE.md#tasks-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [API Search](./REFERENCE.md#accounts-api_search), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Leads | [List](./REFERENCE.md#leads-list), [Get](./REFERENCE.md#leads-get), [API Search](./REFERENCE.md#leads-api_search), [Context Store Search](./REFERENCE.md#leads-context-store-search) |
+| Opportunities | [List](./REFERENCE.md#opportunities-list), [Get](./REFERENCE.md#opportunities-get), [API Search](./REFERENCE.md#opportunities-api_search), [Context Store Search](./REFERENCE.md#opportunities-context-store-search) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [API Search](./REFERENCE.md#tasks-api_search), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
 | Events | [List](./REFERENCE.md#events-list), [Get](./REFERENCE.md#events-get), [API Search](./REFERENCE.md#events-api_search) |
 | Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [API Search](./REFERENCE.md#campaigns-api_search) |
 | Cases | [List](./REFERENCE.md#cases-list), [Get](./REFERENCE.md#cases-get), [API Search](./REFERENCE.md#cases-api_search) |
 | Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [API Search](./REFERENCE.md#notes-api_search) |
 | Content Versions | [List](./REFERENCE.md#content-versions-list), [Get](./REFERENCE.md#content-versions-get), [Download](./REFERENCE.md#content-versions-download) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
+| Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
 | Query | [List](./REFERENCE.md#query-list) |
 
 
@@ -124,7 +127,6 @@ See the official [Salesforce API reference](https://developer.salesforce.com/doc
 
 ## Version information
 
-- **Package version:** 0.1.116
-- **Connector version:** 1.0.15
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/salesforce/CHANGELOG.md)
+- **Package version:** 1.0.17
+- **Connector version:** 1.0.17
+- **Generated with Connector SDK commit SHA:** unknown

@@ -35,7 +35,14 @@ def test_streams(conversations_list, config, is_valid):
     "status_code, response, is_connection_successful, error_msg",
     (
         (200, {"members": [{"id": 1, "name": "Abraham"}]}, True, None),
-        (200, {"ok": False, "error": "invalid_auth"}, False, "Authentication has failed, please update your credentials."),
+        (200, {"ok": False, "error": "invalid_auth"}, False, "Slack API authentication/permission error: invalid_auth."),
+        (200, {"ok": False, "error": "missing_scope"}, False, "Slack API authentication/permission error: missing_scope."),
+        (200, {"ok": False, "error": "not_authed"}, False, "Slack API authentication/permission error: not_authed."),
+        (200, {"ok": False, "error": "account_inactive"}, False, "Slack API authentication/permission error: account_inactive."),
+        (200, {"ok": False, "error": "token_revoked"}, False, "Slack API authentication/permission error: token_revoked."),
+        (200, {"ok": False, "error": "token_expired"}, False, "Slack API authentication/permission error: token_expired."),
+        (200, {"ok": False, "error": "no_permission"}, False, "Slack API authentication/permission error: no_permission."),
+        (200, {"ok": False, "error": "plan_upgrade_required"}, False, "Slack API error: plan_upgrade_required."),
         (
             400,
             "Bad request",
