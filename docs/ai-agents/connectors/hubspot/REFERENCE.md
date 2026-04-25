@@ -8,9 +8,9 @@ The Hubspot connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Search](#contacts-search) |
-| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Search](#companies-search) |
-| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Search](#deals-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [API Search](#contacts-api-search), [Context Store Search](#contacts-context-store-search) |
+| Companies | [List](#companies-list), [Get](#companies-get), [API Search](#companies-api-search), [Context Store Search](#companies-context-store-search) |
+| Deals | [List](#deals-list), [Get](#deals-get), [API Search](#deals-api-search), [Context Store Search](#deals-context-store-search) |
 | Tickets | [List](#tickets-list), [Get](#tickets-get), [API Search](#tickets-api-search) |
 | Schemas | [List](#schemas-list), [Get](#schemas-get) |
 | Objects | [List](#objects-list), [Get](#objects-get) |
@@ -212,14 +212,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Contacts Search
+### Contacts Context Store Search
 
 Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await hubspot.contacts.search(
+await hubspot.contacts.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -232,7 +232,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "contacts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -477,14 +477,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Companies Search
+### Companies Context Store Search
 
 Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await hubspot.companies.search(
+await hubspot.companies.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -497,7 +497,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "companies",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
@@ -742,14 +742,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Deals Search
+### Deals Context Store Search
 
 Search and filter deals records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await hubspot.deals.search(
+await hubspot.deals.context_store_search(
     query={"filter": {"eq": {"archived": True}}}
 )
 ```
@@ -762,7 +762,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "deals",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"archived": True}}}
     }
