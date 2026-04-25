@@ -8,15 +8,22 @@ The Stripe connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](#customers-list), [Create](#customers-create), [Get](#customers-get), [Update](#customers-update), [Delete](#customers-delete), [API Search](#customers-api-search), [Search](#customers-search) |
-| Invoices | [List](#invoices-list), [Get](#invoices-get), [API Search](#invoices-api-search), [Search](#invoices-search) |
-| Charges | [List](#charges-list), [Get](#charges-get), [API Search](#charges-api-search), [Search](#charges-search) |
-| Subscriptions | [List](#subscriptions-list), [Get](#subscriptions-get), [API Search](#subscriptions-api-search), [Search](#subscriptions-search) |
-| Refunds | [List](#refunds-list), [Create](#refunds-create), [Get](#refunds-get), [Search](#refunds-search) |
+| Customers | [List](#customers-list), [Create](#customers-create), [Get](#customers-get), [Update](#customers-update), [Delete](#customers-delete), [API Search](#customers-api-search), [Context Store Search](#customers-context-store-search) |
+| Invoices | [List](#invoices-list), [Create](#invoices-create), [Get](#invoices-get), [API Search](#invoices-api-search), [Context Store Search](#invoices-context-store-search) |
+| Invoice Finalizations | [Create](#invoice-finalizations-create) |
+| Invoice Sends | [Create](#invoice-sends-create) |
+| Charges | [List](#charges-list), [Get](#charges-get), [API Search](#charges-api-search), [Context Store Search](#charges-context-store-search) |
+| Subscriptions | [List](#subscriptions-list), [Create](#subscriptions-create), [Get](#subscriptions-get), [Update](#subscriptions-update), [Delete](#subscriptions-delete), [API Search](#subscriptions-api-search), [Context Store Search](#subscriptions-context-store-search) |
+| Refunds | [List](#refunds-list), [Create](#refunds-create), [Get](#refunds-get), [Context Store Search](#refunds-context-store-search) |
 | Products | [List](#products-list), [Create](#products-create), [Get](#products-get), [Update](#products-update), [Delete](#products-delete), [API Search](#products-api-search) |
 | Balance | [Get](#balance-get) |
 | Balance Transactions | [List](#balance-transactions-list), [Get](#balance-transactions-get) |
-| Payment Intents | [List](#payment-intents-list), [Get](#payment-intents-get), [API Search](#payment-intents-api-search) |
+| Payment Intents | [List](#payment-intents-list), [Create](#payment-intents-create), [Get](#payment-intents-get), [Update](#payment-intents-update), [API Search](#payment-intents-api-search) |
+| Payment Intent Confirmations | [Create](#payment-intent-confirmations-create) |
+| Payment Intent Cancellations | [Create](#payment-intent-cancellations-create) |
+| Prices | [Create](#prices-create) |
+| Checkout Sessions | [Create](#checkout-sessions-create) |
+| Payment Method Attachments | [Create](#payment-method-attachments-create) |
 | Disputes | [List](#disputes-list), [Get](#disputes-get) |
 | Payouts | [List](#payouts-list), [Get](#payouts-get) |
 
@@ -457,14 +464,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Customers Search
+### Customers Context Store Search
 
 Search and filter customers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await stripe.customers.search(
+await stripe.customers.context_store_search(
     query={"filter": {"eq": {"account_balance": 0}}}
 )
 ```
@@ -477,7 +484,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "customers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"account_balance": 0}}}
     }
@@ -723,6 +730,131 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `has_more` | `boolean` |  |
+
+</details>
+
+### Invoices Create
+
+Creates a draft invoice for a given customer. The invoice remains a draft until you finalize it, which allows you to pay or send the invoice to your customers.
+
+#### Python SDK
+
+```python
+await stripe.invoices.create()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "invoices",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"invoice"` |  |
+| `account_country` | `string \| null` |  |
+| `account_name` | `string \| null` |  |
+| `account_tax_ids` | `array \| null` |  |
+| `amount_due` | `integer` |  |
+| `amount_overpaid` | `integer` |  |
+| `amount_paid` | `integer` |  |
+| `amount_remaining` | `integer` |  |
+| `amount_shipping` | `integer` |  |
+| `application` | `string \| null` |  |
+| `application_fee_amount` | `integer \| null` |  |
+| `attempt_count` | `integer` |  |
+| `attempted` | `boolean` |  |
+| `auto_advance` | `boolean` |  |
+| `automatic_tax` | `object` |  |
+| `automatically_finalizes_at` | `integer \| null` |  |
+| `billing_reason` | `string \| null` |  |
+| `charge` | `string \| null` |  |
+| `collection_method` | `"charge_automatically" \| "send_invoice"` |  |
+| `confirmation_secret` | `object \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `custom_fields` | `array \| null` |  |
+| `customer` | `string` |  |
+| `customer_account` | `string \| null` |  |
+| `customer_address` | `object \| null` |  |
+| `customer_email` | `string \| null` |  |
+| `customer_name` | `string \| null` |  |
+| `customer_phone` | `string \| null` |  |
+| `customer_shipping` | `object \| null` |  |
+| `customer_tax_exempt` | `string \| null` |  |
+| `customer_tax_ids` | `array \| null` |  |
+| `default_payment_method` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `default_tax_rates` | `array<object>` |  |
+| `description` | `string \| null` |  |
+| `discount` | `object \| null` |  |
+| `discounts` | `array<string>` |  |
+| `due_date` | `integer \| null` |  |
+| `effective_at` | `integer \| null` |  |
+| `ending_balance` | `integer \| null` |  |
+| `footer` | `string \| null` |  |
+| `from_invoice` | `object \| null` |  |
+| `hosted_invoice_url` | `string \| null` |  |
+| `invoice_pdf` | `string \| null` |  |
+| `issuer` | `object` |  |
+| `last_finalization_error` | `object \| null` |  |
+| `latest_revision` | `string \| null` |  |
+| `lines` | `object` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `next_payment_attempt` | `integer \| null` |  |
+| `number` | `string \| null` |  |
+| `on_behalf_of` | `string \| null` |  |
+| `paid` | `boolean \| null` |  |
+| `paid_out_of_band` | `boolean \| null` |  |
+| `parent` | `object \| null` |  |
+| `payment_intent` | `string \| null` |  |
+| `payment_settings` | `object` |  |
+| `payments` | `object` |  |
+| `period_end` | `integer` |  |
+| `period_start` | `integer` |  |
+| `post_payment_credit_notes_amount` | `integer` |  |
+| `pre_payment_credit_notes_amount` | `integer` |  |
+| `quote` | `string \| null` |  |
+| `receipt_number` | `string \| null` |  |
+| `rendering` | `object \| null` |  |
+| `rendering_options` | `object \| null` |  |
+| `shipping_cost` | `object \| null` |  |
+| `shipping_details` | `object \| null` |  |
+| `starting_balance` | `integer` |  |
+| `statement_descriptor` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `status_transitions` | `object` |  |
+| `subscription` | `string \| null` |  |
+| `subscription_details` | `object \| null` |  |
+| `subtotal` | `integer` |  |
+| `subtotal_excluding_tax` | `integer \| null` |  |
+| `tax` | `integer \| null` |  |
+| `test_clock` | `string \| null` |  |
+| `threshold_reason` | `object \| null` |  |
+| `total` | `integer` |  |
+| `total_discount_amounts` | `array \| null` |  |
+| `total_excluding_tax` | `integer \| null` |  |
+| `total_pretax_credit_amounts` | `array \| null` |  |
+| `total_tax_amounts` | `array \| null` |  |
+| `total_taxes` | `array \| null` |  |
+| `transfer_data` | `object \| null` |  |
+| `webhooks_delivered_at` | `integer \| null` |  |
+
 
 </details>
 
@@ -1005,14 +1137,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Invoices Search
+### Invoices Context Store Search
 
 Search and filter invoices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await stripe.invoices.search(
+await stripe.invoices.context_store_search(
     query={"filter": {"eq": {"account_country": "<str>"}}}
 )
 ```
@@ -1025,7 +1157,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "invoices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"account_country": "<str>"}}}
     }
@@ -1238,6 +1370,282 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].transfer_data` | `object` | Information about the transfer of funds associated with this invoice in Connect scenarios. |
 | `data[].updated` | `integer` | Timestamp indicating when the invoice was last updated. |
 | `data[].webhooks_delivered_at` | `number` | Timestamp indicating when webhooks for this invoice were successfully delivered. |
+
+</details>
+
+## Invoice Finalizations
+
+### Invoice Finalizations Create
+
+Stripe automatically finalizes drafts before sending and attempting payment on invoices. However, if you'd like to finalize a draft invoice manually, you can do so using this method.
+
+#### Python SDK
+
+```python
+await stripe.invoice_finalizations.create(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "invoice_finalizations",
+    "action": "create",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the invoice to finalize |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"invoice"` |  |
+| `account_country` | `string \| null` |  |
+| `account_name` | `string \| null` |  |
+| `account_tax_ids` | `array \| null` |  |
+| `amount_due` | `integer` |  |
+| `amount_overpaid` | `integer` |  |
+| `amount_paid` | `integer` |  |
+| `amount_remaining` | `integer` |  |
+| `amount_shipping` | `integer` |  |
+| `application` | `string \| null` |  |
+| `application_fee_amount` | `integer \| null` |  |
+| `attempt_count` | `integer` |  |
+| `attempted` | `boolean` |  |
+| `auto_advance` | `boolean` |  |
+| `automatic_tax` | `object` |  |
+| `automatically_finalizes_at` | `integer \| null` |  |
+| `billing_reason` | `string \| null` |  |
+| `charge` | `string \| null` |  |
+| `collection_method` | `"charge_automatically" \| "send_invoice"` |  |
+| `confirmation_secret` | `object \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `custom_fields` | `array \| null` |  |
+| `customer` | `string` |  |
+| `customer_account` | `string \| null` |  |
+| `customer_address` | `object \| null` |  |
+| `customer_email` | `string \| null` |  |
+| `customer_name` | `string \| null` |  |
+| `customer_phone` | `string \| null` |  |
+| `customer_shipping` | `object \| null` |  |
+| `customer_tax_exempt` | `string \| null` |  |
+| `customer_tax_ids` | `array \| null` |  |
+| `default_payment_method` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `default_tax_rates` | `array<object>` |  |
+| `description` | `string \| null` |  |
+| `discount` | `object \| null` |  |
+| `discounts` | `array<string>` |  |
+| `due_date` | `integer \| null` |  |
+| `effective_at` | `integer \| null` |  |
+| `ending_balance` | `integer \| null` |  |
+| `footer` | `string \| null` |  |
+| `from_invoice` | `object \| null` |  |
+| `hosted_invoice_url` | `string \| null` |  |
+| `invoice_pdf` | `string \| null` |  |
+| `issuer` | `object` |  |
+| `last_finalization_error` | `object \| null` |  |
+| `latest_revision` | `string \| null` |  |
+| `lines` | `object` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `next_payment_attempt` | `integer \| null` |  |
+| `number` | `string \| null` |  |
+| `on_behalf_of` | `string \| null` |  |
+| `paid` | `boolean \| null` |  |
+| `paid_out_of_band` | `boolean \| null` |  |
+| `parent` | `object \| null` |  |
+| `payment_intent` | `string \| null` |  |
+| `payment_settings` | `object` |  |
+| `payments` | `object` |  |
+| `period_end` | `integer` |  |
+| `period_start` | `integer` |  |
+| `post_payment_credit_notes_amount` | `integer` |  |
+| `pre_payment_credit_notes_amount` | `integer` |  |
+| `quote` | `string \| null` |  |
+| `receipt_number` | `string \| null` |  |
+| `rendering` | `object \| null` |  |
+| `rendering_options` | `object \| null` |  |
+| `shipping_cost` | `object \| null` |  |
+| `shipping_details` | `object \| null` |  |
+| `starting_balance` | `integer` |  |
+| `statement_descriptor` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `status_transitions` | `object` |  |
+| `subscription` | `string \| null` |  |
+| `subscription_details` | `object \| null` |  |
+| `subtotal` | `integer` |  |
+| `subtotal_excluding_tax` | `integer \| null` |  |
+| `tax` | `integer \| null` |  |
+| `test_clock` | `string \| null` |  |
+| `threshold_reason` | `object \| null` |  |
+| `total` | `integer` |  |
+| `total_discount_amounts` | `array \| null` |  |
+| `total_excluding_tax` | `integer \| null` |  |
+| `total_pretax_credit_amounts` | `array \| null` |  |
+| `total_tax_amounts` | `array \| null` |  |
+| `total_taxes` | `array \| null` |  |
+| `transfer_data` | `object \| null` |  |
+| `webhooks_delivered_at` | `integer \| null` |  |
+
+
+</details>
+
+## Invoice Sends
+
+### Invoice Sends Create
+
+Stripe will automatically send invoices to customers according to your subscriptions settings. However, if you'd like to manually send an invoice to your customer out of the normal schedule, you can do so.
+
+#### Python SDK
+
+```python
+await stripe.invoice_sends.create(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "invoice_sends",
+    "action": "create",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the invoice to send |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"invoice"` |  |
+| `account_country` | `string \| null` |  |
+| `account_name` | `string \| null` |  |
+| `account_tax_ids` | `array \| null` |  |
+| `amount_due` | `integer` |  |
+| `amount_overpaid` | `integer` |  |
+| `amount_paid` | `integer` |  |
+| `amount_remaining` | `integer` |  |
+| `amount_shipping` | `integer` |  |
+| `application` | `string \| null` |  |
+| `application_fee_amount` | `integer \| null` |  |
+| `attempt_count` | `integer` |  |
+| `attempted` | `boolean` |  |
+| `auto_advance` | `boolean` |  |
+| `automatic_tax` | `object` |  |
+| `automatically_finalizes_at` | `integer \| null` |  |
+| `billing_reason` | `string \| null` |  |
+| `charge` | `string \| null` |  |
+| `collection_method` | `"charge_automatically" \| "send_invoice"` |  |
+| `confirmation_secret` | `object \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `custom_fields` | `array \| null` |  |
+| `customer` | `string` |  |
+| `customer_account` | `string \| null` |  |
+| `customer_address` | `object \| null` |  |
+| `customer_email` | `string \| null` |  |
+| `customer_name` | `string \| null` |  |
+| `customer_phone` | `string \| null` |  |
+| `customer_shipping` | `object \| null` |  |
+| `customer_tax_exempt` | `string \| null` |  |
+| `customer_tax_ids` | `array \| null` |  |
+| `default_payment_method` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `default_tax_rates` | `array<object>` |  |
+| `description` | `string \| null` |  |
+| `discount` | `object \| null` |  |
+| `discounts` | `array<string>` |  |
+| `due_date` | `integer \| null` |  |
+| `effective_at` | `integer \| null` |  |
+| `ending_balance` | `integer \| null` |  |
+| `footer` | `string \| null` |  |
+| `from_invoice` | `object \| null` |  |
+| `hosted_invoice_url` | `string \| null` |  |
+| `invoice_pdf` | `string \| null` |  |
+| `issuer` | `object` |  |
+| `last_finalization_error` | `object \| null` |  |
+| `latest_revision` | `string \| null` |  |
+| `lines` | `object` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `next_payment_attempt` | `integer \| null` |  |
+| `number` | `string \| null` |  |
+| `on_behalf_of` | `string \| null` |  |
+| `paid` | `boolean \| null` |  |
+| `paid_out_of_band` | `boolean \| null` |  |
+| `parent` | `object \| null` |  |
+| `payment_intent` | `string \| null` |  |
+| `payment_settings` | `object` |  |
+| `payments` | `object` |  |
+| `period_end` | `integer` |  |
+| `period_start` | `integer` |  |
+| `post_payment_credit_notes_amount` | `integer` |  |
+| `pre_payment_credit_notes_amount` | `integer` |  |
+| `quote` | `string \| null` |  |
+| `receipt_number` | `string \| null` |  |
+| `rendering` | `object \| null` |  |
+| `rendering_options` | `object \| null` |  |
+| `shipping_cost` | `object \| null` |  |
+| `shipping_details` | `object \| null` |  |
+| `starting_balance` | `integer` |  |
+| `statement_descriptor` | `string \| null` |  |
+| `status` | `string \| null` |  |
+| `status_transitions` | `object` |  |
+| `subscription` | `string \| null` |  |
+| `subscription_details` | `object \| null` |  |
+| `subtotal` | `integer` |  |
+| `subtotal_excluding_tax` | `integer \| null` |  |
+| `tax` | `integer \| null` |  |
+| `test_clock` | `string \| null` |  |
+| `threshold_reason` | `object \| null` |  |
+| `total` | `integer` |  |
+| `total_discount_amounts` | `array \| null` |  |
+| `total_excluding_tax` | `integer \| null` |  |
+| `total_pretax_credit_amounts` | `array \| null` |  |
+| `total_tax_amounts` | `array \| null` |  |
+| `total_taxes` | `array \| null` |  |
+| `transfer_data` | `object \| null` |  |
+| `webhooks_delivered_at` | `integer \| null` |  |
+
 
 </details>
 
@@ -1548,14 +1956,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Charges Search
+### Charges Context Store Search
 
 Search and filter charges records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await stripe.charges.search(
+await stripe.charges.context_store_search(
     query={"filter": {"eq": {"amount": 0}}}
 )
 ```
@@ -1568,7 +1976,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "charges",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount": 0}}}
     }
@@ -1829,6 +2237,91 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Subscriptions Create
+
+Creates a new subscription on an existing customer. Each customer can have up to 500 active or scheduled subscriptions.
+
+#### Python SDK
+
+```python
+await stripe.subscriptions.create()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "subscriptions",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"subscription"` |  |
+| `application` | `string \| null` |  |
+| `application_fee_percent` | `number \| null` |  |
+| `automatic_tax` | `object` |  |
+| `billing_cycle_anchor` | `integer` |  |
+| `billing_cycle_anchor_config` | `object \| null` |  |
+| `billing_mode` | `object` |  |
+| `billing_thresholds` | `object \| null` |  |
+| `cancel_at` | `integer \| null` |  |
+| `cancel_at_period_end` | `boolean` |  |
+| `canceled_at` | `integer \| null` |  |
+| `cancellation_details` | `object \| null` |  |
+| `collection_method` | `"charge_automatically" \| "send_invoice"` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `customer` | `string` |  |
+| `customer_account` | `string \| null` |  |
+| `days_until_due` | `integer \| null` |  |
+| `default_payment_method` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `default_tax_rates` | `array \| null` |  |
+| `description` | `string \| null` |  |
+| `discounts` | `array<string>` |  |
+| `ended_at` | `integer \| null` |  |
+| `invoice_settings` | `object` |  |
+| `items` | `object` |  |
+| `latest_invoice` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `next_pending_invoice_item_invoice` | `integer \| null` |  |
+| `on_behalf_of` | `string \| null` |  |
+| `pause_collection` | `object \| null` |  |
+| `payment_settings` | `object \| null` |  |
+| `status` | `"incomplete" \| "incomplete_expired" \| "trialing" \| "active" \| "past_due" \| "canceled" \| "unpaid" \| "paused"` |  |
+| `current_period_start` | `integer` |  |
+| `current_period_end` | `integer` |  |
+| `start_date` | `integer` |  |
+| `trial_start` | `integer \| null` |  |
+| `trial_end` | `integer \| null` |  |
+| `discount` | `object \| null` |  |
+| `plan` | `object \| null` |  |
+| `quantity` | `integer \| null` |  |
+| `schedule` | `string \| null` |  |
+| `test_clock` | `string \| null` |  |
+| `transfer_data` | `object \| null` |  |
+| `trial_settings` | `object \| null` |  |
+| `pending_invoice_item_interval` | `object \| null` |  |
+| `pending_setup_intent` | `string \| null` |  |
+| `pending_update` | `object \| null` |  |
+
+
+</details>
+
 ### Subscriptions Get
 
 Retrieves the subscription with the given ID
@@ -1850,6 +2343,198 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --data '{
     "entity": "subscriptions",
     "action": "get",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The subscription ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"subscription"` |  |
+| `application` | `string \| null` |  |
+| `application_fee_percent` | `number \| null` |  |
+| `automatic_tax` | `object` |  |
+| `billing_cycle_anchor` | `integer` |  |
+| `billing_cycle_anchor_config` | `object \| null` |  |
+| `billing_mode` | `object` |  |
+| `billing_thresholds` | `object \| null` |  |
+| `cancel_at` | `integer \| null` |  |
+| `cancel_at_period_end` | `boolean` |  |
+| `canceled_at` | `integer \| null` |  |
+| `cancellation_details` | `object \| null` |  |
+| `collection_method` | `"charge_automatically" \| "send_invoice"` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `customer` | `string` |  |
+| `customer_account` | `string \| null` |  |
+| `days_until_due` | `integer \| null` |  |
+| `default_payment_method` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `default_tax_rates` | `array \| null` |  |
+| `description` | `string \| null` |  |
+| `discounts` | `array<string>` |  |
+| `ended_at` | `integer \| null` |  |
+| `invoice_settings` | `object` |  |
+| `items` | `object` |  |
+| `latest_invoice` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `next_pending_invoice_item_invoice` | `integer \| null` |  |
+| `on_behalf_of` | `string \| null` |  |
+| `pause_collection` | `object \| null` |  |
+| `payment_settings` | `object \| null` |  |
+| `status` | `"incomplete" \| "incomplete_expired" \| "trialing" \| "active" \| "past_due" \| "canceled" \| "unpaid" \| "paused"` |  |
+| `current_period_start` | `integer` |  |
+| `current_period_end` | `integer` |  |
+| `start_date` | `integer` |  |
+| `trial_start` | `integer \| null` |  |
+| `trial_end` | `integer \| null` |  |
+| `discount` | `object \| null` |  |
+| `plan` | `object \| null` |  |
+| `quantity` | `integer \| null` |  |
+| `schedule` | `string \| null` |  |
+| `test_clock` | `string \| null` |  |
+| `transfer_data` | `object \| null` |  |
+| `trial_settings` | `object \| null` |  |
+| `pending_invoice_item_interval` | `object \| null` |  |
+| `pending_setup_intent` | `string \| null` |  |
+| `pending_update` | `object \| null` |  |
+
+
+</details>
+
+### Subscriptions Update
+
+Updates an existing subscription on a customer to match the specified parameters. When changing prices or quantities, we optionally prorate the price we charge next month to make up for any price changes.
+
+#### Python SDK
+
+```python
+await stripe.subscriptions.update(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "subscriptions",
+    "action": "update",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The subscription ID |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"subscription"` |  |
+| `application` | `string \| null` |  |
+| `application_fee_percent` | `number \| null` |  |
+| `automatic_tax` | `object` |  |
+| `billing_cycle_anchor` | `integer` |  |
+| `billing_cycle_anchor_config` | `object \| null` |  |
+| `billing_mode` | `object` |  |
+| `billing_thresholds` | `object \| null` |  |
+| `cancel_at` | `integer \| null` |  |
+| `cancel_at_period_end` | `boolean` |  |
+| `canceled_at` | `integer \| null` |  |
+| `cancellation_details` | `object \| null` |  |
+| `collection_method` | `"charge_automatically" \| "send_invoice"` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `customer` | `string` |  |
+| `customer_account` | `string \| null` |  |
+| `days_until_due` | `integer \| null` |  |
+| `default_payment_method` | `string \| null` |  |
+| `default_source` | `string \| null` |  |
+| `default_tax_rates` | `array \| null` |  |
+| `description` | `string \| null` |  |
+| `discounts` | `array<string>` |  |
+| `ended_at` | `integer \| null` |  |
+| `invoice_settings` | `object` |  |
+| `items` | `object` |  |
+| `latest_invoice` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `next_pending_invoice_item_invoice` | `integer \| null` |  |
+| `on_behalf_of` | `string \| null` |  |
+| `pause_collection` | `object \| null` |  |
+| `payment_settings` | `object \| null` |  |
+| `status` | `"incomplete" \| "incomplete_expired" \| "trialing" \| "active" \| "past_due" \| "canceled" \| "unpaid" \| "paused"` |  |
+| `current_period_start` | `integer` |  |
+| `current_period_end` | `integer` |  |
+| `start_date` | `integer` |  |
+| `trial_start` | `integer \| null` |  |
+| `trial_end` | `integer \| null` |  |
+| `discount` | `object \| null` |  |
+| `plan` | `object \| null` |  |
+| `quantity` | `integer \| null` |  |
+| `schedule` | `string \| null` |  |
+| `test_clock` | `string \| null` |  |
+| `transfer_data` | `object \| null` |  |
+| `trial_settings` | `object \| null` |  |
+| `pending_invoice_item_interval` | `object \| null` |  |
+| `pending_setup_intent` | `string \| null` |  |
+| `pending_update` | `object \| null` |  |
+
+
+</details>
+
+### Subscriptions Delete
+
+Cancels a customer's subscription immediately. The customer will not be charged again for the subscription. Any pending invoice items that you've created will still be charged for at the end of the period, unless manually deleted.
+
+#### Python SDK
+
+```python
+await stripe.subscriptions.delete(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "subscriptions",
+    "action": "delete",
     "params": {
         "id": "<str>"
     }
@@ -2028,14 +2713,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Subscriptions Search
+### Subscriptions Context Store Search
 
 Search and filter subscriptions records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await stripe.subscriptions.search(
+await stripe.subscriptions.context_store_search(
     query={"filter": {"eq": {"application": "<str>"}}}
 )
 ```
@@ -2048,7 +2733,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "subscriptions",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"application": "<str>"}}}
     }
@@ -2388,14 +3073,14 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Refunds Search
+### Refunds Context Store Search
 
 Search and filter refunds records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
 #### Python SDK
 
 ```python
-await stripe.refunds.search(
+await stripe.refunds.context_store_search(
     query={"filter": {"eq": {"amount": 0}}}
 )
 ```
@@ -2408,7 +3093,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "refunds",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"amount": 0}}}
     }
@@ -3131,6 +3816,60 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Payment Intents Create
+
+Creates a PaymentIntent object. After the PaymentIntent is created, attach a payment method and confirm to continue the payment.
+
+#### Python SDK
+
+```python
+await stripe.payment_intents.create()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "payment_intents",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"payment_intent"` |  |
+| `amount` | `integer` |  |
+| `amount_capturable` | `integer` |  |
+| `amount_received` | `integer` |  |
+| `application` | `string \| null` |  |
+| `application_fee_amount` | `integer \| null` |  |
+| `capture_method` | `"automatic" \| "automatic_async" \| "manual"` |  |
+| `client_secret` | `string \| null` |  |
+| `confirmation_method` | `"automatic" \| "manual"` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `customer` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `payment_method` | `string \| null` |  |
+| `payment_method_types` | `array<string>` |  |
+| `status` | `string` |  |
+
+
+</details>
+
 ### Payment Intents Get
 
 Retrieves the details of a PaymentIntent that has previously been created.
@@ -3164,6 +3903,71 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
 | `id` | `string` | Yes | The ID of the payment intent |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"payment_intent"` |  |
+| `amount` | `integer` |  |
+| `amount_capturable` | `integer` |  |
+| `amount_received` | `integer` |  |
+| `application` | `string \| null` |  |
+| `application_fee_amount` | `integer \| null` |  |
+| `capture_method` | `"automatic" \| "automatic_async" \| "manual"` |  |
+| `client_secret` | `string \| null` |  |
+| `confirmation_method` | `"automatic" \| "manual"` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `customer` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `payment_method` | `string \| null` |  |
+| `payment_method_types` | `array<string>` |  |
+| `status` | `string` |  |
+
+
+</details>
+
+### Payment Intents Update
+
+Updates properties on a PaymentIntent object without confirming.
+
+#### Python SDK
+
+```python
+await stripe.payment_intents.update(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "payment_intents",
+    "action": "update",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the payment intent to update |
 
 
 <details>
@@ -3266,6 +4070,305 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | Field Name | Type | Description |
 |------------|------|-------------|
 | `has_more` | `boolean` |  |
+
+</details>
+
+## Payment Intent Confirmations
+
+### Payment Intent Confirmations Create
+
+Confirm that your customer intends to pay with current or provided payment method. Upon confirmation, the PaymentIntent will attempt to initiate a payment.
+
+#### Python SDK
+
+```python
+await stripe.payment_intent_confirmations.create(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "payment_intent_confirmations",
+    "action": "create",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the payment intent to confirm |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"payment_intent"` |  |
+| `amount` | `integer` |  |
+| `amount_capturable` | `integer` |  |
+| `amount_received` | `integer` |  |
+| `application` | `string \| null` |  |
+| `application_fee_amount` | `integer \| null` |  |
+| `capture_method` | `"automatic" \| "automatic_async" \| "manual"` |  |
+| `client_secret` | `string \| null` |  |
+| `confirmation_method` | `"automatic" \| "manual"` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `customer` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `payment_method` | `string \| null` |  |
+| `payment_method_types` | `array<string>` |  |
+| `status` | `string` |  |
+
+
+</details>
+
+## Payment Intent Cancellations
+
+### Payment Intent Cancellations Create
+
+You can cancel a PaymentIntent object when it's in one of these statuses - requires_payment_method, requires_capture, requires_confirmation, requires_action, or processing.
+
+#### Python SDK
+
+```python
+await stripe.payment_intent_cancellations.create(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "payment_intent_cancellations",
+    "action": "create",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the payment intent to cancel |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"payment_intent"` |  |
+| `amount` | `integer` |  |
+| `amount_capturable` | `integer` |  |
+| `amount_received` | `integer` |  |
+| `application` | `string \| null` |  |
+| `application_fee_amount` | `integer \| null` |  |
+| `capture_method` | `"automatic" \| "automatic_async" \| "manual"` |  |
+| `client_secret` | `string \| null` |  |
+| `confirmation_method` | `"automatic" \| "manual"` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `customer` | `string \| null` |  |
+| `description` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `payment_method` | `string \| null` |  |
+| `payment_method_types` | `array<string>` |  |
+| `status` | `string` |  |
+
+
+</details>
+
+## Prices
+
+### Prices Create
+
+Creates a new price for an existing product. The price can be recurring for use in subscriptions or one-time for use in one-off charges.
+
+#### Python SDK
+
+```python
+await stripe.prices.create()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "prices",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"price"` |  |
+| `active` | `boolean` |  |
+| `billing_scheme` | `string \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string` |  |
+| `livemode` | `boolean` |  |
+| `lookup_key` | `string \| null` |  |
+| `metadata` | `object` |  |
+| `nickname` | `string \| null` |  |
+| `product` | `string` |  |
+| `recurring` | `object \| null` |  |
+| `tax_behavior` | `string \| null` |  |
+| `tiers_mode` | `string \| null` |  |
+| `transform_quantity` | `object \| null` |  |
+| `type` | `"one_time" \| "recurring"` |  |
+| `unit_amount` | `integer \| null` |  |
+| `unit_amount_decimal` | `string \| null` |  |
+
+
+</details>
+
+## Checkout Sessions
+
+### Checkout Sessions Create
+
+Creates a Checkout Session object. You can use it to create a payment page hosted on Stripe that customers can use to complete their purchase.
+
+#### Python SDK
+
+```python
+await stripe.checkout_sessions.create()
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "checkout_sessions",
+    "action": "create"
+}'
+```
+
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"checkout.session"` |  |
+| `cancel_url` | `string \| null` |  |
+| `client_reference_id` | `string \| null` |  |
+| `created` | `integer` |  |
+| `currency` | `string \| null` |  |
+| `customer` | `string \| null` |  |
+| `customer_email` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `mode` | `"payment" \| "setup" \| "subscription"` |  |
+| `payment_intent` | `string \| null` |  |
+| `payment_status` | `"no_payment_required" \| "paid" \| "unpaid"` |  |
+| `status` | `string \| null` |  |
+| `success_url` | `string \| null` |  |
+| `url` | `string \| null` |  |
+
+
+</details>
+
+## Payment Method Attachments
+
+### Payment Method Attachments Create
+
+Attaches a PaymentMethod object to a Customer. To use this PaymentMethod as the default for invoice or subscription payments, set invoice_settings.default_payment_method on the Customer.
+
+#### Python SDK
+
+```python
+await stripe.payment_method_attachments.create(
+    id="<str>"
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "payment_method_attachments",
+    "action": "create",
+    "params": {
+        "id": "<str>"
+    }
+}'
+```
+
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `id` | `string` | Yes | The ID of the payment method to attach |
+
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+#### Records
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `string` |  |
+| `object` | `"payment_method"` |  |
+| `billing_details` | `object \| null` |  |
+| `created` | `integer` |  |
+| `customer` | `string \| null` |  |
+| `livemode` | `boolean` |  |
+| `metadata` | `object` |  |
+| `type` | `string` |  |
+| `card` | `object \| null` |  |
+
 
 </details>
 

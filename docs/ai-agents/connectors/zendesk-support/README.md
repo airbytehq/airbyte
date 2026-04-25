@@ -16,6 +16,12 @@ The Zendesk-Support connector is optimized to handle prompts like these.
 - Show me the tickets assigned to me last week
 - List all unresolved tickets
 - Show me the details of recent tickets
+- Create a new ticket with subject 'Login issue' and priority high
+- Update ticket 12345 to status solved
+- Add a comment to ticket 12345 saying 'This has been resolved'
+- Set the priority of ticket 12345 to urgent and assign it to agent 98765
+- Create a new end-user named 'Jane Doe' with email jane@example.com
+- Update user 54321 with notes 'VIP customer'
 - What are the top 5 support issues our organization has faced this month?
 - Analyze the satisfaction ratings for our support team in the last 30 days
 - Compare ticket resolution times across different support groups
@@ -26,16 +32,14 @@ The Zendesk-Support connector is optimized to handle prompts like these.
 
 The Zendesk-Support connector isn't currently able to handle prompts like these.
 
-- Create a new support ticket for \{customer\}
-- Update the priority of this ticket
-- Assign this ticket to \{team_member\}
 - Delete these old support tickets
-- Send an automatic response to \{customer\}
+- Merge two tickets together
+- Export all tickets to a CSV file
 
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-zendesk-support
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -47,8 +51,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_zendesk_support import ZendeskSupportConnector
-from airbyte_agent_zendesk_support.models import ZendeskSupportApiTokenAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector
+from airbyte_agent_sdk.connectors.zendesk_support.models import ZendeskSupportApiTokenAuthConfig
 
 connector = ZendeskSupportConnector(
     auth_config=ZendeskSupportApiTokenAuthConfig(
@@ -71,11 +75,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_zendesk_support import ZendeskSupportConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.zendesk_support import ZendeskSupportConnector, AirbyteAuthConfig
 
 connector = ZendeskSupportConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -96,27 +100,28 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Search](./REFERENCE.md#tickets-search) |
-| Deleted Tickets | [List](./REFERENCE.md#deleted-tickets-list), [Search](./REFERENCE.md#deleted-tickets-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Search](./REFERENCE.md#users-search) |
-| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Search](./REFERENCE.md#organizations-search) |
-| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Search](./REFERENCE.md#groups-search) |
-| Ticket Comments | [List](./REFERENCE.md#ticket-comments-list), [Search](./REFERENCE.md#ticket-comments-search) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [Context Store Search](./REFERENCE.md#tickets-context-store-search) |
+| Ticket Comments | [Create](./REFERENCE.md#ticket-comments-create), [List](./REFERENCE.md#ticket-comments-list), [Context Store Search](./REFERENCE.md#ticket-comments-context-store-search) |
+| Ticket Bulk Updates | [Create](./REFERENCE.md#ticket-bulk-updates-create) |
+| Deleted Tickets | [List](./REFERENCE.md#deleted-tickets-list), [Context Store Search](./REFERENCE.md#deleted-tickets-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Create](./REFERENCE.md#users-create), [Get](./REFERENCE.md#users-get), [Update](./REFERENCE.md#users-update), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Context Store Search](./REFERENCE.md#organizations-context-store-search) |
+| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search) |
 | Attachments | [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download) |
-| Ticket Audits | [List](./REFERENCE.md#ticket-audits-list), [List](./REFERENCE.md#ticket-audits-list), [Search](./REFERENCE.md#ticket-audits-search) |
-| Ticket Metrics | [List](./REFERENCE.md#ticket-metrics-list), [Search](./REFERENCE.md#ticket-metrics-search) |
-| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get), [Search](./REFERENCE.md#ticket-fields-search) |
-| Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get), [Search](./REFERENCE.md#brands-search) |
+| Ticket Audits | [List](./REFERENCE.md#ticket-audits-list), [List](./REFERENCE.md#ticket-audits-list), [Context Store Search](./REFERENCE.md#ticket-audits-context-store-search) |
+| Ticket Metrics | [List](./REFERENCE.md#ticket-metrics-list), [Context Store Search](./REFERENCE.md#ticket-metrics-context-store-search) |
+| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Get](./REFERENCE.md#ticket-fields-get), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search) |
+| Brands | [List](./REFERENCE.md#brands-list), [Get](./REFERENCE.md#brands-get), [Context Store Search](./REFERENCE.md#brands-context-store-search) |
 | Views | [List](./REFERENCE.md#views-list), [Get](./REFERENCE.md#views-get) |
-| Macros | [List](./REFERENCE.md#macros-list), [Get](./REFERENCE.md#macros-get) |
+| Macros | [Get](./REFERENCE.md#macros-get), [List](./REFERENCE.md#macros-list) |
 | Triggers | [List](./REFERENCE.md#triggers-list), [Get](./REFERENCE.md#triggers-get) |
 | Automations | [List](./REFERENCE.md#automations-list), [Get](./REFERENCE.md#automations-get) |
-| Tags | [List](./REFERENCE.md#tags-list), [Search](./REFERENCE.md#tags-search) |
-| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get), [Search](./REFERENCE.md#satisfaction-ratings-search) |
+| Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
+| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Get](./REFERENCE.md#satisfaction-ratings-get), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search) |
 | Group Memberships | [List](./REFERENCE.md#group-memberships-list) |
 | Organization Memberships | [List](./REFERENCE.md#organization-memberships-list) |
 | Sla Policies | [List](./REFERENCE.md#sla-policies-list), [Get](./REFERENCE.md#sla-policies-get) |
-| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Search](./REFERENCE.md#ticket-forms-search) |
+| Ticket Forms | [List](./REFERENCE.md#ticket-forms-list), [Get](./REFERENCE.md#ticket-forms-get), [Context Store Search](./REFERENCE.md#ticket-forms-context-store-search) |
 | Articles | [List](./REFERENCE.md#articles-list), [Get](./REFERENCE.md#articles-get) |
 | Article Attachments | [List](./REFERENCE.md#article-attachments-list), [Get](./REFERENCE.md#article-attachments-get), [Download](./REFERENCE.md#article-attachments-download) |
 
@@ -131,7 +136,6 @@ See the official [Zendesk-Support API reference](https://developer.zendesk.com/a
 
 ## Version information
 
-- **Package version:** 0.18.127
-- **Connector version:** 0.1.18
-- **Generated with Connector SDK commit SHA:** 09ed4945e89bf743be8a0f0d596ae77c99526607
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/zendesk-support/CHANGELOG.md)
+- **Package version:** 0.1.20
+- **Connector version:** 0.1.20
+- **Generated with Connector SDK commit SHA:** unknown

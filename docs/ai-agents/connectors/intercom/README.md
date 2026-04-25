@@ -46,7 +46,7 @@ The Intercom connector isn't currently able to handle prompts like these.
 ## Installation
 
 ```bash
-uv pip install airbyte-agent-intercom
+uv pip install airbyte-agent-sdk
 ```
 
 ## Usage
@@ -58,8 +58,8 @@ Connectors can run in open source or hosted mode.
 In open source mode, you provide API credentials directly to the connector.
 
 ```python
-from airbyte_agent_intercom import IntercomConnector
-from airbyte_agent_intercom.models import IntercomAuthConfig
+from airbyte_agent_sdk.connectors.intercom import IntercomConnector
+from airbyte_agent_sdk.connectors.intercom.models import IntercomAuthConfig
 
 connector = IntercomConnector(
     auth_config=IntercomAuthConfig(
@@ -81,11 +81,11 @@ If your Airbyte client can access multiple organizations, also set `organization
 This example assumes you've already authenticated your connector with Airbyte. See [Authentication](AUTH.md) to learn more about authenticating. If you need a step-by-step guide, see the [hosted execution tutorial](https://docs.airbyte.com/ai-agents/quickstarts/tutorial-hosted).
 
 ```python
-from airbyte_agent_intercom import IntercomConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.intercom import IntercomConnector, AirbyteAuthConfig
 
 connector = IntercomConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
@@ -106,10 +106,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Search](./REFERENCE.md#contacts-search) |
-| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get), [Search](./REFERENCE.md#conversations-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Search](./REFERENCE.md#companies-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Search](./REFERENCE.md#teams-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
+| Conversations | [List](./REFERENCE.md#conversations-list), [Get](./REFERENCE.md#conversations-get), [Context Store Search](./REFERENCE.md#conversations-context-store-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
 | Admins | [List](./REFERENCE.md#admins-list), [Get](./REFERENCE.md#admins-get) |
 | Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get) |
 | Notes | [Create](./REFERENCE.md#notes-create) |
@@ -127,7 +127,6 @@ See the official [Intercom API reference](https://developers.intercom.com/docs/r
 
 ## Version information
 
-- **Package version:** 0.1.92
-- **Connector version:** 0.1.9
-- **Generated with Connector SDK commit SHA:** 75f388847745be753ab20224c66697e1d4a84347
-- **Changelog:** [View changelog](https://github.com/airbytehq/airbyte-agent-connectors/blob/main/connectors/intercom/CHANGELOG.md)
+- **Package version:** 0.1.10
+- **Connector version:** 0.1.10
+- **Generated with Connector SDK commit SHA:** unknown
