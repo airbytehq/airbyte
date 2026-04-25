@@ -190,7 +190,7 @@ jobs:
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+          airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
@@ -288,7 +288,7 @@ jobs:
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && env.GCP_PROJECT_ID != ''
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+          airbyte-ops secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}

@@ -22,8 +22,8 @@ In open source mode, you provide API credentials directly to the connector.
 Example request:
 
 ```python
-from airbyte_agent_monday import MondayConnector
-from airbyte_agent_monday.models import MondayOauth20AuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.monday.models import MondayOauth20AuthenticationAuthConfig
 
 connector = MondayConnector(
     auth_config=MondayOauth20AuthenticationAuthConfig(
@@ -45,8 +45,8 @@ connector = MondayConnector(
 Example request:
 
 ```python
-from airbyte_agent_monday import MondayConnector
-from airbyte_agent_monday.models import MondayApiTokenAuthenticationAuthConfig
+from airbyte_agent_sdk.connectors.monday import MondayConnector
+from airbyte_agent_sdk.connectors.monday.models import MondayApiTokenAuthenticationAuthConfig
 
 connector = MondayConnector(
     auth_config=MondayApiTokenAuthenticationAuthConfig(
@@ -78,7 +78,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Monday",
     "name": "My Monday Connector",
     "credentials": {
@@ -100,7 +100,7 @@ Request a consent URL for your user.
 
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `customer_name` | `string` | Yes | Your unique identifier for the customer |
+| `workspace_name` | `string` | Yes | Your unique identifier for the workspace |
 | `connector_type` | `string` | Yes | The connector type (e.g., "Monday") |
 | `redirect_url` | `string` | Yes | URL to redirect to after OAuth authorization |
 
@@ -111,7 +111,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors/oauth/initia
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Monday",
     "redirect_url": "https://yourapp.com/oauth/callback"
   }'
@@ -147,7 +147,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
   -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
-    "customer_name": "<CUSTOMER_NAME>",
+    "workspace_name": "<WORKSPACE_NAME>",
     "connector_type": "Monday",
     "name": "My Monday Connector",
     "credentials": {
@@ -164,11 +164,11 @@ If your Airbyte client can access multiple organizations, include `organization_
 **Python SDK**
 
 ```python
-from airbyte_agent_monday import MondayConnector, AirbyteAuthConfig
+from airbyte_agent_sdk.connectors.monday import MondayConnector, AirbyteAuthConfig
 
 connector = MondayConnector(
     auth_config=AirbyteAuthConfig(
-        customer_name="<your_customer_name>",
+        workspace_name="<your_workspace_name>",
         organization_id="<your_organization_id>",  # Optional for multi-org clients
         airbyte_client_id="<your-client-id>",
         airbyte_client_secret="<your-client-secret>"
