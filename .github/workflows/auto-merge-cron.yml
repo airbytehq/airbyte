@@ -70,7 +70,7 @@ jobs:
       - name: Fetch required checks for master branch
         id: required-checks
         if: fromJSON(steps.normal-prs.outputs.normal-count) > 0
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ steps.get-hoard-token.outputs.token }}
           script: |
@@ -88,6 +88,79 @@ jobs:
             }
             core.info(`Required checks (${checks.length}): ${JSON.stringify(checks)}`);
             core.setOutput('checks', JSON.stringify(checks));
+
+      # ---------- Write candidate summary ----------
+      - name: Write candidate summary
+        env:
+          FORCE_JSON: ${{ steps.force-prs.outputs.force-matrix }}
+          NORMAL_JSON: ${{ steps.normal-prs.outputs.normal-matrix }}
+        run: |
+          {
+            echo "## Auto-Merge Candidate Summary"
+            echo ""
+
+            force_count=$(echo "$FORCE_JSON" | jq length)
+            normal_count=$(echo "$NORMAL_JSON" | jq length)
+            total=$((force_count + normal_count))
+            echo "**Total PRs discovered:** ${total} (${normal_count} normal, ${force_count} force-merge)"
+            echo ""
+
+            if [ "$force_count" -gt 0 ]; then
+              echo "### Force-Merge PRs (bypass CI checks)"
+              echo ""
+              echo "$FORCE_JSON" | jq -r '.[] | "- [#\(.number)](https://github.com/airbytehq/airbyte/pull/\(.number)): \(.title)"'
+              echo ""
+            fi
+
+            if [ "$normal_count" -gt 0 ]; then
+              # Classify normal PRs by title prefix
+              docs=$(echo "$NORMAL_JSON" | jq '[.[] | select(.title | test("^docs[:(]"; "i"))]')
+              deps=$(echo "$NORMAL_JSON" | jq '[.[] | select(.title | test("^deps[:(]"; "i"))]')
+              other=$(echo "$NORMAL_JSON" | jq --argjson docs "$docs" --argjson deps "$deps" \
+                '[.[] | select(.number as $n | ($docs + $deps) | map(.number) | index($n) | not)]')
+
+              docs_count=$(echo "$docs" | jq length)
+              deps_count=$(echo "$deps" | jq length)
+              other_count=$(echo "$other" | jq length)
+
+              echo "### Normal-Merge PRs by Type"
+              echo ""
+              echo "| Type | Count |"
+              echo "|------|-------|"
+              echo "| docs | ${docs_count} |"
+              echo "| deps | ${deps_count} |"
+              echo "| other | ${other_count} |"
+              echo ""
+
+              if [ "$docs_count" -gt 0 ]; then
+                echo "<details><summary>Docs PRs (${docs_count})</summary>"
+                echo ""
+                echo "$docs" | jq -r '.[] | "- [#\(.number)](https://github.com/airbytehq/airbyte/pull/\(.number)): \(.title)"'
+                echo ""
+                echo "</details>"
+                echo ""
+              fi
+
+              if [ "$deps_count" -gt 0 ]; then
+                echo "<details><summary>Deps PRs (${deps_count})</summary>"
+                echo ""
+                echo "$deps" | jq -r '.[] | "- [#\(.number)](https://github.com/airbytehq/airbyte/pull/\(.number)): \(.title)"'
+                echo ""
+                echo "</details>"
+                echo ""
+              fi
+
+              if [ "$other_count" -gt 0 ]; then
+                echo "<details><summary>Other PRs (${other_count})</summary>"
+                echo ""
+                echo "$other" | jq -r '.[] | "- [#\(.number)](https://github.com/airbytehq/airbyte/pull/\(.number)): \(.title)"'
+                echo ""
+                echo "</details>"
+                echo ""
+              fi
+            fi
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
     outputs:
       normal-matrix: ${{ steps.normal-prs.outputs.normal-matrix }}
       normal-count: ${{ steps.normal-prs.outputs.normal-count }}
@@ -153,7 +226,7 @@ jobs:
       - name: Verify required status checks pass
         if: steps.check-open.outputs.state == 'OPEN' && steps.validate-paths.outputs.valid == 'true'
         id: verify-checks
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           REQUIRED_CHECKS_JSON: ${{ needs.list-candidates.outputs.required-checks }}
         with:
@@ -192,9 +265,11 @@ jobs:
             if (missing.length > 0) {
               core.info(`Missing checks: ${missing.join(', ')}`);
               core.setOutput('ready', 'false');
+              core.setOutput('missing', missing.join(', '));
             } else {
               core.info('All required checks passing');
               core.setOutput('ready', 'true');
+              core.setOutput('missing', '');
             }
 
       # ---------- Eligibility gate ----------
@@ -263,6 +338,38 @@ jobs:
       - name: Dry-run notice
         if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
         run: echo "::notice::DRY RUN -- would merge PR ${PR_NUMBER}"
+
+      # ---------- Per-PR summary ----------
+      - name: Write per-PR summary
+        if: always()
+        env:
+          STATE: ${{ steps.check-open.outputs.state }}
+          VALID_PATHS: ${{ steps.validate-paths.outputs.valid }}
+          CHECKS_READY: ${{ steps.verify-checks.outputs.ready }}
+          MISSING_CHECKS: ${{ steps.verify-checks.outputs.missing }}
+          ELIGIBLE: ${{ steps.eligible.outputs.result }}
+          DRY_RUN: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true' }}
+        run: |
+          link="[#${PR_NUMBER}](https://github.com/airbytehq/airbyte/pull/${PR_NUMBER})"
+          if [ "$ELIGIBLE" = "true" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "| ${link} | ${PR_TITLE} | :yellow_circle: Would merge (dry-run) |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| ${link} | ${PR_TITLE} | :green_circle: Merged |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            reason=""
+            if [ "$STATE" != "OPEN" ]; then
+              reason="PR not open (${STATE})"
+            elif [ "$VALID_PATHS" != "true" ]; then
+              reason="Non-connector files changed"
+            elif [ "$CHECKS_READY" != "true" ]; then
+              reason="Missing checks: ${MISSING_CHECKS}"
+            else
+              reason="Unknown"
+            fi
+            echo "| ${link} | ${PR_TITLE} | :red_circle: Blocked — ${reason} |" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   # ---------- Job 3: Force merge (bypass CI checks) ----------
   force-merge:
@@ -384,3 +491,31 @@ jobs:
       - name: Dry-run notice
         if: steps.eligible.outputs.result == 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true'
         run: echo "::notice::DRY RUN -- would force-merge PR ${PR_NUMBER}"
+
+      # ---------- Per-PR summary ----------
+      - name: Write per-PR summary
+        if: always()
+        env:
+          STATE: ${{ steps.check-open.outputs.state }}
+          VALID_PATHS: ${{ steps.validate-paths.outputs.valid }}
+          ELIGIBLE: ${{ steps.eligible.outputs.result }}
+          DRY_RUN: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE != 'true' }}
+        run: |
+          link="[#${PR_NUMBER}](https://github.com/airbytehq/airbyte/pull/${PR_NUMBER})"
+          if [ "$ELIGIBLE" = "true" ]; then
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "| ${link} | ${PR_TITLE} | :yellow_circle: Would force-merge (dry-run) |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| ${link} | ${PR_TITLE} | :green_circle: Force-merged |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            reason=""
+            if [ "$STATE" != "OPEN" ]; then
+              reason="PR not open (${STATE})"
+            elif [ "$VALID_PATHS" != "true" ]; then
+              reason="Non-connector files changed"
+            else
+              reason="Unknown"
+            fi
+            echo "| ${link} | ${PR_TITLE} | :red_circle: Blocked — ${reason} |" >> "$GITHUB_STEP_SUMMARY"
+          fi
