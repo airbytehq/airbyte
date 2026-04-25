@@ -6,7 +6,7 @@ sidebar_position: 3
 
 Airbyte Agents is a cloud platform that gives AI agents authenticated, structured access to third-party SaaS data. It stores credentials, manages token refresh, and exposes a uniform execution interface so agents can read, search, and write data across dozens of services.
 
-Four interfaces share the same backend. Credentials you configure through one interface are available to all of them.
+You can interact with the platform through four interfaces. They all connect to the same service, so credentials you configure through one interface are available to all of them.
 
 - [**Web app**](../../interfaces/ui) at [app.airbyte.ai](https://app.airbyte.ai) — Talk to an Airbyte-hosted agent in Chats, or define Automations that run on a schedule or webhook.
 - [**API**](../../interfaces/api) — HTTP endpoints for managing connectors, tokens, and executing operations from any language.
@@ -69,7 +69,7 @@ flowchart TB
 
 Airbyte Agents uses a two-layer credential model.
 
-- **Platform credentials** authenticate your app with Airbyte. Your organization's `client_id` and `client_secret` are on the [Profile page](https://app.airbyte.ai/profile). The platform uses these to issue short-lived tokens for API, SDK, and MCP access.
+- **Platform credentials** identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For the API, SDK, and MCP server, your organization's `client_id` and `client_secret` — available on the [Profile page](https://app.airbyte.ai/profile) — serve the same purpose.
 - **Connector credentials** authenticate with each third-party service. When you add a connector, you provide the service's API key, OAuth tokens, or other credentials. Airbyte stores them securely and handles token refresh at execution time.
 
 Add credentials once through any interface and every other interface can use them. For details, see [Connectors and credentials](./connectors-and-credentials).

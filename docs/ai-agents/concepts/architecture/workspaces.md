@@ -8,7 +8,7 @@ A workspace is an isolation boundary within an [organization](./organizations). 
 
 ## The default workspace
 
-Every organization starts with a workspace named `default`. Most apps use this single workspace and never need to create additional ones. The [SDK](../../interfaces/sdk), [API](../../interfaces/api), and [MCP server](../../interfaces/mcp) all target the `default` workspace unless you specify otherwise.
+Every organization starts with a workspace named `default`. Most people use this single workspace and never need to create additional ones. The web app, SDK, API, and MCP server all target the `default` workspace unless you specify otherwise.
 
 ## When to create additional workspaces
 
@@ -31,11 +31,11 @@ The UUID is the durable identifier. The name is a convenience for routing.
 
 ## Create a workspace
 
-Workspaces are created automatically. The first time you mint a [scoped token](../../interfaces/api/authentication#scoped-token) against a new `workspace_name`, Airbyte creates the workspace for you. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.
+Workspaces are created programmatically through the API or SDK — they can't be created through the web app. The first time you mint a [scoped token](../../interfaces/api/authentication#scoped-token) against a new `workspace_name`, Airbyte creates the workspace for you. Use any stable string that makes sense in your app — for example, an internal tenant ID or team slug.
 
 ## Scoped tokens
 
-A scoped token limits access to a single workspace. Most apps that use the `default` workspace can skip scoped tokens entirely and authenticate with an [application token](../../interfaces/api/authentication#application-token). Generate a scoped token when you need to hand a token to a component that should only see one workspace's connectors.
+A scoped token limits access to a single workspace. If you just use the `default` workspace (most cases), you can skip scoped tokens entirely and authenticate with an [application token](../../interfaces/api/authentication#application-token). Generate a scoped token when you need to hand a token to a component that should only see one workspace's connectors.
 
 For details on generating and using scoped tokens, see [Authentication](../../interfaces/api/authentication#scoped-token).
 

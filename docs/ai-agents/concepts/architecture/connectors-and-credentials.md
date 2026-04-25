@@ -36,7 +36,7 @@ A typical connector lifecycle looks like this:
 
 1. **Add credentials** — Provide the third-party service's credentials through the [web app](../../interfaces/ui/add-connector), [API](../../interfaces/api/add-connector), or [SDK](../../interfaces/sdk/add-connector). Airbyte stores the credentials and returns a connector ID.
 2. **Execute operations** — Make tool calls against the connector. Each call targets an entity and an action. See [Execute operations (API)](../../interfaces/api/execute) or [Execute operations (SDK)](../../interfaces/sdk/execute).
-3. **Enable the Context Store** — Optionally turn on the [Context Store](../context-store) to replicate and index a subset of your connector data. This enables fast search operations without hitting the upstream API.
+3. **Use the Context Store** — The [Context Store](../context-store) is enabled by default and replicates and indexes a subset of your connector data. This powers fast search operations without hitting the upstream API.
 
 ## Entities and actions {#entities-and-actions}
 
@@ -53,7 +53,7 @@ Airbyte Agents uses a two-layer credential model.
 
 ### Platform credentials
 
-Platform credentials authenticate your app with Airbyte. Every organization has a `client_id`, `client_secret`, and `organization_id` on the [Profile page](../../admin/profile). The platform uses these to issue short-lived tokens.
+Platform credentials identify your organization with Airbyte. When you sign in to the web app, Airbyte authenticates you behind the scenes. For programmatic access through the API, SDK, or MCP server, your organization's `client_id`, `client_secret`, and `organization_id` — available on the [Profile page](../../admin/profile) — serve the same purpose. The platform uses these to issue short-lived tokens.
 
 | Token type | Scope | Lifetime | Use case |
 | --- | --- | --- | --- |
@@ -74,10 +74,6 @@ Airbyte stores all connector credentials securely. You provide them once, and Ai
 ### Add once, use everywhere
 
 Credentials you add through one interface are available to all of them. A connector configured in the web app works through the API, SDK, or MCP server without re-entering credentials. This applies to every interface in the platform.
-
-### Collecting end-user credentials
-
-If you're building a multi-tenant app and need your end users to connect their own data sources, the authentication module (Airbyte Embedded) is a pre-built UI component you embed in your app. It handles connector selection, credential input, and validation so you don't have to build a custom credential collection flow.
 
 ## Security
 
